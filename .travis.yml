@@ -11,8 +11,10 @@ python:
   - 2.7
 
 env:
-  - TEST_TARGET=installed
-  - TEST_TARGET=source
+  - TEST_TARGET=default
+  - TEST_TARGET=coding
+  - TEST_TARGET=example
+  - TEST_TARGET=doctest
 
 git:
   depth: 10000
@@ -77,7 +79,7 @@ install:
   
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
-  - if [[ $TEST_TARGET == 'installed' ]]; then
+  - if [[ $TEST_TARGET -ne 'coding' ]]; then
       IRIS=$(ls -d1 build/lib*/iris);
       mkdir $IRIS/etc;
     else
@@ -95,7 +97,7 @@ install:
 
   # The coding standards tests expect all the standard names and PyKE
   # modules to be present.
-  - if [[ $TEST_TARGET == 'source' ]]; then
+  - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py std_names;
       PYTHONPATH=lib python setup.py pyke_rules;
     fi
@@ -105,18 +107,21 @@ install:
   - python setup.py --quiet --with-unpack install
 
 script:
-  - if [[ $TEST_TARGET == 'installed' ]]; then
-      python -m iris.tests.runner --default-tests --example-tests;
+  - if [[ $TEST_TARGET == 'default' ]]; then
+      python -m iris.tests.runner --default-tests --system-tests;
+    fi
+  - if [[ $TEST_TARGET == 'example' ]]; then
+      python -m iris.tests.runner --example-tests;
     fi
   # "make html" produces an error when run on Travis that does not
   # affect any downstream functionality but causes the build to fail
   # spuriously. The echo-backtick workaround gets around this error,
   # which should be investigated further in the future.
-  - if [[ $TEST_TARGET == 'installed' ]]; then
+  - if [[ $TEST_TARGET == 'doctest' ]]; then
       cd $(pwd)/docs/iris;
       echo `make clean html`;
       make doctest;
     fi
-  - if [[ $TEST_TARGET == 'source' ]]; then
+  - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py test --coding-tests;
     fi
