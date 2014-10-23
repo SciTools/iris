@@ -1100,12 +1100,42 @@ class Test_regrid(tests.IrisTest):
 
 
 class Test_copy(tests.IrisTest):
-    def test(self):
-        cube = stock.simple_3d_mask()
-        cube_copy = cube.copy()
+    def _check_copy(self, cube, cube_copy):
+        self.assertEqual(cube, cube_copy)
         self.assertNotEqual(id(cube), id(cube_copy))
+        if isinstance(cube.data, np.ma.MaskedArray):
+            self.assertMaskedArrayEqual(cube.data, cube_copy.data)
+        else:
+            self.assertArrayEqual(cube.data, cube_copy.data)
         self.assertNotEqual(id(cube.data), id(cube_copy.data))
-        self.assertNotEqual(id(cube.data.mask), id(cube_copy.data.mask))
+
+    def test(self):
+        cube = stock.simple_3d()
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_emptymask(self):
+        cube = Cube(np.ma.array([0, 1]))
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_arraymask(self):
+        cube = Cube(np.ma.array([0, 1], mask=[True, False]))
+        self._check_copy(cube, cube.copy())
+
+    def test__scalar(self):
+        cube = Cube(0)
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_scalar_emptymask(self):
+        cube = Cube(np.ma.array(0))
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_scalar_arraymask(self):
+        cube = Cube(np.ma.array(0, mask=False))
+        self._check_copy(cube, cube.copy())
+
+    def test__lazy(self):
+        cube = Cube(biggus.NumpyArrayAdapter(np.array([1, 0])))
+        self._check_copy(cube, cube.copy())
 
 
 if __name__ == '__main__':

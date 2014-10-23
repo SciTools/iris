@@ -2615,16 +2615,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _deepcopy(self, memo, data=None):
         if data is None:
-            if not self.has_lazy_data() and self.ndim == 0:
-                # Cope with NumPy's asymmetric (aka. "annoying!") behaviour
-                # of deepcopy on 0-d arrays.
-                new_cube_data = np.asanyarray(self.data)
+            # Use a copy of the source cube data.
+            if self.has_lazy_data():
+                # Use copy.copy, as lazy arrays don't have a copy method.
+                new_cube_data = copy.copy(self.lazy_data())
             else:
-                try:
-                    new_cube_data = self._my_data.copy()
-                except AttributeError:
-                    new_cube_data = copy.copy(self._my_data)
+                # Do *not* use copy.copy, as NumPy 0-d arrays do that wrong.
+                new_cube_data = self.data.copy()
         else:
+            # Use the provided data (without copying it).
             if not isinstance(data, biggus.Array):
                 data = np.asanyarray(data)
 
