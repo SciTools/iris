@@ -168,7 +168,10 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     primary_dimension_elements = set(
         name for (name, _) in target_structure)
 
+    if vector_dims_shape == (1,):
+        shape = ()
+    else:
+        shape = vector_dims_shape
+
     # Return all the information.
-    return (vector_dims_shape,
-            primary_dimension_elements,
-            elements_and_dimensions)
+    return (shape, primary_dimension_elements, elements_and_dimensions)
