@@ -57,7 +57,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         # A single value does not make a dimension (no length-1 dims).
         elements = [('a', np.array([1]))]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (1,))
+        self.assertEqual(shape, ())
         self.assertEqual(primaries, set())
         self.assertEqual(elems_and_dims, {})
 
