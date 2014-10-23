@@ -235,7 +235,7 @@ class TestModes(tests.IrisTest):
         # Extrapolated  -> linear
         data = np.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
-        result = self._regrid(data, 'linear')
+        result = self._regrid(data, 'extrapolate')
         self.assertNotIsInstance(result, np.ma.MaskedArray)
         self.assertArrayEqual(result, self.linear_values)
 
@@ -246,7 +246,7 @@ class TestModes(tests.IrisTest):
         data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
         data[2, 3] = np.ma.masked
-        result = self._regrid(data, 'linear')
+        result = self._regrid(data, 'extrapolate')
         self.assertIsInstance(result, np.ma.MaskedArray)
         mask = [[0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0],
