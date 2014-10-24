@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -341,15 +341,23 @@ def area_weights(cube, normalize=False):
     lon_dim = lon_dim[0] if lon_dim else None
 
     if not (lat.has_bounds() and lon.has_bounds()):
-        msg = "Coordinates {!r} and {!r} must have bounds to determine " \
-              "the area weights.".format(lat.name(), lon.name())
+        msg = ("Coordinates {!r} and {!r} must have bounds to determine "
+               "the area weights.".format(lat.name(), lon.name()))
         raise ValueError(msg)
 
     # Convert from degrees to radians
     lat = lat.copy()
-    lat.convert_units('radians')
     lon = lon.copy()
-    lon.convert_units('radians')
+
+    for coord in (lat, lon):
+        if coord.units in (iris.unit.Unit('degrees'),
+                           iris.unit.Unit('radians')):
+            coord.convert_units('radians')
+        else:
+            msg = ("Units of degrees or radians required, coordinate "
+                   "{!r} has units: {!r}".format(coord.name(),
+                                                 coord.units.name))
+            raise ValueError(msg)
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
