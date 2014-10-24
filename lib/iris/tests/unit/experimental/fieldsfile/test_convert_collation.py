@@ -83,11 +83,11 @@ class Test(tests.IrisTest):
                            (LATITUDE, 0)]
         self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
         coords_and_dims = [
-            (iris.coords.DimCoord(6, 'forecast_period', units='hours'), None),
             (iris.coords.DimCoord(18, 'time', units='hours since epoch'),
              None),
             (iris.coords.DimCoord(12, 'forecast_reference_time',
-                                  units='hours since epoch'), None)
+                                  units='hours since epoch'), None),
+            (iris.coords.DimCoord(6, 'forecast_period', units='hours'), None)
         ]
         self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
 
@@ -106,8 +106,8 @@ class Test(tests.IrisTest):
                            (LATITUDE, 1),
                            (iris.coords.DimCoord([6, 12, 18],
                                                  'forecast_period',
-                                                 units='hours'),
-                            (0,))]
+                                                 units='hours'), (0,))
+                           ]
         self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
         coords_and_dims = [
             (iris.coords.DimCoord([18, 24, 30], 'time',
@@ -130,16 +130,16 @@ class Test(tests.IrisTest):
         self._check_phenomenon(metadata)
         coords_and_dims = [(LONGITUDE, 2),
                            (LATITUDE, 1),
-                           (iris.coords.DimCoord([6, 3, 0.], 'forecast_period',
-                                                 units='hours'),
-                            (0,))]
+                           (iris.coords.DimCoord([12, 15, 18], 'forecast_reference_time',
+                                  units='hours since epoch'), (0,))
+                           ]
         self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
         coords_and_dims = [
             (iris.coords.DimCoord(18, 'time', units='hours since epoch'),
              None),
-            (iris.coords.DimCoord([12, 15, 18], 'forecast_reference_time',
-                                  units='hours since epoch'), (0,))
-        ]
+            (iris.coords.DimCoord([6, 3, 0.], 'forecast_period',
+                                                 units='hours'), (0,))
+            ]
         self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
 
     def test_vector_lbft(self):
@@ -154,18 +154,17 @@ class Test(tests.IrisTest):
         self._check_phenomenon(metadata)
         coords_and_dims = [(LONGITUDE, 2),
                            (LATITUDE, 1),
-                           (iris.coords.DimCoord([15, 12, 9],
-                                                 'forecast_period',
-                                                 units='hours',
-                                                 bounds=[[12, 18], [9, 15],
-                                                         [6, 12]]),
+                           (iris.coords.DimCoord([0, 3, 6],
+                                                 'forecast_reference_time',
+                                                 units='hours since epoch'),
                             (0,))]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
         coords_and_dims = [
             (iris.coords.DimCoord(15, 'time', units='hours since epoch',
                                   bounds=[[12, 18]]), None),
-            (iris.coords.DimCoord([0, 3, 6], 'forecast_reference_time',
-                                  units='hours since epoch'), (0,))
+            (iris.coords.DimCoord([15, 12, 9], 'forecast_period',
+                                  units='hours',
+                                  bounds=[[12, 18], [9, 15], [6, 12]]),
+             (0,))
         ]
         self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
 

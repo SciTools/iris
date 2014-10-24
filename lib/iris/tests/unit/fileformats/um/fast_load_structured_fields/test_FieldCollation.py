@@ -154,16 +154,20 @@ class Test_element_arrays_and_dims(tests.IrisTest):
     def test_blev(self):
         collation = FieldCollation([_make_field(blev=1), _make_field(blev=2)])
         result = collation.element_arrays_and_dims
-        self.assertEqual(result.keys(), ['blev'])
+        keys = set(['blev', 'brsvd1', 'brsvd2', 'brlev',
+                    'bhrlev', 'lblev', 'bhlev'])
+        self.assertEqual(result.viewkeys(), keys)
         values, dims = result['blev']
         self.assertArrayEqual(values, [1, 2])
         self.assertEqual(dims, (0,))
 
     def test_bhlev(self):
-        collation = FieldCollation([_make_field(bhlev=1),
-                                    _make_field(bhlev=2)])
+        collation = FieldCollation([_make_field(blev=0, bhlev=1),
+                                    _make_field(blev=1, bhlev=2)])
         result = collation.element_arrays_and_dims
-        self.assertEqual(result.keys(), ['bhlev'])
+        keys = set(['blev', 'brsvd1', 'brsvd2', 'brlev',
+                    'bhrlev', 'lblev', 'bhlev'])
+        self.assertEqual(result.viewkeys(), keys)
         values, dims = result['bhlev']
         self.assertArrayEqual(values, [1, 2])
         self.assertEqual(dims, (0,))
