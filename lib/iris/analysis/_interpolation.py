@@ -328,8 +328,8 @@ class RectilinearInterpolator(object):
             # some unnecessary checks on the fill_value parameter,
             # so we set it afterwards instead. Sneaky. ;-)
             self._interpolator = _RegularGridInterpolator(
-                self._src_points, data, bounds_error=mode.bounds_error,
-                fill_value=None)
+                self._src_points, data, method=self.method,
+                bounds_error=mode.bounds_error, fill_value=None)
         else:
             self._interpolator.values = data
 
