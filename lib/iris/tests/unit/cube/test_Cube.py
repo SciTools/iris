@@ -1105,6 +1105,10 @@ class Test_copy(tests.IrisTest):
         self.assertNotEqual(id(cube), id(cube_copy))
         if isinstance(cube.data, np.ma.MaskedArray):
             self.assertMaskedArrayEqual(cube.data, cube_copy.data)
+            if cube.data.mask is not np.ma.nomask:
+                # "No mask" is a constant : all other cases must be distinct.
+                self.assertNotEqual(id(cube.data.mask),
+                                    id(cube_copy.data.mask))
         else:
             self.assertArrayEqual(cube.data, cube_copy.data)
         self.assertNotEqual(id(cube.data), id(cube_copy.data))
