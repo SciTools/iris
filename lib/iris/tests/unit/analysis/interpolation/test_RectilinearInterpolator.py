@@ -498,7 +498,7 @@ class Test___call___time(tests.IrisTest):
     def interpolator(self, method=LINEAR):
         data = np.arange(12).reshape(4, 3)
         cube = iris.cube.Cube(data)
-        time_coord = iris.coords.DimCoord(range(0, 48, 12), 'time',
+        time_coord = iris.coords.DimCoord(np.arange(0.0, 48.0, 12.0), 'time',
                                           units='hours since epoch')
         height_coord = iris.coords.DimCoord(range(3), 'altitude', units='m')
         cube.add_dim_coord(time_coord, 0)
