@@ -620,6 +620,157 @@ class BitwiseInt(SplittableInt):
             SplittableInt.__setattr__(self, name, value)
 
 
+def _make_flag_getter(value):
+    def getter(self):
+        return int(bool(self._value & value))
+    return getter
+
+
+def _make_flag_setter(value):
+    def setter(self, flag):
+        if not isinstance(flag, bool):
+            raise TypeError('Can only set bits to True or False')
+        if flag:
+            self._value |= value
+        else:
+            self._value &= ~value
+    return setter
+
+
+class _FlagMetaclass(type):
+    NUM_BITS = 18
+
+    def __new__(cls, classname, bases, class_dict):
+        for i in xrange(cls.NUM_BITS):
+            value = 2 ** i
+            name = 'flag{}'.format(value)
+            class_dict[name] = property(_make_flag_getter(value),
+                                        _make_flag_setter(value))
+        return type.__new__(cls, classname, bases, class_dict)
+
+
+class LBProc(BitwiseInt):
+    # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
+    # properties.
+    __metaclass__ = _FlagMetaclass
+
+    def __init__(self, value):
+        """
+        Args:
+
+        * value (int):
+            The initial value which will determine the flags.
+
+        """
+        if value < 0:
+            raise ValueError('Negative numbers not supported with '
+                             'splittable integers object')
+        self._value = int(value)
+
+    def __len__(self):
+        """
+        Base ten length.
+
+        .. deprecated:: 1.8
+
+            The value of a BitwiseInt only makes sense in base-two.
+
+        """
+        warnings.warn('Length is deprecated')
+        return len(str(self._value))
+
+    def __setattr__(self, name, value):
+        object.__setattr__(self, name, value)
+
+    def __getitem__(self, key):
+        """
+        Base ten indexing support.
+
+        .. deprecated:: 1.8
+
+            The value of a BitwiseInt only makes sense in base-two.
+
+        """
+        warnings.warn('Indexing is deprecated')
+        try:
+            value = int(str(self._value)[::-1][key])
+        except IndexError:
+            value = 0
+        # If the key returns a list of values, then combine them
+        # together to an integer.
+        if isinstance(value, list):
+            value = sum(10**i * val for i, val in enumerate(value))
+        return value
+
+    def __setitem__(self, key, value):
+        """
+        Base ten indexing support.
+
+        .. deprecated:: 1.8
+
+            The value of a BitwiseInt only makes sense in base-two.
+
+        """
+        warnings.warn('Indexing is deprecated')
+        if (not isinstance(value, int) or value < 0):
+            msg = 'Can only set {} as a positive integer value.'.format(key)
+            raise ValueError(msg)
+
+        if isinstance(key, slice):
+            if ((key.start is not None and key.start < 0) or
+                (key.step is not None and key.step < 0) or
+                (key.stop is not None and key.stop < 0)):
+                raise ValueError('Cannot assign a value with slice '
+                                 'objects containing negative indices.')
+
+            # calculate the current length of the value of this string
+            current_length = len(range(*key.indices(len(self))))
+
+            # Get indices for as many digits as have been requested.
+            # Putting the upper limit on the number of digits at 100.
+            indices = range(*key.indices(100))
+            if len(indices) < len(str(value)):
+                fmt = 'Cannot put {} into {} as it has too many digits.'
+                raise ValueError(fmt.format(value, key))
+
+            # Iterate over each of the indices in the slice, zipping
+            # them together with the associated digit.
+            filled_value = str(value).zfill(current_length)
+            for index, digit in zip(indices, filled_value[::-1]):
+                # assign each digit to the associated index
+                self.__setitem__(index, int(digit))
+        else:
+            if value > 9:
+                raise ValueError('Can only set a single digit')
+            # Setting a single digit.
+            factor = 10 ** key
+            head, tail = divmod(self._value, factor)
+            head = head // 10
+            self._value = (head * 10 + value) * factor + tail
+
+    def __iadd__(self, value):
+        self._value += value
+        return self
+
+    def __iand__(self, value):
+        self._value &= value
+        return self
+
+    def __ior__(self, value):
+        self._value |= value
+        return self
+
+    def __int__(self):
+        return self._value
+
+    def __str__(self):
+        return str(self._value)
+
+    @property
+    def flags(self):
+        return tuple(2 ** i for i in xrange(18) if self._value & 2 ** i)
+
+
 class PPDataProxy(object):
     """A reference to the data payload of a single PP field."""
 
@@ -1012,13 +1163,15 @@ class PPField(object):
 
     lbpack = property(lambda self: self._lbpack, _lbpack_setter)
 
-    # lbproc
-    def _lbproc_setter(self, new_value):
-        if not isinstance(new_value, BitwiseInt):
-            new_value = BitwiseInt(new_value, num_bits=18)
-        self._lbproc = new_value
+    @property
+    def lbproc(self):
+        return self._lbproc
 
-    lbproc = property(lambda self: self._lbproc, _lbproc_setter)
+    @lbproc.setter
+    def lbproc(self, value):
+        if not isinstance(value, LBProc):
+            value = LBProc(value)
+        self._lbproc = value
 
     @property
     def data(self):

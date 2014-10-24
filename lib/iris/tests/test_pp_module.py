@@ -120,8 +120,6 @@ class TestPPHeaderDerived(unittest.TestCase):
         
     def test_lbproc_access(self):
         # lbproc == 65539
-        self.assertEqual(self.pp.lbproc[0], 9)
-        self.assertEqual(self.pp.lbproc[19], 0)
         self.assertEqual(self.pp.lbproc.flag1, 1)
         self.assertEqual(self.pp.lbproc.flag65536, 1)
         self.assertEqual(self.pp.lbproc.flag131072, 0)
@@ -169,8 +167,6 @@ class TestPPField_GlobalTemperature(IrisPPTest):
         self.assertEqual(self.r[0].lbtim.ic, 2)
     
     def test_lbproc_access(self):
-        self.assertEqual(self.r[0].lbproc[0], 8)
-        self.assertEqual(self.r[0].lbproc[19], 0)
         self.assertEqual(self.r[0].lbproc.flag1, 0)
         self.assertEqual(self.r[0].lbproc.flag65536, 0)
         self.assertEqual(self.r[0].lbproc.flag131072, 0)
