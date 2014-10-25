@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.pp.PPDataProxy` class."""
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.

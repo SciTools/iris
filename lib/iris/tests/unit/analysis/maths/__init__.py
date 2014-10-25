@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
+from __future__ import (absolute_import, division, print_function)
+
 from abc import ABCMeta, abstractproperty
 
 import numpy as np

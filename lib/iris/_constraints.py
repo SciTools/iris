@@ -19,7 +19,7 @@ Provides objects for building up expressions useful for pattern matching.
 
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 import collections
 import operator

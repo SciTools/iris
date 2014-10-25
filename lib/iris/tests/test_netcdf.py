@@ -19,6 +19,8 @@ Test CF-NetCDF file loading and saving.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests

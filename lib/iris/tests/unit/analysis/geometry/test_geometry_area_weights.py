@@ -20,7 +20,8 @@ function.
 
  """
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 

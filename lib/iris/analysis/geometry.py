@@ -22,6 +22,8 @@ Various utilities related to geometric operations.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import warnings
 
 from shapely.geometry import Polygon

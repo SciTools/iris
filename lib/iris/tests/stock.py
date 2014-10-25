@@ -19,7 +19,7 @@ A collection of routines which create standard Cubes for test purposes.
 
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 import os.path
 

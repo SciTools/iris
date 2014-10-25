@@ -19,6 +19,8 @@ Test the :func:`iris.experimental.ugrid.ugrid` function.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import iris.tests as tests
 
 import iris.experimental.ugrid

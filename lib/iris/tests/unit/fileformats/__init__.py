@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.fileformats` package."""
 
+from __future__ import (absolute_import, division, print_function)
+
 import iris.tests as tests
 
 

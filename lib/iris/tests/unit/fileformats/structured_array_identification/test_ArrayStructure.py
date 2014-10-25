@@ -19,6 +19,9 @@ Unit tests for the
 :mod:`iris.fileformats._structured_array_identification.ArrayStructure` class.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests

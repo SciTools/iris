@@ -18,7 +18,8 @@
 Provides testing capabilities for installed copies of Iris.
 
 """
-from __future__ import print_function
+
+from __future__ import (absolute_import, division, print_function)
 
 # Because this file is imported by setup.py, there may be additional runtime
 # imports later in the file.

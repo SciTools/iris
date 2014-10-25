@@ -19,7 +19,7 @@ A package for converting cubes to and from specific file formats.
 
 """
 
-from __future__ import absolute_import
+from __future__ import (absolute_import, division, print_function)
 
 from iris.io.format_picker import (FileExtension, FormatAgent,
                                    FormatSpecification, MagicNumber,

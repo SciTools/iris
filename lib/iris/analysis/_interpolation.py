@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """A collection of helpers for interpolation."""
 
+from __future__ import (absolute_import, division, print_function)
+
 from collections import namedtuple
 from itertools import product
 import operator

@@ -16,6 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.unit.Unit` class."""
 
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before
 # importing anything else

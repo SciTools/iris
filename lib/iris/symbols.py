@@ -19,7 +19,7 @@ Contains symbol definitions for use with :func:`iris.plot.symbols`.
 
 """
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
 
 import itertools
 import math

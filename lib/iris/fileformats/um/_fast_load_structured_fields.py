@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Experimental code for fast loading of structured UM data."""
 
+from __future__ import (absolute_import, division, print_function)
+
 import itertools
 
 from netCDF4 import netcdftime

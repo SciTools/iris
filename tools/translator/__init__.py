@@ -20,7 +20,7 @@ translations.
 
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import deque, namedtuple

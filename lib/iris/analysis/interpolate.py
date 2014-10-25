@@ -20,6 +20,9 @@ Interpolation and re-gridding routines.
 See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import collections
 import warnings
 

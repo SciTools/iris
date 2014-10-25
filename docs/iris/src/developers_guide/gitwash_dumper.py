@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 ''' Checkout gitwash repo into directory and do search replace on name '''
 
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 import os
 from os.path import join as pjoin

@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.fileformats.grib` package."""
 
+from __future__ import (absolute_import, division, print_function)
+
 import mock
 
 from iris.fileformats.grib._message import _GribMessage
