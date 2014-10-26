@@ -415,12 +415,7 @@ def convert(f):
 
     if \
             (f.lbproc == 128) and \
-            (f.lbtim.ib == 3):
-        cell_methods.append(CellMethod("mean", coords="time"))
-
-    if \
-            (f.lbproc == 128) and \
-            (f.lbtim.ib not in [2, 3]):
+            (f.lbtim.ib != 2):
         cell_methods.append(CellMethod("mean", coords="time"))
 
     if \
