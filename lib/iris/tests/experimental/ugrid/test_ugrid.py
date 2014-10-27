@@ -23,6 +23,19 @@ from __future__ import (absolute_import, division, print_function)
 
 import iris.tests as tests
 
+import unittest
+
+# Import pyugrid if installed, else fail quietly + disable all the tests.
+try:
+    import pyugrid
+    # Check it *is* the real module, and not an iris.proxy FakeModule.
+    pyugrid.ugrid
+except (ImportError, AttributeError):
+    pyugrid = None
+skip_pyugrid = unittest.skipIf(
+    condition=pyugrid is None,
+    reason='Requires pyugrid, which is not available.')
+
 import iris.experimental.ugrid
 
 
@@ -31,6 +44,7 @@ file21 = "21_triangle_example.nc"
 long_name = "volume flux between cells"
 
 
+@skip_pyugrid
 @tests.skip_data
 class TestUgrid(tests.IrisTest):
     def test_ugrid(self):
