@@ -1666,8 +1666,7 @@ class Nearest(object):
     """
     This class describes the nearest-neighbour interpolation scheme for
     interpolating over one or more orthogonal coordinates, typically for
-    use with :meth:`iris.cube.Cube.interpolate()` or
-    :meth:`iris.cube.Cube.regrid()`.
+    use with :meth:`iris.cube.Cube.interpolate()`.
 
     """
     def __init__(self, extrapolation_mode='extrapolate'):
