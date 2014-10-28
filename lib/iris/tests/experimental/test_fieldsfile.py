@@ -35,13 +35,6 @@ class TestStructuredLoadFF(tests.IrisTest):
         cube, = load(fname)
         self.assertCML(cube)
 
-    def test_simple_callback(self):
-        def callback(cube, field, filename):
-            cube.attributes['processing'] = 'fast-ff'
-        fname = tests.get_data_path(('FF', 'structured', 'small'))
-        cube, = load(fname, callback=callback)
-        self.assertCML(cube)
-
 
 if __name__ == "__main__":
     tests.main()
