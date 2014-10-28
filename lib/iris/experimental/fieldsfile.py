@@ -47,12 +47,13 @@ def _collations_from_filename(filename):
 
 def load(filenames, callback=None):
     """
-    Load the structured FieldsFiles.
+    Fast loading of structured FieldsFiles.
 
     Args:
 
-    * filesnames:
+    * filenames:
         One or more filenames.
+
 
     Kwargs:
 
@@ -60,11 +61,69 @@ def load(filenames, callback=None):
         A modifier/filter function. Please see the module documentation
         for :mod:`iris`.
 
+        .. note::
+
+            Unlike the standard :meth:`iris.load` operation, the callback is
+            applied to the final result cubes, not individual input fields.
+
     Returns:
         An :class:`iris.cube.CubeList`.
 
+
+    This is a specialised loading method for fieldsfiles which contain fields
+    repeating regularly over the same vertical levels and times.
+    The results are equivalent to those from :meth:`iris.load`, but operation
+    is substantially faster for suitable input.
+
+    The input files should conform to the following requirements:
+
+    *  the file must contain fields for all possible combinations of the
+       vertical levels and time points found in the file.
+
+    *  the fields must occur in a regular repeating order within the file.
+
+       (For example: a sequence of fields for NV vertical levels, repeated
+       for NP different forecast periods, repeated for NT different forecast
+       times).
+
+    *  all other metadata should be identical across all fields.
+
+       (Or, at least, those of the same 'phenomenon' -- see below).
+
+    Each group of fields with the same values of LBUSER4, LBUSER7 and LBPROC
+    is identified as a separate phenomenon:  These groups are processed
+    independently and returned as separate result cubes.
+
+    .. note::
+
+        At present, each input file is loaded independently.  Thus a single
+        result cube can not combine data from multiple input files.
+
+    .. note::
+
+        The resulting time-related cordinates ('time', 'forecast_time' and
+        'forecast_period') may be mapped to shared cube dimensions and in some
+        cases can also be multidimensional.  However, the vertical level
+        information *must* have a simple one-dimensional structure, independent
+        of the time points, otherwise an error will be raised.
+
+    .. note::
+
+        Where input data does *not* have a fully regular arrangement, the
+        corresponding result cube will have a single anonymous extra dimension
+        which indexes over all the input fields.
+
+        This can happen if, for example, some fields are missing; or have
+        slightly different metadata; or appear out of order in the file.
+
+        .. warning::
+
+            However, any non-regular metadata variation in the input should be
+            strictly avoided as not all irregularities are detected, which can
+            cause erroneous results.
+
     """
-    loader = Loader(_collations_from_filename, {}, convert_collation, None)
+    loader = Loader(_collations_from_filename, {}, _convert_collation, None)
     return CubeList(load_cubes(filenames, callback, loader, None))
 
 
@@ -90,7 +149,7 @@ def _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
             aux_coords_and_dims.append((coord, dims))
 
 
-def convert_collation(collation):
+def _convert_collation(collation):
     """
     Converts a FieldCollation into the corresponding items of Cube
     metadata.
