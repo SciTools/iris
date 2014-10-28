@@ -1660,3 +1660,81 @@ class AreaWeighted(object):
         """
         return AreaWeightedRegridder(src_grid_cube, target_grid_cube,
                                      mdtol=self.mdtol)
+
+
+class Nearest(object):
+    """
+    This class describes the nearest-neighbour interpolation scheme for
+    interpolating over one or more orthogonal coordinates, typically for
+    use with :meth:`iris.cube.Cube.interpolate()`.
+
+    """
+    def __init__(self, extrapolation_mode='extrapolate'):
+        """
+        Nearest-neighbour interpolation scheme suitable for
+        interpolating over one or more orthogonal coordinates.
+
+        Kwargs:
+
+        * extrapolation_mode:
+            Must be one of the following strings:
+
+              * 'extrapolate' - The extrapolation points will take their
+                value from the nearest source point.
+              * 'nan' - The extrapolation points will be be set to NaN.
+              * 'error' - A ValueError exception will be raised, notifying an
+                attempt to extrapolate.
+              * 'mask' - The extrapolation points will always be masked, even
+                if the source data is not a MaskedArray.
+              * 'nanmask' - If the source data is a MaskedArray the
+                extrapolation points will be masked. Otherwise they will be
+                set to NaN.
+
+            The default mode of extrapolation is 'extrapolate'.
+
+        """
+        if extrapolation_mode not in EXTRAPOLATION_MODES:
+            msg = 'Extrapolation mode {!r} not supported.'
+            raise ValueError(msg.format(extrapolation_mode))
+        self.extrapolation_mode = extrapolation_mode
+
+    def __repr__(self):
+        return 'Nearest({!r})'.format(self.extrapolation_mode)
+
+    def interpolator(self, cube, coords):
+        """
+        Creates a nearest-neighbour interpolator to perform
+        interpolation over the given :class:`~iris.cube.Cube` specified
+        by the dimensions of the specified coordinates.
+
+        Args:
+
+        * cube:
+            The source :class:`iris.cube.Cube` to be interpolated.
+        * coords:
+            The names or coordinate instances which are to be
+            interpolated over.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(sample_points, collapse_scalar=True)`
+
+            where `sample_points` is a sequence containing an array of values
+            for each of the coordinates passed to this method, and
+            `collapse_scalar` determines whether to remove length one
+            dimensions in the result cube caused by scalar values in
+            `sample_points`.
+
+            The values for coordinates which correspond to date/times
+            may optionally be supplied as datetime.datetime or
+            netcdftime.datetime instances.
+
+            For example, for the callable returned by:
+            `Nearest().interpolator(cube, ['latitude', 'longitude'])`,
+            sample_points must have the form
+            `[new_lat_values, new_lon_values]`.
+
+        """
+        return RectilinearInterpolator(cube, coords, 'nearest',
+                                       self.extrapolation_mode)
