@@ -47,7 +47,7 @@ def _collations_from_filename(filename):
 
 def load(filenames, callback=None):
     """
-    Fast loading of structured FieldsFiles.
+    Load structured FieldsFiles.
 
     Args:
 
@@ -63,16 +63,16 @@ def load(filenames, callback=None):
 
         .. note::
 
-            Unlike the standard :meth:`iris.load` operation, the callback is
+            Unlike the standard :func:`iris.load` operation, the callback is
             applied to the final result cubes, not individual input fields.
 
     Returns:
         An :class:`iris.cube.CubeList`.
 
 
-    This is a specialised loading method for fieldsfiles which contain fields
-    repeating regularly over the same vertical levels and times.
-    The results are equivalent to those from :meth:`iris.load`, but operation
+    This is a streamlined load operation, to be used only on fieldsfiles whose
+    fields repeat regularly over the same vertical levels and times.
+    The results are equivalent to those from :func:`iris.load`, but operation
     is substantially faster for suitable input.
 
     The input files should conform to the following requirements:
@@ -86,9 +86,8 @@ def load(filenames, callback=None):
        for NP different forecast periods, repeated for NT different forecast
        times).
 
-    *  all other metadata should be identical across all fields.
-
-       (Or, at least, those of the same 'phenomenon' -- see below).
+    *  all other metadata must be identical across all fields of the same
+       phenomenon.
 
     Each group of fields with the same values of LBUSER4, LBUSER7 and LBPROC
     is identified as a separate phenomenon:  These groups are processed
@@ -96,8 +95,8 @@ def load(filenames, callback=None):
 
     .. note::
 
-        At present, each input file is loaded independently.  Thus a single
-        result cube can not combine data from multiple input files.
+        Each input file is loaded independently.  Thus a single result cube can
+        not combine data from multiple input files.
 
     .. note::
 
@@ -116,11 +115,11 @@ def load(filenames, callback=None):
         This can happen if, for example, some fields are missing; or have
         slightly different metadata; or appear out of order in the file.
 
-        .. warning::
+    .. warning::
 
-            However, any non-regular metadata variation in the input should be
-            strictly avoided as not all irregularities are detected, which can
-            cause erroneous results.
+        Any non-regular metadata variation in the input should be strictly
+        avoided, as not all irregularities are detected, which can cause
+        erroneous results.
 
     """
     loader = Loader(_collations_from_filename, {}, _convert_collation, None)
