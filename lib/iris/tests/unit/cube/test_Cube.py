@@ -27,6 +27,7 @@ import itertools
 import biggus
 import mock
 import numpy as np
+import numpy.ma as ma
 
 import iris.aux_factory
 import iris.coords
@@ -1103,13 +1104,16 @@ class Test_regrid(tests.IrisTest):
 
 class Test_copy(tests.IrisTest):
     def _check_copy(self, cube, cube_copy):
-        self.assertEqual(cube, cube_copy)
-        self.assertNotEqual(id(cube), id(cube_copy))
+        self.assertIsNot(cube_copy, cube)
+        self.assertEqual(cube_copy, cube)
+        self.assertIsNot(cube_copy.data, cube.data)
         if isinstance(cube.data, np.ma.MaskedArray):
-            self.assertMaskedArrayEqual(cube.data, cube_copy.data)
+            self.assertMaskedArrayEqual(cube_copy.data, cube.data)
+            if cube.data.mask is not ma.nomask:
+                # "No mask" is a constant : all other cases must be distinct.
+                self.assertIsNot(cube_copy.data.mask, cube.data.mask)
         else:
-            self.assertArrayEqual(cube.data, cube_copy.data)
-        self.assertNotEqual(id(cube.data), id(cube_copy.data))
+            self.assertArrayEqual(cube_copy.data, cube.data)
 
     def test(self):
         cube = stock.simple_3d()
