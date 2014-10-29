@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.experimental.fieldsfile.convert_collation`."""
+"""Unit tests for :func:`iris.experimental.fieldsfile._convert_collation`."""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -25,7 +25,8 @@ import iris.tests as tests
 import mock
 import netcdftime
 
-from iris.experimental.fieldsfile import convert_collation
+from iris.experimental.fieldsfile \
+    import _convert_collation as convert_collation
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
