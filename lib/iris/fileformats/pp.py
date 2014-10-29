@@ -512,6 +512,10 @@ class BitwiseInt(SplittableInt):
     """
     A class to hold an integer, of fixed bit-length, which can easily get/set each bit individually.
 
+    .. deprecated:: 1.8
+
+        Please use `int` instead.
+
     .. note::
 
         Uses a fixed number of bits.
@@ -535,6 +539,7 @@ class BitwiseInt(SplittableInt):
 
     def __init__(self, value, num_bits=None):
         """ """ # intentionally empty docstring as all covered in the class docstring.
+        warnings.warn('BitwiseInt is deprecated - please use `int` instead.')
 
         SplittableInt.__init__(self, value)
         self.flags = ()
@@ -622,12 +627,16 @@ class BitwiseInt(SplittableInt):
 
 def _make_flag_getter(value):
     def getter(self):
+        warnings.warn('The `flag` attributes are deprecated - please use '
+                      'integer bitwise operators instead.')
         return int(bool(self._value & value))
     return getter
 
 
 def _make_flag_setter(value):
     def setter(self, flag):
+        warnings.warn('The `flag` attributes are deprecated - please use '
+                      'integer bitwise operators instead.')
         if not isinstance(flag, bool):
             raise TypeError('Can only set bits to True or False')
         if flag:
@@ -646,10 +655,11 @@ class _FlagMetaclass(type):
             name = 'flag{}'.format(value)
             class_dict[name] = property(_make_flag_getter(value),
                                         _make_flag_setter(value))
+        class_dict['NUM_BITS'] = cls.NUM_BITS
         return type.__new__(cls, classname, bases, class_dict)
 
 
-class LBProc(BitwiseInt):
+class _LBProc(BitwiseInt):
     # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
     # properties.
     __metaclass__ = _FlagMetaclass
@@ -688,7 +698,7 @@ class LBProc(BitwiseInt):
 
         .. deprecated:: 1.8
 
-            The value of a BitwiseInt only makes sense in base-two.
+            The value of an _LBProc only makes sense in base-two.
 
         """
         warnings.warn('Indexing is deprecated')
@@ -708,7 +718,7 @@ class LBProc(BitwiseInt):
 
         .. deprecated:: 1.8
 
-            The value of a BitwiseInt only makes sense in base-two.
+            The value of an _LBProc only makes sense in base-two.
 
         """
         warnings.warn('Indexing is deprecated')
@@ -752,6 +762,9 @@ class LBProc(BitwiseInt):
         self._value += value
         return self
 
+    def __and__(self, value):
+        return self._value & value
+
     def __iand__(self, value):
         self._value &= value
         return self
@@ -768,7 +781,10 @@ class LBProc(BitwiseInt):
 
     @property
     def flags(self):
-        return tuple(2 ** i for i in xrange(18) if self._value & 2 ** i)
+        warnings.warn('The `flags` attribute is deprecated - please use '
+                      'integer bitwise operators instead.')
+        return tuple(2 ** i for i in xrange(self.NUM_BITS)
+                     if self._value & 2 ** i)
 
 
 class PPDataProxy(object):
@@ -1169,8 +1185,8 @@ class PPField(object):
 
     @lbproc.setter
     def lbproc(self, value):
-        if not isinstance(value, LBProc):
-            value = LBProc(value)
+        if not isinstance(value, _LBProc):
+            value = _LBProc(value)
         self._lbproc = value
 
     @property

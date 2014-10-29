@@ -1059,9 +1059,9 @@ def _all_other_rules(f):
         cell_methods.append(CellMethod("maximum", coords="time"))
 
     if f.lbproc not in [0, 128, 4096, 8192]:
-        attributes["ukmo__process_flags"] = tuple(
-            sorted([iris.fileformats.pp.lbproc_map[flag]
-                    for flag in f.lbproc.flags]))
+        attributes["ukmo__process_flags"] = tuple(sorted(
+            [name for value, name in iris.fileformats.pp.lbproc_map.iteritems()
+             if isinstance(value, int) and f.lbproc & value]))
 
     if (f.lbsrce % 10000) == 1111:
         attributes['source'] = 'Data from Met Office Unified Model'
