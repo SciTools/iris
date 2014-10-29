@@ -45,27 +45,21 @@ def _collations_from_filename(filename):
     return group_structured_fields(fields)
 
 
-def load(filenames, callback=None):
+def load(filepath):
     """
-    Load the structured FieldsFiles.
+    Load a structured FieldsFile.
 
     Args:
 
-    * filesnames:
-        One or more filenames.
-
-    Kwargs:
-
-    * callback:
-        A modifier/filter function. Please see the module documentation
-        for :mod:`iris`.
+    * filepath (string):
+        Filepath of the input FieldsFile.
 
     Returns:
-        An :class:`iris.cube.CubeList`.
+        A :class:`iris.cube.CubeList`.
 
     """
     loader = Loader(_collations_from_filename, {}, convert_collation, None)
-    return CubeList(load_cubes(filenames, callback, loader, None))
+    return CubeList(load_cubes([filepath], None, loader, None))
 
 
 def _adjust_dims(coords_and_dims, n_dims):
