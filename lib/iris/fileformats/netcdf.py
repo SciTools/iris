@@ -1375,7 +1375,7 @@ class Saver(object):
         ndims = len(cube.shape)
         dims_index = list(cube.shape)
         if len(cube.shape) == 0:
-            raise ValueError('Cube has no data, saving not possible')
+            requested_dims = []
         elif len(dims_index) == 1:
             requested_dims = [0]
             dims_index[-1] = 1
@@ -1386,6 +1386,7 @@ class Saver(object):
         ndindex = np.ndindex(*dims_index)
 
         cf_var = None
+        lazy_data = cube.lazy_data()
         # iterate over 2D slices, using the last two dimensions
         # (or one if only one exists)
         for index_tuple in ndindex:
@@ -1395,19 +1396,19 @@ class Saver(object):
             # the 0 with a spanning slice
             for d in requested_dims:
                 index_list[d] = slice(None, None)
-            # Request the slice
-            slice_cube = cube[tuple(index_list)]
+            # Obtain the slice from the cube's lazy data
+            slice_data = lazy_data[tuple(index_list)].ndarray()
 
             # Get the values in a form which is valid for the file format.
-            data = self._ensure_valid_dtype(slice_cube.data, 'cube',
-                                            slice_cube)
+            data = self._ensure_valid_dtype(slice_data, 'cube',
+                                            'the data slice')
 
             if cf_var is None:
                 # create the cf_var if it doesn't yet exist
                 # Determine whether there is a cube MDI value.
                 fill_value = None
-                if isinstance(slice_cube.data, ma.core.MaskedArray):
-                    fill_value = slice_cube.data.fill_value
+                if isinstance(data, ma.core.MaskedArray):
+                    fill_value = data.fill_value
 
                 # Create the cube CF-netCDF data variable.
                 cf_var = self._dataset.createVariable(
@@ -1415,6 +1416,7 @@ class Saver(object):
                     fill_value=fill_value, **kwargs)
             # put the data payload into the variable, at the appropriate index
             cf_var[tuple(index_list)] = data
+        self._dataset.sync()
 
         if cube.standard_name:
             cf_var.standard_name = cube.standard_name
