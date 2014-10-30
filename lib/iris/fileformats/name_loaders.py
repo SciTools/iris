@@ -854,9 +854,16 @@ def load_NAMEIII_trajectory(filename):
                 name = "latitude"
             units = "degrees"
         elif name == "Z (m asl)":
-            name = "height"
+            name = "altitude"
             units = "m"
-            long_name = "height above sea level"
+            long_name = "altitude above sea level"
+        elif name == "Z (m agl)":
+            name = 'height'
+            units = "m"
+            long_name = "height above ground level"
+        elif name == "Z (FL)":
+            name = "flight_level"
+            long_name = name
 
         try:
             coord = DimCoord(values, units=units)
