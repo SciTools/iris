@@ -1370,19 +1370,51 @@ class Saver(object):
         while cf_name in self._dataset.variables:
             cf_name = self._increment_name(cf_name)
 
-        # Determine whether there is a cube MDI value.
-        fill_value = None
-        if isinstance(cube.data, ma.core.MaskedArray):
-            fill_value = cube.data.fill_value
+        # process data payload saving for each 2D slice of cube: manage memory.
+        # comprehend shape of cube and implement data paylaod slicing
+        ndims = len(cube.shape)
+        dims_index = list(cube.shape)
+        if len(cube.shape) == 0:
+            raise ValueError('Cube has no data, saving not possible')
+        elif len(dims_index) == 1:
+            requested_dims = [0]
+            dims_index[-1] = 1
+        else:
+            dims_index[-1] = 1
+            dims_index[-2] = 1
+            requested_dims = [ndims-2, ndims-1]
+        ndindex = np.ndindex(*dims_index)
 
-        # Get the values in a form which is valid for the file format.
-        data = self._ensure_valid_dtype(cube.data, 'cube', cube)
+        cf_var = None
+        # iterate over 2D slices, using the last two dimensions
+        # (or one if only one exists)
+        for index_tuple in ndindex:
+            index_list = list(index_tuple)
 
-        # Create the cube CF-netCDF data variable with data payload.
-        cf_var = self._dataset.createVariable(
-            cf_name, data.dtype.newbyteorder('='), dimension_names,
-            fill_value=fill_value, **kwargs)
-        cf_var[:] = data
+            # For each of the spanning dimensions requested, replace
+            # the 0 with a spanning slice
+            for d in requested_dims:
+                index_list[d] = slice(None, None)
+            # Request the slice
+            slice_cube = cube[tuple(index_list)]
+
+            # Get the values in a form which is valid for the file format.
+            data = self._ensure_valid_dtype(slice_cube.data, 'cube',
+                                            slice_cube)
+
+            if cf_var is None:
+                # create the cf_var if it doesn't yet exist
+                # Determine whether there is a cube MDI value.
+                fill_value = None
+                if isinstance(slice_cube.data, ma.core.MaskedArray):
+                    fill_value = slice_cube.data.fill_value
+
+                # Create the cube CF-netCDF data variable.
+                cf_var = self._dataset.createVariable(
+                    cf_name, data.dtype.newbyteorder('='), dimension_names,
+                    fill_value=fill_value, **kwargs)
+            # put the data payload into the variable, at the appropriate index
+            cf_var[tuple(index_list)] = data
 
         if cube.standard_name:
             cf_var.standard_name = cube.standard_name
