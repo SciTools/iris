@@ -252,7 +252,7 @@ class Test1dScatter(tests.GraphicsTest):
 
     def test_coord_coord(self):
         x = self.cube.coord('longitude')
-        y = self.cube.coord('height')
+        y = self.cube.coord('altitude')
         c = self.cube.data
         self.draw_method(x, y, c=c, edgecolor='none')
         self.check_graphic()
@@ -274,7 +274,7 @@ class Test1dScatter(tests.GraphicsTest):
 
     def test_cube_coord(self):
         x = self.cube
-        y = self.cube.coord('height')
+        y = self.cube.coord('altitude')
         c = self.cube.coord('Travel Time').points
         self.draw_method(x, y, c=c, edgecolor='none')
         self.check_graphic()
@@ -291,7 +291,7 @@ class Test1dScatter(tests.GraphicsTest):
     def test_incompatible_objects(self):
         # cubes/coordinates of different sizes cannot be plotted
         x = self.cube
-        y = self.cube.coord('height')[:-1]
+        y = self.cube.coord('altitude')[:-1]
         with self.assertRaises(ValueError):
             self.draw_method(x, y)
 
