@@ -1397,7 +1397,9 @@ class Saver(object):
             for d in requested_dims:
                 index_list[d] = slice(None, None)
             # Obtain the slice from the cube's lazy data
-            slice_data = lazy_data[tuple(index_list)].ndarray()
+            slice_data = lazy_data[tuple(index_list)].masked_array()
+            if ma.count_masked(slice_data) == 0:
+                slice_data = lazy_data[tuple(index_list)].ndarray()
 
             # Get the values in a form which is valid for the file format.
             data = self._ensure_valid_dtype(slice_data, 'cube',
@@ -1615,6 +1617,10 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         cubes.append(cube)
     else:
         cubes = cube
+        # for a CubeList the default selection of unlimited dimensions
+        # has unpleasent consequences for streaming the data payload.
+        # if unlimited_dimensions is None:
+        #     unlimited_dimensions = []
 
     if local_keys is None:
         local_keys = set()
