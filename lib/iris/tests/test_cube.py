@@ -89,6 +89,45 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
             self.cube.add_dim_coord(coord, 0)
 
 
+class Test_specify_as_aux_or_dim_coords(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.cube.Cube(np.arange(4).reshape(2, 2))
+
+    def test_aux_to_dim_coord(self):
+        month_number_coord = iris.coords.AuxCoord(np.arange(2),
+                                                  long_name="month_number")
+        self.cube.add_aux_coord(month_number_coord, 0)
+        self.cube.specify_as_dim_coord("month_number")
+
+    def test_dim_to_aux_coord(self):
+        week_coord = iris.coords.DimCoord([2, 6], long_name="week")
+        self.cube.add_aux_coord(week_coord, 0)
+        self.cube.specify_as_dim_coord("week")
+
+    def test_demotes_preexisting_dim_coord(self):
+        week_coord = iris.coords.DimCoord([2, 6], long_name="week")
+        month_number_coord = iris.coords.AuxCoord(np.arange(2),
+                                                  long_name="month_number")
+        self.cube.add_dim_coord(week_coord, 0)
+        self.cube.add_aux_coord(month_number_coord, 0)
+        self.cube.specify_as_dim_coord("month_number")
+
+    def test_using_Coord_not_name(self):
+        month_number_coord = iris.coords.AuxCoord(np.arange(2),
+                                                  long_name="month_number")
+        self.cube.add_aux_coord(month_number_coord, 0)
+        self.cube.specify_as_dim_coord(month_number_coord)
+
+    def test_fails_with_inappropriate_coord(self):
+        month_coord = iris.coords.AuxCoord(['Jan', 'Feb'],
+                                           long_name="month")
+        self.cube.add_aux_coord(month_coord, 0)
+        cube_before = self.cube.copy()
+        with self.assertRaises(ValueError):
+            self.cube.specify_as_dim_coord("month")
+        self.assertEqual(cube_before, self.cube)
+
+
 class TestEquality(tests.IrisTest):
     def test_not_implmemented(self):
         class Terry(object):

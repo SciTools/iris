@@ -990,6 +990,44 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for factory in self.aux_factories:
             factory.update(old_coord, new_coord)
 
+    def specify_as_aux_coord(self, coord):
+        """
+        Converts a pre-existing cube DimCoord to an AuxCoord.
+        No action if coordinate is already a AuxCoord.
+
+        """
+        coord = self.coord(coord)
+        dims = self.coord_dims(coord)
+        if coord in self.dim_coords:
+            self.remove_coord(coord)
+            # ensure we are adding an AuxCoord instance
+            self.add_aux_coord(iris.coords.AuxCoord.from_coord(coord), dims)
+
+    def specify_as_dim_coord(self, coord):
+        """
+        Converts a pre-existing cube AuxCoord to a DimCoord.
+        Demotes any pre-existing DimCoord to an AuxCoord.
+
+        """
+        coord = self.coord(coord)
+        # ensure single dimension as DimCoords necessarily are
+        dim, = self.coord_dims(coord)
+        if coord in self.aux_coords:
+            try:
+                try:
+                    dim_coord = self.coord(dimensions=dim, dim_coords=True)
+                    self.specify_as_aux_coord(dim_coord)
+                    # except instances with no DimCoords
+                except iris.exceptions.CoordinateNotFoundError:
+                    pass
+                self.remove_coord(coord)
+                # ensure we are adding a DimCoord instance
+                self.add_dim_coord(iris.coords.DimCoord.from_coord(coord), dim)
+            # except inappropriate coords
+            except ValueError:
+                self.add_aux_coord(coord, dim)
+                raise
+
     def coord_dims(self, coord):
         """
         Returns a tuple of the data dimensions relevant to the given
