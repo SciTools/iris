@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
 
 import os
 import sys
@@ -52,6 +53,7 @@ horizontal_sep = """
 
     <p class="hr_p"><a href="#">&uarr;&#32&#32 top &#32&#32&uarr;</a></p>
     <!--
+
 -----------
 
 .. raw:: html
@@ -215,14 +217,14 @@ def do_package(package_name):
 
        out_path = package_dir + '.rst'
        if not os.path.exists(out_path) or doc != ''.join(file(out_path, 'r').readlines()):
-            print 'creating out of date/non-existant document %s' % out_path
+            print('creating out of date/non-existant document %s' % out_path)
             file(out_path, 'w').write(doc)
 
        for import_name, module_path in module_folders.get(package, []):
          doc = auto_doc_module(module_path, import_name, root_package)
          out_path = out_dir + import_name.replace('.', os.path.sep) + '.rst'
          if not os.path.exists(out_path) or doc != ''.join(file(out_path, 'r').readlines()):
-            print 'creating out of date/non-existant document %s' % out_path
+            print('creating out of date/non-existant document %s' % out_path)
             file(out_path, 'w').write(doc)
 
 

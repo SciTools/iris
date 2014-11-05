@@ -15,8 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
 import numpy as np
 
+from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 import iris
 import iris.experimental.regrid as eregrid
 
@@ -27,7 +30,7 @@ class AreaWeightedRegridder(object):
 
     """
 
-    def __init__(self, src_grid_cube, target_grid_cube, mdtol=0):
+    def __init__(self, src_grid_cube, target_grid_cube, mdtol=1):
         """
         Create an area-weighted regridder for conversions between the source
         and target grids.
@@ -47,16 +50,16 @@ class AreaWeightedRegridder(object):
             exceeds mdtol. mdtol=0 means no missing data is tolerated while
             mdtol=1 will mean the resulting element will be masked if and only
             if all the contributing elements of data are masked.
-            Defaults to 0.
+            Defaults to 1.
 
         """
         # Snapshot the state of the cubes to ensure that the regridder is
         # impervious to external changes to the original source cubes.
-        self._src_grid = eregrid._snapshot_grid(src_grid_cube)
-        self._target_grid = eregrid._snapshot_grid(target_grid_cube)
+        self._src_grid = snapshot_grid(src_grid_cube)
+        self._target_grid = snapshot_grid(target_grid_cube)
         # Missing data tolerance.
-        msg = 'Value for mdtol must be in range 0 - 1, got {}.'
-        if mdtol < 0 or mdtol > 1:
+        if not (0 <= mdtol <= 1):
+            msg = 'Value for mdtol must be in range 0 - 1, got {}.'
             raise ValueError(msg.format(mdtol))
         self._mdtol = mdtol
 
@@ -95,7 +98,7 @@ class AreaWeightedRegridder(object):
             area-weighted regridding.
 
         """
-        if eregrid._get_xy_dim_coords(cube) != self._src_grid:
+        if get_xy_dim_coords(cube) != self._src_grid:
             raise ValueError('The given cube is not defined on the same '
                              'source grid as this regridder.')
         return eregrid.regrid_area_weighted_rectilinear_src_and_grid(

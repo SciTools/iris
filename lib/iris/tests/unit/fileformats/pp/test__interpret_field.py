@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.pp._interpret_field` function."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -23,7 +25,6 @@ import iris.tests as tests
 from copy import deepcopy
 
 import mock
-import numpy as np
 
 import iris.fileformats.pp as pp
 

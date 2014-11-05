@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -132,7 +133,10 @@ class TestAll(tests.IrisTest, pp.PPTest):
 
                     with open(file_checker, 'r') as report:
                         # Get the cfchecker report and purge unwanted lines.
-                        checker_report = ''.join([line for line in report.readlines() if not line.startswith('Using')])
+                        lines = [line for line in report.readlines()
+                                 if not (line.startswith('Using') or
+                                         line.startswith('Checking against'))]
+                        checker_report = ''.join(lines)
 
                     os.remove(file_checker)
                     self.assertString(checker_report, self._ref_dir + ('to_netcdf', 'cf_checker', '%s_%d.txt' % (fname_name, index)))

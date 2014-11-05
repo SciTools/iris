@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -22,6 +23,7 @@ import iris.tests as tests
 import os
 import warnings
 import datetime
+from distutils.version import StrictVersion
 
 import gribapi
 import numpy as np
@@ -38,9 +40,19 @@ class TestLoadSave(tests.IrisTest):
 
     def setUp(self):
         iris.fileformats.grib.hindcast_workaround = True
+        self.problem_gribapi_ver = self._problem_gribapi_ver()
 
     def tearDown(self):
         iris.fileformats.grib.hindcast_workaround = False
+
+    def _problem_gribapi_ver(self):
+        # The difference we're checking for here arrived in v1.12.0
+        try:
+            # gribapi v1.9.16 has no __version__ attribute.
+            gribapi_ver = gribapi.__version__
+        except AttributeError:
+            gribapi_ver = gribapi.grib_get_api_version()
+        return StrictVersion(gribapi_ver) < StrictVersion('1.12.0')
 
     def save_and_compare(self, source_grib, reference_text):
         """Load and save grib data, generate diffs, compare with expected diffs."""
@@ -66,12 +78,20 @@ class TestLoadSave(tests.IrisTest):
 
     def test_latlon_forecast_plev(self):
         source_grib = tests.get_data_path(("GRIB", "uk_t", "uk_t.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "latlon_forecast_plev.grib_compare.txt"))
+        if self.problem_gribapi_ver:
+            result_file = "latlon_forecast_plev.grib_compare.pre1-12-0.txt"
+        else:
+            result_file = "latlon_forecast_plev.grib_compare.post1-12-0.txt"
+        reference_text = tests.get_result_path(("grib_save", result_file))
         self.save_and_compare(source_grib, reference_text)
 
     def test_rotated_latlon(self):
         source_grib = tests.get_data_path(("GRIB", "rotated_nae_t", "sensible_pole.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "rotated_latlon.grib_compare.txt"))
+        if self.problem_gribapi_ver:
+            result_file = "rotated_latlon.grib_compare.pre1-12-0.txt"
+        else:
+            result_file = "rotated_latlon.grib_compare.post1-12-0.txt"
+        reference_text = tests.get_result_path(("grib_save", result_file))
         # TODO: Investigate small change in test result:
         #       long [iDirectionIncrement]: [109994] != [109993]
         #       Consider the change in dx_dy() to "InDegrees" too.
@@ -85,22 +105,14 @@ class TestLoadSave(tests.IrisTest):
 
     def test_time_mean(self):
         # This test for time-mean fields also tests negative forecast time.
-        # Because the results depend on the presence of our api patch,
-        # we currently have results for both a patched and unpatched api.
-        # If the api ever allows -ve ft, we should revert to a single result.
         source_grib = tests.get_data_path(("GRIB", "time_processed",
                                            "time_bound.grib2"))
-        reference_text = tests.get_result_path(("grib_save",
-                                                "time_mean.grib_compare.txt"))
-        # TODO: It's not ideal to have grib patch awareness here...
-        import unittest
-        try:
-            self.save_and_compare(source_grib, reference_text)
-        except unittest.TestCase.failureException:
-            reference_text = tests.get_result_path((
-                                        "grib_save",
-                                        "time_mean.grib_compare.FT_PATCH.txt"))
-            self.save_and_compare(source_grib, reference_text)
+        if self.problem_gribapi_ver:
+            result_file = "time_mean.grib_compare.pre1-12-0.txt"
+        else:
+            result_file = "time_mean.grib_compare.post1-12-0.txt"
+        reference_text = tests.get_result_path(("grib_save", result_file))
+        self.save_and_compare(source_grib, reference_text)
 
 
 @tests.skip_data
@@ -220,7 +232,7 @@ class TestHandmade(tests.IrisTest):
 
     def _cube_with_time_bounds(self):
         cube = self._cube_with_pressure()
-        cube.coord("time").bounds = np.array([[0,100]])
+        cube.coord("time").bounds = np.array([[0, 100]])
         return cube
 
     def test_no_time_cube(self):

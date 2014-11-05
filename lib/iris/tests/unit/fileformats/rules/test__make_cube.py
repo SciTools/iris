@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for :func:`iris.fileformats.rules._make_cube`."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -23,6 +25,7 @@ import iris.tests as tests
 import mock
 
 from iris.fileformats.rules import _make_cube
+import iris.fileformats.rules
 
 
 class Test(tests.IrisTest):
@@ -38,15 +41,10 @@ class Test(tests.IrisTest):
         cell_methods = None
         dim_coords_and_dims = None
         aux_coords_and_dims = None
-        converter = mock.Mock(return_value=(factories,
-                                            references,
-                                            standard_name,
-                                            long_name,
-                                            units,
-                                            attributes,
-                                            cell_methods,
-                                            dim_coords_and_dims,
-                                            aux_coords_and_dims))
+        metadata = iris.fileformats.rules.ConversionMetadata(
+            factories, references, standard_name, long_name, units, attributes,
+            cell_methods, dim_coords_and_dims, aux_coords_and_dims)
+        converter = mock.Mock(return_value=metadata)
 
         field = mock.Mock()
         with mock.patch('warnings.warn') as warn:

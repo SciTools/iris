@@ -20,6 +20,8 @@ function.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -132,12 +134,14 @@ class TestEqualiseAttributes(tests.IrisTest):
         cubes = [self.cube_a1b5v1, self.cube_a1b6v1]
         self._test(cubes, {'a': 1, 'v': self.v1})
 
+    @tests.skip_data
     def test_complex_nonecommon(self):
         # Example with cell methods and factories, but no common attributes.
         cubes = [iris.tests.stock.global_pp(),
                  iris.tests.stock.hybrid_height()]
         self._test(cubes, {})
 
+    @tests.skip_data
     def test_complex_somecommon(self):
         # Example with cell methods and factories, plus some common attributes.
         cubes = [iris.tests.stock.global_pp(), iris.tests.stock.simple_pp()]

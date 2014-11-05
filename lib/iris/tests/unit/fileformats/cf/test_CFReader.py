@@ -19,12 +19,13 @@ Unit tests for the `iris.fileformats.cf.CFReader` class.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import mock
-import warnings
 
 import numpy as np
 
@@ -53,6 +54,24 @@ def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
                       grid_mapping=grid_mapping, cell_measures=cell_measures,
                       standard_name=standard_name)
     return ncvar
+
+
+class Test_translate__global_attributes(tests.IrisTest):
+
+    def setUp(self):
+        ncvar = netcdf_variable('ncvar', 'height', np.float)
+        ncattrs = mock.Mock(return_value=['dimensions'])
+        getncattr = mock.Mock(return_value='something something_else')
+        self.dataset = mock.Mock(file_format='NetCDF4',
+                                 variables={'ncvar': ncvar},
+                                 ncattrs=ncattrs,
+                                 getncattr=getncattr)
+
+    def test_create_global_attributes(self):
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset):
+            global_attrs = CFReader('dummy').cf_group.global_attributes
+            self.assertEqual(global_attrs['dimensions'],
+                             'something something_else')
 
 
 class Test_translate__formula_terms(tests.IrisTest):

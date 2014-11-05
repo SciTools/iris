@@ -19,6 +19,8 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import os
 import warnings
 
@@ -26,7 +28,7 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats._ff_cross_references import STASH_TRANS
-import pp
+from . import pp
 
 
 IMDI = -32768
@@ -444,7 +446,7 @@ class FF2PP(object):
         For example::
 
             >>> for field in ff.FF2PP(filename):
-            ...     print field
+            ...     print(field)
 
         """
 
@@ -569,7 +571,7 @@ class FF2PP(object):
             data_depth, data_type = self._payload(field)
 
             # Fast stash look-up.
-            stash_s = field.lbuser[3] / 1000
+            stash_s = field.lbuser[3] // 1000
             stash_i = field.lbuser[3] % 1000
             stash = 'm{:02}s{:02}i{:03}'.format(field.lbuser[6],
                                                 stash_s, stash_i)
@@ -647,7 +649,7 @@ class FF2PP(object):
         return pp._interpret_fields(self._extract_field())
 
 
-def load_cubes(filenames, callback):
+def load_cubes(filenames, callback, constraints=None):
     """
     Loads cubes from a list of fields files filenames.
 
@@ -667,10 +669,11 @@ def load_cubes(filenames, callback):
         orography references).
 
     """
-    return pp._load_cubes_variable_loader(filenames, callback, FF2PP)
+    return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
+                                          constraints=constraints)
 
 
-def load_cubes_32bit_ieee(filenames, callback):
+def load_cubes_32bit_ieee(filenames, callback, constraints=None):
     """
     Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
 
@@ -680,4 +683,5 @@ def load_cubes_32bit_ieee(filenames, callback):
 
     """
     return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
-                                          {'word_depth': 4})
+                                          {'word_depth': 4},
+                                          constraints=constraints)

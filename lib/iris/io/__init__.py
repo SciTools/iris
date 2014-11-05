@@ -18,11 +18,13 @@
 Provides an interface to manage URI scheme support in iris.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import glob
 import os.path
 import types
 import re
-import warnings
 import collections
 
 import iris.fileformats
@@ -57,6 +59,7 @@ def run_callback(callback, cube, field, filename):
     * callback:
         A function to add metadata from the originating field and/or URI which
         obeys the following rules:
+
             1. Function signature must be: ``(cube, field, filename)``.
             2. Modifies the given cube inplace, unless a new cube is
                returned by the function.
@@ -101,22 +104,22 @@ def decode_uri(uri, default='file'):
 
     Examples:
         >>> from iris.io import decode_uri
-        >>> print decode_uri('http://www.thing.com:8080/resource?id=a:b')
+        >>> print(decode_uri('http://www.thing.com:8080/resource?id=a:b'))
         ('http', '//www.thing.com:8080/resource?id=a:b')
 
-        >>> print decode_uri('file:///data/local/dataZoo/...')
+        >>> print(decode_uri('file:///data/local/dataZoo/...'))
         ('file', '///data/local/dataZoo/...')
 
-        >>> print decode_uri('/data/local/dataZoo/...')
+        >>> print(decode_uri('/data/local/dataZoo/...'))
         ('file', '/data/local/dataZoo/...')
 
-        >>> print decode_uri('file:///C:\data\local\dataZoo\...')
+        >>> print(decode_uri('file:///C:\data\local\dataZoo\...'))
         ('file', '///C:\\data\\local\\dataZoo\\...')
 
-        >>> print decode_uri('C:\data\local\dataZoo\...')
+        >>> print(decode_uri('C:\data\local\dataZoo\...'))
         ('file', 'C:\\data\\local\\dataZoo\\...')
 
-        >>> print decode_uri('dataZoo/...')
+        >>> print(decode_uri('dataZoo/...'))
         ('file', 'dataZoo/...')
 
     '''
@@ -165,10 +168,11 @@ def expand_filespecs(file_specs):
     return sum(value_lists, [])
 
 
-def load_files(filenames, callback):
+def load_files(filenames, callback, constraints=None):
     """
     Takes a list of filenames which may also be globs, and optionally a
-    callback function, and returns a generator of Cubes from the given files.
+    constraint set and a callback function, and returns a
+    generator of Cubes from the given files.
 
     .. note::
 
@@ -187,8 +191,13 @@ def load_files(filenames, callback):
 
     # Call each iris format handler with the approriate filenames
     for handling_format_spec, fnames in handler_map.iteritems():
-        for cube in handling_format_spec.handler(fnames, callback):
-            yield cube
+        if handling_format_spec.constraint_aware_handler:
+            for cube in handling_format_spec.handler(fnames, callback,
+                                                     constraints):
+                yield cube
+        else:
+            for cube in handling_format_spec.handler(fnames, callback):
+                yield cube
 
 
 def load_http(urls, callback):
@@ -343,7 +352,7 @@ def save(source, target, saver=None, **kwargs):
     # CubeList or sequence of cubes?
     elif (isinstance(source, iris.cube.CubeList) or
           (isinstance(source, (list, tuple)) and
-           all([type(i) == iris.cube.Cube for i in source]))):
+           all([isinstance(i, iris.cube.Cube) for i in source]))):
         # Only allow cubelist saving for those fileformats that are capable.
         if not 'iris.fileformats.netcdf' in saver.__module__:
             # Make sure the saver accepts an append keyword

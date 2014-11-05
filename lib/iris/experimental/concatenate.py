@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,6 +23,8 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
     :meth:`iris.cube.CubeList.concatenate`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
 
 
 def concatenate(cubes):

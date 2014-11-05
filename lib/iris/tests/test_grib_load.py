@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import datetime
-import os
+from distutils.version import StrictVersion
 
 import gribapi
 import mock
@@ -525,6 +527,23 @@ class TestGribTimecodes(tests.IrisTest):
         gribapi.grib_set_string(grib_message, 'stepRange', '10-55')
         grib_wrapper = iris.fileformats.grib.GribWrapper(grib_message)
 
+        # Define two expected datetimes for _periodEndDateTime as
+        # gribapi v1.9.16 mis-calculates this.
+        # See https://software.ecmwf.int/wiki/display/GRIB/\
+        #     GRIB+API+version+1.9.18+released
+        try:
+            # gribapi v1.9.16 has no __version__ attribute.
+            gribapi_ver = gribapi.__version__
+        except AttributeError:
+            gribapi_ver = gribapi.grib_get_api_version()
+
+        if StrictVersion(gribapi_ver) < StrictVersion('1.9.18'):
+            exp_end_date = datetime.datetime(year=2007, month=03, day=25,
+                                             hour=12, minute=0, second=0)
+        else:
+            exp_end_date = datetime.datetime(year=2007, month=03, day=25,
+                                             hour=19, minute=0, second=0)
+
         # Check that it captures the statistics time period info.
         # (And for now, nothing else)
         self.assertEqual(
@@ -537,11 +556,7 @@ class TestGribTimecodes(tests.IrisTest):
             datetime.datetime(year=2007, month=03, day=23,
                               hour=22, minute=0, second=0)
         )
-        self.assertEqual(
-            grib_wrapper._periodEndDateTime,
-            datetime.datetime(year=2007, month=03, day=25,
-                              hour=12, minute=0, second=0)
-        )
+        self.assertEqual(grib_wrapper._periodEndDateTime, exp_end_date)
 
     def test_warn_unknown_pdts(self):
         # Test loading of an unrecognised GRIB Product Definition Template.
@@ -559,7 +574,7 @@ class TestGribTimecodes(tests.IrisTest):
             # Load the message from the file as a cube.
             cube_generator = iris.fileformats.grib.load_cubes(
                 temp_gribfile_path)
-            cube = cube_generator.next()
+            cube = next(cube_generator)
 
             # Check the cube has an extra "warning" attribute.
             self.assertEqual(

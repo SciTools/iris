@@ -21,7 +21,8 @@ See also: :mod:`NumPy <numpy>`.
 
 """
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
+
 import re
 import warnings
 
@@ -154,7 +155,7 @@ def cube_delta(cube, coord):
         delta_cube = cube.copy(data=delta_cube_data)
     else:
         # Subset the cube to the appropriate new shape by knocking off the last row of the delta dimension
-        subset_slice = [slice(None,None)] * cube.ndim
+        subset_slice = [slice(None, None)] * cube.ndim
         subset_slice[delta_dim] = slice(None, -1)
         delta_cube = cube[tuple(subset_slice)]
         delta_cube.data = delta_cube_data
@@ -193,6 +194,20 @@ def differentiate(cube, coord_to_differentiate):
     of shape (x: n-1; y: m) and differentiating with respect to y will result in (x: n; y: m-1). If the coordinate to differentiate is
     :attr:`circular <iris.coords.DimCoord.circular>` then the resultant shape will be the same as the input cube.
 
+    In the returned cube the `coord_to_differentiate` object is
+    redefined such that the output coordinate values are set to the
+    averages of the original coordinate values (i.e. the mid-points).
+    Similarly, the output lower bounds values are set to the averages of
+    the original lower bounds values and the output upper bounds values
+    are set to the averages of the original upper bounds values. In more
+    formal terms:
+
+    * `C[i] = (c[i] + c[i+1]) / 2`
+    * `B[i, 0] = (b[i, 0] + b[i+1, 0]) / 2`
+    * `B[i, 1] = (b[i, 1] + b[i+1, 1]) / 2`
+
+    where `c` and `b` represent the input coordinate values and bounds,
+    and `C` and `B` the output coordinate values and bounds.
 
     .. note:: Difference method used is the same as :func:`cube_delta` and therefore has the same limitations.
 

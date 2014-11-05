@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
 
 # -*- coding: utf-8 -*-
 #
@@ -153,7 +154,9 @@ intersphinx_mapping = {
    'python': ('http://docs.python.org/2.7', None),
    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
-   'matplotlib': ('http://matplotlib.sourceforge.net/', None),
+   'matplotlib': ('http://matplotlib.org/', None),
+   'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
+   'biggus': ('http://biggus.readthedocs.org/en/latest/', None),
 }
 
 

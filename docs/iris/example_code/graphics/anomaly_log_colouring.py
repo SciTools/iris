@@ -33,7 +33,6 @@ import iris.coord_categorisation
 import iris.plot as iplt
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcols
-import matplotlib.ticker as mticks
 
 
 def main():

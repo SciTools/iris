@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2013, Met Office
+# (C) British Crown Copyright 2012 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,8 @@ The documentation for this file format can be found
 `here <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
 
 import calendar
 import datetime

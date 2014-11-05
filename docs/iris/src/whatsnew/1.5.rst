@@ -4,6 +4,8 @@ What's new in Iris 1.5
 :Release: 1.5.0
 :Date: 12 September 2013
 
+This document explains the new/changed features of Iris in version 1.5.
+(:doc:`View all changes <index>`.)
 
 Iris 1.5 features
 =================

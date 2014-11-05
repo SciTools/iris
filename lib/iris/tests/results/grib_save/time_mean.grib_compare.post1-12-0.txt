@@ -1,0 +1,20 @@
+
+-- GRIB #1 -- shortName=t paramId=130 stepRange=2147512235-2147547299 levelType=pl level=1000 packingType=grid_simple gridType=regular_ll --
+long [totalLength]: [21232] != [21227]
+long [numberOfSection] 6 out of 7 different
+long [productionStatusOfProcessedData]: [0] != [255]
+[section2Length] not found in 2nd field
+long [numberOfSection] 6 out of 7 different
+long [numberOfSection] 5 out of 7 different
+long [shapeOfTheEarth]: [0] != [1]
+scaleFactorOfRadiusOfSphericalEarth is set to missing in 1st field is not missing in 2nd field
+scaledValueOfRadiusOfSphericalEarth is set to missing in 1st field is not missing in 2nd field
+long [latitudeOfLastGridPoint]: [-89999938] != [-89999944]
+long [longitudeOfLastGridPoint]: [356249908] != [356249810]
+long [numberOfSection] 6 out of 7 different
+long [typeOfGeneratingProcess]: [0] != [255]
+long [generatingProcessIdentifier]: [128] != [255]
+long [typeOfTimeIncrement]: [2] != [255]
+long [numberOfSection] 6 out of 7 different
+long [numberOfSection] 6 out of 7 different
+long [numberOfSection] 5 out of 7 different

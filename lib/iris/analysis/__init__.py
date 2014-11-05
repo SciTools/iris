@@ -37,6 +37,7 @@ in that dimension.
 
 The gallery contains several interesting worked examples of how an
 :class:`~iris.analysis.Aggregator` may be used, including:
+
  * :ref:`graphics-COP_1d_plot`
  * :ref:`graphics-SOI_filtering`
  * :ref:`graphics-hovmoller`
@@ -44,7 +45,8 @@ The gallery contains several interesting worked examples of how an
  * :ref:`graphics-custom_aggregation`
 
 """
-from __future__ import division
+
+from __future__ import (absolute_import, division, print_function)
 
 import collections
 
@@ -54,11 +56,11 @@ import numpy.ma as ma
 import scipy.interpolate
 import scipy.stats.mstats
 
-from iris.analysis._interpolator import (_LINEAR_EXTRAPOLATION_MODES,
-                                         LinearInterpolator, LinearRegridder)
 from iris.analysis._area_weighted import AreaWeightedRegridder
+from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
+                                          RectilinearInterpolator)
+from iris.analysis._linear import LinearRegridder
 import iris.coords
-from iris.experimental.regrid import _get_xy_dim_coords
 from iris.exceptions import LazyAggregatorError
 
 
@@ -210,7 +212,7 @@ def coord_comparison(*cubes):
     Example usage::
 
         result = coord_comparison(cube1, cube2)
-        print 'All equal coordinates: ', result['equal']
+        print('All equal coordinates: ', result['equal'])
 
     """
     all_coords = [cube.coords() for cube in cubes]
@@ -366,6 +368,7 @@ class Aggregator(object):
 
         * call_func (callable):
             | *Call signature*: (data, axis=None, \**kwargs)
+
             Data aggregation function.
             Returns an aggregation result, collapsing the 'axis' dimension of
             the 'data' argument.
@@ -374,6 +377,7 @@ class Aggregator(object):
 
         * units_func (callable):
             | *Call signature*: (units)
+
             If provided, called to convert a cube's units.
             Returns an :class:`iris.units.Unit`, or a
             value that can be made into one.
@@ -574,7 +578,7 @@ class WeightedAggregator(Aggregator):
         * cell_method (string):
             Cell method string that supports string format substitution.
         * call_func (callable):
-            Data aggregation function. Call signature (data, axis, **kwargs).
+            Data aggregation function. Call signature `(data, axis, **kwargs)`.
 
         Kwargs:
 
@@ -933,9 +937,7 @@ To compute a weighted area average::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.mean`::
-
-        result = cube.collapsed('longitude', iris.analysis.MEAN, lazy=True)
+    Lazy operation is supported, via :func:`biggus.mean`.
 
 This aggregator handles masked data.
 
@@ -1094,7 +1096,8 @@ This aggregator handles masked data.
 """
 
 
-STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1)
+STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1,
+                     lazy_func=biggus.std)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the standard deviation over a :class:`~iris.cube.Cube`, as
@@ -1115,6 +1118,10 @@ To compute zonal standard deviations over the *longitude* axis of a cube::
 To obtain the biased standard deviation::
 
     result = cube.collapsed('longitude', iris.analysis.STD_DEV, ddof=0)
+
+.. note::
+
+    Lazy operation is supported, via :func:`biggus.std`.
 
 This aggregator handles masked data.
 
@@ -1177,9 +1184,7 @@ To obtain the biased variance::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.var`::
-
-        result = cube.collapsed('longitude', iris.analysis.VARIANCE, lazy=True)
+    Lazy operation is supported, via :func:`biggus.var`.
 
 This aggregator handles masked data.
 
@@ -1283,7 +1288,7 @@ class _Groupby(object):
 
                 for coord in self._groupby_coords:
                     groups.append(iris.coords._GroupIterator(coord.points))
-                    items.append(groups[-1].next())
+                    items.append(next(groups[-1]))
 
                 # Construct the group slice for each group over the group-by
                 # coordinates. Keep constructing until all group-by coordinate
@@ -1320,7 +1325,7 @@ class _Groupby(object):
                         elif groupby_slice.stop == stop:
                             # The current group of this coordinate is
                             # exhausted, so get the next one.
-                            items[item_index] = groups[item_index].next()
+                            items[item_index] = next(groups[item_index])
 
                 # Merge multiple slices together into one tuple.
                 self._slice_merge()
@@ -1395,7 +1400,11 @@ class _Groupby(object):
                     new_points = []
                     new_bounds = None
                     for key_slice in self._slices_by_key.itervalues():
-                        new_pt = '|'.join(coord.points[i] for i in key_slice)
+                        if isinstance(key_slice, slice):
+                            indices = key_slice.indices(coord.points.shape[0])
+                            key_slice = range(*indices)
+                        new_pt = '|'.join([coord.points[i]
+                                           for i in key_slice])
                         new_points.append(new_pt)
                 else:
                     msg = ('collapsing the bounded string coordinate {0!r}'
@@ -1490,6 +1499,9 @@ class Linear(object):
     :meth:`iris.cube.Cube.interpolate()` or :meth:`iris.cube.Cube.regrid()`.
 
     """
+
+    LINEAR_EXTRAPOLATION_MODES = EXTRAPOLATION_MODES.keys() + ['linear']
+
     def __init__(self, extrapolation_mode='linear'):
         """
         Linear interpolation scheme suitable for interpolating over one or
@@ -1500,8 +1512,9 @@ class Linear(object):
         * extrapolation_mode:
             Must be one of the following strings:
 
-              * 'linear' - The extrapolation points will be calculated by
-                extending the gradient of the closest two points.
+              * 'extrapolate' or 'linear' - The extrapolation points
+                will be calculated by extending the gradient of the
+                closest two points.
               * 'nan' - The extrapolation points will be be set to NaN.
               * 'error' - A ValueError exception will be raised, notifying an
                 attempt to extrapolate.
@@ -1511,16 +1524,22 @@ class Linear(object):
                 extrapolation points will be masked. Otherwise they will be
                 set to NaN.
 
-            Default mode of extrapolation is 'linear'.
+            The default mode of extrapolation is 'linear'.
 
         """
-        if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
+        if extrapolation_mode not in self.LINEAR_EXTRAPOLATION_MODES:
             msg = 'Extrapolation mode {!r} not supported.'
             raise ValueError(msg.format(extrapolation_mode))
         self.extrapolation_mode = extrapolation_mode
 
     def __repr__(self):
         return 'Linear({!r})'.format(self.extrapolation_mode)
+
+    def _normalised_extrapolation_mode(self):
+        mode = self.extrapolation_mode
+        if mode == 'linear':
+            mode = 'extrapolate'
+        return mode
 
     def interpolator(self, cube, coords):
         """
@@ -1547,14 +1566,18 @@ class Linear(object):
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
+            The values for coordinates which correspond to date/times
+            may optionally be supplied as datetime.datetime or
+            netcdftime.datetime instances.
+
             For example, for the callable returned by:
             `Linear().interpolator(cube, ['latitude', 'longitude'])`,
             sample_points must have the form
             `[new_lat_values, new_lon_values]`.
 
         """
-        return LinearInterpolator(cube, coords,
-                                  extrapolation_mode=self.extrapolation_mode)
+        return RectilinearInterpolator(cube, coords, 'linear',
+                                       self._normalised_extrapolation_mode())
 
     def regridder(self, src_grid, target_grid):
         """
@@ -1578,7 +1601,7 @@ class Linear(object):
 
         """
         return LinearRegridder(src_grid, target_grid,
-                               extrapolation_mode=self.extrapolation_mode)
+                               self._normalised_extrapolation_mode())
 
 
 class AreaWeighted(object):
@@ -1589,7 +1612,7 @@ class AreaWeighted(object):
 
     """
 
-    def __init__(self, mdtol=0):
+    def __init__(self, mdtol=1):
         """
         Area-weighted regridding scheme suitable for regridding one or more
         orthogonal coordinates.
@@ -1598,15 +1621,16 @@ class AreaWeighted(object):
 
         * mdtol (float):
             Tolerance of missing data. The value returned in each element of
-            the returned array will be masked if the fraction of masked data
-            exceeds mdtol. mdtol=0 means no missing data is tolerated while
-            mdtol=1 will mean the resulting element will be masked if and only
-            if all the contributing elements of data are masked.
-            Defaults to 0.
+            the returned array will be masked if the fraction of missing data
+            exceeds mdtol. This fraction is calculated based on the area of
+            masked cells within each target cell. mdtol=0 means no masked
+            data is tolerated while mdtol=1 will mean the resulting element
+            will be masked if and only if all the overlapping elements of the
+            source grid are masked. Defaults to 1.
 
         """
-        msg = 'Value for mdtol must be in range 0 - 1, got {}.'
-        if mdtol < 0 or mdtol > 1:
+        if not (0 <= mdtol <= 1):
+            msg = 'Value for mdtol must be in range 0 - 1, got {}.'
             raise ValueError(msg.format(mdtol))
         self.mdtol = mdtol
 
@@ -1636,3 +1660,81 @@ class AreaWeighted(object):
         """
         return AreaWeightedRegridder(src_grid_cube, target_grid_cube,
                                      mdtol=self.mdtol)
+
+
+class Nearest(object):
+    """
+    This class describes the nearest-neighbour interpolation scheme for
+    interpolating over one or more orthogonal coordinates, typically for
+    use with :meth:`iris.cube.Cube.interpolate()`.
+
+    """
+    def __init__(self, extrapolation_mode='extrapolate'):
+        """
+        Nearest-neighbour interpolation scheme suitable for
+        interpolating over one or more orthogonal coordinates.
+
+        Kwargs:
+
+        * extrapolation_mode:
+            Must be one of the following strings:
+
+              * 'extrapolate' - The extrapolation points will take their
+                value from the nearest source point.
+              * 'nan' - The extrapolation points will be be set to NaN.
+              * 'error' - A ValueError exception will be raised, notifying an
+                attempt to extrapolate.
+              * 'mask' - The extrapolation points will always be masked, even
+                if the source data is not a MaskedArray.
+              * 'nanmask' - If the source data is a MaskedArray the
+                extrapolation points will be masked. Otherwise they will be
+                set to NaN.
+
+            The default mode of extrapolation is 'extrapolate'.
+
+        """
+        if extrapolation_mode not in EXTRAPOLATION_MODES:
+            msg = 'Extrapolation mode {!r} not supported.'
+            raise ValueError(msg.format(extrapolation_mode))
+        self.extrapolation_mode = extrapolation_mode
+
+    def __repr__(self):
+        return 'Nearest({!r})'.format(self.extrapolation_mode)
+
+    def interpolator(self, cube, coords):
+        """
+        Creates a nearest-neighbour interpolator to perform
+        interpolation over the given :class:`~iris.cube.Cube` specified
+        by the dimensions of the specified coordinates.
+
+        Args:
+
+        * cube:
+            The source :class:`iris.cube.Cube` to be interpolated.
+        * coords:
+            The names or coordinate instances which are to be
+            interpolated over.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(sample_points, collapse_scalar=True)`
+
+            where `sample_points` is a sequence containing an array of values
+            for each of the coordinates passed to this method, and
+            `collapse_scalar` determines whether to remove length one
+            dimensions in the result cube caused by scalar values in
+            `sample_points`.
+
+            The values for coordinates which correspond to date/times
+            may optionally be supplied as datetime.datetime or
+            netcdftime.datetime instances.
+
+            For example, for the callable returned by:
+            `Nearest().interpolator(cube, ['latitude', 'longitude'])`,
+            sample_points must have the form
+            `[new_lat_values, new_lon_values]`.
+
+        """
+        return RectilinearInterpolator(cube, coords, 'nearest',
+                                       self.extrapolation_mode)

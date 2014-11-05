@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -186,8 +187,8 @@ class TestTrajectory(tests.IrisTest):
         # Put a biggus array on the cube so we can test deferred loading.
         cube.lazy_data(biggus.NumpyArrayAdapter(cube.data))
 
-        traj = (('grid_latitude',[20.5, 21.5, 22.5, 23.5]),
-                ('grid_longitude',[31, 32, 33, 34]))
+        traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
+                ('grid_longitude', [31, 32, 33, 34]))
         xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')
 
         # Check that creating the trajectory hasn't led to the original

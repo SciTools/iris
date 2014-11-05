@@ -20,6 +20,8 @@ Unit tests for the
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -28,7 +30,6 @@ import mock
 
 import numpy as np
 
-import iris
 from iris.aux_factory import OceanSigmaZFactory
 from iris.coords import AuxCoord, DimCoord
 from iris.unit import Unit

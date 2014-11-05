@@ -19,6 +19,8 @@ Miscellaneous utility functions.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import abc
 import collections
 import copy
@@ -280,7 +282,7 @@ def guess_coord_axis(coord):
     """
     Returns a "best guess" axis name of the coordinate.
 
-    Heuristic categoration of the coordinate into either label
+    Heuristic categorisation of the coordinate into either label
     'T', 'Z', 'Y', 'X' or None.
 
     Args:
@@ -334,7 +336,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
 
     Examples::
 
-        >>> x=np.arange(10).reshape((2,5))
+        >>> x = np.arange(10).reshape((2, 5))
         >>> rolling_window(x, 3)
         array([[[0, 1, 2], [1, 2, 3], [2, 3, 4]],
                [[5, 6, 7], [6, 7, 8], [7, 8, 9]]])
@@ -355,7 +357,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
     if step < 1:
         raise ValueError("`step` must be at least 1.")
     axis = axis % a.ndim
-    num_windows = (a.shape[axis] - window + step) / step
+    num_windows = (a.shape[axis] - window + step) // step
     shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1:]
     strides = (a.strides[:axis] + (step * a.strides[axis], a.strides[axis]) +
                a.strides[axis + 1:])
@@ -428,12 +430,12 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
 
         between_3_and_6 = between(3, 6)
         for i in range(10):
-           print i, between_3_and_6(i)
+           print(i, between_3_and_6(i))
 
 
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
-           print i, between_3_and_6(i)
+           print(i, between_3_and_6(i))
 
     """
     if lh_inclusive and rh_inclusive:
@@ -461,7 +463,7 @@ def reverse(array, axes):
 
         >>> import numpy as np
         >>> a = np.arange(24).reshape(2, 3, 4)
-        >>> print a
+        >>> print(a)
         [[[ 0  1  2  3]
           [ 4  5  6  7]
           [ 8  9 10 11]]
@@ -469,7 +471,7 @@ def reverse(array, axes):
          [[12 13 14 15]
           [16 17 18 19]
           [20 21 22 23]]]
-        >>> print reverse(a, 1)
+        >>> print(reverse(a, 1))
         [[[ 8  9 10 11]
           [ 4  5  6  7]
           [ 0  1  2  3]]
@@ -477,7 +479,7 @@ def reverse(array, axes):
          [[20 21 22 23]
           [16 17 18 19]
           [12 13 14 15]]]
-        >>> print reverse(a, [1, 2])
+        >>> print(reverse(a, [1, 2]))
         [[[11 10  9  8]
           [ 7  6  5  4]
           [ 3  2  1  0]]
@@ -526,6 +528,7 @@ def monotonic(array, strict=False, return_direction=False):
 
         If the return_direction flag was given then the returned value
         will be:
+
             ``(monotonic_status, direction)``
 
     """
@@ -721,7 +724,7 @@ def _wrap_function_for_method(function, docstring=None):
     simple_arg_source = ', '.join(basic_args + simple_default_args +
                                   var_arg + var_kw)
     source = ('def %s(%s):\n    return function(%s)' %
-              (function.func_name, arg_source, simple_arg_source))
+              (function.__name__, arg_source, simple_arg_source))
 
     # Compile the wrapper function
     # NB. There's an outstanding bug with "exec" where the locals and globals
@@ -730,7 +733,7 @@ def _wrap_function_for_method(function, docstring=None):
     exec source in my_locals, my_locals
 
     # Update the docstring if required, and return the modified function
-    wrapper = my_locals[function.func_name]
+    wrapper = my_locals[function.__name__]
     if docstring is None:
         wrapper.__doc__ = function.__doc__
     else:
@@ -1020,9 +1023,9 @@ Example Usage::
         timers.start("big func", "output")
         output()
 
-        print timers.stop("big func")
+        print(timers.stop("big func"))
 
-        print timers.get("little func")
+        print(timers.get("little func"))
 """
 
 
@@ -1317,3 +1320,72 @@ def unify_time_units(cubes):
                                           time_coord.units.origin)
                 new_unit = iris.unit.Unit(epoch, time_coord.units.calendar)
                 time_coord.convert_units(new_unit)
+
+
+def _is_circular(points, modulus, bounds=None):
+    """
+    Determine whether the provided points or bounds are circular in nature
+    relative to the modulus value.
+
+    If the bounds are provided then these are checked for circularity rather
+    than the points.
+
+    Args:
+
+    * points:
+        :class:`numpy.ndarray` of point values.
+
+    * modulus:
+        Circularity modulus value.
+
+    Kwargs:
+
+    * bounds:
+        :class:`numpy.ndarray` of bound values.
+
+    Returns:
+        Boolean.
+
+    """
+    circular = False
+    if bounds is not None:
+        # Set circular to True if the bounds ends are equivalent.
+        first_bound = last_bound = None
+        if bounds.ndim == 1 and bounds.shape[-1] == 2:
+            first_bound = bounds[0] % modulus
+            last_bound = bounds[1] % modulus
+        elif bounds.ndim == 2 and bounds.shape[-1] == 2:
+            first_bound = bounds[0, 0] % modulus
+            last_bound = bounds[-1, 1] % modulus
+
+        if first_bound is not None and last_bound is not None:
+            circular = np.allclose(first_bound, last_bound,
+                                   rtol=1.0e-5)
+    else:
+        # set circular if points are regular and last+1 ~= first
+        if len(points) > 1:
+            diffs = list(set(np.diff(points)))
+            diff = np.mean(diffs)
+            abs_tol = diff * 1.0e-4
+            diff_approx_equal = np.max(np.abs(diffs - diff)) < abs_tol
+            if diff_approx_equal:
+                circular_value = (points[-1] + diff) % modulus
+                try:
+                    np.testing.assert_approx_equal(points[0],
+                                                   circular_value,
+                                                   significant=4)
+                    circular = True
+                except AssertionError:
+                    if points[0] == 0:
+                        try:
+                            np.testing.assert_approx_equal(modulus,
+                                                           circular_value,
+                                                           significant=4)
+                            circular = True
+                        except AssertionError:
+                            pass
+        else:
+            # XXX - Inherited behaviour from NetCDF PyKE rules.
+            # We need to decide whether this is valid!
+            circular = points[0] >= modulus
+    return circular

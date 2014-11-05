@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,9 @@
 Test metadata translation rules.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -25,9 +28,9 @@ import types
 
 from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
-from iris.fileformats.rules import ConcreteReferenceTarget, Factory, Loader, \
-                                   Reference, ReferenceTarget, RuleResult, \
-                                   load_cubes
+from iris.fileformats.rules import (ConcreteReferenceTarget,
+                                    ConversionMetadata, Factory, Loader,
+                                    Reference, ReferenceTarget, load_cubes)
 import iris.tests.stock as stock
 
 
@@ -106,7 +109,8 @@ class TestLoadCubes(tests.IrisTest):
         factory.factory_class = lambda *args: \
             setattr(aux_factory, 'fake_args', args) or aux_factory
         def converter(field):
-            return ([factory], [], '', '', '', {}, [], [], [])
+            return ConversionMetadata([factory], [], '', '', '', {}, [], [],
+                                      [])
         # Finish by making a fake Loader
         fake_loader = Loader(field_generator, {}, converter, None)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
@@ -176,9 +180,10 @@ class TestLoadCubes(tests.IrisTest):
                                    for coord in src.dim_coords]
             aux_coords_and_dims = [(coord, src.coord_dims(coord))
                                    for coord in src.aux_coords]
-            return (factories, references, src.standard_name, src.long_name,
-                    src.units, src.attributes, src.cell_methods,
-                    dim_coords_and_dims, aux_coords_and_dims)
+            return ConversionMetadata(factories, references, src.standard_name,
+                                      src.long_name, src.units, src.attributes,
+                                      src.cell_methods, dim_coords_and_dims,
+                                      aux_coords_and_dims)
         # Finish by making a fake Loader
         fake_loader = Loader(field_generator, {}, converter, None)
         cubes = load_cubes(['fake_filename'], None, fake_loader)

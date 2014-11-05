@@ -16,7 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -577,8 +578,8 @@ class TestRotatedPole(tests.GraphicsTest):
         self._check_both_conversions(cube)
 
     def test_unrotate_nd(self):
-        rlons = np.array([[350., 352.],[350., 352.]])
-        rlats = np.array([[-5., -0.],[-4., -1.]])
+        rlons = np.array([[350., 352.], [350., 352.]])
+        rlats = np.array([[-5., -0.], [-4., -1.]])
 
         resx, resy = iris.analysis.cartography.unrotate_pole(rlons, rlats,
                                                              178.0, 38.0)
@@ -609,8 +610,8 @@ class TestRotatedPole(tests.GraphicsTest):
         self.assertArrayAlmostEqual(resy, soly)
 
     def test_rotate_nd(self):
-        rlons = np.array([[350., 351.],[352., 353.]])
-        rlats = np.array([[10., 15.],[20., 25.]])
+        rlons = np.array([[350., 351.], [352., 353.]])
+        rlats = np.array([[10., 15.], [20., 25.]])
 
         resx, resy = iris.analysis.cartography.rotate_pole(rlons, rlats,
                                                            20., 80.)
@@ -671,46 +672,6 @@ class TestAreaWeights(tests.IrisTest):
         small_cube.coord('longitude').bounds = None
         self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'),
                        checksum=False)
-
-    def test_quadrant_area(self):
-
-        degrees = iris.unit.Unit("degrees")
-        radians = iris.unit.Unit("radians")
-
-        def lon2radlon(lons):
-            return [degrees.convert(lon, radians) for lon in lons]
-
-        def lat2radcolat(lats):
-            return [degrees.convert(lat + 90, radians) for lat in lats]
-
-        lats = np.array([lat2radcolat([-80, -70])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[319251845980.763671875]])
-
-        lats = np.array([lat2radcolat([0, 10])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[1228800593851.443115234375]])
-
-        lats = np.array([lat2radcolat([10, 0])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[1228800593851.443115234375]])
-
-        lats = np.array([lat2radcolat([70, 80])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[319251845980.7646484375]])
-
-        lats = np.array([lat2radcolat([-80, -70]), lat2radcolat([0, 10]), lat2radcolat([70, 80])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-
-        self.assertAlmostEquals(area[0], [319251845980.763671875])
-        self.assertAlmostEquals(area[1], [1228800593851.443115234375])
-        self.assertAlmostEquals(area[2], [319251845980.7646484375])
-
 
 class TestAreaWeightGeneration(tests.IrisTest):
     def setUp(self):

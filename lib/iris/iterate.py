@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,8 @@
 Cube functions for iteration in step.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
 
 import collections
 import itertools
@@ -146,10 +148,10 @@ def izip(*cubes, **kwargs):
         for definition_coord in common:
             # Extract matching coord from dimensioned_iter_coords_a and
             # dimensioned_iter_coords_b to access shape.
-            coord_a = (coord for coord in dimensioned_iter_coords_a if
-                       definition_coord == coord).next()
-            coord_b = (coord for coord in dimensioned_iter_coords_b if
-                       definition_coord == coord).next()
+            coord_a = next(coord for coord in dimensioned_iter_coords_a if
+                           definition_coord == coord)
+            coord_b = next(coord for coord in dimensioned_iter_coords_b if
+                           definition_coord == coord)
             if coord_a.shape != coord_b.shape:
                 raise ValueError("Shape of common dimensioned coordinate '%s' "
                                  "does not match across all cubes. Unable "
@@ -242,7 +244,7 @@ class _ZipSlicesIterator(collections.Iterator):
 
     def next(self):
         # When self._ndindex runs out it will raise StopIteration for us.
-        master_index_tuple = self._ndindex.next()
+        master_index_tuple = next(self._ndindex)
 
         subcubes = []
         for offsets, requested_dims, coords, cube in itertools.izip(

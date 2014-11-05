@@ -18,12 +18,10 @@
 Time handling.
 
 """
-import collections
-import datetime
-import functools
-import operator
 
-import netcdftime
+from __future__ import (absolute_import, division, print_function)
+
+import functools
 
 
 @functools.total_ordering

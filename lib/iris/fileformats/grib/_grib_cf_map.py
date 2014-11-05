@@ -20,6 +20,9 @@
 Provides GRIB/CF phenomenon translations.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 from collections import namedtuple
 
 
@@ -64,9 +67,10 @@ GRIB2_TO_CF = {
     G2Param(2, 0, 0, 0): CFName('air_temperature', None, 'K'),
     G2Param(2, 0, 0, 2): CFName('air_potential_temperature', None, 'K'),
     G2Param(2, 0, 0, 6): CFName('dew_point_temperature', None, 'K'),
-    G2Param(2, 0, 0, 17): CFName(None, 'grib_skin_temperature', 'K'),
+    G2Param(2, 0, 0, 17): CFName('surface_temperature', None, 'K'),
     G2Param(2, 0, 1, 0): CFName('specific_humidity', None, 'kg kg-1'),
     G2Param(2, 0, 1, 1): CFName('relative_humidity', None, '%'),
+    G2Param(2, 0, 1, 2): CFName('humidity_mixing_ratio', None, 'kg kg-1'),
     G2Param(2, 0, 1, 3): CFName(None, 'precipitable_water', 'kg m-2'),
     G2Param(2, 0, 1, 11): CFName('thickness_of_snowfall_amount', None, 'm'),
     G2Param(2, 0, 1, 13): CFName('liquid_water_content_of_surface_snow', None, 'kg m-2'),
@@ -78,12 +82,15 @@ GRIB2_TO_CF = {
     G2Param(2, 0, 2, 3): CFName('y_wind', None, 'm s-1'),
     G2Param(2, 0, 2, 8): CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'),
     G2Param(2, 0, 2, 10): CFName('atmosphere_absolute_vorticity', None, 's-1'),
+    G2Param(2, 0, 2, 22): CFName('wind_speed_of_gust', None, 'm s-1'),
     G2Param(2, 0, 3, 0): CFName('air_pressure', None, 'Pa'),
     G2Param(2, 0, 3, 1): CFName('air_pressure_at_sea_level', None, 'Pa'),
     G2Param(2, 0, 3, 3): CFName(None, 'icao_standard_atmosphere_reference_height', 'm'),
     G2Param(2, 0, 3, 4): CFName('geopotential', None, 'm2 s-2'),
     G2Param(2, 0, 3, 5): CFName('geopotential_height', None, 'm'),
+    G2Param(2, 0, 3, 6): CFName('altitude', None, 'm'),
     G2Param(2, 0, 3, 9): CFName('geopotential_height_anomaly', None, 'm'),
+    G2Param(2, 0, 5, 5): CFName('toa_outgoing_longwave_flux', None, 'W m-2'),
     G2Param(2, 0, 6, 1): CFName('cloud_area_fraction', None, '%'),
     G2Param(2, 0, 6, 3): CFName('low_type_cloud_area_fraction', None, '%'),
     G2Param(2, 0, 6, 4): CFName('medium_type_cloud_area_fraction', None, '%'),
@@ -137,7 +144,6 @@ CF_TO_GRIB2 = {
     CFName(None, 'cloud_mixing_ratio', 'kg kg-1'): G2Param(2, 0, 1, 22),
     CFName(None, 'convective_inhibition', 'J kg-1'): G2Param(2, 0, 7, 7),
     CFName(None, 'grib_physical_atmosphere_albedo', '%'): G2Param(2, 0, 19, 1),
-    CFName(None, 'grib_skin_temperature', 'K'): G2Param(2, 0, 0, 17),
     CFName(None, 'icao_standard_atmosphere_reference_height', 'm'): G2Param(2, 0, 3, 3),
     CFName(None, 'precipitable_water', 'kg m-2'): G2Param(2, 0, 1, 3),
     CFName(None, 'storm_relative_helicity', 'J kg-1'): G2Param(2, 0, 7, 8),
@@ -145,6 +151,7 @@ CF_TO_GRIB2 = {
     CFName('air_pressure', None, 'Pa'): G2Param(2, 0, 3, 0),
     CFName('air_pressure_at_sea_level', None, 'Pa'): G2Param(2, 0, 3, 1),
     CFName('air_temperature', None, 'K'): G2Param(2, 0, 0, 0),
+    CFName('altitude', None, 'm'): G2Param(2, 0, 3, 6),
     CFName('atmosphere_absolute_vorticity', None, 's-1'): G2Param(2, 0, 2, 10),
     CFName('atmosphere_mass_content_of_cloud_liquid_water', None, 'kg m-2'): G2Param(2, 0, 6, 6),
     CFName('atmosphere_mass_content_of_water_vapor', None, 'kg m-2'): G2Param(2, 0, 1, 64),
@@ -157,6 +164,7 @@ CF_TO_GRIB2 = {
     CFName('geopotential_height', None, 'm'): G2Param(2, 0, 3, 5),
     CFName('geopotential_height_anomaly', None, 'm'): G2Param(2, 0, 3, 9),
     CFName('high_type_cloud_area_fraction', None, '%'): G2Param(2, 0, 6, 5),
+    CFName('humidity_mixing_ratio', None, 'kg kg-1'): G2Param(2, 0, 1, 2),
     CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'): G2Param(2, 0, 2, 8),
     CFName('land_area_fraction', None, '1'): G2Param(2, 2, 0, 0),
     CFName('land_binary_mask', None, '1'): G2Param(2, 2, 0, 0),
@@ -172,9 +180,12 @@ CF_TO_GRIB2 = {
     CFName('specific_humidity', None, 'kg kg-1'): G2Param(2, 0, 1, 0),
     CFName('surface_altitude', None, 'm'): G2Param(2, 2, 0, 7),
     CFName('surface_roughness_length', None, 'm'): G2Param(2, 2, 0, 1),
+    CFName('surface_temperature', None, 'K'): G2Param(2, 0, 0, 17),
     CFName('thickness_of_snowfall_amount', None, 'm'): G2Param(2, 0, 1, 11),
+    CFName('toa_outgoing_longwave_flux', None, 'W m-2'): G2Param(2, 0, 5, 5),
     CFName('wind_from_direction', None, 'degrees'): G2Param(2, 0, 2, 0),
     CFName('wind_speed', None, 'm s-1'): G2Param(2, 0, 2, 1),
+    CFName('wind_speed_of_gust', None, 'm s-1'): G2Param(2, 0, 2, 22),
     CFName('x_wind', None, 'm s-1'): G2Param(2, 0, 2, 2),
     CFName('y_wind', None, 'm s-1'): G2Param(2, 0, 2, 3),
     }

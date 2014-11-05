@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,12 +19,16 @@ Support for conservative regridding via ESMPy.
 
 """
 
-import numpy as np
+from __future__ import (absolute_import, division, print_function)
+
 # Import ESMF via iris.proxy, just so we can build the docs with no ESMF.
 import iris.proxy
 iris.proxy.apply_proxy('ESMF', globals())
 
 import cartopy.crs as ccrs
+import numpy as np
+
+from iris.analysis._interpolation import get_xy_dim_coords
 import iris
 import iris.experimental.regrid as i_regrid
 
@@ -179,8 +183,8 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
     """
     # Get source + target XY coordinate pairs and check they are suitable.
-    src_coords = i_regrid._get_xy_dim_coords(source_cube)
-    dst_coords = i_regrid._get_xy_dim_coords(grid_cube)
+    src_coords = get_xy_dim_coords(source_cube)
+    dst_coords = get_xy_dim_coords(grid_cube)
     src_cs = src_coords[0].coord_system
     grid_cs = dst_coords[0].coord_system
     if src_cs is None or grid_cs is None:

@@ -18,7 +18,9 @@
 Basic mathematical and statistical operations.
 
 """
-from __future__ import division
+
+from __future__ import (absolute_import, division, print_function)
+
 import warnings
 import math
 import operator
@@ -113,7 +115,7 @@ def _assert_compatible(cube, other):
 
     try:
         data_view, other_view = np.broadcast_arrays(cube.data, other)
-    except ValueError, err:
+    except ValueError as err:
         # re-raise
         raise ValueError("The array was not broadcastable to the cube's data shape. The error message from numpy when broadcasting:\n%s\n"
                          "The cube's shape was %s and the array's shape was %s" % (err, cube.shape, other.shape))

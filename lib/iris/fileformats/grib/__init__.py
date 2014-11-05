@@ -21,13 +21,14 @@ See also: `ECMWF GRIB API <http://www.ecmwf.int/publications/manuals/grib_api/in
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import datetime
 import math  #for fmod
-import os
 import warnings
 
 import biggus
-import cartopy
+import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
@@ -41,6 +42,8 @@ from iris.exceptions import TranslationError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
+import iris.fileformats.grib._load_convert
+from iris.fileformats.grib._message import _GribMessage
 import iris.fileformats.grib.load_rules
 import iris.unit
 
@@ -118,10 +121,16 @@ unknown_string = "???"
 
 
 def reset_load_rules():
-    """Resets the GRIB load process to use only the standard conversion rules."""
+    """
+    Resets the GRIB load process to use only the standard conversion rules.
 
+    .. deprecated:: 1.7
+
+    """
     # Uses this module-level variable
     global _load_rules
+
+    warnings.warn('reset_load_rules was deprecated in v1.7.')
 
     _load_rules = None
 
@@ -273,7 +282,7 @@ class GribWrapper(object):
             # we just get <type 'float'> as the type of the "values" array...special case here...
             if key in ["values", "pv", "latitudes", "longitudes"]:
                 res = gribapi.grib_get_double_array(self.grib_message, key)
-            elif key in ('typeOfFirstFixedSurface','typeOfSecondFixedSurface'):
+            elif key in ('typeOfFirstFixedSurface', 'typeOfSecondFixedSurface'):
                 res = np.int32(gribapi.grib_get_long(self.grib_message, key))
             else:
                 key_type = gribapi.grib_get_native_type(self.grib_message, key)
@@ -584,7 +593,7 @@ class GribWrapper(object):
             x1, y1 = cartopy_crs.transform_point(
                                 self.longitudeOfFirstGridPointInDegrees,
                                 self.latitudeOfFirstGridPointInDegrees,
-                                cartopy.crs.Geodetic())
+                                ccrs.Geodetic())
 
             if not np.all(np.isfinite([x1, y1])):
                 raise TranslationError("Could not determine the first latitude"
@@ -863,7 +872,7 @@ def grib_generator(filename, auto_regularise=True):
             gribapi.grib_release(grib_message)
 
 
-def load_cubes(filenames, callback=None, auto_regularise=True):
+def load_cubes(filenames, callback=None, regularise=True, auto_regularise=None):
     """
     Returns a generator of cubes from the given list of filenames.
 
@@ -877,6 +886,13 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
     * callback (callable function):
         Function which can be passed on to :func:`iris.io.run_callback`.
 
+    * regularise (*True* | *False*):
+        If *True*, any cube defined on a reduced grid will be interpolated
+        to an equivalent regular grid. If *False*, any cube defined on a
+        reduced grid will be loaded on the raw reduced grid with no shape
+        information. The default behaviour is to interpolate cubes on a
+        reduced grid to an equivalent regular grid.
+
     * auto_regularise (*True* | *False*):
         If *True*, any cube defined on a reduced grid will be interpolated
         to an equivalent regular grid. If *False*, any cube defined on a
@@ -884,20 +900,34 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         information. The default behaviour is to interpolate cubes on a
         reduced grid to an equivalent regular grid.
 
+        .. deprecated:: 1.8. Please use the `regularise` kwarg instead.
+
     .. note::
 
-       To make use of the *auto_regularise* keyword the normal Iris loading
+       To make use of the *regularise* keyword the normal Iris loading
        pipeline cannot be used, the loading must be performed manually::
 
            cube_generator = iris.fileformats.grib.load_cubes(
-               "reduced.grib", auto_regularise=False)
+               "reduced.grib", regularise=False)
            cubes = iris.cube.CubeList(cube_generator).merge()
 
     """
-    grib_loader = iris.fileformats.rules.Loader(
-        grib_generator, {'auto_regularise': auto_regularise},
-        iris.fileformats.grib.load_rules.convert,
-        _load_rules)
+    if auto_regularise is not None:
+        warnings.warn('the`auto_regularise` kwarg is deprecated and '
+                      'will be removed in a future release. Please use '
+                      '`regularise` instead.')
+        regularise = auto_regularise
+
+    if iris.FUTURE.strict_grib_load:
+        grib_loader = iris.fileformats.rules.Loader(
+            _GribMessage.messages_from_filename,
+            {'regularise': regularise},
+            iris.fileformats.grib._load_convert.convert, None)
+    else:
+        grib_loader = iris.fileformats.rules.Loader(
+            grib_generator, {'auto_regularise': regularise},
+            iris.fileformats.grib.load_rules.convert,
+            _load_rules)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 
 

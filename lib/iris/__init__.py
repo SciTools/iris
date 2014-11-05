@@ -94,6 +94,9 @@ All the load functions share very similar arguments:
                 cube.add_aux_coord(experiment_coord)
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import contextlib
 import itertools
 import logging
@@ -108,7 +111,7 @@ import iris.io
 
 
 # Iris revision.
-__version__ = '1.8.0-dev'
+__version__ = '1.8.0-DEV'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
@@ -128,7 +131,8 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=False, netcdf_promote=False):
+    def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
+                 strict_grib_load=False):
         """
         A container for run-time options controls.
 
@@ -140,12 +144,12 @@ class Future(threading.local):
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
-        Currently, the only option available is `cell_datetime_objects` which
-        controls whether the :meth:`iris.coords.Coord.cell()` method returns
-        time coordinate values as simple numbers or as time objects with
-        attributes for year, month, day, etc. In particular, this allows one
-        to express certain time constraints using a simpler, more
-        transparent syntax, such as::
+        The option `cell_datetime_objects` controls whether the
+        :meth:`iris.coords.Coord.cell()` method returns time coordinate
+        values as simple numbers or as time objects with attributes for
+        year, month, day, etc. In particular, this allows one to express
+        certain time constraints using a simpler, more transparent
+        syntax, such as::
 
             # To select all data defined at midday.
             Constraint(time=lambda cell: cell.point.hour == 12)
@@ -155,13 +159,27 @@ class Future(threading.local):
                                          cell.point.month != 2)
 
         For more details, see :ref:`using-time-constraints`.
+
+        The option `netcdf_promote` controls whether the netCDF loader
+        will expose variables which define reference surfaces for
+        dimensionless vertical coordinates as independent Cubes.
+
+        The option `strict_grib_load` controls whether GRIB files are
+        loaded as Cubes using a new template-based conversion process.
+        This new conversion process will raise an exception when it
+        encounters a GRIB message which uses a template not supported
+        by the conversion.
+
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
         self.__dict__['netcdf_promote'] = netcdf_promote
+        self.__dict__['strict_grib_load'] = strict_grib_load
 
     def __repr__(self):
-        return 'Future(cell_datetime_objects={}, netcdf_promote={})'.format(
-            self.cell_datetime_objects, self.netcdf_promote)
+        return ('Future(cell_datetime_objects={}, netcdf_promote={}, '
+                'strict_grib_load={})'.format(self.cell_datetime_objects,
+                                              self.netcdf_promote,
+                                              self.strict_grib_load))
 
     def __setattr__(self, name, value):
         if name not in self.__dict__:
@@ -220,7 +238,7 @@ else:
     _update(site_configuration)
 
 
-def _generate_cubes(uris, callback):
+def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
     if isinstance(uris, basestring):
         uris = [uris]
@@ -233,7 +251,7 @@ def _generate_cubes(uris, callback):
         # Call each scheme handler with the appropriate URIs
         if scheme == 'file':
             part_names = [x[1] for x in groups]
-            for cube in iris.io.load_files(part_names, callback):
+            for cube in iris.io.load_files(part_names, callback, constraints):
                 yield cube
         elif scheme in ['http', 'https']:
             urls = [':'.join(x) for x in groups]
@@ -245,7 +263,7 @@ def _generate_cubes(uris, callback):
 
 def _load_collection(uris, constraints=None, callback=None):
     try:
-        cubes = _generate_cubes(uris, callback)
+        cubes = _generate_cubes(uris, callback, constraints)
         result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(

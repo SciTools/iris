@@ -18,6 +18,9 @@
 Test cube indexing, slicing, and extracting, and also the dot graphs.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -25,9 +28,7 @@ from contextlib import contextmanager
 import os
 import re
 import sys
-import warnings
 
-import biggus
 import numpy as np
 import numpy.ma as ma
 
@@ -313,7 +314,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         
         # Create a list of values used to create cell methods
         test_values = ((("mean",), (u'longitude', 'latitude'), (u'6 minutes', '12 minutes'), (u'This is a test comment',)),
-                        (("average",), (u'longitude', 'latitude'), (u'6 minutes', '15 minutes'), (u'This is another test comment','This is another comment')),
+                        (("average",), (u'longitude', 'latitude'), (u'6 minutes', '15 minutes'), (u'This is another test comment', 'This is another comment')),
                         (("average",), (u'longitude', 'latitude'), (), ()),
                         (("percentile",), (u'longitude',), (u'6 minutes',), (u'This is another test comment',)))
         
@@ -928,7 +929,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.assertFalse(cube.has_lazy_data())
 
     def test_slices(self):
-        lat_cube = self.cube.slices(['grid_latitude', ]).next()
+        lat_cube = next(self.cube.slices(['grid_latitude', ]))
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
  

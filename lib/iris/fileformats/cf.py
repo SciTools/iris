@@ -25,6 +25,8 @@ References:
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 from abc import ABCMeta, abstractmethod
 from collections import Iterable
 import os
@@ -947,7 +949,7 @@ class CFReader(object):
             self.cf_group.update(variable_type.identify(self._dataset.variables, ignore=ignore))
 
         # Identify global netCDF attributes.
-        attr_dict = {attr_name: getattr(self._dataset, attr_name, '') for
+        attr_dict = {attr_name: _getncattr(self._dataset, attr_name, '') for
                         attr_name in self._dataset.ncattrs()}
         self.cf_group.global_attributes.update(attr_dict)
 
@@ -1092,3 +1094,16 @@ class CFReader(object):
     def __del__(self):
         # Explicitly close dataset to prevent file remaining open.
         self._dataset.close()
+
+
+def _getncattr(dataset, attr, default=None):
+    """
+    Simple wrapper round `netCDF4.Dataset.getncattr` to make it behave
+    more like `getattr`.
+
+    """
+    try:
+        value = dataset.getncattr(attr)
+    except AttributeError:
+        value = default
+    return value

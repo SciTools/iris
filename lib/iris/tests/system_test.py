@@ -22,8 +22,10 @@ This system test module is useful to identify if some of the key components requ
 The system tests can be run with ``python setup.py test --system-tests``.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised before importing anything else
-import sys
 
 import numpy as np
 
@@ -65,7 +67,7 @@ class SystemInitialTest(tests.IrisTest):
 
         cm.assert_valid()
 
-        for filetype in ('.nc', '.pp' , '.grib2'):
+        for filetype in ('.nc', '.pp', '.grib2'):
             saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
             iris.save(cm, saved_tmpfile)
 

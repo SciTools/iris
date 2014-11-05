@@ -19,6 +19,8 @@ Tests for :func:`iris.experimental.regrid.regrid_conservative_via_esmpy`.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -34,7 +36,7 @@ try:
     import ESMF
     # Check it *is* the real module, and not an iris.proxy FakeModule.
     ESMF.Manager
-except ImportError, AttributeError:
+except ImportError as AttributeError:
     ESMF = None
 skip_esmf = unittest.skipIf(
     condition=ESMF is None,
@@ -493,7 +495,7 @@ class TestConservativeRegrid(tests.IrisTest):
         c1toc2 = regrid_conservative_via_esmpy(c1, c2)
 
         # Now redo with dst longitudes rotated, so 'seam' is somewhere else.
-        x2_shift_steps = int(shape2[0] / 3)
+        x2_shift_steps = shape2[0] // 3
         xlims2_shifted = np.array(xlims_2) + 360.0 * x2_shift_steps / shape2[0]
         c2_shifted = _make_test_cube(shape2, xlims2_shifted, ylims_2,
                                      pole_latlon=(47.4, 25.7))
@@ -504,7 +506,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(rolled_data, c1toc2.data)
 
         # Repeat with rolled *source* data : result should be identical
-        x1_shift_steps = int(shape1[0] / 3)
+        x1_shift_steps = shape1[0] // 3
         x_shift_degrees = 360.0 * x1_shift_steps / shape1[0]
         xlims1_shifted = [x - x_shift_degrees for x in xlims1]
         c1_shifted = _make_test_cube(shape1, xlims1_shifted, ylims1)

@@ -29,6 +29,9 @@ switched to "tkagg" to allow the interactive visual inspection of
 graphical test results.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import collections
 import contextlib
 import difflib
@@ -40,7 +43,6 @@ import logging
 import mock
 import os
 import os.path
-import re
 import shutil
 import StringIO
 import subprocess
@@ -82,7 +84,7 @@ _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
 if '--data-files-used' in sys.argv:
     sys.argv.remove('--data-files-used')
     fname = '/var/tmp/all_iris_test_resource_paths.txt'
-    print 'saving list of files used by tests to %s' % fname
+    print('saving list of files used by tests to %s' % fname)
     _EXPORT_DATAPATHS_FILE = open(fname, 'w')
 else:
     _EXPORT_DATAPATHS_FILE = None
@@ -122,7 +124,7 @@ def main():
             lines.insert(11, '                       NOTE: To compare results of failing tests, ')
             lines.insert(12, '                             use idiff.py instead')
             lines.insert(13, '  --data-files-used    Save a list of files used to a temporary file')
-            print '\n'.join(lines)
+            print('\n'.join(lines))
     else:
         unittest.main()
 
@@ -146,8 +148,18 @@ def get_data_path(relative_path):
         gzipped_fname = data_path + '.gz'
         if os.path.exists(gzipped_fname):
             with gzip.open(gzipped_fname, 'rb') as gz_fh:
-                with open(data_path, 'wb') as fh:
-                    fh.writelines(gz_fh)
+                try:
+                    with open(data_path, 'wb') as fh:
+                        fh.writelines(gz_fh)
+                except IOError:
+                    # Put ungzipped data file in a temporary path, since we
+                    # can't write to the original path (maybe it is owned by
+                    # the system.)
+                    _, ext = os.path.splitext(data_path)
+                    data_path = iris.util.create_temp_filename(suffix=ext)
+                    with open(data_path, 'wb') as fh:
+                        fh.writelines(gz_fh)
+
 
     return data_path
 
@@ -577,13 +589,57 @@ class IrisTest(unittest.TestCase):
 
             if _DISPLAY_FIGURES:
                 if err:
-                    print 'Image comparison would have failed. Message: %s' % err
+                    print('Image comparison would have failed. Message: %s' % err)
                 plt.show()
             else:
                 assert not err, 'Image comparison failed. Message: %s' % err
 
         finally:
             plt.close()
+
+    def _remove_testcase_patches(self):
+        """Helper to remove per-testcase patches installed by :meth:`patch`."""
+        # Remove all patches made, ignoring errors.
+        for p in self.testcase_patches:
+            p.stop()
+        # Reset per-test patch control variable.
+        self.testcase_patches.clear()
+
+    def patch(self, *args, **kwargs):
+        """
+        Install a mock.patch, to be removed after the current test.
+
+        The patch is created with mock.patch(*args, **kwargs).
+
+        Returns:
+            The substitute object returned by patch.start().
+
+        For example::
+
+            mock_call = self.patch('module.Class.call', return_value=1)
+            module_Class_instance.call(3, 4)
+            self.assertEqual(mock_call.call_args_list, [mock.call(3, 4)])
+
+        """
+        # Make the new patch and start it.
+        patch = mock.patch(*args, **kwargs)
+        start_result = patch.start()
+
+        # Create the per-testcases control variable if it does not exist.
+        # NOTE: this mimics a setUp method, but continues to work when a
+        # subclass defines its own setUp.
+        if not hasattr(self, 'testcase_patches'):
+            self.testcase_patches = {}
+
+        # When installing the first patch, schedule remove-all at cleanup.
+        if not self.testcase_patches:
+            self.addCleanup(self._remove_testcase_patches)
+
+        # Record the new patch and start object for reference.
+        self.testcase_patches[patch] = start_result
+
+        # Return patch replacement object.
+        return start_result
 
 
 class GraphicsTest(IrisTest):

@@ -19,12 +19,13 @@ Processing of simple IF-THEN rules.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import abc
 import collections
 import getpass
 import logging
 import logging.handlers as handlers
-import operator
 import os
 import os.path
 import platform
@@ -344,8 +345,8 @@ class Rule(object):
 
         try:
             result = self._exec_conditions(field, f, pp, grib, cm)
-        except Exception, err:
-            print >> sys.stderr, 'Condition failed to run conditions: %s : %s' % (self._conditions, err)
+        except Exception as err:
+            print('Condition failed to run conditions: %s : %s' % (self._conditions, err), file=sys.stderr)
             raise err
 
         return result
@@ -386,12 +387,12 @@ class Rule(object):
                 if action_factory:
                     factories.append(action_factory)
 
-            except iris.exceptions.CoordinateNotFoundError, err:
-                print >> sys.stderr, 'Failed (msg:%(error)s) to find coordinate, perhaps consider running last: %(command)s' % {'command':action, 'error': err}
-            except AttributeError, err:
-                print >> sys.stderr, 'Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}
-            except Exception, err:
-                print >> sys.stderr, 'Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}
+            except iris.exceptions.CoordinateNotFoundError as err:
+                print('Failed (msg:%(error)s) to find coordinate, perhaps consider running last: %(command)s' % {'command':action, 'error': err}, file=sys.stderr)
+            except AttributeError as err:
+                print('Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}, file=sys.stderr)
+            except Exception as err:
+                print('Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}, file=sys.stderr)
                 raise err
 
         return factories
@@ -445,7 +446,7 @@ class FunctionRule(Rule):
             factory = obj
 
         elif isinstance(obj, DebugString):
-            print obj
+            print(obj)
 
         # The function returned nothing, like the pp save actions, "lbft = 3"
         elif obj is None:
@@ -737,10 +738,18 @@ Loader = collections.namedtuple('Loader',
                                  'converter', 'legacy_custom_rules'))
 
 
+ConversionMetadata = collections.namedtuple('ConversionMetadata',
+                                            ('factories', 'references',
+                                             'standard_name', 'long_name',
+                                             'units', 'attributes',
+                                             'cell_methods',
+                                             'dim_coords_and_dims',
+                                             'aux_coords_and_dims'))
+
+
 def _make_cube(field, converter):
     # Convert the field to a Cube.
-    (factories, references, standard_name, long_name, units, attributes,
-     cell_methods, dim_coords_and_dims, aux_coords_and_dims) = converter(field)
+    metadata = converter(field)
 
     try:
         data = field._data
@@ -748,32 +757,32 @@ def _make_cube(field, converter):
         data = field.data
 
     cube = iris.cube.Cube(data,
-                          attributes=attributes,
-                          cell_methods=cell_methods,
-                          dim_coords_and_dims=dim_coords_and_dims,
-                          aux_coords_and_dims=aux_coords_and_dims)
+                          attributes=metadata.attributes,
+                          cell_methods=metadata.cell_methods,
+                          dim_coords_and_dims=metadata.dim_coords_and_dims,
+                          aux_coords_and_dims=metadata.aux_coords_and_dims)
 
     # Temporary code to deal with invalid standard names in the
     # translation table.
-    if standard_name is not None:
-        cube.rename(standard_name)
-    if long_name is not None:
-        cube.long_name = long_name
-    if units is not None:
+    if metadata.standard_name is not None:
+        cube.rename(metadata.standard_name)
+    if metadata.long_name is not None:
+        cube.long_name = metadata.long_name
+    if metadata.units is not None:
         # Temporary code to deal with invalid units in the translation
         # table.
         try:
-            cube.units = units
+            cube.units = metadata.units
         except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            msg = 'Ignoring PP invalid units {!r}'.format(metadata.units)
             warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
+            cube.attributes['invalid_units'] = metadata.units
             cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
-    return cube, factories, references
+    return cube, metadata.factories, metadata.references
 
 
-def load_cubes(filenames, user_callback, loader):
+def load_cubes(filenames, user_callback, loader, filter_function=None):
     concrete_reference_targets = {}
     results_needing_reference = []
 
@@ -782,6 +791,10 @@ def load_cubes(filenames, user_callback, loader):
 
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
+            # evaluate field against format specific desired attributes
+            # load if no format specific desired attributes are violated
+            if filter_function is not None and not filter_function(field):
+                continue
             # Convert the field to a Cube.
             cube, factories, references = _make_cube(field, loader.converter)
 

@@ -2,6 +2,9 @@
 #    (C) Copyright 2010 MATPLOTLIB (vn 1.0.1)
 #
 
+from __future__ import (absolute_import, division, print_function)
+
+
 # generate a thumbnail gallery of examples
 template = """\
 {%% extends "layout.html" %%}

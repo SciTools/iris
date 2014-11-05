@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -359,20 +359,20 @@ class TestDimCoordCreation(unittest.TestCase):
     def test_dim_coord_restrictions(self):
         # 1d
         with self.assertRaisesRegexp(ValueError, 'must be 1-dim'):
-            iris.coords.DimCoord([[1,2,3], [4,5,6]]) 
+            iris.coords.DimCoord([[1, 2, 3], [4, 5, 6]])
         # monotonic
         with self.assertRaisesRegexp(ValueError, 'must be strictly monotonic'):
-            iris.coords.DimCoord([1,2,99,4,5]) 
+            iris.coords.DimCoord([1, 2, 99, 4, 5])
         # monotonic bounds
         with self.assertRaisesRegexp(ValueError, 
                                      'monotonicity.*consistent.*all bounds'):
-            iris.coords.DimCoord([1,2,3], bounds=[[1, 12], [2, 9], [3, 6]])
+            iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # shapes of points and bounds
         with self.assertRaisesRegexp(ValueError, 'shape of the bounds array'):
-            iris.coords.DimCoord([1,2,3], bounds=[0.5, 1.5, 2.5, 3.5])
+            iris.coords.DimCoord([1, 2, 3], bounds=[0.5, 1.5, 2.5, 3.5])
         # another example of shapes of points and bounds
         with self.assertRaisesRegexp(ValueError, 'shape of the bounds array'):
-            iris.coords.DimCoord([1,2,3], bounds=[[0.5, 1.5],[1.5, 2.5]])
+            iris.coords.DimCoord([1, 2, 3], bounds=[[0.5, 1.5], [1.5, 2.5]])
 
         # numeric
         with self.assertRaises(ValueError):
@@ -571,7 +571,7 @@ class TestCoordCollapsed(tests.IrisTest):
         
     def test_nd_bounds(self):
         cube = iris.tests.stock.simple_2d_w_multidim_coords(with_bounds=True)
-        pcube = cube.collapsed(['bar','foo'], iris.analysis.SUM)
+        pcube = cube.collapsed(['bar', 'foo'], iris.analysis.SUM)
         pcube.data = pcube.data.astype('i8')
         self.assertCML(pcube, ("coord_api", "nd_bounds.cml"))
 
@@ -620,22 +620,22 @@ class TestGuessBounds(tests.IrisTest):
     def test_guess_bounds(self):
         coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]), long_name="foo", units="1")
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5,5], [5,15], [15,25], [25,35]]))
+        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]))
         
         coord.bounds = None
         coord.guess_bounds(0.25)
-        self.assertArrayEqual(coord.bounds, np.array([[-5,5], [5,15], [15,25], [25,35]]) + 2.5)
+        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) + 2.5)
         
         coord.bounds = None
         coord.guess_bounds(0.75)
-        self.assertArrayEqual(coord.bounds, np.array([[-5,5], [5,15], [15,25], [25,35]]) - 2.5)
+        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) - 2.5)
 
         points = coord.points.copy()
         points[2] = 25
         coord.points = points
         coord.bounds = None
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5.,5.], [5.,17.5], [17.5,27.5], [27.5,32.5]]))
+        self.assertArrayEqual(coord.bounds, np.array([[-5., 5.], [5., 17.5], [17.5, 27.5], [27.5, 32.5]]))
         
         # if the points are not monotonic, then guess_bounds should fail
         points[2] = 32
@@ -776,7 +776,7 @@ class TestIsContiguous(tests.IrisTest):
 
 class TestCoordCompatibility(tests.IrisTest):
     def setUp(self):
-        self.aux_coord = iris.coords.AuxCoord([1., 2. ,3.],
+        self.aux_coord = iris.coords.AuxCoord([1., 2., 3.],
                                               standard_name='longitude',
                                               var_name='lon',
                                               units='degrees')
@@ -817,7 +817,7 @@ class TestCoordCompatibility(tests.IrisTest):
         r.var_name = 'foo'
         self.assertTrue(self.aux_coord.is_compatible(r))
         # With/without bounds.
-        r.bounds = np.array([[0.5, 1.5],[1.5, 2.5],[2.5, 3.5]])
+        r.bounds = np.array([[0.5, 1.5], [1.5, 2.5], [2.5, 3.5]])
         self.assertTrue(self.aux_coord.is_compatible(r))
 
     def test_circular(self):

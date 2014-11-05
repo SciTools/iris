@@ -19,6 +19,8 @@ Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import os
 import subprocess
 
@@ -32,7 +34,15 @@ _SUBGRAPH_INDENT = ' ' * 8
 _DOT_EXECUTABLE_PATH = iris.config.get_option('System', 'dot_path',
                                               default='dot')
 if not os.path.exists(_DOT_EXECUTABLE_PATH):
-    _DOT_EXECUTABLE_PATH = None
+    if not os.path.isabs(_DOT_EXECUTABLE_PATH):
+        try:
+            # Check PATH
+            subprocess.check_output([_DOT_EXECUTABLE_PATH, '-V'],
+                                    stderr=subprocess.STDOUT)
+        except OSError:
+            _DOT_EXECUTABLE_PATH = None
+    else:
+        _DOT_EXECUTABLE_PATH = None
 #: Whether the 'dot' program is present (required for "dotpng" output).
 DOT_AVAILABLE = _DOT_EXECUTABLE_PATH is not None
 

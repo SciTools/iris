@@ -4,10 +4,12 @@ dimensions:
 	latitude = 13 ;
 	longitude = 10 ;
 variables:
-	float unknown(time, latitude, longitude) ;
-		unknown:cell_methods = "time: mean (interval: 1 hour)" ;
-		unknown:grid_mapping = "latitude_longitude" ;
-		unknown:coordinates = "forecast_period forecast_reference_time height" ;
+	float air_temperature(time, latitude, longitude) ;
+		air_temperature:standard_name = "air_temperature" ;
+		air_temperature:units = "K" ;
+		air_temperature:cell_methods = "time: mean (interval: 1 hour)" ;
+		air_temperature:grid_mapping = "latitude_longitude" ;
+		air_temperature:coordinates = "forecast_period forecast_reference_time height" ;
 	int latitude_longitude ;
 		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
 		latitude_longitude:longitude_of_prime_meridian = 0. ;

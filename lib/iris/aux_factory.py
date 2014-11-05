@@ -19,6 +19,8 @@ Definitions of derived coordinates.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
 import zlib
@@ -528,7 +530,7 @@ class HybridHeightFactory(AuxCoordFactory):
         * old_coord:
             The coordinate to be removed/replaced.
         * new_coord:
-            If None, any dependency using old_coord is removed, othewise
+            If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
         """
@@ -723,7 +725,7 @@ class HybridPressureFactory(AuxCoordFactory):
         * old_coord:
             The coordinate to be removed/replaced.
         * new_coord:
-            If None, any dependency using old_coord is removed, othewise
+            If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
         """
@@ -963,7 +965,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         * old_coord:
             The coordinate to be removed/replaced.
         * new_coord:
-            If None, any dependency using old_coord is removed, othewise
+            If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
         """

@@ -16,21 +16,22 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.experimental.raster.export_geotiff` function."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import numpy as np
-from osgeo import gdal
 try:
     from osgeo import gdal
+    from iris.experimental.raster import export_geotiff
 except ImportError:
     gdal = None
 
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.experimental.raster import export_geotiff
 
 
 @tests.skip_gdal

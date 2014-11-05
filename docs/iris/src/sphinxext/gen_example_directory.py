@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,6 +19,9 @@
 """
 Generate the rst files for the examples
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import os
 import re
 import sys
@@ -66,8 +69,7 @@ def generate_example_rst(app):
             relpath = os.path.split(root)[-1]
             datad.setdefault(relpath, []).append((fullpath, fname, contents))
 
-    subdirs = datad.keys()
-    subdirs.sort()
+    subdirs = sorted(datad.keys())
 
     fhindex = file(os.path.join(exampledir, 'index.rst'), 'w')
     fhindex.write("""\
@@ -117,8 +119,7 @@ Iris examples
         sys.stdout.write(subdir + ", ")
         sys.stdout.flush()
 
-        data = datad[subdir]
-        data.sort()
+        data = sorted(datad[subdir])
 
         for fullpath, fname, contents in data:
             basename, ext = os.path.splitext(fname)

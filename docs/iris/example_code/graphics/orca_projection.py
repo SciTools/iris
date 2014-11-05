@@ -1,6 +1,6 @@
 """
 Tri-Polar Grid Projected Plotting
-================================
+=================================
 
 This example demonstrates cell plots of data on the semi-structured ORCA2 model
 grid.
@@ -12,7 +12,6 @@ using different projections for the output image.
 
 """
 
-import matplotlib
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

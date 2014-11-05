@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
 import json
 import urllib
 import urllib2
@@ -33,7 +35,9 @@ Relates grid code and field code to the stash code.
 '''
 
 
-CODE_PREAMBLE = ("from collections import namedtuple\n\n\n"
+CODE_PREAMBLE = ("\nfrom __future__ import "
+                 "(absolute_import, division, print_function)\n\n"
+                 "from collections import namedtuple\n\n\n"
                  "Stash = namedtuple('Stash', 'grid_code field_code')\n\n\n")
 
 
@@ -50,7 +54,7 @@ def write_cross_reference_module(module_path, xrefs):
             except ValueError:
                 msg = ('stash code is not of a recognised'
                        '"m??s??i???" form: {}'.format(stash))
-                print msg
+                print(msg)
             grid = xref.get('grid')
             if grid is not None:
                 try:
@@ -58,7 +62,7 @@ def write_cross_reference_module(module_path, xrefs):
                 except ValueError:
                     msg = ('grid code retrieved from STASH lookup'
                            'is not an interger: {}'.format(grid))
-                    print msg
+                    print(msg)
             else:
                 grid = 0
             lbfc = xref.get('lbfcn')
@@ -107,7 +111,7 @@ order by ?stash'''
     for result in stash['results']['bindings']:
         res = {}
         for head in heads:
-            if result.has_key(head):
+            if head in result:
                 res[head] = result[head]['value']
         stashcodes.append(res)
     return stashcodes

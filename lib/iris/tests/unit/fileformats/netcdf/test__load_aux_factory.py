@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.netcdf._load_aux_factory` function."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -26,7 +28,6 @@ import warnings
 
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.aux_factory import HybridPressureFactory
 from iris.fileformats.netcdf import _load_aux_factory
 
 

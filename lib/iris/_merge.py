@@ -21,6 +21,9 @@ Typically the cube merge process is handled by
 :method:`iris.cube.CubeList.merge`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
@@ -381,11 +384,18 @@ class _CubeSignature(namedtuple('CubeSignature',
         if self.data_type != other.data_type:
             msgs.append('cube data dtype differs: {} != {}'.format(
                 self.data_type, other.data_type))
-        if not (np.isnan(self.fill_value) and np.isnan(other.fill_value)) and \
-                self.fill_value != other.fill_value:
-            msg = 'cube data fill_value differs: ' \
-                '{!r} != {!r}'.format(self.fill_value, other.fill_value)
-            msgs.append(msg)
+        # Compare fill values noting that two np.nans do not compare equal
+        # and np.isnan() raises a TypeError on strings.
+        if self.fill_value != other.fill_value:
+            try:
+                both_nan = (np.isnan(self.fill_value) and
+                            np.isnan(other.fill_value))
+            except TypeError:
+                both_nan = False
+            if not both_nan:
+                msg = 'cube data fill_value differs: ' \
+                    '{!r} != {!r}'.format(self.fill_value, other.fill_value)
+                msgs.append(msg)
         match = not bool(msgs)
         if error_on_mismatch and not match:
             raise iris.exceptions.MergeError(msgs)
@@ -482,12 +492,12 @@ def build_indexes(positions):
         ...
         >>> indexes = build_indexes(positions)
         >>> for k in sorted(indexes):
-        ...     print '%r:' % k
+        ...     print('%r:' % k)
         ...     for kk in sorted(indexes[k]):
-        ...         print '\t%r:' % kk,
+        ...         print('\t%r:' % kk, end=' ')
         ...         for kkk in sorted(indexes[k][kk]):
-        ...             print '%r: %r' % (kkk, indexes[k][kk][kkk]),
-        ...         print
+        ...             print('%r: %r' % (kkk, indexes[k][kk][kkk]), end=' ')
+        ...         print()
         ...
         'a':
              0: 'b': set([10]) 'c': set([100])
@@ -616,7 +626,7 @@ def derive_relation_matrix(indexes):
         >>> indexes = build_indexes(positions)
         >>> matrix = derive_relation_matrix(indexes)
         >>> for k, v in matrix.iteritems():
-        ...     print '%r: %r' % (k, v)
+        ...     print('%r: %r' % (k, v))
         ...
         'a': Relation(separable=set([]), inseparable=set(['c', 'b']))
         'c': Relation(separable=set([]), inseparable=set(['a', 'b']))
@@ -1154,8 +1164,7 @@ class ProtoCube(object):
         # Determine the largest group of source-cubes that want to occupy
         # the same nd-index in the final merged cube.
         group_depth = max([len(group) for group in group_by_nd_index.values()])
-        nd_indexes = group_by_nd_index.keys()
-        nd_indexes.sort()
+        nd_indexes = sorted(group_by_nd_index.keys())
 
         # Check for unique data.
         if unique and group_depth > 1:

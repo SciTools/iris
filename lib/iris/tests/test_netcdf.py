@@ -19,6 +19,8 @@ Test CF-NetCDF file loading and saving.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -27,7 +29,6 @@ import os
 import shutil
 import stat
 import tempfile
-import warnings
 
 import mock
 import netCDF4 as nc
@@ -166,6 +167,15 @@ class TestNetCDFLoad(tests.IrisTest):
         # TEST_COMPAT mod - new cube merge doesn't sort in the same way - test
         # can pass by manual sorting...
         cubes = iris.cube.CubeList(sorted(cubes, key=lambda cube: cube.name()))
+
+        # TEST_COMPAT mod - different versions of the Python module
+        # `netCDF4` give different data arrays: MaskedArray vs ndarray
+        # Since we're not interested in the data we can just normalise
+        # to MaskedArray (to minimise the change).
+        for cube in cubes:
+            # Force the fill value to be the default netCDF fill value
+            # to ensure it matches the previous behaviour.
+            cube.data = ma.masked_equal(cube.data, -2147483647)
 
         self.assertCML(cubes, ('netcdf', 'netcdf_cell_methods.cml'))
 

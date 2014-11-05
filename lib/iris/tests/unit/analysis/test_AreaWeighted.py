@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for :class:`iris.analysis.AreaWeighted`."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -31,7 +33,7 @@ class Test(tests.IrisTest):
         # `iris.analysis._area_weighted.AreaWeightedRegridder` object.
         if mdtol is None:
             area_weighted = AreaWeighted()
-            mdtol = 0
+            mdtol = 1
         else:
             area_weighted = AreaWeighted(mdtol=mdtol)
         self.assertEqual(area_weighted.mdtol, mdtol)

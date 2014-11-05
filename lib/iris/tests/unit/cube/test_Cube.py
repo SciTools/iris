@@ -16,13 +16,18 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.cube.Cube` class."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
+import itertools
+
 import biggus
 import mock
 import numpy as np
+import numpy.ma as ma
 
 import iris.aux_factory
 import iris.coords
@@ -32,7 +37,7 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
-from iris.exceptions import LazyAggregatorError
+from iris.exceptions import CoordinateNotFoundError
 import iris.tests.stock as stock
 
 
@@ -349,6 +354,16 @@ class Test_aggregated_by(tests.IrisTest):
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('label'), label_coord)
 
+    def test_single_string_aggregation(self):
+        aux_coords = [(AuxCoord(['a', 'b', 'a'], long_name='foo'), 0),
+                      (AuxCoord(['a', 'a', 'a'], long_name='bar'), 0)]
+        cube = iris.cube.Cube(np.arange(12).reshape(3, 4),
+                              aux_coords_and_dims=aux_coords)
+        result = cube.aggregated_by('foo', MEAN)
+        self.assertEqual(result.shape, (2, 4))
+        self.assertEqual(result.coord('bar'),
+                         AuxCoord(['a|a', 'a'], long_name='bar'))
+
 
 class Test_rolling_window(tests.IrisTest):
     def setUp(self):
@@ -376,6 +391,136 @@ class Test_rolling_window(tests.IrisTest):
             long_name='month')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('month'), month_coord)
+
+
+class Test_slices_over(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.realistic_4d()
+        # Define expected iterators for 1D and 2D test cases.
+        self.exp_iter_1d = xrange(
+            len(self.cube.coord('model_level_number').points))
+        self.exp_iter_2d = np.ndindex(6, 70, 1, 1)
+        # Define maximum number of interations for particularly long
+        # (and so time-consuming) iterators.
+        self.long_iterator_max = 5
+
+    def test_1d_slice_coord_given(self):
+        res = self.cube.slices_over(self.cube.coord('model_level_number'))
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[:, i]
+            self.assertEqual(res_cube, expected)
+
+    def test_1d_slice_nonexistent_coord_given(self):
+        with self.assertRaises(CoordinateNotFoundError):
+            res = self.cube.slices_over(self.cube.coord('wibble'))
+
+    def test_1d_slice_coord_name_given(self):
+        res = self.cube.slices_over('model_level_number')
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[:, i]
+            self.assertEqual(res_cube, expected)
+
+    def test_1d_slice_nonexistent_coord_name_given(self):
+        with self.assertRaises(CoordinateNotFoundError):
+            res = self.cube.slices_over('wibble')
+
+    def test_1d_slice_dimension_given(self):
+        res = self.cube.slices_over(1)
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[:, i]
+            self.assertEqual(res_cube, expected)
+
+    def test_1d_slice_nonexistent_dimension_given(self):
+        with self.assertRaisesRegexp(ValueError, 'iterator over a dimension'):
+            res = self.cube.slices_over(self.cube.ndim + 1)
+
+    def test_2d_slice_coord_given(self):
+        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
+        res = self.cube.slices_over([self.cube.coord('time'),
+                                     self.cube.coord('model_level_number')])
+        for ct in range(self.long_iterator_max):
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
+            self.assertEqual(next(res), expected)
+
+    def test_2d_slice_nonexistent_coord_given(self):
+        with self.assertRaises(CoordinateNotFoundError):
+            res = self.cube.slices_over([self.cube.coord('time'),
+                                         self.cube.coord('wibble')])
+
+    def test_2d_slice_coord_name_given(self):
+        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
+        res = self.cube.slices_over(['time', 'model_level_number'])
+        for ct in range(self.long_iterator_max):
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
+            self.assertEqual(next(res), expected)
+
+    def test_2d_slice_nonexistent_coord_name_given(self):
+        with self.assertRaises(CoordinateNotFoundError):
+            res = self.cube.slices_over(['time', 'wibble'])
+
+    def test_2d_slice_dimension_given(self):
+        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
+        res = self.cube.slices_over([0, 1])
+        for ct in range(self.long_iterator_max):
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
+            self.assertEqual(next(res), expected)
+
+    def test_2d_slice_reversed_dimension_given(self):
+        # Confirm that reversing the order of the dimensions returns the same
+        # results as the above test.
+        res = self.cube.slices_over([1, 0])
+        for ct in range(self.long_iterator_max):
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
+            self.assertEqual(next(res), expected)
+
+    def test_2d_slice_nonexistent_dimension_given(self):
+        with self.assertRaisesRegexp(ValueError, 'iterator over a dimension'):
+            res = self.cube.slices_over([0, self.cube.ndim + 1])
+
+    def test_multidim_slice_coord_given(self):
+        # Slicing over surface altitude returns 100x100 2D cubes, so only check
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
+        res = self.cube.slices_over('surface_altitude')
+        # Define special ndindex iterator for the different dims sliced over.
+        nditer = np.ndindex(1, 1, 100, 100)
+        for ct in range(self.long_iterator_max):
+            indices = list(next(nditer))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[0] = indices[1] = slice(None)
+            expected = self.cube[tuple(indices)]
+            self.assertEqual(next(res), expected)
+
+    def test_duplicate_coordinate_given(self):
+        res = self.cube.slices_over([1, 1])
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[:, i]
+            self.assertEqual(res_cube, expected)
+
+    def test_non_orthogonal_coordinates_given(self):
+        res = self.cube.slices_over(['model_level_number', 'sigma'])
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[:, i]
+            self.assertEqual(res_cube, expected)
+
+    def test_nodimension(self):
+        # Slicing over no dimension should return the whole cube.
+        res = self.cube.slices_over([])
+        self.assertEqual(next(res), self.cube)
 
 
 def create_cube(lon_min, lon_max, bounds=False):
@@ -730,6 +875,26 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 303)
         self.assertEqual(result.data[0, 0, -1], 28)
 
+    def test_tolerance_bug(self):
+        # Floating point changes introduced by wrapping mean
+        # the resulting coordinate values are not equal to their
+        # equivalents. This led to a bug that this test checks.
+        cube = create_cube(0, 400)
+        cube.coord('longitude').points = np.linspace(-179.55, 179.55, 400)
+        result = cube.intersection(longitude=(125, 145))
+        self.assertArrayAlmostEqual(result.coord('longitude').points,
+                                    cube.coord('longitude').points[339:361])
+
+    def test_tolerance_bug_wrapped(self):
+        cube = create_cube(0, 400)
+        cube.coord('longitude').points = np.linspace(-179.55, 179.55, 400)
+        result = cube.intersection(longitude=(-190, -170))
+        # Expected result is the last 11 and first 11 points.
+        expected = np.append(cube.coord('longitude').points[389:] - 360.,
+                             cube.coord('longitude').points[:11])
+        self.assertArrayAlmostEqual(result.coord('longitude').points,
+                                    expected)
+
 
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
@@ -753,6 +918,27 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
                               [189.5, 190.5])
         self.assertEqual(result.data[0, 0, 0], 170)
         self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_misaligned_bounds(self):
+        cube = create_cube(-180, 180, bounds=True)
+        result = cube.intersection(longitude=(0, 360))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [-0.5,  0.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [358.5,  359.5])
+        self.assertEqual(result.data[0, 0, 0], 180)
+        self.assertEqual(result.data[0, 0, -1], 179)
+
+    def test_misaligned_bounds_decreasing(self):
+        cube = create_cube(180, -180, bounds=True)
+        result = cube.intersection(longitude=(0, 360))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [359.5,  358.5])
+        self.assertArrayEqual(result.coord('longitude').points[-1], 0)
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [0.5, -0.5])
+        self.assertEqual(result.data[0, 0, 0], 181)
+        self.assertEqual(result.data[0, 0, -1], 180)
 
     def test_aligned_inclusive(self):
         cube = create_cube(0, 360, bounds=True)
@@ -811,6 +997,26 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
                               [-10.5, -9.5])
         self.assertArrayEqual(result.coord('longitude').bounds[-1],
                               [9.5, 10.5])
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_decrementing(self):
+        cube = create_cube(360, 0, bounds=True)
+        result = cube.intersection(longitude=(40, 60))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [60.5, 59.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [40.5, 39.5])
+        self.assertEqual(result.data[0, 0, 0], 300)
+        self.assertEqual(result.data[0, 0, -1], 320)
+
+    def test_decrementing_wrapped(self):
+        cube = create_cube(360, 0, bounds=True)
+        result = cube.intersection(longitude=(-10, 10))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [10.5, 9.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [-9.5, -10.5])
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
 
@@ -894,6 +1100,48 @@ class Test_regrid(tests.IrisTest):
         scheme = FakeScheme()
         result = cube.regrid(mock.sentinel.TARGET, scheme)
         self.assertEqual(result, (scheme, cube, mock.sentinel.TARGET, cube))
+
+
+class Test_copy(tests.IrisTest):
+    def _check_copy(self, cube, cube_copy):
+        self.assertIsNot(cube_copy, cube)
+        self.assertEqual(cube_copy, cube)
+        self.assertIsNot(cube_copy.data, cube.data)
+        if isinstance(cube.data, np.ma.MaskedArray):
+            self.assertMaskedArrayEqual(cube_copy.data, cube.data)
+            if cube.data.mask is not ma.nomask:
+                # "No mask" is a constant : all other cases must be distinct.
+                self.assertIsNot(cube_copy.data.mask, cube.data.mask)
+        else:
+            self.assertArrayEqual(cube_copy.data, cube.data)
+
+    def test(self):
+        cube = stock.simple_3d()
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_emptymask(self):
+        cube = Cube(np.ma.array([0, 1]))
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_arraymask(self):
+        cube = Cube(np.ma.array([0, 1], mask=[True, False]))
+        self._check_copy(cube, cube.copy())
+
+    def test__scalar(self):
+        cube = Cube(0)
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_scalar_emptymask(self):
+        cube = Cube(np.ma.array(0))
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_scalar_arraymask(self):
+        cube = Cube(np.ma.array(0, mask=False))
+        self._check_copy(cube, cube.copy())
+
+    def test__lazy(self):
+        cube = Cube(biggus.NumpyArrayAdapter(np.array([1, 0])))
+        self._check_copy(cube, cube.copy())
 
 
 if __name__ == '__main__':

@@ -1,4 +1,6 @@
-import matplotlib.cm as mpl_cm
+
+from __future__ import (absolute_import, division, print_function)
+
 import matplotlib.pyplot as plt
 
 import iris
@@ -9,8 +11,8 @@ import iris.plot as iplt
 fname = iris.sample_data_path('air_temp.pp')
 temperature_cube = iris.load_cube(fname)
 
-# Load a Cynthia Brewer palette.
-brewer_cmap = mpl_cm.get_cmap('brewer_Purples_09')
+# Get the Purples "Brewer" palette.
+brewer_cmap = plt.get_cmap('brewer_Purples_09')
 
 # Draw the contours, with n-levels set for the map colours (9).
 # NOTE: needed as the map is non-interpolated, but matplotlib does not provide

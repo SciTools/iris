@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris._merge._CubeSignature` class."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -67,6 +69,24 @@ class Test_match__fill_value(tests.IrisTest):
     def test_nan_fill_value_unequal(self):
         sig1 = CubeSig(self.defn, self.data_shape, self.data_type, np.nan)
         sig2 = CubeSig(self.defn, self.data_shape, self.data_type, 10)
+        with self.assertRaises(iris.exceptions.MergeError):
+            sig1.match(sig2, True)
+        self.assertFalse(sig1.match(sig2, False))
+        with self.assertRaises(iris.exceptions.MergeError):
+            sig2.match(sig1, True)
+        self.assertFalse(sig2.match(sig1, False))
+
+    def test_str_fill_value_equal(self):
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
+        self.assertTrue(sig1.match(sig2, True))
+        self.assertTrue(sig1.match(sig2, False))
+        self.assertTrue(sig2.match(sig1, True))
+        self.assertTrue(sig2.match(sig1, False))
+
+    def test_str_fill_value_unequal(self):
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, '_')
         with self.assertRaises(iris.exceptions.MergeError):
             sig1.match(sig2, True)
         self.assertFalse(sig1.match(sig2, False))

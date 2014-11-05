@@ -18,7 +18,8 @@
 Test pickling of Iris objects.
 
 """
-from __future__ import with_statement
+
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -26,7 +27,6 @@ import iris.tests as tests
 import cPickle
 import StringIO
 
-import biggus
 import numpy as np
 
 import iris

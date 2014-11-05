@@ -28,10 +28,10 @@ Currently supports only these ones:
 
 '''
 
+from __future__ import (absolute_import, division, print_function)
+
 import collections
 import warnings
-
-import numpy as np
 
 from iris.fileformats.grib import _grib_cf_map as grcf
 import iris.std_names

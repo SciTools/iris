@@ -18,6 +18,9 @@
 Tests the high-level plotting interface.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 import iris.tests.test_plot as test_plot
@@ -29,7 +32,6 @@ if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
     import iris.plot as iplt
     import iris.quickplot as qplt
-    import iris.tests.test_mapping as test_mapping
 
 
 # Caches _load_theta so subsequent calls are faster

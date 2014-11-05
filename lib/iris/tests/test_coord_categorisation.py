@@ -18,6 +18,8 @@
 Test the coordinate categorisation functions.
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -87,14 +89,14 @@ class TestCategorisations(tests.IrisTest):
             with warnings.catch_warnings(record=True):
                 func(cube, 'time', **kwargs)
             result_coords = cube.coords(result_name)
-            self.assertEqual(len(result_coords), 1, fmt.format(func.func_name))
+            self.assertEqual(len(result_coords), 1, fmt.format(func.__name__))
             # Specify source coordinate by coordinate reference
             cube = self.cube.copy()
             time = cube.coord('time')
             with warnings.catch_warnings(record=True):
                 func(cube, time, **kwargs)
             result_coords = cube.coords(result_name)
-            self.assertEqual(len(result_coords), 1, fmt.format(func.func_name))
+            self.assertEqual(len(result_coords), 1, fmt.format(func.__name__))
 
     def test_basic(self):
         cube = self.cube

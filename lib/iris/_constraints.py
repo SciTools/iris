@@ -18,9 +18,11 @@
 Provides objects for building up expressions useful for pattern matching.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import collections
 import operator
-import warnings
 
 import numpy as np
 
@@ -293,7 +295,7 @@ class _ColumnIndexManager(object):
         import numpy as np
         cim = _ColumnIndexManager(4)
         cim[1] = np.array([3, 4, 5]) > 3
-        print cim.as_slice()
+        print(cim.as_slice())
 
     """
     def __init__(self, ndims):

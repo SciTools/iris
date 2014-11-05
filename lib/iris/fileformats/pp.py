@@ -19,6 +19,8 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import abc
 import collections
 from copy import deepcopy
@@ -204,12 +206,12 @@ EXTRA_DATA = {
 
 #: Maps lbuser[0] to numpy data type. "default" will be interpreted if
 #: no match is found, providing a warning in such a case.
-LBUSER_DTYPE_LOOKUP = {1 :np.dtype('>f4'), 
-                       2 :np.dtype('>i4'), 
-                       3 :np.dtype('>i4'),
-                       -1:np.dtype('>f4'),
-                       -2:np.dtype('>i4'),
-                       -3:np.dtype('>i4'),
+LBUSER_DTYPE_LOOKUP = {1: np.dtype('>f4'),
+                       2: np.dtype('>i4'),
+                       3: np.dtype('>i4'),
+                       -1: np.dtype('>f4'),
+                       -2: np.dtype('>i4'),
+                       -3: np.dtype('>i4'),
                        'default': np.dtype('>f4'),
                        }
 
@@ -234,7 +236,7 @@ LBPROC_PAIRS = ((1, "Difference from another experiment"),
                 (131072, "Mean over an ensemble of parallel runs"))
 
 # lbproc_map is dict mapping lbproc->English and English->lbproc essentially a one to one mapping
-lbproc_map = {x : y for x,y in itertools.chain(LBPROC_PAIRS, ((y,x) for x,y in LBPROC_PAIRS))}
+lbproc_map = {x : y for x, y in itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))}
 
 
 class STASH(collections.namedtuple('STASH', 'model section item')):
@@ -256,7 +258,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         3
 
     String conversion results in the MSI format:
-        >>> print iris.fileformats.pp.STASH(1, 16, 203)
+        >>> print(iris.fileformats.pp.STASH(1, 16, 203))
         m01s16i203
 
     """
@@ -285,12 +287,13 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
     def from_msi(msi):
         """Convert a STASH code MSI string to a STASH instance."""
         if not isinstance(msi, basestring):
-            raise TypeError('Expected STASH code MSI string, got %r' % msi)
+            raise TypeError('Expected STASH code MSI string, got %r' % (msi,))
 
         msi_match = re.match('^\s*m(.*)s(.*)i(.*)\s*$', msi, re.IGNORECASE)
 
         if msi_match is None:
-            raise ValueError('Expected STASH code MSI string "mXXsXXiXXX", got %r' % msi)
+            raise ValueError('Expected STASH code MSI string "mXXsXXiXXX", '
+                             'got %r' % (msi,))
 
         return STASH(*msi_match.groups())
 
@@ -346,11 +349,11 @@ class SplittableInt(object):
     A class to hold integers which can easily get each decimal digit individually.
 
     >>> three_six_two = SplittableInt(362)
-    >>> print three_six_two
+    >>> print(three_six_two)
     362
-    >>> print three_six_two[0]
+    >>> print(three_six_two[0])
     2
-    >>> print three_six_two[2]
+    >>> print(three_six_two[2])
     3
 
     .. note:: No support for negative numbers
@@ -366,12 +369,12 @@ class SplittableInt(object):
             A special mapping to provide name based access to specific integer positions:
 
                 >>> a = SplittableInt(1234, {'hundreds': 2})
-                >>> print a.hundreds
+                >>> print(a.hundreds)
                 2
                 >>> a.hundreds = 9
-                >>> print a.hundreds
+                >>> print(a.hundreds)
                 9
-                >>> print a
+                >>> print(a)
                 1934
 
         """
@@ -839,12 +842,12 @@ class PPField(object):
     A PPField instance can easily access the PP header "words" as attributes with some added useful capabilities::
 
         for field in iris.fileformats.pp.load(filename):
-            print field.lbyr
-            print field.lbuser
-            print field.lbuser[0]
-            print field.lbtim
-            print field.lbtim.ia
-            print field.t1
+            print(field.lbyr)
+            print(field.lbuser)
+            print(field.lbuser[0])
+            print(field.lbtim)
+            print(field.lbtim.ia)
+            print(field.t1)
 
     """
 
@@ -958,7 +961,7 @@ class PPField(object):
         if (not hasattr(self, '_stash') or
                 self.lbuser[6] != self._stash.lbuser6() or
                 self.lbuser[3] != self._stash.lbuser3()):
-            self._stash = STASH(self.lbuser[6], self.lbuser[3] / 1000, self.lbuser[3] % 1000)
+            self._stash = STASH(self.lbuser[6], self.lbuser[3] // 1000, self.lbuser[3] % 1000)
         return self._stash
     
     @stash.setter
@@ -1155,7 +1158,7 @@ class PPField(object):
                     extra_elem = extra_elem.ljust(ia, '\00')
 
                     # ia is now the datalength in WORDS of the string
-                    ia /= PP_WORD_DEPTH
+                    ia //= PP_WORD_DEPTH
                 else:
                     # ia is the datalength in WORDS
                     ia = np.product(extra_elem.shape)
@@ -1177,13 +1180,13 @@ class PPField(object):
                                   )
 
         # populate lbext in WORDS
-        lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload // PP_WORD_DEPTH
 
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
         len_of_data_payload += data.size * PP_WORD_DEPTH
 
         # populate lbrec in WORDS
-        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload // PP_WORD_DEPTH
 
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
@@ -1459,7 +1462,7 @@ def load(filename, read_data=False):
     To iterate through all of the fields in a pp file::
 
         for field in iris.fileformats.pp.load(filename):
-            print field
+            print(field)
 
     """
     return _interpret_fields(_field_gen(filename, read_data_bytes=read_data))
@@ -1479,13 +1482,13 @@ def _interpret_fields(fields):
         # Store the first reference to a land mask, and use this as the
         # definitive mask for future fields in this generator.
         if land_mask is None and field.lbuser[6] == 1 and \
-                (field.lbuser[3] / 1000) == 0 and \
+                (field.lbuser[3] // 1000) == 0 and \
                 (field.lbuser[3] % 1000) == 30:
             land_mask = field
 
         # Handle land compressed data payloads,
         # when lbpack.n2 is 2.
-        if (field.raw_lbpack / 10 % 10) == 2:
+        if (field.raw_lbpack // 10 % 10) == 2:
             if land_mask is None:
                 landmask_compressed_fields.append(field)
                 continue
@@ -1631,10 +1634,16 @@ def _ensure_load_rules_loaded():
 
 
 def reset_load_rules():
-    """Resets the PP load process to use only the standard conversion rules."""
+    """
+    Resets the PP load process to use only the standard conversion rules.
 
+    .. deprecated:: 1.7
+
+    """
     # Uses this module-level variable
     global _load_rules
+
+    warnings.warn('reset_load_rules was deprecated in v1.7.')
 
     _load_rules = None
 
@@ -1672,7 +1681,57 @@ def reset_save_rules():
     _save_rules = None
 
 
-def load_cubes(filenames, callback=None):
+# Stash codes not to be filtered (reference altitude and pressure fields).
+_STASH_ALLOW = [STASH(1, 0, 33), STASH(1, 0, 1)]
+
+
+def _convert_constraints(constraints):
+    """
+    Converts known constraints from Iris semantics to PP semantics
+    ignoring all unknown constraints.
+
+    """
+    constraints = iris._constraints.list_of_constraints(constraints)
+    pp_constraints = {}
+    unhandled_constraints = False
+    for con in constraints:
+        if isinstance(con, iris.AttributeConstraint) and \
+                con._attributes.keys() == ['STASH']:
+            # Convert a STASH constraint.
+            stashobj = con._attributes['STASH']
+            if not isinstance(stashobj, STASH):
+                # The attribute can be a STASH object, or a stashcode string.
+                stashobj = STASH.from_msi(stashobj)
+            if not 'stash' in pp_constraints:
+                pp_constraints['stash'] = [stashobj]
+            else:
+                pp_constraints['stash'].append(stashobj)
+        else:
+            ## only keep the pp constraints set if they are all handled as
+            ## pp constraints
+            unhandled_constraints = True
+ 
+    def pp_filter(field):
+        """
+        return True if field is to be kept,
+        False if field does not match filter
+
+        """
+        res = True
+        if pp_constraints.get('stash'):
+            if (field.stash not in _STASH_ALLOW and field.stash not in
+                    pp_constraints['stash']):
+                res = False
+        return res
+
+    if pp_constraints and not unhandled_constraints:
+        result = pp_filter
+    else:
+        result = None
+    return result
+
+
+def load_cubes(filenames, callback=None, constraints=None):
     """
     Loads cubes from a list of pp filenames.
 
@@ -1682,6 +1741,8 @@ def load_cubes(filenames, callback=None):
 
     Kwargs:
 
+    * constraints - a list of Iris constraints
+
     * callback - a function which can be passed on to :func:`iris.io.run_callback`
 
     .. note::
@@ -1690,15 +1751,21 @@ def load_cubes(filenames, callback=None):
         is not preserved when there is a field with orography references)
 
     """
-    return _load_cubes_variable_loader(filenames, callback, load)
+    return _load_cubes_variable_loader(filenames, callback, load,
+                                       constraints=constraints)
 
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
-                                loading_function_kwargs=None):
+                                loading_function_kwargs=None,
+                                constraints=None):
+    pp_filter = None
+    if constraints is not None:
+        pp_filter = _convert_constraints(constraints)
     pp_loader = iris.fileformats.rules.Loader(
         loading_function, loading_function_kwargs or {},
         iris.fileformats.pp_rules.convert, _load_rules)
-    return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader)
+    return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader,
+                                             pp_filter)
 
 
 def save(cube, target, append=False, field_coords=None):

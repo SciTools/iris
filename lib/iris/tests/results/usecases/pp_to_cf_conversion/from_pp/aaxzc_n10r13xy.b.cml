@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>

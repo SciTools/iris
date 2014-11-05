@@ -16,11 +16,12 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :class:`iris.coords.Coord` class."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import datetime
 import collections
 
 import mock
@@ -141,6 +142,26 @@ class Test_is_compatible(tests.IrisTest):
         self.test_coord.attributes['array_test'] = np.array([1.0, 2, 3])
         self.other_coord.attributes['array_test'] = np.array([1.0, 2, 777.7])
         self.assertFalse(self.test_coord.is_compatible(self.other_coord))
+
+
+class Test_DimCoord_copy(tests.IrisTest):
+    def test_writable_points(self):
+        coord1 = DimCoord(range(5),
+                          bounds=[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
+        coord2 = coord1.copy()
+        msg = 'destination is read-only'
+
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord1.points[:] = 0
+
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord2.points[:] = 0
+
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord1.bounds[:] = 0
+
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord2.bounds[:] = 0
 
 
 if __name__ == '__main__':

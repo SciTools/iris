@@ -16,13 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for module-level functions."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import gribapi
-import mock
-import numpy as np
 
 from iris.fileformats.grib.grib_save_rules import _non_missing_forecast_period
 import iris.unit

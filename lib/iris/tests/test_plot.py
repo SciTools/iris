@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -36,7 +37,6 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
     import iris.quickplot as qplt
     import iris.symbols
-    import iris.tests.test_mapping as test_mapping
 
 
 def simple_cube():
@@ -252,7 +252,7 @@ class Test1dScatter(tests.GraphicsTest):
 
     def test_coord_coord(self):
         x = self.cube.coord('longitude')
-        y = self.cube.coord('height')
+        y = self.cube.coord('altitude')
         c = self.cube.data
         self.draw_method(x, y, c=c, edgecolor='none')
         self.check_graphic()
@@ -274,7 +274,7 @@ class Test1dScatter(tests.GraphicsTest):
 
     def test_cube_coord(self):
         x = self.cube
-        y = self.cube.coord('height')
+        y = self.cube.coord('altitude')
         c = self.cube.coord('Travel Time').points
         self.draw_method(x, y, c=c, edgecolor='none')
         self.check_graphic()
@@ -291,7 +291,7 @@ class Test1dScatter(tests.GraphicsTest):
     def test_incompatible_objects(self):
         # cubes/coordinates of different sizes cannot be plotted
         x = self.cube
-        y = self.cube.coord('height')[:-1]
+        y = self.cube.coord('altitude')[:-1]
         with self.assertRaises(ValueError):
             self.draw_method(x, y)
 
@@ -746,7 +746,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
             draw_method(cube, coords=coords)
             try:
                 self.check_graphic()
-            except AssertionError, err:
+            except AssertionError as err:
                 self.fail('Draw method %r failed with coords: %r. '
                           'Assertion message: %s' % (draw_method, coords, err))
 

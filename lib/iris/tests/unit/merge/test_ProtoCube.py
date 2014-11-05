@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris._merge.ProtoCube` class."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -31,7 +33,6 @@ from iris._merge import ProtoCube
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import DimCoord, AuxCoord
 from iris.exceptions import MergeError
-from iris.unit import Unit
 
 
 def example_cube():

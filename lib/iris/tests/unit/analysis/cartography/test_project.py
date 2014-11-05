@@ -16,14 +16,14 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :func:`iris.analysis.cartography.project` function."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 
-import cartopy.crs as ccrs
 import iris
 from iris.coords import DimCoord
 from iris.analysis.cartography import project

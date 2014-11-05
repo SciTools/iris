@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,13 +16,14 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for module-level functions."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import gribapi
 import mock
-import numpy as np
 
 from iris.fileformats.grib.grib_save_rules \
     import type_of_statistical_processing
@@ -46,6 +47,57 @@ class Test(TestGribSimple):
 
         mock_gribapi.assert_has_calls(mock.call.grib_set_long(
             grib, "typeOfStatisticalProcessing", 1))
+
+    def test_missing(self):
+        cube = mock.Mock()
+        cube.cell_methods = [mock.Mock(method='95th percentile',
+                                       coord_names=['time'])]
+
+        coord = mock.Mock()
+        coord.name = mock.Mock(return_value='time')
+
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
+                        mock_gribapi):
+            type_of_statistical_processing(cube, grib, coord)
+
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "typeOfStatisticalProcessing", 255))
+
+    def test_cell_method_coords_len_fail(self):
+        cube = mock.Mock()
+        cube.cell_methods = [mock.Mock(method='sum', coord_names=['time',
+                                                                  'fp'])]
+
+        coord = mock.Mock()
+        coord.name = mock.Mock(return_value='time')
+
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
+                        mock_gribapi):
+            with self.assertRaisesRegexp(ValueError,
+                                         'There are multiple coord names '
+                                         'referenced by the primary cell '
+                                         'method:'):
+                type_of_statistical_processing(cube, grib, coord)
+
+    def test_cell_method_coord_name_fail(self):
+        cube = mock.Mock()
+        cube.cell_methods = [mock.Mock(method='sum', coord_names=['time'])]
+
+        coord = mock.Mock()
+        coord.name = mock.Mock(return_value='forecast_period')
+
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
+                        mock_gribapi):
+            with self.assertRaisesRegexp(ValueError,
+                                         'The coord name referenced by the '
+                                         'primary cell method'):
+                type_of_statistical_processing(cube, grib, coord)
 
 
 if __name__ == "__main__":

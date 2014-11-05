@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Integration tests for loading and saving PP files."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -286,6 +288,72 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(field.brlev, sigma_lower)
         self.assertEqual(field.brsvd, [sigma_upper, delta_upper])
 
+    def test_hybrid_height_round_trip_no_reference(self):
+        # Use pp.load_cubes() to convert fake PPFields into Cubes.
+        # NB. Use MagicMock so that SplittableInt header items, such as
+        # LBCODE, support len().
+        def field_with_data(scale=1):
+            x, y = 40, 30
+            field = mock.MagicMock(_data=np.arange(1200).reshape(y, x) * scale,
+                                   lbcode=[1], lbnpt=x, lbrow=y,
+                                   bzx=350, bdx=1.5, bzy=40, bdy=1.5,
+                                   lbuser=[0] * 7, lbrsvd=[0] * 4)
+            field._x_coord_name = lambda: 'longitude'
+            field._y_coord_name = lambda: 'latitude'
+            field.coord_system = lambda: None
+            return field
+
+        # Make a fake data field which needs the reference surface.
+        model_level = 5678
+        sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
+        delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
+        data_field = field_with_data()
+        data_field.configure_mock(lbvc=65, lblev=model_level,
+                                  bhlev=sigma, bhrlev=sigma_lower,
+                                  blev=delta, brlev=delta_lower,
+                                  brsvd=[delta_upper, sigma_upper])
+
+        # Convert field to a cube.
+        load = mock.Mock(return_value=iter([data_field]))
+        with mock.patch('iris.fileformats.pp.load', new=load) as load, \
+                mock.patch('warnings.warn') as warn:
+            data_cube, = iris.fileformats.pp.load_cubes('DUMMY')
+
+        msg = "Unable to create instance of HybridHeightFactory. " \
+              "The file(s) ['DUMMY'] don't contain field(s) for 'orography'."
+        warn.assert_called_once_with(msg)
+
+        # Check the data cube is set up to use hybrid height.
+        self._test_coord(data_cube, model_level,
+                         standard_name='model_level_number')
+        self._test_coord(data_cube, delta, [delta_lower, delta_upper],
+                         long_name='level_height')
+        self._test_coord(data_cube, sigma, [sigma_lower, sigma_upper],
+                         long_name='sigma')
+        # Check that no aux factory is created (due to missing
+        # reference surface).
+        aux_factories = data_cube.aux_factories
+        self.assertEqual(len(aux_factories), 0)
+
+        # Now use the save rules to convert the Cube back into a PPField.
+        data_field = iris.fileformats.pp.PPField3()
+        data_field.lbfc = 0
+        data_field.lbvc = 0
+        data_field.brsvd = [None, None]
+        data_field.lbuser = [None] * 7
+        iris.fileformats.pp._ensure_save_rules_loaded()
+        iris.fileformats.pp._save_rules.verify(data_cube, data_field)
+
+        # Check the data field has the vertical coordinate as originally
+        # specified.
+        self.assertEqual(data_field.lbvc, 65)
+        self.assertEqual(data_field.lblev, model_level)
+        self.assertEqual(data_field.bhlev, sigma)
+        self.assertEqual(data_field.bhrlev, sigma_lower)
+        self.assertEqual(data_field.blev, delta)
+        self.assertEqual(data_field.brlev, delta_lower)
+        self.assertEqual(data_field.brsvd, [delta_upper, sigma_upper])
+
 
 class TestSaveLBFT(tests.IrisTest):
     def create_cube(self, fp_min, fp_mid, fp_max, ref_offset, season=None):
@@ -389,7 +457,7 @@ class TestCoordinateForms(tests.IrisTest):
         with self.temp_filename('.pp') as pp_filepath:
             iris.save(test_cube, pp_filepath)
             pp_loader = iris.fileformats.pp.load(pp_filepath)
-            pp_field = pp_loader.next()
+            pp_field = next(pp_loader)
         return pp_field
 
     def test_save_awkward_case_is_regular(self):

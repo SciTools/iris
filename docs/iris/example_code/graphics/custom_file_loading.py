@@ -9,8 +9,9 @@ To create a format specification we need to define the following:
 
 * format_name - Some text that describes the format specification we are creating
 * file_element - FileElement object describing the element which identifies
-                 this FormatSpecification.
-    Possible values are:
+  this FormatSpecification.
+
+  Possible values are:
     
     ``iris.io.format_picker.MagicNumber(n, o)`` - The n bytes from the file \
     at offset o.
@@ -70,7 +71,7 @@ def load_NAME_III(filename):
     headers = {}
 
     # skip the NAME header of the file which looks something like 'NAME III (version X.X.X)'
-    file_handle.next()
+    next(file_handle)
 
     # read the next 16 lines of header information, putting the form "header name:    header value" into a dictionary
     for _ in range(16):
@@ -92,7 +93,7 @@ def load_NAME_III(filename):
         headers[header_name] = header_value
 
     # skip the next blank line in the file.
-    file_handle.next()
+    next(file_handle)
 
     # Read the next 7 lines of column definitions
     column_headings = {}
@@ -110,7 +111,7 @@ def load_NAME_III(filename):
     column_headings['time'] = new_time_column_header
 
     # skip the blank line after the column headers
-    file_handle.next()
+    next(file_handle)
 
     # make a list of data arrays to hold the data for each column
     data_shape = (headers['Y grid size'], headers['X grid size'])

@@ -23,6 +23,9 @@ automatically add a plot title, axis titles, and a colour bar when appropriate.
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import matplotlib.pyplot as plt
 
 import iris.config

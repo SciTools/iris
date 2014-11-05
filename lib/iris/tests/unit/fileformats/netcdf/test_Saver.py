@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.netcdf.Saver` class."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -162,6 +164,17 @@ class Test_write(tests.IrisTest):
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
+
+    def test_reserved_attributes(self):
+        cube = self._simple_cube('>f4')
+        cube.attributes['dimensions'] = 'something something_else'
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            ds = nc.Dataset(nc_path)
+            res = ds.getncattr('dimensions')
+            ds.close()
+            self.assertEqual(res, 'something something_else')
 
 
 class TestCoordSystems(tests.IrisTest):

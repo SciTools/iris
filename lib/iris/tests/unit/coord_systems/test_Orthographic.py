@@ -16,11 +16,13 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :class:`iris.coord_systems.Orthographic` class."""
 
+from __future__ import (absolute_import, division, print_function)
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import cartopy.crs
+import cartopy.crs as ccrs
 from iris.coord_systems import GeogCS, Orthographic
 
 
@@ -37,10 +39,10 @@ class Test_as_cartopy_crs(tests.IrisTest):
 
     def test_crs_creation(self):
         res = self.ortho_cs.as_cartopy_crs()
-        globe = cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
-                                  semiminor_axis=self.semi_minor_axis,
-                                  ellipse=None)
-        expected = cartopy.crs.Orthographic(
+        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
+                           semiminor_axis=self.semi_minor_axis,
+                           ellipse=None)
+        expected = ccrs.Orthographic(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
             globe=globe)
@@ -60,10 +62,10 @@ class Test_as_cartopy_projection(tests.IrisTest):
 
     def test_projection_creation(self):
         res = self.ortho_cs.as_cartopy_projection()
-        globe = cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
-                                  semiminor_axis=self.semi_minor_axis,
-                                  ellipse=None)
-        expected = cartopy.crs.Orthographic(
+        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
+                           semiminor_axis=self.semi_minor_axis,
+                           ellipse=None)
+        expected = ccrs.Orthographic(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
             globe=globe)
