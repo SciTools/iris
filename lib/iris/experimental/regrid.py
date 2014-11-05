@@ -639,7 +639,7 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
     return result
 
 
-def _within_bounds(bounds, lower, upper):
+def _within_bounds(bounds, tgt_bounds, orderswap):
     """
     Return whether both lower and upper lie within the extremes
     of bounds.
@@ -648,8 +648,14 @@ def _within_bounds(bounds, lower, upper):
     min_bound = np.min(bounds)
     max_bound = np.max(bounds)
 
-    return (min_bound <= lower <= max_bound) and \
-        (min_bound <= upper <= max_bound)
+    # Swap upper-lower is necessary.
+    if orderswap is True:
+        upper, lower = tgt_bounds.T
+    else:
+        lower, upper = tgt_bounds.T
+
+    return (((lower <= max_bound) * (lower >= min_bound)) *
+            ((upper <= max_bound) * (upper >= min_bound)))
 
 
 def _cropped_bounds(bounds, lower, upper):
@@ -978,6 +984,14 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
 
     # Simple for loop approach.
     indices = [slice(None)] * new_data.ndim
+
+    # Determine which grid bounds are within src extent.
+    y_within_bounds = _within_bounds(src_y_bounds, grid_y_bounds,
+                                     grid_y_decreasing)
+    x_within_bounds = _within_bounds(src_x_bounds, grid_x_bounds,
+                                     grid_x_decreasing)
+
+    # Simple for loop approach.
     for j, (y_0, y_1) in enumerate(grid_y_bounds):
         # Reverse lower and upper if dest grid is decreasing.
         if grid_y_decreasing:
@@ -996,8 +1010,8 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
             # (i.e. circular) this new cell would include a region outside of
             # the extent of the src grid and should therefore be masked.
             outside_extent = x_0 > x_1 and not circular
-            if (outside_extent or not _within_bounds(src_y_bounds, y_0, y_1) or
-                    not _within_bounds(src_x_bounds, x_0, x_1)):
+            if (outside_extent or not y_within_bounds[j] or not
+                    x_within_bounds[i]):
                 # Mask out element(s) in new_data
                 if x_dim is not None:
                     indices[x_dim] = i
