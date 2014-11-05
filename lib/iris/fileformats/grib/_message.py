@@ -78,8 +78,7 @@ class _GribMessage(object):
     def sections(self):
         return self._raw_message.sections
 
-    @property
-    def data(self):
+    def lazy_data(self):
         """
         The data array from the GRIB message as a biggus Array.
 

@@ -81,7 +81,7 @@ class Test__field_gen(tests.IrisTest):
             np.fromfile.assert_has_calls(calls)
         expected_deferred_bytes = ('mocked', open_fh.tell(),
                                    4, np.dtype('>f4'))
-        self.assertEqual(pp_field._data, expected_deferred_bytes)
+        self.assertEqual(pp_field._my_data, expected_deferred_bytes)
 
     def test_read_data_call(self):
         # Checks that data is read if read_data is True.
@@ -94,7 +94,7 @@ class Test__field_gen(tests.IrisTest):
             next(pp._field_gen('mocked', read_data_bytes=True))
         expected_loaded_bytes = pp.LoadedArrayBytes(open_fh.read(),
                                                     np.dtype('>f4'))
-        self.assertEqual(pp_field._data, expected_loaded_bytes)
+        self.assertEqual(pp_field._my_data, expected_loaded_bytes)
 
 if __name__ == "__main__":
     tests.main()

@@ -806,7 +806,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, data_shape, data_type, mdi,
 
 
 # The special headers of the PPField classes which get some improved functionality
-_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'stash',
+_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'my_data', 'stash',
                     't1', 't2')
 
 
@@ -942,13 +942,13 @@ class PPField(object):
         # components, to avoid the standard MaskedArray output
         # which causes irrelevant discrepancies between NumPy
         # v1.6 and v1.7.
-        if ma.isMaskedArray(self._data):
+        if ma.isMaskedArray(self._my_data):
             # Force the fill value to zero to have the minimum
             # impact on the output style.
-            self_attrs.append(('data.data', self._data.filled(0)))
-            self_attrs.append(('data.mask', self._data.mask))
+            self_attrs.append(('data.data', self._my_data.filled(0)))
+            self_attrs.append(('data.mask', self._my_data.mask))
         else:
-            self_attrs.append(('data', self._data))
+            self_attrs.append(('data', self._my_data))
 
         # sort the attributes by position in the pp header followed, then by alphabetical order.
         attributes = sorted(self_attrs, key=lambda pair: (attribute_priority_lookup.get(pair[0], 999), pair[0]) )
@@ -1020,20 +1020,26 @@ class PPField(object):
 
     lbproc = property(lambda self: self._lbproc, _lbproc_setter)
 
+    def lazy_data(self):
+        array = self._my_data
+        if not isinstance(array, biggus.Array):
+            array = biggus.NumpyArrayAdapter(array)
+        return array
+
     @property
     def data(self):
         """The :class:`numpy.ndarray` representing the multidimensional data of the pp file"""
         # Cache the real data on first use
-        if isinstance(self._data, biggus.Array):
-            data = self._data.masked_array()
+        if isinstance(self._my_data, biggus.Array):
+            data = self._my_data.masked_array()
             if ma.count_masked(data) == 0:
                 data = data.data
-            self._data = data
-        return self._data
+            self._my_data = data
+        return self._my_data
 
     @data.setter
     def data(self, value):
-        self._data = value
+        self._my_data = value
 
     @property
     def calendar(self):
@@ -1517,26 +1523,26 @@ def _interpret_fields(fields):
 
 def _create_field_data(field, data_shape, land_mask):
     """
-    Modifies a field's ``_data`` attribute either by:
+    Modifies a field's ``_my_data`` attribute either by:
      * converting DeferredArrayBytes into a biggus array,
      * converting LoadedArrayBytes into an actual numpy array.
 
     """
-    if isinstance(field._data, LoadedArrayBytes):
-        loaded_bytes = field._data
-        field._data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
-                                                  field.lbpack, data_shape,
-                                                  loaded_bytes.dtype,
-                                                  field.bmdi, land_mask)
+    if isinstance(field._my_data, LoadedArrayBytes):
+        loaded_bytes = field._my_data
+        field._my_data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
+                                                     field.lbpack, data_shape,
+                                                     loaded_bytes.dtype,
+                                                     field.bmdi, land_mask)
     else:
         # Wrap the reference to the data payload within a data proxy
         # in order to support deferred data loading.
-        fname, position, n_bytes, dtype = field._data
+        fname, position, n_bytes, dtype = field._my_data
         proxy = PPDataProxy(data_shape, dtype,
                             fname, position,
                             n_bytes, field.raw_lbpack,
                             field.bmdi, land_mask)
-        field._data = biggus.NumpyArrayAdapter(proxy)
+        field._my_data = biggus.NumpyArrayAdapter(proxy)
 
 
 def _field_gen(filename, read_data_bytes):
@@ -1545,7 +1551,7 @@ def _field_gen(filename, read_data_bytes):
     the given filename.
 
     A field returned by the generator is only "half-formed" because its
-    `_data` attribute represents a simple one-dimensional stream of
+    `_my_data` attribute represents a simple one-dimensional stream of
     bytes. (Encoded as an instance of either LoadedArrayBytes or
     DeferredArrayBytes, depending on the value of `read_data_bytes`.)
     This is because fields encoded with a land/sea mask do not contain
@@ -1598,10 +1604,10 @@ def _field_gen(filename, read_data_bytes):
         if read_data_bytes:
             # Read the actual bytes. This can then be converted to a numpy array
             # at a higher level.
-            pp_field._data = LoadedArrayBytes(pp_file.read(data_len), dtype)
+            pp_field._my_data = LoadedArrayBytes(pp_file.read(data_len), dtype)
         else:
             # Provide enough context to read the data bytes later on.
-            pp_field._data = (filename, pp_file.tell(), data_len, dtype)
+            pp_field._my_data = (filename, pp_file.tell(), data_len, dtype)
             # Seek over the actual data payload.
             pp_file_seek(data_len, os.SEEK_CUR)
 

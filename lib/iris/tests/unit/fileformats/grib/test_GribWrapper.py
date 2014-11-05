@@ -88,8 +88,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'regular_ll'
         for i, _ in enumerate(tell_tale):
             gw = GribWrapper(grib_message, grib_fh, auto_regularise)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertIsInstance(gw.lazy_data(), NumpyArrayAdapter)
+            proxy = gw.lazy_data().concrete
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (10, 20))
             self.assertEqual(proxy.dtype, np.float)
@@ -106,8 +106,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'regular_ll'
         for offset in expected:
             gw = GribWrapper(grib_message, grib_fh, auto_regularise)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertIsInstance(gw.lazy_data(), NumpyArrayAdapter)
+            proxy = gw.lazy_data().concrete
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (10, 20))
             self.assertEqual(proxy.dtype, np.float)
@@ -123,8 +123,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'reduced_gg'
         for i, _ in enumerate(tell_tale):
             gw = GribWrapper(grib_message, grib_fh, auto_regularise)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertIsInstance(gw.lazy_data(), NumpyArrayAdapter)
+            proxy = gw.lazy_data().concrete
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (200,))
             self.assertEqual(proxy.dtype, np.float)
@@ -141,8 +141,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'reduced_gg'
         for offset in expected:
             gw = GribWrapper(grib_message, grib_fh, auto_regularise)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertIsInstance(gw.lazy_data(), NumpyArrayAdapter)
+            proxy = gw.lazy_data().concrete
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (200,))
             self.assertEqual(proxy.dtype, np.float)

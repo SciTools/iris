@@ -231,9 +231,25 @@ class GribWrapper(object):
                                   grib_fh.name,
                                   offset - message_length,
                                   auto_regularise)
-            self._data = biggus.NumpyArrayAdapter(proxy)
+            self._my_data = biggus.NumpyArrayAdapter(proxy)
         else:
-            self.data = _message_values(grib_message, shape)
+            self._my_data = _message_values(grib_message, shape)
+
+    def lazy_data(self):
+        array = self._my_data
+        if not isinstance(array, biggus.Array):
+            array = biggus.NumpyArrayAdapter(array)
+        return array
+
+    @property
+    def data(self):
+        data = self._my_data
+        if not isinstance(data, np.ndarray):
+            data = data.masked_array()
+            if ma.count_masked(data) == 0:
+                data = data.data
+            self._my_data = data
+        return data
 
     @staticmethod
     def _regularise_shape(grib_message):

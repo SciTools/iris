@@ -51,18 +51,18 @@ class Test_sections(tests.IrisTest):
         self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
 
-class Test_data__unsupported(tests.IrisTest):
+class Test_lazy_data__unsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
         message = _make_test_message({3: {'sourceOfGridDefinition': 1}})
         with self.assertRaisesRegexp(TranslationError, 'source'):
-            message.data
+            message.lazy_data()
 
     def test_unsupported_quasi_regular__number_of_octets(self):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
                  'numberOfOctectsForNumberOfPoints': 1}})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
-            message.data
+            message.lazy_data()
 
     def test_unsupported_quasi_regular__interpretation(self):
         message = _make_test_message(
@@ -70,7 +70,7 @@ class Test_data__unsupported(tests.IrisTest):
                  'numberOfOctectsForNumberOfPoints': 0,
                  'interpretationOfNumberOfPoints': 1}})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
-            message.data
+            message.lazy_data()
 
     def test_unsupported_template(self):
         message = _make_test_message(
@@ -79,10 +79,10 @@ class Test_data__unsupported(tests.IrisTest):
                  'interpretationOfNumberOfPoints': 0,
                  'gridDefinitionTemplateNumber': 2}})
         with self.assertRaisesRegexp(TranslationError, 'template'):
-            message.data
+            message.lazy_data()
 
 
-class Test_data__grid_template_0(tests.IrisTest):
+class Test_lazy_data__grid_template_0(tests.IrisTest):
     def test_unsupported_scanning_mode(self):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
@@ -91,7 +91,7 @@ class Test_data__grid_template_0(tests.IrisTest):
                  'gridDefinitionTemplateNumber': 0,
                  'scanningMode': 1}})
         with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
-            message.data
+            message.lazy_data()
 
     def _test(self, scanning_mode):
         def make_raw_message():
@@ -106,7 +106,7 @@ class Test_data__grid_template_0(tests.IrisTest):
             raw_message = mock.Mock(sections=sections)
             return raw_message
         message = _GribMessage(make_raw_message(), make_raw_message, False)
-        data = message.data
+        data = message.lazy_data()
         self.assertIsInstance(data, biggus.Array)
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
