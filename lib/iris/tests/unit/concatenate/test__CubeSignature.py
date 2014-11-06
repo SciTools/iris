@@ -42,11 +42,11 @@ class Test__coordinate_dim_metadata_equality(tests.IrisTest):
                            units=t_units)
         cube.add_dim_coord(t_coord, 0)
 
-        # Increasing time-series cube.
+        # Increasing 1D time-series cube.
         self.series_inc_cube = cube
         self.series_inc = CubeSignature(self.series_inc_cube)
 
-        # Decreasing time-series cube.
+        # Decreasing 1D time-series cube.
         self.series_dec_cube = self.series_inc_cube.copy()
         self.series_dec_cube.remove_coord('time')
         t_tmp = DimCoord(points=t_coord.points[::-1],
@@ -55,7 +55,7 @@ class Test__coordinate_dim_metadata_equality(tests.IrisTest):
         self.series_dec_cube.add_dim_coord(t_tmp, 0)
         self.series_dec = CubeSignature(self.series_dec_cube)
 
-        # Scalar time-series cube.
+        # Scalar 0D time-series cube with scalar time coordinate.
         cube = Cube(0, standard_name='air_temperature', units='K')
         cube.add_aux_coord(DimCoord(points=nt,
                                     standard_name='time',
@@ -64,34 +64,34 @@ class Test__coordinate_dim_metadata_equality(tests.IrisTest):
 
     def test_scalar_non_common_axis(self):
         scalar = CubeSignature(self.scalar_cube)
-        self.assertFalse(self.series_inc.dim_metadata == scalar.dim_metadata)
-        self.assertFalse(self.series_dec.dim_metadata == scalar.dim_metadata)
+        self.assertNotEqual(self.series_inc.dim_metadata, scalar.dim_metadata)
+        self.assertNotEqual(self.series_dec.dim_metadata, scalar.dim_metadata)
 
-    def test_scalar_common_axis(self):
+    def test_1d_single_value_common_axis(self):
         # Manually promote scalar time cube to be a 1d cube.
-        scalar = CubeSignature(new_axis(self.scalar_cube, 'time'))
-        self.assertTrue(self.series_inc.dim_metadata == scalar.dim_metadata)
-        self.assertTrue(self.series_dec.dim_metadata == scalar.dim_metadata)
+        single = CubeSignature(new_axis(self.scalar_cube, 'time'))
+        self.assertEqual(self.series_inc.dim_metadata, single.dim_metadata)
+        self.assertEqual(self.series_dec.dim_metadata, single.dim_metadata)
 
     def test_increasing_common_axis(self):
         series_inc = self.series_inc
         series_dec = self.series_dec
-        self.assertTrue(series_inc.dim_metadata == series_inc.dim_metadata)
-        self.assertFalse(series_dec.dim_metadata == series_inc.dim_metadata)
+        self.assertEqual(series_inc.dim_metadata, series_inc.dim_metadata)
+        self.assertNotEqual(series_inc.dim_metadata, series_dec.dim_metadata)
 
     def test_decreasing_common_axis(self):
         series_inc = self.series_inc
         series_dec = self.series_dec
-        self.assertFalse(series_inc.dim_metadata == series_dec.dim_metadata)
-        self.assertTrue(series_dec.dim_metadata == series_dec.dim_metadata)
+        self.assertNotEqual(series_dec.dim_metadata, series_inc.dim_metadata)
+        self.assertEqual(series_dec.dim_metadata, series_dec.dim_metadata)
 
     def test_circular(self):
         series_inc = self.series_inc
         circular_cube = self.series_inc_cube.copy()
         circular_cube.coord('time').circular = True
         circular = CubeSignature(circular_cube)
-        self.assertFalse(series_inc.dim_metadata == circular.dim_metadata)
-        self.assertTrue(circular.dim_metadata == circular.dim_metadata)
+        self.assertNotEqual(circular.dim_metadata, series_inc.dim_metadata)
+        self.assertEqual(circular.dim_metadata, circular.dim_metadata)
 
 
 if __name__ == '__main__':
