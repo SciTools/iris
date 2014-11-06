@@ -1006,6 +1006,16 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     x_within_bounds = _within_bounds(src_x_bounds, grid_x_bounds,
                                      grid_x_decreasing)
 
+    # Cache which src_bounds are within grid bounds
+    cached_x_bounds = []
+    cached_x_indices = []
+    for (x_0, x_1) in grid_x_bounds:
+        if grid_x_decreasing:
+            x_0, x_1 = x_1, x_0
+        x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+        cached_x_bounds.append(x_bounds)
+        cached_x_indices.append(x_indices)
+
     # Simple for loop approach.
     for j, (y_0, y_1) in enumerate(grid_y_bounds):
         # Reverse lower and upper if dest grid is decreasing.
@@ -1016,7 +1026,8 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
             # Reverse lower and upper if dest grid is decreasing.
             if grid_x_decreasing:
                 x_0, x_1 = x_1, x_0
-            x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+            x_bounds = cached_x_bounds[i]
+            x_indices = cached_x_indices[i]
 
             # Determine whether to mask element i, j based on overlap with
             # src.
