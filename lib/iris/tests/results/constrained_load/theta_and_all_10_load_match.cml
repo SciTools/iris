@@ -191,7 +191,7 @@
     </cellMethods>
     <data checksum="0x45a44f1a" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="specific_humidity" units="1">
+  <cube standard_name="specific_humidity" units="kg kg-1">
     <attributes>
       <attribute name="STASH" value="m01s00i010"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
