@@ -1593,10 +1593,6 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         cubes.append(cube)
     else:
         cubes = cube
-        # for a CubeList the default selection of unlimited dimensions
-        # has unpleasent consequences for streaming the data payload.
-        # if unlimited_dimensions is None:
-        #     unlimited_dimensions = []
 
     if local_keys is None:
         local_keys = set()
