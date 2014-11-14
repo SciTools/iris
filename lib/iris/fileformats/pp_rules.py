@@ -1040,8 +1040,8 @@ def _all_other_rules(f):
         else:
             intervals = None
 
-        # Aggregation over a period of time.
         if f.lbtim.ib == 2:
+            # Aggregation over a period of time.
             cell_methods.append(CellMethod(method,
                                            coords='time',
                                            intervals=intervals))

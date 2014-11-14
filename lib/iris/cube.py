@@ -587,7 +587,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                   STASH: m01s16i203
                   source: Data from Met Office Unified Model
              Cell methods:
-                  mean: time
+                  mean within years: time
+                  mean over years: time
 
 
     See the :doc:`user guide</userguide/index>` for more information.
