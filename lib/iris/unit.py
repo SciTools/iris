@@ -172,7 +172,7 @@ _ut_set_error_message_handler = None
 # load the libc shared library
 #
 if _lib_c is None:
-    _lib_c = ctypes.CDLL(ctypes.util.find_library('libc'))
+    _lib_c = ctypes.cdll.msvcrt
 
     #
     # cache common shared library functions
@@ -187,6 +187,7 @@ if _lib_ud is None:
     _lib_ud = iris.config.get_option(
         'System', 'udunits2_path',
         default=ctypes.util.find_library('udunits2'))
+    #_lib_ud = os.path.join(sys.prefix, 'Library', 'bin', 'udunits2.dll')
     _lib_ud = ctypes.CDLL(_lib_ud, use_errno=True)
 
     #
