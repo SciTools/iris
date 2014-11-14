@@ -1045,16 +1045,19 @@ def _all_other_rules(f):
             cell_methods.append(CellMethod(method,
                                            coords='time',
                                            intervals=intervals))
-        # Aggregation over a period of time within a year, over a number
-        # of years.
-        if f.lbtim.ib == 3:
+        elif f.lbtim.ib == 3 and f.lbproc == 128:
+            # Aggregation over a period of time within a year, over a number
+            # of years.
+            # Only mean (lbproc of 128) is handled as the min/max
+            # interpretation is ambiguous e.g. decadal mean of daily max,
+            # decadal max of daily mean, decadal mean of max daily mean etc.
             cell_methods.append(CellMethod('{} within years'.format(method),
                                            coords='time',
                                            intervals=intervals))
             cell_methods.append(CellMethod('{} over years'.format(method),
                                            coords='time'))
-        # Non-specific case.
-        if f.lbtim.ib not in (2, 3):
+        else:
+            # Generic cell method to indicate a time aggregation.
             cell_methods.append(CellMethod(method,
                                            coords='time'))
 

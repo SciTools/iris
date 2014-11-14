@@ -87,6 +87,20 @@ class TestCellMethods(tests.IrisTest):
                     CellMethod('mean over years', 'time')]
         self.assertEqual(res, expected)
 
+    def test_climatology_max(self):
+        field = mock.MagicMock(lbproc=8192,
+                               lbtim=mock.Mock(ia=24, ib=3, ic=3))
+        res = _all_other_rules(field)[5]
+        expected = [CellMethod('maximum', 'time')]
+        self.assertEqual(res, expected)
+
+    def test_climatology_max(self):
+        field = mock.MagicMock(lbproc=4096,
+                               lbtim=mock.Mock(ia=24, ib=3, ic=3))
+        res = _all_other_rules(field)[5]
+        expected = [CellMethod('minimum', 'time')]
+        self.assertEqual(res, expected)
+
     def test_other_lbtim_ib(self):
         # lbtim.ib = 5 -> non-specific aggregation
         field = mock.MagicMock(lbproc=4096,
