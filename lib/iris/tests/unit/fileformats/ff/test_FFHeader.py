@@ -72,6 +72,7 @@ class Test_grid(tests.IrisTest):
         self.assertIs(grid, mock.sentinel.grid)
 
 
+@tests.skip_data
 class Test_integer_constants(tests.IrisTest):
     def test_read_ints(self):
         test_file_path = tests.get_data_path(('FF', 'structured', 'small'))
