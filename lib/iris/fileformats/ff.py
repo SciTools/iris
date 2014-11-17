@@ -346,9 +346,16 @@ class FFHeader(object):
                         addr = getattr(self, elem)
                         ff_file.seek((addr[0] - 1) * word_depth, os.SEEK_SET)
                         if len(addr) == 2:
-                            res = np.fromfile(ff_file,
-                                              dtype='>f{0}'.format(word_depth),
-                                              count=addr[1])
+                            if elem == 'integer_constants':
+                                res = np.fromfile(
+                                    ff_file,
+                                    dtype='>i{0}'.format(word_depth),
+                                    count=addr[1])
+                            else:
+                                res = np.fromfile(
+                                    ff_file,
+                                    dtype='>f{0}'.format(word_depth),
+                                    count=addr[1])
                         elif len(addr) == 3:
                             res = np.fromfile(ff_file,
                                               dtype='>f{0}'.format(word_depth),

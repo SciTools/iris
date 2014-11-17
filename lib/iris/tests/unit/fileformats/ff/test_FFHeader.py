@@ -23,7 +23,7 @@ from __future__ import (absolute_import, division, print_function)
 import iris.tests as tests
 
 import collections
-
+import numpy as np
 import mock
 
 from iris.fileformats.ff import FFHeader
@@ -70,6 +70,14 @@ class Test_grid(tests.IrisTest):
         warn.assert_called_with('Staggered grid type: 0 not currently'
                                 ' interpreted, assuming standard C-grid')
         self.assertIs(grid, mock.sentinel.grid)
+
+
+@tests.skip_data
+class Test_integer_constants(tests.IrisTest):
+    def test_read_ints(self):
+        test_file_path = tests.get_data_path(('FF', 'structured', 'small'))
+        ff_header = FFHeader(test_file_path)
+        self.assertEqual(ff_header.integer_constants.dtype, np.dtype('>i8'))
 
 
 if __name__ == "__main__":
