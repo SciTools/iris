@@ -30,6 +30,25 @@ import numpy as np
 from iris.experimental.um import FixedLengthHeader
 
 
+class Test_empty(tests.IrisTest):
+    def check(self, dtype, word_size=None):
+        if word_size is None:
+            header = FixedLengthHeader.empty()
+        else:
+            header = FixedLengthHeader.empty(word_size)
+        self.assertArrayEqual(header.raw, [-32768] * 256)
+        self.assertEqual(header.raw.dtype, dtype)
+
+    def test_default(self):
+        self.check('>i8')
+
+    def test_explicit_64_bit(self):
+        self.check('>i8', 8)
+
+    def test_explicit_32_bit(self):
+        self.check('>i4', 4)
+
+
 class Test_from_file(tests.IrisTest):
     def check(self, src_dtype, word_size=None):
         data = (np.arange(1000) * 10).astype(src_dtype)

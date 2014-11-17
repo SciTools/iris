@@ -26,14 +26,30 @@ from __future__ import (absolute_import, division, print_function)
 import iris.tests as tests
 
 import mock
+import numpy as np
 
 from iris.experimental.um import Field
+
+
+class Test_num_values(tests.IrisTest):
+    def test_64(self):
+        field = Field(range(45), range(19), None)
+        self.assertEqual(field.num_values(), 64)
+
+    def test_128(self):
+        field = Field(range(45), range(83), None)
+        self.assertEqual(field.num_values(), 128)
 
 
 class Test_read_data(tests.IrisTest):
     def test_None(self):
         field = Field([], [], None)
         self.assertIsNone(field.read_data())
+
+    def test_ndarray(self):
+        data = np.arange(12).reshape(3, 4)
+        field = Field([], [], data)
+        self.assertIs(field.read_data(), data)
 
     def test_provider(self):
         provider = mock.Mock(read_data=lambda field: mock.sentinel.DATA)
