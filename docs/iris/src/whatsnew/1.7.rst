@@ -1,7 +1,7 @@
 What's new in Iris 1.7
 **********************
 
-:Release: 1.7.2
+:Release: 1.7.3
 :Date: ???
 
 This document explains the new/changed features of Iris in version 1.7.
@@ -177,14 +177,22 @@ Bugs fixed
   varibles for "atmosphere hybrid sigma pressure" coordinate data.
 * Corrected comparison of NumPy NaN values in cube merge process.
 * Fixes for :meth:`iris.cube.Cube.intersection` to correct calculating the intersection
-  of a cube with split bounds, handling of circular coordinates, and for finding
-  a wrapped two-point result.
+  of a cube with split bounds, handling of circular coordinates, handling of
+  monotonically descending bounded coordinats and for finding a wrapped two-point
+  result and longitude tolerances.
 * A bug affecting :meth:`iris.cube.Cube.extract` and :meth:`iris.cube.CubeList.extract`
   that led to unexpected behaviour when operating on scalar cubes has been fixed.
 * Aggregate_by may now be passed single-value coordinates.
 * Making a copy of a :class:`iris.coords.DimCoord` no longer results in the writeable
   flag on the copied points and bounds arrays being set to True.
 * Can now save to PP a cube that has vertical levels but no orography.
+* Fix a bug causing surface altitude and surface pressure fields to not appear
+  in cubes loaded with a STASH constraint.
+* Fixed support for :class:`iris.fileformats.pp.STASH` objects in STASH constraints.
+* A fix to avoid a problem where cube attribute names clash with NetCDF reserved attribute names.
+* A fix to allow :meth:`iris.cube.CubeList.concatenate` to deal with descending coordinate order.
+* Add missing NetCDF attribute `varname` when constructing a new :class:`iris.coords.AuxCoord`.
+* The datatype of time arrays converted with :func:`iris.util.unify_time_units` is now preserved.
 
 Incompatible changes
 ====================
@@ -215,6 +223,7 @@ Documentation Changes
   See :ref:`graphics-custom_aggregation`.
 * An example of reprojecting data from 2D auxiliary spatial coordinates
   (such as that from the ORCA grid) has been added. See :ref:`graphics-orca_projection`.
+* A clarification of the behaviour of :func:`iris.analysis.calculus.differentiate`.
 * A new :doc:`"whitepapers" </whitepapers/index>` section has been added to the documentation along
   with the addition of a paper providing an :doc:`overview of the load process for UM-like
   fileformats (e.g. PP and Fieldsfile) </whitepapers/um_files_loading>`.

@@ -1852,6 +1852,10 @@ class Unit(iris.util._OrderedHashable):
                 ut1 = self.utime()
                 ut2 = other.utime()
                 result = ut2.date2num(ut1.num2date(value_copy))
+                # Preserve the datatype of the input array if it was float32.
+                if (isinstance(value, np.ndarray)
+                        and value.dtype == np.float32):
+                    result = result.astype(np.float32)
             else:
                 ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
                 if ut_converter:

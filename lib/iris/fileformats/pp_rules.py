@@ -1032,10 +1032,7 @@ def _all_other_rules(f):
         cell_methods.append(CellMethod("mean", coords="time",
                                        intervals="%d hour" % f.lbtim.ia))
 
-    if f.lbproc == 128 and f.lbtim.ib == 3:
-        cell_methods.append(CellMethod("mean", coords="time"))
-
-    if f.lbproc == 128 and f.lbtim.ib not in [2, 3]:
+    if f.lbproc == 128 and f.lbtim.ib != 2:
         cell_methods.append(CellMethod("mean", coords="time"))
 
     if f.lbproc == 4096 and f.lbtim.ib == 2 and f.lbtim.ia == 0:

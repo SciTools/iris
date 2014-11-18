@@ -978,17 +978,16 @@ class PPField(object):
         self.lbuser[6] = self._stash.lbuser6()
         self.lbuser[3] = self._stash.lbuser3()
 
-    # lbtim
-    def _lbtim_setter(self, new_value):
-        if not isinstance(new_value, SplittableInt):
-            self.raw_lbtim = new_value
-            # add the ia/ib/ic values for lbtim
-            new_value = SplittableInt(new_value, {'ia':slice(2, None), 'ib':1, 'ic':0})
-        else:
-            self.raw_lbtim = new_value._value
-        self._lbtim = new_value
+    @property
+    def lbtim(self):
+        return self._lbtim
 
-    lbtim = property(lambda self: self._lbtim, _lbtim_setter)
+    @lbtim.setter
+    def lbtim(self, value):
+        value = int(value)
+        self.raw_lbtim = value
+        self._lbtim = SplittableInt(value, {'ia': slice(2, None), 'ib': 1,
+                                            'ic': 0})
 
     # lbcode
     def _lbcode_setter(self, new_value):
