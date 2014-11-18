@@ -151,7 +151,9 @@ class TestPPLoadRules(tests.IrisTest):
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
         # Values that result in cell methods being created
-        cell_method_values = {128 : "mean", 4096 : "minimum", 8192 : "maximum"}
+        cell_method_values = {128: "mean within years",
+                              4096: "minimum",
+                              8192: "maximum"}
 
         # Make test values as list of single bit values and some multiple bit values
         single_bit_values = list(iris.fileformats.pp.LBPROC_PAIRS)

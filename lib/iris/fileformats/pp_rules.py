@@ -1025,38 +1025,41 @@ def _all_other_rules(f):
              1 if f.lbcode.ix == 13 else 0))
 
     # LBPROC codings (--> cell methods + attributes)
-    if f.lbproc == 128 and f.lbtim.ib == 2 and f.lbtim.ia == 0:
-        cell_methods.append(CellMethod("mean", coords="time"))
+    if f.lbproc == 128:
+        method = 'mean'
+    elif f.lbproc == 4096:
+        method = 'minimum'
+    elif f.lbproc == 8192:
+        method = 'maximum'
+    else:
+        method = None
 
-    if f.lbproc == 128 and f.lbtim.ib == 2 and f.lbtim.ia != 0:
-        cell_methods.append(CellMethod("mean", coords="time",
-                                       intervals="%d hour" % f.lbtim.ia))
+    if method is not None:
+        if f.lbtim.ia != 0:
+            intervals = '{} hour'.format(f.lbtim.ia)
+        else:
+            intervals = None
 
-    if f.lbproc == 128 and f.lbtim.ib == 3:
-        cell_methods.append(CellMethod("mean", coords="time"))
-
-    if f.lbproc == 128 and f.lbtim.ib not in [2, 3]:
-        cell_methods.append(CellMethod("mean", coords="time"))
-
-    if f.lbproc == 4096 and f.lbtim.ib == 2 and f.lbtim.ia == 0:
-        cell_methods.append(CellMethod("minimum", coords="time"))
-
-    if f.lbproc == 4096 and f.lbtim.ib == 2 and f.lbtim.ia != 0:
-        cell_methods.append(CellMethod("minimum", coords="time",
-                                       intervals="%d hour" % f.lbtim.ia))
-
-    if f.lbproc == 4096 and f.lbtim.ib != 2:
-        cell_methods.append(CellMethod("minimum", coords="time"))
-
-    if f.lbproc == 8192 and f.lbtim.ib == 2 and f.lbtim.ia == 0:
-        cell_methods.append(CellMethod("maximum", coords="time"))
-
-    if f.lbproc == 8192 and f.lbtim.ib == 2 and f.lbtim.ia != 0:
-        cell_methods.append(CellMethod("maximum", coords="time",
-                                       intervals="%d hour" % f.lbtim.ia))
-
-    if f.lbproc == 8192 and f.lbtim.ib != 2:
-        cell_methods.append(CellMethod("maximum", coords="time"))
+        if f.lbtim.ib == 2:
+            # Aggregation over a period of time.
+            cell_methods.append(CellMethod(method,
+                                           coords='time',
+                                           intervals=intervals))
+        elif f.lbtim.ib == 3 and f.lbproc == 128:
+            # Aggregation over a period of time within a year, over a number
+            # of years.
+            # Only mean (lbproc of 128) is handled as the min/max
+            # interpretation is ambiguous e.g. decadal mean of daily max,
+            # decadal max of daily mean, decadal mean of max daily mean etc.
+            cell_methods.append(CellMethod('{} within years'.format(method),
+                                           coords='time',
+                                           intervals=intervals))
+            cell_methods.append(CellMethod('{} over years'.format(method),
+                                           coords='time'))
+        else:
+            # Generic cell method to indicate a time aggregation.
+            cell_methods.append(CellMethod(method,
+                                           coords='time'))
 
     if f.lbproc not in [0, 128, 4096, 8192]:
         attributes["ukmo__process_flags"] = tuple(

@@ -48,7 +48,8 @@ Taking the air temperature cube we've seen previously:
               STASH: m01s16i203
               source: Data from Met Office Unified Model
          Cell methods:
-              mean: time
+              mean within years: time
+              mean over years: time
 
 We can interpolate specific values from the coordinates of the cube:
 
@@ -66,7 +67,8 @@ We can interpolate specific values from the coordinates of the cube:
               STASH: m01s16i203
               source: Data from Met Office Unified Model
          Cell methods:
-              mean: time
+              mean within years: time
+              mean over years: time
 
 As we can see, the resulting cube is scalar and has longitude and latitude coordinates with
 the values defined in our sample points.
