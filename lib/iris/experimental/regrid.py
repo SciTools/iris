@@ -676,10 +676,11 @@ def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
 
 def _cropped_bounds(bounds, lower, upper):
     """
-    Return a new bounds array and corresponding slice object (or indices)
-    that result from cropping the provided bounds between the specified lower
-    and upper values. The bounds at the extremities will be truncated so that
-    they start and end with lower and upper.
+    Return a new bounds array and corresponding slice object (or indices) of
+    the original data array, resulting from cropping the provided bounds
+    between the specified lower and upper values. The bounds at the
+    extremities will be truncated so that they start and end with lower and
+    upper.
 
     This function will return an empty NumPy array and slice if there is no
     overlap between the region covered by bounds and the region from lower to
