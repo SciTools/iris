@@ -639,14 +639,30 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
     return result
 
 
-def _within_bounds(bounds, tgt_bounds, orderswap):
+def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
     """
-    Return whether both lower and upper lie within the extremes
-    of bounds.
+    Determine which target bounds lie within the extremes of the source bounds.
+
+    Args:
+
+    * src_bounds (ndarray):
+        An (n, 2) shaped array of monotonic contiguous source bounds.
+    * tgt_bounds (ndarray):
+        An (n, 2) shaped array corresponding to the target bounds.
+
+    Kwargs:
+
+    * orderswap (bool):
+        A Boolean indicating whether the target bounds are in descending order
+        (True). Defaults to False.
+
+    Returns:
+        Boolean ndarray, indicating whether each target bound is within the
+        extremes of the source bounds.
 
     """
-    min_bound = np.min(bounds)
-    max_bound = np.max(bounds)
+    min_bound = np.min(src_bounds)
+    max_bound = np.max(src_bounds)
 
     # Swap upper-lower is necessary.
     if orderswap is True:
@@ -982,7 +998,6 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     # Assign to mask to explode it, allowing indexed assignment.
     new_data.mask = False
 
-    # Simple for loop approach.
     indices = [slice(None)] * new_data.ndim
 
     # Determine which grid bounds are within src extent.
