@@ -31,6 +31,7 @@ User guide table of contents
    subsetting_a_cube.rst
    plotting_a_cube.rst
    interpolation_and_regridding.rst
+   merge_and_concat.rst
    cube_statistics.rst
    cube_maths.rst
    citation.rst
