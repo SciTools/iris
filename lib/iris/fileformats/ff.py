@@ -466,21 +466,23 @@ class FF2PP(object):
         """Calculate the payload data depth (in bytes) and type."""
         lbpack_n1 = field.raw_lbpack % 10
         if lbpack_n1 == 0:
+            word_depth = self._word_depth
             # Data payload is not packed.
-            data_depth = (field.lblrec - field.lbext) * self._word_depth
+            data_words = (field.lblrec - field.lbext)
             # Determine PP field 64-bit payload datatype.
             lookup = _LBUSER_DTYPE_LOOKUP
             dtype_template = lookup.get(field.lbuser[0], lookup['default'])
             dtype_name = dtype_template.format(word_depth=self._word_depth)
             data_type = np.dtype(dtype_name)
         else:
+            word_depth = pp.PP_WORD_DEPTH
             # Data payload is packed.
             if lbpack_n1 == 1:
                 # Data packed using WGDOS archive method.
-                data_depth = ((field.lbnrec * 2) - 1) * pp.PP_WORD_DEPTH
+                data_words = ((field.lbnrec * 2) - 1)
             elif lbpack_n1 == 2:
                 # Data packed using CRAY 32-bit method.
-                data_depth = (field.lblrec - field.lbext) * pp.PP_WORD_DEPTH
+                data_words = (field.lblrec - field.lbext)
             else:
                 msg = 'PP fields with LBPACK of {} are not supported.'
                 raise NotYetImplementedError(msg.format(field.raw_lbpack))
@@ -489,6 +491,18 @@ class FF2PP(object):
             lookup = pp.LBUSER_DTYPE_LOOKUP
             data_type = lookup.get(field.lbuser[0], lookup['default'])
 
+        if field.boundary_packing is not None:
+            # Adjust to packed data size, for LBC data.
+            # NOTE: logic duplicates that in pp._data_bytes_to_shaped_array.
+            pack_dims = field.boundary_packing
+            boundary_height = pack_dims.y_halo + pack_dims.rim_width
+            boundary_width = pack_dims.x_halo + pack_dims.rim_width
+            y_height, x_width = field.lbrow, field.lbnpt
+            mid_height = y_height - 2 * boundary_height
+            data_words = (boundary_height * x_width * 2 +
+                          boundary_width * mid_height * 2)
+
+        data_depth = data_words * word_depth
         return data_depth, data_type
 
     def _det_border(self, field_dim, halo_dim):
@@ -553,31 +567,37 @@ class FF2PP(object):
         # be stacked, in a vertical dimension.
         # See per-layer loop (below).
 
-        # Calculate field packing details and store on LBPACK.
+        # Calculate field packing details.
         name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
                             x_halo=slice(0, 2))
-        b_packing = pp.SplittableInt(field.lbuser[2], name_mapping)
-        field.lbpack.boundary_packing = b_packing
+        boundary_packing = pp.SplittableInt(field.lbuser[2], name_mapping)
+        # Store packing on the field, which affects how it gets the data.
+        field.boundary_packing = boundary_packing
         # Fix the lbrow and lbnpt to be the actual size of the data
         # array, since the field is no longer a "boundary" fields file
         # field.
-        field.lbrow += 2 * field.lbpack.boundary_packing.y_halo
-        field.lbnpt += 2 * field.lbpack.boundary_packing.x_halo
+        # Note: The documentation states that lbrow (y) doesn't
+        # contain the halo rows, but no such comment exists at UM v8.5
+        # for lbnpt (x). Experimentation has shown that lbnpt also
+        # excludes the halo size.
+        field.lbrow += 2 * boundary_packing.y_halo
+        field.lbnpt += 2 * boundary_packing.x_halo
+
         # Update the x and y coordinates for this field. Note: it may
         # be that this needs to update x and y also, but that is yet
         # to be confirmed.
         if (field.bdx in (0, field.bmdi) or
                 field.bdy in (0, field.bmdi)):
-            field.x = self._det_border(field.x, b_packing.x_halo)
-            field.y = self._det_border(field.y, b_packing.y_halo)
+            field.x = self._det_border(field.x, boundary_packing.x_halo)
+            field.y = self._det_border(field.y, boundary_packing.y_halo)
         else:
             if field.bdy < 0:
                 warnings.warn('The LBC has a bdy less than 0. No '
                               'case has previously been seen of '
                               'this, and the decompression may be '
                               'erroneous.')
-            field.bzx -= field.bdx * b_packing.x_halo
-            field.bzy -= field.bdy * b_packing.y_halo
+            field.bzx -= field.bdx * boundary_packing.x_halo
+            field.bzy -= field.bdy * boundary_packing.y_halo
 
     def _fields_over_all_levels(self, field):
         """

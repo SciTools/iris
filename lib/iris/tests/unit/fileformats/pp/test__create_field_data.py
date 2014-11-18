@@ -43,7 +43,9 @@ class Test__create_field_data(tests.IrisTest):
 
         self.assertIs(field._data, mock.sentinel.array)
         convert_bytes.assert_called_once_with(mock_loaded_bytes.bytes,
-                                              field.lbpack, data_shape,
+                                              field.lbpack,
+                                              field.boundary_packing,
+                                              data_shape,
                                               mock_loaded_bytes.dtype,
                                               field.bmdi, land_mask)
 
@@ -77,7 +79,9 @@ class Test__create_field_data(tests.IrisTest):
         PPDataProxy.assert_called_once_with((data_shape), dtype,
                                             fname, position,
                                             n_bytes,
-                                            field.raw_lbpack, field.bmdi,
+                                            field.raw_lbpack,
+                                            field.boundary_packing,
+                                            field.bmdi,
                                             land_mask)
 
 

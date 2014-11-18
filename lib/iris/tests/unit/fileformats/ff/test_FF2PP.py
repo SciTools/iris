@@ -108,7 +108,7 @@ class Test__extract_field__LBC_format(tests.IrisTest):
                                  x_halo=slice(0, 2))
         boundary_packing = pp.SplittableInt(121416, name_mapping_dict)
 
-        self.assertEqual(field.lbpack.boundary_packing, boundary_packing)
+        self.assertEqual(field.boundary_packing, boundary_packing)
         self.assertEqual(field.bzy, bzy - boundary_packing.y_halo * field.bdy)
         self.assertEqual(field.bzx, bzx - boundary_packing.x_halo * field.bdx)
 
@@ -235,6 +235,7 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
         field.lbrow = 2001
         field.lbuser = (None, None, 80504)
         field.lbpack = pp.SplittableInt(0)
+        field.boundary_packing = None
         field.bdx = 1.0
         field.bzx = 0.0
         field.bdy = 1.0
@@ -246,9 +247,9 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
         ff2pp._adjust_field_for_lbc(field)
         self.assertEqual(field.lbtim, 11)
         self.assertEqual(field.lbvc, 65)
-        self.assertEqual(field.lbpack.boundary_packing.rim_width, 8)
-        self.assertEqual(field.lbpack.boundary_packing.y_halo, 5)
-        self.assertEqual(field.lbpack.boundary_packing.x_halo, 4)
+        self.assertEqual(field.boundary_packing.rim_width, 8)
+        self.assertEqual(field.boundary_packing.y_halo, 5)
+        self.assertEqual(field.boundary_packing.x_halo, 4)
         self.assertEqual(field.lbnpt, 1009)
         self.assertEqual(field.lbrow, 2011)
 

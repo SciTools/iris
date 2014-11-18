@@ -509,7 +509,7 @@ class TestPPDataProxyEquality(unittest.TestCase):
     def test_not_implemented(self):
         class Terry(object): pass
         pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian",
-                             "spam", "beans", "eggs")
+                             "spam", "beans", "eggs", "parrot")
         self.assertIs(pox.__eq__(Terry()), NotImplemented)
         self.assertIs(pox.__ne__(Terry()), NotImplemented)
 
