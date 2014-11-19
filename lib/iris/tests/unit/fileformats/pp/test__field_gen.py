@@ -30,7 +30,7 @@ import numpy as np
 import iris.fileformats.pp as pp
 
 
-class Test__field_gen(tests.IrisTest):
+class Test(tests.IrisTest):
     @contextlib.contextmanager
     def mock_for_field_gen(self, fields):
         side_effect_fields = list(fields)[:]
@@ -95,6 +95,20 @@ class Test__field_gen(tests.IrisTest):
         expected_loaded_bytes = pp.LoadedArrayBytes(open_fh.read(),
                                                     np.dtype('>f4'))
         self.assertEqual(pp_field._data, expected_loaded_bytes)
+
+    def test_invalid_header_release(self):
+        # Check that an unknown LBREL value just results in a warning
+        # and the end of the file iteration instead of raising an error.
+        with self.temp_filename() as temp_path:
+            with open(temp_path, 'w') as f:
+                f.write(np.zeros(65, dtype='i4'))
+            generator = pp._field_gen(temp_path, False)
+            with mock.patch('warnings.warn') as warn:
+                with self.assertRaises(StopIteration):
+                    next(generator)
+            self.assertEqual(warn.call_count, 1)
+            self.assertIn('header release number', warn.call_args[0][0])
+
 
 if __name__ == "__main__":
     tests.main()
