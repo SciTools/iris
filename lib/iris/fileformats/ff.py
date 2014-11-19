@@ -527,43 +527,26 @@ class FF2PP(object):
             field_dim = np.concatenate([extra_before, field_dim, extra_after])
         return field_dim
 
-    def _is_boundary_packed(self):
-        return self._ff_header.dataset_type == 5
-
-    def _fixup_lbc_field(self, field):
+    def _adjust_field_for_lbc(self, field):
         """
         Make an LBC field look like a 'normal' field for rules processing.
 
         """
-        if not self._is_boundary_packed():
-            return
-
-        # Check LBTIM (time encodings), which is not set in LBC fields.
-        if field.lbtim != 0:
-            warnings.warn('Field has LBTIM of {:d}, but expected '
-                          '0 for LBC type field.'.format(
-                              field.lbtim))
         # Set LBTIM to indicate the specific time encoding for LBCs,
         # i.e. t1=forecast, t2=reference
-        field.lbtim = 11
+        lbtim_default = 11
+        if field.lbtim not in (0, lbtim_default):
+            raise ValueError('LBC field has LBTIM of {:d}, expected only '
+                             '0 or {:d}.'.format(field.lbtim, lbtim_default))
+        field.lbtim = lbtim_default
 
-        # Check LBLEV : In LBCs, a special value indicates that the
-        # data section is repeated over multiple vertical levels.
-        if field.lblev != 7777:
-            warnings.warn('Field has LBLEV of {:d}, but expected '
-                          '7777 for LBC type field.'.format(
-                              field.lblev))
-        # N.B. the loop over layers, below, sets LBLEV=level-number, as
-        # required for the 'normal' rules operation.
-
-        # Check LBVC (vertical coordinate encoding type).
-        if field.lbvc != 0:
-            warnings.warn('Field has LBVC of {:d}, but expected '
-                          '0 for LBC type field.'.format(
-                              field.lbvc))
         # Set LBVC to indicate the specific height encoding for LBCs,
         # i.e. hybrid height layers.
-        field.lbvc = 65
+        lbvc_default = 65
+        if field.lbvc not in (0, lbvc_default):
+            raise ValueError('LBC field has LBVC of {:d}, expected only '
+                             '0 or {:d}.'.format(field.lbvc, lbvc_default))
+        field.lbvc = lbvc_default
         # Specifying a vertical encoding scheme means a usable vertical
         # coordinate can be produced, because we also record the level
         # number in each result field:  Thus they are located, and can
@@ -578,10 +561,6 @@ class FF2PP(object):
         # Fix the lbrow and lbnpt to be the actual size of the data
         # array, since the field is no longer a "boundary" fields file
         # field.
-        # Note: The documentation states that lbrow (y) doesn't
-        # contain the halo rows, but no such comment exists at UM v8.5
-        # for lbnpt (x). Experimentation has shown that lbnpt also
-        # excludes the halo size.
         field.lbrow += 2 * field.lbpack.boundary_packing.y_halo
         field.lbnpt += 2 * field.lbpack.boundary_packing.x_halo
         # Update the x and y coordinates for this field. Note: it may
@@ -600,51 +579,46 @@ class FF2PP(object):
             field.bzx -= field.bdx * b_packing.x_halo
             field.bzy -= field.bdy * b_packing.y_halo
 
-    def _fields_per_lookup(self, field):
+    def _fields_over_all_levels(self, field):
         """
-        Iterate over all fields for a single lookup-table entry.
+        Replicate the field over all model levels, setting LBLEV for each.
 
-        This is just one for 'ordinary' fields, but per-level for LBCs.
+        This is appropriate for LBC data.
+        Yields an iterator producing a sequence of distinct field objects.
 
         """
-        is_boundary_packed = self._is_boundary_packed()
-        if not is_boundary_packed:
+        n_all_levels = self._ff_header.level_dependent_constants.shape[0]
+        levels_count = field.lbhem - 100
+        if levels_count < 1:
             levels_count = 1
-        else:
-            n_all_levels = self._ff_header.level_dependent_constants.shape[0]
-            levels_count = field.lbhem - 100
-            if levels_count < 1:
-                levels_count = 1
-                warnings.warn(
-                    'LBC field has LBHEM of {:d}, but this should be (100 '
-                    '+ levels-per-field-type), hence >= 101.  Attempting '
-                    'to read 1 level per field type.   However, this '
-                    'probably indicates a bad file.'.format(field.lbhem))
-            if levels_count > n_all_levels:
-                levels_count = n_all_levels
-                warnings.warn(
-                    "LBC field has LBHEM of (100 + levels-per-field-type) "
-                    "= {:d}.  This is more than the full number of levels "
-                    "in the file ('nAll' = {:d}). Attempting to read "
-                    "'nAll' levels per field type.  However, this "
-                    "probably indicates a bad file.".format(
-                        field.lbhem, n_all_levels))
+            warnings.warn(
+                'LBC field has LBHEM of {:d}, but this should be (100 '
+                '+ levels-per-field-type), hence >= 101.  Attempting '
+                'to read 1 level per field type.   However, this '
+                'probably indicates a bad file.'.format(field.lbhem))
+        if levels_count > n_all_levels:
+            levels_count = n_all_levels
+            warnings.warn(
+                "LBC field has LBHEM of (100 + levels-per-field-type) "
+                "= {:d}.  This is more than the full number of levels "
+                "in the file ('nAll' = {:d}). Attempting to read "
+                "'nAll' levels per field type.  However, this "
+                "probably indicates a bad file.".format(
+                    field.lbhem, n_all_levels))
 
         for i_model_level in range(levels_count):
-            # Adjust per-level when repeating over multiple levels.
-            if is_boundary_packed:
-                # Make subsequent fields alike, but distinct.
-                if i_model_level > 0:
-                    field = field.copy()
-                # Provide the correct "model level" value.
-                field.lblev = i_model_level
-                # NOTE: as LBC lookup headers cover multiple layers, they
-                # contain no per-layer height values, which are all 0.
-                # So the field's "height" coordinate will be useless.
-                # It should be possible to fix this here, by calculating
-                # per-layer Z and C values from the file header, and
-                # setting blev/brlev/brsvd1 and bhlev/bhrlev/brsvd2 here,
-                # but we don't yet do this.
+            # Make subsequent fields alike, but distinct.
+            if i_model_level > 0:
+                field = field.copy()
+            # Provide the correct "model level" value.
+            field.lblev = i_model_level
+            # TODO: as LBC lookup headers cover multiple layers, they
+            # contain no per-layer height values, which are all 0.
+            # So the field's "height" coordinate will be useless.
+            # It should be possible to fix this here, by calculating
+            # per-layer Z and C values from the file header, and
+            # setting blev/brlev/brsvd1 and bhlev/bhrlev/brsvd2 here,
+            # but we don't yet do this.
 
             yield field
 
@@ -726,8 +700,11 @@ class FF2PP(object):
             elif no_x or no_y:
                 warnings.warn('Partially missing X or Y coordinate values.')
 
-            # Correct various control values for LBC fields.
-            self._fixup_lbc_field(field)
+            # Check for LBC fields.
+            is_boundary_packed = self._ff_header.dataset_type == 5
+            if is_boundary_packed:
+                # Apply adjustments specific to LBC data.
+                self._adjust_field_for_lbc(field)
 
             # Calculate start address of the associated PP header data.
             data_offset = field.lbegin * self._word_depth
@@ -735,22 +712,23 @@ class FF2PP(object):
             data_depth, data_type = self._payload(field)
 
             # Produce (yield) output fields.
-            for level_field in self._fields_per_lookup(field):
+            for result_field in ([field] if not is_boundary_packed
+                                 else self._fields_over_all_levels(field)):
                 # Add a field data element.
                 if self._read_data:
                     # Read the actual bytes. This can then be converted to a
                     # numpy array at a higher level.
                     ff_file_seek(data_offset, os.SEEK_SET)
-                    level_field._data = pp.LoadedArrayBytes(
+                    result_field._data = pp.LoadedArrayBytes(
                         ff_file.read(data_depth), data_type)
                 else:
                     # Provide enough context to read the data bytes later on.
-                    level_field._data = (self._filename, data_offset,
-                                         data_depth, data_type)
+                    result_field._data = (self._filename, data_offset,
+                                          data_depth, data_type)
 
                 data_offset += data_depth
 
-                yield level_field
+                yield result_field
 
         ff_file.close()
 

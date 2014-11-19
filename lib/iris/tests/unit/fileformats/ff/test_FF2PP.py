@@ -82,11 +82,11 @@ class Test__extract_field__LBC_format(tests.IrisTest):
     def _mock_lbc(self, **kwargs):
         """Return a Mock object representing an LBC field."""
         # Default kwargs for a valid LBC field mapping just 1 model-level.
-        common_field_kwargs = dict(lbtim=0, lblev=7777, lbvc=0, lbhem=101)
-        for key, val in common_field_kwargs.iteritems():
-            if key not in kwargs:
-                kwargs[key] = val
-        return mock.Mock(**kwargs)
+        field_kwargs = dict(lbtim=0, lblev=7777, lbvc=0, lbhem=101)
+        # Apply provided args (replacing any defaults if specified).
+        field_kwargs.update(kwargs)
+        # Return a mock with just those properties pre-defined.
+        return mock.Mock(**field_kwargs)
 
     def test_LBC_header(self):
         bzx, bzy = -10, 15
@@ -217,31 +217,8 @@ class Test__det_border(tests.IrisTest):
         self.assertArrayEqual(result, com)
 
 
-class Test__is_boundary_packed(tests.IrisTest):
+class Test__adjust_field_for_lbc(tests.IrisTest):
     def setUp(self):
-        # Patch FFHeader to produce a mock header instead of opening a file.
-        self.mock_ff_header = mock.Mock()
-        self.mock_ff = self.patch('iris.fileformats.ff.FFHeader',
-                                  return_value=self.mock_ff_header)
-
-    def test__is_lbc(self):
-        ff2pp = FF2PP('dummy_filename')
-        ff2pp._ff_header.dataset_type = 5
-        self.assertTrue(ff2pp._is_boundary_packed())
-
-    def test__non_lbc(self):
-        ff2pp = FF2PP('dummy_filename')
-        ff2pp._ff_header.dataset_type = 0
-        self.assertFalse(ff2pp._is_boundary_packed())
-
-
-class Test__fixup_lbc_field(tests.IrisTest):
-    def setUp(self):
-        # Ensure warnings always happen, and catch them.
-        self.warn_context = warnings.catch_warnings(record=True)
-        self.caught_warnings = self.warn_context.__enter__()
-        warnings.simplefilter("always")
-
         # Patch FFHeader to produce a mock header instead of opening a file.
         self.mock_ff_header = mock.Mock()
         self.mock_ff_header.dataset_type = 5
@@ -263,11 +240,9 @@ class Test__fixup_lbc_field(tests.IrisTest):
         field.bdy = 1.0
         field.bzy = 0.0
 
-    def tearDown(self):
-        # Exit warnings context.
-        self.warn_context.__exit__()
-
-    def _check_expected_field_result(self):
+    def test__basic(self):
+        ff2pp = FF2PP('dummy_filename')
+        ff2pp._adjust_field_for_lbc(self.mock_field)
         field = self.mock_field
         self.assertEqual(field.lbtim, 11)
         self.assertEqual(field.lbvc, 65)
@@ -277,58 +252,22 @@ class Test__fixup_lbc_field(tests.IrisTest):
         self.assertEqual(field.lbnpt, 1009)
         self.assertEqual(field.lbrow, 2011)
 
-    def test__working_lbc(self):
-        ff2pp = FF2PP('dummy_filename')
-        ff2pp._fixup_lbc_field(self.mock_field)
-        self._check_expected_field_result()
-
-    def test__non_lbc(self):
-        # Take a full copy of the original test field.
-        field = self.mock_field
-        original = copy.deepcopy(field)
-
-        # Create the ff2pp object.
-        ff2pp = FF2PP('dummy_filename')
-        # Modify the dataset type to prevent any operation.
-        ff2pp._ff_header.dataset_type = 7171
-        # Run the testee.
-        ff2pp._fixup_lbc_field(field)
-        # Check nothing changed : slightly awkward because of Mock behaviour.
-        for el in ('lbtim', 'lblev', 'lbvc', 'lbnpt', 'lbrow'):
-            was = getattr(original, el)
-            now = getattr(field, el)
-            self.assertEqual(
-                now, was,
-                'Different "{}" properties: {} instead of {}'.format(
-                    el, now, was))
-        self.assertFalse(hasattr(field.lbpack, 'boundary_packing'))
-
     def test__bad_lbtim(self):
         self.mock_field.lbtim = 717
         ff2pp = FF2PP('dummy_filename')
-        ff2pp._fixup_lbc_field(self.mock_field)
-        self.assertIn('LBTIM of 717, but expected 0',
-                      str(self.caught_warnings[0]))
-        self._check_expected_field_result()
-
-    def test__bad_lblev(self):
-        self.mock_field.lblev = 453
-        ff2pp = FF2PP('dummy_filename')
-        ff2pp._fixup_lbc_field(self.mock_field)
-        self.assertIn('LBLEV of 453, but expected 7777',
-                      str(self.caught_warnings[0]))
-        self._check_expected_field_result()
+        with self.assertRaisesRegexp(ValueError,
+                                     'LBTIM of 717, expected only 0 or 11'):
+            ff2pp._adjust_field_for_lbc(self.mock_field)
 
     def test__bad_lbvc(self):
         self.mock_field.lbvc = 312
         ff2pp = FF2PP('dummy_filename')
-        ff2pp._fixup_lbc_field(self.mock_field)
-        self.assertIn('LBVC of 312, but expected 0',
-                      str(self.caught_warnings[0]))
-        self._check_expected_field_result()
+        with self.assertRaisesRegexp(ValueError,
+                                     'LBVC of 312, expected only 0 or 65'):
+            ff2pp._adjust_field_for_lbc(self.mock_field)
 
 
-class Test__fields_per_lookup(tests.IrisTest):
+class Test__fields_over_all_levels(tests.IrisTest):
     def setUp(self):
         # Ensure warnings always happen, and catch them.
         self.warn_context = warnings.catch_warnings(record=True)
@@ -368,21 +307,14 @@ class Test__fields_per_lookup(tests.IrisTest):
     def test__is_lbc(self):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
-        results = list(ff2pp._fields_per_lookup(field))
+        results = list(ff2pp._fields_over_all_levels(field))
         self._check_expected_levels(results, 3)
-
-    def test__non_lbc(self):
-        ff2pp = FF2PP('dummy_filename')
-        field = self.mock_field
-        ff2pp._ff_header.dataset_type = 0
-        results = list(ff2pp._fields_per_lookup(field))
-        self._check_expected_levels(results, 0)
 
     def test__lbhem_too_small(self):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 100
-        results = list(ff2pp._fields_per_lookup(field))
+        results = list(ff2pp._fields_over_all_levels(field))
         self.assertIn('LBHEM of 100, but this should be (100 + levels',
                       str(self.caught_warnings[0]))
         self._check_expected_levels(results, 1)
@@ -391,7 +323,7 @@ class Test__fields_per_lookup(tests.IrisTest):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 105
-        results = list(ff2pp._fields_per_lookup(field))
+        results = list(ff2pp._fields_over_all_levels(field))
         self.assertIn("LBHEM of (100 + levels-per-field-type) = 105.  This is "
                       "more than the full number of levels in the file "
                       "('nAll' = 3)",
