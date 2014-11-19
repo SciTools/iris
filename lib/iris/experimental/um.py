@@ -154,10 +154,17 @@ class FixedLengthHeader(object):
         self._integers = np.asarray(integers)
 
     def __eq__(self, other):
-        return np.all(self._integers == other._integers)
+        try:
+            eq = np.all(self._integers == other._integers)
+        except AttributeError:
+            eq = NotImplemented
+        return eq
 
     def __ne__(self, other):
-        return not self == other
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     @property
     def raw(self):
@@ -239,12 +246,19 @@ class Field(object):
         self._data_provider = data_provider
 
     def __eq__(self, other):
-        return (np.all(self._int_headers == other._int_headers) and
-                np.all(self._real_headers == other._real_headers) and
-                np.all(self.read_data() == other.read_data()))
+        try:
+            eq = (np.all(self._int_headers == other._int_headers) and
+                  np.all(self._real_headers == other._real_headers) and
+                  np.all(self.read_data() == other.read_data()))
+        except AttributeError:
+            eq = NotImplemented
+        return eq
 
     def __ne__(self, other):
-        return not self == other
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def num_values(self):
         """
@@ -437,7 +451,6 @@ class FieldsFileVariant(object):
         def constants(name, dtype):
             start = getattr(self.fixed_length_header, name + '_start')
             if start > 0:
-                shape = getattr(self.fixed_length_header, name + '_shape')
                 source.seek((start - 1) * word_size)
                 shape = getattr(self.fixed_length_header, name + '_shape')
                 values = np.fromfile(source, dtype, count=np.product(shape))
@@ -616,16 +629,31 @@ class FieldsFileVariant(object):
             f.write(normalise(self.fixed_length_header.raw, 'i'))
 
     def close(self):
-        if not self._source.closed and self.mode in ('a', 'w'):
+        """
+        When appropriate write out any pending changes, and close the
+        underlying file.
+
+        If the file was opened for update or creation then any changes
+        to the fixed length header, the constant components (e.g.
+        integer_constants, level_dependent_constants), or the list of
+        fields are written to the file before closing.
+
+        Irrespective of the initial file mode, any subsequent
+        modifications to any attributes will have no effect on the
+        underlying file. Calling `close()` more than once is allowed.
+
+        """
+        if not self._source.closed:
             try:
-                # For simplicity at this stage we always create a new
-                # file and rename it once complete.
-                # At some later stage we can optimise for in-place
-                # modifications, for example if only one of the integer
-                # constants has been modified.
-                tmp_filename = create_temp_filename()
-                self._write_new(tmp_filename)
-                os.unlink(self.filename)
-                shutil.move(tmp_filename, self.filename)
+                if self.mode in ('a', 'w'):
+                    # For simplicity at this stage we always create a new
+                    # file and rename it once complete.
+                    # At some later stage we can optimise for in-place
+                    # modifications, for example if only one of the integer
+                    # constants has been modified.
+                    tmp_filename = create_temp_filename()
+                    self._write_new(tmp_filename)
+                    os.unlink(self.filename)
+                    shutil.move(tmp_filename, self.filename)
             finally:
                 self._source.close()

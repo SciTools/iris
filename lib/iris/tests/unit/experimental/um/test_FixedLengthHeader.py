@@ -77,6 +77,38 @@ class Test___init__(tests.IrisTest):
             FixedLengthHeader(range(15))
 
 
+class Test___eq__(tests.IrisTest):
+    def test_equal(self):
+        ffv1 = FixedLengthHeader(range(256))
+        ffv2 = FixedLengthHeader(range(256))
+        self.assertTrue(ffv1.__eq__(ffv2))
+
+    def test_not_equal(self):
+        ffv1 = FixedLengthHeader(range(256))
+        ffv2 = FixedLengthHeader(range(256, 512))
+        self.assertFalse(ffv1.__eq__(ffv2))
+
+    def test_invalid(self):
+        ffv1 = FixedLengthHeader(range(256))
+        self.assertIs(ffv1.__eq__(range(256)), NotImplemented)
+
+
+class Test___ne__(tests.IrisTest):
+    def test_equal(self):
+        ffv1 = FixedLengthHeader(range(256))
+        ffv2 = FixedLengthHeader(range(256))
+        self.assertFalse(ffv1.__ne__(ffv2))
+
+    def test_not_equal(self):
+        ffv1 = FixedLengthHeader(range(256))
+        ffv2 = FixedLengthHeader(range(256, 512))
+        self.assertTrue(ffv1.__ne__(ffv2))
+
+    def test_invalid(self):
+        ffv1 = FixedLengthHeader(range(256))
+        self.assertIs(ffv1.__ne__(range(256)), NotImplemented)
+
+
 def make_header():
     return FixedLengthHeader((np.arange(256) + 1) * 10)
 
