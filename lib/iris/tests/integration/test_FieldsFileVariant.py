@@ -35,7 +35,7 @@ RMDI = -1073741824.0
 
 
 @tests.skip_data
-class TestLoad(tests.IrisTest):
+class TestRead(tests.IrisTest):
     def load(self):
         path = tests.get_data_path(('FF', 'n48_multi_field'))
         return FieldsFileVariant(path)
@@ -71,6 +71,14 @@ class TestLoad(tests.IrisTest):
                     RMDI, RMDI, RMDI]                 # 36 - 38
         self.assertArrayEqual(ffv.real_constants, expected)
 
+    def test_level_dependent_constants(self):
+        ffv = self.load()
+        # To make sure we have the correct Fortran-order interpretation
+        # we just check the overall shape and a few of the values.
+        self.assertEqual(ffv.level_dependent_constants.shape, (71, 8))
+        expected = [0.92, 0.918, 0.916, 0.912, 0.908]
+        self.assertArrayEqual(ffv.level_dependent_constants[:5, 2], expected)
+
     def test_fields__length(self):
         ffv = self.load()
         self.assertEqual(len(ffv.fields), 5)
@@ -92,11 +100,28 @@ class TestLoad(tests.IrisTest):
         ffv = self.load()
         self.assertEqual(ffv.fields[0].lbfc, 16)
 
-    def test_fields__data(self):
+    def test_fields__data_wgdos(self):
         ffv = self.load()
         data = ffv.fields[0].read_data()
         self.assertEqual(data.shape, (73, 96))
-        self.assertArrayEqual(data[30, :3], [292.125, 292.375, 290.875])
+        self.assertArrayEqual(data[2, :3], [223.5, 223.0, 222.5])
+
+    def test_fields__data_not_packed(self):
+        path = tests.get_data_path(('FF', 'ancillary', 'qrparm.mask'))
+        ffv = FieldsFileVariant(path)
+        data = ffv.fields[0].read_data()
+        expected = [[1, 1, 1],
+                    [1, 1, 1],
+                    [0, 1, 1],
+                    [0, 1, 1],
+                    [0, 1, 1],
+                    [0, 1, 1],
+                    [0, 1, 1],
+                    [0, 1, 1],
+                    [0, 1, 1],
+                    [0, 1, 1],
+                    [0, 0, 1]]
+        self.assertArrayEqual(data[:11, 605:608], expected)
 
 
 @tests.skip_data
@@ -195,6 +220,23 @@ class TestUpdate(tests.IrisTest):
             # OK.
             self.assertEqual(ffv.real_constants[1], 2)
 
+    def test_level_dependent_constants(self):
+        # Check that tweaks to the level dependent constants are
+        # reflected in the output file.
+        # NB. Because it is a multi-dimensional component, this is
+        # sensitive to the Fortran vs C array ordering used to write
+        # the file.
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            self.assertEqual(ffv.level_dependent_constants[3, 2], 0.912)
+            ffv.level_dependent_constants[3, 2] = 0.913
+            ffv.close()
+
+            ffv = FieldsFileVariant(temp_path)
+            self.assertEqual(ffv.level_dependent_constants[3, 2], 0.913)
+
 
 class TestCreate(tests.IrisTest):
     @tests.skip_data
@@ -248,7 +290,7 @@ class TestCreate(tests.IrisTest):
             ints[21] = 2  # LBREL
             ints[38] = 1  # LBUSER(1)
             reals = range(19)
-            src_data = np.arange(20, dtype='f8').reshape((4, 5))
+            src_data = np.arange(20, dtype='f4').reshape((4, 5))
             ffv.fields = [Field2(ints, reals, src_data)]
             ffv.close()
 

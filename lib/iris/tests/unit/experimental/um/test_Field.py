@@ -31,6 +31,18 @@ import numpy as np
 from iris.experimental.um import Field
 
 
+class Test_int_headers(tests.IrisTest):
+    def test(self):
+        field = Field(range(45), range(19), None)
+        self.assertArrayEqual(field.int_headers, range(45))
+
+
+class Test_real_headers(tests.IrisTest):
+    def test(self):
+        field = Field(range(45), range(19), None)
+        self.assertArrayEqual(field.real_headers, range(19))
+
+
 class Test___eq__(tests.IrisTest):
     def test_equal(self):
         field1 = Field(range(45), range(19), None)
