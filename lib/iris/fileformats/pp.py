@@ -1574,7 +1574,13 @@ def _field_gen(filename, read_data_bytes):
         header = tuple(header_longs) + tuple(header_floats)
 
         # Make a PPField of the appropriate sub-class (depends on header release number)
-        pp_field = make_pp_field(header)
+        try:
+            pp_field = make_pp_field(header)
+        except ValueError as e:
+            msg = 'Unable to interpret one of the fields. {}. Skipping ' \
+                  'the remainder of the file.'.format(e.message)
+            warnings.warn(msg)
+            break
 
         # Skip the trailing 4-byte word containing the header length
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
