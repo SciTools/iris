@@ -107,7 +107,7 @@ class TestUpdate(tests.IrisTest):
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
             shutil.copyfile(src_path, temp_path)
-            ffv = FieldsFileVariant(temp_path, 'a')
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
             self.assertEqual(ffv.fixed_length_header.sub_model, 1)
             ffv.fixed_length_header.sub_model = 2
             ffv.close()
@@ -121,7 +121,7 @@ class TestUpdate(tests.IrisTest):
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
             shutil.copyfile(src_path, temp_path)
-            ffv = FieldsFileVariant(temp_path, 'a')
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
             header_values = ffv.fixed_length_header.raw
             self.assertEqual(header_values.dtype, '>i8')
             header = FixedLengthHeader(header_values.astype('<i4'))
@@ -139,7 +139,7 @@ class TestUpdate(tests.IrisTest):
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
             shutil.copyfile(src_path, temp_path)
-            ffv = FieldsFileVariant(temp_path, 'a')
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
             self.assertEqual(ffv.integer_constants[5], 96)
             ffv.integer_constants[5] = 95
             ffv.close()
@@ -153,7 +153,7 @@ class TestUpdate(tests.IrisTest):
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
             shutil.copyfile(src_path, temp_path)
-            ffv = FieldsFileVariant(temp_path, 'a')
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
             self.assertEqual(ffv.integer_constants.dtype, '>i8')
             ffv.integer_constants = ffv.integer_constants.astype('<f4')
             ffv.close()
@@ -170,7 +170,7 @@ class TestUpdate(tests.IrisTest):
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
             shutil.copyfile(src_path, temp_path)
-            ffv = FieldsFileVariant(temp_path, 'a')
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
             self.assertEqual(ffv.real_constants[1], 2.5)
             ffv.real_constants[1] = 14.75
             ffv.close()
@@ -184,7 +184,7 @@ class TestUpdate(tests.IrisTest):
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
             shutil.copyfile(src_path, temp_path)
-            ffv = FieldsFileVariant(temp_path, 'a')
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
             self.assertEqual(ffv.real_constants.dtype, '>f8')
             ffv.real_constants = ffv.real_constants.astype('<i4')
             ffv.close()
@@ -202,9 +202,10 @@ class TestCreate(tests.IrisTest):
         # Checks that copying all the attributes to a new file
         # re-creates the original with minimal differences.
         src_path = tests.get_data_path(('FF', 'ancillary', 'qrparm.mask'))
-        ffv_src = FieldsFileVariant(src_path, 'r')
+        ffv_src = FieldsFileVariant(src_path, FieldsFileVariant.READ_MODE)
         with self.temp_filename() as temp_path:
-            ffv_dest = FieldsFileVariant(temp_path, 'w')
+            ffv_dest = FieldsFileVariant(temp_path,
+                                         FieldsFileVariant.CREATE_MODE)
             ffv_dest.fixed_length_header = ffv_src.fixed_length_header
             for name, kind in FieldsFileVariant._COMPONENTS:
                 setattr(ffv_dest, name, getattr(ffv_src, name))
@@ -231,7 +232,7 @@ class TestCreate(tests.IrisTest):
         # enable it to load again.
         with self.temp_filename() as temp_path:
             temp_path = 'test.ff'
-            ffv = FieldsFileVariant(temp_path, 'w')
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.CREATE_MODE)
             ffv.fixed_length_header = FixedLengthHeader([-1] * 256)
             ffv.fixed_length_header.data_set_format_version = 20
             ffv.fixed_length_header.sub_model = 1

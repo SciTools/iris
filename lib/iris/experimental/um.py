@@ -413,7 +413,24 @@ class FieldsFileVariant(object):
 
     _WORDS_PER_SECTOR = 2048
 
-    def __init__(self, filename, mode='r', word_size=DEFAULT_WORD_SIZE):
+    class _Mode(object):
+        def __init__(self, name):
+            self.name = name
+
+        def __repr__(self):
+            return self.name + '_MODE'
+
+    #: The file will be opened for read-only access.
+    READ_MODE = _Mode('READ')
+    #: The file will be opened for update.
+    UPDATE_MODE = _Mode('UPDATE')
+    #: The file will be created, overwriting the file if it already
+    #: exists.
+    CREATE_MODE = _Mode('CREATE')
+
+    _MODE_MAPPING = {READ_MODE: 'rb', UPDATE_MODE: 'r+b', CREATE_MODE: 'wb'}
+
+    def __init__(self, filename, mode=READ_MODE, word_size=DEFAULT_WORD_SIZE):
         """
         Opens the given filename as a UM FieldsFile variant.
 
@@ -425,24 +442,25 @@ class FieldsFileVariant(object):
         Kwargs:
 
         * mode:
-            The file access mode: 'r' for read-only; 'a' for amending;
-            'w' for creating a new file.
+            The file access mode: `READ_MODE` for read-only;
+            `UPDATE_MODE` for amending; `CREATE_MODE` for creating a new
+            file.
 
         * word_size:
             The number of byte in each word.
 
         """
-        if mode not in ('r', 'a', 'w'):
+        if mode not in self._MODE_MAPPING:
             raise ValueError('Invaild access mode: {}'.format(mode))
 
         self._filename = filename
         self._mode = mode
         self._word_size = word_size
 
-        source_mode = {'r': 'rb', 'a': 'r+b', 'w': 'wb'}[mode]
+        source_mode = self._MODE_MAPPING[mode]
         self._source = source = open(filename, source_mode)
 
-        if mode == 'w':
+        if mode is self.CREATE_MODE:
             header = FixedLengthHeader.empty(word_size)
         else:
             header = FixedLengthHeader.from_file(source, word_size)
@@ -645,7 +663,7 @@ class FieldsFileVariant(object):
         """
         if not self._source.closed:
             try:
-                if self.mode in ('a', 'w'):
+                if self.mode in (self.UPDATE_MODE, self.CREATE_MODE):
                     # For simplicity at this stage we always create a new
                     # file and rename it once complete.
                     # At some later stage we can optimise for in-place
