@@ -22,15 +22,14 @@ Low level support for UM FieldsFile variants.
 from __future__ import (absolute_import, division, print_function)
 
 import os
-import shutil
-import sys
+import os.path
+import tempfile
 
 import numpy as np
 
 # Borrow some definitions...
 from iris.fileformats.ff import _FF_HEADER_POINTERS, FF_HEADER as _FF_HEADER
 from iris.fileformats.pp import _header_defn
-from iris.util import create_temp_filename
 
 
 DEFAULT_WORD_SIZE = 8  # In bytes.
@@ -580,7 +579,7 @@ class FieldsFileVariant(object):
             header.data_start = header.IMDI
             header.data_shape = header.IMDI
 
-    def _write_new(self, filename):
+    def _write_new(self, output_file):
         self._prepare_fixed_length_header()
 
         # Helper function to ensure an array is big-endian and of the
@@ -588,63 +587,62 @@ class FieldsFileVariant(object):
         def normalise(values, kind):
             return values.astype('>{}{}'.format(kind, self._word_size))
 
-        # Create a brand new output file.
-        with open(filename, 'wb') as f:
-            # Skip the fixed length header. We'll write it at the end
-            # once we know how big the DATA component needs to be.
-            header = self.fixed_length_header
-            f.seek(header.NUM_WORDS * self._word_size)
+        # Skip the fixed length header. We'll write it at the end
+        # once we know how big the DATA component needs to be.
+        header = self.fixed_length_header
+        output_file.seek(header.NUM_WORDS * self._word_size)
 
-            # Write all the normal components which have a value.
-            for name, kind in self._COMPONENTS:
-                values = getattr(self, name)
-                if values is not None:
-                    f.write(buffer(normalise(values, kind)))
+        # Write all the normal components which have a value.
+        for name, kind in self._COMPONENTS:
+            values = getattr(self, name)
+            if values is not None:
+                output_file.write(buffer(normalise(values, kind)))
 
-            if self.fields:
-                # Skip the LOOKUP component and write the DATA component.
-                # We need to adjust the LOOKUP headers to match where
-                # the DATA payloads end up, so to avoid repeatedly
-                # seeking backwards and forwards it makes sense to wait
-                # until we've adjusted them all and write them out in
-                # one go.
-                f.seek((header.data_start - 1) * self._word_size)
-                dataset_type = self.fixed_length_header.dataset_type
-                pad_fields = dataset_type not in (1, 2)
-                sector_size = self._WORDS_PER_SECTOR * self._word_size
-                for field in self.fields:
-                    data = field.read_data()
-                    if data is not None:
-                        field.lbegin = f.tell() / self._word_size
-                        size = data.size
-                        size -= size % -self._WORDS_PER_SECTOR
-                        field.lbnrec = size
-                        kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
-                                                            data.dtype.kind)
-                        f.write(normalise(data, kind))
-                        if pad_fields:
-                            overrun = f.tell() % sector_size
-                            if overrun != 0:
-                                f.write(np.zeros(sector_size - overrun, 'i1'))
+        if self.fields:
+            # Skip the LOOKUP component and write the DATA component.
+            # We need to adjust the LOOKUP headers to match where
+            # the DATA payloads end up, so to avoid repeatedly
+            # seeking backwards and forwards it makes sense to wait
+            # until we've adjusted them all and write them out in
+            # one go.
+            output_file.seek((header.data_start - 1) * self._word_size)
+            dataset_type = self.fixed_length_header.dataset_type
+            pad_fields = dataset_type not in (1, 2)
+            sector_size = self._WORDS_PER_SECTOR * self._word_size
+            for field in self.fields:
+                data = field.read_data()
+                if data is not None:
+                    field.lbegin = output_file.tell() / self._word_size
+                    size = data.size
+                    size -= size % -self._WORDS_PER_SECTOR
+                    field.lbnrec = size
+                    kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
+                                                        data.dtype.kind)
+                    output_file.write(normalise(data, kind))
+                    if pad_fields:
+                        overrun = output_file.tell() % sector_size
+                        if overrun != 0:
+                            padding = np.zeros(sector_size - overrun, 'i1')
+                            output_file.write(padding)
 
-                # Update the fixed length header to reflect the extent
-                # of the DATA component.
-                if dataset_type == 5:
-                    header.data_shape = 0
-                elif self.fields:
-                    header.data_shape = ((f.tell() // self._word_size) -
-                                         header.data_start + 1)
+            # Update the fixed length header to reflect the extent
+            # of the DATA component.
+            if dataset_type == 5:
+                header.data_shape = 0
+            elif self.fields:
+                header.data_shape = ((output_file.tell() // self._word_size) -
+                                     header.data_start + 1)
 
-                # Go back and write the LOOKUP component.
-                f.seek((header.lookup_start - 1) * self._word_size)
-                for field in self.fields:
-                    f.write(buffer(normalise(field._int_headers, 'i')))
-                    f.write(buffer(normalise(field._real_headers, 'f')))
+            # Go back and write the LOOKUP component.
+            output_file.seek((header.lookup_start - 1) * self._word_size)
+            for field in self.fields:
+                output_file.write(buffer(normalise(field._int_headers, 'i')))
+                output_file.write(buffer(normalise(field._real_headers, 'f')))
 
-            # Write the fixed length header - now that we know how big
-            # the DATA component was.
-            f.seek(0)
-            f.write(normalise(self.fixed_length_header.raw, 'i'))
+        # Write the fixed length header - now that we know how big
+        # the DATA component was.
+        output_file.seek(0)
+        output_file.write(normalise(self.fixed_length_header.raw, 'i'))
 
     def close(self):
         """
@@ -669,9 +667,12 @@ class FieldsFileVariant(object):
                     # At some later stage we can optimise for in-place
                     # modifications, for example if only one of the integer
                     # constants has been modified.
-                    tmp_filename = create_temp_filename()
-                    self._write_new(tmp_filename)
+
+                    src_dir = os.path.dirname(os.path.abspath(self.filename))
+                    with tempfile.NamedTemporaryFile(dir=src_dir,
+                                                     delete=False) as tmp_file:
+                        self._write_new(tmp_file)
                     os.unlink(self.filename)
-                    shutil.move(tmp_filename, self.filename)
+                    os.rename(tmp_file.name, self.filename)
             finally:
                 self._source.close()
