@@ -590,21 +590,14 @@ class FF2PP(object):
         n_all_levels = self._ff_header.level_dependent_constants.shape[0]
         levels_count = field.lbhem - 100
         if levels_count < 1:
-            levels_count = 1
-            warnings.warn(
+            raise ValueError(
                 'LBC field has LBHEM of {:d}, but this should be (100 '
-                '+ levels-per-field-type), hence >= 101.  Attempting '
-                'to read 1 level per field type.   However, this '
-                'probably indicates a bad file.'.format(field.lbhem))
+                '+ levels-per-field-type), hence >= 101.'.format(field.lbhem))
         if levels_count > n_all_levels:
-            levels_count = n_all_levels
-            warnings.warn(
-                "LBC field has LBHEM of (100 + levels-per-field-type) "
-                "= {:d}.  This is more than the full number of levels "
-                "in the file ('nAll' = {:d}). Attempting to read "
-                "'nAll' levels per field type.  However, this "
-                "probably indicates a bad file.".format(
-                    field.lbhem, n_all_levels))
+            raise ValueError(
+                'LBC field has LBHEM of (100 + levels-per-field-type) '
+                '= {:d}, but this is more than the total number of levels '
+                'in the file = {:d}).'.format(field.lbhem, n_all_levels))
 
         for i_model_level in range(levels_count):
             # Make subsequent fields alike, but distinct.
@@ -712,8 +705,11 @@ class FF2PP(object):
             data_depth, data_type = self._payload(field)
 
             # Produce (yield) output fields.
-            for result_field in ([field] if not is_boundary_packed
-                                 else self._fields_over_all_levels(field)):
+            if is_boundary_packed:
+                fields = self._fields_over_all_levels(field)
+            else:
+                fields = [field]
+            for result_field in fields:
                 # Add a field data element.
                 if self._read_data:
                     # Read the actual bytes. This can then be converted to a

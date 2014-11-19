@@ -242,8 +242,8 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
 
     def test__basic(self):
         ff2pp = FF2PP('dummy_filename')
-        ff2pp._adjust_field_for_lbc(self.mock_field)
         field = self.mock_field
+        ff2pp._adjust_field_for_lbc(field)
         self.assertEqual(field.lbtim, 11)
         self.assertEqual(field.lbvc, 65)
         self.assertEqual(field.lbpack.boundary_packing.rim_width, 8)
@@ -269,11 +269,6 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
 
 class Test__fields_over_all_levels(tests.IrisTest):
     def setUp(self):
-        # Ensure warnings always happen, and catch them.
-        self.warn_context = warnings.catch_warnings(record=True)
-        self.caught_warnings = self.warn_context.__enter__()
-        warnings.simplefilter("always")
-
         # Patch FFHeader to produce a mock header instead of opening a file.
         self.mock_ff_header = mock.Mock()
         self.mock_ff_header.dataset_type = 5
@@ -291,10 +286,6 @@ class Test__fields_over_all_levels(tests.IrisTest):
         field.lbhem = 103
         self.original_lblev = mock.sentinel.untouched_lbev
         field.lblev = self.original_lblev
-
-    def tearDown(self):
-        # Exit warnings context.
-        self.warn_context.__exit__()
 
     def _check_expected_levels(self, results, n_levels):
         if n_levels is 0:
@@ -314,21 +305,19 @@ class Test__fields_over_all_levels(tests.IrisTest):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 100
-        results = list(ff2pp._fields_over_all_levels(field))
-        self.assertIn('LBHEM of 100, but this should be (100 + levels',
-                      str(self.caught_warnings[0]))
-        self._check_expected_levels(results, 1)
+        with self.assertRaisesRegexp(
+                ValueError,
+                'hence >= 101'):
+            results = list(ff2pp._fields_over_all_levels(field))
 
     def test__lbhem_too_large(self):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 105
-        results = list(ff2pp._fields_over_all_levels(field))
-        self.assertIn("LBHEM of (100 + levels-per-field-type) = 105.  This is "
-                      "more than the full number of levels in the file "
-                      "('nAll' = 3)",
-                      str(self.caught_warnings[0]))
-        self._check_expected_levels(results, 3)
+        with self.assertRaisesRegexp(
+                ValueError,
+                'more than the total number of levels in the file = 3'):
+            results = list(ff2pp._fields_over_all_levels(field))
 
 
 if __name__ == "__main__":
