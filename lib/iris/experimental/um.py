@@ -214,14 +214,14 @@ class Field(object):
     """
     __metaclass__ = _FieldMetaclass
 
-    LBLREC_OFFSET = 14
     #: Zero-based index for lblrec.
-    LBREL_OFFSET = 21
+    LBLREC_OFFSET = 14
     #: Zero-based index for lbrel.
-    LBEGIN_OFFSET = 28
+    LBREL_OFFSET = 21
     #: Zero-based index for lbegin.
-    LBNREC_OFFSET = 29
+    LBEGIN_OFFSET = 28
     #: Zero-based index for lbnrec.
+    LBNREC_OFFSET = 29
 
     def __init__(self, int_headers, real_headers, data_provider):
         """
