@@ -1560,6 +1560,7 @@ def _field_gen(filename, read_data_bytes):
     pp_file_seek = pp_file.seek
     pp_file_read = pp_file.read
 
+    field_count = 0
     # Keep reading until we reach the end of file
     while True:
         # Move past the leading header length word
@@ -1574,7 +1575,13 @@ def _field_gen(filename, read_data_bytes):
         header = tuple(header_longs) + tuple(header_floats)
 
         # Make a PPField of the appropriate sub-class (depends on header release number)
-        pp_field = make_pp_field(header)
+        try:
+            pp_field = make_pp_field(header)
+        except ValueError as e:
+            msg = 'Unable to interpret field {}. {}. Skipping ' \
+                  'the remainder of the file.'.format(field_count, e.message)
+            warnings.warn(msg)
+            break
 
         # Skip the trailing 4-byte word containing the header length
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
@@ -1611,6 +1618,7 @@ def _field_gen(filename, read_data_bytes):
 
         # Skip that last 4 byte record telling me the length of the field I have already read
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
+        field_count += 1
         yield pp_field
     pp_file.close()
 
