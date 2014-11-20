@@ -340,7 +340,9 @@ class IrisTest(unittest.TestCase):
     def assertFilesEqual(self, test_filename, reference_filename):
         reference_path = get_result_path(reference_filename)
         if os.path.isfile(reference_path):
-            self.assertTrue(filecmp.cmp(test_filename, reference_path))
+            fmt = 'test file {!r} does not match reference {!r}.'
+            self.assertTrue(filecmp.cmp(test_filename, reference_path),
+                            fmt.format(test_filename, reference_path))
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)

@@ -22,6 +22,8 @@ Low level support for UM FieldsFile variants.
 from __future__ import (absolute_import, division, print_function)
 
 import os
+import os.path
+import tempfile
 
 import numpy as np
 
@@ -111,6 +113,13 @@ class FixedLengthHeader(object):
     __metaclass__ = _HeaderMetaclass
 
     NUM_WORDS = 256
+    IMDI = -32768
+
+    @classmethod
+    def empty(cls, word_size=DEFAULT_WORD_SIZE):
+        integers = np.empty(cls.NUM_WORDS, dtype='>i{}'.format(word_size))
+        integers[:] = cls.IMDI
+        return cls(integers)
 
     @classmethod
     def from_file(cls, source, word_size=DEFAULT_WORD_SIZE):
@@ -143,6 +152,19 @@ class FixedLengthHeader(object):
                              'be {}.'.format(len(integers), self.NUM_WORDS))
         self._integers = np.asarray(integers)
 
+    def __eq__(self, other):
+        try:
+            eq = np.all(self._integers == other._integers)
+        except AttributeError:
+            eq = NotImplemented
+        return eq
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
+
     @property
     def raw(self):
         return self._integers.view()
@@ -173,9 +195,9 @@ class _FieldMetaclass(type):
                     names = [name + str(i + 1) for i, _ in enumerate(indices)]
                 for name, index in zip(names, indices):
                     if index < _NUM_FIELD_INTS:
-                        attr_name = '_int_headers'
+                        attr_name = 'int_headers'
                     else:
-                        attr_name = '_real_headers'
+                        attr_name = 'real_headers'
                         index -= _NUM_FIELD_INTS
                     class_dict[name] = property(_make_getter(attr_name, index),
                                                 _make_setter(attr_name, index))
@@ -191,14 +213,14 @@ class Field(object):
     """
     __metaclass__ = _FieldMetaclass
 
-    LBLREC_OFFSET = 14
     #: Zero-based index for lblrec.
-    LBREL_OFFSET = 21
+    LBLREC_OFFSET = 14
     #: Zero-based index for lbrel.
-    LBEGIN_OFFSET = 28
+    LBREL_OFFSET = 21
     #: Zero-based index for lbegin.
-    LBNREC_OFFSET = 29
+    LBEGIN_OFFSET = 28
     #: Zero-based index for lbnrec.
+    LBNREC_OFFSET = 29
 
     def __init__(self, int_headers, real_headers, data_provider):
         """
@@ -213,13 +235,38 @@ class Field(object):
         * real_headers:
             A sequence of floating-point header values.
         * data_provider:
-            An object with a `read_data()` method which will provide the
-            corresponding values from the DATA component.
+            Either, an object with a `read_data()` method which will
+            provide the corresponding values from the DATA component,
+            or a NumPy array.
 
         """
-        self._int_headers = int_headers
-        self._real_headers = real_headers
+        #: A NumPy array of integer header values.
+        self.int_headers = np.asarray(int_headers)
+        #: A NumPy array of floating-point header values.
+        self.real_headers = np.asarray(real_headers)
         self._data_provider = data_provider
+
+    def __eq__(self, other):
+        try:
+            eq = (np.all(self.int_headers == other.int_headers) and
+                  np.all(self.real_headers == other.real_headers) and
+                  np.all(self.read_data() == other.read_data()))
+        except AttributeError:
+            eq = NotImplemented
+        return eq
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
+
+    def num_values(self):
+        """
+        Return the number of values defined by this header.
+
+        """
+        return len(self.int_headers) + len(self.real_headers)
 
     def read_data(self):
         """
@@ -230,7 +277,9 @@ class Field(object):
 
         """
         data = None
-        if self._data_provider is not None:
+        if isinstance(self._data_provider, np.ndarray):
+            data = self._data_provider
+        elif self._data_provider is not None:
             data = self._data_provider.read_data(self)
         return data
 
@@ -278,7 +327,7 @@ class _NormalDataProvider(object):
         self.word_size = word_size
 
     def read_data(self, field):
-        self.source.seek(self.offset, os.SEEK_SET)
+        self.source.seek(self.offset)
         lbpack = field.lbpack
         # Ensure lbpack.n4 (number format) is: native, CRAY, or IEEE.
         format = (lbpack // 1000) % 10
@@ -295,6 +344,8 @@ class _NormalDataProvider(object):
             dtype = _DATA_DTYPES[word_size][field.lbuser1]
             rows = field.lbrow
             cols = field.lbnpt
+            # The data is stored in rows, so with the shape (rows, cols)
+            # we don't need to invoke Fortran order.
             data = np.fromfile(self.source, dtype, count=rows * cols)
             data = data.reshape(rows, cols)
         elif lbpack == 1:
@@ -324,7 +375,7 @@ class _BoundaryDataProvider(object):
         self.word_size = word_size
 
     def read_data(self, field):
-        self.source.seek(self.offset, os.SEEK_SET)
+        self.source.seek(self.offset)
         lbpack = field.lbpack
         # Ensure lbpack.n4 (number format) is: native, CRAY, or IEEE.
         format = (lbpack // 1000) % 10
@@ -363,7 +414,26 @@ class FieldsFileVariant(object):
                    ('compressed_field_index2', 'i'),
                    ('compressed_field_index3', 'i'))
 
-    def __init__(self, filename, word_size=DEFAULT_WORD_SIZE):
+    _WORDS_PER_SECTOR = 2048
+
+    class _Mode(object):
+        def __init__(self, name):
+            self.name = name
+
+        def __repr__(self):
+            return self.name
+
+    #: The file will be opened for read-only access.
+    READ_MODE = _Mode('READ_MODE')
+    #: The file will be opened for update.
+    UPDATE_MODE = _Mode('UPDATE_MODE')
+    #: The file will be created, overwriting the file if it already
+    #: exists.
+    CREATE_MODE = _Mode('CREATE_MODE')
+
+    _MODE_MAPPING = {READ_MODE: 'rb', UPDATE_MODE: 'r+b', CREATE_MODE: 'wb'}
+
+    def __init__(self, filename, mode=READ_MODE, word_size=DEFAULT_WORD_SIZE):
         """
         Opens the given filename as a UM FieldsFile variant.
 
@@ -374,20 +444,35 @@ class FieldsFileVariant(object):
 
         Kwargs:
 
+        * mode:
+            The file access mode: `READ_MODE` for read-only;
+            `UPDATE_MODE` for amending; `CREATE_MODE` for creating a new
+            file.
+
         * word_size:
             The number of byte in each word.
 
         """
-        self._source = source = open(filename, 'rb')
+        if mode not in self._MODE_MAPPING:
+            raise ValueError('Invaild access mode: {}'.format(mode))
+
+        self._filename = filename
+        self._mode = mode
         self._word_size = word_size
 
-        self.fixed_length_header = FixedLengthHeader.from_file(source,
-                                                               word_size)
+        source_mode = self._MODE_MAPPING[mode]
+        self._source = source = open(filename, source_mode)
+
+        if mode is self.CREATE_MODE:
+            header = FixedLengthHeader.empty(word_size)
+        else:
+            header = FixedLengthHeader.from_file(source, word_size)
+        self.fixed_length_header = header
 
         def constants(name, dtype):
             start = getattr(self.fixed_length_header, name + '_start')
             if start > 0:
-                source.seek((start - 1) * word_size, os.SEEK_SET)
+                source.seek((start - 1) * word_size)
                 shape = getattr(self.fixed_length_header, name + '_shape')
                 values = np.fromfile(source, dtype, count=np.product(shape))
                 if len(shape) > 1:
@@ -410,35 +495,209 @@ class FieldsFileVariant(object):
 
         lookup = constants('lookup', int_dtype)
         fields = []
-        if lookup[Field.LBNREC_OFFSET, 0] == 0:
-            # A model dump has no direct addressing - only relative, so we
-            # need to update the offset as we create each Field.
-            running_offset = ((self.fixed_length_header.data_start - 1) *
-                              word_size)
-            for raw_headers in lookup.T:
-                if raw_headers[0] == -99:
-                    data_provider = None
-                else:
-                    offset = running_offset
-                    data_provider = data_class(source, offset, word_size)
-                klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
-                int_headers = raw_headers[:_NUM_FIELD_INTS]
-                real_headers = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
-                fields.append(klass(int_headers, real_headers, data_provider))
-                running_offset += raw_headers[Field.LBLREC_OFFSET] * word_size
-        else:
-            for raw_headers in lookup.T:
-                if raw_headers[0] == -99:
-                    data_provider = None
-                else:
-                    offset = raw_headers[Field.LBEGIN_OFFSET] * word_size
-                    data_provider = data_class(source, offset, word_size)
-                klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
-                int_headers = raw_headers[:_NUM_FIELD_INTS]
-                real_headers = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
-                fields.append(klass(int_headers, real_headers, data_provider))
+        if lookup is not None:
+            if lookup[Field.LBNREC_OFFSET, 0] == 0:
+                # A model dump has no direct addressing - only relative,
+                # so we need to update the offset as we create each
+                # Field.
+                running_offset = ((self.fixed_length_header.data_start - 1) *
+                                  word_size)
+                for raw_headers in lookup.T:
+                    if raw_headers[0] == -99:
+                        data_provider = None
+                    else:
+                        offset = running_offset
+                        data_provider = data_class(source, offset, word_size)
+                    klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
+                    ints = raw_headers[:_NUM_FIELD_INTS]
+                    reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
+                    fields.append(klass(ints, reals, data_provider))
+                    running_offset += (raw_headers[Field.LBLREC_OFFSET] *
+                                       word_size)
+            else:
+                for raw_headers in lookup.T:
+                    if raw_headers[0] == -99:
+                        data_provider = None
+                    else:
+                        offset = raw_headers[Field.LBEGIN_OFFSET] * word_size
+                        data_provider = data_class(source, offset, word_size)
+                    klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
+                    ints = raw_headers[:_NUM_FIELD_INTS]
+                    reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
+                    fields.append(klass(ints, reals, data_provider))
         self.fields = fields
+
+    def __del__(self):
+        if hasattr(self, '_source'):
+            self.close()
+
+    def __str__(self):
+        dataset_type = self.fixed_length_header.dataset_type
+        items = ['dataset_type={}'.format(dataset_type)]
+        for name, kind in self._COMPONENTS:
+            value = getattr(self, name)
+            if value is not None:
+                items.append('{}={}'.format(name, value.shape))
+        if self.fields:
+            items.append('fields={}'.format(len(self.fields)))
+        return '<FieldsFileVariant: {}>'.format(', '.join(items))
 
     def __repr__(self):
         fmt = '<FieldsFileVariant: dataset_type={}>'
         return fmt.format(self.fixed_length_header.dataset_type)
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @property
+    def mode(self):
+        return self._mode
+
+    def _update_fixed_length_header(self):
+        # Set the start locations and dimension lengths(*) in the fixed
+        # length header.
+        # *) Except for the DATA component where we only determine
+        #    the start location.
+        header = self.fixed_length_header
+        word_number = header.NUM_WORDS + 1  # Numbered from 1.
+
+        # Start by dealing with the normal components.
+        for name, kind in self._COMPONENTS:
+            value = getattr(self, name)
+            start_name = name + '_start'
+            shape_name = name + '_shape'
+            if value is None:
+                setattr(header, start_name, header.IMDI)
+                setattr(header, shape_name, header.IMDI)
+            else:
+                setattr(header, start_name, word_number)
+                setattr(header, shape_name, value.shape)
+                word_number += value.size
+
+        # Now deal with the LOOKUP and DATA components.
+        if self.fields:
+            header.lookup_start = word_number
+            lengths = set(field.num_values() for field in self.fields)
+            if len(lengths) != 1:
+                msg = 'Inconsistent header lengths - {}'.format(lengths)
+                raise ValueError(msg)
+            header.lookup_shape = (lengths.pop(), len(self.fields))
+
+            # Round up to the nearest whole number of "sectors".
+            offset = word_number - 1
+            offset -= offset % -self._WORDS_PER_SECTOR
+            header.data_start = offset + 1
+        else:
+            header.lookup_start = header.IMDI
+            header.lookup_shape = header.IMDI
+            header.data_start = header.IMDI
+            header.data_shape = header.IMDI
+
+    def _write_new(self, output_file):
+        self._update_fixed_length_header()
+
+        # Helper function to ensure an array is big-endian and of the
+        # correct dtype kind and word size.
+        def normalise(values, kind):
+            return values.astype('>{}{}'.format(kind, self._word_size))
+
+        # Skip the fixed length header. We'll write it at the end
+        # once we know how big the DATA component needs to be.
+        header = self.fixed_length_header
+        output_file.seek(header.NUM_WORDS * self._word_size)
+
+        # Write all the normal components which have a value.
+        for name, kind in self._COMPONENTS:
+            values = getattr(self, name)
+            if values is not None:
+                output_file.write(np.ravel(normalise(values, kind), order='F'))
+
+        if self.fields:
+            # Skip the LOOKUP component and write the DATA component.
+            # We need to adjust the LOOKUP headers to match where
+            # the DATA payloads end up, so to avoid repeatedly
+            # seeking backwards and forwards it makes sense to wait
+            # until we've adjusted them all and write them out in
+            # one go.
+            output_file.seek((header.data_start - 1) * self._word_size)
+            dataset_type = self.fixed_length_header.dataset_type
+            sector_size = self._WORDS_PER_SECTOR * self._word_size
+            for field in self.fields:
+                data = field.read_data()
+                if data is not None:
+                    field.lbegin = output_file.tell() / self._word_size
+                    # Round the data length up to the nearest whole
+                    # number of "sectors".
+                    size = data.size
+                    size -= size % -self._WORDS_PER_SECTOR
+                    field.lbnrec = size
+                    kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
+                                                        data.dtype.kind)
+                    data = normalise(data, kind)
+                    output_file.write(data)
+                    overrun = output_file.tell() % sector_size
+                    if overrun != 0:
+                        padding = np.zeros(sector_size - overrun, 'i1')
+                        output_file.write(padding)
+
+            # Update the fixed length header to reflect the extent
+            # of the DATA component.
+            if dataset_type == 5:
+                header.data_shape = 0
+            else:
+                header.data_shape = ((output_file.tell() // self._word_size) -
+                                     header.data_start + 1)
+
+            # Go back and write the LOOKUP component.
+            output_file.seek((header.lookup_start - 1) * self._word_size)
+            for field in self.fields:
+                output_file.write(normalise(field.int_headers, 'i'))
+                output_file.write(normalise(field.real_headers, 'f'))
+
+        # Write the fixed length header - now that we know how big
+        # the DATA component was.
+        output_file.seek(0)
+        output_file.write(normalise(self.fixed_length_header.raw, 'i'))
+
+    def close(self):
+        """
+        Write out any pending changes, and close the underlying file.
+
+        If the file was opened for update or creation then the current
+        state of the fixed length header, the constant components (e.g.
+        integer_constants, level_dependent_constants), and the list of
+        fields are written to the file before closing. The process of
+        writing to the file also updates the values in the fixed length
+        header and fields which relate to layout within the file. For
+        example, `integer_constants_start` and `integer_constants_shape`
+        within the fixed length header, and the `lbegin` and `lbnrec`
+        elements within the fields.
+
+        If the file was opened in read mode then no changes will be
+        made.
+
+        After calling `close()` any subsequent modifications to any of
+        the attributes will have no effect on the underlying file.
+
+        Calling `close()` more than once is allowed, but only the first
+        call will have any effect.
+
+        """
+        if not self._source.closed:
+            try:
+                if self.mode in (self.UPDATE_MODE, self.CREATE_MODE):
+                    # For simplicity at this stage we always create a new
+                    # file and rename it once complete.
+                    # At some later stage we can optimise for in-place
+                    # modifications, for example if only one of the integer
+                    # constants has been modified.
+
+                    src_dir = os.path.dirname(os.path.abspath(self.filename))
+                    with tempfile.NamedTemporaryFile(dir=src_dir,
+                                                     delete=False) as tmp_file:
+                        self._write_new(tmp_file)
+                    os.unlink(self.filename)
+                    os.rename(tmp_file.name, self.filename)
+            finally:
+                self._source.close()
