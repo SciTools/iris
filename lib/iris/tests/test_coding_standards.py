@@ -134,17 +134,8 @@ class StandardReportWithExclusions(pep8.StandardReport):
 
     if DOCS_DIRS:
         expected_bad_docs_files = [
-            '*/example_code/General/SOI_filtering.py',
-            '*/example_code/General/cross_section.py',
-            '*/example_code/General/custom_file_loading.py',
-            '*/example_code/General/global_map.py',
-            '*/example_code/Meteorology/COP_1d_plot.py',
-            '*/example_code/Meteorology/COP_maps.py',
-            '*/example_code/Meteorology/hovmoller.py',
-            '*/example_code/Meteorology/lagged_ensemble.py',
             '*/src/conf.py',
-            '*/src/developers_guide/gitwash_dumper.py',
-            '*/src/userguide/plotting_examples/1d_with_legend.py']
+            '*/src/developers_guide/gitwash_dumper.py']
 
         expected_bad_files += expected_bad_docs_files
 

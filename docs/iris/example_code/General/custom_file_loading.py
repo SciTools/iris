@@ -2,43 +2,56 @@
 Loading a cube from a custom file format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This example shows how a custom text file can be loaded using the standard Iris load mechanism.
+This example shows how a custom text file can be loaded using the standard Iris
+load mechanism.
 
-The first stage in the process is to define an Iris :class:`FormatSpecification <iris.io.format_picker.FormatSpecification>` for the file format.
-To create a format specification we need to define the following:
+The first stage in the process is to define an Iris :class:`FormatSpecification
+<iris.io.format_picker.FormatSpecification>` for the file format. To create a
+format specification we need to define the following:
 
-* format_name - Some text that describes the format specification we are creating
+* format_name - Some text that describes the format specification we are
+  creating
 * file_element - FileElement object describing the element which identifies
   this FormatSpecification.
 
   Possible values are:
-    
-    ``iris.io.format_picker.MagicNumber(n, o)`` - The n bytes from the file \
-    at offset o.
-    
-    ``iris.io.format_picker.FileExtension()`` - The file's extension.
-    
-    ``iris.io.format_picker.LeadingLine()``  - The first line of the file.
 
-* file_element_value - The value that the file_element should take if a file matches this FormatSpecification
-* handler (optional) - A generator function that will be called when the file specification has been identified. This function is
-  provided by the user and provides the means to parse the whole file. If no handler function is provided, then identification
-  is still possible without any handling.
+    ``iris.io.format_picker.MagicNumber(n, o)``
+        The n bytes from the file at offset o.
+
+    ``iris.io.format_picker.FileExtension()``
+        The file's extension.
+
+    ``iris.io.format_picker.LeadingLine()``
+        The first line of the file.
+
+* file_element_value - The value that the file_element should take if a file
+  matches this FormatSpecification
+* handler (optional) - A generator function that will be called when the file
+  specification has been identified. This function is provided by the user and
+  provides the means to parse the whole file. If no handler function is
+  provided, then identification is still possible without any handling.
 
   The handler function must define the following arguments:
 
   * list of filenames to process
-  * callback function - An optional function to filter/alter the Iris cubes returned
+  * callback function - An optional function to filter/alter the Iris cubes
+    returned
 
-  The handler function must be defined as generator which yields each cube as they are produced.
+  The handler function must be defined as generator which yields each cube as
+  they are produced.
 
-* priority (optional) - Integer giving a priority for considering this specification where higher priority means sooner consideration
+* priority (optional) - Integer giving a priority for considering this
+  specification where higher priority means sooner consideration
 
-In the following example, the function :func:`load_NAME_III` has been defined to handle the loading of the raw data from the custom file format.
-This function is called from :func:`NAME_to_cube` which uses this data to create and yield Iris cubes.
+In the following example, the function :func:`load_NAME_III` has been defined
+to handle the loading of the raw data from the custom file format. This
+function is called from :func:`NAME_to_cube` which uses this data to create and
+yield Iris cubes.
 
-In the ``main()`` function the filenames are loaded via the ``iris.load_cube`` function which automatically
-invokes the ``FormatSpecification`` we defined. The cube returned from the load function is then used to produce a plot.
+In the ``main()`` function the filenames are loaded via the ``iris.load_cube``
+function which automatically invokes the ``FormatSpecification`` we defined.
+The cube returned from the load function is then used to produce a plot.
 
 """
 import datetime
@@ -66,7 +79,8 @@ COLUMN_NAMES = ['species_category', 'species', 'cell_measure', 'quantity',
 
 def load_NAME_III(filename):
     """
-    Loads the Met Office's NAME III grid output files returning headers, column definitions and data arrays as 3 separate lists.
+    Loads the Met Office's NAME III grid output files returning headers, column
+    definitions and data arrays as 3 separate lists.
 
     """
 
@@ -153,14 +167,18 @@ def load_NAME_III(filename):
 
 
 def NAME_to_cube(filenames, callback):
-    """Returns a generator of cubes given a list of filenames and a callback."""
+    """
+    Returns a generator of cubes given a list of filenames and a callback.
+    """
 
     for filename in filenames:
         header, column_headings, data_arrays = load_NAME_III(filename)
 
         for i, data_array in enumerate(data_arrays):
-            # turn the dictionary of column headers with a list of header information for each field into a dictionary of
-            # headers for just this field. Ignore the first 4 columns of grid position (data was located with the data array).
+            # turn the dictionary of column headers with a list of header
+            # information for each field into a dictionary of headers for just
+            # this field. Ignore the first 4 columns of grid position (data was
+            # located with the data array).
             field_headings = dict((k, v[i + 4])
                                   for k, v in column_headings.items())
 
@@ -168,47 +186,69 @@ def NAME_to_cube(filenames, callback):
             cube = iris.cube.Cube(data_array)
 
             # define the name and unit
-            name = ('%s %s' % (field_headings['species'], field_headings['quantity'])).upper().replace(' ', '_')
+            name = ('%s %s' % (field_headings['species'],
+                               field_headings['quantity']))
+            name = name.upper().replace(' ', '_')
             cube.rename(name)
-            # Some units are badly encoded in the file, fix this by putting a space in between. (if gs is not found, then the
-            # string will be returned unchanged)
+            # Some units are badly encoded in the file, fix this by putting a
+            # space in between. (if gs is not found, then the string will be
+            # returned unchanged)
             cube.units = field_headings['unit'].replace('gs', 'g s')
 
-            # define and add the singular coordinates of the field (flight level, time etc.)
-            cube.add_aux_coord(icoords.AuxCoord(field_headings['z_level'], long_name='flight_level', units='1'))
+            # define and add the singular coordinates of the field (flight
+            # level, time etc.)
+            cube.add_aux_coord(icoords.AuxCoord(field_headings['z_level'],
+                                                long_name='flight_level',
+                                                units='1'))
 
-            # define the time unit and use it to serialise the datetime for the time coordinate
-            time_unit = iris.unit.Unit('hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
-            time_coord = icoords.AuxCoord(time_unit.date2num(field_headings['time']), standard_name='time', units=time_unit)
+            # define the time unit and use it to serialise the datetime for the
+            # time coordinate
+            time_unit = iris.unit.Unit('hours since epoch',
+                                       calendar=iris.unit.CALENDAR_GREGORIAN)
+            time_coord = icoords.AuxCoord(
+                time_unit.date2num(field_headings['time']),
+                standard_name='time',
+                units=time_unit)
             cube.add_aux_coord(time_coord)
 
-            # build a coordinate system which can be referenced by latitude and longitude coordinates
+            # build a coordinate system which can be referenced by latitude and
+            # longitude coordinates
             lat_lon_coord_system = icoord_systems.GeogCS(6371229)
 
-            # build regular latitude and longitude coordinates which have bounds
+            # build regular latitude and longitude coordinates which have
+            # bounds
             start = header['X grid origin'] + header['X grid resolution']
             step = header['X grid resolution']
             count = header['X grid size']
             pts = start + np.arange(count, dtype=np.float32) * step
-            lon_coord = icoords.DimCoord(pts, standard_name='longitude', units='degrees', coord_system=lat_lon_coord_system)
+            lon_coord = icoords.DimCoord(pts, standard_name='longitude',
+                                         units='degrees',
+                                         coord_system=lat_lon_coord_system)
             lon_coord.guess_bounds()
 
             start = header['Y grid origin'] + header['Y grid resolution']
             step = header['Y grid resolution']
             count = header['Y grid size']
             pts = start + np.arange(count, dtype=np.float32) * step
-            lat_coord = icoords.DimCoord(pts, standard_name='latitude', units='degrees', coord_system=lat_lon_coord_system)
+            lat_coord = icoords.DimCoord(pts, standard_name='latitude',
+                                         units='degrees',
+                                         coord_system=lat_lon_coord_system)
             lat_coord.guess_bounds()
 
-            # add the latitude and longitude coordinates to the cube, with mappings to data dimensions
+            # add the latitude and longitude coordinates to the cube, with
+            # mappings to data dimensions
             cube.add_dim_coord(lat_coord, 0)
             cube.add_dim_coord(lon_coord, 1)
 
-            # implement standard iris callback capability. Although callbacks are not used in this example, the standard
-            # mechanism for a custom loader to implement a callback is shown:
-            cube = iris.io.run_callback(callback, cube, [header, field_headings, data_array], filename)
+            # implement standard iris callback capability. Although callbacks
+            # are not used in this example, the standard mechanism for a custom
+            # loader to implement a callback is shown:
+            cube = iris.io.run_callback(callback, cube,
+                                        [header, field_headings, data_array],
+                                        filename)
 
-            # yield the cube created (the loop will continue when the next() element is requested)
+            # yield the cube created (the loop will continue when the next()
+            # element is requested)
             yield cube
 
 
@@ -225,7 +265,6 @@ _NAME_III_spec = format_picker.FormatSpecification(
 iris.fileformats.FORMAT_AGENT.add_spec(_NAME_III_spec)
 
 
-
 # ---------------------------------------------
 # |          Using the new loader             |
 # ---------------------------------------------
@@ -233,16 +272,19 @@ iris.fileformats.FORMAT_AGENT.add_spec(_NAME_III_spec)
 def main():
     fname = iris.sample_data_path('NAME_output.txt')
 
-    boundary_volc_ash_constraint = iris.Constraint('VOLCANIC_ASH_AIR_CONCENTRATION', flight_level='From FL000 - FL200')
+    boundary_volc_ash_constraint = iris.Constraint(
+        'VOLCANIC_ASH_AIR_CONCENTRATION',
+        flight_level='From FL000 - FL200')
 
-    # Callback shown as None to illustrate where a cube-level callback function would be used if required
+    # Callback shown as None to illustrate where a cube-level callback function
+    # would be used if required
     cube = iris.load_cube(fname, boundary_volc_ash_constraint, callback=None)
 
     # draw contour levels for the data (the top level is just a catch-all)
     levels = (0.0002, 0.002, 0.004, 1e10)
     cs = iplt.contourf(cube, levels=levels,
-                        colors=('#80ffff', '#939598', '#e00404'),
-                        )
+                       colors=('#80ffff', '#939598', '#e00404'),
+                       )
 
     # draw a black outline at the lowest contour to highlight affected areas
     iplt.contour(cube, levels=(levels[0], 100),
@@ -256,10 +298,12 @@ def main():
     # make a legend, with custom labels, for the coloured contour set
     artists, _ = cs.legend_elements()
     labels = [
-              r'$%s < x \leq %s$' % (levels[0], levels[1]),
-              r'$%s < x \leq %s$' % (levels[1], levels[2]),
-              r'$x > %s$' % levels[2]]
-    ax.legend(artists, labels, title='Ash concentration / g m-3', loc='upper left')
+        r'$%s < x \leq %s$' % (levels[0], levels[1]),
+        r'$%s < x \leq %s$' % (levels[1], levels[2]),
+        r'$x > %s$' % levels[2]
+    ]
+    ax.legend(artists, labels, title='Ash concentration / g m-3',
+              loc='upper left')
 
     time = cube.coord('time')
     time_date = time.units.num2date(time.points[0]).strftime(UTC_format)
