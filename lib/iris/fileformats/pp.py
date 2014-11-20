@@ -623,17 +623,18 @@ class BitwiseInt(SplittableInt):
 class PPDataProxy(object):
     """A reference to the data payload of a single PP field."""
 
-    __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len', '_lbpack',
-                 'mdi', 'mask')
-    
-    def __init__(self, shape, src_dtype, path, offset, data_len, lbpack, mdi,
-                 mask):
+    __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len',
+                 '_lbpack', 'boundary_packing', 'mdi', 'mask')
+
+    def __init__(self, shape, src_dtype, path, offset, data_len,
+                 lbpack, boundary_packing, mdi, mask):
         self.shape = shape
         self.src_dtype = src_dtype
         self.path = path
         self.offset = offset
         self.data_len = data_len
         self.lbpack = lbpack
+        self.boundary_packing = boundary_packing
         self.mdi = mdi
         self.mask = mask
 
@@ -666,7 +667,9 @@ class PPDataProxy(object):
         with open(self.path, 'rb') as pp_file:
             pp_file.seek(self.offset, os.SEEK_SET)
             data_bytes = pp_file.read(self.data_len)
-            data = _data_bytes_to_shaped_array(data_bytes, self.lbpack,
+            data = _data_bytes_to_shaped_array(data_bytes,
+                                               self.lbpack,
+                                               self.boundary_packing,
                                                self.shape, self.src_dtype,
                                                self.mdi, self.mask)
         return data.__getitem__(keys)
@@ -704,7 +707,8 @@ class PPDataProxy(object):
         return result
 
 
-def _data_bytes_to_shaped_array(data_bytes, lbpack, data_shape, data_type, mdi,
+def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
+                                data_shape, data_type, mdi,
                                 mask=None):
     """
     Convert the already read binary data payload into a numpy array, unpacking
@@ -730,12 +734,10 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, data_shape, data_type, mdi,
         data.byteswap(True)
         data.dtype = data.dtype.newbyteorder('=')
 
-    if hasattr(lbpack, 'boundary_packing'):
+    if boundary_packing is not None:
         # Convert a long string of numbers into a "lateral boundary
         # condition" array, which is split into 4 quartiles, North
         # East, South, West and where North and South contain the corners.
-        
-        boundary_packing = lbpack.boundary_packing
         compressed_data = data
         data = np.ma.masked_all(data_shape)
 
@@ -831,8 +833,9 @@ def _pp_attribute_names(header_defn):
     normal_headers = list(name for name, positions in header_defn if name not in _SPECIAL_HEADERS)
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = EXTRA_DATA.values()
-    raw_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack']
-    return normal_headers + special_headers + extra_data + raw_attributes
+    special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
+                          'boundary_packing']
+    return normal_headers + special_headers + extra_data + special_attributes
 
 
 class PPField(object):
@@ -863,6 +866,7 @@ class PPField(object):
         self._raw_header = header
         self.raw_lbtim = None
         self.raw_lbpack = None
+        self.boundary_packing = None
         if header is not None:
             self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
@@ -1525,7 +1529,9 @@ def _create_field_data(field, data_shape, land_mask):
     if isinstance(field._data, LoadedArrayBytes):
         loaded_bytes = field._data
         field._data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
-                                                  field.lbpack, data_shape,
+                                                  field.lbpack,
+                                                  field.boundary_packing,
+                                                  data_shape,
                                                   loaded_bytes.dtype,
                                                   field.bmdi, land_mask)
     else:
@@ -1533,8 +1539,9 @@ def _create_field_data(field, data_shape, land_mask):
         # in order to support deferred data loading.
         fname, position, n_bytes, dtype = field._data
         proxy = PPDataProxy(data_shape, dtype,
-                            fname, position,
-                            n_bytes, field.raw_lbpack,
+                            fname, position, n_bytes,
+                            field.raw_lbpack,
+                            field.boundary_packing,
                             field.bmdi, land_mask)
         field._data = biggus.NumpyArrayAdapter(proxy)
 

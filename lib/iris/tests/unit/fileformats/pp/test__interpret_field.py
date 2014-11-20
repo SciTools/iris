@@ -99,7 +99,7 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
             list(pp._interpret_fields([f1, self.land_mask_field, f2]))
         for call in PPDataProxy.call_args_list:
             positional_args = call[0]
-            self.assertIs(positional_args[7], self.land_mask_field)
+            self.assertIs(positional_args[8], self.land_mask_field)
 
 
 if __name__ == "__main__":

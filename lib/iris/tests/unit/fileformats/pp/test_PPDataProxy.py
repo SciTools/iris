@@ -31,14 +31,14 @@ class Test_lbpack(tests.IrisTest):
     def test_lbpack_SplittableInt(self):
         lbpack = mock.Mock(spec_set=SplittableInt)
         proxy = PPDataProxy(None, None, None, None,
-                            None, lbpack, None, None)
+                            None, lbpack, None, None, None)
         self.assertEqual(proxy.lbpack, lbpack)
         self.assertIs(proxy.lbpack, lbpack)
 
     def test_lnpack_raw(self):
         lbpack = 4321
         proxy = PPDataProxy(None, None, None, None,
-                            None, lbpack, None, None)
+                            None, lbpack, None, None, None)
         self.assertEqual(proxy.lbpack, lbpack)
         self.assertIsNot(proxy.lbpack, lbpack)
         self.assertIsInstance(proxy.lbpack, SplittableInt)
