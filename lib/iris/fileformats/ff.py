@@ -527,6 +527,94 @@ class FF2PP(object):
             field_dim = np.concatenate([extra_before, field_dim, extra_after])
         return field_dim
 
+    def _adjust_field_for_lbc(self, field):
+        """
+        Make an LBC field look like a 'normal' field for rules processing.
+
+        """
+        # Set LBTIM to indicate the specific time encoding for LBCs,
+        # i.e. t1=forecast, t2=reference
+        lbtim_default = 11
+        if field.lbtim not in (0, lbtim_default):
+            raise ValueError('LBC field has LBTIM of {:d}, expected only '
+                             '0 or {:d}.'.format(field.lbtim, lbtim_default))
+        field.lbtim = lbtim_default
+
+        # Set LBVC to indicate the specific height encoding for LBCs,
+        # i.e. hybrid height layers.
+        lbvc_default = 65
+        if field.lbvc not in (0, lbvc_default):
+            raise ValueError('LBC field has LBVC of {:d}, expected only '
+                             '0 or {:d}.'.format(field.lbvc, lbvc_default))
+        field.lbvc = lbvc_default
+        # Specifying a vertical encoding scheme means a usable vertical
+        # coordinate can be produced, because we also record the level
+        # number in each result field:  Thus they are located, and can
+        # be stacked, in a vertical dimension.
+        # See per-layer loop (below).
+
+        # Calculate field packing details and store on LBPACK.
+        name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
+                            x_halo=slice(0, 2))
+        b_packing = pp.SplittableInt(field.lbuser[2], name_mapping)
+        field.lbpack.boundary_packing = b_packing
+        # Fix the lbrow and lbnpt to be the actual size of the data
+        # array, since the field is no longer a "boundary" fields file
+        # field.
+        field.lbrow += 2 * field.lbpack.boundary_packing.y_halo
+        field.lbnpt += 2 * field.lbpack.boundary_packing.x_halo
+        # Update the x and y coordinates for this field. Note: it may
+        # be that this needs to update x and y also, but that is yet
+        # to be confirmed.
+        if (field.bdx in (0, field.bmdi) or
+                field.bdy in (0, field.bmdi)):
+            field.x = self._det_border(field.x, b_packing.x_halo)
+            field.y = self._det_border(field.y, b_packing.y_halo)
+        else:
+            if field.bdy < 0:
+                warnings.warn('The LBC has a bdy less than 0. No '
+                              'case has previously been seen of '
+                              'this, and the decompression may be '
+                              'erroneous.')
+            field.bzx -= field.bdx * b_packing.x_halo
+            field.bzy -= field.bdy * b_packing.y_halo
+
+    def _fields_over_all_levels(self, field):
+        """
+        Replicate the field over all model levels, setting LBLEV for each.
+
+        This is appropriate for LBC data.
+        Yields an iterator producing a sequence of distinct field objects.
+
+        """
+        n_all_levels = self._ff_header.level_dependent_constants.shape[0]
+        levels_count = field.lbhem - 100
+        if levels_count < 1:
+            raise ValueError(
+                'LBC field has LBHEM of {:d}, but this should be (100 '
+                '+ levels-per-field-type), hence >= 101.'.format(field.lbhem))
+        if levels_count > n_all_levels:
+            raise ValueError(
+                'LBC field has LBHEM of (100 + levels-per-field-type) '
+                '= {:d}, but this is more than the total number of levels '
+                'in the file = {:d}).'.format(field.lbhem, n_all_levels))
+
+        for i_model_level in range(levels_count):
+            # Make subsequent fields alike, but distinct.
+            if i_model_level > 0:
+                field = field.copy()
+            # Provide the correct "model level" value.
+            field.lblev = i_model_level
+            # TODO: as LBC lookup headers cover multiple layers, they
+            # contain no per-layer height values, which are all 0.
+            # So the field's "height" coordinate will be useless.
+            # It should be possible to fix this here, by calculating
+            # per-layer Z and C values from the file header, and
+            # setting blev/brlev/brsvd1 and bhlev/bhrlev/brsvd2 here,
+            # but we don't yet do this.
+
+            yield field
+
     def _extract_field(self):
         # FF table pointer initialisation based on FF LOOKUP table
         # configuration.
@@ -543,8 +631,6 @@ class FF2PP(object):
         if self._ff_header.dataset_type == 1:
             table_count = self._ff_header.total_prognostic_fields
 
-        is_boundary_packed = self._ff_header.dataset_type == 5
-
         grid = self._ff_header.grid()
 
         # Process each FF LOOKUP table entry.
@@ -553,6 +639,7 @@ class FF2PP(object):
             # Move file pointer to the start of the current FF LOOKUP
             # table entry.
             ff_file_seek(table_offset, os.SEEK_SET)
+
             # Read the current PP header entry from the FF LOOKUP table.
             header_longs = np.fromfile(
                 ff_file, dtype='>i{0}'.format(self._word_depth),
@@ -568,14 +655,11 @@ class FF2PP(object):
 
             # Calculate next FF LOOKUP table entry.
             table_offset += table_entry_depth
+
             # Construct a PPField object and populate using the header_data
             # read from the current FF LOOKUP table.
             # (The PPField sub-class will depend on the header release number.)
             field = pp.make_pp_field(header)
-            # Calculate start address of the associated PP header data.
-            data_offset = field.lbegin * self._word_depth
-            # Determine PP field payload depth and type.
-            data_depth, data_type = self._payload(field)
 
             # Fast stash look-up.
             stash_s = field.lbuser[3] // 1000
@@ -609,47 +693,39 @@ class FF2PP(object):
             elif no_x or no_y:
                 warnings.warn('Partially missing X or Y coordinate values.')
 
+            # Check for LBC fields.
+            is_boundary_packed = self._ff_header.dataset_type == 5
             if is_boundary_packed:
-                name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
-                                    x_halo=slice(0, 2))
-                b_packing = pp.SplittableInt(field.lbuser[2], name_mapping)
-                field.lbpack.boundary_packing = b_packing
-                # Fix the lbrow and lbnpt to be the actual size of the data
-                # array, since the field is no longer a "boundary" fields file
-                # field.
-                # Note: The documentation states that lbrow (y) doesn't
-                # contain the halo rows, but no such comment exists at UM v8.5
-                # for lbnpt (x). Experimentation has shown that lbnpt also
-                # excludes the halo size.
-                field.lbrow += 2 * field.lbpack.boundary_packing.y_halo
-                field.lbnpt += 2 * field.lbpack.boundary_packing.x_halo
-                # Update the x and y coordinates for this field. Note: it may
-                # be that this needs to update x and y also, but that is yet
-                # to be confirmed.
-                if (field.bdx in (0, field.bmdi) or
-                        field.bdy in (0, field.bmdi)):
-                    field.x = self._det_border(field.x, b_packing.x_halo)
-                    field.y = self._det_border(field.y, b_packing.y_halo)
-                else:
-                    if field.bdy < 0:
-                        warnings.warn('The LBC has a bdy less than 0. No '
-                                      'case has previously been seen of '
-                                      'this, and the decompression may be '
-                                      'erroneous.')
-                    field.bzx -= field.bdx * b_packing.x_halo
-                    field.bzy -= field.bdy * b_packing.y_halo
+                # Apply adjustments specific to LBC data.
+                self._adjust_field_for_lbc(field)
 
-            if self._read_data:
-                # Read the actual bytes. This can then be converted to a
-                # numpy array at a higher level.
-                ff_file_seek(data_offset, os.SEEK_SET)
-                field._data = pp.LoadedArrayBytes(ff_file.read(data_depth),
-                                                  data_type)
+            # Calculate start address of the associated PP header data.
+            data_offset = field.lbegin * self._word_depth
+            # Determine PP field payload depth and type.
+            data_depth, data_type = self._payload(field)
+
+            # Produce (yield) output fields.
+            if is_boundary_packed:
+                fields = self._fields_over_all_levels(field)
             else:
-                # Provide enough context to read the data bytes later on.
-                field._data = (self._filename, data_offset,
-                               data_depth, data_type)
-            yield field
+                fields = [field]
+            for result_field in fields:
+                # Add a field data element.
+                if self._read_data:
+                    # Read the actual bytes. This can then be converted to a
+                    # numpy array at a higher level.
+                    ff_file_seek(data_offset, os.SEEK_SET)
+                    result_field._data = pp.LoadedArrayBytes(
+                        ff_file.read(data_depth), data_type)
+                else:
+                    # Provide enough context to read the data bytes later on.
+                    result_field._data = (self._filename, data_offset,
+                                          data_depth, data_type)
+
+                data_offset += data_depth
+
+                yield result_field
+
         ff_file.close()
 
     def __iter__(self):
