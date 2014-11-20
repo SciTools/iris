@@ -20,7 +20,7 @@ git:
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="c025c5703b109f645991a955b49935619d9f1c17"
+  - export IRIS_TEST_DATA_REF="947e91b85d1f86ddb7b9b2b2525148524c323966"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   - export IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
@@ -68,7 +68,7 @@ install:
   - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
 
 # iris test data
-  - wget -O iris-test-data.zip https://github.com/rhattersley/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip
+  - wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip
   - unzip -q iris-test-data.zip
   - ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data
 
