@@ -237,7 +237,7 @@ class Field(object):
         * data_provider:
             Either, an object with a `read_data()` method which will
             provide the corresponding values from the DATA component,
-            or a NumPy array.
+            or a NumPy array, or None.
 
         """
         #: A NumPy array of integer header values.
@@ -250,7 +250,7 @@ class Field(object):
         try:
             eq = (np.all(self.int_headers == other.int_headers) and
                   np.all(self.real_headers == other.real_headers) and
-                  np.all(self.read_data() == other.read_data()))
+                  np.all(self.get_data() == other.get_data()))
         except AttributeError:
             eq = NotImplemented
         return eq
@@ -268,7 +268,7 @@ class Field(object):
         """
         return len(self.int_headers) + len(self.real_headers)
 
-    def read_data(self):
+    def get_data(self):
         """
         Return a NumPy array containing the data for this field.
 
@@ -282,6 +282,18 @@ class Field(object):
         elif self._data_provider is not None:
             data = self._data_provider.read_data(self)
         return data
+
+    def set_data(self, data):
+        """
+        Set the data payload for this field.
+
+        * data:
+            Either, an object with a `read_data()` method which will
+            provide the corresponding values from the DATA component,
+            or a NumPy array, or None.
+
+        """
+        self._data_provider = data
 
 
 class Field2(Field):
@@ -624,7 +636,7 @@ class FieldsFileVariant(object):
             dataset_type = self.fixed_length_header.dataset_type
             sector_size = self._WORDS_PER_SECTOR * self._word_size
             for field in self.fields:
-                data = field.read_data()
+                data = field.get_data()
                 if data is not None:
                     field.lbegin = output_file.tell() / self._word_size
                     # Round the data length up to the nearest whole

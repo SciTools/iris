@@ -105,20 +105,40 @@ class Test_num_values(tests.IrisTest):
         self.assertEqual(field.num_values(), 128)
 
 
-class Test_read_data(tests.IrisTest):
+class Test_get_data(tests.IrisTest):
     def test_None(self):
         field = Field([], [], None)
-        self.assertIsNone(field.read_data())
+        self.assertIsNone(field.get_data())
 
     def test_ndarray(self):
         data = np.arange(12).reshape(3, 4)
         field = Field([], [], data)
-        self.assertIs(field.read_data(), data)
+        self.assertIs(field.get_data(), data)
 
     def test_provider(self):
         provider = mock.Mock(read_data=lambda field: mock.sentinel.DATA)
         field = Field([], [], provider)
-        self.assertIs(field.read_data(), mock.sentinel.DATA)
+        self.assertIs(field.get_data(), mock.sentinel.DATA)
+
+
+class Test_set_data(tests.IrisTest):
+    def test_None(self):
+        data = np.arange(12).reshape(3, 4)
+        field = Field([], [], data)
+        field.set_data(None)
+        self.assertIsNone(field.get_data())
+
+    def test_ndarray(self):
+        field = Field([], [], None)
+        data = np.arange(12).reshape(3, 4)
+        field.set_data(data)
+        self.assertArrayEqual(field.get_data(), data)
+
+    def test_provider(self):
+        provider = mock.Mock(read_data=lambda field: mock.sentinel.DATA)
+        field = Field([], [], None)
+        field.set_data(provider)
+        self.assertIs(field.get_data(), mock.sentinel.DATA)
 
 
 if __name__ == '__main__':
