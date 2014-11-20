@@ -232,5 +232,44 @@ class Test__getattr__(tests.IrisTest):
             TestPPField().x
 
 
+class Test_lbtim(tests.IrisTest):
+    def test_get_splittable(self):
+        headers = [0] * 64
+        headers[12] = 12345
+        field = TestPPField(headers)
+        self.assertIsInstance(field.lbtim, SplittableInt)
+        self.assertEqual(field.lbtim.ia, 123)
+        self.assertEqual(field.lbtim.ib, 4)
+        self.assertEqual(field.lbtim.ic, 5)
+
+    def test_set_int(self):
+        headers = [0] * 64
+        headers[12] = 12345
+        field = TestPPField(headers)
+        field.lbtim = 34567
+        self.assertIsInstance(field.lbtim, SplittableInt)
+        self.assertEqual(field.lbtim.ia, 345)
+        self.assertEqual(field.lbtim.ib, 6)
+        self.assertEqual(field.lbtim.ic, 7)
+        self.assertEqual(field.raw_lbtim, 34567)
+
+    def test_set_splittable(self):
+        # Check that assigning a SplittableInt to lbtim uses the integer
+        # value. In other words, check that you can't assign an
+        # arbitrary SplittableInt with crazy named attributes.
+        headers = [0] * 64
+        headers[12] = 12345
+        field = TestPPField(headers)
+        si = SplittableInt(34567, {'foo': 0})
+        field.lbtim = si
+        self.assertIsInstance(field.lbtim, SplittableInt)
+        with self.assertRaises(AttributeError):
+            field.lbtim.foo
+        self.assertEqual(field.lbtim.ia, 345)
+        self.assertEqual(field.lbtim.ib, 6)
+        self.assertEqual(field.lbtim.ic, 7)
+        self.assertEqual(field.raw_lbtim, 34567)
+
+
 if __name__ == "__main__":
     tests.main()
