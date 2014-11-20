@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -142,18 +142,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/example_code/Meteorology/COP_maps.py',
             '*/example_code/Meteorology/hovmoller.py',
             '*/example_code/Meteorology/lagged_ensemble.py',
-            '*/example_tests/test_COP_1d_plot.py',
-            '*/example_tests/test_COP_maps.py',
-            '*/example_tests/test_SOI_filtering.py',
-            '*/example_tests/test_TEC.py',
-            '*/example_tests/test_cross_section.py',
-            '*/example_tests/test_custom_file_loading.py',
-            '*/example_tests/test_deriving_phenomena.py',
-            '*/example_tests/test_global_map.py',
-            '*/example_tests/test_hovmoller.py',
-            '*/example_tests/test_lagged_ensemble.py',
-            '*/example_tests/test_lineplot_with_legend.py',
-            '*/example_tests/test_rotated_pole_mapping.py',
             '*/src/conf.py',
             '*/src/developers_guide/gitwash_dumper.py',
             '*/src/userguide/plotting_examples/1d_with_legend.py']
