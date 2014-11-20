@@ -24,25 +24,28 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris import load as iris_load_cubes
+import iris
 
 
 class TestLBC(tests.IrisTest):
     def setUp(self):
         # Load multiple cubes from a test file.
         file_path = tests.get_data_path(('FF', 'lbc', 'small_lbc'))
-        self.cubes = iris_load_cubes(file_path)
+        self.all_cubes = iris.load(file_path)
+        # Select the second cube for detailed checks (the first is orography).
+        self.test_cube = self.all_cubes[1]
 
-    def test_coords(self):
+    def test_various_cubes_shapes(self):
         # Check a few aspects of the loaded cubes.
-        cubes = self.cubes
+        cubes = self.all_cubes
         self.assertEqual(len(cubes), 10)
         self.assertEqual(cubes[0].shape, (16, 16))
         self.assertEqual(cubes[1].shape, (2, 4, 16, 16))
         self.assertEqual(cubes[3].shape, (2, 5, 16, 16))
 
+    def test_cube_coords(self):
         # Check coordinates of one cube.
-        cube = cubes[1]
+        cube = self.test_cube
         self.assertEqual(len(cube.coords()), 8)
         for name, shape in [
                 ('forecast_reference_time', (1,)),
@@ -62,14 +65,18 @@ class TestLBC(tests.IrisTest):
                              'coord {!r} shape is {} instead of {!r}.'.format(
                                  name, coord.shape, shape))
 
-        # Check a few data points as well.
+    def test_cube_data(self):
+        # Check just a few points of the data.
+        cube = self.test_cube
         self.assertArrayAllClose(
             cube.data[:, ::2, 6, 13],
             np.array([[4.218922, 10.074577],
                       [4.626897, 6.520156]]),
             atol=1.0e-6)
 
-        # Check centre 6x2 section (only) is masked.
+    def test_cube_mask(self):
+        # Check the data mask : should be just the centre 6x2 section.
+        cube = self.test_cube
         mask = np.zeros((2, 4, 16, 16), dtype=bool)
         mask[:, :, 7:9, 5:11] = True
         self.assertArrayEqual(cube.data.mask, mask)

@@ -28,9 +28,11 @@ import mock
 import numpy as np
 import warnings
 
-from iris.fileformats.ff import FF2PP
+from iris.exceptions import NotYetImplementedError
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
+
+from iris.fileformats.ff import FF2PP
 
 
 class Test____iter__(tests.IrisTest):
@@ -177,6 +179,76 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         msg = 'The LBC has a bdy less than 0.'
         self.assertTrue(warn.call_args[0][0].startswith(msg),
                         'Northwards bdy warning not correctly raised.')
+
+
+class Test__payload(tests.IrisTest):
+    def setUp(self):
+        # Patch FFHeader to produce a mock header instead of opening a file.
+        self.mock_ff_header = mock.Mock()
+        self.mock_ff = self.patch('iris.fileformats.ff.FFHeader',
+                                  return_value=self.mock_ff_header)
+        # Make it look like a 32-bit LBC file.
+        self.mock_ff_header.word_depth = 8
+        self.mock_ff_header.dataset_type = 5
+
+        # Create a mock LBC type PPField.
+        self.mock_field = mock.Mock()
+        field = self.mock_field
+        field.raw_lbpack = 0
+        field.lbuser = [0]
+        field.lblrec = 777
+        field.lbext = 222
+        field.lbnrec = 50
+        field.boundary_packing = None
+
+    def test__basic(self):
+        ff2pp = FF2PP('dummy_filename')
+        field = self.mock_field
+        data_depth, data_type = ff2pp._payload(field)
+        self.assertEqual(data_depth, 4440)
+        self.assertEqual(data_type, np.dtype('>f8'))
+
+    def test__word_depth(self):
+        ff2pp = FF2PP('dummy_filename', word_depth=4)
+        field = self.mock_field
+        data_depth, data_type = ff2pp._payload(field)
+        self.assertEqual(data_depth, 2220)
+        self.assertEqual(data_type, np.dtype('>f4'))
+
+    def test__lbpack_1(self):
+        ff2pp = FF2PP('dummy_filename')
+        field = self.mock_field
+        field.raw_lbpack = 1
+        data_depth, data_type = ff2pp._payload(field)
+        self.assertEqual(data_depth, 396)
+        self.assertEqual(data_type, np.dtype('>f4'))
+
+    def test__lbpack_2(self):
+        ff2pp = FF2PP('dummy_filename')
+        field = self.mock_field
+        field.raw_lbpack = 2
+        data_depth, data_type = ff2pp._payload(field)
+        self.assertEqual(data_depth, 2220)
+        self.assertEqual(data_type, np.dtype('>f4'))
+
+    def test__lbpack_unsupported(self):
+        ff2pp = FF2PP('dummy_filename')
+        field = self.mock_field
+        field.raw_lbpack = 1239
+        with self.assertRaisesRegexp(
+                NotYetImplementedError,
+                'PP fields with LBPACK of 1239 are not supported.'):
+            ff2pp._payload(field)
+
+    def test__lbpack_lbc_error(self):
+        ff2pp = FF2PP('dummy_filename')
+        field = self.mock_field
+        field.raw_lbpack = 1
+        field.boundary_packing = 0  # Anything not None will do here.
+        with self.assertRaisesRegexp(
+                ValueError,
+                'packed LBC data is not supported'):
+            ff2pp._payload(field)
 
 
 class Test__det_border(tests.IrisTest):

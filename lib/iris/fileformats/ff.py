@@ -468,7 +468,7 @@ class FF2PP(object):
         if lbpack_n1 == 0:
             word_depth = self._word_depth
             # Data payload is not packed.
-            data_words = (field.lblrec - field.lbext)
+            data_words = field.lblrec - field.lbext
             # Determine PP field 64-bit payload datatype.
             lookup = _LBUSER_DTYPE_LOOKUP
             dtype_template = lookup.get(field.lbuser[0], lookup['default'])
@@ -479,10 +479,10 @@ class FF2PP(object):
             # Data payload is packed.
             if lbpack_n1 == 1:
                 # Data packed using WGDOS archive method.
-                data_words = ((field.lbnrec * 2) - 1)
+                data_words = (field.lbnrec * 2) - 1
             elif lbpack_n1 == 2:
                 # Data packed using CRAY 32-bit method.
-                data_words = (field.lblrec - field.lbext)
+                data_words = field.lblrec - field.lbext
             else:
                 msg = 'PP fields with LBPACK of {} are not supported.'
                 raise NotYetImplementedError(msg.format(field.raw_lbpack))
@@ -492,6 +492,11 @@ class FF2PP(object):
             data_type = lookup.get(field.lbuser[0], lookup['default'])
 
         if field.boundary_packing is not None:
+            if lbpack_n1 not in (0, 2):
+                # Can't handle the usual packing methods with LBC data.
+                raise ValueError(
+                    'LBC data has LBPACK = {:d}, but packed LBC data is not '
+                    'supported.'.format(field.raw_lbpack))
             # Adjust to packed data size, for LBC data.
             # NOTE: logic duplicates that in pp._data_bytes_to_shaped_array.
             pack_dims = field.boundary_packing
