@@ -102,14 +102,14 @@ class TestRead(tests.IrisTest):
 
     def test_fields__data_wgdos(self):
         ffv = self.load()
-        data = ffv.fields[0].read_data()
+        data = ffv.fields[0].get_data()
         self.assertEqual(data.shape, (73, 96))
         self.assertArrayEqual(data[2, :3], [223.5, 223.0, 222.5])
 
     def test_fields__data_not_packed(self):
         path = tests.get_data_path(('FF', 'ancillary', 'qrparm.mask'))
         ffv = FieldsFileVariant(path)
-        data = ffv.fields[0].read_data()
+        data = ffv.fields[0].get_data()
         expected = [[1, 1, 1],
                     [1, 1, 1],
                     [0, 1, 1],
@@ -237,6 +237,22 @@ class TestUpdate(tests.IrisTest):
             ffv = FieldsFileVariant(temp_path)
             self.assertEqual(ffv.level_dependent_constants[3, 2], 0.913)
 
+    def test_field_data(self):
+        # Check that tweaks to field data are reflected in the output
+        # file.
+        src_path = tests.get_data_path(('FF', 'ancillary', 'qrparm.mask'))
+        with self.temp_filename() as temp_path:
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            field = ffv.fields[0]
+            self.assertArrayEqual(field.get_data()[0, 604:607], [0, 1, 1])
+            field.set_data(field.get_data() + 10)
+            ffv.close()
+
+            ffv = FieldsFileVariant(temp_path)
+            field = ffv.fields[0]
+            self.assertArrayEqual(field.get_data()[0, 604:607], [10, 11, 11])
+
 
 class TestCreate(tests.IrisTest):
     @tests.skip_data
@@ -318,7 +334,7 @@ class TestCreate(tests.IrisTest):
             self.assertIsNone(ffv.real_constants)
             self.assertEqual(len(ffv.fields), 1)
             for field in ffv.fields:
-                data = field.read_data()
+                data = field.get_data()
                 self.assertArrayEqual(data, src_data)
 
 
