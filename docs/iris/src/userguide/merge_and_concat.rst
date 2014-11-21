@@ -253,7 +253,7 @@ of cubes and returns a new :class:`~iris.cube.CubeList` containing the cubes
 that have been concatenated.
 
 Let's have a look at the :meth:`~iris.cube.CubeList.concatenate` method in operation.
-In the example below we have three 3D (*x*, *y*, *t*) cubes whose ``t`` coordinates
+In the example below we have three 3D ``(t, y, x)`` cubes whose ``t`` coordinates
 have sequentially increasing ranges.
 These cubes can be concatenated by combining the ``t`` coordinates of the input
 cubes to form a new cube with an extended ``t`` coordinate:
@@ -306,7 +306,7 @@ of cubes returned.
 
 To demonstrate the differences between :meth:`~iris.cube.CubeList.concatenate`
 and :meth:`~iris.cube.CubeList.concatenate_cube`, let's return to our three cubes
-from the earlier merge example.
+from the earlier concatenate example.
 
 For the purposes of this example we'll add a *History* attribute to the first
 cube's :data:`~iris.cube.Cube.attributes` dictionary.
@@ -355,7 +355,7 @@ All the cubes that can be concatenated have been. Any cubes that can't be concat
 included unchanged in the returned :class:`~iris.cube.CubeList`.
 When :meth:`~iris.cube.CubeList.concatenate_cube` is called on ``cubes`` it raises a
 descriptive error that highlights the difference in the ``attributes`` dictionaries.
-It is this difference that is preventing ``cube`` being concatenate into a
+It is this difference that is preventing ``cube`` being concatenated into a
 single cube. An example of fixing an issue like this can be found in the
 :ref:`merge_concat_common_issues` section.
 
@@ -392,9 +392,8 @@ Merge
 
 **Attributes Mismatch**
 
-Differences in the :data:`~iris.cube.Cube.attributes` (a cube's metadata, including
-coordinate metadata) of the input cubes probably cause the greatest amount of
-merge-related difficulties.
+Differences in the :data:`~iris.cube.Cube.attributes` the input cubes probably
+cause the greatest amount of merge-related difficulties.
 In recognition of this, Iris has a helper function,
 :func:`~iris.experimental.equalise_cubes.equalise_attributes`, to equalise
 attributes differences in the input cubes.
@@ -484,7 +483,8 @@ scalar ``z`` coordinate with value 2 and the third has a scalar ``z``
 coordinate with value 1.
 The first and third cubes are thus identical.
 We will demonstrate the effect of merging the input cubes with ``unique=False``
-(duplicate cubes allowed) and ``unique=True`` (duplicate cubes not allowed):
+(duplicate cubes allowed) and ``unique=True`` (duplicate cubes not allowed, which
+is the default behaviour):
 
 .. testsetup:: merge_duplicate
 
@@ -531,13 +531,14 @@ error highlighting the presence of the duplicate cube.
 Coordinates containing only a single value can cause confusion when
 combining input cubes. In Iris' terminology a **scalar** coordinate is a
 coordinate of length 1 *which does not describe a data dimension*. Remember:
+
 * The ``merge`` process combines multiple input cubes into a
   single resultant cube with new dimensions created from the
-  *scalar coordinate values* of the input cubes.
+  **scalar** *coordinate values* of the input cubes.
 * The ``concatenate`` process process combines multiple input cubes into a
   single resultant cube with the same *number of dimensions* as the input cubes,
   but with the length of one or more dimensions extended by *joining together
-  sequential dimension coordinates*.
+  sequential* **dimension** *coordinates*.
 
 
 Let's look at two example cubes to demonstrate this.
