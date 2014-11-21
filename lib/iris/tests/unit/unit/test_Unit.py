@@ -72,6 +72,13 @@ class Test_convert(tests.IrisTest):
         expected, result = self.test_gregorian_calendar_conversion_setup()
         self.assertEqual(expected.shape, result.shape)
 
+    def test_non_gregorian_calendar_conversion_dtype(self):
+        data = np.arange(4, dtype=np.float32)
+        u1 = Unit('hours since 2000-01-01 00:00:00', calendar='360_day')
+        u2 = Unit('hours since 2000-01-02 00:00:00', calendar='360_day')
+        result = u1.convert(data, u2)
+        self.assertEqual(result.dtype, np.float32)
+
 
 if __name__ == '__main__':
     tests.main()
