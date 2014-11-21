@@ -16,27 +16,28 @@ issues from occurring.
 Both ``merge`` and ``concatenate`` take multiple cubes as input and
 result in fewer cubes as output. The following diagram illustrates the two processes:
 
-.. image:: merge_and_concat.svg
+.. image:: merge_and_concat.png
    :alt: Pictographic of merge and concatenation.
    :align: center
 
-There is one major difference between the ``merge`` and ``concatenate`` processes. 
-The ``merge`` process combines multiple input cubes into a
-single resultant cube with new dimensions created from the
-*scalar coordinate values* of the input cubes.
-The ``concatenate`` process process combines multiple input cubes into a
-single resultant cube with the same *number of dimensions* as the input cubes,
-but with the length of one or more dimensions extended by *joining together
-sequential dimension coordinates*.
+There is one major difference between the ``merge`` and ``concatenate`` processes.
 
+ * The ``merge`` process combines multiple input cubes into a
+   single resultant cube with new dimensions created from the
+   *scalar coordinate values* of the input cubes.
+
+ * The ``concatenate`` process combines multiple input cubes into a
+   single resultant cube with the same *number of dimensions* as the input cubes,
+   but with the length of one or more dimensions extended by *joining together
+   sequential dimension coordinates*.
 
 Let's imagine 28 individual cubes representing the
-temperature at a location ``(y, x)``, one cube for each day of February. We can use
+temperature at a location ``(y, x)``; one cube for each day of February. We can use
 :meth:`~iris.cube.CubeList.merge` to combine the 28 ``(y, x)`` cubes into
 a single ``(t, y, x)`` cube, where the length of the ``t`` dimension is 28.
 
 Now imagine 12 individual cubes representing daily temperature at a time and
-location ``(t, y, x)``, one cube for each month in the year. We can use
+location ``(t, y, x)``; one cube for each month in the year. We can use
 :meth:`~iris.cube.CubeList.concatenate` to combine the 12
 ``(t, y, x)`` cubes into a single ``(t, y, x)`` cube, where the length
 of the ``t`` dimension is now 365.
@@ -125,7 +126,7 @@ make a new ``z`` dimension coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: merge.svg
+.. image:: merge.png
    :alt: Pictographic of merge.
    :align: center
 
@@ -193,11 +194,11 @@ into a single cube:
       cube.attributes keys differ: 'Conventions'
 
 Note that :meth:`~iris.cube.CubeList.merge` returns two cubes here.
-All the cubes that can be merged have been. Any cubes that can't be merged are
+All the cubes that can be merged have been merged. Any cubes that can't be merged are
 included unchanged in the returned :class:`~iris.cube.CubeList`.
 When :meth:`~iris.cube.CubeList.merge_cube` is called on ``cubes`` it raises a
 descriptive error that highlights the difference in the ``attributes`` dictionaries.
-It is this difference that is preventing ``cube`` being merged into a
+It is this difference that is preventing ``cubes`` being merged into a
 single cube. An example of fixing an issue like this can be found in the
 :ref:`merge_concat_common_issues` section.
 
@@ -207,9 +208,9 @@ Merge in Iris load
 
 The CubeList's :meth:`~iris.cube.CubeList.merge` method is used internally
 by the three main Iris load functions introduced in :doc:`loading_iris_cubes`.
-For file formats such as GRIB and PP, which intrinsically store fields as many
+For file formats such as GRIB and PP, which store fields as many
 individual 2D arrays, Iris loading uses the ``merge`` process to produce a
-more intuitive higher dimensional cube of each phenomenon.
+more intuitive higher dimensional cube of each phenomenon where possible.
 
 Sometimes the ``merge`` process doesn't behave as expected. In almost all
 cases this is due to the input cubes containing unexpected or inconsistent metadata.
@@ -217,12 +218,14 @@ For this reason, a fourth Iris file loading function, :func:`iris.load_raw`, exi
 The :func:`~iris.load_raw` function is intended as a diagnostic tool that can be used to
 load cubes from files without the ``merge`` process taking place. The return value of
 :func:`iris.load_raw` is always a :class:`~iris.cube.CubeList` instance.
+You can then call the :meth:`~iris.cube.CubeList.merge_cube` method on this returned
+:class:`~iris.cube.CubeList` to help identify merge related load issues.
 
 
 Concatenate
 -----------
 
-We've seen that the ``concatenate`` process process combines multiple input cubes into a
+We've seen that the ``concatenate`` process combines multiple input cubes into a
 single resultant cube with the same *number of dimensions* as the input cubes,
 but with the length of one or more dimensions extended by *joining together
 sequential dimension coordinates*.
@@ -284,7 +287,7 @@ cubes to form a new cube with an extended ``t`` coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: concat.svg
+.. image:: concat.png
    :alt: Pictographic of concatenate.
    :align: center
 
@@ -351,11 +354,11 @@ concatenate into a single cube:
 
 
 Note that :meth:`~iris.cube.CubeList.concatenate` returns two cubes here.
-All the cubes that can be concatenated have been. Any cubes that can't be concatenated are
+All the cubes that can be concatenated have been concatenated. Any cubes that can't be concatenated are
 included unchanged in the returned :class:`~iris.cube.CubeList`.
 When :meth:`~iris.cube.CubeList.concatenate_cube` is called on ``cubes`` it raises a
 descriptive error that highlights the difference in the ``attributes`` dictionaries.
-It is this difference that is preventing ``cube`` being concatenated into a
+It is this difference that is preventing ``cubes`` being concatenated into a
 single cube. An example of fixing an issue like this can be found in the
 :ref:`merge_concat_common_issues` section.
 
@@ -529,17 +532,18 @@ error highlighting the presence of the duplicate cube.
 **Single value coordinates**
 
 Coordinates containing only a single value can cause confusion when
-combining input cubes. In Iris' terminology a **scalar** coordinate is a
-coordinate of length 1 *which does not describe a data dimension*. Remember:
+combining input cubes. Remember:
 
 * The ``merge`` process combines multiple input cubes into a
   single resultant cube with new dimensions created from the
   **scalar** *coordinate values* of the input cubes.
-* The ``concatenate`` process process combines multiple input cubes into a
+* The ``concatenate`` process combines multiple input cubes into a
   single resultant cube with the same *number of dimensions* as the input cubes,
   but with the length of one or more dimensions extended by *joining together
   sequential* **dimension** *coordinates*.
 
+In Iris terminology a **scalar** coordinate is a
+coordinate of length 1 *which does not describe a data dimension*.
 
 Let's look at two example cubes to demonstrate this.
 
@@ -640,6 +644,6 @@ the input cubes using :meth:`~iris.cube.CubeList.concatenate_cube`:
 **Attributes Mismatch**
 
 The ``concatenate`` process is affected by attributes mismatch on input cubes
-in the same way that the ``merge`` process.
+in the same way that the ``merge`` process is.
 The :ref:`Attributes Mismatch <merge_issues_attrs_mismatch>` section earlier in this
 chapter gives further information on attributes mismatch.
