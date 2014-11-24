@@ -1,5 +1,5 @@
 dimensions:
-	dim0 = UNLIMITED ; // (4 currently)
+	dim0 = 4 ;
 	dim1 = 5 ;
 	string6 = 6 ;
 variables:

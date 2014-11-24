@@ -1,6 +1,6 @@
 dimensions:
-	time = UNLIMITED ; // (4 currently)
 	site_number = 1 ;
+	time = 4 ;
 variables:
 	float air_temperature(time, site_number) ;
 		air_temperature:standard_name = "air_temperature" ;

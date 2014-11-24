@@ -1,5 +1,5 @@
 dimensions:
-	dim0 = UNLIMITED ; // (1 currently)
+	dim0 = 1 ;
 variables:
 	double air_temperature(dim0) ;
 		air_temperature:standard_name = "air_temperature" ;

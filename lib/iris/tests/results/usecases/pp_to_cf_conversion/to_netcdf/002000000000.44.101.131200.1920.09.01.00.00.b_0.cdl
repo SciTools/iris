@@ -1,6 +1,6 @@
 dimensions:
-	depth = UNLIMITED ; // (20 currently)
 	bnds = 2 ;
+	depth = 20 ;
 	latitude = 73 ;
 variables:
 	float unknown(depth, latitude) ;

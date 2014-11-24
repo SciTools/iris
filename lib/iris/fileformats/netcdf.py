@@ -602,11 +602,8 @@ class Saver(object):
           :class:`iris.coords.Coord` objects):
             Explicit list of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
-            NetCDF dimension variable length 'UNLIMITED'. By default, the
-            outermost (first) dimension for each cube is used. Only the
-            'NETCDF4' format supports multiple 'UNLIMITED' dimensions. To save
-            no unlimited dimensions, use `unlimited_dimensions=[]` (an empty
-            list).
+            NetCDF dimension variable length 'UNLIMITED'.  Only the
+            'NETCDF4' format supports multiple 'UNLIMITED' dimensions.
 
         * zlib (bool):
             If `True`, the data will be compressed in the netCDF file using
@@ -760,18 +757,14 @@ class Saver(object):
 
         * unlimited_dimensions (iterable of strings and/or
           :class:`iris.coords.Coord` objects):
-            List of coordinates to make unlimited. By default, the
-            outermost dimension is made unlimited.
+            List of coordinates to make unlimited.
 
         Returns:
             None.
 
         """
         unlimited_dim_names = []
-        if unlimited_dimensions is None:
-            if dimension_names:
-                unlimited_dim_names.append(dimension_names[0])
-        else:
+        if unlimited_dimensions is not None:
             for coord in unlimited_dimensions:
                 try:
                     coord = cube.coord(name_or_coord=coord, dim_coords=True)
@@ -1505,10 +1498,8 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
       :class:`iris.coords.Coord` objects):
         Explicit list of coordinate names (or coordinate objects) corresponding
         to coordinate dimensions of `cube` to save with the NetCDF dimension
-        variable length 'UNLIMITED'. By default, the outermost (first)
-        dimension for each cube is used. Only the 'NETCDF4' format supports
-        multiple 'UNLIMITED' dimensions. To save no unlimited dimensions, use
-        `unlimited_dimensions=[]` (an empty list).
+        variable length 'UNLIMITED'.  Only the 'NETCDF4' format supports
+        multiple 'UNLIMITED' dimensions.
 
     * zlib (bool):
         If `True`, the data will be compressed in the netCDF file using gzip

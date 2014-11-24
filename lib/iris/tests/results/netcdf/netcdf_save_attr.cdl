@@ -1,5 +1,5 @@
 dimensions:
-	dim0 = UNLIMITED ; // (2 currently)
+	dim0 = 2 ;
 	dim1 = 2 ;
 variables:
 	double temp(dim0, dim1) ;

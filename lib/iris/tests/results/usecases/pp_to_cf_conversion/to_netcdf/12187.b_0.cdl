@@ -1,8 +1,8 @@
 dimensions:
-	model_level_number = UNLIMITED ; // (38 currently)
 	bnds = 2 ;
 	latitude = 145 ;
 	longitude = 192 ;
+	model_level_number = 38 ;
 variables:
 	float tendency_of_upward_air_velocity_due_to_advection(model_level_number, latitude, longitude) ;
 		tendency_of_upward_air_velocity_due_to_advection:standard_name = "tendency_of_upward_air_velocity_due_to_advection" ;
