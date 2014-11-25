@@ -1,4 +1,6 @@
 """
+.. _anomaly_pseudocolour:
+
 Colouring anomaly data with logarithmic scaling
 ===============================================
 
@@ -25,6 +27,12 @@ functions of the same names (i.e. `matplotlib.pyplot.pcolor
 and  `matplotlib.pyplot.pcolormesh
 <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolormesh>`_).
 See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
+
+
+.. seealso::
+
+    A related example shows how to make a contour plot with the same data and
+    scaling requirements.  See : :ref:`anomaly_contours`.
 
 """
 import cartopy.crs as ccrs
