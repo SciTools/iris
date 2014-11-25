@@ -25,10 +25,11 @@ import iris.tests as tests
 import gribapi
 import mock
 
-from iris.fileformats.grib.grib_save_rules \
-    import type_of_statistical_processing
-
+from iris.fileformats.grib._save_rules import type_of_statistical_processing
 from iris.tests.test_grib_load import TestGribSimple
+
+
+GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 
 
 class Test(TestGribSimple):
@@ -41,8 +42,7 @@ class Test(TestGribSimple):
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
-                        mock_gribapi):
+        with mock.patch(GRIB_API, mock_gribapi):
             type_of_statistical_processing(cube, grib, coord)
 
         mock_gribapi.assert_has_calls(mock.call.grib_set_long(
@@ -58,8 +58,7 @@ class Test(TestGribSimple):
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
-                        mock_gribapi):
+        with mock.patch(GRIB_API, mock_gribapi):
             type_of_statistical_processing(cube, grib, coord)
 
         mock_gribapi.assert_has_calls(mock.call.grib_set_long(
@@ -75,8 +74,7 @@ class Test(TestGribSimple):
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
-                        mock_gribapi):
+        with mock.patch(GRIB_API, mock_gribapi):
             with self.assertRaisesRegexp(ValueError,
                                          'There are multiple coord names '
                                          'referenced by the primary cell '
@@ -92,8 +90,7 @@ class Test(TestGribSimple):
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
-                        mock_gribapi):
+        with mock.patch(GRIB_API, mock_gribapi):
             with self.assertRaisesRegexp(ValueError,
                                          'The coord name referenced by the '
                                          'primary cell method'):

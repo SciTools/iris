@@ -27,10 +27,10 @@ import numpy as np
 
 import iris.cube
 
-from iris.fileformats.grib.grib_save_rules import data
+from iris.fileformats.grib._save_rules import data
 
 
-GRIB_API = 'iris.fileformats.grib.grib_save_rules.gribapi'
+GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 GRIB_MESSAGE = mock.sentinel.GRIB_MESSAGE
 
 

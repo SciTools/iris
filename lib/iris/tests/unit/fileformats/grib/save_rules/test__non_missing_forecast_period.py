@@ -22,7 +22,7 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
-from iris.fileformats.grib.grib_save_rules import _non_missing_forecast_period
+from iris.fileformats.grib._save_rules import _non_missing_forecast_period
 import iris.unit
 
 

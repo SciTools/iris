@@ -17,11 +17,9 @@
 """
 Grib save implementation.
 
-..deprecated:: 1.8
-
-This module is for legacy requirements only.
-It has been superceded by :mod:`iris.fileformats.grib._save_rules', which has
-no public API.
+This module replaces the deprecated :mod:`iris.fileformats.grib_save_rules'.
+It is a private module with no public API.
+It is invoked from :meth:`iris.fileformats.grib.save_grib2`.
 
 """
 
