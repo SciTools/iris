@@ -28,7 +28,7 @@ import numpy as np
 import iris
 import iris.cube
 import iris.coords
-import iris.fileformats.grib.grib_save_rules as grib_save_rules
+import iris.fileformats.grib._save_rules as grib_save_rules
 
 
 class Test_non_hybrid_surfaces(tests.IrisTest):

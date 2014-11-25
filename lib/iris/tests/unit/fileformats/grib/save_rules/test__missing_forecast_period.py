@@ -25,7 +25,7 @@ import iris.tests as tests
 import mock
 import numpy as np
 
-from iris.fileformats.grib.grib_save_rules import _missing_forecast_period
+from iris.fileformats.grib._save_rules import _missing_forecast_period
 from iris.tests.test_grib_load import TestGribSimple
 
 

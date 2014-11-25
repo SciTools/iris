@@ -41,7 +41,7 @@ import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
 from iris.fileformats.grib import grib_phenom_translation as gptx
-from iris.fileformats.grib import grib_save_rules
+from iris.fileformats.grib import _save_rules
 import iris.fileformats.grib._load_convert
 from iris.fileformats.grib._message import _GribMessage
 import iris.fileformats.grib.load_rules
@@ -972,7 +972,7 @@ def save_grib2(cube, target, append=False, **kwargs):
 
         # Save this slice to the grib file
         grib_message = gribapi.grib_new_from_samples("GRIB2")
-        grib_save_rules.run(slice2D, grib_message)
+        _save_rules.run(slice2D, grib_message)
         gribapi.grib_write(grib_message, grib_file)
         gribapi.grib_release(grib_message)
 

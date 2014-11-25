@@ -26,9 +26,12 @@ import gribapi
 import mock
 
 import iris.fileformats.grib
-from iris.fileformats.grib.grib_save_rules import reference_time
+from iris.fileformats.grib._save_rules import reference_time
 import iris.tests.stock as stock
 from iris.tests.test_grib_load import TestGribSimple
+
+
+GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 
 
 class Test(TestGribSimple):
@@ -40,8 +43,7 @@ class Test(TestGribSimple):
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
-                        mock_gribapi):
+        with mock.patch(GRIB_API, mock_gribapi):
             reference_time(cube, grib)
 
         mock_gribapi.assert_has_calls(
@@ -58,8 +60,7 @@ class Test(TestGribSimple):
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch('iris.fileformats.grib.grib_save_rules.gribapi',
-                        mock_gribapi):
+        with mock.patch(GRIB_API, mock_gribapi):
             reference_time(cube, grib)
 
         mock_gribapi.assert_has_calls(
