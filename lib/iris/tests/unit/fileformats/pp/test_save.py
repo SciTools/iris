@@ -22,6 +22,7 @@ import iris.tests as tests
 
 import mock
 
+from iris.coords import DimCoord
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 import iris.tests.stock as stock
@@ -44,6 +45,18 @@ def _pp_save_ppfield_values(cube):
         pp.save(cube, target_filelike)
     # Return pp-field mock with all the written properties
     return pp_field
+
+
+class TestVertical(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+
+    def test_pseudo_level(self):
+        pseudo_level = 123
+        coord = DimCoord(pseudo_level, long_name='pseudo_level', units='1')
+        self.cube.add_aux_coord(coord)
+        lbuser5_produced = _pp_save_ppfield_values(self.cube).lbuser[4]
+        self.assertEqual(pseudo_level, lbuser5_produced)
 
 
 class TestLbfcProduction(tests.IrisTest):
