@@ -122,10 +122,12 @@ class TestPPHeaderDerived(unittest.TestCase):
     def test_lbproc_access(self):
         # lbproc == 65539
         with mock.patch('warnings.warn') as warn:
+            self.assertEqual(self.pp.lbproc[0], 9)
+            self.assertEqual(self.pp.lbproc[19], 0)
             self.assertEqual(self.pp.lbproc.flag1, 1)
             self.assertEqual(self.pp.lbproc.flag65536, 1)
             self.assertEqual(self.pp.lbproc.flag131072, 0)
-        self.assertEqual(warn.call_count, 3)
+        self.assertEqual(warn.call_count, 5)
     
     def test_set_lbuser(self):
         self.pp.stash = 'm02s12i003'

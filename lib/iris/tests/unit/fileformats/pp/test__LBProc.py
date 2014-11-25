@@ -216,6 +216,12 @@ class Test_flags(tests.IrisTest):
         self.assertEqual(flags, (2, 8, 16))
 
 
+class Test___repr__(tests.IrisTest):
+    def test(self):
+        lbproc = _LBProc(8641)
+        self.assertEqual(repr(lbproc), '_LBProc(8641)')
+
+
 class Test___str__(tests.IrisTest):
     def test(self):
         lbproc = _LBProc(8641)
@@ -239,12 +245,40 @@ class Test___len__(tests.IrisTest):
 
 
 class Test___getitem__(tests.IrisTest):
-    def test(self):
+    def test_normal_scalar(self):
         lbproc = _LBProc(1234)
         with mock.patch('warnings.warn') as warn:
             digit = lbproc[1]
         self.assertEqual(warn.call_count, 1)
         self.assertEqual(digit, 3)
+
+    def test_out_of_bounds_scalar(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            digit = lbproc[45]
+        self.assertEqual(warn.call_count, 1)
+        self.assertEqual(digit, 0)
+
+    def test_single_digit_slice(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            digit = lbproc[1:2]
+        self.assertEqual(warn.call_count, 1)
+        self.assertEqual(digit, 3)
+
+    def test_double_digit_slice(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            digit = lbproc[1:3]
+        self.assertEqual(warn.call_count, 1)
+        self.assertEqual(digit, 23)
+
+    def test_out_of_bounds_slice(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            digit = lbproc[10:]
+        self.assertEqual(warn.call_count, 1)
+        self.assertEqual(digit, 0)
 
 
 class Test___setitem__(tests.IrisTest):
@@ -261,6 +295,34 @@ class Test___setitem__(tests.IrisTest):
             with self.assertRaises(ValueError):
                 lbproc[1] = 81
         self.assertEqual(warn.call_count, 1)
+
+    def test_out_of_bounds_scalar(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            lbproc[9] = 4
+        self.assertEqual(warn.call_count, 1)
+        self.assertEqual(lbproc, 4000001234)
+
+    def test_single_digit_slice(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            lbproc[1:2] = 6
+        self.assertEqual(warn.call_count, 3)
+        self.assertEqual(lbproc, 1264)
+
+    def test_double_digit_slice(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            lbproc[1:3] = 65
+        self.assertEqual(warn.call_count, 4)
+        self.assertEqual(lbproc, 1654)
+
+    def test_out_of_bounds_slice(self):
+        lbproc = _LBProc(1234)
+        with mock.patch('warnings.warn') as warn:
+            lbproc[6:] = 49
+        self.assertEqual(warn.call_count, 4)
+        self.assertEqual(lbproc, 49001234)
 
 
 if __name__ == '__main__':

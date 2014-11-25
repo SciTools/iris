@@ -703,7 +703,7 @@ class _LBProc(BitwiseInt):
         """
         warnings.warn('Indexing is deprecated')
         try:
-            value = int(str(self._value)[::-1][key])
+            value = int('0' + str(self._value)[::-1][key][::-1])
         except IndexError:
             value = 0
         # If the key returns a list of values, then combine them
@@ -775,6 +775,9 @@ class _LBProc(BitwiseInt):
 
     def __int__(self):
         return self._value
+
+    def __repr__(self):
+        return '_LBProc({})'.format(self._value)
 
     def __str__(self):
         return str(self._value)
