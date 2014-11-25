@@ -143,6 +143,13 @@ class TestFF2PP2Cube(tests.IrisTest):
                                           cube_by_name[standard_name])
             self.assertCML(cube, ('FF', filename))
 
+    def test_raw_to_table_count(self):
+        filename = tests.get_data_path(('FF', 'n48_multi_field_table_count'))
+        cubes = iris.load_raw(filename)
+        ff_header = ff.FFHeader(filename)
+        table_count = ff_header.lookup_table[2]
+        self.assertEqual(len(cubes), table_count)
+
 
 @tests.skip_data
 class TestFFieee32(tests.IrisTest):

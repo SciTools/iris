@@ -652,9 +652,7 @@ class FF2PP(object):
         ff_file = open(self._ff_header.ff_filename, 'rb')
         ff_file_seek = ff_file.seek
 
-        # Check for an instantaneous dump.
-        if self._ff_header.dataset_type == 1:
-            table_count = self._ff_header.total_prognostic_fields
+        is_boundary_packed = self._ff_header.dataset_type == 5
 
         grid = self._ff_header.grid()
 
