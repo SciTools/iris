@@ -268,7 +268,7 @@ class TestPPFileExtraXData(IrisPPTest):
 @tests.skip_data
 class TestPPFileWithExtraCharacterData(IrisPPTest):
     def setUp(self):
-        self.original_pp_filepath = tests.get_data_path(('PP', 'model_comp', 'dec_subset.pp'))
+        self.original_pp_filepath = tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))
         self.r = pp.load(self.original_pp_filepath)
         self.r_loaded_data = pp.load(self.original_pp_filepath, read_data=True)
         
