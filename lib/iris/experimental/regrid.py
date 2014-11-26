@@ -593,25 +593,48 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
     return result
 
 
-def _within_bounds(bounds, lower, upper):
+def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
     """
-    Return whether both lower and upper lie within the extremes
-    of bounds.
+    Determine which target bounds lie within the extremes of the source bounds.
+
+    Args:
+
+    * src_bounds (ndarray):
+        An (n, 2) shaped array of monotonic contiguous source bounds.
+    * tgt_bounds (ndarray):
+        An (n, 2) shaped array corresponding to the target bounds.
+
+    Kwargs:
+
+    * orderswap (bool):
+        A Boolean indicating whether the target bounds are in descending order
+        (True). Defaults to False.
+
+    Returns:
+        Boolean ndarray, indicating whether each target bound is within the
+        extremes of the source bounds.
 
     """
-    min_bound = np.min(bounds)
-    max_bound = np.max(bounds)
+    min_bound = np.min(src_bounds)
+    max_bound = np.max(src_bounds)
 
-    return (min_bound <= lower <= max_bound) and \
-        (min_bound <= upper <= max_bound)
+    # Swap upper-lower is necessary.
+    if orderswap is True:
+        upper, lower = tgt_bounds.T
+    else:
+        lower, upper = tgt_bounds.T
+
+    return (((lower <= max_bound) * (lower >= min_bound)) *
+            ((upper <= max_bound) * (upper >= min_bound)))
 
 
 def _cropped_bounds(bounds, lower, upper):
     """
-    Return a new bounds array and corresponding slice object (or indices)
-    that result from cropping the provided bounds between the specified lower
-    and upper values. The bounds at the extremities will be truncated so that
-    they start and end with lower and upper.
+    Return a new bounds array and corresponding slice object (or indices) of
+    the original data array, resulting from cropping the provided bounds
+    between the specified lower and upper values. The bounds at the
+    extremities will be truncated so that they start and end with lower and
+    upper.
 
     This function will return an empty NumPy array and slice if there is no
     overlap between the region covered by bounds and the region from lower to
@@ -930,8 +953,25 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     # Assign to mask to explode it, allowing indexed assignment.
     new_data.mask = False
 
-    # Simple for loop approach.
     indices = [slice(None)] * new_data.ndim
+
+    # Determine which grid bounds are within src extent.
+    y_within_bounds = _within_bounds(src_y_bounds, grid_y_bounds,
+                                     grid_y_decreasing)
+    x_within_bounds = _within_bounds(src_x_bounds, grid_x_bounds,
+                                     grid_x_decreasing)
+
+    # Cache which src_bounds are within grid bounds
+    cached_x_bounds = []
+    cached_x_indices = []
+    for (x_0, x_1) in grid_x_bounds:
+        if grid_x_decreasing:
+            x_0, x_1 = x_1, x_0
+        x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+        cached_x_bounds.append(x_bounds)
+        cached_x_indices.append(x_indices)
+
+    # Simple for loop approach.
     for j, (y_0, y_1) in enumerate(grid_y_bounds):
         # Reverse lower and upper if dest grid is decreasing.
         if grid_y_decreasing:
@@ -941,7 +981,8 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
             # Reverse lower and upper if dest grid is decreasing.
             if grid_x_decreasing:
                 x_0, x_1 = x_1, x_0
-            x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+            x_bounds = cached_x_bounds[i]
+            x_indices = cached_x_indices[i]
 
             # Determine whether to mask element i, j based on overlap with
             # src.
@@ -950,8 +991,8 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
             # (i.e. circular) this new cell would include a region outside of
             # the extent of the src grid and should therefore be masked.
             outside_extent = x_0 > x_1 and not circular
-            if (outside_extent or not _within_bounds(src_y_bounds, y_0, y_1) or
-                    not _within_bounds(src_x_bounds, x_0, x_1)):
+            if (outside_extent or not y_within_bounds[j] or not
+                    x_within_bounds[i]):
                 # Mask out element(s) in new_data
                 if x_dim is not None:
                     indices[x_dim] = i

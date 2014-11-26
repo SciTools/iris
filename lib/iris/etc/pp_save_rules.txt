@@ -529,6 +529,18 @@ IF
 THEN
     pp.lbproc += 8192
 
+
+##########################
+### vertical - lbuser5 ###
+##########################
+
+IF
+    scalar_coord(cm, 'pseudo_level') is not None
+    not scalar_coord(cm, 'pseudo_level').bounds
+THEN
+    pp.lbuser[4] = scalar_coord(cm, 'pseudo_level').points[0]
+
+
 ################################
 ### vertical - lbvc and blev ###
 ################################
