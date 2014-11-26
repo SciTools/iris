@@ -244,7 +244,7 @@ def main():
     time_date = time.units.num2date(time.points[0]).strftime(UTC_format)
     plt.title('Volcanic ash concentration forecast\nvalid at %s' % time_date)
 
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

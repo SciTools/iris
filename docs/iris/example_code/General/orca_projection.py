@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import iris
 import iris.analysis.cartography
+import iris.plot as iplt
 import iris.quickplot as qplt
 
 
@@ -51,7 +52,7 @@ def main():
         # Draw coastlines
         ax.coastlines()
 
-        plt.show()
+        iplt.show()
 
 if __name__ == '__main__':
     main()

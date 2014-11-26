@@ -6,6 +6,7 @@ Multi-line temperature profile plot
 import matplotlib.pyplot as plt
 
 import iris
+import iris.plot as iplt
 import iris.quickplot as qplt
 
 
@@ -39,7 +40,7 @@ def main():
     plt.axis('tight')
 
     # Finally, show it.
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

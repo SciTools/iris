@@ -137,14 +137,14 @@ class StandardReportWithExclusions(pep8.StandardReport):
 
     if DOCS_DIRS:
         expected_bad_docs_files = [
-            '*/example_code/graphics/COP_1d_plot.py',
-            '*/example_code/graphics/COP_maps.py',
-            '*/example_code/graphics/SOI_filtering.py',
-            '*/example_code/graphics/cross_section.py',
-            '*/example_code/graphics/custom_file_loading.py',
-            '*/example_code/graphics/global_map.py',
-            '*/example_code/graphics/hovmoller.py',
-            '*/example_code/graphics/lagged_ensemble.py',
+            '*/example_code/General/SOI_filtering.py',
+            '*/example_code/General/cross_section.py',
+            '*/example_code/General/custom_file_loading.py',
+            '*/example_code/General/global_map.py',
+            '*/example_code/Meteorology/COP_1d_plot.py',
+            '*/example_code/Meteorology/COP_maps.py',
+            '*/example_code/Meteorology/hovmoller.py',
+            '*/example_code/Meteorology/lagged_ensemble.py',
             '*/example_tests/test_COP_1d_plot.py',
             '*/example_tests/test_COP_maps.py',
             '*/example_tests/test_SOI_filtering.py',
@@ -159,12 +159,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/example_tests/test_rotated_pole_mapping.py',
             '*/src/conf.py',
             '*/src/developers_guide/gitwash_dumper.py',
-            '*/src/sphinxext/custom_class_autodoc.py',
-            '*/src/sphinxext/gen_example_directory.py',
-            '*/src/sphinxext/gen_gallery.py',
-            '*/src/sphinxext/gen_rst.py',
-            '*/src/sphinxext/generate_package_rst.py',
-            '*/src/sphinxext/plot_directive.py',
             '*/src/userguide/plotting_examples/1d_with_legend.py']
 
         expected_bad_files += expected_bad_docs_files
@@ -330,11 +324,9 @@ class TestLicenseHeaders(unittest.TestCase):
         exclude_patterns = ('setup.py',
                             'build/*',
                             'dist/*',
-                            'docs/iris/example_code/graphics/*.py',
+                            'docs/iris/example_code/*/*.py',
                             'docs/iris/src/developers_guide/documenting/*.py',
                             'docs/iris/src/sphinxext/gen_gallery.py',
-                            'docs/iris/src/sphinxext/gen_rst.py',
-                            'docs/iris/src/sphinxext/plot_directive.py',
                             'docs/iris/src/userguide/plotting_examples/*.py',
                             'docs/iris/src/userguide/regridding_plots/*.py',
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
@@ -380,10 +372,8 @@ class TestFutureImports(unittest.TestCase):
         '*/iris/fileformats/_pyke_rules/compiled_krb/__init__.py',
         '*/iris/fileformats/_pyke_rules/compiled_krb/compiled_pyke_files.py',
         '*/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py',
-        '*/docs/iris/example_code/graphics/*.py',
+        '*/docs/iris/example_code/*/*.py',
         '*/docs/iris/src/developers_guide/documenting/*.py',
-        '*/docs/iris/src/sphinxext/gen_rst.py',
-        '*/docs/iris/src/sphinxext/plot_directive.py',
     )
 
     future_imports_pattern = re.compile(

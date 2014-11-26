@@ -62,9 +62,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
-
-              #'matplotlib.sphinxext.plot_directive',
-              'plot_directive',
+              'matplotlib.sphinxext.plot_directive',
 
               # better class documentation
               'custom_class_autodoc',
@@ -75,6 +73,9 @@ extensions = ['sphinx.ext.autodoc',
               'gen_example_directory',
               'generate_package_rst',
               'gen_gallery',
+
+              # Add labels to figures automatically
+              'auto_label_figures',
               ]
 
 # list of packages to document

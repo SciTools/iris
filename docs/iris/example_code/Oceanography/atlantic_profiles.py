@@ -62,7 +62,7 @@ def main():
     for ticklabel in ax2.get_xticklabels():
         ticklabel.set_color(salinity_color)
     plt.tight_layout()
-    plt.show()
+    iplt.show()
 
     # Now plot a T-S diagram using scatter. We'll use all the profiles here,
     # and each point will be coloured according to its depth.
@@ -76,7 +76,7 @@ def main():
     cb = plt.colorbar(orientation='horizontal')
     cb.set_label('Depth / m')
     plt.tight_layout()
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

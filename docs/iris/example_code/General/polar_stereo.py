@@ -10,6 +10,7 @@ projection.
 import matplotlib.pyplot as plt
 
 import iris
+import iris.plot as iplt
 import iris.quickplot as qplt
 
 
@@ -20,7 +21,7 @@ def main():
     ax = plt.gca()
     ax.coastlines()
     ax.gridlines()
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

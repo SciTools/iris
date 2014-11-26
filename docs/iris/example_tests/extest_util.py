@@ -35,7 +35,9 @@ from iris.tests import _DEFAULT_IMAGE_TOLERANCE
 
 
 EXAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                 'example_code', 'graphics')
+                                 'example_code')
+EXAMPLE_DIRECTORIES = [os.path.join(EXAMPLE_DIRECTORY, the_dir)
+                       for the_dir in os.listdir(EXAMPLE_DIRECTORY)]
 
 
 @contextlib.contextmanager
@@ -48,7 +50,7 @@ def add_examples_to_path():
     """
     orig_sys_path = sys.path
     sys.path = sys.path[:]
-    sys.path.append(EXAMPLE_DIRECTORY)
+    sys.path += EXAMPLE_DIRECTORIES
     yield
     sys.path = orig_sys_path
 

@@ -157,9 +157,8 @@ The syntax is very similar to that which you would provide to Matplotlib's
 equivalent :py:func:`matplotlib.pyplot.plot` and indeed all of the 
 keyword arguments are equivalent:
 
-.. literalinclude:: plotting_examples/1d_simple.py
-
 .. plot:: userguide/plotting_examples/1d_simple.py
+   :include-source:
 
 For more information on how this example reduced the 2D cube to 1 dimension see 
 the previous section entitled :doc:`subsetting_a_cube`.
@@ -177,9 +176,8 @@ to a plot.
 For example, the previous plot can be improved quickly by replacing
 **iris.plot** with **iris.quickplot**:
 
-.. literalinclude:: plotting_examples/1d_quickplot_simple.py
-
 .. plot:: userguide/plotting_examples/1d_quickplot_simple.py
+   :include-source:
 
 
 
@@ -192,9 +190,8 @@ and providing the label keyword to identify it.
 Once all of the lines have been added the :func:`matplotlib.pyplot.legend` 
 function can be called to indicate that a legend is desired: 
 
-.. literalinclude:: ../../example_code/graphics/lineplot_with_legend.py
-
-.. plot:: ../example_code/graphics/lineplot_with_legend.py
+.. plot:: ../example_code/General/lineplot_with_legend.py
+   :include-source:
 
 This example of consecutive ``qplt.plot`` calls coupled with the 
 :func:`Cube.slices() <iris.cube.Cube.slices>` method on a cube shows 
@@ -238,9 +235,8 @@ Cube contour
 A simple contour plot of a cube can be created with either the 
 :func:`iris.plot.contour` or :func:`iris.quickplot.contour` functions:
 
-.. literalinclude:: plotting_examples/cube_contour.py
-
 .. plot:: userguide/plotting_examples/cube_contour.py
+   :include-source:
 
 
 Cube filled contour
@@ -248,9 +244,8 @@ Cube filled contour
 Similarly a filled contour plot of a cube can be created with the 
 :func:`iris.plot.contourf` or :func:`iris.quickplot.contourf` functions:
 
-.. literalinclude:: plotting_examples/cube_contourf.py
-
 .. plot:: userguide/plotting_examples/cube_contourf.py
+   :include-source:
 
 
 Cube block plot
@@ -267,9 +262,8 @@ or :func:`iris.quickplot.pcolormesh`.
     and :func:`iris.quickplot.pcolormesh` will attempt to guess suitable values
     based on their points (see also :func:`iris.coords.Coord.guess_bounds()`).
 
-.. literalinclude:: plotting_examples/cube_blockplot.py
-
 .. plot:: userguide/plotting_examples/cube_blockplot.py
+   :include-source:
 
 .. _brewer-info:
 

@@ -3,25 +3,46 @@
 {% block extrahead %}
 
 <script type="text/javascript" src="_static/jquery.cycle.all.latest.js"></script>
+<script type="text/javascript" src="_static/random_image.js"></script>
 
 <style type="text/css">
 #slideshow { width: 400px; }
-#sliderNav { margin-left: 295px; margin-top: 10px; margin-bottom: 75px; cursor:pointer;cursor:hand; }
-#sliderNav div { float: left; height: 17px; width: 20px; background: url("_static/bullet_on.png"); }
-#sliderNav div.activeSlide { background: url("_static/bullet_off.png"); }
+.slideshowImage { max-width: 400px; max-height: 300px; }
+#sliderNav { margin: 10px auto 75px auto; cursor:pointer;cursor:hand; }
+#sliderNav div { display: inline-block; height: 8px; width: 8px; margin: 0 2px;
+  border: #ccc medium solid; border-radius: 50%; box-shadow: 0 0 2px 0 #ccc;}
+#sliderNav div.activeSlide { border-color: #777; background-color: #ccc; }
 </style>
 
 <script type="text/javascript">
 $(document).ready(function() {
-    $('.slideshow').cycle({
+    var $ss = $('.slideshow');
+
+    // Fisher-Yates shuffle
+    for (var i = images.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = images[i];
+        images[i] = images[j];
+        images[j] = temp;
+    }
+
+    // Only use first 5 images
+    for (var i = 0; i < 5; i++) {
+        var img = images[i];
+		$ss.append('<a href="'+img[2]+'"><img src="'+img[1]+'" class="slideshowImage"/></a>');
+    }
+
+    $ss.cycle({
         fx:      'fade',
+        height:  '300px',
+        width:   '400px',
+        fit:     1,
         pager:   '#sliderNav',
         pagerAnchorBuilder: pagerFactory
     });
 
     function pagerFactory(idx, slide) {
-        var s = ' style="background-image: url("_static/bullet_on.png"); width:20px; height;17px; display: block;';
-        return '<div><a href="#"><span></span></a></div>';
+        return '<div><a href="#"></a></div>';
     };
 
 });
@@ -89,15 +110,10 @@ With Iris you can:
 </div>
 
 <div style="float:right; padding-top: 50px; padding-right: 10px;">
-	<div class="slideshow">
-                <a href="examples/graphics/COP_maps.html"><img src="_images/COP_maps.png" style="height: 250px;"/></a>
-                <a href="examples/graphics/custom_file_loading.html"><img src="_images/custom_file_loading.png" style="margin-left:130px; height: 300px;"/></a>
-                <a href="examples/graphics/COP_1d_plot.html"><img src="_images/COP_1d_plot.png" style="margin-left:130px; height: 300px;"/></a>
-                <a href="examples/graphics/hovmoller.html"><img src="_images/hovmoller.png" style="margin-left:130px; height: 300px;"/></a>
-                <a href="examples/graphics/TEC.html"><img src="_images/TEC.png" style="margin-left:130px; height: 300px;"/></a>
-        </div>
-        <div id="sliderNav" align="center"></div>
+	<div class="slideshow"></div>
+	<div id="sliderNav" align="center"></div>
 </div>
 
+<div class="clearer"></div>
 
 {% endblock %}

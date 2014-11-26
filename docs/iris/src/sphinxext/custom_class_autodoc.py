@@ -27,16 +27,12 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
     priority = 1000000
 
     def get_object_members(self, want_all):
-        r,f = autodoc.ClassDocumenter.get_object_members(self, want_all)
-        #print '\nAutodoc:', self.object, '\n    '.join([name for name, obj in f]),
-        #print want_all, self.options.members
-        return r, f
+        return autodoc.ClassDocumenter.get_object_members(self, want_all)
 
     @staticmethod
     def can_document_member(member, mname, isattr, self):
-        #print ' asked me if I can document....', member, mname, isattr, self
-        #print ' gave them :', autodoc.ClassDocumenter.can_document_member(member, mname, isattr, self)
-        return autodoc.ClassDocumenter.can_document_member(member, mname, isattr, self)
+        return autodoc.ClassDocumenter.can_document_member(member, mname,
+                                                           isattr, self)
 
     def get_doc(self, encoding=None):
         content = self.env.config.autoclass_content
@@ -51,7 +47,7 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
         if content in ('both', 'init'):
             constructor = self.get_constructor()
             if constructor:
-                initdocstring = self.get_attr( constructor, '__doc__', None)
+                initdocstring = self.get_attr(constructor, '__doc__', None)
             else:
                 initdocstring = None
             if initdocstring:
@@ -68,22 +64,21 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
         initmeth = self.get_attr(self.object, '__new__', None)
 
         if initmeth is None or initmeth is object.__new__ or not \
-               (inspect.ismethod(initmeth) or inspect.isfunction(initmeth)):
-           initmeth = None
+                (inspect.ismethod(initmeth) or inspect.isfunction(initmeth)):
+            initmeth = None
 
         if initmeth is None:
             initmeth = self.get_attr(self.object, '__init__', None)
 
-        if initmeth is None or initmeth is object.__init__ or initmeth is object.__new__ or not \
-               (inspect.ismethod(initmeth) or inspect.isfunction(initmeth)):
+        if initmeth is None or initmeth is object.__init__ or \
+                initmeth is object.__new__ or not \
+                (inspect.ismethod(initmeth) or inspect.isfunction(initmeth)):
             initmeth = None
 
         return initmeth
 
-
     def format_args(self):
         initmeth = self.get_constructor()
-        #print 'DOING FORMAT ARGS: ', initmeth, self.object
         try:
             argspec = inspect.getargspec(initmeth)
         except TypeError:

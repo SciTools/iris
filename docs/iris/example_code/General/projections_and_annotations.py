@@ -102,7 +102,7 @@ def make_plot(projection_name, projection_crs):
     # Add a title, and display.
     plt.title('A pseudocolour plot on the {} projection,\n'
               'with overlaid contours.'.format(projection_name))
-    plt.show()
+    iplt.show()
 
 
 def main():
