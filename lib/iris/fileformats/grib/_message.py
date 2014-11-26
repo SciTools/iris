@@ -140,14 +140,57 @@ class _DataProxy(object):
     def ndim(self):
         return len(self.shape)
 
+    def _bitmap(self, bitmap_section):
+        """
+        Get the bitmap for the data from the message. The GRIB spec defines
+        that the bitmap is composed of values 0 or 1, where:
+
+            * 0: no data value at corresponding data point (data point masked).
+            * 1: data value at corresponding data point (data point unmasked).
+
+        The bitmap can take the following values:
+
+            * 0: Bitmap applies to the data and is specified in this section
+                 of this message.
+            * 1-253: Bitmap applies to the data, is specified by originating
+                     centre and is not specified in section 6 of this message.
+            * 254: Bitmap applies to the data, is specified in an earlier
+                   section 6 of this message and is not specified in this
+                   section 6 of this message.
+            * 255: Bitmap does not apply to the data.
+
+        Only values 0 and 255 are supported.
+
+        Returns the bitmap, reshaped to the shape of the data as defined by
+        `self.shape`.
+
+        """
+        # Reference GRIB2 Code Table 6.0.
+        bitMapIndicator = bitmap_section['bitMapIndicator']
+
+        if bitMapIndicator == 0:
+            bitmap = bitmap_section['bitmap'].reshape(self.shape)
+        elif bitMapIndicator == 255:
+            bitmap = None
+        else:
+            msg = 'Bitmap Section 6 contains unsupported ' \
+                  'bitmap indicator [{}]'.format(bitMapIndicator)
+            raise TranslationError(msg)
+        return bitmap
+
     def __getitem__(self, keys):
         # NB. Currently assumes that the validity of this interpretation
         # is checked before this proxy is created.
         message = self.recreate_raw()
         sections = message.sections
-        grid_section = sections[3]
-        data = sections[7]['codedValues'].reshape(grid_section['Nj'],
-                                                  grid_section['Ni'])
+        bitmap_section = sections[6]
+        bitmap = self._bitmap(bitmap_section)
+        data = sections[7]['codedValues'].reshape(self.shape)
+
+        if bitmap is not None:
+            # `np.ma.masked_array` masks where input = 1, the opposite of the
+            # behaviour specified by the GRIB spec.
+            data = np.ma.masked_array(data, mask=np.logical_not(bitmap))
         return data.__getitem__(keys)
 
     def __repr__(self):
@@ -317,6 +360,10 @@ class _Section(object):
                        'scaledValueOfCentralWaveNumber')
         if key in vector_keys:
             res = gribapi.grib_get_array(self._message_id, key)
+        elif key == 'bitmap':
+            # The bitmap is stored as an array of hexal strings
+            # It must be retrieved as an array of ints (0, 1).
+            res = gribapi.grib_get_array(self._message_id, key, int)
         elif key in ('typeOfFirstFixedSurface', 'typeOfSecondFixedSurface'):
             # By default these values are returned as unhelpful strings but
             # we can use int representation to compare against instead.

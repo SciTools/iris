@@ -28,6 +28,7 @@ import iris.tests as tests
 import biggus
 import mock
 import numpy as np
+from numpy.random import randint
 
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
@@ -51,16 +52,60 @@ class Test_sections(tests.IrisTest):
         self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
 
+class Test_data__masked(tests.IrisTest):
+    def setUp(self):
+        self.shape = (3, 4)
+        self.bitmap = randint(2, size=(12))
+        self.values = np.arange(12).reshape(self.shape)
+        self._section_3 = {'sourceOfGridDefinition': 0,
+                           'numberOfOctectsForNumberOfPoints': 0,
+                           'interpretationOfNumberOfPoints': 0,
+                           'gridDefinitionTemplateNumber': 0,
+                           'scanningMode': 0, 'Nj': 3, 'Ni': 4}
+
+    def test_no_bitmap(self):
+        message = _make_test_message({3: self._section_3,
+                                      6: {'bitMapIndicator': 255,
+                                          'bitmap': None},
+                                      7: {'codedValues': self.values}})
+        result = message.data.ndarray()
+        self.assertArrayEqual(result, self.values)
+        self.assertIsInstance(result, np.ndarray)
+
+    def test_bitmap_present(self):
+        message = _make_test_message({3: self._section_3,
+                                      6: {'bitMapIndicator': 0,
+                                          'bitmap': self.bitmap},
+                                      7: {'codedValues': self.values}})
+        result = message.data.masked_array()
+        expected = np.ma.masked_array(self.values, np.logical_not(self.bitmap))
+        self.assertArrayEqual(result, expected)
+        self.assertIsInstance(result, np.ma.core.masked_array)
+
+    def test_bitmap__invalid_indicator(self):
+        message = _make_test_message({3: self._section_3,
+                                      6: {'bitMapIndicator': 100,
+                                          'bitmap': None},
+                                      7: {'codedValues': self.values}})
+        with self.assertRaisesRegexp(TranslationError, 'unsupported bitmap'):
+            message.data.ndarray()
+
+
 class Test_data__unsupported(tests.IrisTest):
+    def setUp(self):
+        self._section_6 = {'bitMapIndicator': 255, 'bitmap': None}
+
     def test_unsupported_grid_definition(self):
-        message = _make_test_message({3: {'sourceOfGridDefinition': 1}})
+        message = _make_test_message({3: {'sourceOfGridDefinition': 1},
+                                      6: self._section_6})
         with self.assertRaisesRegexp(TranslationError, 'source'):
             message.data
 
     def test_unsupported_quasi_regular__number_of_octets(self):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
-                 'numberOfOctectsForNumberOfPoints': 1}})
+                 'numberOfOctectsForNumberOfPoints': 1},
+             6: self._section_6})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
 
@@ -68,7 +113,8 @@ class Test_data__unsupported(tests.IrisTest):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
                  'numberOfOctectsForNumberOfPoints': 0,
-                 'interpretationOfNumberOfPoints': 1}})
+                 'interpretationOfNumberOfPoints': 1},
+             6: self._section_6})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
 
@@ -89,7 +135,8 @@ class Test_data__grid_template_0(tests.IrisTest):
                  'numberOfOctectsForNumberOfPoints': 0,
                  'interpretationOfNumberOfPoints': 0,
                  'gridDefinitionTemplateNumber': 0,
-                 'scanningMode': 1}})
+                 'scanningMode': 1},
+             6: {'bitMapIndicator': 255, 'bitmap': None}})
         with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
             message.data
 
@@ -102,6 +149,8 @@ class Test_data__grid_template_0(tests.IrisTest):
                             'scanningMode': scanning_mode,
                             'Nj': 3,
                             'Ni': 4},
+                        6: {'bitMapIndicator': 255,
+                            'bitmap': None},
                         7: {'codedValues': np.arange(12)}}
             raw_message = mock.Mock(sections=sections)
             return raw_message

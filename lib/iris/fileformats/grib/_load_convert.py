@@ -98,6 +98,7 @@ _FIXED_SURFACE = {
 _TYPE_OF_FIXED_SURFACE_MISSING = 255
 
 # Reference Code Table 6.0
+_BITMAP_CODE_PRESENT = 0
 _BITMAP_CODE_NONE = 255
 
 # Reference Code Table 4.10.
@@ -1487,13 +1488,26 @@ def bitmap_section(section):
     """
     Translate section 6 from the GRIB2 message.
 
+    The bitmap can take the following values:
+
+        * 0: Bitmap applies to the data and is specified in this section
+             of this message.
+        * 1-253: Bitmap applies to the data, is specified by originating
+                 centre and is not specified in section 6 of this message.
+        * 254: Bitmap applies to the data, is specified in an earlier
+               section 6 of this message and is not specified in this
+               section 6 of this message.
+        * 255: Bitmap does not apply to the data.
+
+    Only values 0 and 255 are supported.
+
     """
     # Reference GRIB2 Code Table 6.0.
     bitMapIndicator = section['bitMapIndicator']
 
-    if bitMapIndicator != _BITMAP_CODE_NONE:
+    if bitMapIndicator not in [_BITMAP_CODE_NONE, _BITMAP_CODE_PRESENT]:
         msg = 'Bitmap Section 6 contains unsupported ' \
-            'bitmap indicator [{}]'.format(bitMapIndicator)
+              'bitmap indicator [{}]'.format(bitMapIndicator)
         raise TranslationError(msg)
 
 
