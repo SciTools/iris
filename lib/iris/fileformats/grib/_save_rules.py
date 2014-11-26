@@ -49,23 +49,19 @@ def gribbability_check(cube):
     if cs0 != cs1:
         raise iris.exceptions.TranslationError("Inconsistent CoordSystems")
 
-    # Regular?
-    y_coord = cube.coord(dimensions=[0])
-    x_coord = cube.coord(dimensions=[1])
-    if not is_regular(x_coord) or not is_regular(y_coord):
-        raise iris.exceptions.TranslationError(
-            "Cannot save irregular grids to grib")
-
     # Time period exists?
     if not cube.coords("time"):
         raise iris.exceptions.TranslationError("time coord not found")
 
+# Reference Code Table 3.3
+_RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT = 4  # NB "bit 5", as zero-based
 
 ###############################################################################
 #
 # Identification Section 1
 #
 ###############################################################################
+
 
 def centre(cube, grib):
     # TODO: read centre from cube
@@ -191,21 +187,56 @@ def scanning_mode_flags(x_coord, y_coord, grib):
                           int(y_coord.points[1] - y_coord.points[0] > 0))
 
 
-def latlon_common(cube, grib):
+def latlon_grid_common(cube, grib):
     # Grib encoding of the sequences of X and Y points.
     y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
     shape_of_the_earth(cube, grib)
     grid_dims(x_coord, y_coord, grib)
+    scanning_mode_flags(x_coord, y_coord, grib)
+
+
+def latlon_points_regular(cube, grib):
+    y_coord = cube.coord(dimensions=[0])
+    x_coord = cube.coord(dimensions=[1])
     latlon_first_last(x_coord, y_coord, grib)
     dx_dy(x_coord, y_coord, grib)
-    scanning_mode_flags(x_coord, y_coord, grib)
+
+
+def latlon_points_irregular(cube, grib):
+    y_coord = cube.coord(dimensions=[0])
+    x_coord = cube.coord(dimensions=[1])
+
+    # Distinguish between true-north and grid-oriented vectors.
+    is_grid_wind = cube.name() in ('x_wind', 'y_wind', 'grid_eastward_wind',
+                                   'grid_northward_wind')
+    # Encode in bit "5" of 'resolutionAndComponentFlags' (other bits unused).
+    component_flags = 0
+    if is_grid_wind:
+        component_flags |= 2 ** _RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT
+    gribapi.grib_set_long(grib, 'resolutionAndComponentFlags', component_flags)
+
+    # Record the  X and Y coordinate values.
+    # NOTE: there is currently a bug in the gribapi which means that the size
+    # of the longitudes array does not equal 'Nj', as it should.
+    # See : https://software.ecmwf.int/issues/browse/SUP-1096
+    # So, this only works at present if the x and y dimensions are **equal**.
+    lon_values = np.array(np.round(x_coord.points * 1000000),
+                          dtype=np.int64)
+    gribapi.grib_set_long_array(grib, 'longitudes', lon_values)
+    lat_values = np.array(np.round(y_coord.points * 1000000),
+                          dtype=np.int64)
+    gribapi.grib_set_long_array(grib, 'latitudes', lat_values)
 
 
 def rotated_pole(cube, grib):
     # Grib encoding of a rotated pole coordinate system.
     cs = cube.coord(dimensions=[0]).coord_system
 
+    if cs.north_pole_grid_longitude != 0.0:
+        raise iris.exceptions.TranslationError(
+            'Grib save does not yet support Rotated-pole coordinates with '
+            'a rotated prime meridian.')
 # XXX Pending #1125
 #    gribapi.grib_set_double(grib, "latitudeOfSouthernPoleInDegrees",
 #                            float(cs.n_pole.latitude))
@@ -213,7 +244,7 @@ def rotated_pole(cube, grib):
 #                            float(cs.n_pole.longitude))
 #    gribapi.grib_set_double(grib, "angleOfRotationInDegrees", 0)
 # WORKAROUND
-    latitude = -int(cs.grid_north_pole_latitude*1000000)
+    latitude = - int(cs.grid_north_pole_latitude*1000000)
     longitude = int(((cs.grid_north_pole_longitude+180) % 360)*1000000)
     gribapi.grib_set_long(grib, "latitudeOfSouthernPole", latitude)
     gribapi.grib_set_long(grib, "longitudeOfSouthernPole", longitude)
@@ -232,9 +263,8 @@ def grid_definition_template_0(cube, grib):
     """
     # Constant resolution, aka 'regular' true lat-lon grid.
     gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 0)
-
-    # Record x and y points.
-    latlon_common(cube, grib)
+    latlon_grid_common(cube, grib)
+    latlon_points_regular(cube, grib)
 
 
 def grid_definition_template_1(cube, grib):
@@ -250,11 +280,33 @@ def grid_definition_template_1(cube, grib):
     # Constant resolution, aka 'regular' rotated lat-lon grid.
     gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 1)
 
-    # Record x and y points.
-    latlon_common(cube, grib)
+    # Record details of the rotated coordinate system.
+    rotated_pole(cube, grib)
+
+    # Encode the lat/lon points.
+    latlon_grid_common(cube, grib)
+    latlon_points_regular(cube, grib)
+
+
+def grid_definition_template_5(cube, grib):
+    # template 3.5
+    # Variable resolution, aka 'irregular'.
+
+    # NOTE: we must set Ni=Nj=1 before establishing the template.
+    # Without this, setting "gridDefinitionTemplateNumber" = 5 causes an
+    # immediate error.
+    # See: https://software.ecmwf.int/issues/browse/SUP-1095
+    # This is acceptable, as the subsequent call to 'latlon_grid_common' will
+    # set these to the correct horizontal dimensions (by calling 'grid_dims').
+    gribapi.grib_set_long(grib, "Ni", 1)
+    gribapi.grib_set_long(grib, "Nj", 1)
+    gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 5)
 
     # Record details of the rotated coordinate system.
     rotated_pole(cube, grib)
+    # Encode the lat/lon points.
+    latlon_grid_common(cube, grib)
+    latlon_points_irregular(cube, grib)
 
 
 def grid_definition_section(cube, grib):
@@ -264,15 +316,25 @@ def grid_definition_section(cube, grib):
 
     """
     x_coord = cube.coord(dimensions=[1])
+    y_coord = cube.coord(dimensions=[0])
     cs = x_coord.coord_system  # N.B. already checked same cs for x and y.
+    regular_x_and_y = is_regular(x_coord) and is_regular(y_coord)
 
     if isinstance(cs, iris.coord_systems.GeogCS):
-        # Plain lat-lon coordinate system (template 3.0).
+        if not regular_x_and_y:
+            raise iris.exceptions.TranslationError(
+                'Saving an irregular latlon grid to GRIB (PDT3.4) is not '
+                'yet supported.')
+
         grid_definition_template_0(cube, grib)
 
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
-        # Rotated coordinate system (template 3.1).
-        grid_definition_template_1(cube, grib)
+        # Rotated coordinate system cases.
+        # Choose between GDT 3.1 and 3.5 according to coordinate regularity.
+        if regular_x_and_y:
+            grid_definition_template_1(cube, grib)
+        else:
+            grid_definition_template_5(cube, grib)
 
     else:
         raise ValueError('Grib saving is not supported for coordinate system: '

@@ -26,6 +26,13 @@ import numpy.ma as ma
 
 from iris import FUTURE, load_cube
 
+from subprocess import check_output
+
+from iris import FUTURE, load_cube, save
+from iris.coord_systems import RotatedGeogCS
+from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
+from iris.util import is_regular
+
 
 @tests.skip_data
 class TestImport(tests.IrisTest):
@@ -91,6 +98,54 @@ class TestPDT8(tests.IrisTest):
                              len(cell_methods)))
         cell_method, = cell_methods
         self.assertEqual(cell_method.coord_names, ('time',))
+
+
+class TestSaveGdt5(tests.IrisTest):
+    def test_simple(self):
+        # Fetch some sample UKV data (rotated variable grid)
+        path = tests.get_data_path(('PP', 'ukV1', 'ukVpmslont.pp'))
+        cube = load_cube(path)
+
+        # Extract a single 2D field, for simplicity.
+        self.assertEqual(cube.ndim, 3)
+        self.assertEqual(cube.coord_dims('time'), (0,))
+        cube = cube[0]
+
+        # FOR NOW: **also** fix the data so that it is square, i.e. nx=ny.
+        # This is needed because of a bug in the gribapi.
+        # See : https://software.ecmwf.int/issues/browse/SUP-1096
+        ny, nx = cube.shape
+        nn = min(nx, ny)
+        cube = cube[:nn, :nn]
+
+        # Check that it has a rotated-pole variable-spaced grid, as expected.
+        x_coord = cube.coord(axis='x')
+        self.assertIsInstance(x_coord.coord_system, RotatedGeogCS)
+        self.assertFalse(is_regular(x_coord))
+
+        # Write the data to a temporary file, and capture dump output.
+        # TODO: replace the dump with an Iris load, when we support loading.
+        with self.temp_filename('ukv_sample.grib2') as temp_file_path:
+            save(cube, temp_file_path)
+            # Get a dump of the output.
+            dump_text = check_output(('grib_dump -O -wcount=1 ' +
+                                      temp_file_path),
+                                     shell=True)
+        # Check that various aspects of the result are as expected.
+        expect_strings = (
+            'editionNumber = 2',
+            'gridDefinitionTemplateNumber = 5',
+            'Ni = {:d}'.format(nn),
+            'Nj = {:d}'.format(nn),
+            'shapeOfTheEarth = 1',
+            'scaledValueOfRadiusOfSphericalEarth = {:d}'.format(
+                int(UM_DEFAULT_EARTH_RADIUS)),
+            'resolutionAndComponentFlags = 0',
+            'latitudeOfSouthernPole = -37500000',
+            'longitudeOfSouthernPole = 357500000',
+            'angleOfRotation = 0')
+        for expect in expect_strings:
+            self.assertIn(expect, dump_text)
 
 
 if __name__ == '__main__':
