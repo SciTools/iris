@@ -36,6 +36,13 @@ import iris.exceptions
 import iris.unit
 from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
+from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
+                                                 _TIME_RANGE_UNITS)
+
+# Invert code tables from :mod:`iris.fileformats.grib._load_convert`.
+_STATISTIC_TYPE_NAMES = {val: key for key, val in
+                         _STATISTIC_TYPE_NAMES.items()}
+_TIME_RANGE_UNITS = {val: key for key, val in _TIME_RANGE_UNITS.items()}
 
 
 def gribbability_check(cube):
@@ -420,24 +427,58 @@ def set_fixed_surfaces(cube, grib):
                               int(output_v[1]))
 
 
-def type_of_statistical_processing(cube, grib, coord):
-    """Search for processing over the given coord."""
-    # if the last cell method applies only to the given coord...
-    cell_method = cube.cell_methods[-1]
-    coord_names = cell_method.coord_names
-    if len(coord_names) != 1:
-        raise ValueError('There are multiple coord names referenced by '
-                         'the primary cell method: {!r}. Multiple coordinate '
-                         'names are not supported.'.format(coord_names))
-    if coord_names[0] != coord.name():
-        raise ValueError('The coord name referenced by the primary cell method'
-                         ', {!r},  is not the expected coord name {!r}.'
-                         ''.format(coord_names[0], coord.name()))
-    stat_codes = {'mean': 0, 'sum': 1, 'maximum': 2, 'minimum': 3,
-                  'standard_deviation': 6}
-    # 255 is the code in template 4.8 for 'unknown' statistical method
-    stat_code = stat_codes.get(cell_method.method, 255)
-    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", stat_code)
+def set_time_range(grib, time_coord):
+    """
+    Set the time range keys in the specified message
+    based on the bounds of the provided time coordinate.
+
+    """
+    # Set type to hours and convert period to this unit.
+    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeRange",
+                          _TIME_RANGE_UNITS['hours'])
+    hours_since_units = iris.unit.Unit('hours since epoch',
+                                       calendar=time_coord.units.calendar)
+    start_hours, end_hours = time_coord.units.convert(time_coord.bounds[0],
+                                                      hours_since_units)
+    # Cast from np.float to Python float.
+    time_range_in_hours = float(end_hours - start_hours)
+    gribapi.grib_set_long(grib, "lengthOfTimeRange", time_range_in_hours)
+
+
+def set_time_increment(grib, cell_method):
+    """
+    Set the time increment keys in the specified message
+    based on the provided cell method.
+
+    """
+    # Type of time increment, e.g incrementing forecast period, incrementing
+    # forecast reference time, etc. Set to missing, but given
+    # cell method is over time, a value of 2 seems reasonable.
+    # (see code table 4.11)
+    gribapi.grib_set_long(grib, "typeOfTimeIncrement", 255)
+
+    # Determine interval from cell method intervals string.
+    intervals = cell_method.intervals
+    if intervals is not None and len(intervals) == 1:
+        interval, = intervals
+        try:
+            inc, units = interval.split()
+            inc = float(inc)
+            if units in ('hr', 'hour', 'hours'):
+                units_type = _TIME_RANGE_UNITS['hours']
+            else:
+                raise ValueError('Unable to parse units of interval')
+        except ValueError:
+            # Problem interpreting the interval string.
+            gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)
+            gribapi.grib_set_long(grib, "timeIncrement", 0)
+        else:
+            gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement",
+                                  units_type)
+            gribapi.grib_set_long(grib, "timeIncrement", inc)
+    else:
+        gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)
+        gribapi.grib_set_long(grib, "timeIncrement", 0)
 
 
 def time_processing_period(cube, grib):
@@ -449,13 +490,42 @@ def time_processing_period(cube, grib):
     will not be derived and the save process will be aborted.
 
     """
-    # We could probably split this function up a bit
+    # Check for time coordinate.
+    time_coord = cube.coord('time')
 
-    # Can safely assume bounded pt.
-    pt_coord = cube.coord("time")
-    end = iris.unit.num2date(pt_coord.bounds[0, 1], pt_coord.units.name,
-                             pt_coord.units.calendar)
+    if len(time_coord.points) != 1:
+        msg = 'Expected length one time coordinate, got {} points'
 
+    if time_coord.nbounds != 2:
+        msg = 'Expected time coordinate with two bounds, got {} bounds'
+        raise ValueError(msg.format(time_coord.nbounds))
+
+    # Check that there is one and only one cell method related to the
+    # time coord.
+    time_cell_methods = [cell_method for cell_method in cube.cell_methods if
+                         'time' in cell_method.coord_names]
+    if not time_cell_methods:
+        raise ValueError("Expected a cell method with a coordinate name "
+                         "of 'time'")
+    if len(time_cell_methods) > 1:
+        raise ValueError("Cannot handle multiple 'time' cell methods.")
+    cell_method, = time_cell_methods
+
+    # Extract the datetime-like object corresponding to the start and end of
+    # the overall processing interval.
+    start, end = time_coord.units.num2date(time_coord.bounds[0])
+
+    ## Set the associated keys for the start of the interval (octets 13-19 in
+    ## section 1). - might be forecast reference time in some cases????
+    #gribapi.grib_set_long(grib, 'year', start.year)
+    #gribapi.grib_set_long(grib, 'month', start.month)
+    #gribapi.grib_set_long(grib, 'day', start.day)
+    #gribapi.grib_set_long(grib, 'hour', start.hour)
+    #gribapi.grib_set_long(grib, 'minute', start.minute)
+    #gribapi.grib_set_long(grib, 'second', start.second)
+
+    # Set the associated keys for the end of the interval (octets 35-41
+    # in section 4).
     gribapi.grib_set_long(grib, "yearOfEndOfOverallTimeInterval", end.year)
     gribapi.grib_set_long(grib, "monthOfEndOfOverallTimeInterval", end.month)
     gribapi.grib_set_long(grib, "dayOfEndOfOverallTimeInterval", end.day)
@@ -463,23 +533,21 @@ def time_processing_period(cube, grib):
     gribapi.grib_set_long(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
     gribapi.grib_set_long(grib, "secondOfEndOfOverallTimeInterval", end.second)
 
+    # Only one time range specification. A series of aggregations (e.g. the
+    # mean of of an accumulation) would set this to a higher value, but we are
+    # limited to a single time related cell method.
     gribapi.grib_set_long(grib, "numberOfTimeRange", 1)
     gribapi.grib_set_long(grib, "numberOfMissingInStatisticalProcess", 0)
 
-    type_of_statistical_processing(cube, grib, pt_coord)
+    # Type of statistical process (see code table 4.10)
+    statistic_type = _STATISTIC_TYPE_NAMES.get(cell_method.method, 255)
+    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", statistic_type)
 
-    # Type of time increment, e.g incrementing fp, incrementing ref
-    # time, etc. (code table 4.11)
-    gribapi.grib_set_long(grib, "typeOfTimeIncrement", 255)
-    # time unit for period over which statistical processing is done (hours)
-    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeRange", 1)
-    # period over which statistical processing is done
-    gribapi.grib_set_long(grib, "lengthOfTimeRange",
-                          float(pt_coord.bounds[0, 1] - pt_coord.bounds[0, 0]))
-    # time unit between successive source fields (not setting this at present)
-    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)
-    # between successive source fields (just set to 0 for now)
-    gribapi.grib_set_long(grib, "timeIncrement", 0)
+    # Period over which statistical processing is performed.
+    set_time_range(grib, time_coord)
+
+    # Time increment i.e. interval of cell method (if any)
+    set_time_increment(grib, cell_method)
 
 
 def _cube_is_time_statistic(cube):

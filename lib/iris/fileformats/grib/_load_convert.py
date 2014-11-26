@@ -103,8 +103,10 @@ _BITMAP_CODE_NONE = 255
 # Reference Code Table 4.10.
 _STATISTIC_TYPE_NAMES = {
     0: 'mean',
+    1: 'sum',
     2: 'maximum',
-    3: 'minimum'
+    3: 'minimum',
+    6: 'standard_deviation'
 }
 
 # Reference Code Table 4.11.
