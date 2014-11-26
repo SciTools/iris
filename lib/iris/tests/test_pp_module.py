@@ -26,6 +26,7 @@ from types import GeneratorType
 import unittest
 
 import biggus
+import mock
 import netcdftime
 
 import iris.fileformats
@@ -120,11 +121,13 @@ class TestPPHeaderDerived(unittest.TestCase):
         
     def test_lbproc_access(self):
         # lbproc == 65539
-        self.assertEqual(self.pp.lbproc[0], 9)
-        self.assertEqual(self.pp.lbproc[19], 0)
-        self.assertEqual(self.pp.lbproc.flag1, 1)
-        self.assertEqual(self.pp.lbproc.flag65536, 1)
-        self.assertEqual(self.pp.lbproc.flag131072, 0)
+        with mock.patch('warnings.warn') as warn:
+            self.assertEqual(self.pp.lbproc[0], 9)
+            self.assertEqual(self.pp.lbproc[19], 0)
+            self.assertEqual(self.pp.lbproc.flag1, 1)
+            self.assertEqual(self.pp.lbproc.flag65536, 1)
+            self.assertEqual(self.pp.lbproc.flag131072, 0)
+        self.assertEqual(warn.call_count, 5)
     
     def test_set_lbuser(self):
         self.pp.stash = 'm02s12i003'
@@ -169,11 +172,11 @@ class TestPPField_GlobalTemperature(IrisPPTest):
         self.assertEqual(self.r[0].lbtim.ic, 2)
     
     def test_lbproc_access(self):
-        self.assertEqual(self.r[0].lbproc[0], 8)
-        self.assertEqual(self.r[0].lbproc[19], 0)
-        self.assertEqual(self.r[0].lbproc.flag1, 0)
-        self.assertEqual(self.r[0].lbproc.flag65536, 0)
-        self.assertEqual(self.r[0].lbproc.flag131072, 0)
+        with mock.patch('warnings.warn') as warn:
+            self.assertEqual(self.r[0].lbproc.flag1, 0)
+            self.assertEqual(self.r[0].lbproc.flag65536, 0)
+            self.assertEqual(self.r[0].lbproc.flag131072, 0)
+        self.assertEqual(warn.call_count, 3)
 
     def test_t1_t2_access(self):
         self.assertEqual(self.r[0].t1.timetuple(), netcdftime.datetime(1994, 12, 1, 0, 0).timetuple())
@@ -308,14 +311,18 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
 class TestBitwiseInt(unittest.TestCase):
 
     def test_3(self):
-        t = pp.BitwiseInt(3)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(3)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t[0], 3)
         self.assertTrue(t.flag1)
         self.assertTrue(t.flag2)
         self.assertRaises(AttributeError, getattr, t, "flag1024")
         
     def test_setting_flags(self):
-        t = pp.BitwiseInt(3)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(3)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t._value, 3)
 
         t.flag1 = False
@@ -331,12 +338,16 @@ class TestBitwiseInt(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, t, "flag1024", True)
         self.assertRaises(TypeError, setattr, t, "flag2", 1)
 
-        t = pp.BitwiseInt(3, num_bits=11)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(3, num_bits=11)
+        self.assertEqual(warn.call_count, 1)
         t.flag1024 = True
         self.assertEqual(t._value, 1027)
 
     def test_standard_operators(self):
-        t = pp.BitwiseInt(323)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(323)
+        self.assertEqual(warn.call_count, 1)
         
         self.assertTrue(t == 323)
         self.assertFalse(t == 324)
@@ -360,7 +371,9 @@ class TestBitwiseInt(unittest.TestCase):
         self.assertFalse(t in [324])
 
     def test_323(self):
-        t = pp.BitwiseInt(323)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(323)
+        self.assertEqual(warn.call_count, 1)
         self.assertRaises(AttributeError, getattr, t, 'flag0')
         
         self.assertEqual(t.flag1, 1)
@@ -375,19 +388,25 @@ class TestBitwiseInt(unittest.TestCase):
 
 
     def test_33214(self):
-        t = pp.BitwiseInt(33214)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(33214)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t[0], 4)
         self.assertEqual(t.flag1, 0)
         self.assertEqual(t.flag2, 1)
 
     def test_negative_number(self):
-        try:
-            _ = pp.BitwiseInt(-5)
-        except ValueError as err:
-            self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
+        with mock.patch('warnings.warn') as warn:
+            try:
+                _ = pp.BitwiseInt(-5)
+            except ValueError as err:
+                self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
+        self.assertEqual(warn.call_count, 1)
 
     def test_128(self):
-        t = pp.BitwiseInt(128)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(128)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t.flag1, 0)
         self.assertEqual(t.flag2, 0)
         self.assertEqual(t.flag4, 0)
