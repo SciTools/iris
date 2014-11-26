@@ -25,10 +25,9 @@ import iris.tests as tests
 import gribapi
 import numpy as np
 
-import iris
 import iris.cube
 import iris.coords
-import iris.fileformats.grib._save_rules as grib_save_rules
+from iris.fileformats.grib._save_rules import set_fixed_surfaces
 
 
 class Test_non_hybrid_surfaces(tests.IrisTest):
@@ -38,7 +37,7 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
             1500.0, long_name='altitude', units='ft',
             bounds=np.array([1000.0, 2000.0])))
         grib = gribapi.grib_new_from_samples("GRIB2")
-        grib_save_rules.non_hybrid_surfaces(cube, grib)
+        set_fixed_surfaces(cube, grib)
         self.assertEqual(
             gribapi.grib_get_double(grib, "scaledValueOfFirstFixedSurface"),
             304.0)
