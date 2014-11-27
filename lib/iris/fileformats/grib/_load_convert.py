@@ -689,11 +689,12 @@ def grid_definition_template_90(section, metadata):
                                                height_above_centre)
     x_apparent_diameter = (2 * half_apparent_equatorial_angle *
                            height_above_ellipsoid)
-    geocentric_latitude = math.acos(geog_cs.semi_major_axis /
-                                    height_above_centre)
+    # Use the auxiliary circle parametric form of the ellipse to
+    # derive the apparent polar angle.
+    parametric_angle = math.acos(geog_cs.semi_major_axis / height_above_centre)
     half_apparent_polar_angle = math.atan(geog_cs.semi_minor_axis /
                                           (height_above_centre *
-                                           math.sin(geocentric_latitude)))
+                                           math.sin(parametric_angle)))
     y_apparent_diameter = (2 * half_apparent_polar_angle *
                            height_above_ellipsoid)
 
