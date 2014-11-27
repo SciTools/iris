@@ -466,7 +466,7 @@ class FieldsFileVariant(object):
 
         """
         if mode not in self._MODE_MAPPING:
-            raise ValueError('Invaild access mode: {}'.format(mode))
+            raise ValueError('Invalid access mode: {}'.format(mode))
 
         self._filename = filename
         self._mode = mode
