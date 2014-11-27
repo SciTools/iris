@@ -336,7 +336,11 @@ def _missing_forecast_period(cube):
 
 
 def set_forecast_time(cube, grib):
-    """Grib encoding of forecast_period."""
+    """
+    Set the forecast time keys based on the forecast_period coordinate. In
+    the absence of a forecast_period, the forecast time is set to zero.
+
+    """
     try:
         fp_coord = cube.coord("forecast_period")
     except iris.exceptions.CoordinateNotFoundError:
@@ -427,7 +431,7 @@ def set_fixed_surfaces(cube, grib):
                               int(output_v[1]))
 
 
-def set_time_range(grib, time_coord):
+def set_time_range(time_coord, grib):
     """
     Set the time range keys in the specified message
     based on the bounds of the provided time coordinate.
@@ -445,16 +449,15 @@ def set_time_range(grib, time_coord):
     gribapi.grib_set_long(grib, "lengthOfTimeRange", time_range_in_hours)
 
 
-def set_time_increment(grib, cell_method):
+def set_time_increment(cell_method, grib):
     """
     Set the time increment keys in the specified message
     based on the provided cell method.
 
     """
     # Type of time increment, e.g incrementing forecast period, incrementing
-    # forecast reference time, etc. Set to missing, but given
-    # cell method is over time, a value of 2 seems reasonable.
-    # (see code table 4.11)
+    # forecast reference time, etc. Set to missing, but we could use the
+    # cell method coord to infer a value (see code table 4.11).
     gribapi.grib_set_long(grib, "typeOfTimeIncrement", 255)
 
     # Determine interval from cell method intervals string.
@@ -511,18 +514,9 @@ def time_processing_period(cube, grib):
         raise ValueError("Cannot handle multiple 'time' cell methods.")
     cell_method, = time_cell_methods
 
-    # Extract the datetime-like object corresponding to the start and end of
+    # Extract the datetime-like object corresponding to the end of
     # the overall processing interval.
-    start, end = time_coord.units.num2date(time_coord.bounds[0])
-
-    ## Set the associated keys for the start of the interval (octets 13-19 in
-    ## section 1). - might be forecast reference time in some cases????
-    #gribapi.grib_set_long(grib, 'year', start.year)
-    #gribapi.grib_set_long(grib, 'month', start.month)
-    #gribapi.grib_set_long(grib, 'day', start.day)
-    #gribapi.grib_set_long(grib, 'hour', start.hour)
-    #gribapi.grib_set_long(grib, 'minute', start.minute)
-    #gribapi.grib_set_long(grib, 'second', start.second)
+    end = time_coord.units.num2date(time_coord.bounds[0, -1])
 
     # Set the associated keys for the end of the interval (octets 35-41
     # in section 4).
@@ -544,10 +538,10 @@ def time_processing_period(cube, grib):
     gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", statistic_type)
 
     # Period over which statistical processing is performed.
-    set_time_range(grib, time_coord)
+    set_time_range(time_coord, grib)
 
     # Time increment i.e. interval of cell method (if any)
-    set_time_increment(grib, cell_method)
+    set_time_increment(cell_method, grib)
 
 
 def _cube_is_time_statistic(cube):
