@@ -14,7 +14,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for module-level functions."""
+"""
+Unit tests for
+:func:`iris.fileformats.grib._save_rules.set_fixed_surfaces`.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -30,7 +34,7 @@ import iris.coords
 from iris.fileformats.grib._save_rules import set_fixed_surfaces
 
 
-class Test_non_hybrid_surfaces(tests.IrisTest):
+class Test(tests.IrisTest):
     def test_bounded_altitude_feet(self):
         cube = iris.cube.Cube([0])
         cube.add_aux_coord(iris.coords.AuxCoord(
