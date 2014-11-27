@@ -14,7 +14,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for module-level functions."""
+"""
+Unit tests for
+:func:`iris.fileformats.grib._save_rules.set_fixed_surfaces`.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -25,20 +29,19 @@ import iris.tests as tests
 import gribapi
 import numpy as np
 
-import iris
 import iris.cube
 import iris.coords
-import iris.fileformats.grib._save_rules as grib_save_rules
+from iris.fileformats.grib._save_rules import set_fixed_surfaces
 
 
-class Test_non_hybrid_surfaces(tests.IrisTest):
+class Test(tests.IrisTest):
     def test_bounded_altitude_feet(self):
         cube = iris.cube.Cube([0])
         cube.add_aux_coord(iris.coords.AuxCoord(
             1500.0, long_name='altitude', units='ft',
             bounds=np.array([1000.0, 2000.0])))
         grib = gribapi.grib_new_from_samples("GRIB2")
-        grib_save_rules.non_hybrid_surfaces(cube, grib)
+        set_fixed_surfaces(cube, grib)
         self.assertEqual(
             gribapi.grib_get_double(grib, "scaledValueOfFirstFixedSurface"),
             304.0)

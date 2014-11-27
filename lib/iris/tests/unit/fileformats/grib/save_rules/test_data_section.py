@@ -14,7 +14,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.fileformats.grib.grib_save_rules.data`."""
+"""
+Unit tests for
+:func:`iris.fileformats.grib._save_rules.data_section`.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -27,7 +31,7 @@ import numpy as np
 
 import iris.cube
 
-from iris.fileformats.grib._save_rules import data
+from iris.fileformats.grib._save_rules import data_section
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
@@ -82,7 +86,7 @@ class TestMDI(tests.IrisTest):
         cube = iris.cube.Cube(np.arange(5))
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
-            data(cube, grib_message)
+            data_section(cube, grib_message)
         # Check the use of a mask has been turned off.
         self.assertBitmapOff(grib_api)
         # Check the correct data values have been set.
@@ -94,7 +98,7 @@ class TestMDI(tests.IrisTest):
                                                 fill_value=2000))
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
-            data(cube, grib_message)
+            data_section(cube, grib_message)
         # Check the use of a mask has been turned on.
         FILL = 2000
         self.assertBitmapOn(grib_api, FILL)
@@ -107,7 +111,7 @@ class TestMDI(tests.IrisTest):
                                                 fill_value=np.nan))
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
-            data(cube, grib_message)
+            data_section(cube, grib_message)
         # Check the use of a mask has been turned on and a suitable fill
         # value has been chosen.
         FILL = self.assertBitmapRange(grib_api, 1, 3)
@@ -121,7 +125,7 @@ class TestMDI(tests.IrisTest):
                               standard_name='geopotential_height', units='km')
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
-            data(cube, grib_message)
+            data_section(cube, grib_message)
         # Check the use of a mask has been turned off.
         self.assertBitmapOff(grib_api)
         # Check the correct data values have been set.
@@ -136,7 +140,7 @@ class TestMDI(tests.IrisTest):
                               standard_name='geopotential_height', units='km')
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
-            data(cube, grib_message)
+            data_section(cube, grib_message)
         # Check the use of a mask has been turned on.
         FILL = 2000 * 1000
         self.assertBitmapOn(grib_api, FILL)
@@ -153,7 +157,7 @@ class TestMDI(tests.IrisTest):
                               standard_name='geopotential_height', units='km')
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
-            data(cube, grib_message)
+            data_section(cube, grib_message)
         # Check the use of a mask has been turned on and a suitable fill
         # value has been chosen.
         FILL = self.assertBitmapRange(grib_api, -1000, 2000)

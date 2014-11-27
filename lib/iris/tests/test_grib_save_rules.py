@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for iris.fileformats.grib_save_rules"""
+"""Unit tests for :mod:`iris.fileformats.grib._save_rules`."""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -31,16 +31,14 @@ import iris.coords
 import iris.fileformats.grib._save_rules as grib_save_rules
 
 
-class Test_non_hybrid_surfaces(tests.IrisTest):
-    # Test grib_save_rules.non_hybrid_surfaces()
-
+class Test_set_fixed_surfaces(tests.IrisTest):
     @mock.patch.object(gribapi, "grib_set_long")
     def test_altitude_point(self, mock_set_long):
         grib = None
         cube = iris.cube.Cube([1, 2, 3, 4, 5])
         cube.add_aux_coord(iris.coords.AuxCoord([12345], "altitude", units="m"))
 
-        grib_save_rules.non_hybrid_surfaces(cube, grib)
+        grib_save_rules.set_fixed_surfaces(cube, grib)
 
         mock_set_long.assert_any_call(grib, "typeOfFirstFixedSurface", 102)
         mock_set_long.assert_any_call(grib, "scaleFactorOfFirstFixedSurface", 0)
@@ -55,7 +53,7 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
         cube = iris.cube.Cube([1, 2, 3, 4, 5])
         cube.add_aux_coord(iris.coords.AuxCoord([12345], "height", units="m"))
 
-        grib_save_rules.non_hybrid_surfaces(cube, grib)
+        grib_save_rules.set_fixed_surfaces(cube, grib)
 
         mock_set_long.assert_any_call(grib, "typeOfFirstFixedSurface", 103)
         mock_set_long.assert_any_call(grib, "scaleFactorOfFirstFixedSurface", 0)
@@ -68,7 +66,7 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
     def test_no_vertical(self, mock_set_long):
         grib = None
         cube = iris.cube.Cube([1, 2, 3, 4, 5])
-        grib_save_rules.non_hybrid_surfaces(cube, grib)
+        grib_save_rules.set_fixed_surfaces(cube, grib)
         mock_set_long.assert_any_call(grib, "typeOfFirstFixedSurface", 1)
         mock_set_long.assert_any_call(grib, "scaleFactorOfFirstFixedSurface", 0)
         mock_set_long.assert_any_call(grib, "scaledValueOfFirstFixedSurface", 0)
@@ -90,11 +88,11 @@ class Test_phenomenon(tests.IrisTest):
             # This should issue a warning about unrecognised data
             warnings.simplefilter("error")
             with self.assertRaises(UserWarning):
-                grib_save_rules.param_code(cube, grib)
+                grib_save_rules.set_discipline_and_parameter(cube, grib)
         # do it all again, and this time check the results
         grib = None
         cube = iris.cube.Cube(np.array([1.0]))
-        grib_save_rules.param_code(cube, grib)
+        grib_save_rules.set_discipline_and_parameter(cube, grib)
         mock_set_long.assert_any_call(grib, "discipline", 255)
         mock_set_long.assert_any_call(grib, "parameterCategory", 255)
         mock_set_long.assert_any_call(grib, "parameterNumber", 255)
@@ -104,7 +102,7 @@ class Test_phenomenon(tests.IrisTest):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]),
                               standard_name='sea_surface_temperature')
-        grib_save_rules.param_code(cube, grib)
+        grib_save_rules.set_discipline_and_parameter(cube, grib)
         mock_set_long.assert_any_call(grib, "discipline", 10)
         mock_set_long.assert_any_call(grib, "parameterCategory", 3)
         mock_set_long.assert_any_call(grib, "parameterNumber", 0)
@@ -114,7 +112,7 @@ class Test_phenomenon(tests.IrisTest):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]),
                               long_name='cloud_mixing_ratio')
-        grib_save_rules.param_code(cube, grib)
+        grib_save_rules.set_discipline_and_parameter(cube, grib)
         mock_set_long.assert_any_call(grib, "discipline", 0)
         mock_set_long.assert_any_call(grib, "parameterCategory", 1)
         mock_set_long.assert_any_call(grib, "parameterNumber", 22)

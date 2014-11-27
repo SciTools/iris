@@ -241,18 +241,15 @@ def grid_template(cube, grib):
 #
 ###############################################################################
 
-def param_code(cube, grib):
+def set_discipline_and_parameter(cube, grib):
     # NOTE: for now, can match by *either* standard_name or long_name.
     # This allows workarounds for data with no identified standard_name.
     grib2_info = gptx.cf_phenom_to_grib2_info(cube.standard_name,
                                               cube.long_name)
     if grib2_info is not None:
-        gribapi.grib_set_long(grib, "discipline",
-                              int(grib2_info.discipline))
-        gribapi.grib_set_long(grib, "parameterCategory",
-                              int(grib2_info.category))
-        gribapi.grib_set_long(grib, "parameterNumber",
-                              int(grib2_info.number))
+        gribapi.grib_set_long(grib, "discipline", grib2_info.discipline)
+        gribapi.grib_set_long(grib, "parameterCategory", grib2_info.category)
+        gribapi.grib_set_long(grib, "parameterNumber", grib2_info.number)
     else:
         gribapi.grib_set_long(grib, "discipline", 255)
         gribapi.grib_set_long(grib, "parameterCategory", 255)
@@ -260,32 +257,6 @@ def param_code(cube, grib):
         warnings.warn('Unable to determine Grib2 parameter code for cube.\n'
                       'discipline, parameterCategory and parameterNumber '
                       'have been set to "missing".')
-
-
-def generating_process_type(cube, grib):
-    # analysis = 0
-    # initialisation = 1
-    # forecast = 2
-    # more...
-
-    # missing
-    gribapi.grib_set_long(grib, "typeOfGeneratingProcess", 255)
-
-
-def background_process_id(cube, grib):
-    # locally defined
-    gribapi.grib_set_long(grib, "backgroundProcess", 255)
-
-
-def generating_process_id(cube, grib):
-    # locally defined
-    gribapi.grib_set_long(grib, "generatingProcessIdentifier", 255)
-
-
-def obs_time_after_cutoff(cube, grib):
-    # nothing stored in iris for this at present
-    gribapi.grib_set_long(grib, "hoursAfterDataCutoff", 0)
-    gribapi.grib_set_long(grib, "minutesAfterDataCutoff", 0)
 
 
 def _non_missing_forecast_period(cube):
@@ -357,7 +328,7 @@ def _missing_forecast_period(cube):
     return rt, rt_meaning, fp, fp_meaning
 
 
-def time_range(cube, grib):
+def set_forecast_time(cube, grib):
     """Grib encoding of forecast_period."""
     try:
         fp_coord = cube.coord("forecast_period")
@@ -373,32 +344,7 @@ def time_range(cube, grib):
     gribapi.grib_set_long(grib, "forecastTime", fp)
 
 
-def hybrid_surfaces(cube, grib):
-    is_hybrid = False
-# XXX Addressed in #1118 pending #1039 for hybrid levels
-#
-#    # hybrid height? (assume points)
-#    if cube.coords("model_level") and cube.coords("level_height") and \
-#       cube.coords("sigma") and \
-#       isinstance(cube.coord("sigma").coord_system,
-#                  iris.coord_systems.HybridHeightCS):
-#        is_hybrid = True
-#        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", 118)
-#        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface",
-#                              long(cube.coord("model_level").points[0]))
-#        gribapi.grib_set_long(grib, "PVPresent", 1)
-#        gribapi.grib_set_long(grib, "numberOfVerticalCoordinateValues", 2)
-#        level_height = cube.coord("level_height").points[0]
-#        sigma = cube.coord("sigma").points[0]
-#        gribapi.grib_set_double_array(grib, "pv", [level_height, sigma])
-#
-#    # hybrid pressure?
-#    if XXX:
-#        pass
-    return is_hybrid
-
-
-def non_hybrid_surfaces(cube, grib):
+def set_fixed_surfaces(cube, grib):
 
     # Look for something we can export
     v_coord = grib_v_code = output_unit = None
@@ -472,21 +418,6 @@ def non_hybrid_surfaces(cube, grib):
                               int(output_v[0]))
         gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface",
                               int(output_v[1]))
-
-
-def surfaces(cube, grib):
-    if not hybrid_surfaces(cube, grib):
-        non_hybrid_surfaces(cube, grib)
-
-
-def product_common(cube, grib):
-    param_code(cube, grib)
-    generating_process_type(cube, grib)
-    background_process_id(cube, grib)
-    generating_process_id(cube, grib)
-    obs_time_after_cutoff(cube, grib)
-    time_range(cube, grib)
-    surfaces(cube, grib)
 
 
 def type_of_statistical_processing(cube, grib, coord):
@@ -584,30 +515,74 @@ def _cube_is_time_statistic(cube):
     return coord_name in recognised_time_names
 
 
-def product_template(cube, grib):
-    # This will become more complex if we cover more templates, such as 4.15
+def product_definition_template_common(cube, grib):
+    """
+    Set keys within the provided grib message that are common across
+    all of the supported product definition templates.
 
-    # forecast (template 4.0)
+    """
+    set_discipline_and_parameter(cube, grib)
+
+    # Various missing values.
+    gribapi.grib_set_long(grib, "typeOfGeneratingProcess", 255)
+    gribapi.grib_set_long(grib, "backgroundProcess", 255)
+    gribapi.grib_set_long(grib, "generatingProcessIdentifier", 255)
+
+    # Generic time handling.
+    set_forecast_time(cube, grib)
+
+    # Handle vertical coords.
+    set_fixed_surfaces(cube, grib)
+
+
+def product_definition_template_0(cube, grib):
+    """
+    Set keys within the provided grib message based on Product
+    Definition Template 4.0.
+
+    Template 4.0 is used to represent an analysis or forecast at
+    a horizontal level at a point in time.
+
+    """
+    gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 0)
+    product_definition_template_common(cube, grib)
+
+
+def product_definition_template_8(cube, grib):
+    """
+    Set keys within the provided grib message based on Product
+    Definition Template 4.8.
+
+    Template 4.8 is used to represent an aggregation over a time
+    interval.
+
+    """
+    gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 8)
+    product_definition_template_common(cube, grib)
+    try:
+        time_processing_period(cube, grib)
+    except ValueError as e:
+        raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
+                         ' for saving as a time processed statistic GRIB'
+                         ' message. {}'.format(e))
+
+
+def product_definition_section(cube, grib):
+    """
+    Set keys within the product definition section of the provided
+    grib message based on the properties of the cube.
+
+    """
     if not cube.coord("time").has_bounds():
-        gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 0)
-        product_common(cube, grib)
-        return
-
-    # time processed (template 4.8)
-    if _cube_is_time_statistic(cube):
-        gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 8)
-        product_common(cube, grib)
-        try:
-            time_processing_period(cube, grib)
-        except ValueError as e:
-            raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
-                             ' for saving as a time processed statistic GRIB'
-                             ' message. {}'.format(e))
-        return
-
-    # Don't know how to handle this kind of data
-    raise iris.exceptions.TranslationError(
-        'A suitable product template could not be deduced')
+        # forecast (template 4.0)
+        product_definition_template_0(cube, grib)
+    elif _cube_is_time_statistic(cube):
+        # time processed (template 4.8)
+        product_definition_template_8(cube, grib)
+    else:
+        # Don't know how to handle this kind of data
+        msg = 'A suitable product template could not be deduced'
+        raise iris.exceptions.TranslationError(msg)
 
 
 ###############################################################################
@@ -616,7 +591,7 @@ def product_template(cube, grib):
 #
 ###############################################################################
 
-def data(cube, grib):
+def data_section(cube, grib):
     # Masked data?
     if isinstance(cube.data, ma.core.MaskedArray):
         # What missing value shall we use?
@@ -665,7 +640,7 @@ def data(cube, grib):
 
 def run(cube, grib):
     """
-    Sets the keys of the grib message based on the contents of the cube.
+    Set the keys of the grib message based on the contents of the cube.
 
     Args:
 
@@ -686,7 +661,7 @@ def run(cube, grib):
     grid_template(cube, grib)
 
     # Section 4 - Product Definition Section (Product Definition Template)
-    product_template(cube, grib)
+    product_definition_section(cube, grib)
 
     # Section 5 - Data Representation Section (Data Representation Template)
-    data(cube, grib)
+    data_section(cube, grib)
