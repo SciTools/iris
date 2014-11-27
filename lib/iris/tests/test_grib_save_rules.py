@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for iris.fileformats.grib_save_rules"""
+"""Unit tests for :mod:`iris.fileformats.grib._save_rules`."""
 
 from __future__ import (absolute_import, division, print_function)
 
