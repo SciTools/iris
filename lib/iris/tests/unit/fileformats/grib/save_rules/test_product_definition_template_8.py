@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.grib._save_rules.time_processing_period`
+:func:`iris.fileformats.grib._save_rules.product_definition_template_8`
 
 """
 
@@ -32,7 +32,7 @@ import mock
 from iris.coords import CellMethod, DimCoord
 from iris.unit import Unit
 import iris.tests.stock as stock
-from iris.fileformats.grib._save_rules import time_processing_period
+from iris.fileformats.grib._save_rules import product_definition_template_8
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
@@ -53,7 +53,7 @@ class Test_typeOfStatisticalProcessing(tests.IrisTest):
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
         with mock.patch(GRIB_API, mock_gribapi):
-            time_processing_period(cube, grib)
+            product_definition_template_8(cube, grib)
         mock_gribapi.assert_has_calls(mock.call.grib_set_long(
             grib, "typeOfStatisticalProcessing", 1))
 
@@ -65,7 +65,7 @@ class Test_typeOfStatisticalProcessing(tests.IrisTest):
         grib = mock.sentinel.grib_msg_id
         mock_gribapi = mock.Mock(spec=gribapi)
         with mock.patch(GRIB_API, mock_gribapi):
-            time_processing_period(cube, grib)
+            product_definition_template_8(cube, grib)
         mock_gribapi.assert_has_calls(mock.call.grib_set_long(
             grib, "typeOfStatisticalProcessing", 255))
 
@@ -80,7 +80,7 @@ class Test_typeOfStatisticalProcessing(tests.IrisTest):
         with mock.patch(GRIB_API, mock_gribapi):
             with self.assertRaisesRegexp(
                     ValueError, 'Cannot handle multiple coordinate name'):
-                time_processing_period(cube, grib)
+                product_definition_template_8(cube, grib)
 
     def test_cell_method_coord_name_fail(self):
         cube = self.cube
@@ -93,7 +93,7 @@ class Test_typeOfStatisticalProcessing(tests.IrisTest):
             with self.assertRaisesRegexp(
                     ValueError, "Expected a cell method with a coordinate "
                     "name of 'time'"):
-                time_processing_period(cube, grib)
+                product_definition_template_8(cube, grib)
 
 
 if __name__ == "__main__":

@@ -17,9 +17,10 @@
 """
 Grib save implementation.
 
-This module replaces the deprecated :mod:`iris.fileformats.grib_save_rules'.
-It is a private module with no public API.
-It is invoked from :meth:`iris.fileformats.grib.save_grib2`.
+This module replaces the deprecated
+:mod:`iris.fileformats.grib.grib_save_rules`. It is a private module
+with no public API. It is invoked from
+:meth:`iris.fileformats.grib.save_grib2`.
 
 """
 
@@ -321,9 +322,6 @@ def _missing_forecast_period(cube):
     # We have no way of knowing the CF forecast reference time.
     # Set GRIB reference time to "verifying time of forecast",
     # and the forecast period to 0h.
-    warnings.warn('No CF forecast_period. Setting reference time to mean '
-                  '"verifying time of forecast", "forecast time" = 0h')
-
     t_coord = cube.coord("time")
     t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
     rt = t_coord.units.num2date(t)
@@ -492,71 +490,6 @@ def set_time_increment(cell_method, grib):
         gribapi.grib_set_long(grib, "timeIncrement", 0)
 
 
-def time_processing_period(cube, grib):
-    """
-    For template 4.8 (time mean, time max, etc).
-
-    The time range is taken from the 'time' coordinate bounds.
-    If the cell-method coordinate is not 'time' itself, the type of statistic
-    will not be derived and the save process will be aborted.
-
-    """
-    # Check for time coordinate.
-    time_coord = cube.coord('time')
-
-    if len(time_coord.points) != 1:
-        msg = 'Expected length one time coordinate, got {} points'
-
-    if time_coord.nbounds != 2:
-        msg = 'Expected time coordinate with two bounds, got {} bounds'
-        raise ValueError(msg.format(time_coord.nbounds))
-
-    # Check that there is one and only one cell method related to the
-    # time coord.
-    time_cell_methods = [cell_method for cell_method in cube.cell_methods if
-                         'time' in cell_method.coord_names]
-    if not time_cell_methods:
-        raise ValueError("Expected a cell method with a coordinate name "
-                         "of 'time'")
-    if len(time_cell_methods) > 1:
-        raise ValueError("Cannot handle multiple 'time' cell methods")
-    cell_method, = time_cell_methods
-
-    if len(cell_method.coord_names) > 1:
-        raise ValueError("Cannot handle multiple coordinate names in "
-                         "the time related cell method. Expected ('time',), "
-                         "got {!r}".format(cell_method.coord_names))
-
-    # Extract the datetime-like object corresponding to the end of
-    # the overall processing interval.
-    end = time_coord.units.num2date(time_coord.bounds[0, -1])
-
-    # Set the associated keys for the end of the interval (octets 35-41
-    # in section 4).
-    gribapi.grib_set_long(grib, "yearOfEndOfOverallTimeInterval", end.year)
-    gribapi.grib_set_long(grib, "monthOfEndOfOverallTimeInterval", end.month)
-    gribapi.grib_set_long(grib, "dayOfEndOfOverallTimeInterval", end.day)
-    gribapi.grib_set_long(grib, "hourOfEndOfOverallTimeInterval", end.hour)
-    gribapi.grib_set_long(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
-    gribapi.grib_set_long(grib, "secondOfEndOfOverallTimeInterval", end.second)
-
-    # Only one time range specification. A series of aggregations (e.g. the
-    # mean of of an accumulation) would set this to a higher value, but we are
-    # limited to a single time related cell method.
-    gribapi.grib_set_long(grib, "numberOfTimeRange", 1)
-    gribapi.grib_set_long(grib, "numberOfMissingInStatisticalProcess", 0)
-
-    # Type of statistical process (see code table 4.10)
-    statistic_type = _STATISTIC_TYPE_NAMES.get(cell_method.method, 255)
-    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", statistic_type)
-
-    # Period over which statistical processing is performed.
-    set_time_range(time_coord, grib)
-
-    # Time increment i.e. interval of cell method (if any)
-    set_time_increment(cell_method, grib)
-
-
 def _cube_is_time_statistic(cube):
     """
     Test whether we can identify this cube as a statistic over time.
@@ -634,12 +567,61 @@ def product_definition_template_8(cube, grib):
     """
     gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 8)
     product_definition_template_common(cube, grib)
-    try:
-        time_processing_period(cube, grib)
-    except ValueError as e:
-        raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
-                         ' for saving as a time processed statistic GRIB'
-                         ' message. {}'.format(e))
+
+    # Check for time coordinate.
+    time_coord = cube.coord('time')
+
+    if len(time_coord.points) != 1:
+        msg = 'Expected length one time coordinate, got {} points'
+
+    if time_coord.nbounds != 2:
+        msg = 'Expected time coordinate with two bounds, got {} bounds'
+        raise ValueError(msg.format(time_coord.nbounds))
+
+    # Check that there is one and only one cell method related to the
+    # time coord.
+    time_cell_methods = [cell_method for cell_method in cube.cell_methods if
+                         'time' in cell_method.coord_names]
+    if not time_cell_methods:
+        raise ValueError("Expected a cell method with a coordinate name "
+                         "of 'time'")
+    if len(time_cell_methods) > 1:
+        raise ValueError("Cannot handle multiple 'time' cell methods")
+    cell_method, = time_cell_methods
+
+    if len(cell_method.coord_names) > 1:
+        raise ValueError("Cannot handle multiple coordinate names in "
+                         "the time related cell method. Expected ('time',), "
+                         "got {!r}".format(cell_method.coord_names))
+
+    # Extract the datetime-like object corresponding to the end of
+    # the overall processing interval.
+    end = time_coord.units.num2date(time_coord.bounds[0, -1])
+
+    # Set the associated keys for the end of the interval (octets 35-41
+    # in section 4).
+    gribapi.grib_set_long(grib, "yearOfEndOfOverallTimeInterval", end.year)
+    gribapi.grib_set_long(grib, "monthOfEndOfOverallTimeInterval", end.month)
+    gribapi.grib_set_long(grib, "dayOfEndOfOverallTimeInterval", end.day)
+    gribapi.grib_set_long(grib, "hourOfEndOfOverallTimeInterval", end.hour)
+    gribapi.grib_set_long(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
+    gribapi.grib_set_long(grib, "secondOfEndOfOverallTimeInterval", end.second)
+
+    # Only one time range specification. A series of aggregations (e.g. the
+    # mean of of an accumulation) would set this to a higher value, but we are
+    # limited to a single time related cell method.
+    gribapi.grib_set_long(grib, "numberOfTimeRange", 1)
+    gribapi.grib_set_long(grib, "numberOfMissingInStatisticalProcess", 0)
+
+    # Type of statistical process (see code table 4.10)
+    statistic_type = _STATISTIC_TYPE_NAMES.get(cell_method.method, 255)
+    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", statistic_type)
+
+    # Period over which statistical processing is performed.
+    set_time_range(time_coord, grib)
+
+    # Time increment i.e. interval of cell method (if any)
+    set_time_increment(cell_method, grib)
 
 
 def product_definition_section(cube, grib):
@@ -653,7 +635,12 @@ def product_definition_section(cube, grib):
         product_definition_template_0(cube, grib)
     elif _cube_is_time_statistic(cube):
         # time processed (template 4.8)
-        product_definition_template_8(cube, grib)
+        try:
+            product_definition_template_8(cube, grib)
+        except ValueError as e:
+            raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
+                             ' for saving as a time processed statistic GRIB'
+                             ' message. {}'.format(e))
     else:
         # Don't know how to handle this kind of data
         msg = 'A suitable product template could not be deduced'
