@@ -437,6 +437,14 @@ def set_time_range(time_coord, grib):
     based on the bounds of the provided time coordinate.
 
     """
+    if len(time_coord.points) != 1:
+        msg = 'Expected length one time coordinate, got {} points'
+        raise ValueError(msg.format(len(time_coord.points)))
+
+    if time_coord.nbounds != 2:
+        msg = 'Expected time coordinate with two bounds, got {} bounds'
+        raise ValueError(msg.format(time_coord.nbounds))
+
     # Set type to hours and convert period to this unit.
     gribapi.grib_set_long(grib, "indicatorOfUnitForTimeRange",
                           _TIME_RANGE_UNITS['hours'])
