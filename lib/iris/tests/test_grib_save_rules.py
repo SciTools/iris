@@ -130,7 +130,7 @@ class Test_type_of_statistical_processing(tests.IrisTest):
                                           units=time_unit)
         cube.add_aux_coord(time_coord, ())
         cube.add_cell_method(iris.coords.CellMethod('maximum', time_coord))
-        grib_save_rules.type_of_statistical_processing(cube, grib, time_coord)
+        grib_save_rules.time_processing_period(cube, grib)
         mock_set_long.assert_any_call(grib, "typeOfStatisticalProcessing", 2)
 
     @mock.patch.object(gribapi, "grib_set_long")
@@ -144,7 +144,7 @@ class Test_type_of_statistical_processing(tests.IrisTest):
                                           units=time_unit)
         cube.add_aux_coord(time_coord, ())
         cube.add_cell_method(iris.coords.CellMethod('minimum', time_coord))
-        grib_save_rules.type_of_statistical_processing(cube, grib, time_coord)
+        grib_save_rules.time_processing_period(cube, grib)
         mock_set_long.assert_any_call(grib, "typeOfStatisticalProcessing", 3)
 
 

@@ -511,8 +511,13 @@ def time_processing_period(cube, grib):
         raise ValueError("Expected a cell method with a coordinate name "
                          "of 'time'")
     if len(time_cell_methods) > 1:
-        raise ValueError("Cannot handle multiple 'time' cell methods.")
+        raise ValueError("Cannot handle multiple 'time' cell methods")
     cell_method, = time_cell_methods
+
+    if len(cell_method.coord_names) > 1:
+        raise ValueError("Cannot handle multiple coordinate names in "
+                         "the time related cell method. Expected ('time',), "
+                         "got {!r}".format(cell_method.coord_names))
 
     # Extract the datetime-like object corresponding to the end of
     # the overall processing interval.

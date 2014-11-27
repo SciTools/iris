@@ -14,7 +14,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for module-level functions."""
+"""
+Unit tests for
+:func:`iris.fileformats.grib._save_rules.time_processing_period`
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -25,76 +29,72 @@ import iris.tests as tests
 import gribapi
 import mock
 
-from iris.fileformats.grib._save_rules import type_of_statistical_processing
+from iris.coords import CellMethod, DimCoord
+from iris.unit import Unit
+import iris.tests.stock as stock
+from iris.fileformats.grib._save_rules import time_processing_period
 from iris.tests.test_grib_load import TestGribSimple
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 
 
-class Test(TestGribSimple):
-    def test_sum(self):
-        cube = mock.Mock()
-        cube.cell_methods = [mock.Mock(method='sum', coord_names=['ni'])]
+class Test_typeOfStatisticalProcessing(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+        coord = DimCoord(23, 'time', bounds=[0, 100],
+                         units=Unit('days since epoch', calendar='standard'))
+        self.cube.add_aux_coord(coord)
 
-        coord = mock.Mock()
-        coord.name = mock.Mock(return_value='ni')
+    def test_sum(self):
+        cube = self.cube
+        cell_method = CellMethod(method='sum', coords=['time'])
+        cube.add_cell_method(cell_method)
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
         with mock.patch(GRIB_API, mock_gribapi):
-            type_of_statistical_processing(cube, grib, coord)
-
+            time_processing_period(cube, grib)
         mock_gribapi.assert_has_calls(mock.call.grib_set_long(
             grib, "typeOfStatisticalProcessing", 1))
 
-    def test_missing(self):
-        cube = mock.Mock()
-        cube.cell_methods = [mock.Mock(method='95th percentile',
-                                       coord_names=['time'])]
+    def test_unrecognised(self):
+        cube = self.cube
+        cell_method = CellMethod(method='95th percentile', coords=['time'])
+        cube.add_cell_method(cell_method)
 
-        coord = mock.Mock()
-        coord.name = mock.Mock(return_value='time')
-
-        grib = mock.Mock()
+        grib = mock.sentinel.grib_msg_id
         mock_gribapi = mock.Mock(spec=gribapi)
         with mock.patch(GRIB_API, mock_gribapi):
-            type_of_statistical_processing(cube, grib, coord)
-
+            time_processing_period(cube, grib)
         mock_gribapi.assert_has_calls(mock.call.grib_set_long(
             grib, "typeOfStatisticalProcessing", 255))
 
-    def test_cell_method_coords_len_fail(self):
-        cube = mock.Mock()
-        cube.cell_methods = [mock.Mock(method='sum', coord_names=['time',
-                                                                  'fp'])]
-
-        coord = mock.Mock()
-        coord.name = mock.Mock(return_value='time')
+    def test_multiple_cell_method_coords(self):
+        cube = self.cube
+        cell_method = CellMethod(method='sum',
+                                 coords=['time', 'forecast_period'])
+        cube.add_cell_method(cell_method)
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
         with mock.patch(GRIB_API, mock_gribapi):
-            with self.assertRaisesRegexp(ValueError,
-                                         'There are multiple coord names '
-                                         'referenced by the primary cell '
-                                         'method:'):
-                type_of_statistical_processing(cube, grib, coord)
+            with self.assertRaisesRegexp(
+                    ValueError, 'Cannot handle multiple coordinate name'):
+                time_processing_period(cube, grib)
 
     def test_cell_method_coord_name_fail(self):
-        cube = mock.Mock()
-        cube.cell_methods = [mock.Mock(method='sum', coord_names=['time'])]
-
-        coord = mock.Mock()
-        coord.name = mock.Mock(return_value='forecast_period')
+        cube = self.cube
+        cell_method = CellMethod(method='mean', coords=['season'])
+        cube.add_cell_method(cell_method)
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
         with mock.patch(GRIB_API, mock_gribapi):
-            with self.assertRaisesRegexp(ValueError,
-                                         'The coord name referenced by the '
-                                         'primary cell method'):
-                type_of_statistical_processing(cube, grib, coord)
+            with self.assertRaisesRegexp(
+                    ValueError, "Expected a cell method with a coordinate "
+                    "name of 'time'"):
+                time_processing_period(cube, grib)
 
 
 if __name__ == "__main__":
