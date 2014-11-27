@@ -33,7 +33,6 @@ from iris.coords import CellMethod, DimCoord
 from iris.unit import Unit
 import iris.tests.stock as stock
 from iris.fileformats.grib._save_rules import time_processing_period
-from iris.tests.test_grib_load import TestGribSimple
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
