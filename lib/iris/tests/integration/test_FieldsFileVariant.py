@@ -289,7 +289,6 @@ class TestCreate(tests.IrisTest):
         # cross-referencing automatically applied to the headers to
         # enable it to load again.
         with self.temp_filename() as temp_path:
-            temp_path = 'test.ff'
             ffv = FieldsFileVariant(temp_path, FieldsFileVariant.CREATE_MODE)
             ffv.fixed_length_header = FixedLengthHeader([-1] * 256)
             ffv.fixed_length_header.data_set_format_version = 20
