@@ -169,7 +169,7 @@ class _DataProxy(object):
         bitMapIndicator = bitmap_section['bitMapIndicator']
 
         if bitMapIndicator == 0:
-            bitmap = bitmap_section['bitmap'].reshape(self.shape)
+            bitmap = bitmap_section['bitmap']
         elif bitMapIndicator == 255:
             bitmap = None
         else:
@@ -185,12 +185,23 @@ class _DataProxy(object):
         sections = message.sections
         bitmap_section = sections[6]
         bitmap = self._bitmap(bitmap_section)
-        data = sections[7]['codedValues'].reshape(self.shape)
+        data = sections[7]['codedValues']
 
         if bitmap is not None:
             # `np.ma.masked_array` masks where input = 1, the opposite of the
             # behaviour specified by the GRIB spec.
-            data = np.ma.masked_array(data, mask=np.logical_not(bitmap))
+            if bitmap.shape == data.shape:
+                data = np.ma.masked_array(data, mask=np.logical_not(bitmap))
+            elif np.count_nonzero(bitmap) == data.shape[0]:
+                # GRIBAPI only returns the non-masked values from codedValues.
+                _data = np.empty(shape=bitmap.shape)
+                _data[bitmap.astype(bool)] = data
+                data = np.ma.masked_array(_data, mask=np.logical_not(bitmap))
+            else:
+                msg = 'Shapes of data and bitmap do not match.'
+                raise TranslationError(msg)
+
+        data = data.reshape(self.shape)
         return data.__getitem__(keys)
 
     def __repr__(self):
@@ -361,8 +372,9 @@ class _Section(object):
         if key in vector_keys:
             res = gribapi.grib_get_array(self._message_id, key)
         elif key == 'bitmap':
-            # The bitmap is stored as an array of hexal strings
-            # It must be retrieved as an array of ints (0, 1).
+            # The bitmap is stored as contiguous boolean bits, one bit for each
+            # data point. GRIBAPI returns these as strings, so it must be
+            # type-cast to return an array of ints (0, 1).
             res = gribapi.grib_get_array(self._message_id, key, int)
         elif key in ('typeOfFirstFixedSurface', 'typeOfSecondFixedSurface'):
             # By default these values are returned as unhelpful strings but

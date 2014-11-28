@@ -54,39 +54,75 @@ class Test_sections(tests.IrisTest):
 
 class Test_data__masked(tests.IrisTest):
     def setUp(self):
+        self.bitmap = np.array([0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1])
         self.shape = (3, 4)
-        self.bitmap = randint(2, size=(12))
-        self.values = np.arange(12).reshape(self.shape)
         self._section_3 = {'sourceOfGridDefinition': 0,
                            'numberOfOctectsForNumberOfPoints': 0,
                            'interpretationOfNumberOfPoints': 0,
                            'gridDefinitionTemplateNumber': 0,
-                           'scanningMode': 0, 'Nj': 3, 'Ni': 4}
+                           'scanningMode': 0,
+                           'Nj': self.shape[0],
+                           'Ni': self.shape[1]}
 
     def test_no_bitmap(self):
+        values = np.arange(12)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 255,
                                           'bitmap': None},
-                                      7: {'codedValues': self.values}})
+                                      7: {'codedValues': values}})
         result = message.data.ndarray()
-        self.assertArrayEqual(result, self.values)
+        expected = values.reshape(self.shape)
+        self.assertEqual(result.shape, self.shape)
+        self.assertArrayEqual(result, expected)
         self.assertIsInstance(result, np.ndarray)
 
-    def test_bitmap_present(self):
+    def test_bitmap__shapes_equal(self):
+        # Test the possible behaviour where bitmap and codedValues shapes
+        # are equal.
+        values = np.arange(12)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
-                                      7: {'codedValues': self.values}})
+                                      7: {'codedValues': values}})
         result = message.data.masked_array()
-        expected = np.ma.masked_array(self.values, np.logical_not(self.bitmap))
+        expected = np.ma.masked_array(values, np.logical_not(self.bitmap))
+        expected = expected.reshape(self.shape)
         self.assertArrayEqual(result, expected)
         self.assertIsInstance(result, np.ma.core.masked_array)
 
+    def test_bitmap__shapes_unequal(self):
+        # Test the behaviour where bitmap and codedValues shapes
+        # are not equal.
+        values = np.arange(5)
+        message = _make_test_message({3: self._section_3,
+                                      6: {'bitMapIndicator': 0,
+                                          'bitmap': self.bitmap},
+                                      7: {'codedValues': values}})
+        result = message.data.masked_array()
+        expected = np.empty(shape=self.bitmap.shape)
+        expected[self.bitmap.astype(bool)] = values
+        expected = np.ma.masked_array(expected, np.logical_not(self.bitmap))
+        expected = expected.reshape(self.shape)
+        self.assertArrayEqual(result, expected)
+        self.assertIsInstance(result, np.ma.core.masked_array)
+
+    def test_bitmap__shapes_mismatch(self):
+        # Test the behaviour where bitmap and codedValues shapes do not match.
+        # Too many or too few unmasked values in codedValues will cause this.
+        values = np.arange(6)
+        message = _make_test_message({3: self._section_3,
+                                      6: {'bitMapIndicator': 0,
+                                          'bitmap': self.bitmap},
+                                      7: {'codedValues': values}})
+        with self.assertRaisesRegexp(TranslationError, 'do not match'):
+            message.data.masked_array()
+
     def test_bitmap__invalid_indicator(self):
+        values = np.arange(12)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 100,
                                           'bitmap': None},
-                                      7: {'codedValues': self.values}})
+                                      7: {'codedValues': values}})
         with self.assertRaisesRegexp(TranslationError, 'unsupported bitmap'):
             message.data.ndarray()
 
