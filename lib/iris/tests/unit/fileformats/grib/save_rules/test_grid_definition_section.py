@@ -26,10 +26,7 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
-import mock
-import numpy as np
-
-from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.coord_systems import LambertConformal
 from iris.exceptions import TranslationError
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
@@ -41,12 +38,12 @@ class Test(tests.IrisTest, GdtTestMixin):
         GdtTestMixin.setUp(self)
 
     def test__fail_unsupported_coord_system(self):
-        mock_cs = mock.Mock()
-        self._set_coords(mock_cs)
+        cs = LambertConformal()
+        test_cube = self._make_test_cube(cs=cs)
         with self.assertRaisesRegexp(
                 ValueError,
                 'Grib saving is not supported for coordinate system:'):
-            grid_definition_section(self.mock_cube, self.mock_grib)
+            grid_definition_section(test_cube, self.mock_grib)
 
 
 if __name__ == "__main__":

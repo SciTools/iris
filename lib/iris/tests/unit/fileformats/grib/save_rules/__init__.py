@@ -20,9 +20,10 @@ from __future__ import (absolute_import, division, print_function)
 
 import iris.tests as tests
 
+import iris
+from iris.fileformats.pp import EARTH_RADIUS as PP_DEFAULT_EARTH_RADIUS
 import mock
 import numpy as np
-
 
 
 class GdtTestMixin(object):
@@ -30,19 +31,6 @@ class GdtTestMixin(object):
     TARGET_MODULE = 'iris.fileformats.grib._save_rules'
 
     def setUp(self):
-        # Create mock x and y coords.
-        x_coord = mock.MagicMock()
-        y_coord = mock.MagicMock()
-        self.mock_x_coord = x_coord
-        self.mock_y_coord = y_coord
-
-        # Create a mock cube object that returns the x and y coords.
-        def mock_coord_call(dimensions=None):
-            # Accept a single dim 0/1 and return the mock X or Y coord.
-            return [y_coord, x_coord][dimensions[0]]
-
-        self.mock_cube = mock.Mock(coord=mock_coord_call)
-
         # Patch the gribapi of the tested module.
         self.mock_gribapi = self.patch(self.TARGET_MODULE + '.gribapi')
 
@@ -58,11 +46,11 @@ class GdtTestMixin(object):
         # Create a mock 'grib message id', with a 'keys' dict for settings.
         self.mock_grib = mock.Mock(keys={})
 
-        # Initialise the cube coords to something barely usable.
-        self._set_coords()
+        # Initialise the test cube and its coords to something barely usable.
+        self.test_cube = self._make_test_cube()
 
     def _default_coord_system(self):
-        return mock.Mock()
+        return iris.coord_systems.GeogCS(PP_DEFAULT_EARTH_RADIUS)
 
     def _default_x_points(self):
         # Define simple, regular coordinate points.
@@ -71,8 +59,8 @@ class GdtTestMixin(object):
     def _default_y_points(self):
         return [7.0, 8.0]  # N.B. is_regular will *fail* on length-1 coords.
 
-    def _set_coords(self, cs=None, x_points=None, y_points=None):
-        # Set mock x+y coords with given properties, or minimal defaults.
+    def _make_test_cube(self, cs=None, x_points=None, y_points=None):
+        # Create a cube with given properties, or minimal defaults.
         if cs is None:
             cs = self._default_coord_system()
         if x_points is None:
@@ -80,17 +68,16 @@ class GdtTestMixin(object):
         if y_points is None:
             y_points = self._default_y_points()
 
-        for coord, points in zip([self.mock_x_coord, self.mock_y_coord],
-                                 [x_points, y_points]):
-            # Fake the coordinate coord-system and points.
-            coord.coord_system = cs
-            points = np.array(points)
-            coord.points = points
-            # Fake the coordinate array-like properties
-            coord.shape = points.shape
-            coord.ndim = points.ndim
-            # Avoid 'ignoring bounds' warnings.
-            coord.has_bounds = lambda: False
+        x_coord = iris.coords.DimCoord(x_points, standard_name='longitude',
+                                       units='degrees',
+                                       coord_system=cs)
+        y_coord = iris.coords.DimCoord(y_points, standard_name='latitude',
+                                       units='degrees',
+                                       coord_system=cs)
+        test_cube = iris.cube.Cube(np.zeros((len(y_points), len(x_points))))
+        test_cube.add_dim_coord(y_coord, 0)
+        test_cube.add_dim_coord(x_coord, 1)
+        return test_cube
 
     def _check_key(self, name, value):
         # Test that a specific grib key assignment occurred.
