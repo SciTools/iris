@@ -34,6 +34,9 @@ from iris.fileformats.grib._message import _GribMessage
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 
+SECTION_6_NO_BITMAP = {'bitMapIndicator': 255, 'bitmap': None}
+
+
 @tests.skip_data
 class Test_messages_from_filename(tests.IrisTest):
     def test(self):
@@ -66,14 +69,12 @@ class Test_data__masked(tests.IrisTest):
     def test_no_bitmap(self):
         values = np.arange(12)
         message = _make_test_message({3: self._section_3,
-                                      6: {'bitMapIndicator': 255,
-                                          'bitmap': None},
+                                      6: SECTION_6_NO_BITMAP,
                                       7: {'codedValues': values}})
         result = message.data.ndarray()
         expected = values.reshape(self.shape)
         self.assertEqual(result.shape, self.shape)
         self.assertArrayEqual(result, expected)
-        self.assertIsInstance(result, np.ndarray)
 
     def test_bitmap_present(self):
         # Test the behaviour where bitmap and codedValues shapes
@@ -112,12 +113,9 @@ class Test_data__masked(tests.IrisTest):
 
 
 class Test_data__unsupported(tests.IrisTest):
-    def setUp(self):
-        self._section_6 = {'bitMapIndicator': 255, 'bitmap': None}
-
     def test_unsupported_grid_definition(self):
         message = _make_test_message({3: {'sourceOfGridDefinition': 1},
-                                      6: self._section_6})
+                                      6: SECTION_6_NO_BITMAP})
         with self.assertRaisesRegexp(TranslationError, 'source'):
             message.data
 
@@ -125,7 +123,7 @@ class Test_data__unsupported(tests.IrisTest):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
                  'numberOfOctectsForNumberOfPoints': 1},
-             6: self._section_6})
+             6: SECTION_6_NO_BITMAP})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
 
@@ -134,7 +132,7 @@ class Test_data__unsupported(tests.IrisTest):
             {3: {'sourceOfGridDefinition': 0,
                  'numberOfOctectsForNumberOfPoints': 0,
                  'interpretationOfNumberOfPoints': 1},
-             6: self._section_6})
+             6: SECTION_6_NO_BITMAP})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
 
@@ -156,7 +154,7 @@ class Test_data__grid_template_0(tests.IrisTest):
                  'interpretationOfNumberOfPoints': 0,
                  'gridDefinitionTemplateNumber': 0,
                  'scanningMode': 1},
-             6: {'bitMapIndicator': 255, 'bitmap': None}})
+             6: SECTION_6_NO_BITMAP})
         with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
             message.data
 
@@ -169,8 +167,7 @@ class Test_data__grid_template_0(tests.IrisTest):
                             'scanningMode': scanning_mode,
                             'Nj': 3,
                             'Ni': 4},
-                        6: {'bitMapIndicator': 255,
-                            'bitmap': None},
+                        6: SECTION_6_NO_BITMAP,
                         7: {'codedValues': np.arange(12)}}
             raw_message = mock.Mock(sections=sections)
             return raw_message
