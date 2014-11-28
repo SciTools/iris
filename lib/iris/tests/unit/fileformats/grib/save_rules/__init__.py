@@ -24,9 +24,12 @@ import mock
 import numpy as np
 
 
+
 class GdtTestMixin(object):
     """Some handy common test capabilities for grib grid-definition tests."""
-    def setUp(self, target_module):
+    TARGET_MODULE = 'iris.fileformats.grib._save_rules'
+
+    def setUp(self):
         # Create mock x and y coords.
         x_coord = mock.MagicMock()
         y_coord = mock.MagicMock()
@@ -41,7 +44,7 @@ class GdtTestMixin(object):
         self.mock_cube = mock.Mock(coord=mock_coord_call)
 
         # Patch the gribapi of the tested module.
-        self.mock_gribapi = self.patch(target_module + '.gribapi')
+        self.mock_gribapi = self.patch(self.TARGET_MODULE + '.gribapi')
 
         # Fix the mock gribapi to record key assignments.
         def grib_set_trap(grib, name, value):

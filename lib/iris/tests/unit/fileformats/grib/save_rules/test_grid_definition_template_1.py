@@ -40,7 +40,7 @@ TARGET_MODULE = 'iris.fileformats.grib._save_rules'
 
 class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
-        GdtTestMixin.setUp(self, TARGET_MODULE)
+        GdtTestMixin.setUp(self)
 
     def _default_coord_system(self):
         self.mock_ellipsoid = mock.Mock(spec=GeogCS,
@@ -56,14 +56,14 @@ class Test(tests.IrisTest, GdtTestMixin):
         return self.mock_cs
 
     def test__template_number(self):
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key('gridDefinitionTemplateNumber', 1)
 
     def test__shape_of_earth_spherical(self):
         cs = self.mock_x_coord.coord_system.ellipsoid
         cs.inverse_flattening = 0
         cs.semi_major_axis = 1.23
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key('shapeOfTheEarth', 1)
         self._check_key('scaleFactorOfRadiusOfSphericalEarth', 0)
         self._check_key('scaledValueOfRadiusOfSphericalEarth', 1.23)
@@ -73,7 +73,7 @@ class Test(tests.IrisTest, GdtTestMixin):
         cs.inverse_flattening = 7777  # This is used just as a flag.
         cs.semi_major_axis = 1.456
         cs.semi_minor_axis = 1.123
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key('shapeOfTheEarth', 7)
         self._check_key('scaleFactorOfEarthMajorAxis', 0)
         self._check_key('scaledValueOfEarthMajorAxis', 1.456)
@@ -82,13 +82,13 @@ class Test(tests.IrisTest, GdtTestMixin):
 
     def test__grid_shape(self):
         self._set_coords(x_points=np.arange(13), y_points=np.arange(6))
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key('Ni', 13)
         self._check_key('Nj', 6)
 
     def test__grid_points(self):
         self._set_coords(x_points=[1, 3, 5, 7], y_points=[4, 9])
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key("longitudeOfFirstGridPoint", 1000000)
         self._check_key("longitudeOfLastGridPoint", 7000000)
         self._check_key("latitudeOfFirstGridPoint", 4000000)
@@ -97,13 +97,13 @@ class Test(tests.IrisTest, GdtTestMixin):
         self._check_key("DyInDegrees", 5.0)
 
     def test__scanmode(self):
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key('iScansPositively', 1)
         self._check_key('jScansPositively', 1)
 
     def test__scanmode_reverse(self):
         self._set_coords(x_points=np.arange(7, 0, -1))
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key('iScansPositively', 0)
         self._check_key('jScansPositively', 1)
 
@@ -111,7 +111,7 @@ class Test(tests.IrisTest, GdtTestMixin):
         cs = self.mock_cs
         cs.grid_north_pole_latitude = 75.3
         cs.grid_north_pole_longitude = 54.321
-        grid_definition_template_1(self.mock_grib, self.mock_cube)
+        grid_definition_template_1(self.mock_cube, self.mock_grib)
         self._check_key("latitudeOfSouthernPole", -75300000)
         self._check_key("longitudeOfSouthernPole", 234321000)
         self._check_key("angleOfRotation", 0)

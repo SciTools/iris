@@ -220,7 +220,7 @@ def rotated_pole(cube, grib):
     gribapi.grib_set_long(grib, "angleOfRotation", 0)
 
 
-def grid_definition_template_0(grib, cube):
+def grid_definition_template_0(cube, grib):
     """
     Set keys within the provided grib message based on
     Grid Definition Template 3.0.
@@ -237,7 +237,7 @@ def grid_definition_template_0(grib, cube):
     latlon_common(cube, grib)
 
 
-def grid_definition_template_1(grib, cube):
+def grid_definition_template_1(cube, grib):
     """
     Set keys within the provided grib message based on
     Grid Definition Template 3.1.
@@ -263,17 +263,16 @@ def grid_definition_section(cube, grib):
     based on the properties of the cube.
 
     """
-    y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
     cs = x_coord.coord_system  # N.B. already checked same cs for x and y.
 
     if isinstance(cs, iris.coord_systems.GeogCS):
         # Plain lat-lon coordinate system (template 3.0).
-        grid_definition_template_0(grib, cube)
+        grid_definition_template_0(cube, grib)
 
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
         # Rotated coordinate system (template 3.1).
-        grid_definition_template_1(grib, cube)
+        grid_definition_template_1(cube, grib)
 
     else:
         raise ValueError('Grib saving is not supported for coordinate system: '

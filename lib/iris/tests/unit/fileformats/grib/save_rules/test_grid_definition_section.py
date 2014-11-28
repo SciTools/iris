@@ -35,32 +35,10 @@ from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 from iris.fileformats.grib._save_rules import grid_definition_section
 
-TARGET_MODULE = 'iris.fileformats.grib._save_rules'
-
 
 class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
-        GdtTestMixin.setUp(self, TARGET_MODULE)
-
-        # Patch the target calls whose invocation we are mainly testing for.
-        self.mock_gdt0 = self.patch(TARGET_MODULE +
-                                    '.grid_definition_template_0')
-        self.mock_gdt1 = self.patch(TARGET_MODULE +
-                                    '.grid_definition_template_1')
-
-    def test__true_latlon(self):
-        mock_cs = mock.Mock(spec=GeogCS)
-        self._set_coords(mock_cs)
-        grid_definition_section(self.mock_cube, self.mock_grib)
-        self.assertEqual(self.mock_gdt0.call_count, 1)
-        self.assertEqual(self.mock_gdt1.call_count, 0)
-
-    def test__rotated_regular(self):
-        mock_cs = mock.Mock(spec=RotatedGeogCS)
-        self._set_coords(mock_cs)
-        grid_definition_section(self.mock_cube, self.mock_grib)
-        self.assertEqual(self.mock_gdt0.call_count, 0)
-        self.assertEqual(self.mock_gdt1.call_count, 1)
+        GdtTestMixin.setUp(self)
 
     def test__fail_unsupported_coord_system(self):
         mock_cs = mock.Mock()
