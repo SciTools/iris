@@ -43,9 +43,9 @@ class Test(tests.IrisTest, GdtTestMixin):
         GdtTestMixin.setUp(self, TARGET_MODULE)
 
         # Patch the target calls whose invocation we are mainly testing for.
-        self.mock_gdt0 = self.patch(TARGET_MODULE + 
+        self.mock_gdt0 = self.patch(TARGET_MODULE +
                                     '.grid_definition_template_0')
-        self.mock_gdt1 = self.patch(TARGET_MODULE + 
+        self.mock_gdt1 = self.patch(TARGET_MODULE +
                                     '.grid_definition_template_1')
 
     def test__true_latlon(self):

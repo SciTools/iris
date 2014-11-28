@@ -42,6 +42,7 @@ class GdtTestMixin(object):
 
         # Patch the gribapi of the tested module.
         self.mock_gribapi = self.patch(target_module + '.gribapi')
+
         # Fix the mock gribapi to record key assignments.
         def grib_set_trap(grib, name, value):
             # Record a key setting on the mock passed as the 'grib message id'.
@@ -54,7 +55,7 @@ class GdtTestMixin(object):
         # Create a mock 'grib message id', with a 'keys' dict for settings.
         self.mock_grib = mock.Mock(keys={})
 
-        #Initialise the cube coords to something barely usable.
+        # Initialise the cube coords to something barely usable.
         self._set_coords()
 
     def _default_coord_system(self):
@@ -97,4 +98,3 @@ class GdtTestMixin(object):
         else:
             self.assertArrayEqual(found, value,
                                   msg_fmt.format(name, value, found))
-
