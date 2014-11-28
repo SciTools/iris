@@ -656,14 +656,18 @@ def grid_definition_template_90(section, metadata):
         :class:`collections.OrderedDict` of metadata.
 
     """
-    if section['Nr'] == 0:
+    if section['Nr'] == _MDI:
         raise TranslationError('Unsupported orthographic grid.')
+    elif section['Nr'] == 0:
+        raise TranslationError('Unsupported zero height for space-view.')
     if section['orientationOfTheGrid'] != 0:
         raise TranslationError('Unsupported space-view orientation.')
 
     # Determine the coordinate system.
     sub_satellite_lat = (section['latitudeOfSubSatellitePoint']
                          * _GRID_ACCURACY_IN_DEGREES)
+    # The subsequent calculations to determine the apparent Earth
+    # diameters rely on the satellite being over the equator.
     if sub_satellite_lat != 0:
         raise TranslationError('Unsupported non-zero latitude for '
                                'space-view perspective.')

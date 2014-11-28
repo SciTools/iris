@@ -53,7 +53,7 @@ class Test(tests.IrisTest):
         metadata['aux_coords_and_dims'] = []
         return metadata
 
-    def ukv(self):
+    def uk(self):
         section = {
             'shapeOfTheEarth': 3,
             'scaleFactorOfRadiusOfSphericalEarth': MDI,
@@ -79,7 +79,7 @@ class Test(tests.IrisTest):
         }
         return section
 
-    def expected_ukv(self, y_dim, x_dim):
+    def expected_uk(self, y_dim, x_dim):
         # Prepare the expectation.
         expected = self.empty_metadata()
         major = 6378168.8
@@ -145,23 +145,23 @@ class Test(tests.IrisTest):
                 continue
             self.assertEqual(metadata[name], expected[name])
 
-    def test_ukv(self):
-        section = self.ukv()
+    def test_uk(self):
+        section = self.uk()
         metadata = self.empty_metadata()
         grid_definition_template_90(section, metadata)
-        expected = self.expected_ukv(0, 1)
+        expected = self.expected_uk(0, 1)
         self.compare(metadata, expected)
 
-    def test_ukv_transposed(self):
-        section = self.ukv()
+    def test_uk_transposed(self):
+        section = self.uk()
         section['scanningMode'] = 0b11100000
         metadata = self.empty_metadata()
         grid_definition_template_90(section, metadata)
-        expected = self.expected_ukv(1, 0)
+        expected = self.expected_uk(1, 0)
         self.compare(metadata, expected)
 
     def test_non_zero_latitude(self):
-        section = self.ukv()
+        section = self.uk()
         section['latitudeOfSubSatellitePoint'] = 1
         metadata = self.empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
@@ -169,30 +169,38 @@ class Test(tests.IrisTest):
             grid_definition_template_90(section, metadata)
 
     def test_rotated_meridian(self):
-        section = self.ukv()
+        section = self.uk()
         section['orientationOfTheGrid'] = 1
         metadata = self.empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
                                      'orientation'):
             grid_definition_template_90(section, metadata)
 
-    def test_orthographic(self):
-        section = self.ukv()
+    def test_zero_height(self):
+        section = self.uk()
         section['Nr'] = 0
+        metadata = self.empty_metadata()
+        with self.assertRaisesRegexp(iris.exceptions.TranslationError,
+                                     'zero'):
+            grid_definition_template_90(section, metadata)
+
+    def test_orthographic(self):
+        section = self.uk()
+        section['Nr'] = MDI
         metadata = self.empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
                                      'orthographic'):
             grid_definition_template_90(section, metadata)
 
     def test_scanning_mode_positive_x(self):
-        section = self.ukv()
+        section = self.uk()
         section['scanningMode'] = 0b01000000
         metadata = self.empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError, r'\+x'):
             grid_definition_template_90(section, metadata)
 
     def test_scanning_mode_negative_y(self):
-        section = self.ukv()
+        section = self.uk()
         section['scanningMode'] = 0b10000000
         metadata = self.empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError, '-y'):
