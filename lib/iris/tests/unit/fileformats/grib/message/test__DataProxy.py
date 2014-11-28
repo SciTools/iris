@@ -34,34 +34,24 @@ from iris.tests.unit.fileformats.grib import _make_test_message
 
 
 class Test__bitmap(tests.IrisTest):
-    def setUp(self):
-        self.bitmap = randint(2, size=(12))
-        self.values = np.arange(12)
-
     def test_no_bitmap(self):
-        message = _make_test_message({6: {'bitMapIndicator': 255,
-                                          'bitmap': None},
-                                      7: {'codedValues': self.values}})
-        data_proxy = _DataProxy((12,), '', '', message, '')
-        expected = None
-        result = data_proxy._bitmap(message.sections[6])
-        self.assertEqual(expected, result)
+        message = {'bitMapIndicator': 255, 'bitmap': None}
+        data_proxy = _DataProxy(0, 0, 0, 0, 0)
+        result = data_proxy._bitmap(message)
+        self.assertIsNone(result)
 
     def test_bitmap_present(self):
-        message = _make_test_message({6: {'bitMapIndicator': 0,
-                                          'bitmap': self.bitmap},
-                                      7: {'codedValues': self.values}})
-        data_proxy = _DataProxy((12,), '', '', message, '')
-        result = data_proxy._bitmap(message.sections[6])
-        self.assertArrayEqual(self.bitmap, result)
+        bitmap = randint(2, size=(12))
+        message = {'bitMapIndicator': 0, 'bitmap': bitmap}
+        data_proxy = _DataProxy(0, 0, 0, 0, 0)
+        result = data_proxy._bitmap(message)
+        self.assertArrayEqual(bitmap, result)
 
     def test_bitmap__invalid_indicator(self):
-        message = _make_test_message({6: {'bitMapIndicator': 100,
-                                          'bitmap': None},
-                                      7: {'codedValues': self.values}})
-        data_proxy = _DataProxy((12,), '', '', message, '')
+        message = {'bitMapIndicator': 100, 'bitmap': None}
+        data_proxy = _DataProxy(0, 0, 0, 0, 0)
         with self.assertRaisesRegexp(TranslationError, 'unsupported bitmap'):
-            data_proxy._bitmap(message.sections[6])
+            data_proxy._bitmap(message)
 
 
 if __name__ == '__main__':

@@ -161,8 +161,8 @@ class _DataProxy(object):
 
         Only values 0 and 255 are supported.
 
-        Returns the bitmap, reshaped to the shape of the data as defined by
-        `self.shape`.
+        Returns the bitmap as a 1D array of length equal to the
+        number of data points in the message.
 
         """
         # Reference GRIB2 Code Table 6.0.
@@ -188,14 +188,13 @@ class _DataProxy(object):
         data = sections[7]['codedValues']
 
         if bitmap is not None:
-            # `np.ma.masked_array` masks where input = 1, the opposite of the
-            # behaviour specified by the GRIB spec.
-            if bitmap.shape == data.shape:
-                data = np.ma.masked_array(data, mask=np.logical_not(bitmap))
-            elif np.count_nonzero(bitmap) == data.shape[0]:
-                # GRIBAPI only returns the non-masked values from codedValues.
+            # Note that bitmap and data are both 1D arrays at this point.
+            if np.count_nonzero(bitmap) == data.shape[0]:
+                # Only the non-masked values are included in codedValues.
                 _data = np.empty(shape=bitmap.shape)
                 _data[bitmap.astype(bool)] = data
+                # `np.ma.masked_array` masks where input = 1, the opposite of
+                # the behaviour specified by the GRIB spec.
                 data = np.ma.masked_array(_data, mask=np.logical_not(bitmap))
             else:
                 msg = 'Shapes of data and bitmap do not match.'

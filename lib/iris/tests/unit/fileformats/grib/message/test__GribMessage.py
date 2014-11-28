@@ -28,7 +28,6 @@ import iris.tests as tests
 import biggus
 import mock
 import numpy as np
-from numpy.random import randint
 
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
@@ -76,35 +75,20 @@ class Test_data__masked(tests.IrisTest):
         self.assertArrayEqual(result, expected)
         self.assertIsInstance(result, np.ndarray)
 
-    def test_bitmap__shapes_equal(self):
-        # Test the possible behaviour where bitmap and codedValues shapes
-        # are equal.
-        values = np.arange(12)
-        message = _make_test_message({3: self._section_3,
-                                      6: {'bitMapIndicator': 0,
-                                          'bitmap': self.bitmap},
-                                      7: {'codedValues': values}})
-        result = message.data.masked_array()
-        expected = np.ma.masked_array(values, np.logical_not(self.bitmap))
-        expected = expected.reshape(self.shape)
-        self.assertArrayEqual(result, expected)
-        self.assertIsInstance(result, np.ma.core.masked_array)
-
-    def test_bitmap__shapes_unequal(self):
+    def test_bitmap_present(self):
         # Test the behaviour where bitmap and codedValues shapes
         # are not equal.
-        values = np.arange(5)
+        input_values = np.arange(5)
+        output_values = np.array([-1, -1, 0, 1, -1, -1, -1, 2, -1, 3, -1, 4])
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
-                                      7: {'codedValues': values}})
+                                      7: {'codedValues': input_values}})
         result = message.data.masked_array()
-        expected = np.empty(shape=self.bitmap.shape)
-        expected[self.bitmap.astype(bool)] = values
-        expected = np.ma.masked_array(expected, np.logical_not(self.bitmap))
+        expected = np.ma.masked_array(output_values,
+                                      np.logical_not(self.bitmap))
         expected = expected.reshape(self.shape)
-        self.assertArrayEqual(result, expected)
-        self.assertIsInstance(result, np.ma.core.masked_array)
+        self.assertMaskedArrayEqual(result, expected)
 
     def test_bitmap__shapes_mismatch(self):
         # Test the behaviour where bitmap and codedValues shapes do not match.
