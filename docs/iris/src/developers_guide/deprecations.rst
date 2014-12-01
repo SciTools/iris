@@ -9,12 +9,6 @@ results in the longer period of time.  Once the deprecation period has
 expired the deprecated API should be removed/updated in the next
 `major release <http://semver.org/>`_.
 
-.. note::
-
-    Private APIs and public APIs defined in the :mod:`iris.experimental`
-    package are exempt from the deprecation rule - any change is allowed
-    at any time.
-
 
 Adding a deprecation
 ====================
@@ -104,7 +98,8 @@ Changing a default
 .. rubric:: Footnotes
 
 .. [#public-api] A name without a leading underscore in any of its
-   components.
+   components, with the exception of the :mod:`iris.experimental` and
+   :mod:`iris.tests` packages.
 
    Example public names are:
     - `iris.this.`
@@ -115,3 +110,5 @@ Changing a default
     - `iris.this._that`
     - `iris._this.that`
     - `iris._this._that`
+    - `iris.experimental.something`
+    - `iris.tests.get_data_path`
