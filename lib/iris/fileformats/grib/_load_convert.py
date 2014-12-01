@@ -546,7 +546,7 @@ def grid_definition_template_4_and_5(section, metadata, y_name, x_name, cs):
 
     """
     # Determine the (variable) units of resolution.
-    key = 'basicAngleOfTheInitialProductDomain'
+    key = 'basicAngleOfTheInitialProductionDomain'
     basicAngleOfTheInitialProductDomain = section[key]
     subdivisionsOfBasicAngle = section['subdivisionsOfBasicAngle']
 

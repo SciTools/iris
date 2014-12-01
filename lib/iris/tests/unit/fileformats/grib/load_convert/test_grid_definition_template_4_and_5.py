@@ -88,7 +88,7 @@ class Test(tests.IrisTest):
 
     def test_resolution_default_0(self):
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 0,
+            section = {'basicAngleOfTheInitialProductionDomain': 0,
                        'subdivisionsOfBasicAngle': 0,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * RESOLUTION,
@@ -98,7 +98,7 @@ class Test(tests.IrisTest):
 
     def test_resolution_default_mdi(self):
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': MDI,
+            section = {'basicAngleOfTheInitialProductionDomain': MDI,
                        'subdivisionsOfBasicAngle': MDI,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * RESOLUTION,
@@ -109,7 +109,7 @@ class Test(tests.IrisTest):
     def test_resolution(self):
         angle = 10
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 1,
+            section = {'basicAngleOfTheInitialProductionDomain': 1,
                        'subdivisionsOfBasicAngle': angle,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * angle,
@@ -120,7 +120,7 @@ class Test(tests.IrisTest):
     def test_uv_resolved_warn(self):
         angle = 100
         for warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 1,
+            section = {'basicAngleOfTheInitialProductionDomain': 1,
                        'subdivisionsOfBasicAngle': angle,
                        'resolutionAndComponentFlags': 0x08,
                        'longitudes': self.data * angle,
@@ -131,7 +131,7 @@ class Test(tests.IrisTest):
     def test_j_consecutive(self):
         angle = 1000
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 1,
+            section = {'basicAngleOfTheInitialProductionDomain': 1,
                        'subdivisionsOfBasicAngle': angle,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * angle,

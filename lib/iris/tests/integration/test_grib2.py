@@ -29,6 +29,7 @@ from iris import FUTURE, load_cube
 from subprocess import check_output
 
 from iris import FUTURE, load_cube, save
+from iris.coords import CellMethod
 from iris.coord_systems import RotatedGeogCS
 from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
 from iris.util import is_regular
@@ -100,9 +101,9 @@ class TestPDT8(tests.IrisTest):
         self.assertEqual(cell_method.coord_names, ('time',))
 
 
-class TestSaveGdt5(tests.IrisTest):
-    def test_simple(self):
-        # Fetch some sample UKV data (rotated variable grid)
+class TestGDT5(tests.IrisTest):
+    def test_save_load(self):
+        # Load sample UKV data (variable-resolution rotated grid).
         path = tests.get_data_path(('PP', 'ukV1', 'ukVpmslont.pp'))
         cube = load_cube(path)
 
@@ -123,29 +124,86 @@ class TestSaveGdt5(tests.IrisTest):
         self.assertIsInstance(x_coord.coord_system, RotatedGeogCS)
         self.assertFalse(is_regular(x_coord))
 
-        # Write the data to a temporary file, and capture dump output.
-        # TODO: replace the dump with an Iris load, when we support loading.
+        # Write to temporary file, check grib_dump output, and load back in.
         with self.temp_filename('ukv_sample.grib2') as temp_file_path:
             save(cube, temp_file_path)
-            # Get a dump of the output.
+
+            # Get a grib_dump of the output file.
             dump_text = check_output(('grib_dump -O -wcount=1 ' +
                                       temp_file_path),
                                      shell=True)
-        # Check that various aspects of the result are as expected.
-        expect_strings = (
-            'editionNumber = 2',
-            'gridDefinitionTemplateNumber = 5',
-            'Ni = {:d}'.format(nn),
-            'Nj = {:d}'.format(nn),
-            'shapeOfTheEarth = 1',
-            'scaledValueOfRadiusOfSphericalEarth = {:d}'.format(
-                int(UM_DEFAULT_EARTH_RADIUS)),
-            'resolutionAndComponentFlags = 0',
-            'latitudeOfSouthernPole = -37500000',
-            'longitudeOfSouthernPole = 357500000',
-            'angleOfRotation = 0')
-        for expect in expect_strings:
-            self.assertIn(expect, dump_text)
+
+            # Check that various aspects of the saved file are as expected.
+            expect_strings = (
+                'editionNumber = 2',
+                'gridDefinitionTemplateNumber = 5',
+                'Ni = {:d}'.format(cube.shape[-1]),
+                'Nj = {:d}'.format(cube.shape[-2]),
+                'shapeOfTheEarth = 1',
+                'scaledValueOfRadiusOfSphericalEarth = {:d}'.format(
+                    int(UM_DEFAULT_EARTH_RADIUS)),
+                'resolutionAndComponentFlags = 0',
+                'latitudeOfSouthernPole = -37500000',
+                'longitudeOfSouthernPole = 357500000',
+                'angleOfRotation = 0')
+            for expect in expect_strings:
+                self.assertIn(expect, dump_text)
+
+            # Load the Grib file back into a new cube.
+            with FUTURE.context(strict_grib_load=True):
+                cube_loaded_from_saved = load_cube(temp_file_path)
+                # Also load data, before the temporary file gets deleted.
+                cube_loaded_from_saved.data
+
+        # Check those re-loaded properties which should match the original.
+        for test_cube in (cube, cube_loaded_from_saved):
+            self.assertEqual(test_cube.standard_name,
+                             'air_pressure_at_sea_level')
+            self.assertEqual(test_cube.units, 'Pa')
+            self.assertEqual(test_cube.shape, (744, 744))
+            self.assertEqual(cube_loaded_from_saved.cell_methods, ())
+
+        # Check no cube attributes on the re-loaded cube.
+        # Note: this does *not* match the original, but is as expected.
+        self.assertEqual(cube_loaded_from_saved.attributes, {})
+
+        # Now remaining to check: coordinates + data...
+
+        # Check they have the same set of coordinates.
+        co_names = [coord.name() for coord in cube.coords()]
+        co_names_reload = [coord.name()
+                           for coord in cube_loaded_from_saved.coords()]
+        self.assertEqual(set(co_names_reload), set(co_names))
+
+        # Check all the coordinates.
+        for coord_name in co_names:
+            try:
+                co_orig = cube.coord(coord_name)
+                co_load = cube_loaded_from_saved.coord(coord_name)
+
+                # Check shape.
+                self.assertEqual(co_load.shape, co_orig.shape,
+                                 'Shape of re-loaded "{}" coord is {} '
+                                 'instead of {}'.format(coord_name,
+                                                        co_load.shape,
+                                                        co_orig.shape))
+
+                # Check coordinate points equal, within a tolerance.
+                self.assertArrayAllClose(co_load.points, co_orig.points,
+                                         rtol=1.0e-6)
+
+                # Check all coords are unbounded.
+                # (NOTE: this is not so for the original X and Y coordinates,
+                # but Grib does not store those bounds).
+                self.assertIsNone(co_load.bounds)
+
+            except Exception as err:
+                self.assertTrue(False,
+                                'Failed on coordinate "{}" : {}'.format(
+                                    coord_name, str(err)))
+
+        # Check that main data array also matches.
+        self.assertArrayAllClose(cube.data, cube_loaded_from_saved.data)
 
 
 if __name__ == '__main__':

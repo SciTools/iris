@@ -101,7 +101,7 @@ class _GribMessage(object):
                                    'unsupported quasi-regular grid.')
 
         template = grid_section['gridDefinitionTemplateNumber']
-        if template in (0, 1, 90):
+        if template in (0, 1, 5, 90):
             # We can ignore the first two bits (i-neg, j-pos) because
             # that is already captured in the coordinate values.
             if grid_section['scanningMode'] & 0x3f:
@@ -370,7 +370,8 @@ class _Section(object):
         vector_keys = ('codedValues', 'pv', 'satelliteSeries',
                        'satelliteNumber', 'instrumentType',
                        'scaleFactorOfCentralWaveNumber',
-                       'scaledValueOfCentralWaveNumber')
+                       'scaledValueOfCentralWaveNumber',
+                       'longitudes', 'latitudes')
         if key in vector_keys:
             res = gribapi.grib_get_array(self._message_id, key)
         elif key == 'bitmap':
