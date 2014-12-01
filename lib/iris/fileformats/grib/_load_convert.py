@@ -687,14 +687,25 @@ def grid_definition_template_90(section, metadata):
     # two-step process:
     # 1) Determine the angle subtended by the visible surface.
     # 2) Convert that angle into projection coordinates.
-    # NB. The solution given below assumes the satellite is over the
+    # NB. The solutions given below assume the satellite is over the
     # equator.
+    # The apparent equatorial angle uses simple, circular geometry.
+    # But to derive the apparent polar angle we use the auxiliary circle
+    # parametric form of the ellipse. In this form, the equation for the
+    # tangent line is given by:
+    #   x cos(psi)   y sin(psi)
+    #   ---------- + ---------- = 1
+    #       a            b
+    # By considering the cases when x=0 and y=0, the apparent polar
+    # angle (theta) is given by:
+    #   tan(theta) = b / sin(psi)
+    #                ------------
+    #                a / cos(psi)
+    # This can be simplified using: cos(psi) = a / height_above_centre
     half_apparent_equatorial_angle = math.asin(geog_cs.semi_major_axis /
                                                height_above_centre)
     x_apparent_diameter = (2 * half_apparent_equatorial_angle *
                            height_above_ellipsoid)
-    # Use the auxiliary circle parametric form of the ellipse to
-    # derive the apparent polar angle.
     parametric_angle = math.acos(geog_cs.semi_major_axis / height_above_centre)
     half_apparent_polar_angle = math.atan(geog_cs.semi_minor_axis /
                                           (height_above_centre *
