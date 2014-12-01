@@ -466,7 +466,10 @@ def set_time_increment(cell_method, grib):
     # cell method coord to infer a value (see code table 4.11).
     gribapi.grib_set_long(grib, "typeOfTimeIncrement", 255)
 
-    # Determine interval from cell method intervals string.
+    # Default values for the time increment value and units type.
+    inc = 0
+    units_type = 255
+    # Attempt to determine time increment from cell method intervals string.
     intervals = cell_method.intervals
     if intervals is not None and len(intervals) == 1:
         interval, = intervals
@@ -479,15 +482,10 @@ def set_time_increment(cell_method, grib):
                 raise ValueError('Unable to parse units of interval')
         except ValueError:
             # Problem interpreting the interval string.
-            gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)
-            gribapi.grib_set_long(grib, "timeIncrement", 0)
-        else:
-            gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement",
-                                  units_type)
-            gribapi.grib_set_long(grib, "timeIncrement", inc)
-    else:
-        gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)
-        gribapi.grib_set_long(grib, "timeIncrement", 0)
+            inc = 0
+            units_type = 255
+    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", units_type)
+    gribapi.grib_set_long(grib, "timeIncrement", inc)
 
 
 def _cube_is_time_statistic(cube):
@@ -573,6 +571,7 @@ def product_definition_template_8(cube, grib):
 
     if len(time_coord.points) != 1:
         msg = 'Expected length one time coordinate, got {} points'
+        raise ValueError(msg.format(time_coord.points))
 
     if time_coord.nbounds != 2:
         msg = 'Expected time coordinate with two bounds, got {} bounds'
@@ -607,9 +606,9 @@ def product_definition_template_8(cube, grib):
     gribapi.grib_set_long(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
     gribapi.grib_set_long(grib, "secondOfEndOfOverallTimeInterval", end.second)
 
-    # Only one time range specification. A series of aggregations (e.g. the
-    # mean of of an accumulation) would set this to a higher value, but we are
-    # limited to a single time related cell method.
+    # Only one time range specification. If there were a series of aggregations
+    # (e.g. the mean of an accumulation) one might set this to a higher value,
+    # but we currently only handle a single time related cell method.
     gribapi.grib_set_long(grib, "numberOfTimeRange", 1)
     gribapi.grib_set_long(grib, "numberOfMissingInStatisticalProcess", 0)
 
