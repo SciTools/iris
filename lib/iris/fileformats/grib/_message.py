@@ -101,14 +101,17 @@ class _GribMessage(object):
                                    'unsupported quasi-regular grid.')
 
         template = grid_section['gridDefinitionTemplateNumber']
-        if template in (0, 1):
+        if template in (0, 1, 90):
             # We can ignore the first two bits (i-neg, j-pos) because
             # that is already captured in the coordinate values.
             if grid_section['scanningMode'] & 0x3f:
                 msg = 'Unsupported scanning mode: {}'.format(
                     grid_section['scanningMode'])
                 raise TranslationError(msg)
-            shape = (grid_section['Nj'], grid_section['Ni'])
+            if template == 90:
+                shape = (grid_section['Ny'], grid_section['Nx'])
+            else:
+                shape = (grid_section['Nj'], grid_section['Ni'])
             proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
                                self._recreate_raw, self._regularise)
             data = biggus.NumpyArrayAdapter(proxy)

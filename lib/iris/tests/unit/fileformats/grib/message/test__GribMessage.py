@@ -25,6 +25,8 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
+from abc import ABCMeta, abstractmethod
+
 import biggus
 import mock
 import numpy as np
@@ -146,32 +148,27 @@ class Test_data__unsupported(tests.IrisTest):
             message.data
 
 
-class Test_data__grid_template_0(tests.IrisTest):
+# Abstract, mix-in class for testing the `data` attribute for various
+# grid definition templates.
+class Mixin_data__grid_template(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def section_3(self, scanning_mode):
+        raise NotImplementedError()
+
     def test_unsupported_scanning_mode(self):
         message = _make_test_message(
-            {3: {'sourceOfGridDefinition': 0,
-                 'numberOfOctectsForNumberOfPoints': 0,
-                 'interpretationOfNumberOfPoints': 0,
-                 'gridDefinitionTemplateNumber': 0,
-                 'scanningMode': 1},
+            {3: self.section_3(1),
              6: SECTION_6_NO_BITMAP})
         with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
             message.data
 
     def _test(self, scanning_mode):
-        def make_raw_message():
-            sections = {3: {'sourceOfGridDefinition': 0,
-                            'numberOfOctectsForNumberOfPoints': 0,
-                            'interpretationOfNumberOfPoints': 0,
-                            'gridDefinitionTemplateNumber': 0,
-                            'scanningMode': scanning_mode,
-                            'Nj': 3,
-                            'Ni': 4},
-                        6: SECTION_6_NO_BITMAP,
-                        7: {'codedValues': np.arange(12)}}
-            raw_message = mock.Mock(sections=sections)
-            return raw_message
-        message = _GribMessage(make_raw_message(), make_raw_message, False)
+        message = _make_test_message(
+            {3: self.section_3(scanning_mode),
+             6: SECTION_6_NO_BITMAP,
+             7: {'codedValues': np.arange(12)}})
         data = message.data
         self.assertIsInstance(data, biggus.Array)
         self.assertEqual(data.shape, (3, 4))
@@ -190,6 +187,28 @@ class Test_data__grid_template_0(tests.IrisTest):
 
     def test_regular_mode_64_128(self):
         self._test(64 | 128)
+
+
+class Test_data__grid_template_0(tests.IrisTest, Mixin_data__grid_template):
+    def section_3(self, scanning_mode):
+        return {'sourceOfGridDefinition': 0,
+                'numberOfOctectsForNumberOfPoints': 0,
+                'interpretationOfNumberOfPoints': 0,
+                'gridDefinitionTemplateNumber': 0,
+                'scanningMode': scanning_mode,
+                'Nj': 3,
+                'Ni': 4}
+
+
+class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
+    def section_3(self, scanning_mode):
+        return {'sourceOfGridDefinition': 0,
+                'numberOfOctectsForNumberOfPoints': 0,
+                'interpretationOfNumberOfPoints': 0,
+                'gridDefinitionTemplateNumber': 90,
+                'scanningMode': scanning_mode,
+                'Ny': 3,
+                'Nx': 4}
 
 
 if __name__ == '__main__':
