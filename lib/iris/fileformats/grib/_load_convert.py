@@ -642,6 +642,111 @@ def grid_definition_template_5(section, metadata):
                                      'grid_latitude', 'grid_longitude', cs)
 
 
+def grid_definition_template_90(section, metadata):
+    """
+    Translate template representing space view.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    if section['Nr'] == _MDI:
+        raise TranslationError('Unsupported orthographic grid.')
+    elif section['Nr'] == 0:
+        raise TranslationError('Unsupported zero height for space-view.')
+    if section['orientationOfTheGrid'] != 0:
+        raise TranslationError('Unsupported space-view orientation.')
+
+    # Determine the coordinate system.
+    sub_satellite_lat = (section['latitudeOfSubSatellitePoint']
+                         * _GRID_ACCURACY_IN_DEGREES)
+    # The subsequent calculations to determine the apparent Earth
+    # diameters rely on the satellite being over the equator.
+    if sub_satellite_lat != 0:
+        raise TranslationError('Unsupported non-zero latitude for '
+                               'space-view perspective.')
+    sub_satellite_lon = (section['longitudeOfSubSatellitePoint']
+                         * _GRID_ACCURACY_IN_DEGREES)
+    major, minor, radius = ellipsoid_geometry(section)
+    geog_cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
+    height_above_centre = geog_cs.semi_major_axis * section['Nr'] / 1e6
+    height_above_ellipsoid = height_above_centre - geog_cs.semi_major_axis
+    cs = icoord_systems.VerticalPerspective(sub_satellite_lat,
+                                            sub_satellite_lon,
+                                            height_above_ellipsoid,
+                                            ellipsoid=geog_cs)
+
+    # Figure out how large the Earth would appear in projection coodinates.
+    # For both the apparent equatorial and polar diameters this is a
+    # two-step process:
+    # 1) Determine the angle subtended by the visible surface.
+    # 2) Convert that angle into projection coordinates.
+    # NB. The solutions given below assume the satellite is over the
+    # equator.
+    # The apparent equatorial angle uses simple, circular geometry.
+    # But to derive the apparent polar angle we use the auxiliary circle
+    # parametric form of the ellipse. In this form, the equation for the
+    # tangent line is given by:
+    #   x cos(psi)   y sin(psi)
+    #   ---------- + ---------- = 1
+    #       a            b
+    # By considering the cases when x=0 and y=0, the apparent polar
+    # angle (theta) is given by:
+    #   tan(theta) = b / sin(psi)
+    #                ------------
+    #                a / cos(psi)
+    # This can be simplified using: cos(psi) = a / height_above_centre
+    half_apparent_equatorial_angle = math.asin(geog_cs.semi_major_axis /
+                                               height_above_centre)
+    x_apparent_diameter = (2 * half_apparent_equatorial_angle *
+                           height_above_ellipsoid)
+    parametric_angle = math.acos(geog_cs.semi_major_axis / height_above_centre)
+    half_apparent_polar_angle = math.atan(geog_cs.semi_minor_axis /
+                                          (height_above_centre *
+                                           math.sin(parametric_angle)))
+    y_apparent_diameter = (2 * half_apparent_polar_angle *
+                           height_above_ellipsoid)
+
+    y_step = y_apparent_diameter / section['dy']
+    x_step = x_apparent_diameter / section['dx']
+    y_start = y_step * (section['Yo'] - section['Yp'] / 1000)
+    x_start = x_step * (section['Xo'] - section['Xp'] / 1000)
+    y_points = y_start + np.arange(section['Ny']) * y_step
+    x_points = x_start + np.arange(section['Nx']) * x_step
+
+    # This has only been tested with -x/+y scanning, so raise an error
+    # for other permutations.
+    scan = scanning_mode(section['scanningMode'])
+    if scan.i_negative:
+        x_points = -x_points
+    else:
+        raise TranslationError('Unsupported +x scanning')
+    if not scan.j_positive:
+        raise TranslationError('Unsupported -y scanning')
+
+    # Create the X and Y coordinates.
+    y_coord = DimCoord(y_points, 'projection_y_coordinate', units='m',
+                       coord_system=cs)
+    x_coord = DimCoord(x_points, 'projection_x_coordinate', units='m',
+                       coord_system=cs)
+
+    # Determine the lat/lon dimensions.
+    y_dim, x_dim = 0, 1
+    if scan.j_consecutive:
+        y_dim, x_dim = 1, 0
+
+    # Add the X and Y coordinates to the metadata dim coords.
+    metadata['dim_coords_and_dims'].append((y_coord, y_dim))
+    metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
 def grid_definition_section(section, metadata):
     """
     Translate section 3 from the GRIB2 message.
@@ -685,6 +790,9 @@ def grid_definition_section(section, metadata):
     elif template == 5:
         # Process variable resolution rotated latitude/longitude.
         grid_definition_template_5(section, metadata)
+    elif template == 90:
+        # Process space view.
+        grid_definition_template_90(section, metadata)
     else:
         msg = 'Grid definition template [{}] is not supported'.format(template)
         raise TranslationError(msg)

@@ -534,7 +534,8 @@ class VerticalPerspective(CoordSystem):
             True longitude of planar origin in degrees.
 
         * perspective_point_height:
-            Altitude of satellite in metres.
+            Altitude of satellite in metres above the surface of the
+            ellipsoid.
 
         * false_easting
             X offset from planar origin in metres. Defaults to 0.
