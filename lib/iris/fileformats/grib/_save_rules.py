@@ -192,6 +192,7 @@ def scanning_mode_flags(x_coord, y_coord, grib):
 
 
 def latlon_common(cube, grib):
+    # Grib encoding of the sequences of X and Y points.
     y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
     shape_of_the_earth(cube, grib)
@@ -202,6 +203,7 @@ def latlon_common(cube, grib):
 
 
 def rotated_pole(cube, grib):
+    # Grib encoding of a rotated pole coordinate system.
     cs = cube.coord(dimensions=[0]).coord_system
 
 # XXX Pending #1125
@@ -218,21 +220,63 @@ def rotated_pole(cube, grib):
     gribapi.grib_set_long(grib, "angleOfRotation", 0)
 
 
-def grid_template(cube, grib):
-    cs = cube.coord(dimensions=[0]).coord_system
-    if isinstance(cs, iris.coord_systems.GeogCS):
-        # template 3.0
-        gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 0)
-        latlon_common(cube, grib)
+def grid_definition_template_0(cube, grib):
+    """
+    Set keys within the provided grib message based on
+    Grid Definition Template 3.0.
 
-    # rotated
+    Template 3.0 is used to represent "latitude/longitude (or equidistant
+    cylindrical, or Plate Carree)".
+    The coordinates are regularly spaced, true latitudes and longitudes.
+
+    """
+    # Constant resolution, aka 'regular' true lat-lon grid.
+    gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 0)
+
+    # Record x and y points.
+    latlon_common(cube, grib)
+
+
+def grid_definition_template_1(cube, grib):
+    """
+    Set keys within the provided grib message based on
+    Grid Definition Template 3.1.
+
+    Template 3.1 is used to represent "rotated latitude/longitude (or
+    equidistant cylindrical, or Plate Carree)".
+    The coordinates are regularly spaced, rotated latitudes and longitudes.
+
+    """
+    # Constant resolution, aka 'regular' rotated lat-lon grid.
+    gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 1)
+
+    # Record x and y points.
+    latlon_common(cube, grib)
+
+    # Record details of the rotated coordinate system.
+    rotated_pole(cube, grib)
+
+
+def grid_definition_section(cube, grib):
+    """
+    Set keys within the grid definition section of the provided grib message,
+    based on the properties of the cube.
+
+    """
+    x_coord = cube.coord(dimensions=[1])
+    cs = x_coord.coord_system  # N.B. already checked same cs for x and y.
+
+    if isinstance(cs, iris.coord_systems.GeogCS):
+        # Plain lat-lon coordinate system (template 3.0).
+        grid_definition_template_0(cube, grib)
+
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
-        # template 3.1
-        gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 1)
-        latlon_common(cube, grib)
-        rotated_pole(cube, grib)
+        # Rotated coordinate system (template 3.1).
+        grid_definition_template_1(cube, grib)
+
     else:
-        raise ValueError("Currently unhandled CoordSystem: %s" % cs)
+        raise ValueError('Grib saving is not supported for coordinate system: '
+                         '{:s}'.format(cs))
 
 
 ###############################################################################
@@ -658,7 +702,7 @@ def run(cube, grib):
     identification(cube, grib)
 
     # Section 3 - Grid Definition Section (Grid Definition Template)
-    grid_template(cube, grib)
+    grid_definition_section(cube, grib)
 
     # Section 4 - Product Definition Section (Product Definition Template)
     product_definition_section(cube, grib)
