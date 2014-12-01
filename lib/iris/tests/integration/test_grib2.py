@@ -22,19 +22,39 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
+import numpy.ma as ma
+
 from iris import FUTURE, load_cube
 
 
-class TestGdt1(tests.IrisTest):
-    def test_simple(self):
+@tests.skip_data
+class TestImport(tests.IrisTest):
+    def test_gdt1(self):
         with FUTURE.context(strict_grib_load=True):
             path = tests.get_data_path(('GRIB', 'rotated_nae_t',
                                         'sensible_pole.grib2'))
             cube = load_cube(path)
             self.assertCMLApproxData(cube)
 
+    def test_gdt90_with_bitmap(self):
+        with FUTURE.context(strict_grib_load=True):
+            path = tests.get_data_path(('GRIB', 'umukv', 'ukv_chan9.grib2'))
+            cube = load_cube(path)
+            # Pay particular attention to the orientation.
+            self.assertIsNot(cube.data[0, 0], ma.masked)
+            self.assertIs(cube.data[-1, 0], ma.masked)
+            self.assertIs(cube.data[0, -1], ma.masked)
+            self.assertIs(cube.data[-1, -1], ma.masked)
+            x = cube.coord('projection_x_coordinate').points
+            y = cube.coord('projection_y_coordinate').points
+            self.assertGreater(x[0], x[-1])  # Decreasing X coordinate
+            self.assertLess(y[0], y[-1])  # Increasing Y coordinate
+            # Check everything else.
+            self.assertCMLApproxData(cube)
 
-class TestPdt8(tests.IrisTest):
+
+@tests.skip_data
+class TestPDT8(tests.IrisTest):
     def setUp(self):
         # Load from the test file.
         file_path = tests.get_data_path(('GRIB', 'time_processed',
