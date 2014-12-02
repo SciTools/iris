@@ -89,8 +89,9 @@ class Test(tests.IrisTest):
         self.coord.bounds = [lower, upper]
         with mock.patch('warnings.warn') as warn:
             set_time_range(self.coord, mock.sentinel.grib)
-        warn.assert_called_once_with('Truncating floating point lengthOfTimeRange '
-                                     '10.9 to integer value 10')
+        msg = 'Truncating floating point lengthOfTimeRange 10.9 ' \
+              'to integer value 10'
+        warn.assert_called_once_with(msg)
         mock_set_long.assert_any_call(mock.sentinel.grib,
                                       'indicatorOfUnitForTimeRange', 1)
         mock_set_long.assert_any_call(mock.sentinel.grib,
