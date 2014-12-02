@@ -90,6 +90,12 @@ else:
     _EXPORT_DATAPATHS_FILE = None
 
 
+if '--create-missing' in sys.argv:
+    sys.argv.remove('--create-missing')
+    print('Allowing creation of missing test results.')
+    os.environ['IRIS_TEST_CREATE_MISSING'] = 'true'
+
+
 # A shared logger for use by unit tests
 logger = logging.getLogger('tests')
 
@@ -124,6 +130,8 @@ def main():
             lines.insert(11, '                       NOTE: To compare results of failing tests, ')
             lines.insert(12, '                             use idiff.py instead')
             lines.insert(13, '  --data-files-used    Save a list of files used to a temporary file')
+            lines.insert(
+                14, '  -m                   Create missing test results')
             print('\n'.join(lines))
     else:
         unittest.main()
@@ -314,7 +322,7 @@ class IrisTest(unittest.TestCase):
 
     def assertCubeDataAlmostEqual(self, cube, reference_filename, *args, **kwargs):
         reference_path = get_result_path(reference_filename)
-        if os.path.isfile(reference_path):
+        if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
 
             result = np.load(reference_path)
@@ -339,7 +347,7 @@ class IrisTest(unittest.TestCase):
 
     def assertFilesEqual(self, test_filename, reference_filename):
         reference_path = get_result_path(reference_filename)
-        if os.path.isfile(reference_path):
+        if self._check_reference_file(reference_path):
             fmt = 'test file {!r} does not match reference {!r}.'
             self.assertTrue(filecmp.cmp(test_filename, reference_path),
                             fmt.format(test_filename, reference_path))
@@ -361,7 +369,7 @@ class IrisTest(unittest.TestCase):
         self.assertString(repr(obj), reference_filename)
 
     def _check_same(self, item, reference_path, reference_filename, type_comparison_name='CML'):
-        if os.path.isfile(reference_path):
+        if self._check_reference_file(reference_path):
             reference = ''.join(open(reference_path, 'r').readlines())
             self._assert_str_same(reference, item, reference_path,
                                   type_comparison_name)
@@ -533,6 +541,14 @@ class IrisTest(unittest.TestCase):
         self._assertion_counts[test_id] += 1
 
         return test_id + '.' + str(assertion_id)
+
+    def _check_reference_file(self, reference_path):
+        reference_exists = os.path.isfile(reference_path)
+        if not (reference_exists or
+                os.environ.get('IRIS_TEST_CREATE_MISSING')):
+            msg = 'Missing test result: {}'.format(reference_path)
+            raise AssertionError(msg)
+        return reference_exists
 
     def _ensure_folder(self, path):
         dir_path = os.path.dirname(path)
