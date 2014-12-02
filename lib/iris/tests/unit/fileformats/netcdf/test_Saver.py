@@ -80,7 +80,8 @@ class Test_write(tests.IrisTest):
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
-            self.assertCDL(nc_path, basename='endian', flags='')
+            result_path = self.result_path('endian', 'cdl')
+            self.assertCDL(nc_path, result_path, flags='')
 
     def test_big_endian(self):
         # Create a Cube with big-endian data.
@@ -88,7 +89,8 @@ class Test_write(tests.IrisTest):
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
-            self.assertCDL(nc_path, basename='endian', flags='')
+            result_path = self.result_path('endian', 'cdl')
+            self.assertCDL(nc_path, result_path, flags='')
 
     def test_zlib(self):
         cube = self._simple_cube('>f4')
