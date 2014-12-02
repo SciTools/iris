@@ -46,9 +46,10 @@ class TestRunner():
                               'subset of the default tests.)'),
         ('num-processors=', 'p', 'The number of processors used for running '
                                  'the tests.'),
+        ('create-missing', 'm', 'Create missing test result files.'),
     ]
     boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests',
-                       'default-tests', 'coding-tests']
+                       'default-tests', 'coding-tests', 'create-missing']
 
     def initialize_options(self):
         self.no_data = False
@@ -58,15 +59,17 @@ class TestRunner():
         self.default_tests = False
         self.coding_tests = False
         self.num_processors = None
+        self.create_missing = False
 
     def finalize_options(self):
+        # These enviroment variables will be propagated to all the
+        # processes that nose.run creates.
         if self.no_data:
             print('Running tests in no-data mode...')
-
-            # This enviroment variable will be propagated to all the processes
-            # that nose.run creates, allowing us to simulate the absence of
-            # test data
             os.environ['override_test_data_repository'] = 'true'
+        if self.create_missing:
+            os.environ['IRIS_TEST_CREATE_MISSING'] = 'true'
+
         tests = []
         if self.system_tests:
             tests.append('system')
