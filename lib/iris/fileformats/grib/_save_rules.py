@@ -35,6 +35,7 @@ import numpy.ma as ma
 import iris
 import iris.exceptions
 import iris.unit
+from iris.coord_systems import GeogCS
 from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
@@ -159,12 +160,12 @@ def identification(cube, grib):
 #
 ###############################################################################
 
-def shape_of_the_earth(cube, grib):
 
+def shape_of_the_earth(cube, grib):
     # assume latlon
     cs = cube.coord(dimensions=[0]).coord_system
 
-    # Turn them all missing to start with (255 for byte, -1 for long)
+    # Initially set shape_of_earth keys to missing (255 for byte, -1 for long).
     gribapi.grib_set_long(grib, "scaleFactorOfRadiusOfSphericalEarth", 255)
     gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth", -1)
     gribapi.grib_set_long(grib, "scaleFactorOfEarthMajorAxis", 255)
@@ -172,15 +173,23 @@ def shape_of_the_earth(cube, grib):
     gribapi.grib_set_long(grib, "scaleFactorOfEarthMinorAxis", 255)
     gribapi.grib_set_long(grib, "scaledValueOfEarthMinorAxis", -1)
 
-    ellipsoid = cs
-    if isinstance(cs, iris.coord_systems.RotatedGeogCS):
+    if isinstance(cs, GeogCS):
+        ellipsoid = cs
+    else:
         ellipsoid = cs.ellipsoid
+        if ellipsoid is None:
+            msg = "Could not determine shape of the earth from coord system "\
+                  "of horizontal grid."
+            raise iris.exceptions.TranslationError(msg)
 
+    # Spherical earth.
     if ellipsoid.inverse_flattening == 0.0:
         gribapi.grib_set_long(grib, "shapeOfTheEarth", 1)
-        gribapi.grib_set_long(grib, "scaleFactorOfRadiusOfSphericalEarth", 0)
+        gribapi.grib_set_long(grib,
+                              "scaleFactorOfRadiusOfSphericalEarth", 0)
         gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth",
                               ellipsoid.semi_major_axis)
+    # Oblate spheroid earth.
     else:
         gribapi.grib_set_long(grib, "shapeOfTheEarth", 7)
         gribapi.grib_set_long(grib, "scaleFactorOfEarthMajorAxis", 0)
@@ -364,6 +373,40 @@ def grid_definition_template_5(cube, grib):
     latlon_points_irregular(cube, grib)
 
 
+def grid_definition_template_12(cube, grib):
+    """
+    Set keys within the provided grib message based on
+    Grid Definition Template 3.12.
+
+    Template 3.12 is used to represent a Transverse Mercator grid.
+
+    """
+    gribapi.grib_set(grib, "gridDefinitionTemplateNumber", 12)
+
+    # Record x and y points.
+    latlon_common(cube, grib)
+
+    # Set some keys specific to GDT12.
+    cs = cube.coord(dimensions=[0]).coord_system
+    # Lat and lon of reference point are measured in millionths of a degree.
+    gribapi.grib_set(grib, "latitudeOfReferencePoint",
+                     cs.latitude_of_projection_origin * 1e6)
+    gribapi.grib_set(grib, "longitudeOfReferencePoint",
+                     cs.longitude_of_central_meridian * 1e6)
+    # False easting and false northing are measured in units of (10^-2)m.
+    gribapi.grib_set(grib, "XR", cs.false_easting * 100)
+    gribapi.grib_set(grib, "YR", cs.false_northing * 100)
+    gribapi.grib_set(grib, "scaleFactorAtReferencePoint",
+                     cs.scale_factor_at_central_meridian)
+
+    # Check that scaleFactorAtReferencePoint is being stored correctly.
+    scale_at_ref_point = gribapi.grib_get(grib, "scaleFactorAtReferencePoint")
+    if cs.scale_factor_at_central_meridian != scale_at_ref_point:
+        msg = "GRIBAPI error prevented correct setting of "\
+              "key 'scaleFactorAtReferencePoint'."
+        raise iris.exceptions.TranslationError(msg)
+
+
 def grid_definition_section(cube, grib):
     """
     Set keys within the grid definition section of the provided grib message,
@@ -390,6 +433,10 @@ def grid_definition_section(cube, grib):
             grid_definition_template_1(cube, grib)
         else:
             grid_definition_template_5(cube, grib)
+
+    elif isinstance(cs, iris.coord_systems.TransverseMercator):
+        # Transverse Mercator coordinate system (template 3.12).
+        grid_definition_template_12(cube, grib)
 
     else:
         raise ValueError('Grib saving is not supported for coordinate system: '
