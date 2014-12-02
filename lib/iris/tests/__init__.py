@@ -287,7 +287,7 @@ class IrisTest(unittest.TestCase):
 
         os.remove(cdl_filename)
         reference_path = get_result_path(reference_filename)
-        self._check_same(cdl, reference_path, reference_filename, type_comparison_name='CDL')
+        self._check_same(cdl, reference_path, type_comparison_name='CDL')
 
     def assertCML(self, cubes, reference_filename=None, checksum=True):
         """
@@ -306,7 +306,7 @@ class IrisTest(unittest.TestCase):
         else:
             xml = cubes.xml(checksum=checksum, order=False, byteorder=False)
         reference_path = get_result_path(reference_filename)
-        self._check_same(xml, reference_path, reference_filename)
+        self._check_same(xml, reference_path)
 
     def assertTextFile(self, source_filename, reference_filename, desc="text file"):
         """Check if two text files are the same, printing any diffs."""
@@ -354,19 +354,22 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating result file: %s', reference_path)
             shutil.copy(test_filename, reference_path)
 
-    def assertString(self, string, reference_filename):
-        reference_path = get_result_path(reference_filename)
+    def assertString(self, string, reference_filename=None):
+        if reference_filename is None:
+            reference_path = self.result_path(None, 'txt')
+        else:
+            reference_path = get_result_path(reference_filename)
         # If the test string is a unicode string, encode as
         # utf-8 before comparison to the reference string.
         if isinstance(string, unicode):
             string = string.encode('utf-8')
-        self._check_same(string, reference_path, reference_filename,
+        self._check_same(string, reference_path,
                          type_comparison_name='Strings')
 
     def assertRepr(self, obj, reference_filename):
         self.assertString(repr(obj), reference_filename)
 
-    def _check_same(self, item, reference_path, reference_filename, type_comparison_name='CML'):
+    def _check_same(self, item, reference_path, type_comparison_name='CML'):
         if self._check_reference_file(reference_path):
             reference = ''.join(open(reference_path, 'r').readlines())
             self._assert_str_same(reference, item, reference_path,
@@ -387,7 +390,8 @@ class IrisTest(unittest.TestCase):
         doc.appendChild(obj.xml_element(doc))
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = get_result_path(reference_filename)
-        self._check_same(pretty_xml, reference_path, reference_filename, type_comparison_name='XML')
+        self._check_same(pretty_xml, reference_path,
+                         type_comparison_name='XML')
 
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)

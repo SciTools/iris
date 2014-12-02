@@ -213,25 +213,35 @@ class TestStockCubeStringRepresentations(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()
 
-    def _check(self, cube):
-        prefix = 'realistic_{}d'.format(cube.ndim)
-        self.assertString(str(cube), ('cdm', 'str_repr', prefix + '.str.txt'))
-        self.assertString(repr(cube), ('cdm', 'str_repr', prefix + '.repr.txt'))
+    def test_4d_str(self):
+        self.assertString(str(self.cube))
 
-    def test_4d(self):
-        self._check(self.cube)
+    def test_4d_repr(self):
+        self.assertString(repr(self.cube))
 
-    def test_3d(self):
-        self._check(self.cube[0])
+    def test_3d_str(self):
+        self.assertString(str(self.cube[0]))
 
-    def test_2d(self):
-        self._check(self.cube[0, 0])
+    def test_3d_repr(self):
+        self.assertString(repr(self.cube[0]))
 
-    def test_1d(self):
-        self._check(self.cube[0, 0, 0])
+    def test_2d_str(self):
+        self.assertString(str(self.cube[0, 0]))
 
-    def test_0d(self):
-        self._check(self.cube[0, 0, 0, 0])
+    def test_2d_repr(self):
+        self.assertString(repr(self.cube[0, 0]))
+
+    def test_1d_str(self):
+        self.assertString(str(self.cube[0, 0, 0]))
+
+    def test_1d_repr(self):
+        self.assertString(repr(self.cube[0, 0, 0]))
+
+    def test_0d_str(self):
+        self.assertString(str(self.cube[0, 0, 0, 0]))
+
+    def test_0d_repr(self):
+        self.assertString(repr(self.cube[0, 0, 0, 0]))
 
 
 @tests.skip_data
