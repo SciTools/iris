@@ -97,7 +97,7 @@ master_doc = 'contents'
 project = u'Iris'
 # define the copyright information for latex builds. Note, for html builds,
 # the copyright exists directly inside "_templates/layout.html"
-copyright = u'British Crown Copyright 2010 - 2013, Met Office'
+copyright = u'British Crown Copyright 2010 - 2014, Met Office'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
