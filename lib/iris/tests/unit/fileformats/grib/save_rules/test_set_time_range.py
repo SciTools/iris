@@ -82,6 +82,20 @@ class Test(tests.IrisTest):
                                  'lengthOfTimeRange',
                                  (upper - lower) * 24)
 
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_fractional_hours(self, mock_set_long):
+        lower = 10.0
+        upper = 20.9
+        self.coord.bounds = [lower, upper]
+        with mock.patch('warnings.warn') as warn:
+            set_time_range(self.coord, mock.sentinel.grib)
+        warn.assert_called_once_with('Truncating floating point lengthOfTimeRange '
+                                     '10.9 to integer value 10')
+        mock_set_long.assert_any_call(mock.sentinel.grib,
+                                      'indicatorOfUnitForTimeRange', 1)
+        mock_set_long.assert_any_call(mock.sentinel.grib,
+                                      'lengthOfTimeRange', int(upper - lower))
+
 
 if __name__ == "__main__":
     tests.main()

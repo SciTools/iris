@@ -450,9 +450,16 @@ def set_time_range(time_coord, grib):
                                        calendar=time_coord.units.calendar)
     start_hours, end_hours = time_coord.units.convert(time_coord.bounds[0],
                                                       hours_since_units)
-    # Cast from np.float to Python float.
-    time_range_in_hours = float(end_hours - start_hours)
-    gribapi.grib_set(grib, "lengthOfTimeRange", time_range_in_hours)
+    # Cast from np.float to Python int. The lengthOfTimeRange key is a
+    # 4 byte integer so we cast to highlight truncation of any floating
+    # point value. The grib_api will do the cast from float to int, but it
+    # cannot handle numpy floats.
+    time_range_in_hours = end_hours - start_hours
+    integer_hours = int(time_range_in_hours)
+    if integer_hours != time_range_in_hours:
+        warnings.warn('Truncating floating point lengthOfTimeRange {} to integer '
+                      'value {}'.format(time_range_in_hours, integer_hours))
+    gribapi.grib_set(grib, "lengthOfTimeRange", integer_hours)
 
 
 def set_time_increment(cell_method, grib):
@@ -484,6 +491,14 @@ def set_time_increment(cell_method, grib):
             # Problem interpreting the interval string.
             inc = 0
             units_type = 255
+        else:
+            # Cast to int as timeIncrement key is a 4 byte integer.
+            integer_inc = int(inc)
+            if integer_inc != inc:
+                warnings.warn('Truncating floating point timeIncrement {} to '
+                              'integer value {}'.format(inc, integer_inc))
+            inc = integer_inc
+
     gribapi.grib_set(grib, "indicatorOfUnitForTimeIncrement", units_type)
     gribapi.grib_set(grib, "timeIncrement", inc)
 

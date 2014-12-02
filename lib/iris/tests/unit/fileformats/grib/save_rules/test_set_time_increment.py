@@ -82,6 +82,17 @@ class Test(tests.IrisTest):
                                  'indicatorOfUnitForTimeIncrement', 1)
         mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 25)
 
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_fractional_hours(self, mock_set):
+        cell_method = CellMethod('sum', 'time', '25.9 hours')
+        with mock.patch('warnings.warn') as warn:
+            set_time_increment(cell_method, mock.sentinel.grib)
+        warn.assert_called_once_with('Truncating floating point timeIncrement '
+                                     '25.9 to integer value 25')
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeIncrement', 1)
+        mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 25)
+
 
 if __name__ == "__main__":
     tests.main()

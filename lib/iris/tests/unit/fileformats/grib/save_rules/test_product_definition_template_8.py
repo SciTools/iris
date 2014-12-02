@@ -137,7 +137,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
     def test_default_calendar(self, mock_set):
         cube = self.cube
         # End bound is 1972-04-26 10:27:07.
-        coord = DimCoord(23.0, 'time', bounds=[0.0, 20314.452],
+        coord = DimCoord(23.0, 'time', bounds=[0.452, 20314.452],
                          units=Unit('hours since epoch'))
         cube.add_aux_coord(coord)
 
@@ -161,7 +161,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
     def test_360_day_calendar(self, mock_set):
         cube = self.cube
         # End bound is 1972-05-07 10:27:07
-        coord = DimCoord(23.0, 'time', bounds=[0.0, 20314.452],
+        coord = DimCoord(23.0, 'time', bounds=[0.452, 20314.452],
                          units=Unit('hours since epoch', calendar='360_day'))
         cube.add_aux_coord(coord)
 
