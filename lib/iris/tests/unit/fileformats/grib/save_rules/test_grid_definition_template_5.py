@@ -133,15 +133,16 @@ class Test(tests.IrisTest, GdtTestMixin):
         self.test_cube.rename('eastward_wind')
         grid_definition_template_5(self.test_cube, self.mock_grib)
         flags = self.mock_grib.keys['resolutionAndComponentFlags'] & 255
-        flags_expected = 0
+        flags_expected = 0b00000000
         self.assertEqual(flags, flags_expected)
 
     def test__grid_winds_orientation(self):
         self.test_cube.rename('x_wind')
         grid_definition_template_5(self.test_cube, self.mock_grib)
         flags = self.mock_grib.keys['resolutionAndComponentFlags'] & 255
-        flags_expected = 0b10000
+        flags_expected = 0b00001000
         self.assertEqual(flags, flags_expected)
+
 
 if __name__ == "__main__":
     tests.main()

@@ -38,30 +38,24 @@ from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
 
 
-def gribbability_check(cube):
-    "We always need the following things for grib saving."
+###############################################################################
+#
+# Constants
+#
+###############################################################################
 
-    # GeogCS exists?
-    cs0 = cube.coord(dimensions=[0]).coord_system
-    cs1 = cube.coord(dimensions=[1]).coord_system
-    if cs0 is None or cs1 is None:
-        raise iris.exceptions.TranslationError("CoordSystem not present")
-    if cs0 != cs1:
-        raise iris.exceptions.TranslationError("Inconsistent CoordSystems")
+# Reference Flag Table 3.3
+_RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT = 3  # NB "bit5", from MSB=1.
 
-    # Time period exists?
-    if not cube.coords("time"):
-        raise iris.exceptions.TranslationError("time coord not found")
+# Reference Regulation 92.1.6
+_DEFAULT_DEGREES_UNITS = 1.0e-6
 
-# Reference Code Table 3.3
-_RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT = 4  # NB "bit 5", as zero-based
 
 ###############################################################################
 #
 # Identification Section 1
 #
 ###############################################################################
-
 
 def centre(cube, grib):
     # TODO: read centre from cube
@@ -214,19 +208,19 @@ def latlon_points_irregular(cube, grib):
     component_flags = 0
     if is_grid_wind:
         component_flags |= 2 ** _RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT
-    gribapi.grib_set_long(grib, 'resolutionAndComponentFlags', component_flags)
+    gribapi.grib_set(grib, 'resolutionAndComponentFlags', component_flags)
 
     # Record the  X and Y coordinate values.
     # NOTE: there is currently a bug in the gribapi which means that the size
     # of the longitudes array does not equal 'Nj', as it should.
     # See : https://software.ecmwf.int/issues/browse/SUP-1096
     # So, this only works at present if the x and y dimensions are **equal**.
-    lon_values = np.array(np.round(x_coord.points * 1000000),
-                          dtype=np.int64)
-    gribapi.grib_set_long_array(grib, 'longitudes', lon_values)
-    lat_values = np.array(np.round(y_coord.points * 1000000),
-                          dtype=np.int64)
-    gribapi.grib_set_long_array(grib, 'latitudes', lat_values)
+    lon_values = x_coord.points / _DEFAULT_DEGREES_UNITS
+    lat_values = y_coord.points / _DEFAULT_DEGREES_UNITS
+    gribapi.grib_set_array(grib, 'longitudes',
+                           np.array(np.round(lon_values), dtype=np.int64))
+    gribapi.grib_set_array(grib, 'latitudes',
+                           np.array(np.round(lat_values), dtype=np.int64))
 
 
 def rotated_pole(cube, grib):
@@ -244,11 +238,12 @@ def rotated_pole(cube, grib):
 #                            float(cs.n_pole.longitude))
 #    gribapi.grib_set_double(grib, "angleOfRotationInDegrees", 0)
 # WORKAROUND
-    latitude = - int(cs.grid_north_pole_latitude*1000000)
-    longitude = int(((cs.grid_north_pole_longitude+180) % 360)*1000000)
-    gribapi.grib_set_long(grib, "latitudeOfSouthernPole", latitude)
-    gribapi.grib_set_long(grib, "longitudeOfSouthernPole", longitude)
-    gribapi.grib_set_long(grib, "angleOfRotation", 0)
+    latitude = cs.grid_north_pole_latitude / _DEFAULT_DEGREES_UNITS
+    longitude = (((cs.grid_north_pole_longitude + 180) % 360) /
+                 _DEFAULT_DEGREES_UNITS)
+    gribapi.grib_set(grib, "latitudeOfSouthernPole", - int(round(latitude)))
+    gribapi.grib_set(grib, "longitudeOfSouthernPole", int(round(longitude)))
+    gribapi.grib_set(grib, "angleOfRotation", 0)
 
 
 def grid_definition_template_0(cube, grib):
@@ -289,18 +284,24 @@ def grid_definition_template_1(cube, grib):
 
 
 def grid_definition_template_5(cube, grib):
-    # template 3.5
-    # Variable resolution, aka 'irregular'.
+    """
+    Set keys within the provided grib message based on
+    Grid Definition Template 3.5.
 
+    Template 3.5 is used to represent "variable resolution rotated
+    latitude/longitude".
+    The coordinates are irregularly spaced, rotated latitudes and longitudes.
+
+    """
     # NOTE: we must set Ni=Nj=1 before establishing the template.
     # Without this, setting "gridDefinitionTemplateNumber" = 5 causes an
     # immediate error.
     # See: https://software.ecmwf.int/issues/browse/SUP-1095
     # This is acceptable, as the subsequent call to 'latlon_grid_common' will
     # set these to the correct horizontal dimensions (by calling 'grid_dims').
-    gribapi.grib_set_long(grib, "Ni", 1)
-    gribapi.grib_set_long(grib, "Nj", 1)
-    gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 5)
+    gribapi.grib_set(grib, "Ni", 1)
+    gribapi.grib_set(grib, "Nj", 1)
+    gribapi.grib_set(grib, "gridDefinitionTemplateNumber", 5)
 
     # Record details of the rotated coordinate system.
     rotated_pole(cube, grib)
@@ -743,6 +744,22 @@ def data_section(cube, grib):
 
 
 ###############################################################################
+
+def gribbability_check(cube):
+    "We always need the following things for grib saving."
+
+    # GeogCS exists?
+    cs0 = cube.coord(dimensions=[0]).coord_system
+    cs1 = cube.coord(dimensions=[1]).coord_system
+    if cs0 is None or cs1 is None:
+        raise iris.exceptions.TranslationError("CoordSystem not present")
+    if cs0 != cs1:
+        raise iris.exceptions.TranslationError("Inconsistent CoordSystems")
+
+    # Time period exists?
+    if not cube.coords("time"):
+        raise iris.exceptions.TranslationError("time coord not found")
+
 
 def run(cube, grib):
     """

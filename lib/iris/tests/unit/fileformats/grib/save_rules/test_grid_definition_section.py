@@ -37,14 +37,6 @@ class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
         GdtTestMixin.setUp(self)
 
-        # Patch the target calls whose invocation we are mainly testing for.
-        self.mock_gdt0 = self.patch(self.TARGET_MODULE +
-                                    '.grid_definition_template_0')
-        self.mock_gdt1 = self.patch(self.TARGET_MODULE +
-                                    '.grid_definition_template_1')
-        self.mock_gdt5 = self.patch(self.TARGET_MODULE +
-                                    '.grid_definition_template_5')
-
     def test__fail_irregular_latlon(self):
         test_cube = self._make_test_cube(x_points=(1, 2, 11, 12),
                                          y_points=(4, 5, 6))
