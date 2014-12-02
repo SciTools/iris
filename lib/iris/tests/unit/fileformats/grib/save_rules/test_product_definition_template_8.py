@@ -38,7 +38,7 @@ from iris.fileformats.grib._save_rules import product_definition_template_8
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 
 
-class Test_typeOfStatisticalProcessing(tests.IrisTest):
+class TestTypeOfStatisticalProcessing(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -98,7 +98,7 @@ class Test_typeOfStatisticalProcessing(tests.IrisTest):
                 product_definition_template_8(cube, grib)
 
 
-class Test_TimeCoordPrerequisites(tests.IrisTest):
+class TestTimeCoordPrerequisites(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -142,6 +142,85 @@ class Test_TimeCoordPrerequisites(tests.IrisTest):
                     ValueError, 'Expected time coordinate with two bounds, '
                     'got 3 bounds'):
                 product_definition_template_8(self.cube, grib)
+
+
+class TestEndOfOverallTimeInterval(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+        # Rename cube to avoid warning about unknown discipline/parameter.
+        self.cube.rename('air_temperature')
+        cell_method = CellMethod(method='sum', coords=['time'])
+        self.cube.add_cell_method(cell_method)
+
+    def test_default_calendar(self):
+        cube = self.cube
+        # End bound is 1972-04-26 10:27:07.
+        coord = DimCoord(23.0, 'time', bounds=[0.0, 20314.452],
+                         units=Unit('hours since epoch'))
+        cube.add_aux_coord(coord)
+
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch(GRIB_API, mock_gribapi):
+            product_definition_template_8(cube, grib)
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "yearOfEndOfOverallTimeInterval", 1972))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "monthOfEndOfOverallTimeInterval", 4))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "dayOfEndOfOverallTimeInterval", 26))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "hourOfEndOfOverallTimeInterval", 10))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "minuteOfEndOfOverallTimeInterval", 27))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "secondOfEndOfOverallTimeInterval", 7))
+
+    def test_360_day_calendar(self):
+        cube = self.cube
+        # End bound is 1972-05-07 10:27:07
+        coord = DimCoord(23.0, 'time', bounds=[0.0, 20314.452],
+                         units=Unit('hours since epoch', calendar='360_day'))
+        cube.add_aux_coord(coord)
+
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch(GRIB_API, mock_gribapi):
+            product_definition_template_8(cube, grib)
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "yearOfEndOfOverallTimeInterval", 1972))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "monthOfEndOfOverallTimeInterval", 5))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "dayOfEndOfOverallTimeInterval", 7))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "hourOfEndOfOverallTimeInterval", 10))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "minuteOfEndOfOverallTimeInterval", 27))
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, "secondOfEndOfOverallTimeInterval", 7))
+
+
+class TestNumberOfTimeRange(tests.IrisTest):
+    def test_other_cell_methods(self):
+        cube = stock.lat_lon_cube()
+        # Rename cube to avoid warning about unknown discipline/parameter.
+        cube.rename('air_temperature')
+        coord = DimCoord(23, 'time', bounds=[0, 24],
+                         units=Unit('hours since epoch'))
+        cube.add_aux_coord(coord)
+        # Add one time cell method and another unrelated one.
+        cell_method = CellMethod(method='mean', coords=['elephants'])
+        cube.add_cell_method(cell_method)
+        cell_method = CellMethod(method='sum', coords=['time'])
+        cube.add_cell_method(cell_method)
+
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch(GRIB_API, mock_gribapi):
+            product_definition_template_8(cube, grib)
+        mock_gribapi.assert_has_calls(mock.call.grib_set_long(
+            grib, 'numberOfTimeRange', 1))
 
 
 if __name__ == "__main__":
