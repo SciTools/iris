@@ -255,13 +255,13 @@ def set_discipline_and_parameter(cube, grib):
     grib2_info = gptx.cf_phenom_to_grib2_info(cube.standard_name,
                                               cube.long_name)
     if grib2_info is not None:
-        gribapi.grib_set_long(grib, "discipline", grib2_info.discipline)
-        gribapi.grib_set_long(grib, "parameterCategory", grib2_info.category)
-        gribapi.grib_set_long(grib, "parameterNumber", grib2_info.number)
+        gribapi.grib_set(grib, "discipline", grib2_info.discipline)
+        gribapi.grib_set(grib, "parameterCategory", grib2_info.category)
+        gribapi.grib_set(grib, "parameterNumber", grib2_info.number)
     else:
-        gribapi.grib_set_long(grib, "discipline", 255)
-        gribapi.grib_set_long(grib, "parameterCategory", 255)
-        gribapi.grib_set_long(grib, "parameterNumber", 255)
+        gribapi.grib_set(grib, "discipline", 255)
+        gribapi.grib_set(grib, "parameterCategory", 255)
+        gribapi.grib_set(grib, "parameterNumber", 255)
         warnings.warn('Unable to determine Grib2 parameter code for cube.\n'
                       'discipline, parameterCategory and parameterNumber '
                       'have been set to "missing".')
@@ -349,8 +349,8 @@ def set_forecast_time(cube, grib):
     else:
         _, _, fp, grib_time_code = _missing_forecast_period(cube)
 
-    gribapi.grib_set_long(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
-    gribapi.grib_set_long(grib, "forecastTime", fp)
+    gribapi.grib_set(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
+    gribapi.grib_set(grib, "forecastTime", fp)
 
 
 def set_fixed_surfaces(cube, grib):
@@ -394,13 +394,13 @@ def set_fixed_surfaces(cube, grib):
         # NOTE: may *not* be truly correct, but seems to be common practice.
         # Still under investigation :
         # See https://github.com/SciTools/iris/issues/519
-        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", 1)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "typeOfFirstFixedSurface", 1)
+        gribapi.grib_set(grib, "scaleFactorOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "scaledValueOfFirstFixedSurface", 0)
         # Set secondary surface = 'missing'.
-        gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "typeOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "scaleFactorOfSecondFixedSurface", 255)
+        gribapi.grib_set(grib, "scaledValueOfSecondFixedSurface", -1)
     elif not v_coord.has_bounds():
         # No second surface
         output_v = v_coord.units.convert(v_coord.points[0], output_unit)
@@ -408,25 +408,25 @@ def set_fixed_surfaces(cube, grib):
             warnings.warn("Vertical level encoding problem: scaling required.")
         output_v = int(output_v)
 
-        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", output_v)
-        gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "typeOfFirstFixedSurface", grib_v_code)
+        gribapi.grib_set(grib, "scaleFactorOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "scaledValueOfFirstFixedSurface", output_v)
+        gribapi.grib_set(grib, "typeOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "scaleFactorOfSecondFixedSurface", 255)
+        gribapi.grib_set(grib, "scaledValueOfSecondFixedSurface", -1)
     else:
         # bounded : set lower+upper surfaces
         output_v = v_coord.units.convert(v_coord.bounds[0], output_unit)
         if output_v[0] - abs(output_v[0]) or output_v[1] - abs(output_v[1]):
             warnings.warn("Vertical level encoding problem: scaling required.")
-        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface",
-                              int(output_v[0]))
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface",
-                              int(output_v[1]))
+        gribapi.grib_set(grib, "typeOfFirstFixedSurface", grib_v_code)
+        gribapi.grib_set(grib, "typeOfSecondFixedSurface", grib_v_code)
+        gribapi.grib_set(grib, "scaleFactorOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "scaleFactorOfSecondFixedSurface", 0)
+        gribapi.grib_set(grib, "scaledValueOfFirstFixedSurface",
+                         int(output_v[0]))
+        gribapi.grib_set(grib, "scaledValueOfSecondFixedSurface",
+                         int(output_v[1]))
 
 
 def set_time_range(time_coord, grib):
@@ -444,15 +444,15 @@ def set_time_range(time_coord, grib):
         raise ValueError(msg.format(time_coord.nbounds))
 
     # Set type to hours and convert period to this unit.
-    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeRange",
-                          _TIME_RANGE_UNITS['hours'])
+    gribapi.grib_set(grib, "indicatorOfUnitForTimeRange",
+                     _TIME_RANGE_UNITS['hours'])
     hours_since_units = iris.unit.Unit('hours since epoch',
                                        calendar=time_coord.units.calendar)
     start_hours, end_hours = time_coord.units.convert(time_coord.bounds[0],
                                                       hours_since_units)
     # Cast from np.float to Python float.
     time_range_in_hours = float(end_hours - start_hours)
-    gribapi.grib_set_long(grib, "lengthOfTimeRange", time_range_in_hours)
+    gribapi.grib_set(grib, "lengthOfTimeRange", time_range_in_hours)
 
 
 def set_time_increment(cell_method, grib):
@@ -464,7 +464,7 @@ def set_time_increment(cell_method, grib):
     # Type of time increment, e.g incrementing forecast period, incrementing
     # forecast reference time, etc. Set to missing, but we could use the
     # cell method coord to infer a value (see code table 4.11).
-    gribapi.grib_set_long(grib, "typeOfTimeIncrement", 255)
+    gribapi.grib_set(grib, "typeOfTimeIncrement", 255)
 
     # Default values for the time increment value and units type.
     inc = 0
@@ -484,8 +484,8 @@ def set_time_increment(cell_method, grib):
             # Problem interpreting the interval string.
             inc = 0
             units_type = 255
-    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", units_type)
-    gribapi.grib_set_long(grib, "timeIncrement", inc)
+    gribapi.grib_set(grib, "indicatorOfUnitForTimeIncrement", units_type)
+    gribapi.grib_set(grib, "timeIncrement", inc)
 
 
 def _cube_is_time_statistic(cube):
@@ -530,9 +530,9 @@ def product_definition_template_common(cube, grib):
     set_discipline_and_parameter(cube, grib)
 
     # Various missing values.
-    gribapi.grib_set_long(grib, "typeOfGeneratingProcess", 255)
-    gribapi.grib_set_long(grib, "backgroundProcess", 255)
-    gribapi.grib_set_long(grib, "generatingProcessIdentifier", 255)
+    gribapi.grib_set(grib, "typeOfGeneratingProcess", 255)
+    gribapi.grib_set(grib, "backgroundProcess", 255)
+    gribapi.grib_set(grib, "generatingProcessIdentifier", 255)
 
     # Generic time handling.
     set_forecast_time(cube, grib)
@@ -563,7 +563,7 @@ def product_definition_template_8(cube, grib):
     interval.
 
     """
-    gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 8)
+    gribapi.grib_set(grib, "productDefinitionTemplateNumber", 8)
     product_definition_template_common(cube, grib)
 
     # Check for time coordinate.
@@ -599,22 +599,22 @@ def product_definition_template_8(cube, grib):
 
     # Set the associated keys for the end of the interval (octets 35-41
     # in section 4).
-    gribapi.grib_set_long(grib, "yearOfEndOfOverallTimeInterval", end.year)
-    gribapi.grib_set_long(grib, "monthOfEndOfOverallTimeInterval", end.month)
-    gribapi.grib_set_long(grib, "dayOfEndOfOverallTimeInterval", end.day)
-    gribapi.grib_set_long(grib, "hourOfEndOfOverallTimeInterval", end.hour)
-    gribapi.grib_set_long(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
-    gribapi.grib_set_long(grib, "secondOfEndOfOverallTimeInterval", end.second)
+    gribapi.grib_set(grib, "yearOfEndOfOverallTimeInterval", end.year)
+    gribapi.grib_set(grib, "monthOfEndOfOverallTimeInterval", end.month)
+    gribapi.grib_set(grib, "dayOfEndOfOverallTimeInterval", end.day)
+    gribapi.grib_set(grib, "hourOfEndOfOverallTimeInterval", end.hour)
+    gribapi.grib_set(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
+    gribapi.grib_set(grib, "secondOfEndOfOverallTimeInterval", end.second)
 
     # Only one time range specification. If there were a series of aggregations
     # (e.g. the mean of an accumulation) one might set this to a higher value,
     # but we currently only handle a single time related cell method.
-    gribapi.grib_set_long(grib, "numberOfTimeRange", 1)
-    gribapi.grib_set_long(grib, "numberOfMissingInStatisticalProcess", 0)
+    gribapi.grib_set(grib, "numberOfTimeRange", 1)
+    gribapi.grib_set(grib, "numberOfMissingInStatisticalProcess", 0)
 
     # Type of statistical process (see code table 4.10)
     statistic_type = _STATISTIC_TYPE_NAMES.get(cell_method.method, 255)
-    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", statistic_type)
+    gribapi.grib_set(grib, "typeOfStatisticalProcessing", statistic_type)
 
     # Period over which statistical processing is performed.
     set_time_range(time_coord, grib)

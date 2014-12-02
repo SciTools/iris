@@ -34,53 +34,53 @@ from iris.fileformats.grib._save_rules import set_time_increment
 
 
 class Test(tests.IrisTest):
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_no_intervals(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_no_intervals(self, mock_set):
         cell_method = CellMethod('sum', 'time')
         set_time_increment(cell_method, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeIncrement', 255)
-        mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 0)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeIncrement', 255)
+        mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 0)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_area(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_area(self, mock_set):
         cell_method = CellMethod('sum', 'area', '25 km')
         set_time_increment(cell_method, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeIncrement', 255)
-        mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 0)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeIncrement', 255)
+        mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 0)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_multiple_intervals(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_multiple_intervals(self, mock_set):
         cell_method = CellMethod('sum', 'time', ('1 hour', '24 hour'))
         set_time_increment(cell_method, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeIncrement', 255)
-        mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 0)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeIncrement', 255)
+        mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 0)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_hr(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_hr(self, mock_set):
         cell_method = CellMethod('sum', 'time', '23 hr')
         set_time_increment(cell_method, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeIncrement', 1)
-        mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 23)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeIncrement', 1)
+        mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 23)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_hour(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_hour(self, mock_set):
         cell_method = CellMethod('sum', 'time', '24 hour')
         set_time_increment(cell_method, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeIncrement', 1)
-        mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 24)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeIncrement', 1)
+        mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 24)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_hours(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_hours(self, mock_set):
         cell_method = CellMethod('sum', 'time', '25 hours')
         set_time_increment(cell_method, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeIncrement', 1)
-        mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 25)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeIncrement', 1)
+        mock_set.assert_any_call(mock.sentinel.grib, 'timeIncrement', 25)
 
 
 if __name__ == "__main__":

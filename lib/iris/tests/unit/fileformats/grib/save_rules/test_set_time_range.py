@@ -58,29 +58,29 @@ class Test(tests.IrisTest):
                                      'coordinate, got 2 points'):
             set_time_range(coord, mock.sentinel.grib)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_hours(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_hours(self, mock_set):
         lower = 10
         upper = 20
         self.coord.bounds = [lower, upper]
         set_time_range(self.coord, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeRange', 1)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'lengthOfTimeRange', upper - lower)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeRange', 1)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'lengthOfTimeRange', upper - lower)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_days(self, mock_set_long):
+    @mock.patch.object(gribapi, 'grib_set')
+    def test_days(self, mock_set):
         lower = 4
         upper = 6
         self.coord.bounds = [lower, upper]
         self.coord.units = Unit('days since epoch', calendar='standard')
         set_time_range(self.coord, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeRange', 1)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'lengthOfTimeRange',
-                                      (upper - lower) * 24)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'indicatorOfUnitForTimeRange', 1)
+        mock_set.assert_any_call(mock.sentinel.grib,
+                                 'lengthOfTimeRange',
+                                 (upper - lower) * 24)
 
 
 if __name__ == "__main__":

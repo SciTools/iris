@@ -44,7 +44,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
                          units=Unit('days since epoch', calendar='standard'))
         self.cube.add_aux_coord(coord)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_sum(self, mock_set):
         cube = self.cube
         cell_method = CellMethod(method='sum', coords=['time'])
@@ -54,7 +54,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
         mock_set.assert_any_call(mock.sentinel.grib,
                                  "typeOfStatisticalProcessing", 1)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_unrecognised(self, mock_set):
         cube = self.cube
         cell_method = CellMethod(method='95th percentile', coords=['time'])
@@ -64,7 +64,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
         mock_set.assert_any_call(mock.sentinel.grib,
                                  "typeOfStatisticalProcessing", 255)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_multiple_cell_method_coords(self, mock_set):
         cube = self.cube
         cell_method = CellMethod(method='sum',
@@ -74,7 +74,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
                                      'Cannot handle multiple coordinate name'):
             product_definition_template_8(cube, mock.sentinel.grib)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_cell_method_coord_name_fail(self, mock_set):
         cube = self.cube
         cell_method = CellMethod(method='mean', coords=['season'])
@@ -91,7 +91,7 @@ class TestTimeCoordPrerequisites(tests.IrisTest):
         # Rename cube to avoid warning about unknown discipline/parameter.
         self.cube.rename('air_temperature')
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_multiple_points(self, mock_set):
         # Add time coord with multiple points.
         coord = DimCoord([23, 24, 25], 'time',
@@ -102,7 +102,7 @@ class TestTimeCoordPrerequisites(tests.IrisTest):
                 ValueError, 'Expected length one time coordinate'):
             product_definition_template_8(self.cube, mock.sentinel.grib)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_no_bounds(self, mock_set):
         # Add time coord with no bounds.
         coord = DimCoord(23, 'time',
@@ -113,7 +113,7 @@ class TestTimeCoordPrerequisites(tests.IrisTest):
                 'got 0 bounds'):
             product_definition_template_8(self.cube, mock.sentinel.grib)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_more_than_two_bounds(self, mock_set):
         # Add time coord with more than two bounds.
         coord = DimCoord(23, 'time', bounds=[21, 22, 23],
@@ -133,7 +133,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
         cell_method = CellMethod(method='sum', coords=['time'])
         self.cube.add_cell_method(cell_method)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_default_calendar(self, mock_set):
         cube = self.cube
         # End bound is 1972-04-26 10:27:07.
@@ -157,7 +157,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
         mock_set.assert_any_call(
             grib, "secondOfEndOfOverallTimeInterval", 7)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_360_day_calendar(self, mock_set):
         cube = self.cube
         # End bound is 1972-05-07 10:27:07
@@ -183,7 +183,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
 
 
 class TestNumberOfTimeRange(tests.IrisTest):
-    @mock.patch.object(gribapi, 'grib_set_long')
+    @mock.patch.object(gribapi, 'grib_set')
     def test_other_cell_methods(self, mock_set):
         cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
