@@ -38,11 +38,8 @@ class TestGeoTiffExport(tests.IrisTest):
                                 if not isinstance(val, unicode)
                                 else "(%s, '%s')" % (tag, val)
                                 for tag, val in sorted(im.tag.items()))
-
         reference_path = tests.get_result_path(reference_filename)
-
-        self._check_same(tiff_header, reference_path, reference_filename,
-                         type_comparison_name='Tiff header')
+        self.assertString(tiff_header, reference_path)
 
     def check_tiff(self, cube, tif_header):
         import iris.experimental.raster
