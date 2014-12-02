@@ -17,3 +17,19 @@
 """Unit tests for the :mod:`iris.fileformats.grib._load_convert` package."""
 
 from __future__ import (absolute_import, division, print_function)
+
+from collections import OrderedDict
+
+
+def empty_metadata():
+    metadata = OrderedDict()
+    metadata['factories'] = []
+    metadata['references'] = []
+    metadata['standard_name'] = None
+    metadata['long_name'] = None
+    metadata['units'] = None
+    metadata['attributes'] = {}
+    metadata['cell_methods'] = []
+    metadata['dim_coords_and_dims'] = []
+    metadata['aux_coords_and_dims'] = []
+    return metadata

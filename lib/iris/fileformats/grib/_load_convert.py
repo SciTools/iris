@@ -644,6 +644,72 @@ def grid_definition_template_5(section, metadata):
                                      'grid_latitude', 'grid_longitude', cs)
 
 
+def grid_definition_template_12(section, metadata):
+    """
+    Translate template representing transverse Mercator.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    major, minor, radius = ellipsoid_geometry(section)
+    geog_cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
+
+    lat = section['latitudeOfReferencePoint'] * _GRID_ACCURACY_IN_DEGREES
+    lon = section['longitudeOfReferencePoint'] * _GRID_ACCURACY_IN_DEGREES
+    scale = section['scaleFactorAtReferencePoint']
+    CM_TO_M = 0.01
+    easting = section['XR'] * CM_TO_M
+    northing = section['YR'] * CM_TO_M
+    cs = icoord_systems.TransverseMercator(lat, lon, easting, northing,
+                                           scale, geog_cs)
+
+    # Rather unhelpfully this grid definition template seems to be
+    # overspecified, and thus open to inconsistency.
+    last_x = section['x1'] + (section['Ni'] - 1) * section['Di']
+    last_y = section['y1'] + (section['Nj'] - 1) * section['Dj']
+    if (last_x != section['x2'] or last_y != section['y2']):
+        raise TranslationError('Inconsistent grid definition')
+
+    x1 = section['x1'] * CM_TO_M
+    dx = section['Di'] * CM_TO_M
+    x_points = x1 + np.arange(section['Ni']) * dx
+    y1 = section['y1'] * CM_TO_M
+    dy = section['Dj'] * CM_TO_M
+    y_points = y1 + np.arange(section['Nj']) * dy
+
+    # This has only been tested with +x/+y scanning, so raise an error
+    # for other permutations.
+    scan = scanning_mode(section['scanningMode'])
+    if scan.i_negative:
+        raise TranslationError('Unsupported -x scanning')
+    if not scan.j_positive:
+        raise TranslationError('Unsupported -y scanning')
+
+    # Create the X and Y coordinates.
+    y_coord = DimCoord(y_points, 'projection_y_coordinate', units='m',
+                       coord_system=cs)
+    x_coord = DimCoord(x_points, 'projection_x_coordinate', units='m',
+                       coord_system=cs)
+
+    # Determine the lat/lon dimensions.
+    y_dim, x_dim = 0, 1
+    scan = scanning_mode(section['scanningMode'])
+    if scan.j_consecutive:
+        y_dim, x_dim = 1, 0
+
+    # Add the X and Y coordinates to the metadata dim coords.
+    metadata['dim_coords_and_dims'].append((y_coord, y_dim))
+    metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
 def grid_definition_template_90(section, metadata):
     """
     Translate template representing space view.
@@ -792,6 +858,9 @@ def grid_definition_section(section, metadata):
     elif template == 5:
         # Process variable resolution rotated latitude/longitude.
         grid_definition_template_5(section, metadata)
+    elif template == 12:
+        # Process transverse Mercator.
+        grid_definition_template_12(section, metadata)
     elif template == 90:
         # Process space view.
         grid_definition_template_90(section, metadata)
