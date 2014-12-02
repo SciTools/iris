@@ -41,6 +41,8 @@ GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 class Test_typeOfStatisticalProcessing(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
+        # Rename cube to avoid warning about unknown discipline/parameter.
+        self.cube.rename('air_temperature')
         coord = DimCoord(23, 'time', bounds=[0, 100],
                          units=Unit('days since epoch', calendar='standard'))
         self.cube.add_aux_coord(coord)
@@ -94,6 +96,52 @@ class Test_typeOfStatisticalProcessing(tests.IrisTest):
                     ValueError, "Expected a cell method with a coordinate "
                     "name of 'time'"):
                 product_definition_template_8(cube, grib)
+
+
+class Test_TimeCoordPrerequisites(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+        # Rename cube to avoid warning about unknown discipline/parameter.
+        self.cube.rename('air_temperature')
+
+    def test_multiple_points(self):
+        # Add time coord with multiple points.
+        coord = DimCoord([23, 24, 25], 'time',
+                         bounds=[[22, 23], [23, 24], [24, 25]],
+                         units=Unit('days since epoch', calendar='standard'))
+        self.cube.add_aux_coord(coord, 0)
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch(GRIB_API, mock_gribapi):
+            with self.assertRaisesRegexp(
+                    ValueError, 'Expected length one time coordinate'):
+                product_definition_template_8(self.cube, grib)
+
+    def test_no_bounds(self):
+        # Add time coord with no bounds.
+        coord = DimCoord(23, 'time',
+                         units=Unit('days since epoch', calendar='standard'))
+        self.cube.add_aux_coord(coord)
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch(GRIB_API, mock_gribapi):
+            with self.assertRaisesRegexp(
+                    ValueError, 'Expected time coordinate with two bounds, '
+                    'got 0 bounds'):
+                product_definition_template_8(self.cube, grib)
+
+    def test_more_than_two_bounds(self):
+        # Add time coord with more than two bounds.
+        coord = DimCoord(23, 'time', bounds=[21, 22, 23],
+                         units=Unit('days since epoch', calendar='standard'))
+        self.cube.add_aux_coord(coord)
+        grib = mock.Mock()
+        mock_gribapi = mock.Mock(spec=gribapi)
+        with mock.patch(GRIB_API, mock_gribapi):
+            with self.assertRaisesRegexp(
+                    ValueError, 'Expected time coordinate with two bounds, '
+                    'got 3 bounds'):
+                product_definition_template_8(self.cube, grib)
 
 
 if __name__ == "__main__":

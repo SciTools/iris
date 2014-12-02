@@ -82,14 +82,6 @@ class Test(tests.IrisTest):
                                       'indicatorOfUnitForTimeIncrement', 1)
         mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 25)
 
-    @mock.patch.object(gribapi, 'grib_set_long')
-    def test_area(self, mock_set_long):
-        cell_method = CellMethod('sum', 'area', '25 km')
-        set_time_increment(cell_method, mock.sentinel.grib)
-        mock_set_long.assert_any_call(mock.sentinel.grib,
-                                      'indicatorOfUnitForTimeIncrement', 255)
-        mock_set_long.assert_any_call(mock.sentinel.grib, 'timeIncrement', 0)
-
 
 if __name__ == "__main__":
     tests.main()
