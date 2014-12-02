@@ -457,8 +457,9 @@ def set_time_range(time_coord, grib):
     time_range_in_hours = end_hours - start_hours
     integer_hours = int(time_range_in_hours)
     if integer_hours != time_range_in_hours:
-        warnings.warn('Truncating floating point lengthOfTimeRange {} to integer '
-                      'value {}'.format(time_range_in_hours, integer_hours))
+        msg = 'Truncating floating point lengthOfTimeRange {} to ' \
+              'integer value {}'
+        warnings.warn(msg.format(time_range_in_hours, integer_hours))
     gribapi.grib_set(grib, "lengthOfTimeRange", integer_hours)
 
 
