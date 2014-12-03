@@ -214,6 +214,25 @@ def _hindcast_fix(forecast_time):
     return forecast_time
 
 
+def fixup_float32_from_int32(value):
+    """
+    Workaround for use when reading an IEEE 32-bit floating-point value
+    which the ECMWF GRIB API has erroneously treated as a 4-byte signed
+    integer.
+
+    """
+    # Convert from two's complement to sign-and-magnitude.
+    # NB. The bit patterns 0x00000000 and 0x80000000 will both be
+    # returned by the ECMWF GRIB API as an integer 0. Because they
+    # correspond to positive and negative zero respectively it is safe
+    # to treat an integer 0 as a positive zero.
+    if value < 0:
+        value = 0x80000000 - value
+    value_as_uint32 = np.array(value, dtype='u4')
+    value_as_float32 = value_as_uint32.view(dtype='f4')
+    return float(value_as_float32)
+
+
 ###############################################################################
 #
 # Identification Section 1
@@ -665,6 +684,10 @@ def grid_definition_template_12(section, metadata):
     lat = section['latitudeOfReferencePoint'] * _GRID_ACCURACY_IN_DEGREES
     lon = section['longitudeOfReferencePoint'] * _GRID_ACCURACY_IN_DEGREES
     scale = section['scaleFactorAtReferencePoint']
+    # Catch bug in ECMWF GRIB API (present at 1.12.1) where the scale
+    # is treated as a signed, 4-byte integer.
+    if isinstance(scale, int):
+        scale = fixup_float32_from_int32(scale)
     CM_TO_M = 0.01
     easting = section['XR'] * CM_TO_M
     northing = section['YR'] * CM_TO_M

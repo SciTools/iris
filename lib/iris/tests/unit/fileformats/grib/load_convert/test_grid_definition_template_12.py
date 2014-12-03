@@ -137,6 +137,17 @@ class Test(tests.IrisTest):
                                      'grid'):
             grid_definition_template_12(section, metadata)
 
+    def test_scale_workaround(self):
+        section = self.section_3()
+        section['scaleFactorAtReferencePoint'] = 1065346526
+        metadata = empty_metadata()
+        grid_definition_template_12(section, metadata)
+        expected = self.expected(0, 1)
+        # A float32 can't hold exactly the same value.
+        cs = expected['dim_coords_and_dims'][0][0].coord_system
+        cs.scale_factor_at_central_meridian = 0.9996012449264526
+        self.assertEqual(metadata, expected)
+
 
 if __name__ == '__main__':
     tests.main()
