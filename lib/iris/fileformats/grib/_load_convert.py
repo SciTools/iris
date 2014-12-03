@@ -104,8 +104,10 @@ _BITMAP_CODE_NONE = 255
 # Reference Code Table 4.10.
 _STATISTIC_TYPE_NAMES = {
     0: 'mean',
+    1: 'sum',
     2: 'maximum',
-    3: 'minimum'
+    3: 'minimum',
+    6: 'standard_deviation'
 }
 
 # Reference Code Table 4.11.
@@ -1235,10 +1237,11 @@ def statistical_cell_method(section):
 
     # Decode the type of time increment.
     increment_typecode = section['typeOfTimeIncrement']
-    if increment_typecode != 2:
+    if increment_typecode not in (2, 255):
         # NOTE: All our current test data seems to contain the value 2, which
         # is all we currently support.
-        # The exact interpretation of this is still unclear.
+        # The exact interpretation of this is still unclear so we also accept
+        # a missing value.
         msg = ('grib statistic time-increment type [{}] '
                'is not supported.'.format(increment_typecode))
         raise TranslationError(msg)

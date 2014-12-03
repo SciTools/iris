@@ -17,9 +17,10 @@
 """
 Grib save implementation.
 
-This module replaces the deprecated :mod:`iris.fileformats.grib_save_rules'.
-It is a private module with no public API.
-It is invoked from :meth:`iris.fileformats.grib.save_grib2`.
+This module replaces the deprecated
+:mod:`iris.fileformats.grib.grib_save_rules`. It is a private module
+with no public API. It is invoked from
+:meth:`iris.fileformats.grib.save_grib2`.
 
 """
 
@@ -36,6 +37,13 @@ import iris.exceptions
 import iris.unit
 from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
+from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
+                                                 _TIME_RANGE_UNITS)
+
+# Invert code tables from :mod:`iris.fileformats.grib._load_convert`.
+_STATISTIC_TYPE_NAMES = {val: key for key, val in
+                         _STATISTIC_TYPE_NAMES.items()}
+_TIME_RANGE_UNITS = {val: key for key, val in _TIME_RANGE_UNITS.items()}
 
 
 ###############################################################################
@@ -354,13 +362,13 @@ def set_discipline_and_parameter(cube, grib):
     grib2_info = gptx.cf_phenom_to_grib2_info(cube.standard_name,
                                               cube.long_name)
     if grib2_info is not None:
-        gribapi.grib_set_long(grib, "discipline", grib2_info.discipline)
-        gribapi.grib_set_long(grib, "parameterCategory", grib2_info.category)
-        gribapi.grib_set_long(grib, "parameterNumber", grib2_info.number)
+        gribapi.grib_set(grib, "discipline", grib2_info.discipline)
+        gribapi.grib_set(grib, "parameterCategory", grib2_info.category)
+        gribapi.grib_set(grib, "parameterNumber", grib2_info.number)
     else:
-        gribapi.grib_set_long(grib, "discipline", 255)
-        gribapi.grib_set_long(grib, "parameterCategory", 255)
-        gribapi.grib_set_long(grib, "parameterNumber", 255)
+        gribapi.grib_set(grib, "discipline", 255)
+        gribapi.grib_set(grib, "parameterCategory", 255)
+        gribapi.grib_set(grib, "parameterNumber", 255)
         warnings.warn('Unable to determine Grib2 parameter code for cube.\n'
                       'discipline, parameterCategory and parameterNumber '
                       'have been set to "missing".')
@@ -421,9 +429,6 @@ def _missing_forecast_period(cube):
     # We have no way of knowing the CF forecast reference time.
     # Set GRIB reference time to "verifying time of forecast",
     # and the forecast period to 0h.
-    warnings.warn('No CF forecast_period. Setting reference time to mean '
-                  '"verifying time of forecast", "forecast time" = 0h')
-
     t_coord = cube.coord("time")
     t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
     rt = t_coord.units.num2date(t)
@@ -436,7 +441,11 @@ def _missing_forecast_period(cube):
 
 
 def set_forecast_time(cube, grib):
-    """Grib encoding of forecast_period."""
+    """
+    Set the forecast time keys based on the forecast_period coordinate. In
+    the absence of a forecast_period, the forecast time is set to zero.
+
+    """
     try:
         fp_coord = cube.coord("forecast_period")
     except iris.exceptions.CoordinateNotFoundError:
@@ -447,8 +456,8 @@ def set_forecast_time(cube, grib):
     else:
         _, _, fp, grib_time_code = _missing_forecast_period(cube)
 
-    gribapi.grib_set_long(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
-    gribapi.grib_set_long(grib, "forecastTime", fp)
+    gribapi.grib_set(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
+    gribapi.grib_set(grib, "forecastTime", fp)
 
 
 def set_fixed_surfaces(cube, grib):
@@ -492,13 +501,13 @@ def set_fixed_surfaces(cube, grib):
         # NOTE: may *not* be truly correct, but seems to be common practice.
         # Still under investigation :
         # See https://github.com/SciTools/iris/issues/519
-        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", 1)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "typeOfFirstFixedSurface", 1)
+        gribapi.grib_set(grib, "scaleFactorOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "scaledValueOfFirstFixedSurface", 0)
         # Set secondary surface = 'missing'.
-        gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "typeOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "scaleFactorOfSecondFixedSurface", 255)
+        gribapi.grib_set(grib, "scaledValueOfSecondFixedSurface", -1)
     elif not v_coord.has_bounds():
         # No second surface
         output_v = v_coord.units.convert(v_coord.points[0], output_unit)
@@ -506,87 +515,100 @@ def set_fixed_surfaces(cube, grib):
             warnings.warn("Vertical level encoding problem: scaling required.")
         output_v = int(output_v)
 
-        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", output_v)
-        gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "typeOfFirstFixedSurface", grib_v_code)
+        gribapi.grib_set(grib, "scaleFactorOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "scaledValueOfFirstFixedSurface", output_v)
+        gribapi.grib_set(grib, "typeOfSecondFixedSurface", -1)
+        gribapi.grib_set(grib, "scaleFactorOfSecondFixedSurface", 255)
+        gribapi.grib_set(grib, "scaledValueOfSecondFixedSurface", -1)
     else:
         # bounded : set lower+upper surfaces
         output_v = v_coord.units.convert(v_coord.bounds[0], output_unit)
         if output_v[0] - abs(output_v[0]) or output_v[1] - abs(output_v[1]):
             warnings.warn("Vertical level encoding problem: scaling required.")
-        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface",
-                              int(output_v[0]))
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface",
-                              int(output_v[1]))
+        gribapi.grib_set(grib, "typeOfFirstFixedSurface", grib_v_code)
+        gribapi.grib_set(grib, "typeOfSecondFixedSurface", grib_v_code)
+        gribapi.grib_set(grib, "scaleFactorOfFirstFixedSurface", 0)
+        gribapi.grib_set(grib, "scaleFactorOfSecondFixedSurface", 0)
+        gribapi.grib_set(grib, "scaledValueOfFirstFixedSurface",
+                         int(output_v[0]))
+        gribapi.grib_set(grib, "scaledValueOfSecondFixedSurface",
+                         int(output_v[1]))
 
 
-def type_of_statistical_processing(cube, grib, coord):
-    """Search for processing over the given coord."""
-    # if the last cell method applies only to the given coord...
-    cell_method = cube.cell_methods[-1]
-    coord_names = cell_method.coord_names
-    if len(coord_names) != 1:
-        raise ValueError('There are multiple coord names referenced by '
-                         'the primary cell method: {!r}. Multiple coordinate '
-                         'names are not supported.'.format(coord_names))
-    if coord_names[0] != coord.name():
-        raise ValueError('The coord name referenced by the primary cell method'
-                         ', {!r},  is not the expected coord name {!r}.'
-                         ''.format(coord_names[0], coord.name()))
-    stat_codes = {'mean': 0, 'sum': 1, 'maximum': 2, 'minimum': 3,
-                  'standard_deviation': 6}
-    # 255 is the code in template 4.8 for 'unknown' statistical method
-    stat_code = stat_codes.get(cell_method.method, 255)
-    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", stat_code)
-
-
-def time_processing_period(cube, grib):
+def set_time_range(time_coord, grib):
     """
-    For template 4.8 (time mean, time max, etc).
-
-    The time range is taken from the 'time' coordinate bounds.
-    If the cell-method coordinate is not 'time' itself, the type of statistic
-    will not be derived and the save process will be aborted.
+    Set the time range keys in the specified message
+    based on the bounds of the provided time coordinate.
 
     """
-    # We could probably split this function up a bit
+    if len(time_coord.points) != 1:
+        msg = 'Expected length one time coordinate, got {} points'
+        raise ValueError(msg.format(len(time_coord.points)))
 
-    # Can safely assume bounded pt.
-    pt_coord = cube.coord("time")
-    end = iris.unit.num2date(pt_coord.bounds[0, 1], pt_coord.units.name,
-                             pt_coord.units.calendar)
+    if time_coord.nbounds != 2:
+        msg = 'Expected time coordinate with two bounds, got {} bounds'
+        raise ValueError(msg.format(time_coord.nbounds))
 
-    gribapi.grib_set_long(grib, "yearOfEndOfOverallTimeInterval", end.year)
-    gribapi.grib_set_long(grib, "monthOfEndOfOverallTimeInterval", end.month)
-    gribapi.grib_set_long(grib, "dayOfEndOfOverallTimeInterval", end.day)
-    gribapi.grib_set_long(grib, "hourOfEndOfOverallTimeInterval", end.hour)
-    gribapi.grib_set_long(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
-    gribapi.grib_set_long(grib, "secondOfEndOfOverallTimeInterval", end.second)
+    # Set type to hours and convert period to this unit.
+    gribapi.grib_set(grib, "indicatorOfUnitForTimeRange",
+                     _TIME_RANGE_UNITS['hours'])
+    hours_since_units = iris.unit.Unit('hours since epoch',
+                                       calendar=time_coord.units.calendar)
+    start_hours, end_hours = time_coord.units.convert(time_coord.bounds[0],
+                                                      hours_since_units)
+    # Cast from np.float to Python int. The lengthOfTimeRange key is a
+    # 4 byte integer so we cast to highlight truncation of any floating
+    # point value. The grib_api will do the cast from float to int, but it
+    # cannot handle numpy floats.
+    time_range_in_hours = end_hours - start_hours
+    integer_hours = int(time_range_in_hours)
+    if integer_hours != time_range_in_hours:
+        msg = 'Truncating floating point lengthOfTimeRange {} to ' \
+              'integer value {}'
+        warnings.warn(msg.format(time_range_in_hours, integer_hours))
+    gribapi.grib_set(grib, "lengthOfTimeRange", integer_hours)
 
-    gribapi.grib_set_long(grib, "numberOfTimeRange", 1)
-    gribapi.grib_set_long(grib, "numberOfMissingInStatisticalProcess", 0)
 
-    type_of_statistical_processing(cube, grib, pt_coord)
+def set_time_increment(cell_method, grib):
+    """
+    Set the time increment keys in the specified message
+    based on the provided cell method.
 
-    # Type of time increment, e.g incrementing fp, incrementing ref
-    # time, etc. (code table 4.11)
-    gribapi.grib_set_long(grib, "typeOfTimeIncrement", 255)
-    # time unit for period over which statistical processing is done (hours)
-    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeRange", 1)
-    # period over which statistical processing is done
-    gribapi.grib_set_long(grib, "lengthOfTimeRange",
-                          float(pt_coord.bounds[0, 1] - pt_coord.bounds[0, 0]))
-    # time unit between successive source fields (not setting this at present)
-    gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)
-    # between successive source fields (just set to 0 for now)
-    gribapi.grib_set_long(grib, "timeIncrement", 0)
+    """
+    # Type of time increment, e.g incrementing forecast period, incrementing
+    # forecast reference time, etc. Set to missing, but we could use the
+    # cell method coord to infer a value (see code table 4.11).
+    gribapi.grib_set(grib, "typeOfTimeIncrement", 255)
+
+    # Default values for the time increment value and units type.
+    inc = 0
+    units_type = 255
+    # Attempt to determine time increment from cell method intervals string.
+    intervals = cell_method.intervals
+    if intervals is not None and len(intervals) == 1:
+        interval, = intervals
+        try:
+            inc, units = interval.split()
+            inc = float(inc)
+            if units in ('hr', 'hour', 'hours'):
+                units_type = _TIME_RANGE_UNITS['hours']
+            else:
+                raise ValueError('Unable to parse units of interval')
+        except ValueError:
+            # Problem interpreting the interval string.
+            inc = 0
+            units_type = 255
+        else:
+            # Cast to int as timeIncrement key is a 4 byte integer.
+            integer_inc = int(inc)
+            if integer_inc != inc:
+                warnings.warn('Truncating floating point timeIncrement {} to '
+                              'integer value {}'.format(inc, integer_inc))
+            inc = integer_inc
+
+    gribapi.grib_set(grib, "indicatorOfUnitForTimeIncrement", units_type)
+    gribapi.grib_set(grib, "timeIncrement", inc)
 
 
 def _cube_is_time_statistic(cube):
@@ -631,9 +653,9 @@ def product_definition_template_common(cube, grib):
     set_discipline_and_parameter(cube, grib)
 
     # Various missing values.
-    gribapi.grib_set_long(grib, "typeOfGeneratingProcess", 255)
-    gribapi.grib_set_long(grib, "backgroundProcess", 255)
-    gribapi.grib_set_long(grib, "generatingProcessIdentifier", 255)
+    gribapi.grib_set(grib, "typeOfGeneratingProcess", 255)
+    gribapi.grib_set(grib, "backgroundProcess", 255)
+    gribapi.grib_set(grib, "generatingProcessIdentifier", 255)
 
     # Generic time handling.
     set_forecast_time(cube, grib)
@@ -664,14 +686,64 @@ def product_definition_template_8(cube, grib):
     interval.
 
     """
-    gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 8)
+    gribapi.grib_set(grib, "productDefinitionTemplateNumber", 8)
     product_definition_template_common(cube, grib)
-    try:
-        time_processing_period(cube, grib)
-    except ValueError as e:
-        raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
-                         ' for saving as a time processed statistic GRIB'
-                         ' message. {}'.format(e))
+
+    # Check for time coordinate.
+    time_coord = cube.coord('time')
+
+    if len(time_coord.points) != 1:
+        msg = 'Expected length one time coordinate, got {} points'
+        raise ValueError(msg.format(time_coord.points))
+
+    if time_coord.nbounds != 2:
+        msg = 'Expected time coordinate with two bounds, got {} bounds'
+        raise ValueError(msg.format(time_coord.nbounds))
+
+    # Check that there is one and only one cell method related to the
+    # time coord.
+    time_cell_methods = [cell_method for cell_method in cube.cell_methods if
+                         'time' in cell_method.coord_names]
+    if not time_cell_methods:
+        raise ValueError("Expected a cell method with a coordinate name "
+                         "of 'time'")
+    if len(time_cell_methods) > 1:
+        raise ValueError("Cannot handle multiple 'time' cell methods")
+    cell_method, = time_cell_methods
+
+    if len(cell_method.coord_names) > 1:
+        raise ValueError("Cannot handle multiple coordinate names in "
+                         "the time related cell method. Expected ('time',), "
+                         "got {!r}".format(cell_method.coord_names))
+
+    # Extract the datetime-like object corresponding to the end of
+    # the overall processing interval.
+    end = time_coord.units.num2date(time_coord.bounds[0, -1])
+
+    # Set the associated keys for the end of the interval (octets 35-41
+    # in section 4).
+    gribapi.grib_set(grib, "yearOfEndOfOverallTimeInterval", end.year)
+    gribapi.grib_set(grib, "monthOfEndOfOverallTimeInterval", end.month)
+    gribapi.grib_set(grib, "dayOfEndOfOverallTimeInterval", end.day)
+    gribapi.grib_set(grib, "hourOfEndOfOverallTimeInterval", end.hour)
+    gribapi.grib_set(grib, "minuteOfEndOfOverallTimeInterval", end.minute)
+    gribapi.grib_set(grib, "secondOfEndOfOverallTimeInterval", end.second)
+
+    # Only one time range specification. If there were a series of aggregations
+    # (e.g. the mean of an accumulation) one might set this to a higher value,
+    # but we currently only handle a single time related cell method.
+    gribapi.grib_set(grib, "numberOfTimeRange", 1)
+    gribapi.grib_set(grib, "numberOfMissingInStatisticalProcess", 0)
+
+    # Type of statistical process (see code table 4.10)
+    statistic_type = _STATISTIC_TYPE_NAMES.get(cell_method.method, 255)
+    gribapi.grib_set(grib, "typeOfStatisticalProcessing", statistic_type)
+
+    # Period over which statistical processing is performed.
+    set_time_range(time_coord, grib)
+
+    # Time increment i.e. interval of cell method (if any)
+    set_time_increment(cell_method, grib)
 
 
 def product_definition_section(cube, grib):
@@ -685,7 +757,12 @@ def product_definition_section(cube, grib):
         product_definition_template_0(cube, grib)
     elif _cube_is_time_statistic(cube):
         # time processed (template 4.8)
-        product_definition_template_8(cube, grib)
+        try:
+            product_definition_template_8(cube, grib)
+        except ValueError as e:
+            raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
+                             ' for saving as a time processed statistic GRIB'
+                             ' message. {}'.format(e))
     else:
         # Don't know how to handle this kind of data
         msg = 'A suitable product template could not be deduced'
