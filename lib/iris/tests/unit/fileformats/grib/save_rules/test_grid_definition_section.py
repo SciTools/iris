@@ -37,6 +37,14 @@ class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
         GdtTestMixin.setUp(self)
 
+    def test__fail_irregular_latlon(self):
+        test_cube = self._make_test_cube(x_points=(1, 2, 11, 12),
+                                         y_points=(4, 5, 6))
+        with self.assertRaisesRegexp(
+                TranslationError,
+                'irregular latlon grid .* not yet supported'):
+            grid_definition_section(test_cube, self.mock_grib)
+
     def test__fail_unsupported_coord_system(self):
         cs = LambertConformal()
         test_cube = self._make_test_cube(cs=cs)

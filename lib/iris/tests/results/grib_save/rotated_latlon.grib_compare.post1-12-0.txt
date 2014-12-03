@@ -12,7 +12,6 @@ scaledValueOfRadiusOfSphericalEarth is set to missing in 1st field is not missin
 long [latitudeOfLastGridPoint]: [19419996] != [19419285]
 long [longitudeOfLastGridPoint]: [392109982] != [32106370]
 long [iDirectionIncrement]: [109994] != [109993]
-long [longitudeOfSouthernPole]: [332466980] != [332466979]
 long [numberOfSection] 6 out of 7 different
 long [typeOfGeneratingProcess]: [0] != [255]
 long [generatingProcessIdentifier]: [128] != [255]
