@@ -229,12 +229,11 @@ def latlon_first_last(x_coord, y_coord, grib):
                           int((x_coord.points[-1] % 360)*1000000))
 
 
-def dx_dy(x_coord, y_coord, grib):
+def dx_dy(x_coord, y_coord):
     x_step = regular_step(x_coord)
     y_step = regular_step(y_coord)
-    # TODO: THIS USED BE "Dx" and "Dy"!!! DID THE API CHANGE AGAIN???
-    gribapi.grib_set_double(grib, "DxInDegrees", float(abs(x_step)))
-    gribapi.grib_set_double(grib, "DyInDegrees", float(abs(y_step)))
+    gribapi.grib_set(grib, "DxInDegrees", float(abs(x_step)))
+    gribapi.grib_set(grib, "DyInDegrees", float(abs(y_step)))
 
 
 def scanning_mode_flags(x_coord, y_coord, grib):
@@ -383,19 +382,37 @@ def grid_definition_template_12(cube, grib):
     """
     gribapi.grib_set(grib, "gridDefinitionTemplateNumber", 12)
 
+    # Retrieve some information from the cube.
+    y_coord = cube.coord(dimensions=[0])
+    x_coord = cube.coord(dimensions=[1])
+    cs = y_coord.coord_system
+
     # Record x and y points.
-    latlon_common(cube, grib)
+    M_TO_CM = 100
+    shape_of_the_earth(cube, grib)
+    grid_dims(x_coord, y_coord, grib)
+    x_step = regular_step(x_coord)
+    y_step = regular_step(y_coord)
+    gribapi.grib_set(grib, "Di", float(abs(x_step))*M_TO_CM)
+    gribapi.grib_set(grib, "Dj", float(abs(y_step))*M_TO_CM)
+    scanning_mode_flags(x_coord, y_coord, grib)
 
     # Set some keys specific to GDT12.
-    cs = cube.coord(dimensions=[0]).coord_system
+    # Define horizontal grid.
+    gribapi.grib_set(grib, "Y1", int(y_coord.points[0] * M_TO_CM))
+    gribapi.grib_set(grib, "Y2", int(y_coord.points[-1] * M_TO_CM))
+    gribapi.grib_set(grib, "X1", int(x_coord.points[0] * M_TO_CM))
+    gribapi.grib_set(grib, "X2", int(x_coord.points[-1] * M_TO_CM))
+
     # Lat and lon of reference point are measured in millionths of a degree.
     gribapi.grib_set(grib, "latitudeOfReferencePoint",
                      cs.latitude_of_projection_origin * 1e6)
     gribapi.grib_set(grib, "longitudeOfReferencePoint",
                      cs.longitude_of_central_meridian * 1e6)
+
     # False easting and false northing are measured in units of (10^-2)m.
-    gribapi.grib_set(grib, "XR", cs.false_easting * 100)
-    gribapi.grib_set(grib, "YR", cs.false_northing * 100)
+    gribapi.grib_set(grib, "XR", cs.false_easting * M_TO_CM)
+    gribapi.grib_set(grib, "YR", cs.false_northing * M_TO_CM)
     gribapi.grib_set(grib, "scaleFactorAtReferencePoint",
                      cs.scale_factor_at_central_meridian)
 
@@ -404,7 +421,7 @@ def grid_definition_template_12(cube, grib):
     if cs.scale_factor_at_central_meridian != scale_at_ref_point:
         msg = "GRIBAPI error prevented correct setting of "\
               "key 'scaleFactorAtReferencePoint'."
-        raise iris.exceptions.TranslationError(msg)
+        warnings.warn(msg)
 
 
 def grid_definition_section(cube, grib):
