@@ -48,9 +48,13 @@ def fixup_int32_as_uint32(value):
 
     """
     value = int(value)
-    if value < 0:
-        # Convert from two's-complement to sign-and-magnitude.
-        value = 0x80000000 - value
+    if -0x7fffffff <= value <= 0x7fffffff:
+        if value < 0:
+            # Convert from two's-complement to sign-and-magnitude.
+            value = 0x80000000 - value
+    else:
+        msg = '{} out of range -2147483647 to 2147483647.'.format(value)
+        raise ValueError(msg)
     return value
 
 
