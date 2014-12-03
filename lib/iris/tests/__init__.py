@@ -251,13 +251,34 @@ class IrisTest(unittest.TestCase):
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags='-h'):
         """
-        Converts the given CF-netCDF file to CDL for comparison with
-        the reference CDL file, or creates the reference file if it
-        doesn't exist.
+        Test that the CDL for the given netCDF file matches the contents
+        of the reference file.
+
+        If the environment variable IRIS_TEST_CREATE_MISSING is
+        non-empty, the reference file is created if it doesn't exist.
+
+        Args:
+
+        * netcdf_filename:
+            The path to the netCDF file.
+
+        Kwargs:
+
+        * reference_filename:
+            The relative path (relative to the test results directory).
+            If omitted, the result is generated from the calling
+            method's name, class, and module using
+            :meth:`iris.tests.IrisTest.result_path`.
+
+        * flags:
+            Command-line flags for `ncdump`, as either a whitespace
+            separated string or an iterable. Defaults to '-h'.
 
         """
         if reference_filename is None:
-            reference_filename = self.result_path(None, 'cdl')
+            reference_path = self.result_path(None, 'cdl')
+        else:
+            reference_path = get_result_path(reference_filename)
 
         # Convert the netCDF file to CDL file format.
         cdl_filename = iris.util.create_temp_filename(suffix='.cdl')
@@ -286,13 +307,32 @@ class IrisTest(unittest.TestCase):
         cdl = ''.join(lines)
 
         os.remove(cdl_filename)
-        reference_path = get_result_path(reference_filename)
         self._check_same(cdl, reference_path, type_comparison_name='CDL')
 
     def assertCML(self, cubes, reference_filename=None, checksum=True):
         """
-        Checks the given cubes match the reference file, or creates the
-        reference file if it doesn't exist.
+        Test that the CML for the given cubes matches the contents of
+        the reference file.
+
+        If the environment variable IRIS_TEST_CREATE_MISSING is
+        non-empty, the reference file is created if it doesn't exist.
+
+        Args:
+
+        * cubes:
+            Either a Cube or a sequence of Cubes.
+
+        Kwargs:
+
+        * reference_filename:
+            The relative path (relative to the test results directory).
+            If omitted, the result is generated from the calling
+            method's name, class, and module using
+            :meth:`iris.tests.IrisTest.result_path`.
+
+        * checksum:
+            When True, causes the CML to include a checksum for each
+            Cube's data. Defaults to True.
 
         """
         if isinstance(cubes, iris.cube.Cube):
@@ -355,6 +395,26 @@ class IrisTest(unittest.TestCase):
             shutil.copy(test_filename, reference_path)
 
     def assertString(self, string, reference_filename=None):
+        """
+        Test that `string` matches the contents of the reference file.
+
+        If the environment variable IRIS_TEST_CREATE_MISSING is
+        non-empty, the reference file is created if it doesn't exist.
+
+        Args:
+
+        * string:
+            The string to check.
+
+        Kwargs:
+
+        * reference_filename:
+            The relative path (relative to the test results directory).
+            If omitted, the result is generated from the calling
+            method's name, class, and module using
+            :meth:`iris.tests.IrisTest.result_path`.
+
+        """
         if reference_filename is None:
             reference_path = self.result_path(None, 'txt')
         else:
