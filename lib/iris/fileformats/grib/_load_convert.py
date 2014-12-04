@@ -233,6 +233,21 @@ def fixup_float32_from_int32(value):
     return float(value_as_float32)
 
 
+def fixup_int32_from_uint32(value):
+    """
+    Workaround for use when reading a signed, 4-byte integer which the
+    ECMWF GRIB API has erroneously treated as an unsigned, 4-byte
+    integer.
+
+    NB. This workaround is safe to use with values which are already
+    treated as signed, 4-byte integers.
+
+    """
+    if value >= 0x80000000:
+        value = 0x80000000 - value
+    return value
+
+
 ###############################################################################
 #
 # Identification Section 1
@@ -694,17 +709,24 @@ def grid_definition_template_12(section, metadata):
     cs = icoord_systems.TransverseMercator(lat, lon, easting, northing,
                                            scale, geog_cs)
 
+    # Deal with bug in ECMWF GRIB API (present at 1.12.1) where these
+    # values are treated as unsigned, 4-byte integers.
+    x1 = fixup_int32_from_uint32(section['x1'])
+    y1 = fixup_int32_from_uint32(section['y1'])
+    x2 = fixup_int32_from_uint32(section['x2'])
+    y2 = fixup_int32_from_uint32(section['y2'])
+
     # Rather unhelpfully this grid definition template seems to be
     # overspecified, and thus open to inconsistency.
-    last_x = section['x1'] + (section['Ni'] - 1) * section['Di']
-    last_y = section['y1'] + (section['Nj'] - 1) * section['Dj']
-    if (last_x != section['x2'] or last_y != section['y2']):
+    last_x = x1 + (section['Ni'] - 1) * section['Di']
+    last_y = y1 + (section['Nj'] - 1) * section['Dj']
+    if (last_x != x2 or last_y != y2):
         raise TranslationError('Inconsistent grid definition')
 
-    x1 = section['x1'] * CM_TO_M
+    x1 = x1 * CM_TO_M
     dx = section['Di'] * CM_TO_M
     x_points = x1 + np.arange(section['Ni']) * dx
-    y1 = section['y1'] * CM_TO_M
+    y1 = y1 * CM_TO_M
     dy = section['Dj'] * CM_TO_M
     y_points = y1 + np.arange(section['Nj']) * dy
 
