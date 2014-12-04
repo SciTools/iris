@@ -960,15 +960,13 @@ def save_grib2(cube, target, append=False, **kwargs):
     else:
         raise ValueError("Can only save grib to filename or writable")
 
-    # discover the lat and lon coords (this bit is common to the pp and grib savers...)
-    lat_coords = filter(lambda coord: "latitude" in coord.name(), cube.coords())
-    lon_coords = filter(lambda coord: "longitude" in coord.name(), cube.coords())
-    if len(lat_coords) != 1 or len(lon_coords) != 1:
-        raise TranslationError("Did not find one (and only one) "
-                               "latitude or longitude coord")
+    x_coords = cube.coords(axis='x', dim_coords=True)
+    y_coords = cube.coords(axis='y', dim_coords=True)
+    if len(x_coords) != 1 or len(y_coords) != 1:
+        raise TranslationError("Did not find one (and only one) x or y coord")
 
     # Save each latlon slice2D in the cube
-    for slice2D in cube.slices([lat_coords[0], lon_coords[0]]):
+    for slice2D in cube.slices([y_coords[0], x_coords[0]]):
 
         # Save this slice to the grib file
         grib_message = gribapi.grib_new_from_samples("GRIB2")

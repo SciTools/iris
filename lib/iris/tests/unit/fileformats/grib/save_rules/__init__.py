@@ -39,11 +39,11 @@ class GdtTestMixin(object):
             # Record a key setting on the mock passed as the 'grib message id'.
             grib.keys[name] = value
 
+        self.mock_gribapi.grib_set = grib_set_trap
         self.mock_gribapi.grib_set_long = grib_set_trap
         self.mock_gribapi.grib_set_float = grib_set_trap
         self.mock_gribapi.grib_set_double = grib_set_trap
         self.mock_gribapi.grib_set_long_array = grib_set_trap
-        self.mock_gribapi.grib_set = grib_set_trap
         self.mock_gribapi.grib_set_array = grib_set_trap
 
         # Create a mock 'grib message id', with a 'keys' dict for settings.
