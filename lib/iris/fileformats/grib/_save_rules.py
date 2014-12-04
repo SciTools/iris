@@ -93,6 +93,19 @@ def fixup_int32_as_uint32(value):
     return value
 
 
+def ensure_set_int32_value(grib, key, value):
+    """
+    Ensure the workaround function :func:`fixup_int32_as_uint32` is applied as
+    necessary to problem keys.
+
+    """
+    try:
+        gribapi.grib_set(grib, key, value)
+    except gribapi.GribInternalError:
+        value = fixup_int32_as_uint32(value)
+        gribapi.grib_set(grib, key, value)
+
+
 ###############################################################################
 #
 # Constants
@@ -229,7 +242,7 @@ def latlon_first_last(x_coord, y_coord, grib):
                           int((x_coord.points[-1] % 360)*1000000))
 
 
-def dx_dy(x_coord, y_coord):
+def dx_dy(x_coord, y_coord, grib):
     x_step = regular_step(x_coord)
     y_step = regular_step(y_coord)
     gribapi.grib_set(grib, "DxInDegrees", float(abs(x_step)))
@@ -387,22 +400,22 @@ def grid_definition_template_12(cube, grib):
     x_coord = cube.coord(dimensions=[1])
     cs = y_coord.coord_system
 
-    # Record x and y points.
+    # Set some keys specific to GDT12.
+    # Encode the horizontal points.
     M_TO_CM = 100
-    shape_of_the_earth(cube, grib)
-    grid_dims(x_coord, y_coord, grib)
     x_step = regular_step(x_coord)
     y_step = regular_step(y_coord)
     gribapi.grib_set(grib, "Di", float(abs(x_step))*M_TO_CM)
     gribapi.grib_set(grib, "Dj", float(abs(y_step))*M_TO_CM)
-    scanning_mode_flags(x_coord, y_coord, grib)
+    latlon_grid_common(cube, grib)
 
-    # Set some keys specific to GDT12.
-    # Define horizontal grid.
-    gribapi.grib_set(grib, "Y1", int(y_coord.points[0] * M_TO_CM))
-    gribapi.grib_set(grib, "Y2", int(y_coord.points[-1] * M_TO_CM))
-    gribapi.grib_set(grib, "X1", int(x_coord.points[0] * M_TO_CM))
-    gribapi.grib_set(grib, "X2", int(x_coord.points[-1] * M_TO_CM))
+    # GRIBAPI expects unsigned ints in X1, X2, Y1, Y2 but it should accept
+    # signed ints, so work around this.
+    # See https://software.ecmwf.int/issues/browse/SUP-1101
+    ensure_set_int32_value(grib, "Y1", int(y_coord.points[0]*M_TO_CM))
+    ensure_set_int32_value(grib, "Y2", int(y_coord.points[-1]*M_TO_CM))
+    ensure_set_int32_value(grib, "X1", int(x_coord.points[0]*M_TO_CM))
+    ensure_set_int32_value(grib, "X2", int(x_coord.points[-1]*M_TO_CM))
 
     # Lat and lon of reference point are measured in millionths of a degree.
     gribapi.grib_set(grib, "latitudeOfReferencePoint",
@@ -413,15 +426,16 @@ def grid_definition_template_12(cube, grib):
     # False easting and false northing are measured in units of (10^-2)m.
     gribapi.grib_set(grib, "XR", cs.false_easting * M_TO_CM)
     gribapi.grib_set(grib, "YR", cs.false_northing * M_TO_CM)
-    gribapi.grib_set(grib, "scaleFactorAtReferencePoint",
-                     cs.scale_factor_at_central_meridian)
 
-    # Check that scaleFactorAtReferencePoint is being stored correctly.
-    scale_at_ref_point = gribapi.grib_get(grib, "scaleFactorAtReferencePoint")
-    if cs.scale_factor_at_central_meridian != scale_at_ref_point:
-        msg = "GRIBAPI error prevented correct setting of "\
-              "key 'scaleFactorAtReferencePoint'."
-        warnings.warn(msg)
+    # GRIBAPI expects a signed int for scaleFactorAtReferencePoint
+    # but it should accept a float, so work around this.
+    # See https://software.ecmwf.int/issues/browse/SUP-1100
+    value = cs.scale_factor_at_central_meridian
+    key_type = gribapi.grib_get_native_type(grib,
+                                            "scaleFactorAtReferencePoint")
+    if key_type is not float:
+        value = fixup_float32_as_int32(value)
+    gribapi.grib_set(grib, "scaleFactorAtReferencePoint", value)
 
 
 def grid_definition_section(cube, grib):

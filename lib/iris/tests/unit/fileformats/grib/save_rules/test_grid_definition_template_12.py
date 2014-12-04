@@ -35,12 +35,17 @@ from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 from iris.fileformats.grib._save_rules import grid_definition_template_12
 
 
+class FakeGribError(StandardError):
+    pass
+
+
 class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
         self.default_ellipsoid = GeogCS(semi_major_axis=6377563.396,
                                         semi_minor_axis=6356256.909)
         self.default_cs = self._default_coord_system()
         self.test_cube = self._make_test_cube(cs=self.default_cs)
+
         GdtTestMixin.setUp(self)
 
     def _default_coord_system(self):
@@ -85,12 +90,60 @@ class Test(tests.IrisTest, GdtTestMixin):
         self._check_key("Di", 200.0)
         self._check_key("Dj", 500.0)
 
+    def test__negative_grid_points_gribapi_broken(self):
+        self.mock_gribapi.GribInternalError = FakeGribError
+
+        def set(grib, key, value):
+            if key in ["X1", "X2", "Y1", "Y2"] and value < 0:
+                raise self.mock_gribapi.GribInternalError()
+            grib.keys[key] = value
+        self.mock_gribapi.grib_set = set
+
+        test_cube = self._make_test_cube(x_points=[-1, 1, 3, 5, 7],
+                                         y_points=[-4, 9],
+                                         cs=self.default_cs)
+        grid_definition_template_12(test_cube, self.mock_grib)
+        self._check_key("X1", 0x80000064)
+        self._check_key("X2", 700)
+        self._check_key("Y1", 0x80000190)
+        self._check_key("Y2", 900)
+
+    def test__negative_grid_points_gribapi_fixed(self):
+        test_cube = self._make_test_cube(x_points=[-1, 1, 3, 5, 7],
+                                         y_points=[-4, 9],
+                                         cs=self.default_cs)
+        grid_definition_template_12(test_cube, self.mock_grib)
+        self._check_key("X1", -100)
+        self._check_key("X2", 700)
+        self._check_key("Y1", -400)
+        self._check_key("Y2", 900)
+
     def test__template_specifics(self):
         grid_definition_template_12(self.test_cube, self.mock_grib)
         self._check_key("latitudeOfReferencePoint", 49000000.0)
         self._check_key("longitudeOfReferencePoint", -2000000.0)
         self._check_key("XR", 40000000.0)
         self._check_key("YR", -10000000.0)
+
+    def test__scale_factor_gribapi_broken(self):
+        # GRIBAPI expects a signed int for scaleFactorAtReferencePoint
+        # but it should accept a float, so work around this.
+        # See https://software.ecmwf.int/issues/browse/SUP-1100
+
+        def get_native_type(grib, key):
+            assert key == "scaleFactorAtReferencePoint"
+            return int
+        self.mock_gribapi.grib_get_native_type = get_native_type
+        grid_definition_template_12(self.test_cube, self.mock_grib)
+        self._check_key("scaleFactorAtReferencePoint", 1065346526)
+
+    def test__scale_factor_gribapi_fixed(self):
+
+        def get_native_type(grib, key):
+            assert key == "scaleFactorAtReferencePoint"
+            return float
+        self.mock_gribapi.grib_get_native_type = get_native_type
+        grid_definition_template_12(self.test_cube, self.mock_grib)
         self._check_key("scaleFactorAtReferencePoint", 0.9996012717)
 
     def test__scanmode(self):
