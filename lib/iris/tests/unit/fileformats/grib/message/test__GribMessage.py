@@ -189,26 +189,51 @@ class Mixin_data__grid_template(object):
         self._test(64 | 128)
 
 
+def _example_section_3(grib_definition_template_number, scanning_mode):
+    return {'sourceOfGridDefinition': 0,
+            'numberOfOctectsForNumberOfPoints': 0,
+            'interpretationOfNumberOfPoints': 0,
+            'gridDefinitionTemplateNumber': grib_definition_template_number,
+            'scanningMode': scanning_mode,
+            'Nj': 3,
+            'Ni': 4}
+
+
 class Test_data__grid_template_0(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
-        return {'sourceOfGridDefinition': 0,
-                'numberOfOctectsForNumberOfPoints': 0,
-                'interpretationOfNumberOfPoints': 0,
-                'gridDefinitionTemplateNumber': 0,
-                'scanningMode': scanning_mode,
-                'Nj': 3,
-                'Ni': 4}
+        return _example_section_3(0, scanning_mode)
+
+
+class Test_data__grid_template_1(tests.IrisTest, Mixin_data__grid_template):
+    def section_3(self, scanning_mode):
+        return _example_section_3(1, scanning_mode)
+
+
+class Test_data__grid_template_5(tests.IrisTest, Mixin_data__grid_template):
+    def section_3(self, scanning_mode):
+        return _example_section_3(5, scanning_mode)
 
 
 class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
-        return {'sourceOfGridDefinition': 0,
-                'numberOfOctectsForNumberOfPoints': 0,
-                'interpretationOfNumberOfPoints': 0,
-                'gridDefinitionTemplateNumber': 90,
-                'scanningMode': scanning_mode,
-                'Ny': 3,
-                'Nx': 4}
+        section_3 = _example_section_3(90, scanning_mode)
+        # Exceptionally, dimensions are 'Nx' + 'Ny' instead of 'Ni' + 'Nj'.
+        section_3['Nx'] = section_3['Ni']
+        section_3['Ny'] = section_3['Nj']
+        del section_3['Ni']
+        del section_3['Nj']
+        return section_3
+
+
+class Test_data__unknown_grid_template(tests.IrisTest):
+    def test(self):
+        message = _make_test_message(
+            {3: _example_section_3(999, 0),
+             6: SECTION_6_NO_BITMAP,
+             7: {'codedValues': np.arange(12)}})
+        with self.assertRaisesRegexp(TranslationError,
+                                     'template 999 is not supported'):
+            data = message.data
 
 
 if __name__ == '__main__':
