@@ -214,6 +214,11 @@ class Test_data__grid_template_5(tests.IrisTest, Mixin_data__grid_template):
         return _example_section_3(5, scanning_mode)
 
 
+class Test_data__grid_template_12(tests.IrisTest, Mixin_data__grid_template):
+    def section_3(self, scanning_mode):
+        return _example_section_3(12, scanning_mode)
+
+
 class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(90, scanning_mode)
