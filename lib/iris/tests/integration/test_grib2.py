@@ -101,6 +101,7 @@ class TestPDT8(tests.IrisTest):
         self.assertEqual(cell_method.coord_names, ('time',))
 
 
+@tests.skip_data
 class TestGDT5(tests.IrisTest):
     def test_save_load(self):
         # Load sample UKV data (variable-resolution rotated grid).
@@ -155,13 +156,19 @@ class TestGDT5(tests.IrisTest):
                 # Also load data, before the temporary file gets deleted.
                 cube_loaded_from_saved.data
 
+        # The re-loaded result will not match the original in every respect:
+        #  * cube attributes are discarded
+        #  * horizontal coordinates are rounded to an integer representation
+        #  * bounds on horizontal coords are lost
+        # Thus the following "equivalence tests" are rather piecemeal..
+
         # Check those re-loaded properties which should match the original.
         for test_cube in (cube, cube_loaded_from_saved):
             self.assertEqual(test_cube.standard_name,
                              'air_pressure_at_sea_level')
             self.assertEqual(test_cube.units, 'Pa')
             self.assertEqual(test_cube.shape, (744, 744))
-            self.assertEqual(cube_loaded_from_saved.cell_methods, ())
+            self.assertEqual(test_cube.cell_methods, ())
 
         # Check no cube attributes on the re-loaded cube.
         # Note: this does *not* match the original, but is as expected.
@@ -169,11 +176,11 @@ class TestGDT5(tests.IrisTest):
 
         # Now remaining to check: coordinates + data...
 
-        # Check they have the same set of coordinates.
+        # Check they have all the same coordinates.
         co_names = [coord.name() for coord in cube.coords()]
         co_names_reload = [coord.name()
                            for coord in cube_loaded_from_saved.coords()]
-        self.assertEqual(set(co_names_reload), set(co_names))
+        self.assertEqual(sorted(co_names_reload), sorted(co_names))
 
         # Check all the coordinates.
         for coord_name in co_names:
@@ -197,7 +204,7 @@ class TestGDT5(tests.IrisTest):
                 # but Grib does not store those bounds).
                 self.assertIsNone(co_load.bounds)
 
-            except Exception as err:
+            except AssertionError as err:
                 self.assertTrue(False,
                                 'Failed on coordinate "{}" : {}'.format(
                                     coord_name, str(err)))
