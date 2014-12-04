@@ -14,22 +14,33 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :mod:`iris.fileformats.grib._load_convert` package."""
+"""
+Unit tests for `iris.fileformats.grib._load_convert.fixup_float32_from_int32`.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
-from collections import OrderedDict
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
+
+from iris.fileformats.grib._load_convert import fixup_float32_from_int32
 
 
-def empty_metadata():
-    metadata = OrderedDict()
-    metadata['factories'] = []
-    metadata['references'] = []
-    metadata['standard_name'] = None
-    metadata['long_name'] = None
-    metadata['units'] = None
-    metadata['attributes'] = {}
-    metadata['cell_methods'] = []
-    metadata['dim_coords_and_dims'] = []
-    metadata['aux_coords_and_dims'] = []
-    return metadata
+class Test(tests.IrisTest):
+    def test_negative(self):
+        result = fixup_float32_from_int32(-0x3f000000)
+        self.assertEqual(result, -0.5)
+
+    def test_zero(self):
+        result = fixup_float32_from_int32(0)
+        self.assertEqual(result, 0)
+
+    def test_positive(self):
+        result = fixup_float32_from_int32(0x3f000000)
+        self.assertEqual(result, 0.5)
+
+
+if __name__ == '__main__':
+    tests.main()

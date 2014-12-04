@@ -26,13 +26,12 @@ from __future__ import (absolute_import, division, print_function)
 # before importing anything else.
 import iris.tests as tests
 
-from collections import OrderedDict
-
 import numpy as np
 
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 from iris.fileformats.grib._load_convert import grid_definition_template_90
 
 
@@ -40,19 +39,6 @@ MDI = 2 ** 32 - 1
 
 
 class Test(tests.IrisTest):
-    def empty_metadata(self):
-        metadata = OrderedDict()
-        metadata['factories'] = []
-        metadata['references'] = []
-        metadata['standard_name'] = None
-        metadata['long_name'] = None
-        metadata['units'] = None
-        metadata['attributes'] = {}
-        metadata['cell_methods'] = []
-        metadata['dim_coords_and_dims'] = []
-        metadata['aux_coords_and_dims'] = []
-        return metadata
-
     def uk(self):
         section = {
             'shapeOfTheEarth': 3,
@@ -81,7 +67,7 @@ class Test(tests.IrisTest):
 
     def expected_uk(self, y_dim, x_dim):
         # Prepare the expectation.
-        expected = self.empty_metadata()
+        expected = empty_metadata()
         major = 6378168.8
         ellipsoid = iris.coord_systems.GeogCS(major, 6356584.0)
         height = (6610674e-6 - 1) * major
@@ -147,7 +133,7 @@ class Test(tests.IrisTest):
 
     def test_uk(self):
         section = self.uk()
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         grid_definition_template_90(section, metadata)
         expected = self.expected_uk(0, 1)
         self.compare(metadata, expected)
@@ -155,7 +141,7 @@ class Test(tests.IrisTest):
     def test_uk_transposed(self):
         section = self.uk()
         section['scanningMode'] = 0b11100000
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         grid_definition_template_90(section, metadata)
         expected = self.expected_uk(1, 0)
         self.compare(metadata, expected)
@@ -163,7 +149,7 @@ class Test(tests.IrisTest):
     def test_non_zero_latitude(self):
         section = self.uk()
         section['latitudeOfSubSatellitePoint'] = 1
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
                                      'non-zero latitude'):
             grid_definition_template_90(section, metadata)
@@ -171,7 +157,7 @@ class Test(tests.IrisTest):
     def test_rotated_meridian(self):
         section = self.uk()
         section['orientationOfTheGrid'] = 1
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
                                      'orientation'):
             grid_definition_template_90(section, metadata)
@@ -179,7 +165,7 @@ class Test(tests.IrisTest):
     def test_zero_height(self):
         section = self.uk()
         section['Nr'] = 0
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
                                      'zero'):
             grid_definition_template_90(section, metadata)
@@ -187,7 +173,7 @@ class Test(tests.IrisTest):
     def test_orthographic(self):
         section = self.uk()
         section['Nr'] = MDI
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
                                      'orthographic'):
             grid_definition_template_90(section, metadata)
@@ -195,14 +181,14 @@ class Test(tests.IrisTest):
     def test_scanning_mode_positive_x(self):
         section = self.uk()
         section['scanningMode'] = 0b01000000
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError, r'\+x'):
             grid_definition_template_90(section, metadata)
 
     def test_scanning_mode_negative_y(self):
         section = self.uk()
         section['scanningMode'] = 0b10000000
-        metadata = self.empty_metadata()
+        metadata = empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError, '-y'):
             grid_definition_template_90(section, metadata)
 
