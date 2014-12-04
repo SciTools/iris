@@ -947,6 +947,8 @@ fc_extras
     ################################################################################
     def get_attr_units(cf_var, attributes):
         attr_units = getattr(cf_var, CF_ATTR_UNITS, iris.unit._UNIT_DIMENSIONLESS)
+        if not attr_units:
+            attr_units = '1'
 
         # Sanitise lat/lon units.
         if attr_units in UD_UNITS_LAT or attr_units in UD_UNITS_LON:
