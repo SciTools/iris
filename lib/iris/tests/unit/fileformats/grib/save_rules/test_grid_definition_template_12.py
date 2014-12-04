@@ -43,8 +43,7 @@ class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
         self.default_ellipsoid = GeogCS(semi_major_axis=6377563.396,
                                         semi_minor_axis=6356256.909)
-        self.default_cs = self._default_coord_system()
-        self.test_cube = self._make_test_cube(cs=self.default_cs)
+        self.test_cube = self._make_test_cube()
 
         GdtTestMixin.setUp(self)
 
@@ -72,16 +71,14 @@ class Test(tests.IrisTest, GdtTestMixin):
 
     def test__grid_shape(self):
         test_cube = self._make_test_cube(x_points=np.arange(13),
-                                         y_points=np.arange(6),
-                                         cs=self.default_cs)
+                                         y_points=np.arange(6))
         grid_definition_template_12(test_cube, self.mock_grib)
         self._check_key('Ni', 13)
         self._check_key('Nj', 6)
 
     def test__grid_points(self):
         test_cube = self._make_test_cube(x_points=[1, 3, 5, 7],
-                                         y_points=[4, 9],
-                                         cs=self.default_cs)
+                                         y_points=[4, 9])
         grid_definition_template_12(test_cube, self.mock_grib)
         self._check_key("X1", 100)
         self._check_key("X2", 700)
@@ -93,6 +90,7 @@ class Test(tests.IrisTest, GdtTestMixin):
     def test__negative_grid_points_gribapi_broken(self):
         self.mock_gribapi.GribInternalError = FakeGribError
 
+        # Force the test to run the signed int --> unsigned int workaround.
         def set(grib, key, value):
             if key in ["X1", "X2", "Y1", "Y2"] and value < 0:
                 raise self.mock_gribapi.GribInternalError()
@@ -100,8 +98,7 @@ class Test(tests.IrisTest, GdtTestMixin):
         self.mock_gribapi.grib_set = set
 
         test_cube = self._make_test_cube(x_points=[-1, 1, 3, 5, 7],
-                                         y_points=[-4, 9],
-                                         cs=self.default_cs)
+                                         y_points=[-4, 9])
         grid_definition_template_12(test_cube, self.mock_grib)
         self._check_key("X1", 0x80000064)
         self._check_key("X2", 700)
@@ -110,8 +107,7 @@ class Test(tests.IrisTest, GdtTestMixin):
 
     def test__negative_grid_points_gribapi_fixed(self):
         test_cube = self._make_test_cube(x_points=[-1, 1, 3, 5, 7],
-                                         y_points=[-4, 9],
-                                         cs=self.default_cs)
+                                         y_points=[-4, 9])
         grid_definition_template_12(test_cube, self.mock_grib)
         self._check_key("X1", -100)
         self._check_key("X2", 700)

@@ -35,7 +35,7 @@ import numpy.ma as ma
 import iris
 import iris.exceptions
 import iris.unit
-from iris.coord_systems import GeogCS
+from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
 from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
@@ -118,12 +118,15 @@ _RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT = 3  # NB "bit5", from MSB=1.
 # Reference Regulation 92.1.6
 _DEFAULT_DEGREES_UNITS = 1.0e-6
 
+# Units scaling for Grid Definition Template 3.12
+_TRANSVERSE_MERCATOR_DEGREES_UNITS = 1.0e-2
 
 ###############################################################################
 #
 # Identification Section 1
 #
 ###############################################################################
+
 
 def centre(cube, grib):
     # TODO: read centre from cube
@@ -198,8 +201,7 @@ def shape_of_the_earth(cube, grib):
     # Spherical earth.
     if ellipsoid.inverse_flattening == 0.0:
         gribapi.grib_set_long(grib, "shapeOfTheEarth", 1)
-        gribapi.grib_set_long(grib,
-                              "scaleFactorOfRadiusOfSphericalEarth", 0)
+        gribapi.grib_set_long(grib, "scaleFactorOfRadiusOfSphericalEarth", 0)
         gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth",
                               ellipsoid.semi_major_axis)
     # Oblate spheroid earth.
@@ -256,7 +258,7 @@ def scanning_mode_flags(x_coord, y_coord, grib):
                           int(y_coord.points[1] - y_coord.points[0] > 0))
 
 
-def latlon_grid_common(cube, grib):
+def horizontal_grid_common(cube, grib):
     # Grib encoding of the sequences of X and Y points.
     y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
@@ -333,7 +335,7 @@ def grid_definition_template_0(cube, grib):
     """
     # Constant resolution, aka 'regular' true lat-lon grid.
     gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 0)
-    latlon_grid_common(cube, grib)
+    horizontal_grid_common(cube, grib)
     latlon_points_regular(cube, grib)
 
 
@@ -354,7 +356,7 @@ def grid_definition_template_1(cube, grib):
     rotated_pole(cube, grib)
 
     # Encode the lat/lon points.
-    latlon_grid_common(cube, grib)
+    horizontal_grid_common(cube, grib)
     latlon_points_regular(cube, grib)
 
 
@@ -372,8 +374,9 @@ def grid_definition_template_5(cube, grib):
     # Without this, setting "gridDefinitionTemplateNumber" = 5 causes an
     # immediate error.
     # See: https://software.ecmwf.int/issues/browse/SUP-1095
-    # This is acceptable, as the subsequent call to 'latlon_grid_common' will
-    # set these to the correct horizontal dimensions (by calling 'grid_dims').
+    # This is acceptable, as the subsequent call to 'horizontal_grid_common'
+    # will set these to the correct horizontal dimensions
+    # (by calling 'grid_dims').
     gribapi.grib_set(grib, "Ni", 1)
     gribapi.grib_set(grib, "Nj", 1)
     gribapi.grib_set(grib, "gridDefinitionTemplateNumber", 5)
@@ -381,7 +384,7 @@ def grid_definition_template_5(cube, grib):
     # Record details of the rotated coordinate system.
     rotated_pole(cube, grib)
     # Encode the lat/lon points.
-    latlon_grid_common(cube, grib)
+    horizontal_grid_common(cube, grib)
     latlon_points_irregular(cube, grib)
 
 
@@ -402,30 +405,41 @@ def grid_definition_template_12(cube, grib):
 
     # Set some keys specific to GDT12.
     # Encode the horizontal points.
-    M_TO_CM = 100
     x_step = regular_step(x_coord)
     y_step = regular_step(y_coord)
-    gribapi.grib_set(grib, "Di", float(abs(x_step))*M_TO_CM)
-    gribapi.grib_set(grib, "Dj", float(abs(y_step))*M_TO_CM)
-    latlon_grid_common(cube, grib)
+    gribapi.grib_set(grib, "Di",
+                     float(abs(x_step)) / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
+    gribapi.grib_set(grib, "Dj",
+                     float(abs(y_step)) / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
+    horizontal_grid_common(cube, grib)
 
     # GRIBAPI expects unsigned ints in X1, X2, Y1, Y2 but it should accept
     # signed ints, so work around this.
     # See https://software.ecmwf.int/issues/browse/SUP-1101
-    ensure_set_int32_value(grib, "Y1", int(y_coord.points[0]*M_TO_CM))
-    ensure_set_int32_value(grib, "Y2", int(y_coord.points[-1]*M_TO_CM))
-    ensure_set_int32_value(grib, "X1", int(x_coord.points[0]*M_TO_CM))
-    ensure_set_int32_value(grib, "X2", int(x_coord.points[-1]*M_TO_CM))
+    ensure_set_int32_value(
+        grib, "Y1",
+        int(y_coord.points[0] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
+    ensure_set_int32_value(
+        grib, "Y2",
+        int(y_coord.points[-1] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
+    ensure_set_int32_value(
+        grib, "X1",
+        int(x_coord.points[0] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
+    ensure_set_int32_value(
+        grib, "X2",
+        int(x_coord.points[-1] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
 
     # Lat and lon of reference point are measured in millionths of a degree.
     gribapi.grib_set(grib, "latitudeOfReferencePoint",
-                     cs.latitude_of_projection_origin * 1e6)
+                     cs.latitude_of_projection_origin / _DEFAULT_DEGREES_UNITS)
     gribapi.grib_set(grib, "longitudeOfReferencePoint",
-                     cs.longitude_of_central_meridian * 1e6)
+                     cs.longitude_of_central_meridian / _DEFAULT_DEGREES_UNITS)
 
     # False easting and false northing are measured in units of (10^-2)m.
-    gribapi.grib_set(grib, "XR", cs.false_easting * M_TO_CM)
-    gribapi.grib_set(grib, "YR", cs.false_northing * M_TO_CM)
+    gribapi.grib_set(grib, "XR",
+                     cs.false_easting / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
+    gribapi.grib_set(grib, "YR",
+                     cs.false_northing / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
 
     # GRIBAPI expects a signed int for scaleFactorAtReferencePoint
     # but it should accept a float, so work around this.
@@ -449,7 +463,7 @@ def grid_definition_section(cube, grib):
     cs = x_coord.coord_system  # N.B. already checked same cs for x and y.
     regular_x_and_y = is_regular(x_coord) and is_regular(y_coord)
 
-    if isinstance(cs, iris.coord_systems.GeogCS):
+    if isinstance(cs, GeogCS):
         if not regular_x_and_y:
             raise iris.exceptions.TranslationError(
                 'Saving an irregular latlon grid to GRIB (PDT3.4) is not '
@@ -457,7 +471,7 @@ def grid_definition_section(cube, grib):
 
         grid_definition_template_0(cube, grib)
 
-    elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
+    elif isinstance(cs, RotatedGeogCS):
         # Rotated coordinate system cases.
         # Choose between GDT 3.1 and 3.5 according to coordinate regularity.
         if regular_x_and_y:
@@ -465,7 +479,7 @@ def grid_definition_section(cube, grib):
         else:
             grid_definition_template_5(cube, grib)
 
-    elif isinstance(cs, iris.coord_systems.TransverseMercator):
+    elif isinstance(cs, TransverseMercator):
         # Transverse Mercator coordinate system (template 3.12).
         grid_definition_template_12(cube, grib)
 
