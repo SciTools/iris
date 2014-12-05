@@ -717,18 +717,21 @@ def grid_definition_template_12(section, metadata):
     y2 = fixup_int32_from_uint32(section['Y2'])
 
     # Rather unhelpfully this grid definition template seems to be
-    # overspecified, and thus open to inconsistency.
-    last_x = x1 + (section['Ni'] - 1) * section['Di']
-    last_y = y1 + (section['Nj'] - 1) * section['Dj']
-    if (last_x != x2 or last_y != y2):
-        raise TranslationError('Inconsistent grid definition')
+    # overspecified, and thus open to inconsistency. But for determining
+    # the extents the X1, Y1, X2, and Y2 points have the highest
+    # precision, as opposed to using Di and Dj.
+    # Check whether Di and Dj are as consistent as possible with that
+    # interpretation - i.e. they are within 1cm.
+    def check_range(v1, v2, n, d):
+        min_last = v1 + (n - 1) * (d - 1)
+        max_last = v1 + (n - 1) * (d + 1)
+        if not (min_last < v2 < max_last):
+            raise TranslationError('Inconsistent grid definition')
+    check_range(x1, x2, section['Ni'], section['Di'])
+    check_range(y1, y2, section['Nj'], section['Dj'])
 
-    x1 = x1 * CM_TO_M
-    dx = section['Di'] * CM_TO_M
-    x_points = x1 + np.arange(section['Ni']) * dx
-    y1 = y1 * CM_TO_M
-    dy = section['Dj'] * CM_TO_M
-    y_points = y1 + np.arange(section['Nj']) * dy
+    x_points = np.linspace(x1 * CM_TO_M, x2 * CM_TO_M, section['Ni'])
+    y_points = np.linspace(y1 * CM_TO_M, y2 * CM_TO_M, section['Nj'])
 
     # This has only been tested with +x/+y scanning, so raise an error
     # for other permutations.
