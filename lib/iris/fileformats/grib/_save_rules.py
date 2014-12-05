@@ -564,16 +564,44 @@ def _non_missing_forecast_period(cube):
 
 
 def _missing_forecast_period(cube):
-    # We have no way of knowing the CF forecast reference time.
-    # Set GRIB reference time to "verifying time of forecast",
-    # and the forecast period to 0h.
-    t_coord = cube.coord("time")
-    t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
-    rt = t_coord.units.num2date(t)
-    rt_meaning = 2  # "verification time of forecast"
+    """
+    Returns a reference time and significance code together with a forecast
+    period and corresponding units type code.
 
-    fp = 0
-    fp_meaning = 1  # hours
+    """
+    t_coord = cube.coord("time")
+
+    if cube.coords('forecast_reference_time'):
+        # Make copies and convert them to common "hours since" units.
+        hours_since = iris.unit.Unit('hours since epoch',
+                                     calendar=t_coord.units.calendar)
+        frt_coord = cube.coord('forecast_reference_time').copy()
+        frt_coord.convert_units(hours_since)
+        t_coord = t_coord.copy()
+        t_coord.convert_units(hours_since)
+        # Extract values.
+        t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
+        frt = frt_coord.points[0]
+        # Calculate GRIB parameters.
+        rt = frt_coord.units.num2date(frt)
+        rt_meaning = 1  # Forecast reference time.
+        fp = t - frt
+        integer_fp = int(fp)
+        if integer_fp != fp:
+            msg = 'Truncating floating point forecast period {} to ' \
+                  'integer value {}'
+            warnings.warn(msg.format(fp, integer_fp))
+        fp = integer_fp
+        fp_meaning = 1  # Hours
+    else:
+        # With no forecast period or forecast reference time set assume a
+        # reference time significance of "Observation time" and set the
+        # forecast period to 0h.
+        t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
+        rt = t_coord.units.num2date(t)
+        rt_meaning = 3  # Observation time
+        fp = 0
+        fp_meaning = 1  # Hours
 
     return rt, rt_meaning, fp, fp_meaning
 
@@ -581,7 +609,8 @@ def _missing_forecast_period(cube):
 def set_forecast_time(cube, grib):
     """
     Set the forecast time keys based on the forecast_period coordinate. In
-    the absence of a forecast_period, the forecast time is set to zero.
+    the absence of a forecast_period and forecast_reference_time,
+    the forecast time is set to zero.
 
     """
     try:
