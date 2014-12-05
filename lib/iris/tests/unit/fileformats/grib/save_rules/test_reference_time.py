@@ -64,7 +64,7 @@ class Test(TestGribSimple):
             reference_time(cube, grib)
 
         mock_gribapi.assert_has_calls(
-            [mock.call.grib_set_long(grib, "significanceOfReferenceTime", 2),
+            [mock.call.grib_set_long(grib, "significanceOfReferenceTime", 3),
              mock.call.grib_set_long(grib, "dataDate", '19941201'),
              mock.call.grib_set_long(grib, "dataTime", '0000')])
 
