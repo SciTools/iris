@@ -129,6 +129,18 @@ class Test(tests.IrisTest):
         expected = self.expected(1, 0)
         self.assertEqual(metadata, expected)
 
+    def test_di_tolerance(self):
+        # Even though Ni * Di doesn't exactly match X1 to X2 it should
+        # be close enough to allow the translation.
+        section = self.section_3()
+        section['X2'] += 1
+        metadata = empty_metadata()
+        grid_definition_template_12(section, metadata)
+        expected = self.expected(0, 1)
+        x = expected['dim_coords_and_dims'][1][0]
+        x.points = np.linspace(293000, 299000.01, 4)
+        self.assertEqual(metadata, expected)
+
     def test_incompatible_grid_extent(self):
         section = self.section_3()
         section['X2'] += 100
