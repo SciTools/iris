@@ -267,6 +267,7 @@ def reference_time_coord(section):
     """
     # Look-up standard name by significanceOfReferenceTime.
     _lookup = {1: 'forecast_reference_time',
+               2: 'time',
                3: 'time'}
 
     # Calculate the reference time and units.
@@ -1231,6 +1232,52 @@ def statistical_forecast_period_coord(section, frt_coord):
     return fp_coord
 
 
+def other_time_coord(rt_coord, fp_coord):
+    """
+    Return the counterpart to the given scalar 'time' or
+    'forecast_reference_time' coordinate, by combining it with the
+    given forecast_period coordinate.
+
+    Bounds are not supported.
+
+    Args:
+
+    * rt_coord:
+        The scalar "reference time" :class:`iris.coords.DimCoord`,
+        as defined by section 1. This must be either a 'time' or
+        'forecast_reference_time' coordinate.
+
+    * fp_coord:
+        The scalar 'forecast_period' :class:`iris.coords.DimCoord`.
+
+    Returns:
+        The scalar :class:`iris.coords.DimCoord` for either 'time' or
+        'forecast_reference_time'.
+
+    """
+    if not rt_coord.units.is_time_reference():
+        fmt = 'Invalid unit for reference time coord: {}'
+        raise ValueError(fmt.format(rt_coord.units))
+    if not fp_coord.units.is_time():
+        fmt = 'Invalid unit for forecast_period coord: {}'
+        raise ValueError(fmt.format(fp_coord.units))
+    if rt_coord.has_bounds() or fp_coord.has_bounds():
+        raise ValueError('Coordinate bounds are not supported')
+    if rt_coord.shape != (1,) or fp_coord.shape != (1,):
+        raise ValueError('Vector coordinates are not supported')
+
+    if rt_coord.standard_name == 'time':
+        rt_base_unit = str(rt_coord.units).split(' since ')[0]
+        fp = fp_coord.units.convert(fp_coord.points[0], rt_base_unit)
+        frt = rt_coord.points[0] - fp
+        return DimCoord(frt, 'forecast_reference_time', units=rt_coord.units)
+    elif rt_coord.standard_name == 'forecast_reference_time':
+        return validity_time_coord(rt_coord, fp_coord)
+    else:
+        fmt = 'Unexpected reference time coordinate: {}'
+        raise ValueError(fmt.format(rt_coord.name()))
+
+
 def validity_time_coord(frt_coord, fp_coord):
     """
     Create the validity or phenomenon time coordinate.
@@ -1375,7 +1422,7 @@ def statistical_cell_method(section):
     return cell_method
 
 
-def product_definition_template_0(section, metadata, frt_coord):
+def product_definition_template_0(section, metadata, rt_coord):
     """
     Translate template representing an analysis or forecast at a horizontal
     level or in a horizontal layer at a point in time.
@@ -1390,8 +1437,9 @@ def product_definition_template_0(section, metadata, frt_coord):
     * metadata:
         :class:`collections.OrderedDict` of metadata.
 
-    * frt_coord:
-        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+    * rt_coord:
+        The scalar "reference time" :class:`iris.coords.DimCoord`.
+        This will be either 'time' or 'forecast_reference_time'.
 
     """
     # Handle generating process details.
@@ -1407,13 +1455,14 @@ def product_definition_template_0(section, metadata, frt_coord):
     # Add the forecast period coordinate to the metadata aux coords.
     metadata['aux_coords_and_dims'].append((fp_coord, None))
 
-    # Calculate the validity (phenomenon) time.
-    t_coord = validity_time_coord(frt_coord, fp_coord)
+    # Calculate the "other" time coordinate - i.e. whichever of 'time'
+    # or 'forecast_reference_time' we don't already have.
+    other_coord = other_time_coord(rt_coord, fp_coord)
     # Add the time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((t_coord, None))
+    metadata['aux_coords_and_dims'].append((other_coord, None))
 
-    # Add the forecast reference time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((frt_coord, None))
+    # Add the reference time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((rt_coord, None))
 
     # Check for vertical coordinates.
     vertical_coords(section, metadata)
