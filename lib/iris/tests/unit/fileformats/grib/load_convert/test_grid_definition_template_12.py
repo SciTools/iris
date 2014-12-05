@@ -59,10 +59,10 @@ class Test(tests.IrisTest):
             'scanningMode': 64,
             'Di': 200000,
             'Dj': 100000,
-            'x1': 29300000,
-            'y1': 9200000,
-            'x2': 29900000,
-            'y2': 9400000
+            'X1': 29300000,
+            'Y1': 9200000,
+            'X2': 29900000,
+            'Y2': 9400000
         }
         return section
 
@@ -131,7 +131,7 @@ class Test(tests.IrisTest):
 
     def test_incompatible_grid_extent(self):
         section = self.section_3()
-        section['x2'] += 100
+        section['X2'] += 100
         metadata = empty_metadata()
         with self.assertRaisesRegexp(iris.exceptions.TranslationError,
                                      'grid'):

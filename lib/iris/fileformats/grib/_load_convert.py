@@ -711,10 +711,10 @@ def grid_definition_template_12(section, metadata):
 
     # Deal with bug in ECMWF GRIB API (present at 1.12.1) where these
     # values are treated as unsigned, 4-byte integers.
-    x1 = fixup_int32_from_uint32(section['x1'])
-    y1 = fixup_int32_from_uint32(section['y1'])
-    x2 = fixup_int32_from_uint32(section['x2'])
-    y2 = fixup_int32_from_uint32(section['y2'])
+    x1 = fixup_int32_from_uint32(section['X1'])
+    y1 = fixup_int32_from_uint32(section['Y1'])
+    x2 = fixup_int32_from_uint32(section['X2'])
+    y2 = fixup_int32_from_uint32(section['Y2'])
 
     # Rather unhelpfully this grid definition template seems to be
     # overspecified, and thus open to inconsistency.
