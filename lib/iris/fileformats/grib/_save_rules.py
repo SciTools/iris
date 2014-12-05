@@ -36,10 +36,11 @@ import iris
 import iris.exceptions
 import iris.unit
 from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
-from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
                                                  _TIME_RANGE_UNITS)
+from iris.util import is_regular, regular_step
+
 
 # Invert code tables from :mod:`iris.fileformats.grib._load_convert`.
 _STATISTIC_TYPE_NAMES = {val: key for key, val in
@@ -118,8 +119,6 @@ _RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT = 3  # NB "bit5", from MSB=1.
 # Reference Regulation 92.1.6
 _DEFAULT_DEGREES_UNITS = 1.0e-6
 
-# Units scaling for Grid Definition Template 3.12
-_TRANSVERSE_MERCATOR_DEGREES_UNITS = 1.0e-2
 
 ###############################################################################
 #
@@ -403,31 +402,40 @@ def grid_definition_template_12(cube, grib):
     x_coord = cube.coord(dimensions=[1])
     cs = y_coord.coord_system
 
+    # Normalise the coordinate values to centimetres - the resolution
+    # used in the GRIB message.
+    def points_in_cm(coord):
+        points = coord.units.convert(coord.points, 'cm')
+        points = np.around(points).astype(int)
+        return points
+    y_cm = points_in_cm(y_coord)
+    x_cm = points_in_cm(x_coord)
+
     # Set some keys specific to GDT12.
     # Encode the horizontal points.
-    x_step = regular_step(x_coord)
-    y_step = regular_step(y_coord)
-    gribapi.grib_set(grib, "Di",
-                     float(abs(x_step)) / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
-    gribapi.grib_set(grib, "Dj",
-                     float(abs(y_step)) / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
+
+    # NB. Since we're already in centimetres, our tolerance for
+    # discrepancy in the differences is 1.
+    def step(points):
+        diffs = points[1:] - points[:-1]
+        mean_diff = np.mean(diffs).astype(points.dtype)
+        if not np.allclose(diffs, mean_diff, atol=1):
+            msg = ('Irregular coordinates not supported for transverse '
+                   'Mercator.')
+            raise iris.exceptions.TranslationError(msg)
+        return int(mean_diff)
+
+    gribapi.grib_set(grib, 'Di', abs(step(x_cm)))
+    gribapi.grib_set(grib, 'Dj', abs(step(y_cm)))
     horizontal_grid_common(cube, grib)
 
     # GRIBAPI expects unsigned ints in X1, X2, Y1, Y2 but it should accept
     # signed ints, so work around this.
     # See https://software.ecmwf.int/issues/browse/SUP-1101
-    ensure_set_int32_value(
-        grib, "Y1",
-        int(y_coord.points[0] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
-    ensure_set_int32_value(
-        grib, "Y2",
-        int(y_coord.points[-1] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
-    ensure_set_int32_value(
-        grib, "X1",
-        int(x_coord.points[0] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
-    ensure_set_int32_value(
-        grib, "X2",
-        int(x_coord.points[-1] / _TRANSVERSE_MERCATOR_DEGREES_UNITS))
+    ensure_set_int32_value(grib, 'Y1', int(y_cm[0]))
+    ensure_set_int32_value(grib, 'Y2', int(y_cm[-1]))
+    ensure_set_int32_value(grib, 'X1', int(x_cm[0]))
+    ensure_set_int32_value(grib, 'X2', int(x_cm[-1]))
 
     # Lat and lon of reference point are measured in millionths of a degree.
     gribapi.grib_set(grib, "latitudeOfReferencePoint",
@@ -435,11 +443,14 @@ def grid_definition_template_12(cube, grib):
     gribapi.grib_set(grib, "longitudeOfReferencePoint",
                      cs.longitude_of_central_meridian / _DEFAULT_DEGREES_UNITS)
 
+    # Convert a value in metres into the closest integer number of
+    # centimetres.
+    def m_to_cm(value):
+        return int(round(value * 100))
+
     # False easting and false northing are measured in units of (10^-2)m.
-    gribapi.grib_set(grib, "XR",
-                     cs.false_easting / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
-    gribapi.grib_set(grib, "YR",
-                     cs.false_northing / _TRANSVERSE_MERCATOR_DEGREES_UNITS)
+    gribapi.grib_set(grib, 'XR', m_to_cm(cs.false_easting))
+    gribapi.grib_set(grib, 'YR', m_to_cm(cs.false_northing))
 
     # GRIBAPI expects a signed int for scaleFactorAtReferencePoint
     # but it should accept a float, so work around this.

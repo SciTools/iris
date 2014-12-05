@@ -28,6 +28,7 @@ import iris.tests as tests
 
 import numpy as np
 
+import iris.coords
 from iris.coord_systems import GeogCS, TransverseMercator
 from iris.exceptions import TranslationError
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
@@ -46,6 +47,24 @@ class Test(tests.IrisTest, GdtTestMixin):
         self.test_cube = self._make_test_cube()
 
         GdtTestMixin.setUp(self)
+
+    def _make_test_cube(self, cs=None, x_points=None, y_points=None):
+        # Create a cube with given properties, or minimal defaults.
+        if cs is None:
+            cs = self._default_coord_system()
+        if x_points is None:
+            x_points = self._default_x_points()
+        if y_points is None:
+            y_points = self._default_y_points()
+
+        x_coord = iris.coords.DimCoord(x_points, 'projection_x_coordinate',
+                                       units='m', coord_system=cs)
+        y_coord = iris.coords.DimCoord(y_points, 'projection_y_coordinate',
+                                       units='m', coord_system=cs)
+        test_cube = iris.cube.Cube(np.zeros((len(y_points), len(x_points))))
+        test_cube.add_dim_coord(y_coord, 0)
+        test_cube.add_dim_coord(x_coord, 1)
+        return test_cube
 
     def _default_coord_system(self):
         # This defines an OSGB coord system.
@@ -76,7 +95,7 @@ class Test(tests.IrisTest, GdtTestMixin):
         self._check_key('Ni', 13)
         self._check_key('Nj', 6)
 
-    def test__grid_points(self):
+    def test__grid_points_exact(self):
         test_cube = self._make_test_cube(x_points=[1, 3, 5, 7],
                                          y_points=[4, 9])
         grid_definition_template_12(test_cube, self.mock_grib)
@@ -84,8 +103,19 @@ class Test(tests.IrisTest, GdtTestMixin):
         self._check_key("X2", 700)
         self._check_key("Y1", 400)
         self._check_key("Y2", 900)
-        self._check_key("Di", 200.0)
-        self._check_key("Dj", 500.0)
+        self._check_key("Di", 200)
+        self._check_key("Dj", 500)
+
+    def test__grid_points_approx(self):
+        test_cube = self._make_test_cube(x_points=[1.001, 3.003, 5.005, 7.007],
+                                         y_points=[4, 9])
+        grid_definition_template_12(test_cube, self.mock_grib)
+        self._check_key("X1", 100)
+        self._check_key("X2", 701)
+        self._check_key("Y1", 400)
+        self._check_key("Y2", 900)
+        self._check_key("Di", 200)
+        self._check_key("Dj", 500)
 
     def test__negative_grid_points_gribapi_broken(self):
         self.mock_gribapi.GribInternalError = FakeGribError
