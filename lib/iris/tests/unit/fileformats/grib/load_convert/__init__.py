@@ -18,6 +18,10 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+# import iris tests first so that some things can be initialised
+# before importing anything else.
+import iris.tests as tests
+
 from collections import OrderedDict
 
 
@@ -33,3 +37,12 @@ def empty_metadata():
     metadata['dim_coords_and_dims'] = []
     metadata['aux_coords_and_dims'] = []
     return metadata
+
+
+class LoadConvertTest(tests.IrisTest):
+    def assertMetadataEqual(self, result, expected):
+        # Compare two metadata dictionaries. Gives slightly more
+        # helpful error message than: self.assertEqual(result, expected)
+        self.assertEqual(result.keys(), expected.keys())
+        for key in result.keys():
+            self.assertEqual(result[key], expected[key])

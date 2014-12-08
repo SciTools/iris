@@ -26,71 +26,82 @@ from __future__ import (absolute_import, division, print_function)
 # before importing anything else.
 import iris.tests as tests
 
-from copy import deepcopy
-import warnings
-
 import mock
 
+import iris.coords
+from iris.tests.unit.fileformats.grib.load_convert import (LoadConvertTest,
+                                                           empty_metadata)
 from iris.fileformats.grib._load_convert import product_definition_template_0
 
 
-class Test(tests.IrisTest):
-    def setUp(self):
-        module = 'iris.fileformats.grib._load_convert'
-        self.patch('warnings.warn')
-        this = '{}.data_cutoff'.format(module)
-        self.patch(this)
-        this = '{}.forecast_period_coord'.format(module)
-        self.forecast_period = mock.sentinel.forecast_period
-        self.patch(this, return_value=self.forecast_period)
-        this = '{}.validity_time_coord'.format(module)
-        self.time = mock.sentinel.time
-        self.patch(this, return_value=self.time)
-        this = '{}.vertical_coords'.format(module)
-        self.factory = mock.sentinel.factory
-        func = lambda s, m: m['factories'].append(self.factory)
-        self.patch(this, side_effect=func)
-        self.metadata = {'factories': [], 'references': [],
-                         'standard_name': None,
-                         'long_name': None, 'units': None, 'attributes': {},
-                         'cell_methods': [], 'dim_coords_and_dims': [],
-                         'aux_coords_and_dims': []}
+MDI = 0xffffffff
 
-    def _check(self, request_warning):
-        this = 'iris.fileformats.grib._load_convert.options'
-        with mock.patch(this, warn_on_unsupported=request_warning):
-            metadata = deepcopy(self.metadata)
-            indicator = mock.sentinel.indicatorOfUnitOfTimeRange
-            section = {'hoursAfterDataCutoff': None,
-                       'minutesAfterDataCutoff': None,
-                       'indicatorOfUnitOfTimeRange': indicator,
-                       'forecastTime': mock.sentinel.forecastTime}
-            forecast_reference_time = mock.sentinel.forecast_reference_time
-            # The called being tested.
-            product_definition_template_0(section, metadata,
-                                          forecast_reference_time)
-            expected = deepcopy(self.metadata)
-            expected['factories'].append(self.factory)
-            expected['aux_coords_and_dims'] = [(self.forecast_period, None),
-                                               (self.time, None),
-                                               (forecast_reference_time, None)]
-            self.assertEqual(metadata, expected)
-            if request_warning:
-                warn_msgs = [mcall[1][0] for mcall in warnings.warn.mock_calls]
-                expected_msgs = ['type of generating', 'background generating',
-                                 'forecast generating']
-                for emsg in expected_msgs:
-                    matches = [wmsg for wmsg in warn_msgs if emsg in wmsg]
-                    self.assertEqual(len(matches), 1)
-                    warn_msgs.remove(matches[0])
-            else:
-                self.assertEqual(len(warnings.warn.mock_calls), 0)
 
-    def test_pdt_no_warn(self):
-        self._check(False)
+def section_4():
+    return {'hoursAfterDataCutoff': MDI,
+            'minutesAfterDataCutoff': MDI,
+            'indicatorOfUnitOfTimeRange': 0,  # minutes
+            'forecastTime': 360,
+            'NV': 0,
+            'typeOfFirstFixedSurface': 103,
+            'scaleFactorOfFirstFixedSurface': 0,
+            'scaledValueOfFirstFixedSurface': 9999,
+            'typeOfSecondFixedSurface': 255}
 
-    def test_pdt_warn(self):
-        self._check(True)
+
+class Test(LoadConvertTest):
+    def test_given_frt(self):
+        metadata = empty_metadata()
+        rt_coord = iris.coords.DimCoord(24, 'forecast_reference_time',
+                                        units='hours since epoch')
+        product_definition_template_0(section_4(), metadata, rt_coord)
+        expected = empty_metadata()
+        aux = expected['aux_coords_and_dims']
+        aux.append((iris.coords.DimCoord(6, 'forecast_period', units='hours'),
+                    None))
+        aux.append((
+            iris.coords.DimCoord(30, 'time', units='hours since epoch'), None))
+        aux.append((rt_coord, None))
+        aux.append((iris.coords.DimCoord(9999, long_name='height', units='m'),
+                    None))
+        self.assertMetadataEqual(metadata, expected)
+
+    def test_given_t(self):
+        metadata = empty_metadata()
+        rt_coord = iris.coords.DimCoord(24, 'time',
+                                        units='hours since epoch')
+        product_definition_template_0(section_4(), metadata, rt_coord)
+        expected = empty_metadata()
+        aux = expected['aux_coords_and_dims']
+        aux.append((iris.coords.DimCoord(6, 'forecast_period', units='hours'),
+                    None))
+        aux.append((
+            iris.coords.DimCoord(18, 'forecast_reference_time',
+                                 units='hours since epoch'), None))
+        aux.append((rt_coord, None))
+        aux.append((iris.coords.DimCoord(9999, long_name='height', units='m'),
+                    None))
+        self.assertMetadataEqual(metadata, expected)
+
+    def test_generating_process_warnings(self):
+        metadata = empty_metadata()
+        rt_coord = iris.coords.DimCoord(24, 'forecast_reference_time',
+                                        units='hours since epoch')
+        convert_options = iris.fileformats.grib._load_convert.options
+        emit_warnings = convert_options.warn_on_unsupported
+        try:
+            convert_options.warn_on_unsupported = True
+            with mock.patch('warnings.warn') as warn:
+                product_definition_template_0(section_4(), metadata, rt_coord)
+            warn_msgs = [call[1][0] for call in warn.mock_calls]
+            expected = ['Unable to translate type of generating process.',
+                        'Unable to translate background generating process '
+                        'identifier.',
+                        'Unable to translate forecast generating process '
+                        'identifier.']
+            self.assertEqual(warn_msgs, expected)
+        finally:
+            convert_options.warn_on_unsupported = emit_warnings
 
 
 if __name__ == '__main__':
