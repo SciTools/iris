@@ -6,7 +6,6 @@ long [productionStatusOfProcessedData]: [0] != [255]
 [section2Length] not found in 2nd field
 long [numberOfSection] 6 out of 7 different
 long [numberOfSection] 5 out of 7 different
-long [shapeOfTheEarth]: [0] != [1]
 scaleFactorOfRadiusOfSphericalEarth is set to missing in 1st field is not missing in 2nd field
 scaledValueOfRadiusOfSphericalEarth is set to missing in 1st field is not missing in 2nd field
 long [numberOfSection] 6 out of 7 different

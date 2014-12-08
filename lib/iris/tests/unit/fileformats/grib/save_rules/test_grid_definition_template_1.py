@@ -52,30 +52,6 @@ class Test(tests.IrisTest, GdtTestMixin):
         grid_definition_template_1(self.test_cube, self.mock_grib)
         self._check_key('gridDefinitionTemplateNumber', 1)
 
-    def test__shape_of_earth_spherical(self):
-        ellipsoid = GeogCS(1.23)
-        cs = RotatedGeogCS(grid_north_pole_latitude=90.0,
-                           grid_north_pole_longitude=0.0,
-                           ellipsoid=ellipsoid)
-        test_cube = self._make_test_cube(cs=cs)
-        grid_definition_template_1(test_cube, self.mock_grib)
-        self._check_key('shapeOfTheEarth', 1)
-        self._check_key('scaleFactorOfRadiusOfSphericalEarth', 0)
-        self._check_key('scaledValueOfRadiusOfSphericalEarth', 1.23)
-
-    def test__shape_of_earth_flattened(self):
-        ellipsoid = GeogCS(semi_major_axis=1.456, semi_minor_axis=1.123)
-        cs = RotatedGeogCS(grid_north_pole_latitude=90.0,
-                           grid_north_pole_longitude=0.0,
-                           ellipsoid=ellipsoid)
-        test_cube = self._make_test_cube(cs=cs)
-        grid_definition_template_1(test_cube, self.mock_grib)
-        self._check_key('shapeOfTheEarth', 7)
-        self._check_key('scaleFactorOfEarthMajorAxis', 0)
-        self._check_key('scaledValueOfEarthMajorAxis', 1.456)
-        self._check_key('scaleFactorOfEarthMinorAxis', 0)
-        self._check_key('scaledValueOfEarthMinorAxis', 1.123)
-
     def test__grid_shape(self):
         test_cube = self._make_test_cube(x_points=np.arange(13),
                                          y_points=np.arange(6))
