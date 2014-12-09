@@ -190,6 +190,10 @@ Bugs fixed
 * A fix to allow :meth:`iris.cube.CubeList.concatenate` to deal with descending coordinate order.
 * Add missing NetCDF attribute `varname` when constructing a new :class:`iris.coords.AuxCoord`.
 * The datatype of time arrays converted with :func:`iris.util.unify_time_units` is now preserved.
+* Scalar dimension coordinates can now be concatenated with :meth:`iris.cube.CubeList.concatenate`.
+* Arbitrary names can no longer be set for elements of a :class:`iris.fileformats.pp.SplittableInt`.
+* Cubes that contain a pseudo-level coordinate can now be saved to PP.
+* Fixed a bug in the FieldsFile loader that prevented it always loading all available fields.
 
 Incompatible changes
 ====================
