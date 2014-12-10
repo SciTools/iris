@@ -31,6 +31,47 @@ from iris.coords import DimCoord, AuxCoord, Coord
 Pair = collections.namedtuple('Pair', 'points bounds')
 
 
+class Test_guess_bounds(tests.IrisTest):
+    def setUp(self):
+        self.coord = DimCoord(np.array([-160, -120, 0, 30, 150, 170]),
+                              units='degree', standard_name='longitude',
+                              circular=True)
+
+    def test_non_circular(self):
+        self.coord.circular = False
+        self.coord.guess_bounds()
+        target = np.array([[-180., -140.], [-140., -60.], [-60., 15.],
+                           [15., 90.], [90., 160.], [160., 180.]])
+        self.assertArrayEqual(target, self.coord.bounds)
+
+    def test_circular_increasing(self):
+        self.coord.guess_bounds()
+        target = np.array([[-175., -140.], [-140., -60.], [-60., 15.],
+                           [15., 90.], [90., 160.], [160., 185.]])
+        self.assertArrayEqual(target, self.coord.bounds)
+
+    def test_circular_decreasing(self):
+        self.coord.points = self.coord.points[::-1]
+        self.coord.guess_bounds()
+        target = np.array([[185., 160.], [160., 90.], [90., 15.],
+                           [15., -60.], [-60., -140.], [-140., -175.]])
+        self.assertArrayEqual(target, self.coord.bounds)
+
+    def test_circular_increasing_alt_range(self):
+        self.coord.points = np.array([10, 30, 90, 150, 210, 220])
+        self.coord.guess_bounds()
+        target = np.array([[-65., 20.], [20., 60.], [60., 120.],
+                           [120., 180.], [180., 215.], [215., 295.]])
+        self.assertArrayEqual(target, self.coord.bounds)
+
+    def test_circular_decreasing_alt_range(self):
+        self.coord.points = np.array([10, 30, 90, 150, 210, 220])[::-1]
+        self.coord.guess_bounds()
+        target = np.array([[295, 215], [215, 180], [180, 120], [120, 60],
+                           [60, 20], [20, -65]])
+        self.assertArrayEqual(target, self.coord.bounds)
+
+
 class Test_cell(tests.IrisTest):
     def _mock_coord(self):
         coord = mock.Mock(spec=Coord, ndim=1,
@@ -116,7 +157,7 @@ class Test_collapsed(tests.IrisTest):
                                           [4, 5, 7, 8],
                                           [7, 8, 10, 11]]))
         with self.assertRaises(ValueError):
-            collapsed_coord = coord.collapsed()
+            coord.collapsed()
 
 
 class Test_is_compatible(tests.IrisTest):

@@ -863,12 +863,6 @@ class TestNearestNeighbourAdditional(tests.IrisTest):
         results = [3, 2, 1, 0]
         self._test_nn_breakpoints(points, breaks, results,
                                   guess_bounds=True, bounds_point=0.4)
-        # same but circular...
-        breaks = [-110.0] + breaks
-        results = [0] + results
-        self._test_nn_breakpoints(points, breaks, results,
-                                  guess_bounds=True, bounds_point=0.4,
-                                  circular=True)
 
     def test_nearest_neighbour_odd_bounds(self):
         # additional: test with overlapping bounds

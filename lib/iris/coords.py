@@ -1001,10 +1001,17 @@ class Coord(CFVariableMixin):
             raise ValueError('Coord already has bounds. Remove the bounds '
                              'before guessing new ones.')
 
-        diffs = np.diff(self.points)
-
-        diffs = np.insert(diffs, 0, diffs[0])
-        diffs = np.append(diffs, diffs[-1])
+        if getattr(self, 'circular', False) is True:
+            points = np.empty(self.points.shape[0] + 2)
+            points[1:-1] = self.points
+            direction = 1 if self.points[-1] > self.points[0] else -1
+            points[0] = self.points[-1] - (self.units.modulus * direction)
+            points[-1] = self.points[0] + (self.units.modulus * direction)
+            diffs = np.diff(points)
+        else:
+            diffs = np.diff(self.points)
+            diffs = np.insert(diffs, 0, diffs[0])
+            diffs = np.append(diffs, diffs[-1])
 
         min_bounds = self.points - diffs[:-1] * bound_position
         max_bounds = self.points + diffs[1:] * (1 - bound_position)
