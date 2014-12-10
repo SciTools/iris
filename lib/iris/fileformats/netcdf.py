@@ -1391,10 +1391,9 @@ class Saver(object):
             # Create the cube CF-netCDF data variable.
             cf_var = self._dataset.createVariable(
                 cf_name, cube.lazy_data().dtype.newbyteorder('='), 
-                dimension_names)
+                dimension_names, **kwargs)
             # stream the data
-            biggus.save([cube.lazy_data()], [cf_var])
-
+            biggus.save([cube.lazy_data()], [cf_var], masked=True)
 
         if cube.standard_name:
             cf_var.standard_name = cube.standard_name
