@@ -3279,7 +3279,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             **kwargs)
         # and perform the data transformation, generating weights first if
         # needed
-        newkwargs = {}
+        newkwargs = copy.deepcopy(kwargs)
         if isinstance(aggregator, iris.analysis.WeightedAggregator) and \
                 aggregator.uses_weighting(**kwargs):
             if 'weights' in kwargs.keys():
