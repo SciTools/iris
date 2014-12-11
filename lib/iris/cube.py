@@ -2196,14 +2196,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
-            if points_only == True:
+            if points_only is True:
                 points = wrap_lons(coord.points, minimum, modulus)
                 inside_indices, = np.where(
                     np.logical_and(min_comp(minimum, points),
                                    max_comp(points, maximum)))
             else:
                 inside = np.logical_and(min_comp(minimum, bounds),
-                                    max_comp(bounds, maximum))
+                                        max_comp(bounds, maximum))
                 inside_indices, = np.where(np.any(inside, axis=1))
 
             # To ensure that bounds (and points) of matching cells aren't
@@ -2214,7 +2214,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # become [349.875, -9.5625] which is no longer valid. The lower
             # cell bound value (and possibly associated point) are
             # recalculated so that they are consistent with the extended
-            # wapping scheme which moves the wrap point to the correct lower
+            # wrapping scheme which moves the wrap point to the correct lower
             # bound value (-10.125) thus resulting in the cell no longer
             # being split. For bounds which may extend exactly the length of
             # the modulus, we simply preserve the point to bound difference,
