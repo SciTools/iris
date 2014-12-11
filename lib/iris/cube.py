@@ -2088,7 +2088,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return result
 
     def _intersect(self, name_or_coord, minimum, maximum,
-                   min_inclusive=True, max_inclusive=True):
+                   min_inclusive=True, max_inclusive=True, points_only=False):
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -2104,7 +2104,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         subsets, points, bounds = self._intersect_modulus(coord,
                                                           minimum, maximum,
                                                           min_inclusive,
-                                                          max_inclusive)
+                                                          max_inclusive,
+                                                          points_only)
 
         # By this point we have either one or two subsets along the relevant
         # dimension. If it's just one subset (which might be a slice or an
@@ -2178,7 +2179,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return result
 
     def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
-                           max_inclusive):
+                           max_inclusive, points_only):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError("requested range greater than coordinate's"
@@ -2195,9 +2196,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
-            inside = np.logical_and(min_comp(minimum, bounds),
+            if points_only == True:
+                points = wrap_lons(coord.points, minimum, modulus)
+                inside_indices, = np.where(
+                    np.logical_and(min_comp(minimum, points),
+                                   max_comp(points, maximum)))
+            else:
+                inside = np.logical_and(min_comp(minimum, bounds),
                                     max_comp(bounds, maximum))
-            inside_indices, = np.where(np.any(inside, axis=1))
+                inside_indices, = np.where(np.any(inside, axis=1))
 
             # To ensure that bounds (and points) of matching cells aren't
             # "scrambled" by the wrap operation we detect split cells that
