@@ -2087,6 +2087,68 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = result._intersect(name, *value)
         return result
 
+    def points_intersection(self, *args, **kwargs):
+        """
+        Return intersection of the cube's points with specified coordinate
+        ranges.
+
+        Coordinate ranges can be specified as:
+
+        (a) instances of :class:`iris.coords.CoordExtent`.
+
+        (b) keyword arguments, where the keyword name specifies the name
+            of the coordinate (as defined in :meth:`iris.cube.Cube.coords()`)
+            and the value defines the corresponding range of coordinate
+            values as a tuple. The tuple must contain two, three, or four
+            items corresponding to: (minimum, maximum, min_inclusive,
+            max_inclusive). Where the items are defined as:
+
+            * minimum
+                The minimum value of the range to select.
+
+            * maximum
+                The maximum value of the range to select.
+
+            * min_inclusive
+                If True, coordinate values equal to `minimum` will be included
+                in the selection. Default is True.
+
+            * max_inclusive
+                If True, coordinate values equal to `maximum` will be included
+                in the selection. Default is True.
+
+        .. note::
+
+            For ranges defined over "circular" coordinates (i.e. those
+            where the `units` attribute has a modulus defined) the cube
+            will be "rolled" to fit where neccesary.
+
+        .. warning::
+
+            Currently this routine only works with "circular"
+            coordinates (as defined in the previous note.)
+
+        For example::
+
+            >>> print cube.coord('longitude').points[40:50]
+            [ 22.5  27.5  32.5  37.5  42.5  47.5  52.5  57.5  62.5  67.5]
+            >>> subset = cube.points_intersection(longitude=(30,50))
+            >>> print subset.coord('longitude').points
+            [ 32.5  37.5  42.5  47.5]
+
+        Returns:
+            A new :class:`~iris.cube.Cube` giving the subset of the cube, the
+            points of which intersect with the requested coordinate intervals.
+
+        """
+        result = self
+        result.points_intersection = True
+        for arg in args:
+            result = result._intersect(*arg, points_only=True)
+        for name, value in kwargs.iteritems():
+            result = result._intersect(name, *value, points_only=True)
+        return result
+
     def _intersect(self, name_or_coord, minimum, maximum,
                    min_inclusive=True, max_inclusive=True, points_only=False):
         coord = self.coord(name_or_coord)
