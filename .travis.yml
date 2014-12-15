@@ -63,6 +63,10 @@ install:
   - conda list
   - conda info -a
 
+# Temporary workaround to avoid GitHub SSL verification when downloading
+# Natural Earth shapefiles.
+  - conda install python=2.7.8
+
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
 # i.e. There should be no DownloadWarning reports in the log.
   - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
