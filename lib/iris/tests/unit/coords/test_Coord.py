@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,6 +29,89 @@ from iris.coords import DimCoord, AuxCoord, Coord
 
 
 Pair = collections.namedtuple('Pair', 'points bounds')
+
+
+class Test_nearest_neighbour_index__ascending(tests.IrisTest):
+    def setUp(self):
+        points = [0., 90., 180., 270.]
+        self.coord = DimCoord(points, circular=False,
+                              units='degrees')
+
+    def _test_nearest_neighbour_index(self, target, bounds=None,
+                                      circular=False):
+        _bounds = [[-20, 10], [10, 100], [100, 260], [260, 340]]
+        ext_pnts = [-70, -10, 110, 275, 370]
+        if bounds is True:
+            self.coord.bounds = _bounds
+        else:
+            self.coord.bounds = bounds
+        self.coord.circular = circular
+        results = [self.coord.nearest_neighbour_index(ind) for ind in ext_pnts]
+        self.assertEqual(results, target)
+
+    def test_nobounds(self):
+        target = [0, 0, 1, 3, 3]
+        self._test_nearest_neighbour_index(target)
+
+    def test_nobounds_circular(self):
+        target = [3, 0, 1, 3, 0]
+        self._test_nearest_neighbour_index(target, circular=True)
+
+    def test_bounded(self):
+        target = [0, 0, 2, 3, 3]
+        self._test_nearest_neighbour_index(target, bounds=True)
+
+    def test_bounded_circular(self):
+        target = [3, 0, 2, 3, 0]
+        self._test_nearest_neighbour_index(target, bounds=True, circular=True)
+
+    def test_bounded_overlapping(self):
+        _bounds = [[-20, 50], [10, 150], [100, 300], [260, 340]]
+        target = [0, 0, 1, 2, 3]
+        self._test_nearest_neighbour_index(target, bounds=_bounds)
+
+    def test_bounded_disjointed(self):
+        _bounds = [[-20, 10], [80, 170], [180, 190], [240, 340]]
+        target = [0, 0, 1, 3, 3]
+        self._test_nearest_neighbour_index(target, bounds=_bounds)
+
+    def test_scalar(self):
+        self.coord = DimCoord([0], circular=False, units='degrees')
+        target = [0, 0, 0, 0, 0]
+        self._test_nearest_neighbour_index(target)
+
+
+class Test_nearest_neighbour_index__descending(tests.IrisTest):
+    def setUp(self):
+        points = [270., 180., 90., 0.]
+        self.coord = DimCoord(points, circular=False,
+                              units='degrees')
+
+    def _test_nearest_neighbour_index(self, target, bounds=False,
+                                      circular=False):
+        _bounds = [[340, 260], [260, 100], [100, 10], [10, -20]]
+        ext_pnts = [-70, -10, 110, 275, 370]
+        if bounds:
+            self.coord.bounds = _bounds
+        self.coord.circular = circular
+        results = [self.coord.nearest_neighbour_index(ind) for ind in ext_pnts]
+        self.assertEqual(results, target)
+
+    def test_nobounds(self):
+        target = [3, 3, 2, 0, 0]
+        self._test_nearest_neighbour_index(target)
+
+    def test_nobounds_circular(self):
+        target = [0, 3, 2, 0, 3]
+        self._test_nearest_neighbour_index(target, circular=True)
+
+    def test_bounded(self):
+        target = [3, 3, 1, 0, 0]
+        self._test_nearest_neighbour_index(target, bounds=True)
+
+    def test_bounded_circular(self):
+        target = [0, 3, 1, 0, 3]
+        self._test_nearest_neighbour_index(target, bounds=True, circular=True)
 
 
 class Test_guess_bounds(tests.IrisTest):
