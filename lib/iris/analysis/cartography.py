@@ -252,9 +252,6 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
     The resulting array will have a shape of
     *(radian_colat_bounds.shape[0], radian_lon_bounds.shape[0])*
 
-    The calculations are done at 64 bit precision and the returned array
-    will be of type numpy.float64.
-
     """
     # ensure pairs of bounds
     if (radian_colat_bounds.shape[-1] != 2 or
@@ -265,11 +262,10 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
 
     # fill in a new array of areas
     radius_sqr = radius_of_earth ** 2
-    radian_colat_64 = radian_colat_bounds.astype(np.float64)
-    radian_lon_64 = radian_lon_bounds.astype(np.float64)
 
-    ylen = np.cos(radian_colat_64[:, 0]) - np.cos(radian_colat_64[:, 1])
-    xlen = radian_lon_64[:, 1] - radian_lon_64[:, 0]
+    ylen = (np.cos(radian_colat_bounds[:, 0]) -
+            np.cos(radian_colat_bounds[:, 1]))
+    xlen = radian_lon_bounds[:, 1] - radian_lon_bounds[:, 0]
     areas = radius_sqr * np.outer(ylen, xlen)
 
     # we use abs because backwards bounds (min > max) give negative areas.

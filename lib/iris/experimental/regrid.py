@@ -947,9 +947,10 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     # Flag to indicate whether the original data was a masked array.
     src_masked = ma.isMaskedArray(src_data)
     if src_masked:
-        new_data = ma.zeros(new_shape, fill_value=src_data.fill_value)
+        new_data = ma.zeros(new_shape, fill_value=src_data.fill_value,
+                            dtype=src_data.dtype)
     else:
-        new_data = ma.zeros(new_shape)
+        new_data = ma.zeros(new_shape, dtype=src_data.dtype)
     # Assign to mask to explode it, allowing indexed assignment.
     new_data.mask = False
 
@@ -1180,15 +1181,12 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
     x_units = iris.unit.Unit('radians') if spherical else src_x.units
     y_units = iris.unit.Unit('radians') if spherical else src_y.units
 
-    # Operate in highest precision.
+    # Operate in source precision.
     src_dtype = np.promote_types(src_x.bounds.dtype, src_y.bounds.dtype)
-    grid_dtype = np.promote_types(grid_x.bounds.dtype, grid_y.bounds.dtype)
-    dtype = np.promote_types(src_dtype, grid_dtype)
-
-    src_x_bounds = _get_bounds_in_units(src_x, x_units, dtype)
-    src_y_bounds = _get_bounds_in_units(src_y, y_units, dtype)
-    grid_x_bounds = _get_bounds_in_units(grid_x, x_units, dtype)
-    grid_y_bounds = _get_bounds_in_units(grid_y, y_units, dtype)
+    src_x_bounds = _get_bounds_in_units(src_x, x_units, src_dtype)
+    src_y_bounds = _get_bounds_in_units(src_y, y_units, src_dtype)
+    grid_x_bounds = _get_bounds_in_units(grid_x, x_units, src_dtype)
+    grid_y_bounds = _get_bounds_in_units(grid_y, y_units, src_dtype)
 
     # Determine whether target grid bounds are decreasing. This must
     # be determined prior to wrap_lons being called.
