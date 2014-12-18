@@ -161,7 +161,7 @@ class TestConventionsAttributes(tests.IrisTest):
 
 
 class TestLazySave(tests.IrisTest):
-    def test_lazy(self):
+    def test_lazy_preserved_save(self):
         fpath = tests.get_data_path(('NetCDF', 'label_and_climate',
                                      'small_FC_167_mon_19601101.nc'))
         acube = iris.load_cube(fpath)
