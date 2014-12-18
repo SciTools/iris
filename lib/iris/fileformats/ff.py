@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -113,7 +113,7 @@ Y_COORD_V_GRID = (11, 19, 28)
 #: Grid codes found in the STASH master which are currently known to be
 #: handled correctly. A warning is issued if a grid is found which is not
 #: handled.
-HANDLED_GRIDS = (1, 2, 3, 4, 5, 26, 29) + X_COORD_U_GRID + Y_COORD_V_GRID
+HANDLED_GRIDS = (1, 2, 3, 4, 5, 21, 26, 29) + X_COORD_U_GRID + Y_COORD_V_GRID
 
 # REAL constants header names as described by UM documentation paper F3.
 # NB. These are zero-based indices as opposed to the one-based indices

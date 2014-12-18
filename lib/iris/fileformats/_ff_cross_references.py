@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -202,6 +202,7 @@ STASH_TRANS = {
     "m01s00i203": Stash(19, 57),
     "m01s00i204": Stash(1, 19),
     "m01s00i205": Stash(1, 36),
+    "m01s00i207": Stash(21, 1381),
     "m01s00i208": Stash(21, 1382),
     "m01s00i209": Stash(21, 1383),
     "m01s00i211": Stash(1, 218),

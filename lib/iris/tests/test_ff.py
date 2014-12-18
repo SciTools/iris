@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -224,12 +224,6 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
 
     def test_v(self):
         self._check_stash('m01s00i003', self.P_grid_x, self.V_grid_y)
-
-    def test_unhandled_grid_type(self):
-        with mock.patch('warnings.warn') as warn_fn:
-            self._check_stash('m01s00i005', self.P_grid_x, self.P_grid_y)
-            self.assertIn("Assuming the data is on a P grid.",
-                          warn_fn.call_args[0][0])
 
 
 class TestFFPayload(tests.IrisTest):
