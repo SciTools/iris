@@ -1,0 +1,5 @@
+* NetCDF saving to all NetCDF4/HDF encodings (the default) now uses biggus save, which streams the data payload during save.
+ * This enables cubes with data payloads larger than the system memory to be saved to netCDF. 
+ * After saving a cube's data payload will still be lazy, the data will not be loaded into memory.
+ * :func:`iris.fileformats.netcdf.save`.
+
