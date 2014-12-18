@@ -1,5 +1,4 @@
-You can either install Iris from source or from the Python package manager
-conda.
+You can either install Iris from source or from the conda package manager.
 
 Installing from Source
 ----------------------
@@ -114,6 +113,10 @@ pandas 0.11.0 or later (http://pandas.pydata.org)
 PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
     Python package for image processing.
 
+pyugrid 0.1.1 or later (https://github.com/pyugrid/pyugrid)
+    A Python API to utilize data written using the unstructured grid
+    UGRID conventions.
+
 shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
@@ -166,20 +169,19 @@ bit more frequently.
 Installing from conda
 ---------------------
 
-Iris can be installed using the Python package manager `conda <http://conda.pydata.org/>`_.
+Iris can be installed using the `conda <http://conda.pydata.org/>`_ package manager.
 
 Iris is available from conda for the following platforms:
  * Linux 64-bit,
  * Mac OSX 64-bit, and
  * Windows 32-bit and 64-bit.
 
-To install Iris from conda, you must first download and install conda.
-A lightweight version of conda called Miniconda is available for download from
+To install Iris from conda, you must first download and install conda, for example from
 http://conda.pydata.org/miniconda.html.
 
 Once conda is installed, you can install Iris from conda on any platform with the following command::
 
-  conda install -c SciTools iris
+  conda install -c scitools iris
 
 Further documentation on using conda and the features it provides can be found
 at http://conda.pydata.org/docs/intro.html.
