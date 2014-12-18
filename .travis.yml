@@ -50,6 +50,7 @@ install:
   # ---------------------------------
   - conda config --add channels scitools
   - conda install --quiet --file conda-requirements.txt
+  - conda install --quiet -c scitools/channel/dev biggus=0.7.0.post.180 --no-deps --yes
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
