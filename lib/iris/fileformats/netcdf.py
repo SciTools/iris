@@ -1370,19 +1370,31 @@ class Saver(object):
         while cf_name in self._dataset.variables:
             cf_name = self._increment_name(cf_name)
 
-        # Determine whether there is a cube MDI value.
-        fill_value = None
-        if isinstance(cube.data, ma.core.MaskedArray):
-            fill_value = cube.data.fill_value
+        # if netcdf3 avoid streaming due to dtype handling
+        if (not cube.has_lazy_data()
+                or self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                                 'NETCDF3_64BIT')):
+            # Determine whether there is a cube MDI value.
+            fill_value = None
+            if isinstance(cube.data, ma.core.MaskedArray):
+                fill_value = cube.data.fill_value
 
-        # Get the values in a form which is valid for the file format.
-        data = self._ensure_valid_dtype(cube.data, 'cube', cube)
+            # Get the values in a form which is valid for the file format.
+            data = self._ensure_valid_dtype(cube.data, 'cube', cube)
 
-        # Create the cube CF-netCDF data variable with data payload.
-        cf_var = self._dataset.createVariable(
-            cf_name, data.dtype.newbyteorder('='), dimension_names,
-            fill_value=fill_value, **kwargs)
-        cf_var[:] = data
+            # Create the cube CF-netCDF data variable with data payload.
+            cf_var = self._dataset.createVariable(
+                cf_name, data.dtype.newbyteorder('='), dimension_names,
+                fill_value=fill_value, **kwargs)
+            cf_var[:] = data
+
+        else:
+            # Create the cube CF-netCDF data variable.
+            cf_var = self._dataset.createVariable(
+                cf_name, cube.lazy_data().dtype.newbyteorder('='),
+                dimension_names, **kwargs)
+            # stream the data
+            biggus.save([cube.lazy_data()], [cf_var], masked=True)
 
         if cube.standard_name:
             cf_var.standard_name = cube.standard_name
@@ -1480,6 +1492,10 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     * Keyword arguments specifying how to save the data are applied
       to each cube. To use different settings for different cubes, use
       the NetCDF Context manager (:class:`~Saver`) directly.
+    * The save process will stream the data payload to the file using biggus,
+      enabling large data payloads to be saved and maintaining the 'lazy'
+      status of the cube's data payload, unless the netcdf_format is explicitly
+      specified to be 'NETCDF3' or 'NETCDF3_CLASSIC'.
 
     Args:
 
