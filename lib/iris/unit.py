@@ -172,7 +172,10 @@ _ut_set_error_message_handler = None
 # load the libc shared library
 #
 if _lib_c is None:
-    _lib_c = ctypes.cdll.msvcrt
+    if sys.platform == 'win32':
+        _lib_c = ctypes.cdll.msvcrt
+    else:
+        _lib_c = ctypes.CDLL(ctypes.util.find_library('libc'))
 
     #
     # cache common shared library functions
