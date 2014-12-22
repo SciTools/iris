@@ -2018,7 +2018,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
 
-    def intersection(self, ignore_bounds=False, *args, **kwargs):
+    def intersection(self, *args, **kwargs):
         """
         Return the intersection of the cube with specified coordinate
         ranges.
@@ -2084,6 +2084,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         result = self
+        ignore_bounds = False
+        if ignore_bounds in kwargs:
+            ignore_bounds = kwargs.pop('ignore_bounds')
         for arg in args:
             result = result._intersect(*arg, ignore_bounds=ignore_bounds)
         for name, value in kwargs.iteritems():
