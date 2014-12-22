@@ -415,8 +415,8 @@ def _load_aux_factory(engine, cube):
             for coord, cf_var_name in engine.provides['coordinates']:
                 if cf_var_name == name:
                     return coord
-            raise ValueError('Unable to find coordinate for variable '
-                             '{!r}'.format(name))
+            warnings.warn('Unable to find coordinate for variable '
+                          '{!r}'.format(name))
 
         if formula_type == 'atmosphere_hybrid_height_coordinate':
             delta = coord_from_term('a')
@@ -501,7 +501,10 @@ def load_cubes(filenames, callback=None):
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.
-            _load_aux_factory(engine, cube)
+            try:
+                _load_aux_factory(engine, cube)
+            except ValueError as e:
+                warnings.warn('{}'.format(e))
 
             # Perform any user registered callback function.
             cube = iris.io.run_callback(callback, cube, cf_var, filename)
