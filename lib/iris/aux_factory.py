@@ -63,7 +63,8 @@ class LazyArray(object):
         self._array = None
 
     def __repr__(self):
-        return '<LazyArray(shape={})>'.format(self.shape)
+        return '<LazyArray(shape={}, dtype({}))>'.format(self.shape,
+                                                         self.dtype)
 
     def _cached_array(self):
         if self._array is None:
