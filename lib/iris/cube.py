@@ -2018,7 +2018,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
 
-    def intersection(self, *args, **kwargs):
+    def intersection(self, ignore_bounds=False, *args, **kwargs):
         """
         Return the intersection of the cube with specified coordinate
         ranges.
@@ -2047,6 +2047,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             * max_inclusive
                 If True, coordinate values equal to `maximum` will be included
                 in the selection. Default is True.
+
+        Set the optional keyword argument *ignore_bounds* to True to perform a
+        points only intersection.
 
         .. note::
 
@@ -2082,75 +2085,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         result = self
         for arg in args:
-            result = result._intersect(*arg)
+            result = result._intersect(*arg, ignore_bounds=ignore_bounds)
         for name, value in kwargs.iteritems():
-            result = result._intersect(name, *value)
-        return result
-
-    def points_intersection(self, *args, **kwargs):
-        """
-        Return intersection of the cube's points with specified coordinate
-        ranges.
-
-        Coordinate ranges can be specified as:
-
-        (a) instances of :class:`iris.coords.CoordExtent`.
-
-        (b) keyword arguments, where the keyword name specifies the name
-            of the coordinate (as defined in :meth:`iris.cube.Cube.coords()`)
-            and the value defines the corresponding range of coordinate
-            values as a tuple. The tuple must contain two, three, or four
-            items corresponding to: (minimum, maximum, min_inclusive,
-            max_inclusive). Where the items are defined as:
-
-            * minimum
-                The minimum value of the range to select.
-
-            * maximum
-                The maximum value of the range to select.
-
-            * min_inclusive
-                If True, coordinate values equal to `minimum` will be included
-                in the selection. Default is True.
-
-            * max_inclusive
-                If True, coordinate values equal to `maximum` will be included
-                in the selection. Default is True.
-
-        .. note::
-
-            For ranges defined over "circular" coordinates (i.e. those
-            where the `units` attribute has a modulus defined) the cube
-            will be "rolled" to fit where neccesary.
-
-        .. warning::
-
-            Currently this routine only works with "circular"
-            coordinates (as defined in the previous note.)
-
-        For example::
-
-            >>> print cube.coord('longitude').points[40:50]
-            [ 22.5  27.5  32.5  37.5  42.5  47.5  52.5  57.5  62.5  67.5]
-            >>> subset = cube.points_intersection(longitude=(30,50))
-            >>> print subset.coord('longitude').points
-            [ 32.5  37.5  42.5  47.5]
-
-        Returns:
-            A new :class:`~iris.cube.Cube` giving the subset of the cube, the
-            points of which intersect with the requested coordinate intervals.
-
-        """
-        result = self
-        result.points_intersection = True
-        for arg in args:
-            result = result._intersect(*arg, points_only=True)
-        for name, value in kwargs.iteritems():
-            result = result._intersect(name, *value, points_only=True)
+            result = result._intersect(name, *value,
+                                       ignore_bounds=ignore_bounds)
         return result
 
     def _intersect(self, name_or_coord, minimum, maximum,
-                   min_inclusive=True, max_inclusive=True, points_only=False):
+                   min_inclusive=True, max_inclusive=True,
+                   ignore_bounds=False):
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -2167,7 +2110,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                           minimum, maximum,
                                                           min_inclusive,
                                                           max_inclusive,
-                                                          points_only)
+                                                          ignore_bounds)
 
         # By this point we have either one or two subsets along the relevant
         # dimension. If it's just one subset (which might be a slice or an
@@ -2241,7 +2184,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return result
 
     def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
-                           max_inclusive, points_only):
+                           max_inclusive, ignore_bounds):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError("requested range greater than coordinate's"
@@ -2258,7 +2201,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
-            if points_only is True:
+            if ignore_bounds is True:
                 points = wrap_lons(coord.points, minimum, modulus)
                 inside_indices, = np.where(
                     np.logical_and(min_comp(minimum, points),

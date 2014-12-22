@@ -661,6 +661,18 @@ class Test_intersection__Lazy(tests.IrisTest):
         self.assertEqual(result.data[0, 0, -1], 10)
 
 
+class Test_intersection_Points(tests.IrisTest):
+    def test_ignore_bounds(self):
+        cube = create_cube(0, 30, bounds=True)
+        result = cube.intersection(longitude=(9.5, 12.5), ignore_bounds=True)
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(10, 13))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [9.5, 10.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [11.5, 12.5])
+
+
 # Check what happens with a regional, points-only circular intersection
 # coordinate.
 class Test_intersection__RegionalSrcModulus(tests.IrisTest):
