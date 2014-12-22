@@ -2018,7 +2018,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
 
-    def intersection(self, ignore_bounds=False, *args, **kwargs):
+    def intersection(self, *args, **kwargs):
         """
         Return the intersection of the cube with specified coordinate
         ranges.
@@ -2048,8 +2048,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 If True, coordinate values equal to `maximum` will be included
                 in the selection. Default is True.
 
-        Set the optional keyword argument *ignore_bounds* to True to perform a
-        points only intersection.
+        To perform an intersection that ignores any bounds on the coordinates,
+        set the optional keyword argument *ignore_bounds* to True.
 
         .. note::
 
@@ -2084,6 +2084,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         result = self
+        ignore_bounds = kwargs.pop('ignore_bounds', False)
         for arg in args:
             result = result._intersect(*arg, ignore_bounds=ignore_bounds)
         for name, value in kwargs.iteritems():
