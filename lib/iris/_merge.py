@@ -1601,10 +1601,14 @@ class ProtoCube(object):
 
         # Coordinate sort function.
         # NB. This makes use of two properties which don't end up in
-        # the CoordDefn used by scalar_defns: `coord._points.dtype` and
+        # the CoordDefn used by scalar_defns: `coord.points.dtype` and
         # `type(coord)`.
         def key_func(coord):
-            return (not np.issubdtype(coord._points.dtype, np.number),
+            # Try to avoid evaluating LazyArray instances.
+            points_dtype = coord._points.dtype
+            if points_dtype is None:
+                points_dtype = coord.points.dtype
+            return (not np.issubdtype(points_dtype, np.number),
                     not isinstance(coord, iris.coords.DimCoord),
                     hint_dict.get(coord.name(), len(hint_dict) + 1),
                     axis_dict.get(iris.util.guess_coord_axis(coord),
