@@ -31,6 +31,7 @@ import iris
 import iris.experimental.um as um
 
 
+@tests.skip_data
 class TestLBC(tests.IrisTest):
     def setUp(self):
         # Load multiple cubes from a test file.
