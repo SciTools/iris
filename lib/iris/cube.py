@@ -2049,7 +2049,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 in the selection. Default is True.
 
         To perform an intersection that ignores any bounds on the coordinates,
-        set the optional keyword argument *ignore_bounds* to True.
+        set the optional keyword argument *ignore_bounds* to True. Defaults to
+        False.
 
         .. note::
 
@@ -2202,7 +2203,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
-            if ignore_bounds is True:
+            if ignore_bounds:
                 points = wrap_lons(coord.points, minimum, modulus)
                 inside_indices, = np.where(
                     np.logical_and(min_comp(minimum, points),
