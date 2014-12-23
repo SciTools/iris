@@ -2048,6 +2048,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 If True, coordinate values equal to `maximum` will be included
                 in the selection. Default is True.
 
+        To perform an intersection that ignores any bounds on the coordinates,
+        set the optional keyword argument *ignore_bounds* to True. Defaults to
+        False.
+
         .. note::
 
             For ranges defined over "circular" coordinates (i.e. those
@@ -2081,14 +2085,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         result = self
+        ignore_bounds = kwargs.pop('ignore_bounds', False)
         for arg in args:
-            result = result._intersect(*arg)
+            result = result._intersect(*arg, ignore_bounds=ignore_bounds)
         for name, value in kwargs.iteritems():
-            result = result._intersect(name, *value)
+            result = result._intersect(name, *value,
+                                       ignore_bounds=ignore_bounds)
         return result
 
     def _intersect(self, name_or_coord, minimum, maximum,
-                   min_inclusive=True, max_inclusive=True):
+                   min_inclusive=True, max_inclusive=True,
+                   ignore_bounds=False):
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -2104,7 +2111,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         subsets, points, bounds = self._intersect_modulus(coord,
                                                           minimum, maximum,
                                                           min_inclusive,
-                                                          max_inclusive)
+                                                          max_inclusive,
+                                                          ignore_bounds)
 
         # By this point we have either one or two subsets along the relevant
         # dimension. If it's just one subset (which might be a slice or an
@@ -2178,7 +2186,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return result
 
     def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
-                           max_inclusive):
+                           max_inclusive, ignore_bounds):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError("requested range greater than coordinate's"
@@ -2195,9 +2203,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
-            inside = np.logical_and(min_comp(minimum, bounds),
-                                    max_comp(bounds, maximum))
-            inside_indices, = np.where(np.any(inside, axis=1))
+            if ignore_bounds:
+                points = wrap_lons(coord.points, minimum, modulus)
+                inside_indices, = np.where(
+                    np.logical_and(min_comp(minimum, points),
+                                   max_comp(points, maximum)))
+            else:
+                inside = np.logical_and(min_comp(minimum, bounds),
+                                        max_comp(bounds, maximum))
+                inside_indices, = np.where(np.any(inside, axis=1))
 
             # To ensure that bounds (and points) of matching cells aren't
             # "scrambled" by the wrap operation we detect split cells that
@@ -2207,7 +2221,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # become [349.875, -9.5625] which is no longer valid. The lower
             # cell bound value (and possibly associated point) are
             # recalculated so that they are consistent with the extended
-            # wapping scheme which moves the wrap point to the correct lower
+            # wrapping scheme which moves the wrap point to the correct lower
             # bound value (-10.125) thus resulting in the cell no longer
             # being split. For bounds which may extend exactly the length of
             # the modulus, we simply preserve the point to bound difference,
