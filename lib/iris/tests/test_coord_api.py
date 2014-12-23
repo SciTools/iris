@@ -45,7 +45,7 @@ class TestLazy(unittest.TestCase):
         shape = (3, 4)
         dtype = np.int64
         point_func = lambda: np.arange(12, dtype=dtype).reshape(shape)
-        points = iris.aux_factory.LazyArray(shape, dtype, point_func)
+        points = iris.aux_factory.LazyArray(shape, point_func, dtype)
         self.coord = iris.coords.AuxCoord(points=points)
 
     def _check_lazy(self, coord):
