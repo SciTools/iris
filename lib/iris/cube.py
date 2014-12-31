@@ -1398,6 +1398,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return shape
 
     @property
+    def dtype(self):
+        """
+        Return the data type of this cube without causing the data payload
+        to be loaded into memory, which would happen if the cube.data.dtype
+        attribute was queried.
+        """
+        return self.lazy_data().dtype
+
+    @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
         return len(self.shape)
