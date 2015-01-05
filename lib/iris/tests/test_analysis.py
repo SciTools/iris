@@ -989,23 +989,6 @@ class TestRollingWindow(tests.IrisTest):
 
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
-    def test_missing_data_kwarg(self):
-        # rolling window with missing data not tolerated
-        self.cube.data = ma.array(self.cube.data,
-                                  mask=[[True, False, False, True],
-                                        [False, False, False, False],
-                                        [True, True, True, True]])
-        res_cube = self.cube.rolling_window('longitude', iris.analysis.MEAN,
-                                            window=2, mdtol=0)
-        expected_result = np.ma.array([[ -99., 11., -99.],
-                                      [ 10., 13., 17.],
-                                      [ -99., -99., -99.]],
-                                      mask=[[True, False, True],
-                                            [False, False, False],
-                                            [True, True, True]],
-                                      dtype=np.float64)
-        self.assertMaskedArrayEqual(expected_result, res_cube.data)
-
     def test_longitude_circular(self):
         cube = self.cube
         cube.coord('longitude').circular = True
