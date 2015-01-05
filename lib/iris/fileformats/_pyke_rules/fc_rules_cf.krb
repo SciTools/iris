@@ -868,7 +868,7 @@ fc_extras
 
     CM_PARSE = re.compile(  r'''
                                 (?P<name>([\w_]+:\s+)+)
-                                (?P<method>[\w_]+)\s*
+                                (?P<method>[\w_\s]+(?![\w_]*:))\s*
                                 (?:
                                     \(\s*
                                     (?P<extra>[^\)]+)
@@ -1487,8 +1487,17 @@ fc_extras
         if nc_cell_methods is not None:
             for m in CM_PARSE.finditer(nc_cell_methods):
                 d = m.groupdict()
-                if d[CM_METHOD].lower() not in CM_KNOWN_METHODS:
-                    warnings.warn('NetCDF variable {!r} contains unknown cell method {!r}'.format('{}'.format(cf_var_name), '{}'.format(d[CM_METHOD])))
+                method = d[CM_METHOD]
+                method = method.strip()
+                # Check validity of method, allowing for multi-part methods
+                # e.g. mean over years.
+                method_words = method.split()
+                if method_words[0].lower() not in CM_KNOWN_METHODS:
+                    msg = 'NetCDF variable {!r} contains unknown cell ' \
+                          'method {!r}'
+                    warnings.warn(msg.format('{}'.format(cf_var_name),
+                                             '{}'.format(method_words[0])))
+                d[CM_METHOD] = method
                 name = d[CM_NAME]
                 name = name.replace(' ', '')
                 name = name.rstrip(':')
