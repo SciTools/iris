@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -187,18 +187,14 @@ class TestBoundedCube(tests.GraphicsTest):
 
     def test_default_projection_and_extent(self):
         self.assertEqual(iplt.default_projection(self.cube),
-                         ccrs.PlateCarree()
-                         )
-
+                         ccrs.PlateCarree())
         np_testing.assert_array_almost_equal(
              iplt.default_projection_extent(self.cube),
-             [0., 360., -89.99995422, 89.99998474]
-                                             )
-
+             [0., 360., -89.99995422, 89.99998474])
         np_testing.assert_array_almost_equal(
-             iplt.default_projection_extent(self.cube, mode=iris.coords.BOUND_MODE),
-             (-1.87499952, 358.12500048, -91.24995422, 91.24998474)
-                                             )
+             iplt.default_projection_extent(
+                 self.cube, mode=iris.coords.BOUND_MODE),
+                 [-1.875046, 358.124954, -91.24995422, 91.24998474])
 
 
 @tests.skip_data
