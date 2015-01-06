@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -1154,6 +1154,17 @@ class Test_copy(tests.IrisTest):
     def test__lazy(self):
         cube = Cube(biggus.NumpyArrayAdapter(np.array([1, 0])))
         self._check_copy(cube, cube.copy())
+
+
+class Test_properties(tests.IrisTest):
+    def setUp(self):
+        self.cube_i8 = iris.cube.Cube(np.array([0,1], dtype=np.int8))
+        self.cube_f32 = iris.cube.Cube(np.array([0,1], dtype=np.float32))
+
+    def test_dtype(self):
+        # Check that the dtype property returns the correct numpy.dtype object.
+        self.assertEqual(self.cube_i8.dtype, np.int8)
+        self.assertEqual(self.cube_f32.dtype, np.float32)
 
 
 if __name__ == '__main__':
