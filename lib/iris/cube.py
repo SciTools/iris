@@ -1399,11 +1399,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @property
     def dtype(self):
-        """
-        Return the data type of this cube without causing the data payload
-        to be loaded into memory, which would happen if the cube.data.dtype
-        attribute was queried.
-        """
+        """The :class:`numpy.dtype` of the data of this cube."""
         return self.lazy_data().dtype
 
     @property
