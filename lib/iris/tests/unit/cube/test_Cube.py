@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -386,6 +386,19 @@ class Test_rolling_window(tests.IrisTest):
             long_name='month')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('month'), month_coord)
+
+    def test_kwargs(self):
+        # Rolling window with missing data not tolerated
+        window = 2
+        self.cube.data = np.ma.array(self.cube.data,
+                                     mask=([True, False, False,
+                                            False, True, False]))
+        res_cube = self.cube.rolling_window('val', iris.analysis.MEAN,
+                                            window, mdtol=0)
+        expected_result = np.ma.array([-99., 1.5, 2.5, -99., -99.],
+                                      mask=[True, False, False, True, True],
+                                      dtype=np.float64)
+        self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
 
 def create_cube(lon_min, lon_max, bounds=False):

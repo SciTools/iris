@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -3185,7 +3185,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             **kwargs)
         # and perform the data transformation, generating weights first if
         # needed
-        newkwargs = {}
         if isinstance(aggregator, iris.analysis.WeightedAggregator) and \
                 aggregator.uses_weighting(**kwargs):
             if 'weights' in kwargs.keys():
@@ -3194,11 +3193,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     raise ValueError('Weights for rolling window aggregation '
                                      'must be a 1d array with the same length '
                                      'as the window.')
-                newkwargs['weights'] = iris.util.broadcast_to_shape(
+                kwargs = dict(kwargs)
+                kwargs['weights'] = iris.util.broadcast_to_shape(
                     weights, rolling_window_data.shape, (dimension + 1,))
         new_cube.data = aggregator.aggregate(rolling_window_data,
                                              axis=dimension + 1,
-                                             **newkwargs)
+                                             **kwargs)
 
         return new_cube
 
