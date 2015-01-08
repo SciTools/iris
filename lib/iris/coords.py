@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -1002,10 +1002,17 @@ class Coord(CFVariableMixin):
             raise ValueError('Coord already has bounds. Remove the bounds '
                              'before guessing new ones.')
 
-        diffs = np.diff(self.points)
-
-        diffs = np.insert(diffs, 0, diffs[0])
-        diffs = np.append(diffs, diffs[-1])
+        if getattr(self, 'circular', False):
+            points = np.empty(self.points.shape[0] + 2)
+            points[1:-1] = self.points
+            direction = 1 if self.points[-1] > self.points[0] else -1
+            points[0] = self.points[-1] - (self.units.modulus * direction)
+            points[-1] = self.points[0] + (self.units.modulus * direction)
+            diffs = np.diff(points)
+        else:
+            diffs = np.diff(self.points)
+            diffs = np.insert(diffs, 0, diffs[0])
+            diffs = np.append(diffs, diffs[-1])
 
         min_bounds = self.points - diffs[:-1] * bound_position
         max_bounds = self.points + diffs[1:] * (1 - bound_position)
@@ -1126,14 +1133,21 @@ class Coord(CFVariableMixin):
         #     or if two are equally close, return the lowest index
         if self.has_bounds():
             # make bounds ranges complete+separate, so point is in at least one
+            increasing = self.bounds[0, 1] > self.bounds[0, 0]
             bounds = bounds.copy()
             # sort the bounds cells by their centre values
             sort_inds = np.argsort(np.mean(bounds, axis=1))
             bounds = bounds[sort_inds]
             # replace all adjacent bounds with their averages
-            mid_bounds = 0.5 * (bounds[:-1, 1] + bounds[1:, 0])
-            bounds[:-1, 1] = mid_bounds
-            bounds[1:, 0] = mid_bounds
+            if increasing:
+                mid_bounds = 0.5 * (bounds[:-1, 1] + bounds[1:, 0])
+                bounds[:-1, 1] = mid_bounds
+                bounds[1:, 0] = mid_bounds
+            else:
+                mid_bounds = 0.5 * (bounds[:-1, 0] + bounds[1:, 1])
+                bounds[:-1, 0] = mid_bounds
+                bounds[1:, 1] = mid_bounds
+
             # if point lies beyond either end, fix the end cell to include it
             bounds[0, 0] = min(point, bounds[0, 0])
             bounds[-1, 1] = max(point, bounds[-1, 1])
