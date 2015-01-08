@@ -246,9 +246,22 @@ class BuildPyWithExtras(build_py.build_py):
             MakePykeRules._pyke_rule_compile()
 
 
+def extract_version():
+    version = None
+    fdir = os.path.dirname(__file__)
+    fnme = os.path.join(fdir, 'lib', 'iris', '__init__.py')
+    with open(fnme) as fd:
+        for line in fd:
+            if (line.startswith('__version__')):
+                _, version = line.split('=')
+                version = version.strip()[1:-1]  # Remove quotation characters
+                break
+    return version
+
+
 setup(
     name='Iris',
-    version='1.7.4-DEV',
+    version=extract_version(),
     url='http://scitools.org.uk/iris/',
     author='UK Met Office',
 
