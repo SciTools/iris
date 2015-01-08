@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -673,7 +673,7 @@ class _LBProc(BitwiseInt):
 
         """
         if value < 0:
-            msg = 'Setting LBPROC with a negative value of {}'
+            msg = 'Negative values of LBPROC {} are not supported.'
             warnings.warn(msg.format(value))
         self._value = int(value)
 
