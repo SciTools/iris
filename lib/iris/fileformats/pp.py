@@ -673,8 +673,8 @@ class _LBProc(BitwiseInt):
 
         """
         if value < 0:
-            raise ValueError('Negative numbers not supported with '
-                             'splittable integers object')
+            msg = 'Setting LBPROC with a negative value of {}'
+            warnings.warn(msg.format(value))
         self._value = int(value)
 
     def __len__(self):
