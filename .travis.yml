@@ -95,9 +95,9 @@ install:
   - echo "[System]" >> $SITE_CFG
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
 
-  # The coding standards tests expect all the standard names and PyKE
+  # The coding standards and default tests expect all the standard names and PyKE
   # modules to be present.
-  - if [[ $TEST_TARGET == 'coding' ]]; then
+  - if [ $TEST_TARGET == 'coding' ] || [ $TEST_TARGET == 'default' ]; then
       python setup.py std_names;
       PYTHONPATH=lib python setup.py pyke_rules;
     fi
