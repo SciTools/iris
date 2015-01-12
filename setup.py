@@ -18,7 +18,6 @@ import setuptools
 sys.path.append('lib/iris/tests/runner')
 from _runner import TestRunner
 
-exclude_dirs = ['compiled_krb']
 
 # Returns the package and all its sub-packages
 def find_package_tree(root_path, root_package):
@@ -30,7 +29,10 @@ def find_package_tree(root_path, root_package):
             contains_init_file = os.path.isfile(os.path.join(dir_path,
                                                              dir_name,
                                                              '__init__.py'))
-            if dir_name in exclude_dirs or not contains_init_file:
+            if not contains_init_file:
+                dir_names.remove(dir_name)
+            # Exclude compiled PyKE rules, but keep associated unit tests.
+            if dir_name == 'compiled_krb' and 'tests' not in dir_path:
                 dir_names.remove(dir_name)
         if dir_names:
             prefix = dir_path.split('/')[root_count:]
