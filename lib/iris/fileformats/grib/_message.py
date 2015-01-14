@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -101,7 +101,7 @@ class _GribMessage(object):
                                    'unsupported quasi-regular grid.')
 
         template = grid_section['gridDefinitionTemplateNumber']
-        if template in (0, 1, 5, 12, 90):
+        if template in (0, 1, 5, 12, 40, 90):
             # We can ignore the first two bits (i-neg, j-pos) because
             # that is already captured in the coordinate values.
             if grid_section['scanningMode'] & 0x3f:
@@ -371,7 +371,7 @@ class _Section(object):
                        'satelliteNumber', 'instrumentType',
                        'scaleFactorOfCentralWaveNumber',
                        'scaledValueOfCentralWaveNumber',
-                       'longitudes', 'latitudes')
+                       'longitudes', 'latitudes', 'distinctLatitudes')
         if key in vector_keys:
             res = gribapi.grib_get_array(self._message_id, key)
         elif key == 'bitmap':
