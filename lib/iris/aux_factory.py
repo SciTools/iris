@@ -1100,6 +1100,7 @@ class OceanSigmaFactory(AuxCoordFactory):
         # Build a "lazy" points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
         points_shape = self._shape(nd_points_by_key)
+        points_dtype = self._dtype(nd_points_by_key)
 
         # Define the function here to obtain a closure.
         def calc_points():
@@ -1107,7 +1108,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                                 nd_points_by_key['eta'],
                                 nd_points_by_key['depth'])
 
-        points = LazyArray(points_shape, calc_points)
+        points = LazyArray(points_shape, calc_points, points_dtype)
 
         bounds = None
         if self.sigma and self.sigma.nbounds:
@@ -1115,6 +1116,7 @@ class OceanSigmaFactory(AuxCoordFactory):
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
             bounds_shape = self._shape(nd_values_by_key)
+            bounds_dtype = self._dtype(nd_values_by_key)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
@@ -1138,10 +1140,9 @@ class OceanSigmaFactory(AuxCoordFactory):
                         nd_values_by_key[key] = bounds
                 return self._derive(nd_values_by_key['sigma'],
                                     nd_values_by_key['eta'],
-                                    nd_values_by_key['depth'],
-                                    bounds_shape)
+                                    nd_values_by_key['depth'])
 
-            bounds = LazyArray(bounds_shape, calc_bounds)
+            bounds = LazyArray(bounds_shape, calc_bounds, bounds_dtype)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
