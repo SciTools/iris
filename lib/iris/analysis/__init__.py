@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -59,7 +59,7 @@ import scipy.stats.mstats
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
-from iris.analysis._linear import LinearRegridder
+from iris.analysis._linear import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -1600,8 +1600,8 @@ class Linear(object):
             which is to be regridded to the `target_grid`.
 
         """
-        return LinearRegridder(src_grid, target_grid,
-                               self._normalised_extrapolation_mode())
+        return RectilinearRegridder(src_grid, target_grid,
+                                    self._normalised_extrapolation_mode())
 
 
 class AreaWeighted(object):

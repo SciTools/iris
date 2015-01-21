@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ import iris.cube
 import iris.experimental.regrid as eregrid
 
 
-class LinearRegridder(object):
+class RectilinearRegridder(object):
     """
     This class provides support for performing regridding via linear
     interpolation.
@@ -87,10 +87,10 @@ class LinearRegridder(object):
     def __call__(self, cube):
         """
         Regrid this :class:`~iris.cube.Cube` on to the target grid of
-        this :class:`LinearRegridder`.
+        this :class:`RectilinearRegridder`.
 
         The given cube must be defined with the same grid as the source
-        grid used to create this :class:`LinearRegridder`.
+        grid used to create this :class:`RectilinearRegridder`.
 
         Args:
 

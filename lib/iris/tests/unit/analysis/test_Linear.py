@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -112,9 +112,9 @@ class Test_regridder(tests.IrisTest):
         linear = create_scheme(mode)
 
         # Check that calling `linear.regridder(...)` returns an instance
-        # of LinearRegridder which has been created using the correct
+        # of RectilinearRegridder which has been created using the correct
         # arguments.
-        with mock.patch('iris.analysis.LinearRegridder',
+        with mock.patch('iris.analysis.RectilinearRegridder',
                         return_value=mock.sentinel.regridder) as lr:
             regridder = linear.regridder(mock.sentinel.src,
                                          mock.sentinel.target)

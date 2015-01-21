@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.analysis._linear.LinearRegridder`."""
+"""Unit tests for :class:`iris.analysis._linear.RectilinearRegridder`."""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -25,7 +25,7 @@ import iris.tests as tests
 import mock
 import numpy as np
 
-from iris.analysis._linear import LinearRegridder
+from iris.analysis._linear import RectilinearRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
@@ -52,14 +52,14 @@ class Test(tests.IrisTest):
     def check_mode(self, mode):
         src_grid, target_grid = self.grids()
         kwargs = {'extrapolation_mode': mode}
-        regridder = LinearRegridder(src_grid, target_grid, **kwargs)
+        regridder = RectilinearRegridder(src_grid, target_grid, **kwargs)
         # Make a new cube to regrid with different data so we can
         # distinguish between regridding the original src grid
         # definition cube and the cube passed to the regridder.
         src = src_grid.copy()
         src.data += 10
 
-        # To avoid duplicating tests, just check the LinearRegridder
+        # To avoid duplicating tests, just check the RectilinearRegridder
         # defers to the experimental regrid function with the correct
         # arguments (and honouring the return value!)
         with mock.patch('iris.experimental.regrid.'
@@ -92,7 +92,7 @@ class Test(tests.IrisTest):
     def test_invalid_mode(self):
         src, target = self.grids()
         with self.assertRaises(ValueError):
-            LinearRegridder(src, target, 'magic')
+            RectilinearRegridder(src, target, 'magic')
 
     def test_mismatched_src_coord_systems(self):
         src = Cube(np.zeros((3, 4)))
@@ -103,7 +103,7 @@ class Test(tests.IrisTest):
         src.add_dim_coord(lon, 1)
         target = mock.Mock()
         with self.assertRaises(ValueError):
-            LinearRegridder(src, target, 'extrapolate')
+            RectilinearRegridder(src, target, 'extrapolate')
 
 
 if __name__ == '__main__':
