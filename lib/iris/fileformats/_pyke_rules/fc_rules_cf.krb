@@ -40,7 +40,7 @@ fc_default
 
 #
 # Context:
-#   This rule will trigger iff a grid_mapping() case specific fact 
+#   This rule will trigger iff a grid_mapping() case specific fact
 #   has been asserted that refers to a rotated pole.
 #
 # Purpose:
@@ -99,10 +99,10 @@ fc_provides_grid_mapping_transverse_mercator
 #
 # Context:
 #   This rule will trigger iff a coordinate() case specific fact
-#   has been asserted that refers to a CF latitude coordinate.     
+#   has been asserted that refers to a CF latitude coordinate.
 #
 # Purpose:
-#   Assert that the CF latitude coordinate exists.    
+#   Assert that the CF latitude coordinate exists.
 #
 fc_provides_coordinate_latitude
     foreach
@@ -335,10 +335,10 @@ fc_build_auxiliary_coordinate_longitude_rotated
 #
 # Context:
 #   This rule will trigger for each auxiliary_coordinate() case specific fact
-#   that is not a spatio-temporal related auxiliary coordinate. 
+#   that is not a spatio-temporal related auxiliary coordinate.
 #
 # Purpose:
-#   Add the auxiliary coordinate to the cube.    
+#   Add the auxiliary coordinate to the cube.
 #
 fc_build_auxiliary_coordinate
     foreach
@@ -434,7 +434,7 @@ fc_build_coordinate_longitude_rotated
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_GRID_LON,
                                           coord_system=engine.provides['coordinate_system'])
-        python engine.rule_triggered.add(rule.name)        
+        python engine.rule_triggered.add(rule.name)
 
 
 #
@@ -482,7 +482,7 @@ fc_build_coordinate_longitude_nocs
                                           coord_system=None)
         python engine.rule_triggered.add(rule.name)
 
-        
+
 #
 # Context:
 #   This rule will trigger iff a projection_x_coordinate coordinate exists and
@@ -608,8 +608,8 @@ fc_attribute_ukmo__process_flags
         python attr_value = engine.cf_var.ukmo__process_flags
         python engine.cube.attributes['ukmo__process_flags'] = tuple([x.replace("_", " ") for x in attr_value.split(" ")])
         python engine.rule_triggered.add(rule.name)
-        
-        
+
+
 #
 # Context:
 #   This rule will trigger iff a formula term that refers to a
@@ -764,8 +764,8 @@ fc_extras
     import iris.std_names
     import iris.unit
     import iris.util
-    
-    
+
+
     #
     # UD Units Constants (based on Unidata udunits.dat definition file)
     #
@@ -775,7 +775,7 @@ fc_extras
     UD_UNITS_LON = ['degrees_east', 'degree_east', 'degree_e', 'degrees_e',
                     'degreee', 'degreese', 'degrees', 'degrees east',
                     'degree east', 'degree e', 'degrees e']
-    
+
     #
     # CF Dimensionless Vertical Coordinates
     #
@@ -807,7 +807,7 @@ fc_extras
     CF_GRID_MAPPING_STEREO = 'stereographic'
     CF_GRID_MAPPING_TRANSVERSE = 'transverse_mercator'
     CF_GRID_MAPPING_VERTICAL = 'vertical_perspective'
-    
+
     #
     # CF Attribute Names.
     #
@@ -835,7 +835,7 @@ fc_extras
     CF_ATTR_LONG_NAME = 'long_name'
     CF_ATTR_UNITS = 'units'
     CF_ATTR_CELL_METHODS = 'cell_methods'
-    
+
     #
     # CF Attribute Value Constants.
     #
@@ -844,11 +844,11 @@ fc_extras
     CF_VALUE_AXIS_Y = 'y'
     CF_VALUE_AXIS_T = 't'
     CF_VALUE_AXIS_Z = 'z'
-    
-    
+
+
     # Attribute - positive.
     CF_VALUE_POSITIVE = ['down', 'up']
-    
+
     # Attribute - standard_name.
     CF_VALUE_STD_NAME_LAT = 'latitude'
     CF_VALUE_STD_NAME_LON = 'longitude'
@@ -856,11 +856,11 @@ fc_extras
     CF_VALUE_STD_NAME_GRID_LON = 'grid_longitude'
     CF_VALUE_STD_NAME_PROJ_X = 'projection_x_coordinate'
     CF_VALUE_STD_NAME_PROJ_Y = 'projection_y_coordinate'
-    
+
     # Cell methods.
     CM_KNOWN_METHODS = ['point', 'sum', 'mean', 'maximum', 'minimum', 'mid_range',
                         'standard_deviation', 'variance', 'mode', 'median']
-    
+
     CM_COMMENT = 'comment'
     CM_EXTRA = 'extra'
     CM_INTERVAL = 'interval'
@@ -908,7 +908,7 @@ fc_extras
         nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
         cube.cell_methods = _parse_cell_methods(cf_var.cf_name, nc_att_cell_methods)
 
-        # Set the cube global attributes. 
+        # Set the cube global attributes.
         for attr_name, attr_value in cf_var.cf_group.global_attributes.iteritems():
             try:
                 if isinstance(attr_value, unicode):
@@ -937,7 +937,7 @@ fc_extras
 
         # Check for a default spherical earth.
         if major is None and minor is None and inverse_flattening is None:
-            major = getattr(cf_grid_var, CF_ATTR_GRID_EARTH_RADIUS, None) 
+            major = getattr(cf_grid_var, CF_ATTR_GRID_EARTH_RADIUS, None)
 
         return major, minor, inverse_flattening
 
@@ -1153,27 +1153,40 @@ fc_extras
         cube = engine.cube
         attributes = {}
 
+        # Get units
         attr_units = get_attr_units(cf_coord_var, attributes)
-        points_data = cf_coord_var[:]
-        # Gracefully fill points masked array.
-        if ma.isMaskedArray(points_data):
-            points_data = ma.filled(points_data)
-            msg = 'Gracefully filling {!r} dimension coordinate masked points'
-            warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+
+        # Get any coordinate point data.
+        if isinstance(cf_coord_var, cf.CFLabelVariable):
+            points_data = cf_coord_var.cf_label_data(cf_var)
+        else:
+            dtype = cf_coord_var.dtype
+            fill_value = getattr(cf_coord_var.cf_data, '_FillValue',
+                                 netCDF4.default_fillvals[dtype.str[1:]])
+            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
+                cf_coord_var.shape, dtype, engine.filename,
+                cf_coord_var.cf_name, fill_value)
+            points_data = biggus.OrthoArrayAdapter(proxy)
 
         # Get any coordinate bounds.
         cf_bounds_var = get_cf_bounds_var(cf_coord_var)
         if cf_bounds_var is not None:
-            bounds_data = cf_bounds_var[:]
-            # Gracefully fill bounds masked array.
-            if ma.isMaskedArray(bounds_data):
-                bounds_data = ma.filled(bounds_data)
-                msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
-                warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+            dtype = cf_bounds_var.dtype
+            fill_value = getattr(cf_bounds_var.cf_data, '_FillValue',
+                                 netCDF4.default_fillvals[dtype.str[1:]])
+            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
+                cf_bounds_var.shape, dtype, engine.filename,
+                cf_bounds_var.cf_name, fill_value)
+            bounds_data = biggus.OrthoArrayAdapter(proxy)
+
             # Handle transposed bounds where the vertex dimension is not
             # the last one. Test based on shape to support different
             # dimension names.
             if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
+                # Biggus 0.7 doesn't support rollaxis, so we have to
+                # resolve the data to a numpy array.
+                # NB. This is what used to happen with LazyArray as well.
+                bounds_data = bounds_data.ndarray()
                 bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var,
                                                   cf_coord_var)
         else:
@@ -1230,7 +1243,7 @@ fc_extras
             else:
                 # Scalar coords are placed in the aux_coords container.
                 cube.add_aux_coord(coord, data_dims)
-            
+
         # Update the coordinate to CF-netCDF variable mapping.
         engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
 
@@ -1285,7 +1298,7 @@ fc_extras
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
         common_dims = filter(lambda dim: dim in cf_var.dimensions, cf_coord_var.dimensions)
-        data_dims = None    
+        data_dims = None
         if common_dims:
             # Calculate the offset of each common dimension.
             data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
@@ -1314,10 +1327,10 @@ fc_extras
     def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
         """
         Determine whether the CF coordinate variable is a latitude/longitude variable.
-        
+
         Ref: [CF] Section 4.1 Latitude Coordinate.
              [CF] Section 4.2 Longitude Coordinate.
-        
+
         """
         is_valid = False
         attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
@@ -1359,7 +1372,7 @@ fc_extras
     def is_latitude(engine, cf_name):
         """Determine whether the CF coordinate variable is a latitude variable."""
         cf_var = engine.cf_var.cf_group[cf_name]
-        return _is_lat_lon(cf_var, UD_UNITS_LAT, CF_VALUE_STD_NAME_LAT, 
+        return _is_lat_lon(cf_var, UD_UNITS_LAT, CF_VALUE_STD_NAME_LAT,
                            CF_VALUE_STD_NAME_GRID_LAT, CF_VALUE_AXIS_Y, ['lat', 'rlat'])
 
 
@@ -1415,7 +1428,7 @@ fc_extras
             is_time_reference = iris.unit.Unit(attr_units or 1).is_time_reference()
         except ValueError:
             is_time_reference = False
-        
+
         return is_time_reference and (attr_std_name=='time' or attr_axis.lower()==CF_VALUE_AXIS_T)
 
 
@@ -1537,6 +1550,6 @@ fc_extras
                     if len(d[CM_NAME]) != len(comment) and len(comment) == 1:
                         comment = comment*len(d[CM_NAME])
                 d[CM_INTERVAL] = tuple(interval)
-                d[CM_COMMENT] = tuple(comment)               
+                d[CM_COMMENT] = tuple(comment)
                 cell_methods.append(iris.coords.CellMethod(d[CM_METHOD], coords=d[CM_NAME], intervals=d[CM_INTERVAL], comments=d[CM_COMMENT]))
         return tuple(cell_methods)
