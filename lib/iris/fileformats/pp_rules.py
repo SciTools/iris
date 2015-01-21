@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.exceptions import TranslationError
 from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
 from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
@@ -608,6 +609,16 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
             None))
         coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
 
+    if \
+            (len(lbcode) == 5) and \
+            (lbcode[-1] == 3) and \
+            (lbtim.ib == 2) and  (lbtim.ic == 2):
+        coords_and_dims.append((
+            DimCoord(standard_name='forecast_reference_time',
+                     units=epoch_hours_unit,
+                     points=t2_epoch_hours - lbft),
+            None))
+
     return coords_and_dims
 
 
@@ -766,6 +777,7 @@ def convert(f):
     aux_coords_and_dims = []
 
     # "Normal" (non-cross-sectional) Time values (--> scalar coordinates)
+    # Our spurious scalar time coord gets introduced by this call...
     time_coords_and_dims = _convert_scalar_time_coords(
         lbcode=f.lbcode, lbtim=f.lbtim,
         epoch_hours_unit=f.time_unit('hours'),
@@ -968,30 +980,78 @@ def _all_other_rules(f):
 
     # Cross-sectional time values (--> vector coordinates)
     if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.iy == 23):
+        epoch_hours_unit = f.time_unit('hours')
         dim_coords_and_dims.append(
             (DimCoord(
                 f.y,
                 standard_name='time',
-                units=Unit('days since 0000-01-01 00:00:00',
+                units=Unit(epoch_hours_unit,
                            calendar=iris.unit.CALENDAR_360_DAY),
                 bounds=f.y_bounds),
              0))
 
     if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.ix == 23):
+        epoch_hours_unit = f.time_unit('hours')
         dim_coords_and_dims.append(
             (DimCoord(
                 f.x,
                 standard_name='time',
-                units=Unit('days since 0000-01-01 00:00:00',
+                units=Unit(epoch_hours_unit,
                            calendar=iris.unit.CALENDAR_360_DAY),
                 bounds=f.x_bounds),
              1))
 
-    # Site number (--> scalar coordinate)
-    if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.ix == 13 and
-            f.bdx != 0):
+    # Check for cross-section over-specification.
+    if (len(f.lbcode) == 5 and
+            f.lbcode[-1] == 3 and
+            f.lbcode.ix == 23 and
+            hasattr(f, 'x')):
+        epoch_hours_unit = f.time_unit('hours')
+        t1_epoch_hours = epoch_hours_unit.date2num(f.t1)
+        if t1_epoch_hours != f.x[0]:
+            msg = ('PP cross-section file is over-specified for '
+                   'the time dimension, but the sets of values do not match.')
+            raise TranslationError(msg)
+
+    if (len(f.lbcode) == 5 and
+            f.lbcode[-1] == 3 and
+            f.lbcode.iy == 23 and
+            hasattr(f, 'y')):
+        epoch_hours_unit = f.time_unit('hours')
+        t1_epoch_hours = epoch_hours_unit.date2num(f.t1)
+        if t1_epoch_hours != f.y[0]:
+            msg = ('PP cross-section file is over-specified for '
+                   'the time dimension, but the sets of values do not match.')
+            raise TranslationError(msg)
+
+    # More cross-sectional time values (--> vector coordinates)
+    if (len(f.lbcode) == 5 and f.lbcode[-1] == 3 and f.lbcode.iy == 23):
+        epoch_hours_unit = f.time_unit('hours')
+        t1_epoch_hours = epoch_hours_unit.date2num(f.t1)
+        t2_epoch_hours = epoch_hours_unit.date2num(f.t2)
+        # The end time is exclusive, not inclusive.
+        hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
+        timestep = hours_from_t1_to_t2 / f.lbrow
+        t2_epoch_hours -= timestep
         dim_coords_and_dims.append(
-            (DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt,
+            (DimCoord(
+                np.linspace(t1_epoch_hours, t2_epoch_hours, f.lbrow),
+                standard_name='time',
+                units=Unit(epoch_hours_unit,
+                           calendar=iris.unit.CALENDAR_360_DAY),
+                bounds=f.y_bounds),
+             0))
+
+    # Site number (--> scalar coordinate)
+    if (len(f.lbcode) == 5 and f.lbcode.ix == 13):
+        if f.bdx != 0.0:
+            point_zero = f.bzx
+            point_spacing = f.bdx
+        else:
+            point_zero = 0.0
+            point_spacing = 1.0
+        dim_coords_and_dims.append(
+            (DimCoord.from_regular(point_zero, point_spacing, f.lbnpt,
                                    long_name='site_number', units='1'),
              1))
 

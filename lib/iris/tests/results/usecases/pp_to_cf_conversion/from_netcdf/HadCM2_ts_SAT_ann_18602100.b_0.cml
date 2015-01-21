@@ -24,8 +24,8 @@
         <dimCoord id="2718ad80" long_name="site_number" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32" var_name="site_number"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="6bc2e82a" points="[670020.0, 670380.0, 670740.0, ..., 755340.0,
-		755700.0, 756060.0]" shape="(240,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
+        <dimCoord id="2789ad5b" points="[670020.0, 670380.0, 670740.0, ..., 755340.0,
+		755700.0, 756060.0]" shape="(240,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>
