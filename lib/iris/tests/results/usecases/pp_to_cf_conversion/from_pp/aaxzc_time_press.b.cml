@@ -12,7 +12,7 @@
 		1000.0]" shape="(15,)" units="Unit('hPa')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="42c82ea7" points="[756690.0, 763890.0, 771090.0, 778290.0]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+        <dimCoord id="4c12dc80" points="[756690.0, 763890.0, 771090.0, 778290.0]" shape="(4,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods>
