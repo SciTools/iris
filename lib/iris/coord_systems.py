@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -315,12 +315,20 @@ class RotatedGeogCS(CoordSystem):
         return CoordSystem.xml_element(self, doc, self._pretty_attrs())
 
     def as_cartopy_crs(self):
+        globe = None
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
         return ccrs.RotatedGeodetic(self.grid_north_pole_longitude,
-                                    self.grid_north_pole_latitude)
+                                    self.grid_north_pole_latitude,
+                                    globe=globe)
 
     def as_cartopy_projection(self):
+        globe = None
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
         return ccrs.RotatedPole(self.grid_north_pole_longitude,
-                                self.grid_north_pole_latitude)
+                                self.grid_north_pole_latitude,
+                                globe=globe)
 
 
 class TransverseMercator(CoordSystem):
