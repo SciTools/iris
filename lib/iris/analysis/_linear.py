@@ -33,13 +33,13 @@ import iris.cube
 
 class RectilinearRegridder(object):
     """
-    This class provides support for performing regridding via linear
-    interpolation.
+    This class provides support for performing nearest-neighbour or
+    linear regridding between source and target grids.
 
     """
-    def __init__(self, src_grid_cube, tgt_grid_cube, extrapolation_mode):
+    def __init__(self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode):
         """
-        Create a linear regridder for conversions between the source
+        Create a regridder for conversions between the source
         and target grids.
 
         Args:
@@ -48,6 +48,8 @@ class RectilinearRegridder(object):
             The :class:`~iris.cube.Cube` providing the source grid.
         * tgt_grid_cube:
             The :class:`~iris.cube.Cube` providing the target grid.
+        * method:
+            Either 'linear' or 'nearest'.
         * extrapolation_mode:
             Must be one of the following strings:
 
@@ -76,6 +78,11 @@ class RectilinearRegridder(object):
         # Check the target grid units.
         for coord in self._tgt_grid:
             self._check_units(coord)
+        # Whether to use linear or nearest-neighbour interpolation.
+        if method not in ('linear', 'nearest'):
+            msg = 'Regridding method {!r} not supported.'.format(method)
+            raise ValueError(msg)
+        self._method = method
         # The extrapolation mode.
         if extrapolation_mode not in EXTRAPOLATION_MODES:
             msg = 'Invalid extrapolation mode {!r}'
@@ -120,10 +127,10 @@ class RectilinearRegridder(object):
         return sample_grid_x, sample_grid_y
 
     @staticmethod
-    def _regrid_bilinear_array(src_data, x_dim, y_dim,
-                               src_x_coord, src_y_coord,
-                               sample_grid_x, sample_grid_y,
-                               extrapolation_mode='nanmask'):
+    def _regrid(src_data, x_dim, y_dim,
+                src_x_coord, src_y_coord,
+                sample_grid_x, sample_grid_y,
+                method='linear', extrapolation_mode='nanmask'):
         """
         Regrid the given data from the src grid to the sample grid.
 
@@ -157,6 +164,8 @@ class RectilinearRegridder(object):
 
         Kwargs:
 
+        * method:
+            Either 'linear' or 'nearest'. The default method is 'linear'.
         * extrapolation_mode:
             Must be one of the following strings:
 
@@ -458,7 +467,7 @@ class RectilinearRegridder(object):
             A cube defined with the horizontal dimensions of the target
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid using
-            linear interpolation.
+            either nearest-neighbour or linear interpolation.
 
         """
         # Validity checks.
@@ -497,13 +506,14 @@ class RectilinearRegridder(object):
         # Compute the interpolated data values.
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
-        data = self._regrid_bilinear_array(src.data, x_dim, y_dim,
-                                           src_x_coord, src_y_coord,
-                                           sample_grid_x, sample_grid_y,
-                                           self._extrapolation_mode)
+        data = self._regrid(src.data, x_dim, y_dim,
+                            src_x_coord, src_y_coord,
+                            sample_grid_x, sample_grid_y,
+                            self._method, self._extrapolation_mode)
 
         # Wrap up the data as a Cube.
-        regrid_callback = functools.partial(self._regrid_bilinear_array,
+        regrid_callback = functools.partial(self._regrid,
+                                            method=self._method,
                                             extrapolation_mode='nan')
         result = self._create_cube(data, src, x_dim, y_dim,
                                    src_x_coord, src_y_coord,

@@ -43,7 +43,8 @@ RESULT_DIR = ('analysis', 'linear')
 class Test___call____rotated_to_lat_lon(tests.IrisTest):
     def setUp(self):
         self.src = realistic_4d()[:5, :2, ::40, ::30]
-        self.mode = 'mask'
+        # Regridder method and extrapolation-mode.
+        self.args = ('linear', 'mask')
 
     def test_single_point(self):
         src = self.src[0, 0]
@@ -52,7 +53,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         # rotated coordinates of src[1, 1] into lat/lon by using cs2cs.
         grid.coord('longitude').points = -3.144870
         grid.coord('latitude').points = 52.406444
-        regridder = Regridder(src, grid, self.mode)
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         self.assertEqual(src.data[1, 1], result.data)
 
@@ -61,7 +62,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         src = self.src
         src.transpose([3, 1, 2, 0])
         grid = self._grid_subset()
-        regridder = Regridder(src, grid, self.mode)
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         result.transpose([3, 1, 2, 0])
         self.assertCMLApproxData(result, RESULT_DIR + ('subset.cml',))
@@ -78,63 +79,62 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         src = self.src
         grid = self._grid_subset()
 
-        regridder = Regridder(src, grid[::-1], self.mode)
+        regridder = Regridder(src, grid[::-1], *self.args)
         result = regridder(src)
         self.assertCMLApproxData(result[:, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, ::-1], grid[::-1], self.mode)
+        regridder = Regridder(src[:, :, ::-1], grid[::-1], *self.args)
         result = regridder(src[:, :, ::-1])
         self.assertCMLApproxData(result[:, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, :, ::-1], grid[::-1], self.mode)
+        regridder = Regridder(src[:, :, :, ::-1], grid[::-1], *self.args)
         result = regridder(src[:, :, :, ::-1])
         self.assertCMLApproxData(result[:, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, ::-1, ::-1], grid[::-1], self.mode)
+        regridder = Regridder(src[:, :, ::-1, ::-1], grid[::-1], *self.args)
         result = regridder(src[:, :, ::-1, ::-1])
         self.assertCMLApproxData(result[:, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src, grid[:, ::-1], self.mode)
+        regridder = Regridder(src, grid[:, ::-1], *self.args)
         result = regridder(src)
         self.assertCMLApproxData(result[:, :, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, ::-1], grid[:, ::-1], self.mode)
+        regridder = Regridder(src[:, :, ::-1], grid[:, ::-1], *self.args)
         result = regridder(src[:, :, ::-1])
         self.assertCMLApproxData(result[:, :, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, :, ::-1], grid[:, ::-1], self.mode)
+        regridder = Regridder(src[:, :, :, ::-1], grid[:, ::-1], *self.args)
         result = regridder(src[:, :, :, ::-1])
         self.assertCMLApproxData(result[:, :, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, ::-1, ::-1], grid[:, ::-1], self.mode)
+        regridder = Regridder(src[:, :, ::-1, ::-1], grid[:, ::-1], *self.args)
         result = regridder(src[:, :, ::-1, ::-1])
         self.assertCMLApproxData(result[:, :, :, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src, grid[::-1, ::-1], self.mode)
+        regridder = Regridder(src, grid[::-1, ::-1], *self.args)
         result = regridder(src)
         self.assertCMLApproxData(result[:, :, ::-1, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, ::-1], grid[::-1, ::-1], self.mode)
+        regridder = Regridder(src[:, :, ::-1], grid[::-1, ::-1], *self.args)
         result = regridder(src[:, :, ::-1])
         self.assertCMLApproxData(result[:, :, ::-1, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, :, ::-1], grid[::-1, ::-1], self.mode)
+        regridder = Regridder(src[:, :, :, ::-1], grid[::-1, ::-1], *self.args)
         result = regridder(src[:, :, :, ::-1])
         self.assertCMLApproxData(result[:, :, ::-1, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, ::-1, ::-1], grid[::-1, ::-1],
-                              self.mode)
+        regridder = Regridder(src[:, :, ::-1, ::-1], grid[::-1, ::-1], *self.args)
         result = regridder(src[:, :, ::-1, ::-1])
         self.assertCMLApproxData(result[:, :, ::-1, ::-1],
                                  RESULT_DIR + ('subset.cml',))
@@ -143,7 +143,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         # The destination grid points are entirely contained within the
         # src grid points.
         grid = self._grid_subset()
-        regridder = Regridder(self.src, grid, self.mode)
+        regridder = Regridder(self.src, grid, *self.args)
         result = regridder(self.src)
         self.assertCMLApproxData(result, RESULT_DIR + ('subset.cml',))
 
@@ -158,7 +158,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         # Add some extra dimensions to the destination Cube and
         # these should be safely ignored.
         big_grid = self._big_grid()
-        regridder = Regridder(self.src, big_grid, self.mode)
+        regridder = Regridder(self.src, big_grid, *self.args)
         result = regridder(self.src)
         self.assertCMLApproxData(result, RESULT_DIR + ('subset.cml',))
 
@@ -167,7 +167,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         # dimensions) must not affect the result.
         big_grid = self._big_grid()
         big_grid.transpose([4, 0, 3, 1, 2])
-        regridder = Regridder(self.src, big_grid, self.mode)
+        regridder = Regridder(self.src, big_grid, *self.args)
         result = regridder(self.src)
         self.assertCMLApproxData(result, RESULT_DIR + ('subset.cml',))
 
@@ -176,7 +176,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         src = self.src
         src.remove_coord('time')
         grid = self._grid_subset()
-        regridder = Regridder(src, grid, self.mode)
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         self.assertCMLApproxData(result, RESULT_DIR + ('subset_anon.cml',))
 
@@ -187,7 +187,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         src.data = np.ma.MaskedArray(src.data)
         src.data[:, :, 0, 0] = np.ma.masked
         grid = self._grid_subset()
-        regridder = Regridder(src, grid, self.mode)
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         self.assertCMLApproxData(result, RESULT_DIR + ('subset_masked_1.cml',))
 
@@ -198,7 +198,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         src.data = np.ma.MaskedArray(src.data)
         src.data[:, :, 1, 2] = np.ma.masked
         grid = self._grid_subset()
-        regridder = Regridder(src, grid, self.mode)
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         self.assertCMLApproxData(result, RESULT_DIR + ('subset_masked_2.cml',))
 
@@ -208,7 +208,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         grid = global_pp()[:4, :4]
         grid.coord('longitude').points = np.linspace(-3.3, -3.06, 4)
         grid.coord('latitude').points = np.linspace(52.377, 52.43, 4)
-        regridder = Regridder(self.src, grid, self.mode)
+        regridder = Regridder(self.src, grid, *self.args)
         result = regridder(self.src)
         self.assertCMLApproxData(result, RESULT_DIR + ('partial_overlap.cml',))
 
@@ -218,7 +218,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         grid = global_pp()[:4, :4]
         grid.coord('longitude').points = np.linspace(-3.3, -3.2, 4)
         grid.coord('latitude').points = np.linspace(52.377, 52.43, 4)
-        regridder = Regridder(self.src, grid, self.mode)
+        regridder = Regridder(self.src, grid, *self.args)
         result = regridder(self.src)
         self.assertCMLApproxData(result, RESULT_DIR + ('no_overlap.cml',))
 
@@ -228,7 +228,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         src = self.src
         src.coord('surface_altitude').points[1, 2] = np.ma.masked
         grid = self._grid_subset()
-        regridder = Regridder(src, grid, self.mode)
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         self.assertCMLApproxData(result, RESULT_DIR + ('masked_altitude.cml',))
 
@@ -239,7 +239,7 @@ class Test___call____NOP(tests.IrisTest):
         # src grid points.
         src = realistic_4d()[:5, :2, ::40, ::30]
         grid = src.copy()
-        regridder = Regridder(src, grid, 'mask')
+        regridder = Regridder(src, grid, 'linear', 'mask')
         result = regridder(src)
         self.assertEqual(result, src)
 
@@ -264,11 +264,12 @@ class Test___call____circular(tests.IrisTest):
         grid = global_pp()[:4, :4]
         grid.coord('longitude').points = grid.coord('longitude').points - 5
         self.grid = grid
-        self.mode = 'mask'
+        # Regridder method and extrapolation-mode.
+        self.args = ('linear', 'mask')
 
     def test_non_circular(self):
         # Non-circular src -> non-circular grid
-        regridder = Regridder(self.src, self.grid, self.mode)
+        regridder = Regridder(self.src, self.grid, *self.args)
         result = regridder(self.src)
         self.assertFalse(result.coord('longitude').circular)
         self.assertCMLApproxData(result, RESULT_DIR + ('non_circular.cml',))
@@ -277,7 +278,7 @@ class Test___call____circular(tests.IrisTest):
         # Circular src -> non-circular grid
         src = self.src
         src.coord('longitude').circular = True
-        regridder = Regridder(src, self.grid, self.mode)
+        regridder = Regridder(src, self.grid, *self.args)
         result = regridder(src)
         self.assertFalse(result.coord('longitude').circular)
         self.assertCMLApproxData(result, RESULT_DIR + ('circular_src.cml',))
@@ -286,7 +287,7 @@ class Test___call____circular(tests.IrisTest):
         # Non-circular src -> circular grid
         grid = self.grid
         grid.coord('longitude').circular = True
-        regridder = Regridder(self.src, grid, self.mode)
+        regridder = Regridder(self.src, grid, *self.args)
         result = regridder(self.src)
         self.assertTrue(result.coord('longitude').circular)
         self.assertCMLApproxData(result, RESULT_DIR + ('circular_grid.cml',))
@@ -297,7 +298,7 @@ class Test___call____circular(tests.IrisTest):
         src.coord('longitude').circular = True
         grid = self.grid
         grid.coord('longitude').circular = True
-        regridder = Regridder(src, grid, self.mode)
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         self.assertTrue(result.coord('longitude').circular)
         self.assertCMLApproxData(result, RESULT_DIR + ('both_circular.cml',))
@@ -306,6 +307,10 @@ class Test___call____circular(tests.IrisTest):
 @tests.skip_data
 @tests.skip_plot
 class Test___call____visual(tests.GraphicsTest):
+    def setUp(self):
+        # Regridder method and extrapolation-mode.
+        self.args = ('linear', 'mask')
+
     def test_osgb_to_latlon(self):
         path = tests.get_data_path(
             ('NIMROD', 'uk2km', 'WO0000000003452',
@@ -320,7 +325,7 @@ class Test___call____visual(tests.GraphicsTest):
                        coord_system=cs)
         grid.add_dim_coord(lat, 0)
         grid.add_dim_coord(lon, 1)
-        regridder = Regridder(src, grid, 'mask')
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         qplt.pcolor(result, antialiased=False)
         qplt.plt.gca().coastlines()
@@ -329,7 +334,7 @@ class Test___call____visual(tests.GraphicsTest):
     def test_subsample(self):
         src = global_pp()
         grid = src[::2, ::3]
-        regridder = Regridder(src, grid, 'mask')
+        regridder = Regridder(src, grid, *self.args)
         result = regridder(src)
         qplt.pcolormesh(result)
         qplt.plt.gca().coastlines()
