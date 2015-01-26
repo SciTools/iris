@@ -37,7 +37,7 @@ class RectilinearRegridder(object):
     interpolation.
 
     """
-    def __init__(self, src_grid_cube, target_grid_cube, extrapolation_mode):
+    def __init__(self, src_grid_cube, tgt_grid_cube, extrapolation_mode):
         """
         Create a linear regridder for conversions between the source
         and target grids.
@@ -46,7 +46,7 @@ class RectilinearRegridder(object):
 
         * src_grid_cube:
             The :class:`~iris.cube.Cube` providing the source grid.
-        * target_grid_cube:
+        * tgt_grid_cube:
             The :class:`~iris.cube.Cube` providing the target grid.
         * extrapolation_mode:
             Must be one of the following strings:
@@ -64,31 +64,23 @@ class RectilinearRegridder(object):
                 set to NaN.
 
         """
+        # Validity checks.
+        if not isinstance(src_grid_cube, iris.cube.Cube):
+            raise TypeError("'src_grid_cube' must be a Cube")
+        if not isinstance(tgt_grid_cube, iris.cube.Cube):
+            raise TypeError("'tgt_grid_cube' must be a Cube")
         # Snapshot the state of the cubes to ensure that the regridder
         # is impervious to external changes to the original source cubes.
         self._src_grid = snapshot_grid(src_grid_cube)
-        self._target_grid = snapshot_grid(target_grid_cube)
+        self._tgt_grid = snapshot_grid(tgt_grid_cube)
+        # Check the target grid units.
+        for coord in self._tgt_grid:
+            self._check_units(coord)
         # The extrapolation mode.
         if extrapolation_mode not in EXTRAPOLATION_MODES:
-            msg = 'Extrapolation mode {!r} not supported.'
+            msg = 'Invalid extrapolation mode {!r}'
             raise ValueError(msg.format(extrapolation_mode))
         self._extrapolation_mode = extrapolation_mode
-
-        # The need for an actual Cube is an implementation quirk
-        # caused by the current usage of the experimental regrid
-        # function.
-        self._target_grid_cube_cache = None
-
-    @property
-    def _target_grid_cube(self):
-        if self._target_grid_cube_cache is None:
-            x, y = self._target_grid
-            data = np.empty((y.points.size, x.points.size))
-            cube = iris.cube.Cube(data)
-            cube.add_dim_coord(y, 0)
-            cube.add_dim_coord(x, 1)
-            self._target_grid_cube_cache = cube
-        return self._target_grid_cube_cache
 
     @staticmethod
     def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
@@ -429,7 +421,27 @@ class RectilinearRegridder(object):
                 warnings.warn(msg)
         return result
 
-    def __call__(self, cube):
+    def _check_units(self, coord):
+        if coord.coord_system is None:
+            # No restriction on units.
+            pass
+        elif isinstance(coord.coord_system,
+                        (iris.coord_systems.GeogCS,
+                         iris.coord_systems.RotatedGeogCS)):
+            # Units for lat-lon or rotated pole must be 'degrees'. Note
+            # that 'degrees_east' etc. are equal to 'degrees'.
+            if coord.units != 'degrees':
+                msg = "Unsupported units for coordinate system. " \
+                      "Expected 'degrees' got {!r}.".format(coord.units)
+                raise ValueError(msg)
+        else:
+            # Units for other coord systems must be equal to metres.
+            if coord.units != 'm':
+                msg = "Unsupported units for coordinate system. " \
+                      "Expected 'metres' got {!r}.".format(coord.units)
+                raise ValueError(msg)
+
+    def __call__(self, src):
         """
         Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`RectilinearRegridder`.
@@ -439,7 +451,7 @@ class RectilinearRegridder(object):
 
         Args:
 
-        * cube:
+        * src:
             A :class:`~iris.cube.Cube` to be regridded.
 
         Returns:
@@ -449,10 +461,53 @@ class RectilinearRegridder(object):
             linear interpolation.
 
         """
-        import iris.experimental.regrid as eregrid
-        if get_xy_dim_coords(cube) != self._src_grid:
+        # Validity checks.
+        if not isinstance(src, iris.cube.Cube):
+            raise TypeError("'src' must be a Cube")
+        if get_xy_dim_coords(src) != self._src_grid:
             raise ValueError('The given cube is not defined on the same '
                              'source grid as this regridder.')
-        return eregrid.regrid_bilinear_rectilinear_src_and_grid(
-            cube, self._target_grid_cube,
-            extrapolation_mode=self._extrapolation_mode)
+
+        src_x_coord, src_y_coord = get_xy_dim_coords(src)
+        grid_x_coord, grid_y_coord = self._tgt_grid
+        src_cs = src_x_coord.coord_system
+        grid_cs = grid_x_coord.coord_system
+
+        if src_cs is None and grid_cs is None:
+            if not (src_x_coord.is_compatible(grid_x_coord) and
+                    src_y_coord.is_compatible(grid_y_coord)):
+                raise ValueError("The rectilinear grid coordinates of the "
+                                 "given cube and target grid have no "
+                                 "coordinate system but they do not have "
+                                 "matching coordinate metadata.")
+        elif src_cs is None or grid_cs is None:
+            raise ValueError("The rectilinear grid coordinates of the given "
+                             "cube and target grid must either both have "
+                             "coordinate systems or both have no coordinate "
+                             "system but with matching coordinate metadata.")
+
+        # Check the source grid units.
+        for coord in (src_x_coord, src_y_coord):
+            self._check_units(coord)
+
+        # Convert the grid to a 2D sample grid in the src CRS.
+        sample_grid = self._sample_grid(src_cs, grid_x_coord, grid_y_coord)
+        sample_grid_x, sample_grid_y = sample_grid
+
+        # Compute the interpolated data values.
+        x_dim = src.coord_dims(src_x_coord)[0]
+        y_dim = src.coord_dims(src_y_coord)[0]
+        data = self._regrid_bilinear_array(src.data, x_dim, y_dim,
+                                           src_x_coord, src_y_coord,
+                                           sample_grid_x, sample_grid_y,
+                                           self._extrapolation_mode)
+
+        # Wrap up the data as a Cube.
+        regrid_callback = functools.partial(self._regrid_bilinear_array,
+                                            extrapolation_mode='nan')
+        result = self._create_cube(data, src, x_dim, y_dim,
+                                   src_x_coord, src_y_coord,
+                                   grid_x_coord, grid_y_coord,
+                                   sample_grid_x, sample_grid_y,
+                                   regrid_callback)
+        return result

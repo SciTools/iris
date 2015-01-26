@@ -36,10 +36,6 @@ import iris.coord_systems
 import iris.cube
 import iris.unit
 
-# XXX imports to be removed
-from functools import partial
-from iris.analysis._interpolation import EXTRAPOLATION_MODES
-
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))
 _NP_VERSION = _Version(*(int(val) for val in
@@ -116,121 +112,6 @@ def _get_xy_coords(cube):
                          "same data dimension.")
 
     return x_coord, y_coord
-
-
-def regrid_bilinear_rectilinear_src_and_grid(src, grid,
-                                             extrapolation_mode='mask'):
-    """
-    Return a new Cube that is the result of regridding the source Cube
-    onto the grid of the grid Cube using bilinear interpolation.
-
-    Both the source and grid Cubes must be defined on rectilinear grids.
-
-    Auxiliary coordinates which span the grid dimensions are ignored,
-    except where they provide a reference surface for an
-    :class:`iris.aux_factory.AuxCoordFactory`.
-
-    Args:
-
-    * src:
-        The source :class:`iris.cube.Cube` providing the data.
-    * grid:
-        The :class:`iris.cube.Cube` which defines the new grid.
-
-    Kwargs:
-
-    * extrapolation_mode:
-        Must be one of the following strings:
-
-          * 'linear' - The extrapolation points will be calculated by
-            extending the gradient of the closest two points.
-          * 'nan' - The extrapolation points will be be set to NaN.
-          * 'error' - A ValueError exception will be raised, notifying an
-            attempt to extrapolate.
-          * 'mask' - The extrapolation points will always be masked, even
-            if the source data is not a MaskedArray.
-          * 'nanmask' - If the source data is a MaskedArray the
-            extrapolation points will be masked. Otherwise they will be
-            set to NaN.
-
-        The default mode of extrapolation is 'mask'.
-
-    Returns:
-        The :class:`iris.cube.Cube` resulting from regridding the source
-        data onto the grid defined by the grid Cube.
-
-    """
-    # Validity checks
-    if not isinstance(src, iris.cube.Cube):
-        raise TypeError("'src' must be a Cube")
-    if not isinstance(grid, iris.cube.Cube):
-        raise TypeError("'grid' must be a Cube")
-    src_x_coord, src_y_coord = get_xy_dim_coords(src)
-    grid_x_coord, grid_y_coord = get_xy_dim_coords(grid)
-    src_cs = src_x_coord.coord_system
-    grid_cs = grid_x_coord.coord_system
-    if src_cs is None and grid_cs is None:
-        if not (src_x_coord.is_compatible(grid_x_coord) and
-                src_y_coord.is_compatible(grid_y_coord)):
-            raise ValueError("The rectilinear grid coordinates of the 'src' "
-                             "and 'grid' Cubes have no coordinate system but "
-                             "they do not have matching coordinate metadata.")
-    elif src_cs is None or grid_cs is None:
-        raise ValueError("The rectilinear grid coordinates of the 'src' and "
-                         "'grid' Cubes must either both have coordinate "
-                         "systems or both have no coordinate system but with "
-                         "matching coordinate metadata.")
-
-    def _check_units(coord):
-        if coord.coord_system is None:
-            # No restriction on units.
-            pass
-        elif isinstance(coord.coord_system,
-                        (iris.coord_systems.GeogCS,
-                         iris.coord_systems.RotatedGeogCS)):
-            # Units for lat-lon or rotated pole must be 'degrees'. Note
-            # that 'degrees_east' etc. are equal to 'degrees'.
-            if coord.units != 'degrees':
-                msg = "Unsupported units for coordinate system. " \
-                      "Expected 'degrees' got {!r}.".format(coord.units)
-                raise ValueError(msg)
-        else:
-            # Units for other coord systems must be equal to metres.
-            if coord.units != 'm':
-                msg = "Unsupported units for coordinate system. " \
-                      "Expected 'metres' got {!r}.".format(coord.units)
-                raise ValueError(msg)
-
-    for coord in (src_x_coord, src_y_coord, grid_x_coord, grid_y_coord):
-        _check_units(coord)
-
-    if extrapolation_mode not in EXTRAPOLATION_MODES:
-        raise ValueError('Invalid extrapolation mode.')
-
-    # Convert the grid to a 2D sample grid in the src CRS.
-    sample_grid = RectilinearRegridder._sample_grid(src_cs,
-                                                    grid_x_coord, grid_y_coord)
-    sample_grid_x, sample_grid_y = sample_grid
-
-    # Compute the interpolated data values.
-    x_dim = src.coord_dims(src_x_coord)[0]
-    y_dim = src.coord_dims(src_y_coord)[0]
-    data = RectilinearRegridder._regrid_bilinear_array(src.data, x_dim, y_dim,
-                                                       src_x_coord,
-                                                       src_y_coord,
-                                                       sample_grid_x,
-                                                       sample_grid_y,
-                                                       extrapolation_mode)
-
-    # Wrap up the data as a Cube.
-    regrid_callback = partial(RectilinearRegridder._regrid_bilinear_array,
-                              extrapolation_mode='nan')
-    result = RectilinearRegridder._create_cube(data, src, x_dim, y_dim,
-                                               src_x_coord, src_y_coord,
-                                               grid_x_coord, grid_y_coord,
-                                               sample_grid_x, sample_grid_y,
-                                               regrid_callback)
-    return result
 
 
 def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
