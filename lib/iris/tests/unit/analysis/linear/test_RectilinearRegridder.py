@@ -25,85 +25,12 @@ import iris.tests as tests
 import mock
 import numpy as np
 
-from iris.analysis._linear import RectilinearRegridder
-from iris.coord_systems import GeogCS
-from iris.coords import DimCoord
+from iris.analysis._linear import RectilinearRegridder as Regridder
+from iris.aux_factory import HybridHeightFactory
+from iris.coord_systems import GeogCS, OSGB
+from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-
-
-class Test(tests.IrisTest):
-    def cube(self, x, y):
-        data = np.arange(len(x) * len(y)).reshape(len(y), len(x))
-        cube = Cube(data)
-        lat = DimCoord(y, 'latitude', units='degrees')
-        lon = DimCoord(x, 'longitude', units='degrees')
-        cube.add_dim_coord(lat, 0)
-        cube.add_dim_coord(lon, 1)
-        return cube
-
-    def grids(self):
-        src = self.cube(np.linspace(20, 30, 3), np.linspace(10, 25, 4))
-        target = self.cube(np.linspace(6, 18, 8), np.linspace(11, 22, 9))
-        return src, target
-
-    def extract_grid(self, cube):
-        return cube.coord('latitude'), cube.coord('longitude')
-
-    def check_mode(self, mode):
-        src_grid, target_grid = self.grids()
-        kwargs = {'extrapolation_mode': mode}
-        regridder = RectilinearRegridder(src_grid, target_grid, **kwargs)
-        # Make a new cube to regrid with different data so we can
-        # distinguish between regridding the original src grid
-        # definition cube and the cube passed to the regridder.
-        src = src_grid.copy()
-        src.data += 10
-
-        # To avoid duplicating tests, just check the RectilinearRegridder
-        # defers to the experimental regrid function with the correct
-        # arguments (and honouring the return value!)
-        with mock.patch('iris.experimental.regrid.'
-                        'regrid_bilinear_rectilinear_src_and_grid',
-                        return_value=mock.sentinel.result) as regrid:
-            result = regridder(src)
-        self.assertEqual(regrid.call_count, 1)
-        _, args, kwargs = regrid.mock_calls[0]
-        self.assertEqual(args[0], src)
-        self.assertEqual(self.extract_grid(args[1]),
-                         self.extract_grid(target_grid))
-        self.assertEqual(kwargs, {'extrapolation_mode': mode})
-        self.assertIs(result, mock.sentinel.result)
-
-    def test_mode_error(self):
-        self.check_mode('error')
-
-    def test_mode_extrapolate(self):
-        self.check_mode('extrapolate')
-
-    def test_mode_nan(self):
-        self.check_mode('nan')
-
-    def test_mode_mask(self):
-        self.check_mode('mask')
-
-    def test_mode_nanmask(self):
-        self.check_mode('nanmask')
-
-    def test_invalid_mode(self):
-        src, target = self.grids()
-        with self.assertRaises(ValueError):
-            RectilinearRegridder(src, target, 'magic')
-
-    def test_mismatched_src_coord_systems(self):
-        src = Cube(np.zeros((3, 4)))
-        cs = GeogCS(6543210)
-        lat = DimCoord(range(3), 'latitude', coord_system=cs)
-        lon = DimCoord(range(4), 'longitude')
-        src.add_dim_coord(lat, 0)
-        src.add_dim_coord(lon, 1)
-        target = mock.Mock()
-        with self.assertRaises(ValueError):
-            RectilinearRegridder(src, target, 'extrapolate')
+from iris.tests.stock import lat_lon_cube
 
 
 class Test__regrid_bilinear_array(tests.IrisTest):
@@ -140,7 +67,7 @@ class Test__regrid_bilinear_array(tests.IrisTest):
 
         self.x_dim = 2
         self.y_dim = 1
-        self.regrid_array = RectilinearRegridder._regrid_bilinear_array
+        self.regrid_array = Regridder._regrid_bilinear_array
 
     def assert_values(self, values):
         # values is a list of [x, y, [val1, val2]]
@@ -239,7 +166,7 @@ class Test__regrid_bilinear_array__modes(tests.IrisTest):
                      [8, 9, 10, 11, 12]]
 
     def setUp(self):
-        self.regrid_array = RectilinearRegridder._regrid_bilinear_array
+        self.regrid_array = Regridder._regrid_bilinear_array
 
     def _regrid(self, data, extrapolation_mode=None):
         x = np.arange(4)
@@ -429,6 +356,535 @@ class Test__regrid_bilinear_array__modes(tests.IrisTest):
         data = np.arange(12, dtype=np.float).reshape(3, 4)
         with self.assertRaisesRegexp(ValueError, 'Invalid extrapolation mode'):
             self._regrid(data, 'BOGUS')
+
+
+class Test___call____invalid_types(tests.IrisTest):
+    def setUp(self):
+        self.cube = lat_lon_cube()
+        self.mode = 'mask'
+        self.regridder = Regridder(self.cube, self.cube, self.mode)
+
+    def test_src_as_array(self):
+        arr = np.zeros((3, 4))
+        with self.assertRaises(TypeError):
+            Regridder(arr, self.cube, self.mode)
+        with self.assertRaises(TypeError):
+            self.regridder(arr)
+
+    def test_grid_as_array(self):
+        with self.assertRaises(TypeError):
+            Regridder(self.cube, np.zeros((3, 4)), self.mode)
+
+    def test_src_as_int(self):
+        with self.assertRaises(TypeError):
+            Regridder(42, self.cube, self.mode)
+        with self.assertRaises(TypeError):
+            self.regridder(42)
+
+    def test_grid_as_int(self):
+        with self.assertRaises(TypeError):
+            Regridder(self.cube, 42, self.mode)
+
+
+class Test___call____missing_coords(tests.IrisTest):
+    def setUp(self):
+        self.mode = 'mask'
+
+    def ok_bad(self, coord_names):
+        # Deletes the named coords from `bad`.
+        ok = lat_lon_cube()
+        bad = lat_lon_cube()
+        for name in coord_names:
+            bad.remove_coord(name)
+        return ok, bad
+
+    def test_src_missing_lat(self):
+        ok, bad = self.ok_bad(['latitude'])
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+        regridder = Regridder(ok, ok, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_missing_lat(self):
+        ok, bad = self.ok_bad(['latitude'])
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+    def test_src_missing_lon(self):
+        ok, bad = self.ok_bad(['longitude'])
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+        regridder = Regridder(ok, ok, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_missing_lon(self):
+        ok, bad = self.ok_bad(['longitude'])
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+    def test_src_missing_lat_lon(self):
+        ok, bad = self.ok_bad(['latitude', 'longitude'])
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+        regridder = Regridder(ok, ok, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_missing_lat_lon(self):
+        ok, bad = self.ok_bad(['latitude', 'longitude'])
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+
+class Test___call____not_dim_coord(tests.IrisTest):
+    def setUp(self):
+        self.mode = 'mask'
+
+    def ok_bad(self, coord_name):
+        # Demotes the named DimCoord on `bad` to an AuxCoord.
+        ok = lat_lon_cube()
+        bad = lat_lon_cube()
+        coord = bad.coord(coord_name)
+        dims = bad.coord_dims(coord)
+        bad.remove_coord(coord_name)
+        aux_coord = AuxCoord.from_coord(coord)
+        bad.add_aux_coord(aux_coord, dims)
+        return ok, bad
+
+    def test_src_with_aux_lat(self):
+        ok, bad = self.ok_bad('latitude')
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+        regridder = Regridder(ok, ok, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_with_aux_lat(self):
+        ok, bad = self.ok_bad('latitude')
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+    def test_src_with_aux_lon(self):
+        ok, bad = self.ok_bad('longitude')
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+        regridder = Regridder(ok, ok, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_with_aux_lon(self):
+        ok, bad = self.ok_bad('longitude')
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+
+class Test___call____not_dim_coord_share(tests.IrisTest):
+    def setUp(self):
+        self.mode = 'mask'
+
+    def ok_bad(self):
+        # Make lat/lon share a single dimension on `bad`.
+        ok = lat_lon_cube()
+        bad = lat_lon_cube()
+        lat = bad.coord('latitude')
+        bad = bad[0, :lat.shape[0]]
+        bad.remove_coord('latitude')
+        bad.add_aux_coord(lat, 0)
+        return ok, bad
+
+    def test_src_shares_dim(self):
+        ok, bad = self.ok_bad()
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+        regridder = Regridder(ok, ok, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_shares_dim(self):
+        ok, bad = self.ok_bad()
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+
+class Test___call____bad_georeference(tests.IrisTest):
+    def setUp(self):
+        self.mode = 'mask'
+
+    def ok_bad(self, lat_cs, lon_cs):
+        # Updates `bad` to use the given coordinate systems.
+        ok = lat_lon_cube()
+        bad = lat_lon_cube()
+        bad.coord('latitude').coord_system = lat_cs
+        bad.coord('longitude').coord_system = lon_cs
+        return ok, bad
+
+    def test_src_no_cs(self):
+        ok, bad = self.ok_bad(None, None)
+        regridder = Regridder(bad, ok, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_no_cs(self):
+        ok, bad = self.ok_bad(None, None)
+        regridder = Regridder(ok, bad, self.mode)
+        with self.assertRaises(ValueError):
+            regridder(ok)
+
+    def test_src_one_cs(self):
+        ok, bad = self.ok_bad(None, GeogCS(6371000))
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+
+    def test_grid_one_cs(self):
+        ok, bad = self.ok_bad(None, GeogCS(6371000))
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+    def test_src_inconsistent_cs(self):
+        ok, bad = self.ok_bad(GeogCS(6370000), GeogCS(6371000))
+        with self.assertRaises(ValueError):
+            Regridder(bad, ok, self.mode)
+
+    def test_grid_inconsistent_cs(self):
+        ok, bad = self.ok_bad(GeogCS(6370000), GeogCS(6371000))
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, self.mode)
+
+
+class Test___call____bad_angular_units(tests.IrisTest):
+    def ok_bad(self):
+        # Changes the longitude coord to radians on `bad`.
+        ok = lat_lon_cube()
+        bad = lat_lon_cube()
+        bad.coord('longitude').units = 'radians'
+        return ok, bad
+
+    def test_src_radians(self):
+        ok, bad = self.ok_bad()
+        regridder = Regridder(bad, ok, 'mask')
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_radians(self):
+        ok, bad = self.ok_bad()
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, 'mask')
+
+
+def uk_cube():
+    data = np.arange(12, dtype=np.float32).reshape(3, 4)
+    uk = Cube(data)
+    cs = OSGB()
+    y_coord = DimCoord(range(3), 'projection_y_coordinate', units='m',
+                       coord_system=cs)
+    x_coord = DimCoord(range(4), 'projection_x_coordinate', units='m',
+                       coord_system=cs)
+    uk.add_dim_coord(y_coord, 0)
+    uk.add_dim_coord(x_coord, 1)
+    surface = AuxCoord(data * 10, 'surface_altitude', units='m')
+    uk.add_aux_coord(surface, (0, 1))
+    uk.add_aux_factory(HybridHeightFactory(orography=surface))
+    return uk
+
+
+class Test___call____bad_linear_units(tests.IrisTest):
+    def ok_bad(self):
+        # Defines `bad` with an x coordinate in km.
+        ok = lat_lon_cube()
+        bad = uk_cube()
+        bad.coord(axis='x').units = 'km'
+        return ok, bad
+
+    def test_src_km(self):
+        ok, bad = self.ok_bad()
+        regridder = Regridder(bad, ok, 'mask')
+        with self.assertRaises(ValueError):
+            regridder(bad)
+
+    def test_grid_km(self):
+        ok, bad = self.ok_bad()
+        with self.assertRaises(ValueError):
+            Regridder(ok, bad, 'mask')
+
+
+class Test___call____no_coord_systems(tests.IrisTest):
+    # Test behaviour in the absence of any coordinate systems.
+
+    def remove_coord_systems(self, cube):
+        for coord in cube.coords():
+            coord.coord_system = None
+
+    def test_ok(self):
+        # Ensure regridding is supported when the coordinate definitions match.
+        # NB. We change the coordinate *values* to ensure that does not
+        # prevent the regridding operation.
+        src = uk_cube()
+        self.remove_coord_systems(src)
+        grid = src.copy()
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
+        regridder = Regridder(src, grid, 'mask')
+        result = regridder(src)
+        for coord in result.dim_coords:
+            self.assertEqual(coord, grid.coord(coord))
+        expected = np.ma.arange(12).reshape((3, 4)) + 5
+        expected[:, 3] = np.ma.masked
+        expected[2, :] = np.ma.masked
+        self.assertMaskedArrayEqual(result.data, expected)
+
+    def test_matching_units(self):
+        # Check we are insensitive to the units provided they match.
+        # NB. We change the coordinate *values* to ensure that does not
+        # prevent the regridding operation.
+        src = uk_cube()
+        self.remove_coord_systems(src)
+        # Move to unusual units (i.e. not metres or degrees).
+        for coord in src.dim_coords:
+            coord.units = 'feet'
+        grid = src.copy()
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
+        regridder = Regridder(src, grid, 'mask')
+        result = regridder(src)
+        for coord in result.dim_coords:
+            self.assertEqual(coord, grid.coord(coord))
+        expected = np.ma.arange(12).reshape((3, 4)) + 5
+        expected[:, 3] = np.ma.masked
+        expected[2, :] = np.ma.masked
+        self.assertMaskedArrayEqual(result.data, expected)
+
+    def test_different_units(self):
+        src = uk_cube()
+        self.remove_coord_systems(src)
+        # Move to unusual units (i.e. not metres or degrees).
+        for coord in src.coords():
+            coord.units = 'feet'
+        grid = src.copy()
+        grid.coord('projection_y_coordinate').units = 'yards'
+        # We change the coordinate *values* to ensure that does not
+        # prevent the regridding operation.
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
+        regridder = Regridder(src, grid, 'mask')
+        emsg = 'matching coordinate metadata'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            regridder(src)
+
+    def test_coord_metadata_mismatch(self):
+        # Check for failure when coordinate definitions differ.
+        uk = uk_cube()
+        self.remove_coord_systems(uk)
+        lat_lon = lat_lon_cube()
+        self.remove_coord_systems(lat_lon)
+        regridder = Regridder(uk, lat_lon, 'mask')
+        with self.assertRaises(ValueError):
+            regridder(uk)
+
+
+# Check what happens to NaN values, extrapolated values, and
+# masked values.
+class Test___call____extrapolation_mode(tests.IrisTest):
+    values = [[np.nan, 6, 7, np.nan],
+              [9, 10, 11, np.nan],
+              [np.nan, np.nan, np.nan, np.nan]]
+
+    linear_values = [[np.nan, 6, 7, 8],
+                     [9, 10, 11, 12],
+                     [13, 14, 15, 16]]
+
+    surface_values = [[50, 60, 70, np.nan],
+                      [90, 100, 110, np.nan],
+                      [np.nan, np.nan, np.nan, np.nan]]
+
+    def _ndarray_cube(self):
+        src = uk_cube()
+        src.data[0, 0] = np.nan
+        return src
+
+    def _masked_cube(self):
+        src = uk_cube()
+        src.data = np.ma.asarray(src.data)
+        src.data[0, 0] = np.nan
+        src.data[2, 3] = np.ma.masked
+        return src
+
+    def _regrid(self, src, extrapolation_mode='mask'):
+        grid = src.copy()
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
+        regridder = Regridder(src, grid, extrapolation_mode)
+        result = regridder(src)
+
+        surface = result.coord('surface_altitude').points
+        self.assertNotIsInstance(surface, np.ma.MaskedArray)
+        self.assertArrayEqual(surface, self.surface_values)
+
+        return result.data
+
+    def test_default_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        src = self._ndarray_cube()
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 1, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray_none_masked(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> N/A
+        src = uk_cube()
+        src.data = np.ma.asarray(src.data)
+        src.data[0, 0] = np.nan
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray_none_masked_expanded(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> N/A
+        src = uk_cube()
+        src.data = np.ma.asarray(src.data)
+        # Make sure the mask has been expanded
+        src.data.mask = False
+        src.data[0, 0] = np.nan
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_linear_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> linear
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'extrapolate')
+        self.assertNotIsInstance(result, np.ma.MaskedArray)
+        self.assertArrayEqual(result, self.linear_values)
+
+    def test_linear_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> linear
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'extrapolate')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 0],
+                [0, 0, 1, 1],
+                [0, 0, 1, 1]]
+        expected = np.ma.MaskedArray(self.linear_values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_nan_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'nan')
+        self.assertNotIsInstance(result, np.ma.MaskedArray)
+        self.assertArrayEqual(result, self.values)
+
+    def test_nan_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'nan')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 0]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_error_ndarray(self):
+        # Values irrelevant - the function raises an error.
+        src = self._ndarray_cube()
+        with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            self._regrid(src, 'error')
+
+    def test_error_maskedarray(self):
+        # Values irrelevant - the function raises an error.
+        src = self._masked_cube()
+        with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            self._regrid(src, 'error')
+
+    def test_mask_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked (this is different from all the other
+        #                          modes)
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'mask')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_mask_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'mask')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 1, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_nanmask_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'nanmask')
+        self.assertNotIsInstance(result, np.ma.MaskedArray)
+        self.assertArrayEqual(result, self.values)
+
+    def test_nanmask_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'nanmask')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 1, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_invalid(self):
+        src = uk_cube()
+        with self.assertRaisesRegexp(ValueError, 'Invalid extrapolation mode'):
+            self._regrid(src, 'BOGUS')
 
 
 if __name__ == '__main__':
