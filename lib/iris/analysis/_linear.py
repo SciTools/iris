@@ -37,7 +37,8 @@ class RectilinearRegridder(object):
     linear regridding between source and target grids.
 
     """
-    def __init__(self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode):
+    def __init__(self, src_grid_cube, tgt_grid_cube, method,
+                 extrapolation_mode):
         """
         Create a regridder for conversions between the source
         and target grids.

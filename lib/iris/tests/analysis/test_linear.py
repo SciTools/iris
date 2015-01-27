@@ -134,7 +134,8 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         self.assertCMLApproxData(result[:, :, ::-1, ::-1],
                                  RESULT_DIR + ('subset.cml',))
 
-        regridder = Regridder(src[:, :, ::-1, ::-1], grid[::-1, ::-1], *self.args)
+        regridder = Regridder(src[:, :, ::-1, ::-1], grid[::-1, ::-1],
+                              *self.args)
         result = regridder(src[:, :, ::-1, ::-1])
         self.assertCMLApproxData(result[:, :, ::-1, ::-1],
                                  RESULT_DIR + ('subset.cml',))

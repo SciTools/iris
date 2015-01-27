@@ -1600,7 +1600,7 @@ class Linear(object):
             which is to be regridded to the `target_grid`.
 
         """
-        return RectilinearRegridder(src_grid, target_grid,
+        return RectilinearRegridder(src_grid, target_grid, 'linear',
                                     self._normalised_extrapolation_mode())
 
 
