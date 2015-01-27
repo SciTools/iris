@@ -3312,30 +3312,34 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def interpolate(self, sample_points, scheme, collapse_scalar=True):
         """
-        Interpolate over the :class:`~iris.cube.Cube` using the specified
-        sample points and provided interpolation scheme.
+        Interpolate from this :class:`~iris.cube.Cube` to the given
+        sample points using the given interpolation scheme.
 
         Args:
 
         * sample_points:
             A sequence of (coordinate, points) pairs over which to
-            interpolate. The values for coordinates which correspond to
-            date/times may optionally be supplied as datetime.datetime or
+            interpolate. The values for coordinates that correspond to
+            dates or times may optionally be supplied as datetime.datetime or
             netcdftime.datetime instances.
         * scheme:
-            A :class:`~iris.analysis.Linear` instance, which defines the
-            interpolator scheme.
+            The type of interpolation to use to interpolate from this
+            :class:`~iris.cube.Cube` to the given sample points. The
+            interpolation schemes currently available in Iris are:
+                * :class:`iris.analysis.Linear`, and
+                * :class:`iris.analysis.Nearest`.
 
         Kwargs:
 
         * collapse_scalar:
-            Whether to collapse the dimension of the scalar sample points
+            Whether to collapse the dimension of scalar sample points
             in the resulting cube. Default is True.
 
         Returns:
-            A cube interpolated at the given sample points. The dimensionality
-            of the cube will be the number of original cube dimensions minus
-            the number of scalar coordinates, if collapse_scalar is True.
+            A cube interpolated at the given sample points.
+            If `collapse_scalar` is True then the dimensionality of the cube
+            will be the number of original cube dimensions minus
+            the number of scalar coordinates.
 
         For example:
 
@@ -3383,23 +3387,26 @@ calendar='gregorian')
 
     def regrid(self, grid, scheme):
         """
-        Regrid this :class:`~iris.cube.Cube` on to the given `grid`
-        using the provided regridding scheme.
+        Regrid this :class:`~iris.cube.Cube` on to the given target `grid`
+        using the given regridding `scheme`.
 
         Args:
 
         * grid:
-            A :class:`~iris.cube.Cube` which defines the target grid.
+            A :class:`~iris.cube.Cube` that defines the target grid.
         * scheme:
-            A :class:`~iris.analysis.Linear` or
-            :class:`~iris.analysis.AreaWeighted` instance, which defines
-            the interpolator scheme.
+            The type of regridding to use to regrid this cube onto the
+            target grid. The regridding schemes currently available
+            in Iris are:
+                * :class:`iris.analysis.Linear`,
+                * :class:`iris.analysis.Nearest`, and
+                * :class:`iris.analysis.AreaWeighted`.
 
         Returns:
-            A cube defined with the horizontal dimensions of the target
+            A cube defined with the horizontal dimensions of the target grid
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid
-            according to the given scheme.
+            according to the given regridding scheme.
 
         """
         regridder = scheme.regridder(self, grid)

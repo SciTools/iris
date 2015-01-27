@@ -67,7 +67,7 @@ from iris.exceptions import LazyAggregatorError
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
            'VARIANCE', 'coord_comparison', 'Aggregator', 'WeightedAggregator',
-           'clear_phenomenon_identity', 'Linear', 'AreaWeighted')
+           'clear_phenomenon_identity', 'Linear', 'AreaWeighted', 'Nearest')
 
 
 class _CoordGroup(object):
