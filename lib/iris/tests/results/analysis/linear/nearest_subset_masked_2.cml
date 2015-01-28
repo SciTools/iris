@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1, 2, 3]">
+        <auxCoord bounds="[[[[413.937, 426.634],
+  		[374.808, 387.565],
+  		[198.1, 211.129],
+  		[198.1, 211.129],
+  		[328.8, 341.628]],
+
+ 		[[325.116, 337.95],
+  		[289.584, 302.472],
+  		[404.5, 417.212],
+  		[404.5, 417.212],
+  		[424.168, 436.85]],
+
+ 		[[325.116, 337.95],
+  		[289.584, 302.472],
+  		[404.5, 417.212],
+  		[404.5, 417.212],
+  		[424.168, 436.85]],
+
+ 		[[440.66, 453.316],
+  		[394.2, 406.928],
+  		[302.769, 315.637],
+  		[302.769, 315.637],
+  		[259.792, 272.726]]],
+
+
+		[[[426.634, 445.681],
+  		[387.565, 406.703],
+  		[211.129, 230.673],
+  		[211.129, 230.673],
+  		[341.628, 360.871]],
+
+ 		[[337.95, 357.202],
+  		[302.472, 321.806],
+  		[417.212, 436.281],
+  		[417.212, 436.281],
+  		[436.85, 455.873]],
+
+ 		[[337.95, 357.202],
+  		[302.472, 321.806],
+  		[417.212, 436.281],
+  		[417.212, 436.281],
+  		[436.85, 455.873]],
+
+ 		[[453.316, 472.302],
+  		[406.928, 426.02],
+  		[315.637, 334.94],
+  		[315.637, 334.94],
+  		[272.726, 292.128]]]]" id="c56f646c" points="[[[418.698, 379.592, 202.986, 202.986, 333.61],
+ 		[329.929, 294.417, 409.267, 409.267, 428.923],
+ 		[329.929, 294.417, 409.267, 409.267, 428.923],
+ 		[445.406, 398.973, 307.595, 307.595, 264.642]],
+
+		[[434.57, 395.539, 219.272, 219.272, 349.646],
+ 		[345.971, 310.528, 425.157, 425.157, 444.776],
+ 		[345.971, 310.528, 425.157, 425.157, 444.776],
+ 		[461.227, 414.883, 323.68, 323.68, 280.81]]]" shape="(2, 4, 5)" standard_name="altitude" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+      <coord>
+        <dimCoord id="73141289" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="a42bcac2" points="[52.372, 52.3946666667, 52.4173333333, 52.44]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 13.3333],
+		[13.3333, 33.3333]]" id="218bea13" long_name="level_height" points="[5.0, 21.6667]" shape="(2,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord id="63128986" points="[-3.182, -3.1515, -3.121, -3.0905, -3.06]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="af0092b8" points="[1, 2]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord bounds="[[1.0, 0.998464],
+		[0.998464, 0.996162]]" id="5f88ebd6" long_name="sigma" points="[0.999424, 0.997504]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[2, 3]">
+        <auxCoord id="4471545e" points="[[413.937, 374.808, 198.1, 198.1, 328.8],
+		[325.116, 289.584, 404.5, 404.5, 424.168],
+		[325.116, 289.584, 404.5, 404.5, 424.168],
+		[440.66, 394.2, 302.769, 302.769, 259.792]]" shape="(4, 5)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="6a1b3c16" points="[347921.166667, 347921.333333, 347921.5,
+		347921.666667, 347921.833333]" shape="(5,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(5, 2, 4, 5)" state="loaded"/>
+  </cube>
+</cubes>

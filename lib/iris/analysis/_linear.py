@@ -90,6 +90,14 @@ class RectilinearRegridder(object):
             raise ValueError(msg.format(extrapolation_mode))
         self._extrapolation_mode = extrapolation_mode
 
+    @property
+    def method(self):
+        return self._method
+
+    @property
+    def extrapolation_mode(self):
+        return self._extrapolation_mode
+
     @staticmethod
     def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
         """
@@ -189,6 +197,10 @@ class RectilinearRegridder(object):
             grid.
 
         """
+        #
+        # XXX: At the moment requires to be a static method as used by
+        # experimental regrid_area_weighted_rectilinear_src_and_grid
+        #
         if sample_grid_x.shape != sample_grid_y.shape:
             raise ValueError('Inconsistent sample grid shapes.')
         if sample_grid_x.ndim != 2:
@@ -244,10 +256,10 @@ class RectilinearRegridder(object):
 
         # Construct the interpolator, we will fill in any values out of bounds
         # manually.
-        interpolator = _RegularGridInterpolator([x_points,
-                                                 src_y_coord.points],
-                                                initial_data, fill_value=None,
-                                                bounds_error=False)
+        interpolator = _RegularGridInterpolator([x_points, src_y_coord.points],
+                                                initial_data, method=method,
+                                                bounds_error=False,
+                                                fill_value=None)
         # The constructor of the _RegularGridInterpolator class does
         # some unnecessary checks on these values, so we set them
         # afterwards instead. Sneaky. ;-)
@@ -366,6 +378,10 @@ class RectilinearRegridder(object):
             The new, regridded Cube.
 
         """
+        #
+        # XXX: At the moment requires to be a static method as used by
+        # experimental regrid_area_weighted_rectilinear_src_and_grid
+        #
         # Create a result cube with the appropriate metadata
         result = iris.cube.Cube(data)
         result.metadata = copy.deepcopy(src.metadata)
