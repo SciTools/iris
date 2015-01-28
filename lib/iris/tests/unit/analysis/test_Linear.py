@@ -123,7 +123,7 @@ class Test_regridder(tests.IrisTest):
         else:
             expected_mode = mode
         lr.assert_called_once_with(mock.sentinel.src, mock.sentinel.target,
-                                   expected_mode)
+                                   'linear', expected_mode)
         self.assertIs(regridder, mock.sentinel.regridder)
 
     def test_default(self):

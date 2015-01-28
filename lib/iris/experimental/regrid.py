@@ -748,7 +748,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
     # Wrap up the data as a Cube.
     # Create 2d meshgrids as required by _create_cube func.
     meshgrid_x, meshgrid_y = np.meshgrid(grid_x.points, grid_y.points)
-    regrid_callback = RectilinearRegridder._regrid_bilinear_array
+    regrid_callback = RectilinearRegridder._regrid
     new_cube = RectilinearRegridder._create_cube(new_data, src_cube,
                                                  src_x_dim, src_y_dim,
                                                  src_x, src_y, grid_x, grid_y,
