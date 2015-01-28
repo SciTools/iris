@@ -1494,9 +1494,10 @@ def clear_phenomenon_identity(cube):
 
 class Linear(object):
     """
-    This class describes the linear interpolation scheme for interpolating over
-    one or more orthogonal coordinates, typically for use with
-    :meth:`iris.cube.Cube.interpolate()` or :meth:`iris.cube.Cube.regrid()`.
+    This class describes the linear interpolation and regridding scheme for
+    interpolating or regridding over one or more orthogonal coordinates,
+    typically for use with :meth:`iris.cube.Cube.interpolate()` or
+    :meth:`iris.cube.Cube.regrid()`.
 
     """
 
@@ -1504,8 +1505,8 @@ class Linear(object):
 
     def __init__(self, extrapolation_mode='linear'):
         """
-        Linear interpolation scheme suitable for interpolating over one or
-        more orthogonal coordinates.
+        Linear interpolation and regridding scheme suitable for interpolating
+        or regridding over one or more orthogonal coordinates.
 
         Kwargs:
 
@@ -1545,14 +1546,14 @@ class Linear(object):
         """
         Creates a linear interpolator to perform interpolation over the
         given :class:`~iris.cube.Cube` specified by the dimensions of
-        the specified coordinates.
+        the given coordinates.
 
         Args:
 
         * cube:
             The source :class:`iris.cube.Cube` to be interpolated.
         * coords:
-            The names or coordinate instances which are to be
+            The names or coordinate instances that are to be
             interpolated over.
 
         Returns:
@@ -1566,7 +1567,7 @@ class Linear(object):
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
-            The values for coordinates which correspond to date/times
+            The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
             netcdftime.datetime instances.
 
@@ -1574,6 +1575,9 @@ class Linear(object):
             `Linear().interpolator(cube, ['latitude', 'longitude'])`,
             sample_points must have the form
             `[new_lat_values, new_lon_values]`.
+
+            This callable would typically be used by
+            :class:`iris.cube.Cube.interpolate`.
 
         """
         return RectilinearInterpolator(cube, coords, 'linear',
@@ -1597,7 +1601,13 @@ class Linear(object):
                 `callable(cube)`
 
             where `cube` is a cube with the same grid as `src_grid`
-            which is to be regridded to the `target_grid`.
+            that is to be regridded to the `target_grid`.
+            Thus for the callable returned by
+            `Linear().regridder(src_grid, target_grid)`, cube must
+            be on the same grid as src_grid.
+
+            This callable would typically be used by
+            :class:`iris.cube.Cube.regrid`.
 
         """
         return RectilinearRegridder(src_grid, target_grid, 'linear',
@@ -1654,8 +1664,14 @@ class AreaWeighted(object):
 
                 `callable(cube)`
 
-            where `cube` is a cube with the same grid as `src_grid_cube`, which
-            is to be regridded to the grid of `target_grid_cube`.
+            where `cube` is a cube with the same grid as `src_grid_cube`
+            that is to be regridded to the grid of `target_grid_cube`.
+            Thus for the callable returned by
+            `AreaWeighted().regridder(src_grid, target_grid)`, cube must
+            be on the same grid as src_grid.
+
+            This callable would typically be used by
+            :class:`iris.cube.Cube.regrid`.
 
         """
         return AreaWeightedRegridder(src_grid_cube, target_grid_cube,
@@ -1664,16 +1680,16 @@ class AreaWeighted(object):
 
 class Nearest(object):
     """
-    This class describes the nearest-neighbour interpolation scheme for
-    interpolating over one or more orthogonal coordinates, typically for
-    use with :meth:`iris.cube.Cube.interpolate()` or
-    :meth:`iris.cube.Cube.regrid()`.
+    This class describes the nearest-neighbour interpolation and regridding
+    scheme for interpolating or regridding over one or more orthogonal
+    coordinates, typically for use with :meth:`iris.cube.Cube.interpolate()`
+    or :meth:`iris.cube.Cube.regrid()`.
 
     """
     def __init__(self, extrapolation_mode='extrapolate'):
         """
-        Nearest-neighbour interpolation scheme suitable for
-        interpolating over one or more orthogonal coordinates.
+        Nearest-neighbour interpolation and regridding scheme suitable for
+        interpolating or regridding over one or more orthogonal coordinates.
 
         Kwargs:
 
@@ -1727,7 +1743,7 @@ class Nearest(object):
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
-            The values for coordinates which correspond to date/times
+            The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
             netcdftime.datetime instances.
 
@@ -1735,6 +1751,9 @@ class Nearest(object):
             `Nearest().interpolator(cube, ['latitude', 'longitude'])`,
             sample_points must have the form
             `[new_lat_values, new_lon_values]`.
+
+            This callable would typically be used by
+            :class:`iris.cube.Cube.interpolate`.
 
         """
         return RectilinearInterpolator(cube, coords, 'nearest',
