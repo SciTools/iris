@@ -1666,7 +1666,8 @@ class Nearest(object):
     """
     This class describes the nearest-neighbour interpolation scheme for
     interpolating over one or more orthogonal coordinates, typically for
-    use with :meth:`iris.cube.Cube.interpolate()`.
+    use with :meth:`iris.cube.Cube.interpolate()` or
+    :meth:`iris.cube.Cube.regrid()`.
 
     """
     def __init__(self, extrapolation_mode='extrapolate'):
@@ -1738,3 +1739,27 @@ class Nearest(object):
         """
         return RectilinearInterpolator(cube, coords, 'nearest',
                                        self.extrapolation_mode)
+
+    def regridder(self, src_grid, target_grid):
+        """
+        Creates a nearest-neighbour regridder to perform regridding from the
+        source grid to the target grid.
+
+        Args:
+
+        * src_grid:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_grid
+            which is to be regridded to the `target_grid`.
+
+        """
+        return RectilinearRegridder(src_grid, target_grid, 'nearest',
+                                    self.extrapolation_mode)

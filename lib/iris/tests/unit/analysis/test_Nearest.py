@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -83,6 +83,40 @@ class Test_interpolator(tests.IrisTest):
         ri.assert_called_once_with(mock.sentinel.cube, mock.sentinel.coords,
                                    'nearest', expected_mode)
         self.assertIs(interpolator, mock.sentinel.interpolator)
+
+    def test_default(self):
+        self.check_mode()
+
+    def test_extrapolate(self):
+        self.check_mode('extrapolate')
+
+    def test_nan(self):
+        self.check_mode('nan')
+
+    def test_error(self):
+        self.check_mode('error')
+
+    def test_mask(self):
+        self.check_mode('mask')
+
+    def test_nanmask(self):
+        self.check_mode('nanmask')
+
+
+class Test_regridder(tests.IrisTest):
+    def check_mode(self, mode=None):
+        scheme = create_scheme(mode)
+
+        with mock.patch('iris.analysis.RectilinearRegridder',
+                        return_value=mock.sentinel.regridder) as rr:
+            regridder = scheme.regridder(mock.sentinel.src_grid,
+                                         mock.sentinel.tgt_grid)
+
+        expected_mode = 'extrapolate' if mode is None else mode
+        rr.assert_called_once_with(mock.sentinel.src_grid,
+                                   mock.sentinel.tgt_grid,
+                                   'nearest', expected_mode)
+        self.assertIs(regridder, mock.sentinel.regridder)
 
     def test_default(self):
         self.check_mode()
