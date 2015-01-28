@@ -107,6 +107,9 @@ class Test_regridder(tests.IrisTest):
     def check_mode(self, mode=None):
         scheme = create_scheme(mode)
 
+        # Ensure that calling the regridder results in an instance of
+        # RectilinearRegridder being returned, which has been created with
+        # the expected arguments.
         with mock.patch('iris.analysis.RectilinearRegridder',
                         return_value=mock.sentinel.regridder) as rr:
             regridder = scheme.regridder(mock.sentinel.src_grid,
