@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,6 +38,14 @@ class Test_corr(tests.IrisTest):
                                                            'ensemble_001.pp'))
         self.cube_b = iris.load_cube(iris.sample_data_path('GloSea4',
                                                            'ensemble_002.pp'))
+
+        dummycrd = iris.coords.DimCoord(range(100), long_name="dummy")
+        mask_a = [True]*20 + [False]*80
+        self.masked_a = iris.cube.Cube(np.ma.masked_array(range(100), mask_a))
+        self.masked_a.add_dim_coord(dummycrd, 0)
+        mask_b = [False]*10 + [True]*20 + [False]*70
+        self.masked_b = iris.cube.Cube(np.ma.masked_array(range(100), mask_b))
+        self.masked_b.add_dim_coord(dummycrd, 0)
 
     def test_perfect_corr(self):
         r = stats.pearsonr(self.cube_a, self.cube_a,
@@ -100,6 +108,24 @@ class Test_corr(tests.IrisTest):
     def test_non_existent_coord(self):
         with self.assertRaises(ValueError):
             stats.pearsonr(self.cube_a, self.cube_b, 'bad_coord')
+
+    def test_differing_masks(self):
+        """
+        Test that we only consider points
+        where both cubes are unmasked
+
+        """
+        r = stats.pearsonr(self.masked_a, self.masked_b)
+        self.assertArrayEqual(r.data, [1.0])
+
+        self.masked_a.data.mask = True
+        r = stats.pearsonr(self.masked_a, self.masked_b)
+        self.assertArrayEqual(r.data.mask, [True])
+
+        self.masked_a.data.mask = True
+        self.masked_b.data.mask = True
+        r = stats.pearsonr(self.masked_a, self.masked_b)
+        self.assertArrayEqual(r.data.mask, [True])
 
 
 if __name__ == '__main__':
