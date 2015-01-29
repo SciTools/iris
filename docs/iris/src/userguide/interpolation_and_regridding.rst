@@ -17,13 +17,14 @@ upon existing interpolation schemes implemented by SciPy.
 In Iris we refer to the avaliable types of interpolation and regridding as
 `schemes`. The following are the interpolation schemes that are currently
 available in Iris:
- * :class:`iris.analysis.Linear`, and
- * :class:`Nearest-neighbour<iris.analysis.Nearest>`.
+ * linear interpolation (:class:`iris.analysis.Linear`), and
+ * nearest-neighbour interpolation (:class:`iris.analysis.Nearest`).
 
 The following are the regridding schemes that are currently available in Iris:
- * :class:`iris.analysis.Linear`,
- * :class:`Nearest-neighbour<iris.analysis.Nearest>`, and
- * :class:`Area Weighted<iris.analysis.AreaWeighted>`.
+ * linear regridding (:class:`iris.analysis.Linear`),
+ * nearest-neighbour regridding (:class:`iris.analysis.Nearest`), and
+ * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order
+    conservative).
 
 
 .. _interpolation:
@@ -31,17 +32,19 @@ The following are the regridding schemes that are currently available in Iris:
 Interpolation
 -------------
 
-Interpolating a cube can be achieved with the :meth:`~iris.cube.Cube.interpolate`
-method. This method expects two arguments; the first argument being the sample points
-to interpolate and the second argument being the interpolation scheme to use.
+Interpolating a cube is achieved with the :meth:`~iris.cube.Cube.interpolate`
+method. This method expects two arguments:
+ #. the sample points to interpolate, and
+ #. the second argument being the interpolation scheme to use.
+
 The result is a new cube, interpolated at the sample points.
 
 Sample points must be defined as an iterable of ``(coord, value(s))`` pairs.
-The `coord` argument can be either a name or coordinate instance, but the specified
-coordinate must exist on the cube being interpolated! For example:
- * ``[('latitude', 51.48), ('longitude', 0)]``,
- * ``[(cube.coord('latitude'), 51.48)]``, and
- * ``[('longitude', np.linspace(-11, 2, 14))]``
+The `coord` argument can be either a coordinate name or coordinate instance.
+The specified coordinate must exist on the cube being interpolated! For example:
+ * coordinate names and scalar sample points: ``[('latitude', 51.48), ('longitude', 0)]``,
+ * a coordinate instance and a scalar sample point: ``[(cube.coord('latitude'), 51.48)]``, and
+ * a coordinate name and a NumPy array of sample points: ``[('longitude', np.linspace(-11, 2, 14))]``
 are all examples of valid sample points.
 
 The values for coordinates that correspond to date/times can be supplied as
@@ -90,8 +93,8 @@ We can interpolate specific values from the coordinates of the cube:
 As we can see, the resulting cube is scalar and has longitude and latitude coordinates with
 the values defined in our sample points.
 
-It isn't necessary to specify sample points for each dimension. Any dimensions that aren't
-specified are preserved:
+It isn't necessary to specify sample points for every dimension, only those that you
+wish to interpolate over:
 
     >>> result = air_temp.interpolate([('longitude', 0)], iris.analysis.Linear())
     >>> print 'Original:', air_temp.summary(shorten=True)
@@ -147,26 +150,23 @@ the new data in a plot. This will help us to see what is going on:
 .. plot:: userguide/regridding_plots/interpolate_column.py
 
 The red diamonds on the extremes of the altitude values show that we have
-extrapolated data beyond the range of the original data. In some cases this is desirable
-functionality but in other cases it is not. For example, this column defines
-a surface altitude value of 414m, so extrapolating an "air potential temperature" at 400m
-makes little physical sense in this case.
+extrapolated data beyond the range of the original data. In some cases this is
+desirable but in other cases it is not. For example, this column defines
+a surface altitude value of 414m, so extrapolating an "air potential temperature"
+at 400m makes little physical sense in this case.
 
 We can control the extrapolation mode when defining the interpolation scheme.
-Controlling the extrapolation mode means we can avoid situations like the above where
+Controlling the extrapolation mode allows us to avoid situations like the above where
 extrapolating values makes little physical sense.
 
 The extrapolation mode is controlled by the ``extrapolation_mode`` keyword.
 For the available interpolation schemes available in Iris, the ``extrapolation_mode``
 keyword must be one of:
- * ``extrapolate`` (the extrapolation points will be calculated by extending
-    the gradient of the closest two points),
- * ``error`` (a ValueError exception will be raised, notifying an attempt to extrapolate),
- * ``nan`` (the extrapolation points will be be set to NaN),
- * ``mask`` (the extrapolation points will always be masked, even if the source
-    data is not a MaskedArray), or
- * ``nanmask`` (if the source data is a MaskedArray the extrapolation points
-    will be masked. Otherwise they will be set to NaN).
+ * ``extrapolate`` -- the extrapolation points will be calculated by extending the gradient of the closest two points,
+ * ``error`` -- a ValueError exception will be raised, notifying an attempt to extrapolate,
+ * ``nan`` -- the extrapolation points will be be set to NaN,
+ * ``mask`` -- the extrapolation points will always be masked, even if the source data is not a MaskedArray, or
+ * ``nanmask`` -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
 
 Using an extrapolation mode is achieved by constructing an interpolation scheme
 with the extrapolation mode keyword set as required. The constructed scheme
@@ -176,8 +176,8 @@ For example, to mask values that lie beyond the range of the original data:
     >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
     >>> new_column = column.interpolate(sample_points, scheme)
     >>> print new_column.coord('altitude').points
-    [           nan   494.44451904   588.88891602   683.33325195   777.77783203 \
-   872.222229     966.66674805  1061.11108398  1155.55541992            nan]
+    [ nan 494.44 588.89 683.33 777.78 872.22 966.67 1061.11
+    1155.56 nan]
 
 
 Caching an interpolator
@@ -185,7 +185,7 @@ Caching an interpolator
 
 If you need to interpolate a cube on multiple sets of sample points you can
 'cache' an interpolator to be used for each of these interpolations. This can
-shorten the execution time your code as the most computationally
+shorten the execution time of your code as the most computationally
 intensive part of an interpolation is setting up the interpolator.
 
 To cache an interpolator you must set up an interpolator scheme and call the
