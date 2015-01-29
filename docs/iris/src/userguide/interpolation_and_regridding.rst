@@ -179,6 +179,8 @@ For example, to mask values that lie beyond the range of the original data:
       1155.56      nan]
 
 
+.. _caching_an_interpolator:
+
 Caching an interpolator
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -360,6 +362,8 @@ To visualise the above regrid, let's plot the original data, along with 3 distin
 
 .. plot:: userguide/regridding_plots/regridded_to_global_area_weighted.py
 
+
+.. _caching_a_regridder:
 
 Caching a regridder
 ^^^^^^^^^^^^^^^^^^^

@@ -1548,6 +1548,11 @@ class Linear(object):
         given :class:`~iris.cube.Cube` specified by the dimensions of
         the given coordinates.
 
+        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+        interpolating a cube. There are, however, some situations when
+        constructing your own interpolator is preferable. These are detailed
+        in the :ref:`user guide <caching_an_interpolator>`.
+
         Args:
 
         * cube:
@@ -1576,9 +1581,6 @@ class Linear(object):
             sample_points must have the form
             `[new_lat_values, new_lon_values]`.
 
-            This callable would typically be used by
-            :class:`iris.cube.Cube.interpolate`.
-
         """
         return RectilinearInterpolator(cube, coords, 'linear',
                                        self._normalised_extrapolation_mode())
@@ -1587,6 +1589,11 @@ class Linear(object):
         """
         Creates a linear regridder to perform regridding from the source
         grid to the target grid.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
 
         Args:
 
@@ -1602,12 +1609,6 @@ class Linear(object):
 
             where `cube` is a cube with the same grid as `src_grid`
             that is to be regridded to the `target_grid`.
-            Thus for the callable returned by
-            `Linear().regridder(src_grid, target_grid)`, cube must
-            be on the same grid as src_grid.
-
-            This callable would typically be used by
-            :class:`iris.cube.Cube.regrid`.
 
         """
         return RectilinearRegridder(src_grid, target_grid, 'linear',
@@ -1652,6 +1653,11 @@ class AreaWeighted(object):
         Creates an area-weighted regridder to perform regridding from the
         source grid to the target grid.
 
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
         Args:
 
         * src_grid_cube:
@@ -1666,12 +1672,6 @@ class AreaWeighted(object):
 
             where `cube` is a cube with the same grid as `src_grid_cube`
             that is to be regridded to the grid of `target_grid_cube`.
-            Thus for the callable returned by
-            `AreaWeighted().regridder(src_grid, target_grid)`, cube must
-            be on the same grid as src_grid.
-
-            This callable would typically be used by
-            :class:`iris.cube.Cube.regrid`.
 
         """
         return AreaWeightedRegridder(src_grid_cube, target_grid_cube,
@@ -1724,12 +1724,17 @@ class Nearest(object):
         interpolation over the given :class:`~iris.cube.Cube` specified
         by the dimensions of the specified coordinates.
 
+        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+        interpolating a cube. There are, however, some situations when
+        constructing your own interpolator is preferable. These are detailed
+        in the :ref:`user guide <caching_an_interpolator>`.
+
         Args:
 
         * cube:
             The source :class:`iris.cube.Cube` to be interpolated.
         * coords:
-            The names or coordinate instances which are to be
+            The names or coordinate instances that are to be
             interpolated over.
 
         Returns:
@@ -1752,9 +1757,6 @@ class Nearest(object):
             sample_points must have the form
             `[new_lat_values, new_lon_values]`.
 
-            This callable would typically be used by
-            :class:`iris.cube.Cube.interpolate`.
-
         """
         return RectilinearInterpolator(cube, coords, 'nearest',
                                        self.extrapolation_mode)
@@ -1763,6 +1765,11 @@ class Nearest(object):
         """
         Creates a nearest-neighbour regridder to perform regridding from the
         source grid to the target grid.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
 
         Args:
 
@@ -1776,8 +1783,8 @@ class Nearest(object):
 
                 `callable(cube)`
 
-            where `cube` is a cube with the same grid as `src_grid
-            which is to be regridded to the `target_grid`.
+            where `cube` is a cube with the same grid as `src_grid`
+            that is to be regridded to the `target_grid`.
 
         """
         return RectilinearRegridder(src_grid, target_grid, 'nearest',
