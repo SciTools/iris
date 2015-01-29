@@ -953,8 +953,6 @@ class Test___call____extrapolation_modes(tests.IrisTest):
 class Test___call____rotated_to_lat_lon(tests.IrisTest):
     def setUp(self):
         self.src = realistic_4d()[:5, :2, ::40, ::30]
-        # Regridder method and extrapolation-mode.
-        self.args = ('linear', 'mask')
         self.mode = 'mask'
         self.methods = ('linear', 'nearest')
 
@@ -1202,33 +1200,39 @@ class Test___call____circular(tests.IrisTest):
         grid = global_pp()[:4, :4]
         grid.coord('longitude').points = grid.coord('longitude').points - 5
         self.grid = grid
-        # Regridder method and extrapolation-mode.
-        self.args = ('linear', 'mask')
+        self.mode = 'mask'
+        self.methods = ('linear', 'nearest')
 
     def test_non_circular(self):
         # Non-circular src -> non-circular grid
-        regridder = Regridder(self.src, self.grid, *self.args)
-        result = regridder(self.src)
-        self.assertFalse(result.coord('longitude').circular)
-        self.assertCMLApproxData(result, RESULT_DIR + ('non_circular.cml',))
+        for method in self.methods:
+            regridder = Regridder(self.src, self.grid, method, self.mode)
+            result = regridder(self.src)
+            self.assertFalse(result.coord('longitude').circular)
+            cml = RESULT_DIR + ('{}_non_circular.cml'.format(method),)
+            self.assertCMLApproxData(result, cml)
 
     def test_circular_src(self):
         # Circular src -> non-circular grid
         src = self.src
         src.coord('longitude').circular = True
-        regridder = Regridder(src, self.grid, *self.args)
-        result = regridder(src)
-        self.assertFalse(result.coord('longitude').circular)
-        self.assertCMLApproxData(result, RESULT_DIR + ('circular_src.cml',))
+        for method in self.methods:
+            regridder = Regridder(src, self.grid, method, self.mode)
+            result = regridder(src)
+            self.assertFalse(result.coord('longitude').circular)
+            cml = RESULT_DIR + ('{}_circular_src.cml'.format(method),)
+            self.assertCMLApproxData(result, cml)
 
     def test_circular_grid(self):
         # Non-circular src -> circular grid
         grid = self.grid
         grid.coord('longitude').circular = True
-        regridder = Regridder(self.src, grid, *self.args)
-        result = regridder(self.src)
-        self.assertTrue(result.coord('longitude').circular)
-        self.assertCMLApproxData(result, RESULT_DIR + ('circular_grid.cml',))
+        for method in self.methods:
+            regridder = Regridder(self.src, grid, method, self.mode)
+            result = regridder(self.src)
+            self.assertTrue(result.coord('longitude').circular)
+            cml = RESULT_DIR + ('{}_circular_grid.cml'.format(method),)
+            self.assertCMLApproxData(result, cml)
 
     def test_circular_src_and_grid(self):
         # Circular src -> circular grid
@@ -1236,10 +1240,12 @@ class Test___call____circular(tests.IrisTest):
         src.coord('longitude').circular = True
         grid = self.grid
         grid.coord('longitude').circular = True
-        regridder = Regridder(src, grid, *self.args)
-        result = regridder(src)
-        self.assertTrue(result.coord('longitude').circular)
-        self.assertCMLApproxData(result, RESULT_DIR + ('both_circular.cml',))
+        for method in self.methods:
+            regridder = Regridder(src, grid, method, self.mode)
+            result = regridder(src)
+            self.assertTrue(result.coord('longitude').circular)
+            cml = RESULT_DIR + ('{}_both_circular.cml'.format(method),)
+            self.assertCMLApproxData(result, cml)
 
 
 if __name__ == '__main__':
