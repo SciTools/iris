@@ -31,7 +31,7 @@ from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
 from iris.analysis._interpolation import get_xy_dim_coords
-from iris.analysis._linear import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
 import iris.unit

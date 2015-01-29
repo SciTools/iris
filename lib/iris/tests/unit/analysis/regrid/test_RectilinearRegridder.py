@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.analysis._linear.RectilinearRegridder`."""
+"""Unit tests for :class:`iris.analysis._regrid.RectilinearRegridder`."""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -25,7 +25,7 @@ import iris.tests as tests
 import mock
 import numpy as np
 
-from iris.analysis._linear import RectilinearRegridder as Regridder
+from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.aux_factory import HybridHeightFactory
 from iris.coord_systems import GeogCS, OSGB
 from iris.coords import AuxCoord, DimCoord

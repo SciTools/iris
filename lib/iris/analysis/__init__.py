@@ -59,7 +59,7 @@ import scipy.stats.mstats
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
-from iris.analysis._linear import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 

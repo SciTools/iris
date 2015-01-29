@@ -24,7 +24,7 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-from iris.analysis._linear import RectilinearRegridder as Regridder
+from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.aux_factory import HybridHeightFactory
 from iris.coord_systems import GeogCS
 from iris.coords import AuxCoord, DimCoord
@@ -36,7 +36,7 @@ if tests.MPL_AVAILABLE:
     import iris.quickplot as qplt
 
 
-RESULT_DIR = ('analysis', 'linear')
+RESULT_DIR = ('analysis', 'regrid')
 
 
 @tests.skip_data
