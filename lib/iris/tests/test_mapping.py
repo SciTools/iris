@@ -39,6 +39,12 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
+# A specific cartopy Globe matching the iris RotatedGeogCS default.
+_DEFAULT_GLOBE = ccrs.Globe(semimajor_axis=6371229.0,
+                            semiminor_axis=6371229.0,
+                            ellipse=None)
+
+
 @tests.skip_plot
 class TestBasic(tests.GraphicsTest):
     cube = iris.tests.stock.realistic_4d()
@@ -61,7 +67,8 @@ class TestBasic(tests.GraphicsTest):
 
     def test_default_projection_and_extent(self):
         self.assertEqual(iplt.default_projection(self.cube),
-                         ccrs.RotatedPole(357.5 - 180, 37.5)
+                         ccrs.RotatedPole(357.5 - 180, 37.5,
+                                          globe=_DEFAULT_GLOBE)
                          )
 
         np_testing.assert_array_almost_equal(iplt.default_projection_extent(self.cube),
@@ -129,8 +136,9 @@ class TestMappingSubRegion(tests.GraphicsTest):
 
     def test_default_projection_and_extent(self):
         self.assertEqual(iplt.default_projection(self.cube),
-                          ccrs.RotatedPole(357.5 - 180, 37.5)
-                          )
+                         ccrs.RotatedPole(357.5 - 180, 37.5,
+                                          globe=_DEFAULT_GLOBE)
+                         )
 
         np_testing.assert_array_almost_equal(iplt.default_projection_extent(self.cube),
                                              (313.01998901, 391.11999512, -22.48999977, 24.80999947)
