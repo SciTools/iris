@@ -874,17 +874,6 @@ def rotate_winds(u_cube, v_cube, target_cs):
     also have two 2-dimensional auxiliary coordinates containing the X and
     Y locations in the target coordinate system.
 
-    ..note ::
-
-        The names of the output cubes are those of the inputs, prefixed with
-        'transformed_' (e.g. 'transformed_x_wind').
-
-    ..note ::
-
-        Conversion between rotated-pole and non-rotated systems can be
-        expressed analytically.  However, this function always uses a numerical
-        approach.
-
     Args:
 
     * u_cube
@@ -900,6 +889,25 @@ def rotate_winds(u_cube, v_cube, target_cs):
     Returns:
         A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
         and v components in the requested target coordinate system.
+        The units are the same as the inputs.
+
+    ..note ::
+
+        The U and V values are measures of distance, with units such as
+        'm s-1'.  These are not the same as coordinate vectors, which transform
+        in a different manner.
+
+    ..note ::
+
+        The names of the output cubes are those of the inputs, prefixed with
+        'transformed_' (e.g. 'transformed_x_wind').
+
+    ..note ::
+
+        Conversion between rotated-pole and non-rotated systems can be
+        expressed analytically.  However, this function always uses a numerical
+        approach.
+
 
     """
     # Check u_cube and v_cube have the same shape. We iterate through
