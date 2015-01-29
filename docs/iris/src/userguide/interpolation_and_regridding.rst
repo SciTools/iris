@@ -169,7 +169,7 @@ the regridding scheme to use.
     The powerful mapping functionality provided by cartopy, however, means that regridding
     is often not necessary if performed just for visualisation purposes.
 
-Let's load two cubes that are on different grids:
+Let's load two cubes that have different grids and coordinate systems:
 
     >>> global_air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> rotated_psl = iris.load_cube(iris.sample_data_path('rotated_pole.nc'))
@@ -179,8 +179,9 @@ We can visually confirm that they are on different grids by plotting the two cub
 .. plot:: userguide/regridding_plots/regridding_plot.py
 
 Let's regrid the ``global_air_temp`` cube onto a rotated pole grid
-using a linear interpolation scheme. To achieve this we pass the ``rotated_psl``
-cube to the regridder to supply the grid to regrid the ``global_air_temp`` cube onto:
+using a linear regridding scheme. To achieve this we pass the ``rotated_psl``
+cube to the regridder to supply the target grid to regrid the ``global_air_temp``
+cube onto:
 
     >>> rotated_air_temp = global_air_temp.regrid(rotated_psl, iris.analysis.Linear())
 
@@ -189,6 +190,15 @@ cube to the regridder to supply the grid to regrid the ``global_air_temp`` cube 
 We could regrid the pressure values onto the global grid, but this will involve
 some form of extrapolation. As with interpolation, we can control the extrapolation
 mode when defining the regridding scheme.
+
+For the available regridding schemes in Iris, the ``extrapolation_mode`` keyword
+must be one of:
+ * 'extrapolate' -- the extrapolation points will take their value from the nearest source point.
+ * 'nan' -- the extrapolation points will be be set to NaN.
+ * 'error' -- a ValueError exception will be raised, notifying an attempt to extrapolate.
+ * 'mask' -- the extrapolation points will always be masked, even if the source data is not a MaskedArray.
+ * 'nanmask' -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
+
 
 The ``rotated_psl`` cube is defined on a limited area rotated pole grid. If we regridded
 the ``rotated_psl`` cube onto the global grid as defined by the ``global_air_temp`` cube
@@ -213,13 +223,14 @@ Area weighted regridding
 It is often the case that a point-based regridding scheme (such as
 :class:`iris.analysis.Linear`) is not appropriate when you need to conserve
 quantities when regridding. The :class:`iris.analysis.AreaWeighted` scheme is less
-general than :class:`iris.analysis.Linear`, but is a conservative regridding scheme,
-meaning that the area weighted total is approximately preserved across grids.
+general than :class:`~iris.analysis.Linear` or :class:`~iris.analysis.Nearest`,
+but is a conservative regridding scheme, meaning that the area weighted total is
+approximately preserved across grids.
 
 With the :class:`~iris.analysis.AreaWeighted` regridding scheme, each target grid-box's
 data is computed as a weighted mean of all grid-boxes from the source grid. The weighting
 for any given target grid-box is the area of the intersection with each of the
-source grid-boxes. This scheme is performs well when regridding from a high
+source grid-boxes. This scheme performs well when regridding from a high
 resolution source grid to a lower resolution target grid, since all source data
 points will be accounted for in the target grid.
 
@@ -237,14 +248,14 @@ along with a limited area cube containing total concentration of volcanic ash:
 
 One of the key limitations of the :class:`~iris.analysis.AreaWeighted`
 regridding scheme is that the two input grids must be defined in the same
-coordinate system as each other. Both must also contain monotonic, bounded,
-1D spatial coordinates.
+coordinate system as each other. Both input grids must also contain monotonic,
+bounded, 1D spatial coordinates.
 
 .. note::
 
     The :class:`~iris.analysis.AreaWeighted` regridding scheme requires spatial
     areas, therefore the longitude and latitude coordinates must be bounded.
-    If the longitude and latitude bounds are not specified in the cube we can
+    If the longitude and latitude bounds are not defined in the cube we can
     guess the bounds based on the coordinates' point values:
 
         >>> global_air_temp.coord('longitude').guess_bounds()
@@ -263,7 +274,7 @@ regridding scheme:
     >>> print global_ash.summary(shorten=True)
     VOLCANIC_ASH_AIR_CONCENTRATION / (g/m3) (latitude: 73; longitude: 96)
 
-Notice how the :class:`~iris.analysis.AreaWeighted` regridding scheme allows us
+Note that the :class:`~iris.analysis.AreaWeighted` regridding scheme allows us
 to define a missing data tolerance (``mdtol``), which specifies the tolerated
 fraction of masked data in any given target grid-box. If the fraction of masked
 data within a target grid-box exceeds this value, the data in this target
@@ -298,6 +309,7 @@ grid to regrid the source cube to. For example:
     >>> global_air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> regional_ash = iris.load_cube(iris.sample_data_path('NAME_output.txt'))
     >>> regional_ash = regional_ash.collapsed('flight_level', iris.analysis.SUM)
+    >>>
     >>> regridder = iris.analysis.Nearest().regridder(global_air_temp, rotated_psl)
 
 When this cached regridder is called you must pass it a cube on the same grid
