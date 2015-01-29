@@ -150,81 +150,81 @@ values requiring extrapolation being masked.
 
 .. _regridding:
 
+
 Regridding
----------------------------------
+----------
 
-Regridding conceptually is a very similar to interpolation in Iris, with the primary difference being
-that interpolations are based on sample points, where regridding is based on the **spatial** grid of
-*another cube*.
+Regridding is conceptually a very similar process to interpolation in Iris. 
+The primary difference is that interpolation is based on sample points, while
+regridding is based on the **spatial** grid of *another cube*.
 
-Regridding is achieved with the :meth:`cube.regrid() <iris.cube.Cube.regrid>` method,
-with the first argument being *another cube* which has the grid to which the cube should
-be interpolated onto, and the second argument being the regridding scheme to use.
-
-The current regridding schemes available are :class:`iris.analysis.Linear` for a linear point
-based regrid and :class:`iris.analysis.AreaWeighted` for area weighted regridding.
+Regridding a cube is achieved with the :meth:`cube.regrid() <iris.cube.Cube.regrid>` method.
+This method expects two arguments; the first argument being *another cube* that defines
+the grid onto which the cube should be regridded, and the second argument being
+the regridding scheme to use.
 
 .. note::
 
-    Regridding is a common operation needed to allow comparisons of data on different grids, however
-    because of the powerful mapping functionality provided by cartopy, regridding is often not
-    necessary if it is just for visualisation purposes.
+    Regridding is a common operation needed to allow comparisons of data on different grids.
+    The powerful mapping functionality provided by cartopy, however, means that regridding
+    is often not necessary if performed just for visualisation purposes.
 
-Let's load two cubes which are on different grids:
+Let's load two cubes that are on different grids:
 
     >>> global_air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> rotated_psl = iris.load_cube(iris.sample_data_path('rotated_pole.nc'))
 
-We can visually confirm that they are on different grids by drawing a block plot
-(pcolormesh) of the two cubes:
+We can visually confirm that they are on different grids by plotting the two cubes:
 
 .. plot:: userguide/regridding_plots/regridding_plot.py
 
-To regrid the air temperature values onto the rotated pole grid using a linear
-interpolation scheme, we pass the ``rotated_psl`` cube, whose grid will be used
-as the locations for the interpolated air temperature values:
+Let's regrid the ``global_air_temp`` cube onto a rotated pole grid
+using a linear interpolation scheme. To achieve this we pass the ``rotated_psl``
+cube to the regridder to supply the grid to regrid the ``global_air_temp`` cube onto:
 
     >>> rotated_air_temp = global_air_temp.regrid(rotated_psl, iris.analysis.Linear())
 
 .. plot:: userguide/regridding_plots/regridded_to_rotated.py
 
-Of course, we could have interpolated the pressure values onto the global grid, but
-this will involve some form of extrapolation. As with interpolation, it is in the
-definition of the scheme where the extrapolation mode can be controlled.
+We could regrid the pressure values onto the global grid, but this will involve
+some form of extrapolation. As with interpolation, we can control the extrapolation
+mode when defining the regridding scheme.
 
-When regridding the pressure cube, which is defined on a limited area rotated pole grid, on to
-the global grid as defined by the temperature cube, any linearly extrapolation
-values would quickly become dominant and highly inaccurate. We may therefore define the
-``extrapolation_mode`` in the constructor of :class:`iris.analysis.Linear` masking values which
-lie outside of the domain of the rotated pole grid:
+The ``rotated_psl`` cube is defined on a limited area rotated pole grid. If we regridded
+the ``rotated_psl`` cube onto the global grid as defined by the ``global_air_temp`` cube
+any linearly extrapolated values would quickly become dominant and highly inaccurate.
+We can control this behaviour by defining the ``extrapolation_mode`` in the constructor
+of the regridding scheme to mask values that lie outside of the domain of the rotated
+pole grid:
 
     >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
     >>> global_psl = rotated_psl.regrid(global_air_temp, scheme)
 
 .. plot:: userguide/regridding_plots/regridded_to_global.py
 
-Notice that, although we can still see the approximate shape of the rotated pole grid, the
-cells have now become rectangular in a plate-carrée/equirectangular projection, and that
-the resulting cube is really global, with a large proportion of the data being masked.
+Notice that although we can still see the approximate shape of the rotated pole grid, the
+cells have now become rectangular in a plate carrée (equirectangular) projection.
+The spatial grid of the resulting cube is really global, with a large proportion of the
+data being masked.
 
 Area weighted regridding
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-To conserve quantities when regridding, it is often the case that a point-based
-interpolation such as that provided by :class:`iris.analysis.Linear` is not
-appropriate. The :class:`iris.analysis.AreaWeighted` scheme is less general than
-:class:`iris.analysis.Linear`, but it is a conservative regridding scheme meaning
-that the area weighted total is approximately preserved across grids.
+It is often the case that a point-based regridding scheme (such as
+:class:`iris.analysis.Linear`) is not appropriate when you need to conserve
+quantities when regridding. The :class:`iris.analysis.AreaWeighted` scheme is less
+general than :class:`iris.analysis.Linear`, but is a conservative regridding scheme,
+meaning that the area weighted total is approximately preserved across grids.
 
-With :class:`~iris.analysis.AreaWeighted`, each target grid-box's data is
-computed as a weighted mean of all grid-boxes from the source grid. The weighting
+With the :class:`~iris.analysis.AreaWeighted` regridding scheme, each target grid-box's
+data is computed as a weighted mean of all grid-boxes from the source grid. The weighting
 for any given target grid-box is the area of the intersection with each of the
-source grid-boxes. Such a scheme is an excellent choice when regridding from a high
-resolution grid to a lower resolution, since all source data points will be accounted
-for in the target grid.
+source grid-boxes. This scheme is performs well when regridding from a high
+resolution source grid to a lower resolution target grid, since all source data
+points will be accounted for in the target grid.
 
-Using the same global grid we saw previously, along with a limited area cube
-containing total concentration of volcanic ash:
+Let's demonstrate this with the global air temperature cube we saw previously,
+along with a limited area cube containing total concentration of volcanic ash:
 
     >>> global_air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> print global_air_temp.summary(shorten=True)
@@ -235,42 +235,77 @@ containing total concentration of volcanic ash:
     >>> print regional_ash.summary(shorten=True)
     VOLCANIC_ASH_AIR_CONCENTRATION / (g/m3) (latitude: 214; longitude: 584)
 
-One of the key limitations to the AreaWeighted regridding scheme is that the two
-input grids must be defined in the same coordinate system and both must contain
-monotonic, bounded, 1D spatial coordinates.
+One of the key limitations of the :class:`~iris.analysis.AreaWeighted`
+regridding scheme is that the two input grids must be defined in the same
+coordinate system as each other. Both must also contain monotonic, bounded,
+1D spatial coordinates.
 
 .. note::
 
-    The area weighted scheme requires spatial areas, therefore the longitude and
-    latitude coordinates must be bounded. In this case, we can simply guess bounds
-    based on the point values, but this step will is not necessary if the cube being
-    worked with is already bounded:
+    The :class:`~iris.analysis.AreaWeighted` regridding scheme requires spatial
+    areas, therefore the longitude and latitude coordinates must be bounded.
+    If the longitude and latitude bounds are not specified in the cube we can
+    guess the bounds based on the coordinates' point values:
 
         >>> global_air_temp.coord('longitude').guess_bounds()
         >>> global_air_temp.coord('latitude').guess_bounds()
 
-Using numpy's masked array module we can mask any data which falls below a meaningful
+Using NumPy's masked array module we can mask any data that falls below a meaningful
 concentration:
 
     >>> regional_ash.data = np.ma.masked_less(regional_ash.data, 5e-6)
 
-Finally, we can regrid the data using the area weighted scheme:
+Finally, we can regrid the data using the :class:`~iris.analysis.AreaWeighted`
+regridding scheme:
 
     >>> scheme = iris.analysis.AreaWeighted(mdtol=0.5)
     >>> global_ash = regional_ash.regrid(global_air_temp, scheme)
     >>> print global_ash.summary(shorten=True)
     VOLCANIC_ASH_AIR_CONCENTRATION / (g/m3) (latitude: 73; longitude: 96)
 
-Notice how the :class:`~iris.analysis.AreaWeighted` scheme allows us to define ``mdtol``
-which specifies the acceptable fraction of masked data in any given target grid-box.
-If the fraction of masked data exceeds this value, the data in the target grid-box will
-be masked in the result. The fraction of masked data is calculated based on the area of
-masked source grid-boxes that overlaps with each target grid-box. Defining an
-``mdtol`` allows fine control of masked data tolerance, but it is worth remembering that
-defining anything other than an ``mdtol`` of 1 will prevent the scheme from being fully
-conservative, as some data would be disregarded if it lies close to masked data.
+Notice how the :class:`~iris.analysis.AreaWeighted` regridding scheme allows us
+to define a missing data tolerance (``mdtol``), which specifies the tolerated
+fraction of masked data in any given target grid-box. If the fraction of masked
+data within a target grid-box exceeds this value, the data in this target
+grid-box will be masked in the result.
 
-To visualise the regrid, let's plot the original data, along with 3 distinct ``mdtol``
-values to compare the result: 
+The fraction of masked data is calculated based on the area of masked source grid-boxes
+that overlaps with each target grid-box. Defining an ``mdtol`` in the
+:class:`~iris.analysis.AreaWeighted` regridding scheme allows fine control
+of masked data tolerance. It is worth remembering that defining an ``mdtol`` of
+anything other than 1 will prevent the scheme from being fully conservative, as
+some data will be disregarded if it lies close to masked data.
+
+To visualise the above regrid, let's plot the original data, along with 3 distinct
+``mdtol`` values to compare the result:
 
 .. plot:: userguide/regridding_plots/regridded_to_global_area_weighted.py
+
+
+Caching a regridder
+^^^^^^^^^^^^^^^^^^^
+
+If you need to regrid multiple cubes with a common source grid onto a common
+target grid you can 'cache' a regridder to be used for each of these regrids.
+This can shorten the execution time of your code as the most computationally
+intensive part of an regrid is setting up the regridder.
+
+To cache an regridder you must set up an regridder scheme and call the
+scheme's regridder method. The regridder method takes as arguments a cube
+defining the source grid (that is to be regridded) and cube defining the target
+grid to regrid the source cube to. For example:
+
+    >>> global_air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+    >>> regional_ash = iris.load_cube(iris.sample_data_path('NAME_output.txt'))
+    >>> regional_ash = regional_ash.collapsed('flight_level', iris.analysis.SUM)
+    >>> regridder = iris.analysis.Nearest().regridder(global_air_temp, rotated_psl)
+
+When this cached regridder is called you must pass it a cube on the same grid
+as the source grid that is to be regridded to the target grid.
+So, to use the cached regridder defined above:
+
+    >>> for cube in list_of_cubes_on_source_grid:
+    ...     result = regridder(cube)
+
+In each case the result will be a cube regridded to the target grid from the
+cube we passed to interpolator.
