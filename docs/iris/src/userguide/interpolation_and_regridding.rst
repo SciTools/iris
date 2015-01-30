@@ -7,31 +7,50 @@
   import iris
 
 =================================
-Cube regridding and interpolation
+Cube interpolation and regridding
 =================================
 
-Iris builds upon interpolation schemes implemented by scipy, and other packages,
-to add powerful cube-aware regrid and interpolation functionality exposed through
-simple cube methods.
+Iris provides powerful cube-aware interpolation and regridding functionality,
+exposed through Iris cube methods. This functionality is provided by building
+upon existing interpolation schemes implemented by SciPy.
+
+In Iris we refer to the avaliable types of interpolation and regridding as
+`schemes`. The following are the interpolation schemes that are currently
+available in Iris:
+ * linear interpolation (:class:`iris.analysis.Linear`), and
+ * nearest-neighbour interpolation (:class:`iris.analysis.Nearest`).
+
+The following are the regridding schemes that are currently available in Iris:
+ * linear regridding (:class:`iris.analysis.Linear`),
+ * nearest-neighbour regridding (:class:`iris.analysis.Nearest`), and
+ * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order conservative).
+
 
 .. _interpolation:
 
 Interpolation
 -------------
 
-Interpolation can be achieved on a cube with the :meth:`~iris.cube.Cube.interpolate`
-method, with the first argument being the points to interpolate, and the second being
-the interpolation scheme to use. The result is a new interpolated cube.
+Interpolating a cube is achieved with the :meth:`~iris.cube.Cube.interpolate`
+method. This method expects two arguments:
+ #. the sample points to interpolate, and
+ #. the second argument being the interpolation scheme to use.
 
-Sample points can be defined as an iterable of ``(coord/coord name, value(s))`` pairs, e.g. ``[('latitude', 51.48), ('longitude', 0)]``.
-The values for coordinates which correspond to date/times may optionally
-be supplied as datetime.datetime or netcdftime.datetime instances,
+The result is a new cube, interpolated at the sample points.
+
+Sample points must be defined as an iterable of ``(coord, value(s))`` pairs.
+The `coord` argument can be either a coordinate name or coordinate instance.
+The specified coordinate must exist on the cube being interpolated! For example:
+ * coordinate names and scalar sample points: ``[('latitude', 51.48), ('longitude', 0)]``,
+ * a coordinate instance and a scalar sample point: ``[(cube.coord('latitude'), 51.48)]``, and
+ * a coordinate name and a NumPy array of sample points: ``[('longitude', np.linspace(-11, 2, 14))]``
+are all examples of valid sample points.
+
+The values for coordinates that correspond to date/times can be supplied as
+datetime.datetime or netcdftime.datetime instances,
 e.g. ``[('time', datetime.datetime(2009, 11, 19, 10, 30))]``).
 
-Whilst more interpolation schemes will become available, the only interpolation scheme
-currently implementing Iris' interpolate interface is :class:`iris.analysis.Linear`.
-
-Taking the air temperature cube we've seen previously:
+Let's take the air temperature cube we've seen previously:
 
     >>> air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> print air_temp
@@ -73,19 +92,18 @@ We can interpolate specific values from the coordinates of the cube:
 As we can see, the resulting cube is scalar and has longitude and latitude coordinates with
 the values defined in our sample points.
 
-It isn't necessary to specify sample points for each dimension - any dimensions which aren't
-specified are preserved:
+It isn't necessary to specify sample points for every dimension, only those that you
+wish to interpolate over:
 
     >>> result = air_temp.interpolate([('longitude', 0)], iris.analysis.Linear())
-
     >>> print 'Original:', air_temp.summary(shorten=True)
     Original: air_temperature / (K)               (latitude: 73; longitude: 96)
     >>> print 'Interpolated:', result.summary(shorten=True)
     Interpolated: air_temperature / (K)               (latitude: 73)
 
-The sample points needn't be a scalar value and may be an array of values instead.
-When multiple coordinates are provided with arrays instead of scalars, the coordinates
-on the resulting cube will be orthogonal:
+The sample points for a coordinate can be an array of values. When multiple coordinates are
+provided with arrays instead of scalar sample points, the coordinates on the resulting cube
+will be orthogonal:
 
     >>> sample_points = [('longitude', np.linspace(-11, 2, 14)),
     ...                  ('latitude',  np.linspace(48, 60, 13))]
@@ -94,7 +112,7 @@ on the resulting cube will be orthogonal:
     air_temperature / (K)               (latitude: 13; longitude: 14)
 
 
-Interpolating non horizontal coordinates
+Interpolating non-horizontal coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Interpolation in Iris is not limited to horizontal-spatial coordinates - any
@@ -117,39 +135,87 @@ coordinate is unevenly spaced in altitude:
        723.58   790.31   863.41   942.88  1028.74  1120.98  1219.61]
 
 We could regularise the vertical coordinate by defining 10 equally spaced altitude
-sample points between 400 and 1250:
+sample points between 400 and 1250 and interpolating our vertical coordinate onto
+these sample points:
 
     >>> sample_points = [('altitude', np.linspace(400, 1250, 10))]
     >>> new_column = column.interpolate(sample_points, iris.analysis.Linear())
     >>> print new_column.summary(shorten=True)
     air_potential_temperature / (K)     (model_level_number: 10)
 
-To see what is going on, let's look at the original data, the interpolation line, and
-the new data in a plot: 
+Let's look at the original data, the interpolation line and
+the new data in a plot. This will help us to see what is going on:
 
 .. plot:: userguide/regridding_plots/interpolate_column.py
 
-As we can see with the red diamonds on the extremes of the altitude values, we have
-extrapolated data beyond the range of the original data. In some cases this is desirable
-functionality, and for others it is not - for instance, this column defined
-a surface altitude value of 414m, so extrapolating "air potential temperature" at 400m
-in this case makes little physical sense.
+The red diamonds on the extremes of the altitude values show that we have
+extrapolated data beyond the range of the original data. In some cases this is
+desirable but in other cases it is not. For example, this column defines
+a surface altitude value of 414m, so extrapolating an "air potential temperature"
+at 400m makes little physical sense in this case.
 
-Fortunately we can control the extrapolation mode when defining the interpolation scheme
-with the ``extrapolation_mode`` keyword.  For :class:`iris.analysis.Linear` the
-``extrapolation_mode`` must be one of ``linear``, ``error``, ``nan``, ``mask`` or
-``nanmask``. To mask the values which lie beyond the range of the original data, using
-the ``mask`` extrapolation mode is just a matter of constructing the appropriate scheme
-and passing it through to the :meth:`~iris.cube.Cube.interpolate` method:
+We can control the extrapolation mode when defining the interpolation scheme.
+Controlling the extrapolation mode allows us to avoid situations like the above where
+extrapolating values makes little physical sense.
+
+The extrapolation mode is controlled by the ``extrapolation_mode`` keyword.
+For the available interpolation schemes available in Iris, the ``extrapolation_mode``
+keyword must be one of:
+ * ``extrapolate`` -- the extrapolation points will be calculated by extending the gradient of the closest two points,
+ * ``error`` -- a ValueError exception will be raised, notifying an attempt to extrapolate,
+ * ``nan`` -- the extrapolation points will be be set to NaN,
+ * ``mask`` -- the extrapolation points will always be masked, even if the source data is not a MaskedArray, or
+ * ``nanmask`` -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
+
+Using an extrapolation mode is achieved by constructing an interpolation scheme
+with the extrapolation mode keyword set as required. The constructed scheme
+is then passed to the :meth:`~iris.cube.Cube.interpolate` method.
+For example, to mask values that lie beyond the range of the original data:
 
     >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
     >>> new_column = column.interpolate(sample_points, scheme)
+    >>> print new_column.coord('altitude').points
+    [     nan   494.44   588.89   683.33   777.78   872.22   966.67  1061.11
+      1155.56      nan]
 
-The result will be a cube of the number of points passed through to interpolate, with the
-values requiring extrapolation being masked.
+
+Caching an interpolator
+^^^^^^^^^^^^^^^^^^^^^^^
+
+If you need to interpolate a cube on multiple sets of sample points you can
+'cache' an interpolator to be used for each of these interpolations. This can
+shorten the execution time of your code as the most computationally
+intensive part of an interpolation is setting up the interpolator.
+
+To cache an interpolator you must set up an interpolator scheme and call the
+scheme's interpolator method. The interpolator method takes as arguments:
+ #. a cube to be interpolated, and
+ #. an iterable of coordinate names or coordinate instances of the coordinates that are to be interpolated over.
+
+For example:
+
+    >>> air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+    >>> interpolator = iris.analysis.Nearest().interpolator(air_temp, ['latitude', 'longitude'])
+
+When this cached interpolator is called you must pass it an iterable of sample points
+that have the same form as the iterable of coordinates passed to the constructor.
+So, to use the cached interpolator defined above:
+
+    >>> latitudes = np.linspace(48, 60, 13)
+    >>> longitudes = np.linspace(-11, 2, 14)
+    >>> for lat, lon in zip(latitudes, longitudes):
+    ...     result = interpolator([lat, lon])
+
+In each case ``result`` will be a cube interpolated from the ``air_temp`` cube we
+passed to interpolator.
+
+Note that you must specify the required extrapolation mode when setting up the cached interpolator.
+For example::
+
+    >>> interpolator = iris.analysis.Nearest(extrapolation_mode='nan').interpolator(cube, coords)
+
 
 .. _regridding:
-
 
 Regridding
 ----------
