@@ -1494,9 +1494,10 @@ def clear_phenomenon_identity(cube):
 
 class Linear(object):
     """
-    This class describes the linear interpolation scheme for interpolating over
-    one or more orthogonal coordinates, typically for use with
-    :meth:`iris.cube.Cube.interpolate()` or :meth:`iris.cube.Cube.regrid()`.
+    This class describes the linear interpolation and regridding scheme for
+    interpolating or regridding over one or more orthogonal coordinates,
+    typically for use with :meth:`iris.cube.Cube.interpolate()` or
+    :meth:`iris.cube.Cube.regrid()`.
 
     """
 
@@ -1504,8 +1505,8 @@ class Linear(object):
 
     def __init__(self, extrapolation_mode='linear'):
         """
-        Linear interpolation scheme suitable for interpolating over one or
-        more orthogonal coordinates.
+        Linear interpolation and regridding scheme suitable for interpolating
+        or regridding over one or more orthogonal coordinates.
 
         Kwargs:
 
@@ -1545,14 +1546,19 @@ class Linear(object):
         """
         Creates a linear interpolator to perform interpolation over the
         given :class:`~iris.cube.Cube` specified by the dimensions of
-        the specified coordinates.
+        the given coordinates.
+
+        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+        interpolating a cube. There are, however, some situations when
+        constructing your own interpolator is preferable. These are detailed
+        in the :ref:`user guide <caching_an_interpolator>`.
 
         Args:
 
         * cube:
             The source :class:`iris.cube.Cube` to be interpolated.
         * coords:
-            The names or coordinate instances which are to be
+            The names or coordinate instances that are to be
             interpolated over.
 
         Returns:
@@ -1566,7 +1572,7 @@ class Linear(object):
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
-            The values for coordinates which correspond to date/times
+            The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
             netcdftime.datetime instances.
 
@@ -1584,6 +1590,11 @@ class Linear(object):
         Creates a linear regridder to perform regridding from the source
         grid to the target grid.
 
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
         Args:
 
         * src_grid:
@@ -1597,7 +1608,7 @@ class Linear(object):
                 `callable(cube)`
 
             where `cube` is a cube with the same grid as `src_grid`
-            which is to be regridded to the `target_grid`.
+            that is to be regridded to the `target_grid`.
 
         """
         return RectilinearRegridder(src_grid, target_grid, 'linear',
@@ -1642,6 +1653,11 @@ class AreaWeighted(object):
         Creates an area-weighted regridder to perform regridding from the
         source grid to the target grid.
 
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
         Args:
 
         * src_grid_cube:
@@ -1654,8 +1670,8 @@ class AreaWeighted(object):
 
                 `callable(cube)`
 
-            where `cube` is a cube with the same grid as `src_grid_cube`, which
-            is to be regridded to the grid of `target_grid_cube`.
+            where `cube` is a cube with the same grid as `src_grid_cube`
+            that is to be regridded to the grid of `target_grid_cube`.
 
         """
         return AreaWeightedRegridder(src_grid_cube, target_grid_cube,
@@ -1664,16 +1680,16 @@ class AreaWeighted(object):
 
 class Nearest(object):
     """
-    This class describes the nearest-neighbour interpolation scheme for
-    interpolating over one or more orthogonal coordinates, typically for
-    use with :meth:`iris.cube.Cube.interpolate()` or
-    :meth:`iris.cube.Cube.regrid()`.
+    This class describes the nearest-neighbour interpolation and regridding
+    scheme for interpolating or regridding over one or more orthogonal
+    coordinates, typically for use with :meth:`iris.cube.Cube.interpolate()`
+    or :meth:`iris.cube.Cube.regrid()`.
 
     """
     def __init__(self, extrapolation_mode='extrapolate'):
         """
-        Nearest-neighbour interpolation scheme suitable for
-        interpolating over one or more orthogonal coordinates.
+        Nearest-neighbour interpolation and regridding scheme suitable for
+        interpolating or regridding over one or more orthogonal coordinates.
 
         Kwargs:
 
@@ -1708,12 +1724,17 @@ class Nearest(object):
         interpolation over the given :class:`~iris.cube.Cube` specified
         by the dimensions of the specified coordinates.
 
+        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+        interpolating a cube. There are, however, some situations when
+        constructing your own interpolator is preferable. These are detailed
+        in the :ref:`user guide <caching_an_interpolator>`.
+
         Args:
 
         * cube:
             The source :class:`iris.cube.Cube` to be interpolated.
         * coords:
-            The names or coordinate instances which are to be
+            The names or coordinate instances that are to be
             interpolated over.
 
         Returns:
@@ -1727,7 +1748,7 @@ class Nearest(object):
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
-            The values for coordinates which correspond to date/times
+            The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
             netcdftime.datetime instances.
 
@@ -1745,6 +1766,11 @@ class Nearest(object):
         Creates a nearest-neighbour regridder to perform regridding from the
         source grid to the target grid.
 
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
         Args:
 
         * src_grid:
@@ -1757,8 +1783,8 @@ class Nearest(object):
 
                 `callable(cube)`
 
-            where `cube` is a cube with the same grid as `src_grid
-            which is to be regridded to the `target_grid`.
+            where `cube` is a cube with the same grid as `src_grid`
+            that is to be regridded to the `target_grid`.
 
         """
         return RectilinearRegridder(src_grid, target_grid, 'nearest',
