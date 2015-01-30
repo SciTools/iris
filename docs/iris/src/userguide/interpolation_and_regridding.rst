@@ -7,7 +7,7 @@
   import iris
 
 =================================
-Cube regridding and interpolation
+Cube interpolation and regridding
 =================================
 
 Iris provides powerful cube-aware interpolation and regridding functionality,
@@ -23,8 +23,7 @@ available in Iris:
 The following are the regridding schemes that are currently available in Iris:
  * linear regridding (:class:`iris.analysis.Linear`),
  * nearest-neighbour regridding (:class:`iris.analysis.Nearest`), and
- * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order
-    conservative).
+ * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order conservative).
 
 
 .. _interpolation:
@@ -176,8 +175,8 @@ For example, to mask values that lie beyond the range of the original data:
     >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
     >>> new_column = column.interpolate(sample_points, scheme)
     >>> print new_column.coord('altitude').points
-    [ nan 494.44 588.89 683.33 777.78 872.22 966.67 1061.11
-    1155.56 nan]
+    [     nan   494.44   588.89   683.33   777.78   872.22   966.67  1061.11
+      1155.56      nan]
 
 
 Caching an interpolator
@@ -189,9 +188,11 @@ shorten the execution time of your code as the most computationally
 intensive part of an interpolation is setting up the interpolator.
 
 To cache an interpolator you must set up an interpolator scheme and call the
-scheme's interpolator method. The interpolator method takes as arguments a cube
-to be interpolated and an iterable of names or coordinate instances of the
-coordinates that are to be interpolated over. For example:
+scheme's interpolator method. The interpolator method takes as arguments:
+ #. a cube to be interpolated, and
+ #. an iterable of coordinate names or coordinate instances of the coordinates that are to be interpolated over.
+
+For example:
 
     >>> air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> interpolator = iris.analysis.Nearest().interpolator(air_temp, ['latitude', 'longitude'])
@@ -205,11 +206,12 @@ So, to use the cached interpolator defined above:
     >>> for lat, lon in zip(latitudes, longitudes):
     ...     result = interpolator([lat, lon])
 
-In each case the result will be a cube interpolated from the `air_temp` cube we
+In each case ``result`` will be a cube interpolated from the ``air_temp`` cube we
 passed to interpolator.
 
 Note that you must specify the required extrapolation mode when setting up the cached interpolator.
-For example:
+For example::
+
     >>> interpolator = iris.analysis.Nearest(extrapolation_mode='nan').interpolator(cube, coords)
 
 
