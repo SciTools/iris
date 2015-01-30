@@ -750,7 +750,7 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
     Returns:
         (dx2/dx1, dy2/dx1, dx2/dy1, dy2/dy1) at given locations. Each
-        element of this tuple will be tha same shape as the 'x' and 'y'
+        element of this tuple will be the same shape as the 'x' and 'y'
         arrays and will be the partial differentials between the two systems.
 
     """
@@ -891,18 +891,18 @@ def rotate_winds(u_cube, v_cube, target_cs):
         and v components in the requested target coordinate system.
         The units are the same as the inputs.
 
-    ..note ::
+    .. note::
 
-        The U and V values are measures of distance, with units such as
-        'm s-1'.  These are not the same as coordinate vectors, which transform
-        in a different manner.
+        The U and V values relate to distance, with units such as 'm s-1'.
+        These are not the same as coordinate vectors, which transform in a
+        different manner.
 
-    ..note ::
+    .. note::
 
         The names of the output cubes are those of the inputs, prefixed with
-        'transformed_' (e.g. 'transformed_x_wind').
+        'transformed\_' (e.g. 'transformed_x_wind').
 
-    ..note ::
+    .. note::
 
         Conversion between rotated-pole and non-rotated systems can be
         expressed analytically.  However, this function always uses a numerical
