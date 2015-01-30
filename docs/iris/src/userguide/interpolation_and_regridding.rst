@@ -156,12 +156,12 @@ Regridding
 
 Regridding is conceptually a very similar process to interpolation in Iris. 
 The primary difference is that interpolation is based on sample points, while
-regridding is based on the **spatial** grid of *another cube*.
+regridding is based on the **horizontal** grid of *another cube*.
 
 Regridding a cube is achieved with the :meth:`cube.regrid() <iris.cube.Cube.regrid>` method.
-This method expects two arguments; the first argument being *another cube* that defines
-the grid onto which the cube should be regridded, and the second argument being
-the regridding scheme to use.
+This method expects two arguments: 
+ #. *another cube* that defines the target grid onto which the cube should be regridded, and
+ #. the regridding scheme to use.
 
 .. note::
 
@@ -193,12 +193,13 @@ mode when defining the regridding scheme.
 
 For the available regridding schemes in Iris, the ``extrapolation_mode`` keyword
 must be one of:
- * 'extrapolate' -- the extrapolation points will take their value from the nearest source point.
- * 'nan' -- the extrapolation points will be be set to NaN.
- * 'error' -- a ValueError exception will be raised, notifying an attempt to extrapolate.
- * 'mask' -- the extrapolation points will always be masked, even if the source data is not a MaskedArray.
- * 'nanmask' -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
-
+ * ``extrapolate`` --
+    * for :class:`~iris.analysis.Linear` the extrapolation points will be calculated by extending the gradient of the closest two points.
+    * for :class:`~iris.analysis.Nearest` the extrapolation points will take their value from the nearest source point.
+ * ``nan`` -- the extrapolation points will be be set to NaN.
+ * ``error`` -- a ValueError exception will be raised, notifying an attempt to extrapolate.
+ * ``mask`` -- the extrapolation points will always be masked, even if the source data is not a MaskedArray.
+ * ``nanmask`` -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
 
 The ``rotated_psl`` cube is defined on a limited area rotated pole grid. If we regridded
 the ``rotated_psl`` cube onto the global grid as defined by the ``global_air_temp`` cube
@@ -217,14 +218,15 @@ cells have now become rectangular in a plate carrée (equirectangular) projectio
 The spatial grid of the resulting cube is really global, with a large proportion of the
 data being masked.
 
-Area weighted regridding
+Area-weighted regridding
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is often the case that a point-based regridding scheme (such as
-:class:`iris.analysis.Linear`) is not appropriate when you need to conserve
-quantities when regridding. The :class:`iris.analysis.AreaWeighted` scheme is less
-general than :class:`~iris.analysis.Linear` or :class:`~iris.analysis.Nearest`,
-but is a conservative regridding scheme, meaning that the area weighted total is
+:class:`iris.analysis.Linear` or :class:`iris.analysis.Nearest`) is not
+appropriate when you need to conserve quantities when regridding. The
+:class:`iris.analysis.AreaWeighted` scheme is less general than
+:class:`~iris.analysis.Linear` or :class:`~iris.analysis.Nearest`, but is a
+conservative regridding scheme, meaning that the area-weighted total is
 approximately preserved across grids.
 
 With the :class:`~iris.analysis.AreaWeighted` regridding scheme, each target grid-box's
@@ -280,8 +282,8 @@ fraction of masked data in any given target grid-box. If the fraction of masked
 data within a target grid-box exceeds this value, the data in this target
 grid-box will be masked in the result.
 
-The fraction of masked data is calculated based on the area of masked source grid-boxes
-that overlaps with each target grid-box. Defining an ``mdtol`` in the
+The fraction of masked data is calculated based on the area of masked source
+grid-boxes that overlaps with each target grid-box. Defining an ``mdtol`` in the
 :class:`~iris.analysis.AreaWeighted` regridding scheme allows fine control
 of masked data tolerance. It is worth remembering that defining an ``mdtol`` of
 anything other than 1 will prevent the scheme from being fully conservative, as
@@ -299,25 +301,26 @@ Caching a regridder
 If you need to regrid multiple cubes with a common source grid onto a common
 target grid you can 'cache' a regridder to be used for each of these regrids.
 This can shorten the execution time of your code as the most computationally
-intensive part of an regrid is setting up the regridder.
+intensive part of a regrid is setting up the regridder.
 
-To cache an regridder you must set up an regridder scheme and call the
-scheme's regridder method. The regridder method takes as arguments a cube
-defining the source grid (that is to be regridded) and cube defining the target
-grid to regrid the source cube to. For example:
+To cache a regridder you must set up a regridder scheme and call the
+scheme's regridder method. The regridder method takes as arguments:
+ #. a cube (that is to be regridded) defining the source grid, and
+ #. a cube defining the target grid to regrid the source cube to.
+
+For example:
 
     >>> global_air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-    >>> regional_ash = iris.load_cube(iris.sample_data_path('NAME_output.txt'))
-    >>> regional_ash = regional_ash.collapsed('flight_level', iris.analysis.SUM)
-    >>>
+    >>> rotated_psl = iris.load_cube(iris.sample_data_path('rotated_pole.nc'))
     >>> regridder = iris.analysis.Nearest().regridder(global_air_temp, rotated_psl)
 
 When this cached regridder is called you must pass it a cube on the same grid
-as the source grid that is to be regridded to the target grid.
-So, to use the cached regridder defined above:
+as the source grid cube (in this case ``global_air_temp``) that is to be
+regridded to the target grid. For example::
 
     >>> for cube in list_of_cubes_on_source_grid:
     ...     result = regridder(cube)
 
-In each case the result will be a cube regridded to the target grid from the
-cube we passed to interpolator.
+In each case ``result`` will be the input cube regridded to the grid defined by
+the target grid cube (in this case ``rotated_psl``) that we used to define the
+cached regridder.
