@@ -2160,6 +2160,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         max_comp = np.less_equal if max_inclusive else np.less
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
+
+            # Do not wrap around values which are within a tolerance of base +
+            # period as this makes points originally contiguous no longer
+            # contiguous.
+            tol = 1e-12
+            mask = ((coord.bounds < (minimum + modulus) + tol) *
+                    (coord.bounds > (minimum + modulus) - tol))
+            bounds[mask] = coord.bounds[mask]
+
             inside = np.logical_and(min_comp(minimum, bounds),
                                     max_comp(bounds, maximum))
             inside_indices, = np.where(np.any(inside, axis=1))
