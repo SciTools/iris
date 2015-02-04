@@ -2145,6 +2145,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
                            max_inclusive):
+        # Point tolerance for wrap_lons comparison
+        tol = 1e-12
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError("requested range greater than coordinate's"
@@ -2164,7 +2166,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Do not wrap around values which are within a tolerance of base +
             # period as this makes points originally contiguous no longer
             # contiguous.
-            tol = 1e-12
             mask = ((coord.bounds < (minimum + modulus) + tol) *
                     (coord.bounds > (minimum + modulus) - tol))
             bounds[mask] = coord.bounds[mask]
@@ -2203,8 +2204,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 bounds = wrap_lons(coord.bounds, minimum, modulus)
             points = wrap_lons(coord.points, minimum, modulus)
         else:
+            # Do not wrap around values which are within a tolerance of base +
+            # period as this makes points originally contiguous no longer
+            # contiguous.
             points = iris.analysis.cartography.wrap_lons(coord.points, minimum,
                                                          modulus)
+            mask = ((coord.points < (minimum + modulus) + tol) *
+                    (coord.points > (minimum + modulus) - tol))
+            points[mask] = coord.points[mask]
             bounds = None
             inside_indices, = np.where(
                 np.logical_and(min_comp(minimum, points),
