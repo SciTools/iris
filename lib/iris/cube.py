@@ -2143,10 +2143,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 result.add_aux_factory(factory.updated(coord_mapping))
         return result
 
-    def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
-                           max_inclusive):
+    def _wrap_lons(self, points, minimum, period):
+        # Ensure that the (base + period) is not wrapped resulting in a
+        # contiguous coordinate no longer being contiguous.
         # Point tolerance for wrap_lons comparison
         tol = 1e-12
+        npoints = wrap_lons(points, minimum, period)
+
+        mask = ((points < (minimum + period) + tol) *
+                (points > (minimum + period) - tol))
+        npoints[mask] = minimum + period
+        return npoints
+
+    def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
+                           max_inclusive):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError("requested range greater than coordinate's"
@@ -2161,14 +2171,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         min_comp = np.less_equal if min_inclusive else np.less
         max_comp = np.less_equal if max_inclusive else np.less
         if coord.has_bounds():
-            bounds = wrap_lons(coord.bounds, minimum, modulus)
-
-            # Do not wrap around values which are within a tolerance of base +
-            # period as this makes points originally contiguous no longer
-            # contiguous.
-            mask = ((coord.bounds < (minimum + modulus) + tol) *
-                    (coord.bounds > (minimum + modulus) - tol))
-            bounds[mask] = coord.bounds[mask]
+            bounds = self._wrap_lons(coord.bounds, minimum, modulus)
 
             inside = np.logical_and(min_comp(minimum, bounds),
                                     max_comp(bounds, maximum))
@@ -2201,17 +2204,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 else:
                     cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
                     minimum = np.min(cells[:, 1])
-                bounds = wrap_lons(coord.bounds, minimum, modulus)
-            points = wrap_lons(coord.points, minimum, modulus)
+                bounds = self._wrap_lons(coord.bounds, minimum, modulus)
+            points = self._wrap_lons(coord.points, minimum, modulus)
         else:
-            # Do not wrap around values which are within a tolerance of base +
-            # period as this makes points originally contiguous no longer
-            # contiguous.
-            points = iris.analysis.cartography.wrap_lons(coord.points, minimum,
-                                                         modulus)
-            mask = ((coord.points < (minimum + modulus) + tol) *
-                    (coord.points > (minimum + modulus) - tol))
-            points[mask] = coord.points[mask]
+            points = self._wrap_lons(coord.points, minimum, modulus)
             bounds = None
             inside_indices, = np.where(
                 np.logical_and(min_comp(minimum, points),
