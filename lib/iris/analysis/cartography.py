@@ -858,6 +858,43 @@ def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs):
     return u2_dist, v2_dist
 
 
+def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
+    """
+    Return a mask that can be applied to data array to mask elements
+    where the magnitude of vectors are not preserved due to numerical
+    errors introduced by the tranformation between coordinate systems.
+
+    Args:
+    * src_crs (`cartopy.crs.Projection`):
+        The source coordinate reference systems.
+    * x, y (array):
+        Locations of each vector defined in 'src_crs'.
+    * tgt_crs (`cartopy.crs.Projection`):
+        The target coordinate reference systems.
+
+    Returns:
+        2d boolean array that is the same shape as x and y.
+
+    """
+    if x.shape != y.shape:
+        raise ValueError('Arrays do not have matching shapes. '
+                         'x.shape is {}, y.shape is {}.'.format(x.shape,
+                                                                y.shape))
+    ones = np.ones(x.shape)
+    zeros = np.zeros(x.shape)
+    u_one_t, v_zero_t = _transform_distance_vectors(src_crs, x, y,
+                                                    ones, zeros, tgt_crs)
+    u_zero_t, v_one_t = _transform_distance_vectors(src_crs, x, y,
+                                                    zeros, ones, tgt_crs)
+    # Squared magnitudes should be equal to one within acceptable tolerance.
+    sqmag_1_0 = u_one_t**2 + v_zero_t**2
+    sqmag_0_1 = u_zero_t**2 + v_one_t**2
+    mask = np.logical_not(
+        np.logical_and(np.isclose(sqmag_1_0, ones, atol=1e-3),
+                       np.isclose(sqmag_0_1, ones, atol=1e-3)))
+    return mask
+
+
 def rotate_winds(u_cube, v_cube, target_cs):
     """
     Transform wind vectors to a different coordinate system.
@@ -975,11 +1012,25 @@ def rotate_winds(u_cube, v_cube, target_cs):
     else:
         dims = x_dims
 
+    # Transpose x, y 2d arrays to match order in cube's data.
+    if dims[0] > dims[1]:
+        x = x.transpose()
+        y = y.transpose()
+
     # Create resulting cubes.
     ut_cube = u_cube.copy()
     vt_cube = v_cube.copy()
     ut_cube.rename('transformed_{}'.format(u_cube.name()))
     vt_cube.rename('transformed_{}'.format(v_cube.name()))
+
+    # Calculate mask based on preservation of magnitude
+    mask = _transform_distance_vectors_tolerance_mask(src_crs, x, y,
+                                                      target_crs)
+    apply_mask = mask.any()
+    if apply_mask:
+        # Make masked arrays to accept masking.
+        ut_cube.data = ma.asanyarray(ut_cube.data)
+        vt_cube.data = ma.asanyarray(vt_cube.data)
 
     # Project vectors with u, v components one horiz slice at a time and
     # insert into the resulting cubes.
@@ -995,6 +1046,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
         u = u_cube.data[index]
         v = v_cube.data[index]
         ut, vt = _transform_distance_vectors(src_crs, x, y, u, v, target_crs)
+        if apply_mask:
+            ut = ma.asanyarray(ut)
+            ut[mask] = ma.masked
+            vt = ma.asanyarray(vt)
+            vt[mask] = ma.masked
         ut_cube.data[index] = ut
         vt_cube.data[index] = vt
 
