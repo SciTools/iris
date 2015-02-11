@@ -28,7 +28,7 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.coord_systems import GeogCS, TransverseMercator, OSGB
+from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator, OSGB
 from iris.exceptions import TranslationError
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
@@ -57,7 +57,8 @@ class Test(tests.IrisTest, GdtTestMixin):
         test_cube = self._make_test_cube(cs=cs)
         shape_of_the_earth(test_cube, self.mock_grib)
         self._check_key('shapeOfTheEarth', 0)
-        self._spherical_earth_test_common(radius)
+        self._check_key('scaleFactorOfRadiusOfSphericalEarth', 255)
+        self._check_key('scaledValueOfRadiusOfSphericalEarth', -1)
 
     def test_radius_of_earth_6371229(self):
         # Test setting shapeOfTheEarth = 6
@@ -66,7 +67,8 @@ class Test(tests.IrisTest, GdtTestMixin):
         test_cube = self._make_test_cube(cs=cs)
         shape_of_the_earth(test_cube, self.mock_grib)
         self._check_key('shapeOfTheEarth', 6)
-        self._spherical_earth_test_common(radius)
+        self._check_key('scaleFactorOfRadiusOfSphericalEarth', 255)
+        self._check_key('scaledValueOfRadiusOfSphericalEarth', -1)
 
     def test_spherical_earth(self):
         # Test setting shapeOfTheEarth = 1
@@ -110,6 +112,31 @@ class Test(tests.IrisTest, GdtTestMixin):
         self._check_key('shapeOfTheEarth', 1)
         self._spherical_earth_test_common(radius)
 
+    def test_RotatedGeogCS_spherical(self):
+        # Test setting shapeOfTheEarth = 1 with a RotatedGeogCS coord system.
+        radius = 52431.0
+        cs = RotatedGeogCS(grid_north_pole_latitude=90.0,
+                           grid_north_pole_longitude=0.0,
+                           ellipsoid=GeogCS(radius))
+        test_cube = self._make_test_cube(cs=cs)
+        shape_of_the_earth(test_cube, self.mock_grib)
+        self._check_key('shapeOfTheEarth', 1)
+        self._spherical_earth_test_common(radius)
+
+    def test_RotatedGeogCS_oblate_spheroid(self):
+        # Test setting shapeOfTheEarth = 7 with a RotatedGeogCS coord system.
+        semi_major_axis = 1456.0
+        semi_minor_axis = 1123.0
+        ellipsoid = GeogCS(semi_major_axis=semi_major_axis,
+                           semi_minor_axis=semi_minor_axis)
+        cs = RotatedGeogCS(grid_north_pole_latitude=90.0,
+                           grid_north_pole_longitude=0.0,
+                           ellipsoid=ellipsoid)
+        test_cube = self._make_test_cube(cs=cs)
+        shape_of_the_earth(test_cube, self.mock_grib)
+        self._check_key('shapeOfTheEarth', 7)
+        self._oblate_spheroid_earth_test_common(semi_major_axis,
+                                                semi_minor_axis)
 
 if __name__ == "__main__":
     tests.main()

@@ -206,10 +206,10 @@ def shape_of_the_earth(cube, grib):
             gribapi.grib_set_long(grib, "shapeOfTheEarth", 6)
         else:
             gribapi.grib_set_long(grib, "shapeOfTheEarth", 1)
-        gribapi.grib_set_long(grib,
-                              "scaleFactorOfRadiusOfSphericalEarth", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth",
-                              ellipsoid.semi_major_axis)
+            gribapi.grib_set_long(grib,
+                                  "scaleFactorOfRadiusOfSphericalEarth", 0)
+            gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth",
+                                  ellipsoid.semi_major_axis)
     # Oblate spheroid earth.
     else:
         if isinstance(cs, iris.coord_systems.OSGB):
