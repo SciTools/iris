@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -571,7 +571,7 @@ STASH_TO_CF = {
     'm01s26i001': CFName(None, 'river water storage', 'kg'),
     'm01s26i002': CFName(None, 'gridbox outflow', 'kg/s'),
     'm01s26i003': CFName(None, 'gridbox inflow', 'kg/s'),
-    'm01s26i004': CFName(None, 'water_flux_into_sea_water_from_rivers ', 'kg/m^2/s'),
+    'm01s26i004': CFName('water_flux_into_sea_water_from_rivers', None, 'kg m-2 s-1'),
     'm01s26i006': CFName(None, 'Inland basin flow on trip grid', 'kg/s'),
     'm01s30i003': CFName('upward_air_velocity', None, 'm s-1'),
     'm01s30i004': CFName('air_temperature', None, 'K'),
