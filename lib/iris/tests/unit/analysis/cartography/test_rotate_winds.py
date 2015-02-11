@@ -26,6 +26,7 @@ from __future__ import (absolute_import, division, print_function)
 import iris.tests as tests
 
 import numpy as np
+import numpy.ma as ma
 
 import cartopy.crs as ccrs
 from iris.analysis.cartography import rotate_winds, unrotate_pole
@@ -261,6 +262,48 @@ class TestRotatedToOSGB(tests.IrisTest):
         self.assertEqual(ut.coord('projection_y_coordinate'), expected_y)
         self.assertEqual(vt.coord('projection_y_coordinate'), expected_y)
 
+    def test_new_coords_transposed(self):
+        u, v = self._uv_cubes_limited_extent()
+        # Transpose cubes so that cube is in xy order rather than the
+        # typical yx order of meshgrid.
+        u.transpose()
+        v.transpose()
+        x = u.coord('grid_longitude').points
+        y = u.coord('grid_latitude').points
+        x2d, y2d = np.meshgrid(x, y)
+        src_crs = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
+        tgt_crs = ccrs.OSGB()
+        xyz_tran = tgt_crs.transform_points(src_crs, x2d, y2d)
+
+        ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
+
+        points = xyz_tran[..., 0].reshape(x2d.shape)
+        expected_x = AuxCoord(points,
+                              standard_name='projection_x_coordinate',
+                              units='m',
+                              coord_system=iris.coord_systems.OSGB())
+        self.assertEqual(ut.coord('projection_x_coordinate'), expected_x)
+        self.assertEqual(vt.coord('projection_x_coordinate'), expected_x)
+
+        points = xyz_tran[..., 1].reshape(y2d.shape)
+        expected_y = AuxCoord(points,
+                              standard_name='projection_y_coordinate',
+                              units='m',
+                              coord_system=iris.coord_systems.OSGB())
+        self.assertEqual(ut.coord('projection_y_coordinate'), expected_y)
+        self.assertEqual(vt.coord('projection_y_coordinate'), expected_y)
+        # Check dim mapping for 2d coords is yx.
+        expected_dims = (u.coord_dims('grid_latitude') +
+                         u.coord_dims('grid_longitude'))
+        self.assertEqual(ut.coord_dims('projection_x_coordinate'),
+                         expected_dims)
+        self.assertEqual(ut.coord_dims('projection_y_coordinate'),
+                         expected_dims)
+        self.assertEqual(vt.coord_dims('projection_x_coordinate'),
+                         expected_dims)
+        self.assertEqual(vt.coord_dims('projection_y_coordinate'),
+                         expected_dims)
+
     def test_orig_coords(self):
         u, v = self._uv_cubes_limited_extent()
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
@@ -309,6 +352,66 @@ class TestRotatedToOSGB(tests.IrisTest):
         # Compare u and v data values against previously calculated values.
         self.assertArrayAlmostEqual(ut.data, expected_ut_data)
         self.assertArrayAlmostEqual(vt.data, expected_vt_data)
+
+    def test_transposed(self):
+        # Test case where the coordinates are not ordered yx in the cube.
+        u, v = self._uv_cubes_limited_extent()
+        # Slice out 4 points that lie in and outside OSGB extent.
+        u = u[1:3, 3:5]
+        v = v[1:3, 3:5]
+        # Transpose cubes (in-place)
+        u.transpose()
+        v.transpose()
+        ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
+        # Values precalculated and checked.
+        expected_ut_data = np.array([[0.16285514,  0.35323639],
+                                     [1.82650698,  2.62455840]]).T
+        expected_vt_data = np.array([[19.88979966,  19.01921346],
+                                     [19.88018847,  19.01424281]]).T
+        # Compare u and v data values against previously calculated values.
+        self.assertArrayAllClose(ut.data, expected_ut_data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, expected_vt_data, rtol=1e-5)
+
+
+class TestMasking(tests.IrisTest):
+    def test_rotated_to_osgb(self):
+        # Rotated Pole data with large extent.
+        x = np.linspace(311.9, 391.1, 10)
+        y = np.linspace(-23.6, 24.8, 8)
+        u, v = uv_cubes(x, y)
+        ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
+
+        # Ensure cells with discrepancies in magnitude are masked.
+        self.assertTrue(ma.isMaskedArray(ut.data))
+        self.assertTrue(ma.isMaskedArray(vt.data))
+
+        # Snapshot of mask with fixed tolerance of atol=2e-3
+        expected_mask = np.array([[1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+                                  [1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+                                  [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
+                                  [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
+                                  [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
+                                  [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
+                                  [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
+                                  [1, 1, 1, 1, 1, 0, 0, 1, 1, 1]], np.bool)
+        self.assertArrayEqual(expected_mask, ut.data.mask)
+        self.assertArrayEqual(expected_mask, vt.data.mask)
+
+        # Check unmasked values have sufficiently small error in mag.
+        expected_mag = np.sqrt(u.data**2 + v.data**2)
+        # Use underlying data to ignore mask in calculation.
+        res_mag = np.sqrt(ut.data.data**2 + vt.data.data**2)
+        # Calculate percentage error (note there are no zero magnitudes
+        # so we can divide safely).
+        anom = 100.0 * np.abs(res_mag - expected_mag) / expected_mag
+        self.assertTrue(anom[~ut.data.mask].max() < 0.1)
+
+    def test_rotated_to_unrotated(self):
+        # Suffiently accurate so that no mask is introduced.
+        u, v = uv_cubes()
+        ut, vt = rotate_winds(u, v, iris.coord_systems.GeogCS(6371229))
+        self.assertFalse(ma.isMaskedArray(ut.data))
+        self.assertFalse(ma.isMaskedArray(vt.data))
 
 
 class TestRoundTrip(tests.IrisTest):

@@ -887,13 +887,13 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
     u_zero_t, v_one_t = _transform_distance_vectors(src_crs, x, y,
                                                     zeros, ones, tgt_crs)
     # Squared magnitudes should be equal to one within acceptable tolerance.
-    # A value of atol=1e-3 is used, which corresponds to a change in magnitude
-    # of approximately 0.05%.
+    # A value of atol=2e-3 is used, which corresponds to a change in magnitude
+    # of approximately 0.1%.
     sqmag_1_0 = u_one_t**2 + v_zero_t**2
     sqmag_0_1 = u_zero_t**2 + v_one_t**2
     mask = np.logical_not(
-        np.logical_and(np.isclose(sqmag_1_0, ones, atol=1e-3),
-                       np.isclose(sqmag_0_1, ones, atol=1e-3)))
+        np.logical_and(np.isclose(sqmag_1_0, ones, atol=2e-3),
+                       np.isclose(sqmag_0_1, ones, atol=2e-3)))
     return mask
 
 
@@ -946,7 +946,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
         Conversion between rotated-pole and non-rotated systems can be
         expressed analytically.  However, this function always uses a numerical
         approach. In locations where this numerical approach does not preserve
-        magnitude to an accuracy of 0.05%, the corresponding elements of the
+        magnitude to an accuracy of 0.1%, the corresponding elements of the
         returned cubes will be masked.
 
     """
