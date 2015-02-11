@@ -887,6 +887,8 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
     u_zero_t, v_one_t = _transform_distance_vectors(src_crs, x, y,
                                                     zeros, ones, tgt_crs)
     # Squared magnitudes should be equal to one within acceptable tolerance.
+    # A value of atol=1e-3 is used, which corresponds to a change in magnitude
+    # of approximately 0.05%.
     sqmag_1_0 = u_one_t**2 + v_zero_t**2
     sqmag_0_1 = u_zero_t**2 + v_one_t**2
     mask = np.logical_not(
@@ -939,12 +941,13 @@ def rotate_winds(u_cube, v_cube, target_cs):
         The names of the output cubes are those of the inputs, prefixed with
         'transformed\_' (e.g. 'transformed_x_wind').
 
-    .. note::
+    .. warning::
 
         Conversion between rotated-pole and non-rotated systems can be
         expressed analytically.  However, this function always uses a numerical
-        approach.
-
+        approach. In locations where this numerical approach does not preserve
+        magnitude to an accuracy of 0.05%, the corresponding elements of the
+        returned cubes will be masked.
 
     """
     # Check u_cube and v_cube have the same shape. We iterate through
@@ -1012,7 +1015,8 @@ def rotate_winds(u_cube, v_cube, target_cs):
     else:
         dims = x_dims
 
-    # Transpose x, y 2d arrays to match order in cube's data.
+    # Transpose x, y 2d arrays to match the order in cube's data
+    # array so that x, y and the sliced data all line up.
     if dims[0] > dims[1]:
         x = x.transpose()
         y = y.transpose()
@@ -1023,7 +1027,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
     ut_cube.rename('transformed_{}'.format(u_cube.name()))
     vt_cube.rename('transformed_{}'.format(v_cube.name()))
 
-    # Calculate mask based on preservation of magnitude
+    # Calculate mask based on preservation of magnitude.
     mask = _transform_distance_vectors_tolerance_mask(src_crs, x, y,
                                                       target_crs)
     apply_mask = mask.any()
@@ -1058,6 +1062,14 @@ def rotate_winds(u_cube, v_cube, target_cs):
     xyz_tran = target_crs.transform_points(src_crs, x, y)
     xt = xyz_tran[..., 0].reshape(x.shape)
     yt = xyz_tran[..., 1].reshape(y.shape)
+
+    # Transpose xt, yt 2d arrays to match the dim order
+    # of the original x an y arrays - i.e. undo the earlier
+    # transpose (if applied).
+    if dims[0] > dims[1]:
+        xt = xt.transpose()
+        yt = yt.transpose()
+
     xt_coord = iris.coords.AuxCoord(xt,
                                     standard_name='projection_x_coordinate',
                                     coord_system=target_cs)
