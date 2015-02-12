@@ -713,3 +713,379 @@ def project(cube, target_proj, nx=None, ny=None):
     new_cube.metadata = cube.metadata
 
     return new_cube, extent
+
+
+def _transform_xy(crs_from, x, y, crs_to):
+    """
+    Shorthand function to transform 2d points between coordinate
+    reference systems.
+
+    Args:
+
+    * crs_from, crs_to (:class:`cartopy.crs.Projection`):
+        The coordinate reference systems.
+    * x, y (arrays):
+        point locations defined in 'crs_from'.
+
+    Returns:
+        x, y :  Arrays of locations defined in 'crs_to'.
+
+    """
+    pts = crs_to.transform_points(crs_from, x, y)
+    return pts[..., 0], pts[..., 1]
+
+
+def _inter_crs_differentials(crs1, x, y, crs2):
+    """
+    Calculate coordinate partial differentials from crs1 to crs2.
+
+    Returns dx2/dx1, dy2/dx1, dx2/dy1 and dy2/dy1, at given locations.
+
+    Args:
+
+    * crs1, crs2 (`cartopy.crs.Projection`):
+        The coordinate systems, "from" and "to".
+    * x, y (array):
+        Point locations defined in 'crs1'.
+
+    Returns:
+        (dx2/dx1, dy2/dx1, dx2/dy1, dy2/dy1) at given locations. Each
+        element of this tuple will be the same shape as the 'x' and 'y'
+        arrays and will be the partial differentials between the two systems.
+
+    """
+    # Get locations in target crs.
+    crs2_x, crs2_y = _transform_xy(crs1, x, y, crs2)
+
+    # Define small x-deltas in the source crs.
+    VECTOR_DELTAS_FACTOR = 360000.0  # Empirical factor to obtain small delta.
+    delta_x = (crs1.x_limits[1] - crs1.x_limits[0]) / VECTOR_DELTAS_FACTOR
+    delta_x = delta_x * np.ones(x.shape)
+    eps = 1e-9
+    # Reverse deltas where we would otherwise step outside the valid range.
+    invalid_dx = x + delta_x > crs1.x_limits[1] - eps
+    delta_x[invalid_dx] = -delta_x[invalid_dx]
+    # Calculate the transformed point with x = x + dx.
+    crs2_x2, crs2_y2 = _transform_xy(crs1, x + delta_x, y, crs2)
+    # Form differentials wrt dx.
+    dx2_dx = (crs2_x2 - crs2_x) / delta_x
+    dy2_dx = (crs2_y2 - crs2_y) / delta_x
+
+    # Define small y-deltas in the source crs.
+    delta_y = (crs1.y_limits[1] - crs1.y_limits[0]) / VECTOR_DELTAS_FACTOR
+    delta_y = delta_y * np.ones(y.shape)
+    # Reverse deltas where we would otherwise step outside the valid range.
+    invalid_dy = y + delta_y > crs1.y_limits[1] - eps
+    delta_y[invalid_dy] = -delta_y[invalid_dy]
+    # Calculate the transformed point with y = y + dy.
+    crs2_x2, crs2_y2 = _transform_xy(crs1, x, y + delta_y, crs2)
+    # Form differentials wrt dy.
+    dx2_dy = (crs2_x2 - crs2_x) / delta_y
+    dy2_dy = (crs2_y2 - crs2_y) / delta_y
+
+    return dx2_dx, dy2_dx, dx2_dy, dy2_dy
+
+
+def _crs_distance_differentials(crs, x, y):
+    """
+    Calculate d(distance) / d(x) and ... / d(y) for a coordinate
+    reference system at specified locations.
+
+    Args:
+
+    * crs (:class:`cartopy.crs.Projection`):
+        The coordinate reference system.
+    * x, y (array):
+        Locations at which to calculate the differentials,
+        defined in 'crs' coordinate reference system.
+
+    Returns:
+        (abs(ds/dx), abs(ds/dy)).
+        Numerically approximated partial differentials,
+        i.e. scaling factors between changes in distance and changes in
+        coordinate values.
+
+    """
+    # Make a true-latlon coordinate system for distance calculations.
+    crs_latlon = ccrs.Geodetic(globe=ccrs.Globe(ellipse='sphere'))
+    # Transform points to true-latlon (just to get the true latitudes).
+    _, true_lat = _transform_xy(crs, x, y, crs_latlon)
+    # Get coordinate differentials w.r.t. true-latlon.
+    dlon_dx, dlat_dx, dlon_dy, dlat_dy = \
+        _inter_crs_differentials(crs, x, y, crs_latlon)
+    # Calculate effective scalings of X and Y coordinates.
+    lat_factor = np.cos(np.deg2rad(true_lat))**2
+    ds_dx = np.sqrt(dlat_dx * dlat_dx + dlon_dx * dlon_dx * lat_factor)
+    ds_dy = np.sqrt(dlat_dy * dlat_dy + dlon_dy * dlon_dy * lat_factor)
+    return ds_dx, ds_dy
+
+
+def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs):
+    """
+    Transform distance vectors from one coordinate reference system to
+    another, preserving magnitude and physical direction.
+
+    Args:
+
+    * src_crs, tgt_crs (`cartopy.crs.Projection`):
+        The source and target coordinate reference systems.
+    * x, y (array):
+        Locations of each vector defined in 'src_crs'.
+    * u_dist, v_dist (array):
+        Components of each vector along the x and y directions of 'src_crs'
+        at each location.
+
+    Returns:
+        (ut_dist, vt_dist): Tuple of arrays containing the vector components
+        along the x and y directions of 'tgt_crs' at each location.
+
+    """
+    # Get distance scalings for source crs.
+    ds_dx1, ds_dy1 = _crs_distance_differentials(src_crs, x, y)
+    # Get distance scalings for target crs.
+    x2, y2 = _transform_xy(src_crs, x, y, tgt_crs)
+    ds_dx2, ds_dy2 = _crs_distance_differentials(tgt_crs, x2, y2)
+    # Scale input distance vectors --> source-coordinate differentials.
+    u1, v1 = u_dist / ds_dx1, v_dist / ds_dy1
+    # Transform vectors into the target system.
+    dx2_x1, dy2_x1, dx2_y1, dy2_y1 = _inter_crs_differentials(
+        src_crs, x, y, tgt_crs)
+    u2 = dx2_x1 * u1 + dx2_y1 * v1
+    v2 = dy2_x1 * u1 + dy2_y1 * v1
+    # Rescale output coordinate vectors --> target distance vectors.
+    u2_dist, v2_dist = u2 * ds_dx2, v2 * ds_dy2
+
+    return u2_dist, v2_dist
+
+
+def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
+    """
+    Return a mask that can be applied to data array to mask elements
+    where the magnitude of vectors are not preserved due to numerical
+    errors introduced by the tranformation between coordinate systems.
+
+    Args:
+    * src_crs (`cartopy.crs.Projection`):
+        The source coordinate reference systems.
+    * x, y (array):
+        Locations of each vector defined in 'src_crs'.
+    * tgt_crs (`cartopy.crs.Projection`):
+        The target coordinate reference systems.
+
+    Returns:
+        2d boolean array that is the same shape as x and y.
+
+    """
+    if x.shape != y.shape:
+        raise ValueError('Arrays do not have matching shapes. '
+                         'x.shape is {}, y.shape is {}.'.format(x.shape,
+                                                                y.shape))
+    ones = np.ones(x.shape)
+    zeros = np.zeros(x.shape)
+    u_one_t, v_zero_t = _transform_distance_vectors(src_crs, x, y,
+                                                    ones, zeros, tgt_crs)
+    u_zero_t, v_one_t = _transform_distance_vectors(src_crs, x, y,
+                                                    zeros, ones, tgt_crs)
+    # Squared magnitudes should be equal to one within acceptable tolerance.
+    # A value of atol=2e-3 is used, which corresponds to a change in magnitude
+    # of approximately 0.1%.
+    sqmag_1_0 = u_one_t**2 + v_zero_t**2
+    sqmag_0_1 = u_zero_t**2 + v_one_t**2
+    mask = np.logical_not(
+        np.logical_and(np.isclose(sqmag_1_0, ones, atol=2e-3),
+                       np.isclose(sqmag_0_1, ones, atol=2e-3)))
+    return mask
+
+
+def rotate_winds(u_cube, v_cube, target_cs):
+    """
+    Transform wind vectors to a different coordinate system.
+
+    The input cubes contain U and V components parallel to the local X and Y
+    directions of the input grid at each point.
+
+    The output cubes contain the same winds, at the same locations, but
+    relative to the grid directions of a different coordinate system.
+    Thus in vector terms, the magnitudes will always be the same, but the
+    angles can be different.
+
+    The outputs retain the original horizontal dimension coordinates, but
+    also have two 2-dimensional auxiliary coordinates containing the X and
+    Y locations in the target coordinate system.
+
+    Args:
+
+    * u_cube
+        An instance of :class:`iris.cube.Cube` that contains the x-component
+        of the vector.
+    * v_cube
+        An instance of :class:`iris.cube.Cube` that contains the y-component
+        of the vector.
+    * target_cs
+        An instance of :class:`iris.coord_systems.CoordSystem` that specifies
+        the new grid directions.
+
+    Returns:
+        A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
+        and v components in the requested target coordinate system.
+        The units are the same as the inputs.
+
+    .. note::
+
+        The U and V values relate to distance, with units such as 'm s-1'.
+        These are not the same as coordinate vectors, which transform in a
+        different manner.
+
+    .. note::
+
+        The names of the output cubes are those of the inputs, prefixed with
+        'transformed\_' (e.g. 'transformed_x_wind').
+
+    .. warning::
+
+        Conversion between rotated-pole and non-rotated systems can be
+        expressed analytically.  However, this function always uses a numerical
+        approach. In locations where this numerical approach does not preserve
+        magnitude to an accuracy of 0.1%, the corresponding elements of the
+        returned cubes will be masked.
+
+    """
+    # Check u_cube and v_cube have the same shape. We iterate through
+    # the u and v cube slices which relies on the shapes matching.
+    if u_cube.shape != v_cube.shape:
+        msg = 'Expected u and v cubes to have the same shape. ' \
+              'u cube has shape {}, v cube has shape {}.'
+        raise ValueError(msg.format(u_cube.shape, v_cube.shape))
+
+    # Check the u_cube and v_cube have the same x and y coords.
+    msg = 'Coordinates differ between u and v cubes. Coordinate {!r} from ' \
+          'u cube does not equal coordinate {!r} from v cube.'
+    if u_cube.coord(axis='x') != v_cube.coord(axis='x'):
+        raise ValueError(msg.format(u_cube.coord(axis='x').name(),
+                                    v_cube.coord(axis='x').name()))
+    if u_cube.coord(axis='y') != v_cube.coord(axis='y'):
+        raise ValueError(msg.format(u_cube.coord(axis='y').name(),
+                                    v_cube.coord(axis='y').name()))
+
+    # Check x and y coords have the same coordinate system.
+    x_coord = u_cube.coord(axis='x')
+    y_coord = u_cube.coord(axis='y')
+    if x_coord.coord_system != y_coord.coord_system:
+        msg = "Coordinate systems of x and y coordinates differ. " \
+              "Coordinate {!r} has a coord system of {!r}, but coordinate " \
+              "{!r} has a coord system of {!r}."
+        raise ValueError(msg.format(x_coord.name(), x_coord.coord_system,
+                                    y_coord.name(), y_coord.coord_system))
+
+    # Convert from iris coord systems to cartopy CRSs to access
+    # transform functionality. Use projection as cartopy
+    # transform_vectors relies on x_limits and y_limits.
+    if x_coord.coord_system is not None:
+        src_crs = x_coord.coord_system.as_cartopy_projection()
+    else:
+        # Default to Geodetic (but actually use PlateCarree as a
+        # projection is needed).
+        src_crs = ccrs.PlateCarree()
+    target_crs = target_cs.as_cartopy_projection()
+
+    # Check the number of dimensions of the x and y coords is the same.
+    # Subsequent logic assumes either both 1d or both 2d.
+    x = x_coord.points
+    y = y_coord.points
+    if x.ndim != y.ndim or x.ndim > 2 or y.ndim > 2:
+        msg = 'x and y coordinates must have the same number of dimensions ' \
+              'and be either 1D or 2D. The number of dimensions are {} and ' \
+              '{}, respectively.'.format(x.ndim, y.ndim)
+        raise ValueError(msg)
+
+    # Check the dimension mappings match between u_cube and v_cube.
+    if u_cube.coord_dims(x_coord) != v_cube.coord_dims(x_coord):
+        raise ValueError('Dimension mapping of x coordinate differs '
+                         'between u and v cubes.')
+    if u_cube.coord_dims(y_coord) != v_cube.coord_dims(y_coord):
+        raise ValueError('Dimension mapping of y coordinate differs '
+                         'between u and v cubes.')
+    x_dims = u_cube.coord_dims(x_coord)
+    y_dims = u_cube.coord_dims(y_coord)
+
+    # Convert points to 2D, if not already, and determine dims.
+    if x.ndim == y.ndim == 1:
+        x, y = np.meshgrid(x, y)
+        dims = (y_dims[0], x_dims[0])
+    else:
+        dims = x_dims
+
+    # Transpose x, y 2d arrays to match the order in cube's data
+    # array so that x, y and the sliced data all line up.
+    if dims[0] > dims[1]:
+        x = x.transpose()
+        y = y.transpose()
+
+    # Create resulting cubes.
+    ut_cube = u_cube.copy()
+    vt_cube = v_cube.copy()
+    ut_cube.rename('transformed_{}'.format(u_cube.name()))
+    vt_cube.rename('transformed_{}'.format(v_cube.name()))
+
+    # Calculate mask based on preservation of magnitude.
+    mask = _transform_distance_vectors_tolerance_mask(src_crs, x, y,
+                                                      target_crs)
+    apply_mask = mask.any()
+    if apply_mask:
+        # Make masked arrays to accept masking.
+        ut_cube.data = ma.asanyarray(ut_cube.data)
+        vt_cube.data = ma.asanyarray(vt_cube.data)
+
+    # Project vectors with u, v components one horiz slice at a time and
+    # insert into the resulting cubes.
+    shape = list(u_cube.shape)
+    for dim in dims:
+        shape[dim] = 1
+    ndindex = np.ndindex(*shape)
+    for index in ndindex:
+        index = list(index)
+        for dim in dims:
+            index[dim] = slice(None, None)
+        index = tuple(index)
+        u = u_cube.data[index]
+        v = v_cube.data[index]
+        ut, vt = _transform_distance_vectors(src_crs, x, y, u, v, target_crs)
+        if apply_mask:
+            ut = ma.asanyarray(ut)
+            ut[mask] = ma.masked
+            vt = ma.asanyarray(vt)
+            vt[mask] = ma.masked
+        ut_cube.data[index] = ut
+        vt_cube.data[index] = vt
+
+    # Calculate new coords of locations in target coordinate system.
+    xyz_tran = target_crs.transform_points(src_crs, x, y)
+    xt = xyz_tran[..., 0].reshape(x.shape)
+    yt = xyz_tran[..., 1].reshape(y.shape)
+
+    # Transpose xt, yt 2d arrays to match the dim order
+    # of the original x an y arrays - i.e. undo the earlier
+    # transpose (if applied).
+    if dims[0] > dims[1]:
+        xt = xt.transpose()
+        yt = yt.transpose()
+
+    xt_coord = iris.coords.AuxCoord(xt,
+                                    standard_name='projection_x_coordinate',
+                                    coord_system=target_cs)
+    yt_coord = iris.coords.AuxCoord(yt,
+                                    standard_name='projection_y_coordinate',
+                                    coord_system=target_cs)
+    # Set units based on coord_system.
+    if isinstance(target_cs, (iris.coord_systems.GeogCS,
+                              iris.coord_systems.RotatedGeogCS)):
+        xt_coord.units = yt_coord.units = 'degrees'
+    else:
+        xt_coord.units = yt_coord.units = 'm'
+
+    ut_cube.add_aux_coord(xt_coord, dims)
+    ut_cube.add_aux_coord(yt_coord, dims)
+    vt_cube.add_aux_coord(xt_coord.copy(), dims)
+    vt_cube.add_aux_coord(yt_coord.copy(), dims)
+
+    return ut_cube, vt_cube
