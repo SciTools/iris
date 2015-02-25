@@ -352,6 +352,7 @@ STASH_TO_CF = {
     'm01s03i261': CFName('gross_primary_productivity_of_carbon', None, 'kg m-2 s-1'),
     'm01s03i262': CFName('net_primary_productivity_of_carbon', None, 'kg m-2 s-1'),
     'm01s03i263': CFName('plant_respiration_carbon_flux', None, 'kg/m^2/s'),
+    'm01s03i281': CFName('visibility_in_air', None, 'm'),
     'm01s03i293': CFName('soil_respiration_carbon_flux', None, 'kg/m^2/s'),
     'm01s03i295': CFName(None, 'surface_snow_area_fraction_where_land', '%'),
     'm01s03i296': CFName(None, 'Evaporation from soil surface', 'kg/m^2/s'),
