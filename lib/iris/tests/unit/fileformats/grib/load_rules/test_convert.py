@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -104,6 +104,9 @@ class TestBoundedTime(TestField):
         self._test_for_coord(message, convert, self.is_time,
                              expected_points=[100],
                              expected_bounds=[[80, 120]])
+
+    def test_time_range_indicator_2(self):
+        self.assert_bounded_message(timeRangeIndicator=2)
 
     def test_time_range_indicator_3(self):
         self.assert_bounded_message(timeRangeIndicator=3)

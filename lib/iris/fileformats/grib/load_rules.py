@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -173,6 +173,11 @@ def convert(grib):
                      points=0.5 * (t_bounds[0] + t_bounds[1]),
                      bounds=t_bounds),
             None))
+
+    if \
+            (grib.edition == 1) and \
+            (grib.timeRangeIndicator == 2):
+        add_bounded_time_coords(aux_coords_and_dims, grib)
 
     if \
             (grib.edition == 1) and \
@@ -390,7 +395,9 @@ def convert(grib):
             (grib.productDefinitionTemplateNumber == 1):
         aux_coords_and_dims.append((DimCoord(points=grib.perturbationNumber, long_name='ensemble_member', units='no_unit'), None))
 
-    if grib.productDefinitionTemplateNumber not in (0, 8):
+    if \
+            (grib.edition == 2) and \
+            grib.productDefinitionTemplateNumber not in (0, 8):
         attributes["GRIB_LOAD_WARNING"] = ("unsupported GRIB%d ProductDefinitionTemplate: #4.%d" % (grib.edition, grib.productDefinitionTemplateNumber))
 
     if \
