@@ -624,7 +624,7 @@ class StashCFHeightConstraintMappings(Mappings):
         encoding of this metarelate mapping translation.
 
         """
-        return ' _STASHCODE_IMPLIED_HEIGHTS'
+        return '_STASHCODE_IMPLIED_HEIGHTS'
 
     @property
     def source_scheme(self):

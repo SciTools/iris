@@ -26,7 +26,8 @@ from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
-from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
+from iris.fileformats.um_cf_map import (LBFC_TO_CF, STASH_TO_CF,
+                                        _STASHCODE_IMPLIED_HEIGHTS)
 from iris.unit import Unit
 import iris.fileformats.pp
 import iris.unit
@@ -609,18 +610,6 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
         coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
 
     return coords_and_dims
-
-
-_STASHCODE_IMPLIED_HEIGHTS = {
-    'm01s03i225': 10.0,
-    'm01s03i226': 10.0,
-    'm01s03i236': 1.5,
-    'm01s03i237': 1.5,
-    'm01s03i245': 1.5,
-    'm01s03i247': 1.5,
-    'm01s03i250': 1.5,
-    'm01s03i281': 1.5,
-    'm01s03i463': 10.0}
 
 
 def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
