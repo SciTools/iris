@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube standard_name="wind_speed_of_gust" units="m s-1">
     <attributes>
       <attribute name="STASH" value="m01s03i463"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
