@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -211,6 +211,15 @@ class TestGDT5(tests.IrisTest):
 
         # Check that main data array also matches.
         self.assertArrayAllClose(cube.data, cube_loaded_from_saved.data)
+
+
+@tests.skip_data
+class TestGDT40(tests.IrisTest):
+    def test_regular(self):
+        path = tests.get_data_path(('GRIB', 'gaussian', 'regular_gg.grib2'))
+        with FUTURE.context(strict_grib_load=True):
+            cube = load_cube(path)
+        self.assertCMLApproxData(cube)
 
 
 if __name__ == '__main__':
