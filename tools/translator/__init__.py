@@ -286,6 +286,20 @@ class Mappings(object):
         result = cffield and dimcoord
         return result
 
+    def is_cf_height_constrained(self, comp):
+        snprop = metarelate.StatementProperty(metarelate.Item('<http://def.scitools.org.uk/cfdatamodel/standard_name>', 'standard_name'), metarelate.Item('<http://vocab.nerc.ac.uk/standard_name/height>', 'height'))
+        uprop = metarelate.StatementProperty(metarelate.Item('<http://def.scitools.org.uk/cfdatamodel/units>', 'units'), metarelate.Item('"m"', 'm'))
+        pts_pred = metarelate.Item('<http://def.scitools.org.uk/cfdatamodel/points>', 'points')
+        result = False
+        if self.is_cf_constrained(comp):
+            props = comp.dim_coord.component.properties
+            if len(props) == 3:
+                if snprop in props and uprop in props:
+                    preds = [prop.predicate for prop in props]
+                    if pts_pred in preds:
+                        result = True
+        return result
+
     def is_fieldcode(self, component):
         """
         Determines whether the provided concept from a mapping
@@ -510,7 +524,7 @@ class FieldcodeCFMappings(Mappings):
         return self.is_fieldcode(mapping.source) and self.is_cf(mapping.target)
 
 
-class StashCFMappings(Mappings):
+class StashCFNameMappings(Mappings):
     """
     Represents a container for UM stash-code to CF phenomenon metarelate
     mapping translations.
@@ -576,7 +590,76 @@ class StashCFMappings(Mappings):
             Boolean.
 
         """
-        return self.is_stash(mapping.source) and self.is_cf(mapping.target)
+        return self.is_stash(mapping.source) and (self.is_cf(mapping.target) or 
+                                                  self.is_cf_constrained(mapping.target))
+
+class StashCFHeightConstraintMappings(Mappings):
+    """
+    Represents a container for UM stash-code to CF phenomenon metarelate
+    mapping translations where a singular height constraint is defined by
+    the STASH code.
+
+    Encoding support is provided to generate the Python dictionary source
+    code representation of these mappings from UM stash-code to CF
+    standard name, long name, and units.
+
+    """
+    def _key(self, line):
+        """Provides the sort key of the mappings order."""
+        return line.split(':')[0].strip()
+
+    def msg_strings(self):
+        return('    {stash!r}',
+               '{dim_coord[points]},\n')
+
+    def get_initial_id_nones(self):
+        sourceid = {}
+        targetid = {}
+        return sourceid, targetid
+
+    @property
+    def mapping_name(self):
+        """
+        Property that specifies the name of the dictionary to contain the
+        encoding of this metarelate mapping translation.
+
+        """
+        return ' _STASHCODE_IMPLIED_HEIGHTS'
+
+    @property
+    def source_scheme(self):
+        """
+        Property that specifies the name of the scheme for the source
+        :class:`metarelate.Component` defining this metarelate mapping
+        translation.
+
+        """
+        return FORMAT_URIS['umf']
+
+    @property
+    def target_scheme(self):
+        """
+        Property that specifies the name of the scheme for the target
+        :class:`metarelate.Component` defining this metarelate mapping
+        translation.
+
+        """
+        return FORMAT_URIS['cff']
+
+    def valid_mapping(self, mapping):
+        """
+        Determine whether the provided :class:`metarelate.Mapping` represents a
+        UM stash-code to CF translation.
+
+        Args:
+        * mapping:
+            A :class:`metarelate.Mapping` instance.
+
+        Returns:
+            Boolean.
+
+        """
+        return self.is_stash(mapping.source) and self.is_cf_height_constrained(mapping.target)
 
 
 class GRIB1LocalParamCFMappings(Mappings):

@@ -27,7 +27,8 @@ import os.path
 
 from metarelate.fuseki import FusekiServer
 
-from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFMappings,
+from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFNameMappings,
+                        StashCFHeightConstraintMappings,
                         CFFieldcodeMappings, GRIB1LocalParamCFConstrainedMappings,
                         GRIB1LocalParamCFMappings, GRIB2ParamCFMappings,
                         CFConstrainedGRIB1LocalParamMappings,
@@ -136,9 +137,11 @@ def build_um_cf_map(fuseki, filename):
         # create the collections, then call lines on each one
         # for thread safety during lines and encode
         fccf = FieldcodeCFMappings(maps)
-        stcf = StashCFMappings(maps)
+        stcf = StashCFNameMappings(maps)
+        stcfhcon = StashCFHeightConstraintMappings(maps)
         fh.writelines(fccf.lines(fuseki))
         fh.writelines(stcf.lines(fuseki))
+        fh.writelines(stcfhcon.lines(fuseki))
 
         # Encode the relevant CF to UM translations.
         maps = _retrieve_mappings(fuseki, FORMAT_URIS['cff'],
