@@ -704,7 +704,7 @@ class IFunc(object):
         return "IFunc constructed from the data function " + self.data_func.__name__ + \
                " and the units function " + self.units_func.__name__
 
-    def __call__(self, cube, other=None, dim=None, in_place=False, new_name=None, **kwargs_ifunc):
+    def __call__(self, cube, other=None, dim=None, in_place=False, new_name=None, **kwargs_data_func):
         '''
         Applies the ifunc to the cube(s).
 
@@ -730,7 +730,7 @@ class IFunc(object):
             Dimension along which to apply `other` if it's a coordinate that is
             not found in `cube`
 
-        * **kwargs_ifunc:
+        * **kwargs_data_func:
             Keyword arguments that get passed on to the data_func.
 
         Returns:
@@ -738,8 +738,8 @@ class IFunc(object):
 
         '''
 
-        def wrap_data_func(*args, **kwargs_data_func):
-            kwargs_combined = dict(kwargs_ifunc, **kwargs_data_func)
+        def wrap_data_func(*args, **kwargs):
+            kwargs_combined = dict(kwargs_data_func, **kwargs)
 
             return self.data_func(*args, **kwargs_combined)
 

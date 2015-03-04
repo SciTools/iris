@@ -40,10 +40,13 @@
       </coord>
     </coords>
     <cellMethods>
-      <cellMethod method="mean">
+      <cellMethod method="mean within years">
+        <coord name="time"/>
+      </cellMethod>
+      <cellMethod method="mean over years">
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(73, 96)" state="loaded"/>
+    <data dtype="float32" shape="(73, 96)" state="loaded"/>
   </cube>
 </cubes>
