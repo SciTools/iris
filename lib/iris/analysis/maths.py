@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ from __future__ import (absolute_import, division, print_function)
 import warnings
 import math
 import operator
+import inspect
 
 import numpy as np
 
@@ -437,6 +438,85 @@ def log10(cube, in_place=False):
                            in_place=in_place)
 
 
+def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
+                in_place=False):
+    """
+    Apply a `numpy universal function
+<http://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube or pair of cubes.
+
+    .. note:: Many of the numpy.ufunc have been implemented explicitly in Iris
+        e.g. :func:`numpy.abs`, :func:`numpy.add` are implemented in
+        :func:`iris.analysis.maths.abs`, :func:`iris.analysis.maths.add`.
+        It is usually preferable to use these functions rather than
+        :func:`iris.analysis.maths.apply_ufunc` where possible.
+
+    Args:
+
+    * ufunc:
+        An instance of :func:`numpy.ufunc` e.g. :func:`numpy.sin`, :func:`numpy.mod`.
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`.
+
+    Kwargs:
+
+    * other_cube:
+        An instance of :class:`iris.cube.Cube` to be given as the second argument
+        to :func:`numpy.ufunc`.
+
+    * new_unit:
+        Unit for the resulting Cube.
+
+    * new_name:
+        Name for the resulting Cube.
+
+    * in_place:
+        Whether to create a new Cube, or alter the given "cube".
+
+    Returns:
+        An instance of :class:`iris.cube.Cube`.
+
+    Example::
+
+        cube = apply_ufunc(numpy.sin, cube, in_place=True)
+
+    """
+
+    if not isinstance(ufunc, np.ufunc):
+        name = getattr(ufunc, '__name__', 'function passed to apply_ufunc')
+
+        raise TypeError(name +
+              " is not recognised (it is not an instance of numpy.ufunc)")
+
+    if ufunc.nout != 1:
+        msg = ('{} returns {} objects, apply_ufunc currently only supports ufunc '
+           'functions returning a single object.')
+        raise ValueError(msg.format(ufunc.__name__, ufunc.nout))
+
+    if ufunc.nin == 2:
+        if other_cube is None:
+            raise ValueError(ufunc.__name__ +
+                  " requires two arguments, so other_cube must also be "
+                  "passed to apply_ufunc")
+
+        _assert_is_cube(other_cube)
+
+        new_cube = _binary_op_common(ufunc, ufunc.__name__,
+                                     cube, other_cube,
+                                     new_unit, in_place=in_place)
+
+    elif ufunc.nin == 1:
+        new_cube = _math_op_common(cube, ufunc, new_unit,
+                                   in_place=in_place)
+
+    else:
+        raise ValueError(ufunc.__name__ + ".nin should be 1 or 2.")
+
+    new_cube.rename(new_name)
+
+    return new_cube
+
+
 def _binary_op_common(operation_function, operation_noun, cube, other,
                       new_unit, dim=None, in_place=False):
     """
@@ -536,3 +616,160 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
+
+
+class IFunc(object):
+    '''
+    Class for functions that can be applied to an iris cube.
+
+    Example usage 1:: Using an existing numpy ufunc, such as numpy.sin for the data
+        function and a simple lambda function for the units function.
+
+        sine_ifunc = iris.analysis.maths.IFunc(numpy.sin, 
+                                             lambda cube: iris.unit.Unit('1'))
+        sine_cube = sine_ifunc(cube)
+
+    Example usage 2:: Define a function for the data arrays of two cubes
+        and define a units function that checks the units of the cubes for consistency,
+        before giving the resulting cube the same units as the first cube.
+
+        def ws_data_func(u_data, v_data):
+            return numpy.sqrt( u_data**2 + v_data**2 )
+
+        def ws_units_func(u_cube, v_cube):
+            if u_cube.units != getattr(v_cube, 'units', u_cube.units):
+                raise ValueError("units do not match")
+            return u_cube.units
+
+        ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
+        ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
+
+    Example usage 3:: Using a data function that allows a keyword argument.
+
+        cs_ifunc = iris.analysis.maths.IFunc(numpy.cumsum,
+                   lambda a: a.units
+                   )
+        cs_cube = cs_ifunc(cube, axis=1)
+    '''
+    def __init__(self, data_func, units_func):
+        '''
+        Create an ifunc from a data function and units function.
+
+        Args:
+        
+        * data_func:
+
+            Function to be applied to one or two data arrays, which
+            are given as positional arguments. Should return another
+            data array, with the same shape as the first array.
+
+            Can also have keyword arguments.
+
+        * units_func:
+
+            Function to calculate the unit of the resulting cube.
+            Should take the cube(s) as input and return
+            an instance of :class:`iris.unit.Unit`.
+
+        Returns:
+            An ifunc.
+
+        '''
+
+        if hasattr(data_func, 'nin'):
+            self.nin = data_func.nin
+
+        else:
+            (args, varargs, keywords, defaults) = inspect.getargspec(data_func)
+            self.nin = len(args) - (len(defaults) if defaults is not None else 0)
+
+        if self.nin not in [1, 2]:
+            msg = ('{} requires {} input data arrays, the IFunc class currently only supports '
+                   'functions requiring 1 or two data arrays as input.')
+            raise ValueError(msg.format(data_func.__name__, self.nin))
+
+        if hasattr(data_func, 'nout'):
+            if data_func.nout != 1:
+                msg = ('{} returns {} objects, the IFunc class currently only supports '
+                    'functions returning a single object.')
+                raise ValueError(msg.format(data_func.__name__, data_func.nout))
+
+        self.data_func = data_func
+
+        self.units_func = units_func
+
+    def __repr__(self):
+        return "iris.analysis.maths.IFunc(" + self.data_func.__name__ \
+               + ", " + self.units_func.__name__ + ")"
+
+    def __str__(self):
+        return "IFunc constructed from the data function " + self.data_func.__name__ + \
+               " and the units function " + self.units_func.__name__
+
+    def __call__(self, cube, other=None, dim=None, in_place=False, new_name=None, **kwargs_data_func):
+        '''
+        Applies the ifunc to the cube(s).
+
+        Args:
+
+        * cube
+            An instance of :class:`iris.cube.Cube`, whose data is used as the first
+            argument to the data function.
+
+        Kwargs:
+
+        * other
+            A cube, coord, ndarray or number whose data is used as the second argument
+            to the data function.
+
+        * new_name:
+            Name for the resulting Cube.
+
+        * in_place:
+            Whether to create a new Cube, or alter the given "cube".
+
+        * dim:
+            Dimension along which to apply `other` if it's a coordinate that is
+            not found in `cube`
+
+        * **kwargs_data_func:
+            Keyword arguments that get passed on to the data_func.
+
+        Returns:
+            An instance of :class:`iris.cube.Cube`.
+
+        '''
+
+        def wrap_data_func(*args, **kwargs):
+            kwargs_combined = dict(kwargs_data_func, **kwargs)
+
+            return self.data_func(*args, **kwargs_combined)
+
+        if self.nin == 2:
+            if other is None:
+                raise ValueError(self.data_func.__name__ +
+                      " requires two arguments")
+
+            new_unit = self.units_func(cube, other)
+
+            new_cube = _binary_op_common(wrap_data_func, self.data_func.__name__,
+                                     cube, other,
+                                     new_unit, dim=dim, in_place=in_place)
+
+        elif self.nin == 1:
+            if not other is None:
+                raise ValueError(self.data_func.__name__ +
+                      " requires one argument")
+
+            new_unit = self.units_func(cube)
+
+            new_cube = _math_op_common(cube, wrap_data_func, new_unit,
+                                       in_place=in_place)
+
+        else:
+            raise ValueError("self.nin should be 1 or 2.")
+
+        if not new_name is None:
+            new_cube.rename(new_name)
+
+        return new_cube
