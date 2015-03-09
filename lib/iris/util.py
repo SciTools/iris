@@ -1211,6 +1211,42 @@ def as_compatible_shape(src_cube, target_cube):
     return new_cube
 
 
+def cube_squeeze(cube):
+    """
+    Removes any dimension of length one. If it has an associated DimCoord or
+    AuxCoord, this becomes a scalar coord.
+
+    Args:
+
+    * src_cube (:class:`iris.cube.Cube`)
+        Source cube to remove length 1 dimension(s) from.
+
+    Returns:
+        A new :class:`iris.cube.Cube` instance without any dimensions of
+        length 1.
+
+    For example::
+
+        >>> cube.shape
+        (1, 360, 360)
+        >>> ncube = iris.util.cube_squeeze(cube)
+        >>> ncube.shape
+        (360, 360)
+
+    .. warning::
+
+        Calling this method will trigger any deferred loading, causing the
+        data array of the cube to be loaded into memory.
+
+    """
+
+    slices = [0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)]
+    
+    squeezed = cube[tuple(slices)]
+    
+    return squeezed
+
+
 def file_is_newer_than(result_path, source_paths):
     """
     Return whether the 'result' file has a later modification time than all of

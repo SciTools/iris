@@ -1169,5 +1169,121 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
 
+class Test_Cube_promote_aux_coord_to_dim_coord(tests.IrisTest):
+    """Unit tests for the promote_aux_coord_to_dim_coord cube method."""
+
+    def test_dimension_already_has_dimcoord(self):
+        cube_a = iris.tests.stock.hybrid_height()
+        cube_b = cube_a.copy()
+        cube_b.promote_aux_coord_to_dim_coord('model_level_number')
+        self.assertEqual(cube_b.dim_coords,
+            (cube_a.coord('model_level_number'),))
+
+    def test_old_dim_coord_is_now_aux_coord(self):
+        cube_a = iris.tests.stock.hybrid_height()
+        cube_b = cube_a.copy()
+        cube_b.promote_aux_coord_to_dim_coord('model_level_number')
+        self.assertTrue(cube_a.coord('level_height') in cube_b.aux_coords)
+
+    def test_argument_is_coord_instance(self):
+        cube_a = iris.tests.stock.realistic_4d()
+        cube_b = cube_a.copy()
+        cube_b.promote_aux_coord_to_dim_coord(cube_b.coord('level_height'))
+        self.assertEqual(cube_b.dim_coords,
+            (cube_a.coord('time'), cube_a.coord('level_height'),
+             cube_a.coord('grid_latitude'), cube_a.coord('grid_longitude')))
+
+    def test_dimension_is_anonymous(self):
+        cube_a = iris.tests.stock.realistic_4d()
+        cube_b = cube_a.copy()
+        cube_b.remove_coord('model_level_number')
+        cube_b.promote_aux_coord_to_dim_coord('level_height')
+        self.assertEqual(cube_b.dim_coords,
+            (cube_a.coord('time'), cube_a.coord('level_height'),
+             cube_a.coord('grid_latitude'), cube_a.coord('grid_longitude')))
+
+    def test_already_a_dim_coord(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        cube_b = cube_a.copy()
+        cube_b.promote_aux_coord_to_dim_coord('dim1')
+        self.assertEqual(cube_a, cube_b)
+
+    def test_coord_of_that_name_does_not_exist(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
+            cube_a.promote_aux_coord_to_dim_coord('wibble')
+
+    def test_coord_does_not_exist(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        coord = cube_a.coord('dim1').copy()
+        coord.rename('new')
+        with self.assertRaises(ValueError):
+            cube_a.promote_aux_coord_to_dim_coord(coord)
+
+    def test_argument_is_wrong_type(self):
+        cube_a = iris.tests.stock.simple_1d()
+        with self.assertRaises(TypeError):
+            cube_a.promote_aux_coord_to_dim_coord(0.0)
+
+    def test_trying_to_promote_a_multidim_coord(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_coords()
+        with self.assertRaises(ValueError):
+            cube_a.promote_aux_coord_to_dim_coord('bar')
+
+    def test_trying_to_promote_a_scalar_coord(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        with self.assertRaises(ValueError):
+            cube_a.promote_aux_coord_to_dim_coord('an_other')
+
+
+class Test_Cube_demote_dim_coord_to_aux_coord(tests.IrisTest):
+    """Unit tests for the demote_dim_coord_to_aux_coord cube method."""
+
+    def test_argument_is_basestring(self):
+        cube_a = iris.tests.stock.simple_3d()
+        cube_b = cube_a.copy()
+        cube_b.demote_dim_coord_to_aux_coord(cube_b.coord('wibble'))
+        self.assertEqual(cube_b.dim_coords,
+            (cube_a.coord('latitude'), cube_a.coord('longitude')))
+
+    def test_argument_is_coord_instance(self):
+        cube_a = iris.tests.stock.realistic_4d()
+        cube_b = cube_a.copy()
+        cube_b.demote_dim_coord_to_aux_coord(cube_b.coord('model_level_number'))
+        self.assertEqual(cube_b.dim_coords,
+            (cube_a.coord('time'),
+             cube_a.coord('grid_latitude'), cube_a.coord('grid_longitude')))
+
+    def test_old_dim_coord_is_now_aux_coord(self):
+        cube_a = iris.tests.stock.hybrid_height()
+        cube_b = cube_a.copy()
+        cube_b.demote_dim_coord_to_aux_coord('level_height')
+        self.assertTrue(cube_a.coord('level_height') in cube_b.aux_coords)
+
+    def test_coord_of_that_name_does_not_exist(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
+            cube_a.demote_dim_coord_to_aux_coord('wibble')
+
+    def test_coord_does_not_exist(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        cube_b = cube_a.copy()
+        coord = cube_b.coord('dim1').copy()
+        coord.rename('new')
+        cube_b.demote_dim_coord_to_aux_coord(coord)
+        self.assertEqual(cube_a, cube_b)
+
+    def test_argument_is_wrong_type(self):
+        cube_a = iris.tests.stock.simple_1d()
+        with self.assertRaises(TypeError):
+            cube_a.demote_dim_coord_to_aux_coord(0.0)
+
+    def test_trying_to_demote_a_scalar_coord(self):
+        cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        cube_b = cube_a.copy()
+        cube_b.demote_dim_coord_to_aux_coord('an_other')
+        self.assertEqual(cube_a, cube_b)
+
+
 if __name__ == '__main__':
     tests.main()
