@@ -54,6 +54,18 @@ def convert(grib):
     dim_coords_and_dims = []
     aux_coords_and_dims = []
 
+    # deprecation warning for this code path for edition 2 messages
+    if grib.edition == 2:
+        msg = ('This GRIB loader is deprecated and will be removed in '
+              'a future release.  Please consider using the new '
+              'GRIB loader by setting the :class:`iris.Future` '
+              'option `strict_grib_load` to True; e.g.:\n'
+              'iris.FUTURE.strict_grib_load = True\n'
+              'Please report issues you experience to:\n'
+              'https://groups.google.com/forum/#!topic/scitools-iris-dev/'
+              'lMsOusKNfaU')
+        warnings.warn(msg)
+
     if \
             (grib.gridType=="reduced_gg"):
         aux_coords_and_dims.append((AuxCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 0))
