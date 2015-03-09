@@ -21,7 +21,6 @@ import unittest
 
 import iris
 import iris.tests.stock
-from iris.util import new_axis
 
 class Test(iris.tests.IrisTest):
 
