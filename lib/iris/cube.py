@@ -1006,7 +1006,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) An instance of :class:`iris.coords.AuxCoord`
 
             or
-   
+
             (b) the :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name` of an instance of an instance of
             :class:`iris.coords.AuxCoord`.
@@ -1014,22 +1014,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         For example::
 
             >>> print cube
-            air_temperature / (K)            (time: 12; latitude: 73; longitude: 96)
+            air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
                  Dimension coordinates:
-                      time                         x      -              -
-                      latitude                     -      x              -
-                      longitude                    -      -              x
+                      time                    x      -              -
+                      latitude                -      x              -
+                      longitude               -      -              x
                  Auxiliary coordinates:
-                      year                         x      -              -
+                      year                    x      -              -
             >>> cube.promote_aux_coord_to_dim_coord('year')
             >>> print cube
-            air_temperature / (K)            (year: 12; latitude: 73; longitude: 96)
+            air_temperature / (K)       (year: 12; latitude: 73; longitude: 96)
                  Dimension coordinates:
-                      year                         x      -              -
-                      latitude                     -      x              -
-                      longitude                    -      -              x   
+                      year                    x      -              -
+                      latitude                -      x              -
+                      longitude               -      -              x
                  Auxiliary coordinates:
-                      time                         x      -              -
+                      time                    x      -              -
 
         """
 
@@ -1065,7 +1065,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
 
-        old_dim_coord = self.coords(dim_coords=True, contains_dimension=coord_dim[0])
+        old_dim_coord = self.coords(dim_coords=True,
+                                    contains_dimension=coord_dim[0])
 
         if len(old_dim_coord) == 1:
             self.demote_dim_coord_to_aux_coord(old_dim_coord[0])
@@ -1098,22 +1099,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         For example::
 
             >>> print cube
-            air_temperature / (K)            (time: 12; latitude: 73; longitude: 96)
+            air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
                  Dimension coordinates:
-                      time                         x      -              -
-                      latitude                     -      x              -
-                      longitude                    -      -              x
+                      time                    x      -              -
+                      latitude                -      x              -
+                      longitude               -      -              x
                  Auxiliary coordinates:
-                      year                         x      -              -
+                      year                    x      -              -
             >>> cube.demote_dim_coord_to_aux_coord('time')
             >>> print cube
-            air_temperature / (K)             (-- : 12; latitude: 73; longitude: 96)
+            air_temperature / (K)        (-- : 12; latitude: 73; longitude: 96)
                  Dimension coordinates:
-                      latitude                     -      x              -
-                      longitude                    -      -              x
+                      latitude                -      x              -
+                      longitude               -      -              x
                  Auxiliary coordinates:
-                      time                         x      -              -
-                      year                         x      -              -
+                      time                    x      -              -
+                      year                    x      -              -
 
         """
 
@@ -1140,7 +1141,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self.remove_coord(dim_coord)
 
         self.add_aux_coord(aux_coord, coord_dim)
-
 
     def coord_dims(self, coord):
         """

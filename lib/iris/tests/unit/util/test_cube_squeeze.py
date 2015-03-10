@@ -22,6 +22,7 @@ import unittest
 import iris
 import iris.tests.stock
 
+
 class Test(iris.tests.IrisTest):
 
     def setUp(self):
@@ -38,7 +39,7 @@ class Test(iris.tests.IrisTest):
 
     def test_squeeze_two_dims(self):
         cube_3d = iris.util.new_axis(self.cube, scalar_coord='an_other')
-        cube_4d =  iris.util.new_axis(cube_3d, scalar_coord='air_temperature')
+        cube_4d = iris.util.new_axis(cube_3d, scalar_coord='air_temperature')
 
         self.assertEqual(self.cube, iris.util.cube_squeeze(cube_4d))
 

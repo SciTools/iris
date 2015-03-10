@@ -1177,7 +1177,7 @@ class Test_Cube_promote_aux_coord_to_dim_coord(tests.IrisTest):
         cube_b = cube_a.copy()
         cube_b.promote_aux_coord_to_dim_coord('model_level_number')
         self.assertEqual(cube_b.dim_coords,
-            (cube_a.coord('model_level_number'),))
+                         (cube_a.coord('model_level_number'),))
 
     def test_old_dim_coord_is_now_aux_coord(self):
         cube_a = iris.tests.stock.hybrid_height()
@@ -1190,8 +1190,9 @@ class Test_Cube_promote_aux_coord_to_dim_coord(tests.IrisTest):
         cube_b = cube_a.copy()
         cube_b.promote_aux_coord_to_dim_coord(cube_b.coord('level_height'))
         self.assertEqual(cube_b.dim_coords,
-            (cube_a.coord('time'), cube_a.coord('level_height'),
-             cube_a.coord('grid_latitude'), cube_a.coord('grid_longitude')))
+                         (cube_a.coord('time'), cube_a.coord('level_height'),
+                          cube_a.coord('grid_latitude'),
+                          cube_a.coord('grid_longitude')))
 
     def test_dimension_is_anonymous(self):
         cube_a = iris.tests.stock.realistic_4d()
@@ -1199,8 +1200,9 @@ class Test_Cube_promote_aux_coord_to_dim_coord(tests.IrisTest):
         cube_b.remove_coord('model_level_number')
         cube_b.promote_aux_coord_to_dim_coord('level_height')
         self.assertEqual(cube_b.dim_coords,
-            (cube_a.coord('time'), cube_a.coord('level_height'),
-             cube_a.coord('grid_latitude'), cube_a.coord('grid_longitude')))
+                         (cube_a.coord('time'), cube_a.coord('level_height'),
+                          cube_a.coord('grid_latitude'),
+                          cube_a.coord('grid_longitude')))
 
     def test_already_a_dim_coord(self):
         cube_a = iris.tests.stock.simple_2d_w_multidim_and_scalars()
@@ -1244,15 +1246,17 @@ class Test_Cube_demote_dim_coord_to_aux_coord(tests.IrisTest):
         cube_b = cube_a.copy()
         cube_b.demote_dim_coord_to_aux_coord(cube_b.coord('wibble'))
         self.assertEqual(cube_b.dim_coords,
-            (cube_a.coord('latitude'), cube_a.coord('longitude')))
+                         (cube_a.coord('latitude'), cube_a.coord('longitude')))
 
     def test_argument_is_coord_instance(self):
         cube_a = iris.tests.stock.realistic_4d()
         cube_b = cube_a.copy()
-        cube_b.demote_dim_coord_to_aux_coord(cube_b.coord('model_level_number'))
+        coord = cube_b.coord('model_level_number').copy()
+        cube_b.demote_dim_coord_to_aux_coord(coord)
         self.assertEqual(cube_b.dim_coords,
-            (cube_a.coord('time'),
-             cube_a.coord('grid_latitude'), cube_a.coord('grid_longitude')))
+                         (cube_a.coord('time'),
+                          cube_a.coord('grid_latitude'),
+                          cube_a.coord('grid_longitude')))
 
     def test_old_dim_coord_is_now_aux_coord(self):
         cube_a = iris.tests.stock.hybrid_height()

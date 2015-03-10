@@ -1240,10 +1240,11 @@ def cube_squeeze(cube):
 
     """
 
-    slices = [0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)]
-    
+    slices = [0 if cube.shape[dim] == 1 else slice(None)
+              for dim in range(cube.ndim)]
+
     squeezed = cube[tuple(slices)]
-    
+
     return squeezed
 
 
