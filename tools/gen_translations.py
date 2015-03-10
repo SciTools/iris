@@ -29,7 +29,8 @@ from metarelate.fuseki import FusekiServer
 
 from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFNameMappings,
                         StashCFHeightConstraintMappings,
-                        CFFieldcodeMappings, GRIB1LocalParamCFConstrainedMappings,
+                        CFFieldcodeMappings,
+                        GRIB1LocalParamCFConstrainedMappings,
                         GRIB1LocalParamCFMappings, GRIB2ParamCFMappings,
                         CFConstrainedGRIB1LocalParamMappings,
                         CFGRIB2ParamMappings, CFGRIB1LocalParamMappings)
@@ -197,6 +198,7 @@ def build_grib_cf_map(fuseki, filename):
         fh.writelines(cfcg1.lines(fuseki))
         fh.writelines(cg1.lines(fuseki))
         fh.writelines(cg2.lines(fuseki))
+
 
 def main():
     with FusekiServer() as fuseki:

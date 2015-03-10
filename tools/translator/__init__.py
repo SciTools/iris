@@ -278,18 +278,30 @@ class Mappings(object):
         ftype = FORMAT_URIS['cff']
         result = False
         cffield = hasattr(comp, 'com_type') and comp.com_type == ftype and \
-                  hasattr(comp, 'units') and (hasattr(comp, 'standard_name') or\
-                                              hasattr(comp, 'long_name'))
+            hasattr(comp, 'units') and (hasattr(comp, 'standard_name') or
+                                        hasattr(comp, 'long_name'))
         dimcoord = hasattr(comp, 'dim_coord') and \
-                   isinstance(comp.dim_coord, metarelate.ComponentProperty) and \
-                   comp.dim_coord.component.com_type.notation == 'DimCoord'
+            isinstance(comp.dim_coord, metarelate.ComponentProperty) and \
+            comp.dim_coord.component.com_type.notation == 'DimCoord'
         result = cffield and dimcoord
         return result
 
     def is_cf_height_constrained(self, comp):
-        snprop = metarelate.StatementProperty(metarelate.Item('<http://def.scitools.org.uk/cfdatamodel/standard_name>', 'standard_name'), metarelate.Item('<http://vocab.nerc.ac.uk/standard_name/height>', 'height'))
-        uprop = metarelate.StatementProperty(metarelate.Item('<http://def.scitools.org.uk/cfdatamodel/units>', 'units'), metarelate.Item('"m"', 'm'))
-        pts_pred = metarelate.Item('<http://def.scitools.org.uk/cfdatamodel/points>', 'points')
+        item_sn = metarelate.Item(('<http://def.scitools.org.uk/cfdatamodel/'
+                                   'standard_name>'),
+                                  'standard_name')
+        item_h = metarelate.Item(('<http://vocab.nerc.ac.uk/standard_name/'
+                                  'height>'),
+                                 'height')
+        snprop = metarelate.StatementProperty(item_sn, item_h)
+        item_u = metarelate.Item(('<http://def.scitools.org.uk/cfdatamodel/'
+                                  'units>'),
+                                 'units')
+        uprop = metarelate.StatementProperty(item_u,
+                                             metarelate.Item('"m"', 'm'))
+        pts_pred = metarelate.Item(('<http://def.scitools.org.uk/cfdatamodel/'
+                                    'points>'),
+                                   'points')
         result = False
         if self.is_cf_constrained(comp):
             props = comp.dim_coord.component.properties
@@ -590,8 +602,10 @@ class StashCFNameMappings(Mappings):
             Boolean.
 
         """
-        return self.is_stash(mapping.source) and (self.is_cf(mapping.target) or 
-                                                  self.is_cf_constrained(mapping.target))
+        return (self.is_stash(mapping.source) and
+                (self.is_cf(mapping.target) or
+                 self.is_cf_constrained(mapping.target)))
+
 
 class StashCFHeightConstraintMappings(Mappings):
     """
@@ -659,7 +673,8 @@ class StashCFHeightConstraintMappings(Mappings):
             Boolean.
 
         """
-        return self.is_stash(mapping.source) and self.is_cf_height_constrained(mapping.target)
+        return (self.is_stash(mapping.source) and
+                self.is_cf_height_constrained(mapping.target))
 
 
 class GRIB1LocalParamCFMappings(Mappings):
@@ -675,7 +690,7 @@ class GRIB1LocalParamCFMappings(Mappings):
     def _key(self, line):
         """Provides the sort key of the mappings order."""
         matchstr = ('^    G1LocalParam\(([0-9]+), ([0-9]+), '
-                         '([0-9]+), ([0-9]+)\):.*')
+                    '([0-9]+), ([0-9]+)\):.*')
         match = re.match(matchstr, line)
         if match is None:
             raise ValueError('encoding not sortable')
