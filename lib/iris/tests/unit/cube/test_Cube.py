@@ -1237,6 +1237,11 @@ class Test_Cube_promote_aux_coord_to_dim_coord(tests.IrisTest):
         with self.assertRaises(ValueError):
             cube_a.promote_aux_coord_to_dim_coord('an_other')
 
+    def test_trying_to_promote_a_nonmonotonic_coord(self):
+        cube_a = iris.tests.stock.hybrid_height()
+        with self.assertRaises(ValueError):
+            cube_a.promote_aux_coord_to_dim_coord('surface_altitude')
+
 
 class Test_Cube_demote_dim_coord_to_aux_coord(tests.IrisTest):
     """Unit tests for the demote_dim_coord_to_aux_coord cube method."""

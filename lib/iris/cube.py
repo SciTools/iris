@@ -1049,7 +1049,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # nothing to do
             return
 
-        if not aux_coord in self.aux_coords:
+        if aux_coord not in self.aux_coords:
             msg = ("Attempting to promote an AuxCoord ({}) "
                    "which does not exist in the cube.")
             msg = msg.format(aux_coord.name())
@@ -1059,11 +1059,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if len(coord_dim) != 1:
             msg = ("Attempting to promote an AuxCoord ({}) "
-                   "which is associated with {} dimensions")
+                   "which is associated with {} dimensions.")
             msg = msg.format(aux_coord.name(), len(coord_dim))
             raise ValueError(msg)
 
-        dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
+        try:
+            dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
+        except ValueError, valerr:
+            msg = ("Attempt to promote an AuxCoord ({}) fails "
+                   "when attempting to create a DimCoord from the "
+                   "AuxCoord because: {}")
+            msg = msg.format(aux_coord.name(), valerr.message)
+            raise ValueError(msg)
 
         old_dim_coord = self.coords(dim_coords=True,
                                     contains_dimension=coord_dim[0])
@@ -1130,17 +1137,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             msg = msg.format(type(name_or_coord))
             raise TypeError(msg)
 
-        if not dim_coord in self.dim_coords:
+        if dim_coord not in self.dim_coords:
             # nothing to do
             return
 
         coord_dim = self.coord_dims(dim_coord)
 
-        aux_coord = iris.coords.AuxCoord.from_coord(dim_coord)
-
         self.remove_coord(dim_coord)
 
-        self.add_aux_coord(aux_coord, coord_dim)
+        self.add_aux_coord(dim_coord, coord_dim)
 
     def coord_dims(self, coord):
         """

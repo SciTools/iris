@@ -1211,7 +1211,7 @@ def as_compatible_shape(src_cube, target_cube):
     return new_cube
 
 
-def cube_squeeze(cube):
+def squeeze(cube):
     """
     Removes any dimension of length one. If it has an associated DimCoord or
     AuxCoord, this becomes a scalar coord.
@@ -1229,14 +1229,9 @@ def cube_squeeze(cube):
 
         >>> cube.shape
         (1, 360, 360)
-        >>> ncube = iris.util.cube_squeeze(cube)
+        >>> ncube = iris.util.squeeze(cube)
         >>> ncube.shape
         (360, 360)
-
-    .. warning::
-
-        Calling this method will trigger any deferred loading, causing the
-        data array of the cube to be loaded into memory.
 
     """
 

@@ -9,7 +9,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Test function :func:`iris.util.cube_squeeze`."""
+"""Test function :func:`iris.util.squeeze`."""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -29,11 +29,11 @@ class Test(iris.tests.IrisTest):
         self.cube = iris.tests.stock.simple_2d_w_multidim_and_scalars()
 
     def test_no_change(self):
-        self.assertEqual(self.cube, iris.util.cube_squeeze(self.cube))
+        self.assertEqual(self.cube, iris.util.squeeze(self.cube))
 
     def test_squeeze_one_dim(self):
         cube_3d = iris.util.new_axis(self.cube, scalar_coord='an_other')
-        cube_2d = iris.util.cube_squeeze(cube_3d)
+        cube_2d = iris.util.squeeze(cube_3d)
 
         self.assertEqual(self.cube, cube_2d)
 
@@ -41,11 +41,11 @@ class Test(iris.tests.IrisTest):
         cube_3d = iris.util.new_axis(self.cube, scalar_coord='an_other')
         cube_4d = iris.util.new_axis(cube_3d, scalar_coord='air_temperature')
 
-        self.assertEqual(self.cube, iris.util.cube_squeeze(cube_4d))
+        self.assertEqual(self.cube, iris.util.squeeze(cube_4d))
 
     def test_squeeze_one_anonymous_dim(self):
         cube_3d = iris.util.new_axis(self.cube)
-        cube_2d = iris.util.cube_squeeze(cube_3d)
+        cube_2d = iris.util.squeeze(cube_3d)
 
         self.assertEqual(self.cube, cube_2d)
 
@@ -53,7 +53,7 @@ class Test(iris.tests.IrisTest):
         cube_scalar = self.cube[0, 0]
         cube_1d = iris.util.new_axis(cube_scalar)
 
-        self.assertEqual(cube_scalar, iris.util.cube_squeeze(cube_1d))
+        self.assertEqual(cube_scalar, iris.util.squeeze(cube_1d))
 
 
 if __name__ == '__main__':
