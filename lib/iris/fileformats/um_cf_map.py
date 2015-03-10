@@ -817,7 +817,7 @@ STASH_TO_CF = {
     'm04s06i001': CFName('sea_surface_wind_wave_significant_height', None, 'm'),
     }
 
-_STASHCODE_IMPLIED_HEIGHTS = {
+STASHCODE_IMPLIED_HEIGHTS = {
     'm01s03i225': (10.0,),
     'm01s03i226': (10.0,),
     'm01s03i236': (1.5,),
