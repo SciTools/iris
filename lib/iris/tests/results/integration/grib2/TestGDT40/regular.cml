@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="geopotential_height" units="m">
+    <coords>
+      <coord>
+        <dimCoord id="73141289" points="[69]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
+      </coord>
+      <coord>
+        <dimCoord id="f8c7ad26" points="[382320.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="f7c6cc4d" points="[88.572168514, 86.7225309547, 84.861970292, ...,
+		-84.861970292, -86.7225309547, -88.572168514]" shape="(96,)" standard_name="latitude" units="Unit('degrees_north')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord circular="True" id="1c32ea60" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees_east')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="5b34144a" long_name="pressure" points="[52500.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="6a1b3c16" points="[382389.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(96, 192)" state="loaded"/>
+  </cube>
+</cubes>

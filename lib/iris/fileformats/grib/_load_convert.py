@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -758,6 +758,88 @@ def grid_definition_template_12(section, metadata):
     metadata['dim_coords_and_dims'].append((x_coord, x_dim))
 
 
+def grid_definition_template_40(section, metadata):
+    """
+    Translate template representing a regular Gaussian grid.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    scan = scanning_mode(section['scanningMode'])
+
+    major, minor, radius = ellipsoid_geometry(section)
+    cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
+
+    # Calculate longitude points.
+    x_inc = section['iDirectionIncrement'] * _GRID_ACCURACY_IN_DEGREES
+    x_offset = section['longitudeOfFirstGridPoint'] * _GRID_ACCURACY_IN_DEGREES
+    x_direction = -1 if scan.i_negative else 1
+    Ni = section['Ni']
+    x_points = np.arange(Ni, dtype=np.float64) * x_inc * x_direction + x_offset
+
+    # Determine whether the x-points (in degrees) are circular.
+    circular = _is_circular(x_points, 360.0)
+
+    # Get the latitude points.
+    #
+    # Gaussian latitudes are defined by Gauss-Legendre quadrature and the Gauss
+    # quadrature rule (http://en.wikipedia.org/wiki/Gaussian_quadrature). The
+    # latitudes of a particular Gaussian grid are uniquely defined by the
+    # number of latitudes between the equator and the pole, N. The latitudes
+    # are calculated from the roots of a Legendre series which must be
+    # calculated numerically. This process involves forming a (possibly large)
+    # companion matrix, computing its eigenvalues, and usually at least one
+    # application of Newton's method to achieve best results
+    # (http://en.wikipedia.org/wiki/Newton%27s_method). The latitudes are given
+    # by the arcsine of the roots converted to degrees. This computation can be
+    # time-consuming, especially for large grid sizes.
+    #
+    # A direct computation would require:
+    #   1. Reading the coded key 'N' representing the number of latitudes
+    #      between the equator and pole.
+    #   2. Computing the set of global Gaussian latitudes associated with the
+    #      value of N.
+    #   3. Determining the direction of the latitude points from the scanning
+    #      mode.
+    #   4. Producing a subset of the latitudes based on the given first and
+    #      last latitude points, given by the coded keys La1 and La2.
+    #
+    # Given the complexity and potential for poor performance of calculating
+    # the Gaussian latitudes directly, the GRIB-API computed key
+    # 'distinctLatitudes' is utilised to obtain the latitude points from the
+    # GRIB2 message. This computed key provides a rapid calculation of the
+    # monotonic latitude points that form the Gaussian grid, accounting for
+    # the coverage of the grid.
+    y_points = section['distinctLatitudes']
+    y_points.sort()
+    if not scan.j_positive:
+        y_points = y_points[::-1]
+
+    # Create lat/lon coordinates.
+    x_coord = DimCoord(x_points, standard_name='longitude',
+                       units='degrees_east', coord_system=cs,
+                       circular=circular)
+    y_coord = DimCoord(y_points, standard_name='latitude',
+                       units='degrees_north', coord_system=cs)
+
+    # Determine the lat/lon dimensions.
+    y_dim, x_dim = 0, 1
+    if scan.j_consecutive:
+        y_dim, x_dim = 1, 0
+
+    # Add the lat/lon coordinates to the metadata dim coords.
+    metadata['dim_coords_and_dims'].append((y_coord, y_dim))
+    metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
 def grid_definition_template_90(section, metadata):
     """
     Translate template representing space view.
@@ -909,6 +991,8 @@ def grid_definition_section(section, metadata):
     elif template == 12:
         # Process transverse Mercator.
         grid_definition_template_12(section, metadata)
+    elif template == 40:
+        grid_definition_template_40(section, metadata)
     elif template == 90:
         # Process space view.
         grid_definition_template_90(section, metadata)
