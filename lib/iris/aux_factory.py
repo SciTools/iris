@@ -287,15 +287,16 @@ class AuxCoordFactory(CFVariableMixin):
         # Transpose to be consistent with the Cube.
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs]
-        points = coord.points
-        if dims:
+        points = coord._points
+        if dims and transpose_order != range(len(dims)):
+            points = np.array(points)
             points = points.transpose(transpose_order)
 
-        # Figure out the n-dimensional shape.
-        nd_shape = [1] * ndim
+        # Expand dimensionality to be consistent with the Cube.
+        keys = [None] * ndim
         for dim, size in zip(dims, coord.shape):
-            nd_shape[dim] = size
-        points.shape = tuple(nd_shape)
+            keys[dim] = slice(None)
+        points = points[tuple(keys)]
         return points
 
     def _remap(self, dependency_dims, derived_dims):
@@ -320,7 +321,9 @@ class AuxCoordFactory(CFVariableMixin):
                 # compatible with normal coordinates.
                 if not derived_dims:
                     shape.append(1)
-                nd_points.shape = shape
+                if nd_points.shape != tuple(shape):
+                    nd_points = np.array(nd_points)
+                    nd_points.shape = shape
             else:
                 # If no coord, treat value as zero.
                 # Use a float16 to provide `shape` attribute and avoid
@@ -365,6 +368,7 @@ class AuxCoordFactory(CFVariableMixin):
                     # extra dimension to make the shape compatible, so
                     # we just add an extra 1.
                     shape.append(1)
+                nd_values = np.array(nd_values)
                 nd_values.shape = shape
             else:
                 # If no coord, treat value as zero.
