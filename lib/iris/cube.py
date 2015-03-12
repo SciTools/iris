@@ -3081,16 +3081,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             aggregateby_cube.remove_coord(coord)
 
         # Determine the group-by cube data shape.
-        percentile_rollaxis = False
-        data_shape = list(self.shape)
-        if 'percentile' in aggregator.cell_method:
-            try:
-                shape = [len(kwargs['percent'])]
-                percentile_rollaxis = True
-            except TypeError:
-                pass
-            else:
-                data_shape.extend(shape)
+        data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
         data_shape[dimension_to_groupby] = len(groupby)
 
         # Aggregate the group-by data.
@@ -3108,10 +3099,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                           axis=dimension_to_groupby,
                                           **kwargs)
 
-            if percentile_rollaxis:
-                # Roll the result so its shape matches `data_shape`.
-                result = np.rollaxis(result, 0, start=len(result.shape))
-
             # Determine aggregation result data type for the aggregate-by cube
             # data on first pass.
             if i == 0:
@@ -3121,10 +3108,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     aggregateby_data = np.zeros(data_shape, dtype=result.dtype)
 
             aggregateby_data[tuple(cube_slice)] = result
-
-        if percentile_rollaxis:
-            # Roll `aggregate_by` data so its shape is restored.
-            aggregateby_data = np.rollaxis(aggregateby_data, -1)
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(aggregateby_cube,
@@ -3142,7 +3125,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             else:
                 aggregateby_cube.add_aux_coord(coord.copy(),
                                                dimension_to_groupby)
-        # Attatch the aggregate-by data into the aggregate-by cube.
+
+        # Attach the aggregate-by data into the aggregate-by cube.
         aggregateby_cube = aggregator.post_process(aggregateby_cube,
                                                    aggregateby_data,
                                                    coords, **kwargs)

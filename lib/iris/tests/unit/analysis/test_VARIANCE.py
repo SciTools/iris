@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -86,6 +86,25 @@ class Test_lazy_aggregate(tests.IrisTest):
         array = biggus.NumpyArrayAdapter(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=0)
         self.assertArrayAlmostEqual(var.ndarray(), np.array(5.25))
+
+
+class Test_required(tests.IrisTest):
+    def test(self):
+        self.assertIsNone(VARIANCE.required)
+
+
+class Test_name(tests.IrisTest):
+    def test(self):
+        self.assertEqual(VARIANCE.name(), 'variance')
+
+
+class Test_aggregate_shape(tests.IrisTest):
+    def test(self):
+        shape = ()
+        kwargs = dict()
+        self.assertTupleEqual(VARIANCE.aggregate_shape(**kwargs), shape)
+        kwargs = dict(bat='man', wonder='woman')
+        self.assertTupleEqual(VARIANCE.aggregate_shape(**kwargs), shape)
 
 
 if __name__ == "__main__":

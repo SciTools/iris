@@ -88,5 +88,24 @@ class Test_aggregate(tests.IrisTest):
         self.assertAlmostEqual(rms, expected_rms)
 
 
+class Test_required(tests.IrisTest):
+    def test(self):
+        self.assertIsNone(RMS.required)
+
+
+class Test_name(tests.IrisTest):
+    def test(self):
+        self.assertEqual(RMS.name(), 'root_mean_square')
+
+
+class Test_aggregate_shape(tests.IrisTest):
+    def test(self):
+        shape = ()
+        kwargs = dict()
+        self.assertTupleEqual(RMS.aggregate_shape(**kwargs), shape)
+        kwargs = dict(tom='jerry', calvin='hobbes')
+        self.assertTupleEqual(RMS.aggregate_shape(**kwargs), shape)
+
+
 if __name__ == "__main__":
     tests.main()

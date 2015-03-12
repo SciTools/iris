@@ -327,6 +327,7 @@ class Test_aggregated_by(tests.IrisTest):
         self.mock_agg.cell_method = []
         self.mock_agg.aggregate = mock.Mock(
             return_value=mock.Mock(dtype='object'))
+        self.mock_agg.aggregate_shape = mock.Mock(return_value=())
         post_process_func = lambda x, y, z: x
         self.mock_agg.post_process = mock.Mock(side_effect=post_process_func)
 
