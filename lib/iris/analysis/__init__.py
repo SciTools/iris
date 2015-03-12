@@ -534,16 +534,17 @@ class Aggregator(object):
                                 'Aggregator object.')
             coord_names.append(coord.name())
 
-        # Add a cell method.
+        # Add a cell method if the aggregator is not `percentile`.
         method_name = self.cell_method.format(**kwargs)
-        cell_method = iris.coords.CellMethod(method_name, coord_names)
-        cube.add_cell_method(cell_method)
+        if 'percentile' not in method_name:
+            cell_method = iris.coords.CellMethod(method_name, coord_names)
+            cube.add_cell_method(cell_method)
 
         # Update the units if required.
         if self.units_func is not None:
             cube.units = self.units_func(cube.units)
 
-    def post_process(self, collapsed_cube, data_result, **kwargs):
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
         Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
@@ -555,6 +556,25 @@ class Aggregator(object):
             Result from :func:`iris.analysis.Aggregator.aggregate`
 
         """
+        # Add a new coordinate for the percentile aggregator corner case.
+        if 'percentile' in self.cell_method.format(**kwargs):
+            percentiles = kwargs['percent']
+            coord_names = [coord.name() for coord in coords]
+            cl = []
+            # We need an iterable.
+            try:
+                list(percentiles)
+            except TypeError:
+                percentiles = [percentiles]
+            for percentile in percentiles:
+                temp_cube = collapsed_cube.copy()
+                coord_name = 'percentile_over_{}'.format('_'.join(coord_names))
+                percentile_coord = iris.coords.AuxCoord(percentile,
+                                                        long_name=coord_name)
+                temp_cube.add_aux_coord(percentile_coord)
+                cl.append(temp_cube)
+            collapsed_cube = iris.cube.CubeList(cl).merge_cube()
+
         if isinstance(data_result, biggus.Array):
             collapsed_cube.lazy_data(data_result)
         else:
@@ -619,7 +639,7 @@ class WeightedAggregator(Aggregator):
                 break
         return result
 
-    def post_process(self, collapsed_cube, data_result, **kwargs):
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
         Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
@@ -640,24 +660,32 @@ class WeightedAggregator(Aggregator):
             result = (collapsed_cube, collapsed_weights)
         else:
             result = Aggregator.post_process(self, collapsed_cube,
-                                             data_result, **kwargs)
+                                             data_result, coords, **kwargs)
 
         return result
 
 
 def _percentile(data, axis, percent, **kwargs):
     # NB. scipy.stats.mstats.scoreatpercentile always works across just the
-    # first dimension of its input data, and  returns a result that has one
+    # first dimension of its input data, and returns a result that has one
     # fewer dimension than the input.
     # So shape=(3, 4, 5) -> shape(4, 5)
     data = np.rollaxis(data, axis)
+    quantiles = np.array(percent) / 100.
     shape = data.shape[1:]
     if shape:
         data = data.reshape([data.shape[0], np.prod(shape)])
-    result = scipy.stats.mstats.scoreatpercentile(data, percent, **kwargs)
+    result = scipy.stats.mstats.mquantiles(data, quantiles, axis=0, **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
     if shape:
+        try:
+            percentiles_len = [len(percent)]
+        except TypeError:
+            pass
+        else:
+            percentiles_len.extend(shape)
+            shape = percentiles_len
         result = result.reshape(shape)
     return result
 

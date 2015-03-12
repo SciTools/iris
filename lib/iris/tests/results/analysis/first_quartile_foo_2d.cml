@@ -10,12 +10,11 @@
       <coord>
         <dimCoord bounds="[[-15, 45]]" id="549be28b" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
+      <coord>
+        <dimCoord id="88f09ece" long_name="percentile_over_foo" points="[25]" shape="(1,)" units="Unit('1')" value_type="int64"/>
+      </coord>
     </coords>
-    <cellMethods>
-      <cellMethod method="percentile (25%)">
-        <coord name="foo"/>
-      </cellMethod>
-    </cellMethods>
+    <cellMethods/>
     <data dtype="float64" shape="(3,)" state="loaded"/>
   </cube>
 </cubes>
