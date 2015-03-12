@@ -116,10 +116,16 @@ static PyObject *wgdos_unpack_py(PyObject *self, PyObject *args)
         npts = lbnpt*lbrow;
     }
 
+    // We can't use the macros Py_BEGIN_ALLOW_THREADS / Py_END_ALLOW_THREADS
+    // because they declare a new scope block, but we want multiple exits.
+    PyThreadState *_save;
+    _save = PyEval_SaveThread();
+
     /* Do the unpack of the given byte array */
     float *dataout = (float*)calloc(npts, sizeof(float));
 
     if (dataout == NULL) {
+        PyEval_RestoreThread(_save);
         PyErr_SetString(PyExc_ValueError, "Unable to allocate memory for wgdos_unpacking.");
         return NULL;
     }
@@ -131,6 +137,7 @@ static PyObject *wgdos_unpack_py(PyObject *self, PyObject *args)
     /* Raise an exception if there was a problem with the WGDOS algorithm */
     if (status != 0) {
       free(dataout);
+      PyEval_RestoreThread(_save);
       PyErr_SetString(PyExc_ValueError, "WGDOS unpack encountered an error."); 
       return NULL;
     }
@@ -138,6 +145,7 @@ static PyObject *wgdos_unpack_py(PyObject *self, PyObject *args)
         /* The data came back fine, so make a Numpy array and return it */
         dims[0]=lbrow;
         dims[1]=lbnpt;
+        PyEval_RestoreThread(_save);
         npy_array_out=(PyArrayObject *) PyArray_SimpleNewFromData(2, dims, NPY_FLOAT, dataout);
 
         if (npy_array_out == NULL) {
@@ -181,9 +189,15 @@ static PyObject *rle_decode_py(PyObject *self, PyObject *args)
         npts = lbnpt*lbrow;
     }
 
+    // We can't use the macros Py_BEGIN_ALLOW_THREADS / Py_END_ALLOW_THREADS
+    // because they declare a new scope block, but we want multiple exits.
+    PyThreadState *_save;
+    _save = PyEval_SaveThread();
+
     float *dataout = (float*)calloc(npts, sizeof(float));
 
     if (dataout == NULL) {
+        PyEval_RestoreThread(_save);
         PyErr_SetString(PyExc_ValueError, "Unable to allocate memory for wgdos_unpacking.");
         return NULL;
     }
@@ -195,6 +209,7 @@ static PyObject *rle_decode_py(PyObject *self, PyObject *args)
     /* Raise an exception if there was a problem with the REL algorithm */
     if (status != 0) {
       free(dataout);
+      PyEval_RestoreThread(_save);
       PyErr_SetString(PyExc_ValueError, "RLE decode encountered an error."); 
       return NULL;
     }
@@ -202,6 +217,7 @@ static PyObject *rle_decode_py(PyObject *self, PyObject *args)
         /* The data came back fine, so make a Numpy array and return it */
         dims[0]=lbrow;
         dims[1]=lbnpt;
+        PyEval_RestoreThread(_save);
         npy_array_out=(PyArrayObject *) PyArray_SimpleNewFromData(2, dims, NPY_FLOAT, dataout);
         
         if (npy_array_out == NULL) {
