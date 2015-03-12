@@ -46,11 +46,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertArrayAlmostEqual(var.ndarray(), np.array(2.291287))
 
 
-class Test_required(tests.IrisTest):
-    def test(self):
-        self.assertIsNone(STD_DEV.required)
-
-
 class Test_name(tests.IrisTest):
     def test(self):
         self.assertEqual(STD_DEV.name(), 'standard_deviation')

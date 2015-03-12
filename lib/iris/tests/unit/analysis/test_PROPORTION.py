@@ -48,12 +48,6 @@ class Test_masked(tests.IrisTest):
         self.assertArrayEqual(cube.data, [0.5])
 
 
-class Test_required(tests.IrisTest):
-    def test(self):
-        self.assertIsNotNone(PROPORTION.required)
-        self.assertEqual(PROPORTION.required, 'function')
-
-
 class Test_name(tests.IrisTest):
     def test(self):
         self.assertEqual(PROPORTION.name(), 'proportion')

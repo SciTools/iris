@@ -88,11 +88,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertArrayAlmostEqual(var.ndarray(), np.array(5.25))
 
 
-class Test_required(tests.IrisTest):
-    def test(self):
-        self.assertIsNone(VARIANCE.required)
-
-
 class Test_name(tests.IrisTest):
     def test(self):
         self.assertEqual(VARIANCE.name(), 'variance')

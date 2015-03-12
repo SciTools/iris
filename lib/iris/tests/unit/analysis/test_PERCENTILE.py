@@ -110,12 +110,6 @@ class Test_aggregate(tests.IrisTest):
         self.assertArrayAlmostEqual(actual, expected)
 
 
-class Test_required(tests.IrisTest):
-    def test(self):
-        self.assertIsNotNone(PERCENTILE.required)
-        self.assertEqual(PERCENTILE.required, 'percent')
-
-
 class Test_name(tests.IrisTest):
     def test(self):
         self.assertEqual(PERCENTILE.name(), 'percentile')

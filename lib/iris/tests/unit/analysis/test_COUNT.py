@@ -47,12 +47,6 @@ class Test_masked(tests.IrisTest):
         self.assertArrayEqual(cube.data, [2])
 
 
-class Test_required(tests.IrisTest):
-    def test(self):
-        self.assertIsNotNone(COUNT.required)
-        self.assertEqual(COUNT.required, 'function')
-
-
 class Test_name(tests.IrisTest):
     def test(self):
         self.assertEqual(COUNT.name(), 'count')

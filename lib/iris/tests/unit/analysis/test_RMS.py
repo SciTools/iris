@@ -29,7 +29,6 @@ from iris.analysis import RMS
 
 
 class Test_aggregate(tests.IrisTest):
-
     def test_1d(self):
         # 1-dimensional input
         data = np.array([5, 2, 6, 4], dtype=np.float64)
@@ -86,11 +85,6 @@ class Test_aggregate(tests.IrisTest):
         expected_rms = 8.0
         rms = RMS.aggregate(data, 0, weights=weights)
         self.assertAlmostEqual(rms, expected_rms)
-
-
-class Test_required(tests.IrisTest):
-    def test(self):
-        self.assertIsNone(RMS.required)
 
 
 class Test_name(tests.IrisTest):

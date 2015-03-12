@@ -55,11 +55,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertMaskedArrayAlmostEqual(result, expected)
 
 
-class Test_required(tests.IrisTest):
-    def test(self):
-        self.assertIsNone(MEAN.required)
-
-
 class Test_name(tests.IrisTest):
     def test(self):
         self.assertEqual(MEAN.name(), 'mean')

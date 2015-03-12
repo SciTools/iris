@@ -48,7 +48,6 @@ The gallery contains several interesting worked examples of how an
 
 from __future__ import (absolute_import, division, print_function)
 
-from abc import ABCMeta, abstractmethod
 import collections
 
 import biggus
@@ -351,14 +350,12 @@ def coord_comparison(*cubes):
 
 class _Aggregator(object):
     """
-    The :class:`_Aggregator` abstract base class provides common
-    aggregation functionality.
+    The :class:`_Aggregator` base class provides common aggregation
+    functionality.
 
     """
-    __metaclass__ = ABCMeta
-
     def __init__(self, cell_method, call_func, units_func=None,
-                 lazy_func=None, required=None, **kwargs):
+                 lazy_func=None, **kwargs):
         """
         Create an aggregator for the given :data:`call_func`.
 
@@ -390,10 +387,6 @@ class _Aggregator(object):
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
 
-        * required (string or None):
-            The name of any mandatory keyword argument associated with
-            calling this aggregator.
-
         Additional kwargs::
             Passed through to :data:`call_func` and :data:`lazy_func`.
 
@@ -418,8 +411,6 @@ class _Aggregator(object):
         #: Lazy aggregation function, may be None to indicate that a lazy
         #: operation is not available.
         self.lazy_func = lazy_func
-        #: Name of mandatory keyword argument.
-        self.required = required
 
         self._kwargs = kwargs
 
@@ -462,13 +453,6 @@ class _Aggregator(object):
         # provided to __init__.
         kwargs = dict(self._kwargs.items() + kwargs.items())
 
-        # If a mandatory keyword argument has been registered, ensure
-        # that it is available to the aggregator lazy callable.
-        if self.required is not None:
-            if self.required not in kwargs:
-                msg = '{} aggregator requires mandatory keyword argument {!r}.'
-                raise ValueError(msg.format(self.name(), self.required))
-
         return self.lazy_func(data, axis, **kwargs)
 
     def aggregate(self, data, axis, **kwargs):
@@ -507,13 +491,6 @@ class _Aggregator(object):
         """
         kwargs = dict(self._kwargs.items() + kwargs.items())
         mdtol = kwargs.pop('mdtol', None)
-
-        # If a mandatory keyword argument has been registered, ensure
-        # that it is available to the aggregator callable.
-        if self.required is not None:
-            if self.required not in kwargs:
-                msg = '{} aggregator requires mandatory keyword argument {!r}.'
-                raise ValueError(msg.format(self.name(), self.required))
 
         result = self.call_func(data, axis=axis, **kwargs)
         if (mdtol is not None and ma.isMaskedArray(data)):
@@ -593,46 +570,32 @@ class _Aggregator(object):
         """
         return ()
 
-    @abstractmethod
     def name(self):
         """
         Returns the name of the aggregator.
 
         """
+        try:
+            name = '_'.join(self.cell_method.split())
+        except AttributeError:
+            name = 'unknown'
+        return name
 
 
-class AdditiveAggregator(_Aggregator):
+class PercentileAggregator(_Aggregator):
     """
-    The :class:`AdditiveAggregator` class provides common additive aggregation
+    The :class:`PercentileAggregator` class provides percentile aggregation
     functionality.
 
-    An additive aggregator *may* introduce a new dimension to the data for the
-    statistic being calculated, but only if more than one point is requested.
+    This aggregator *may* introduce a new dimension to the data for the
+    statistic being calculated, but only if more than one quantile is required.
     For example, calculating the 50th and 90th percentile will result in a new
     data dimension with an extent of 2, for each of the quantiles calculated.
 
     """
-
-    def __init__(self, name, call_func, required, units_func=None,
-                 lazy_func=None, **kwargs):
+    def __init__(self, units_func=None, lazy_func=None, **kwargs):
         """
-        Create an additive aggregator for the given :data:`call_func`.
-
-        Args:
-
-        * name (string):
-            The name of the aggregator.
-
-        * call_func (callable):
-            | *Call signature*: (data, axis=None, \**kwargs)
-
-            Data aggregation function.
-            Returns an aggregation result, collapsing the 'axis' dimension of
-            the 'data' argument.
-
-        * required (string):
-            The name of the mandatory keyword argument associated with
-            calling this aggregator.
+        Create a percentile aggregator.
 
         Kwargs:
 
@@ -651,21 +614,58 @@ class AdditiveAggregator(_Aggregator):
         Additional kwargs::
             Passed through to :data:`call_func` and :data:`lazy_func`.
 
-        Aggregators are used by cube aggregation methods such as
+        This aggregator can used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
         :meth:`~iris.cube.Cube.aggregated_by`.  For example::
 
             cube.collapsed('longitude', iris.analysis.PERCENTILE, percent=50)
 
         """
-        self._name = name
-        if not isinstance(required, basestring) or not required:
-            msg = '{} aggregator requires a mandatory keyword argument.'
-            raise ValueError(msg.format(self.name()))
-        cell_method = None
-        _Aggregator.__init__(self, cell_method, call_func,
+        self._name = 'percentile'
+        self._arg = 'percent'
+        _Aggregator.__init__(self, None, _percentile,
                              units_func=units_func, lazy_func=lazy_func,
-                             required=required, **kwargs)
+                             **kwargs)
+
+    def aggregate(self, data, axis, **kwargs):
+        """
+        Perform the percentile aggregation over the given data.
+
+        Keyword arguments are passed through to the data aggregation function
+        (for example, the "percent" keyword for a percentile aggregator).
+        This function is usually used in conjunction with update_metadata(),
+        which should be passed the same keyword arguments.
+
+        Args:
+
+        * data (array):
+            Data array.
+
+        * axis (int):
+            Axis to aggregate over.
+
+        Kwargs:
+
+        * mdtol (float):
+            Tolerance of missing data. The value returned will be masked if
+            the fraction of data to missing data is less than or equal to
+            mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
+            will return the resulting value from the aggregation function.
+            Defaults to 1.
+
+        * kwargs:
+            All keyword arguments apart from those specified above, are
+            passed through to the data aggregation function.
+
+        Returns:
+            The aggregated data.
+
+        """
+        if self._arg not in kwargs:
+            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+            raise ValueError(msg.format(self.name(), self._arg))
+
+        return _Aggregator.aggregate(self, data, axis, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
@@ -692,7 +692,10 @@ class AdditiveAggregator(_Aggregator):
         """
         cubes = iris.cube.CubeList()
         # The additive aggregator requires a mandatory keyword.
-        points = kwargs[self.required]
+        if self._arg not in kwargs:
+            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+            raise ValueError(msg.format(self.name(), self._arg))
+        points = kwargs[self._arg]
         # Derive the name of the additive coordinate.
         names = [coord.name() for coord in coords]
         coord_name = '{}_over_{}'.format(self.name(), '_'.join(names))
@@ -737,11 +740,11 @@ class AdditiveAggregator(_Aggregator):
             A tuple of the additive dimension shape.
 
         """
-        if self.required not in kwargs:
+        if self._arg not in kwargs:
             msg = '{} aggregator requires the mandatory keyword argument {!r}.'
-            raise ValueError(msg.format(self.name(), self.required))
+            raise ValueError(msg.format(self.name(), self._arg))
 
-        points = kwargs[self.required]
+        points = kwargs[self._arg]
         shape = ()
 
         if not isinstance(points, collections.Iterable):
@@ -759,11 +762,7 @@ class AdditiveAggregator(_Aggregator):
         Returns the name of the aggregator.
 
         """
-        try:
-            name = '_'.join(self._name.split())
-        except AttributeError:
-            name = 'unknown'
-        return name
+        return self._name
 
 
 class Aggregator(_Aggregator):
@@ -771,7 +770,6 @@ class Aggregator(_Aggregator):
     The :class:`Aggregator` class provides common aggregation functionality.
 
     """
-
     def update_metadata(self, cube, coords, **kwargs):
         """
         Update cube cell method metadata w.r.t the aggregation function.
@@ -809,17 +807,6 @@ class Aggregator(_Aggregator):
         cell_method = iris.coords.CellMethod(method_name, coord_names)
         cube.add_cell_method(cell_method)
 
-    def name(self):
-        """
-        Returns the name of the aggregator.
-
-        """
-        try:
-            name = '_'.join(self.cell_method.split())
-        except AttributeError:
-            name = 'unknown'
-        return name
-
 
 class WeightedAggregator(Aggregator):
     """
@@ -827,7 +814,7 @@ class WeightedAggregator(Aggregator):
 
     """
     def __init__(self, cell_method, call_func, units_func=None,
-                 lazy_func=None, required=None, **kwargs):
+                 lazy_func=None, **kwargs):
         """
         Create a weighted aggregator for the given :data:`call_func`.
 
@@ -849,17 +836,13 @@ class WeightedAggregator(Aggregator):
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
 
-        * required (string or None):
-            The name of any mandatory keyword argument associated with
-            calling this aggregator.
-
         Additional kwargs:
             Passed through to :data:`call_func` and :data:`lazy_func`.
 
         """
         Aggregator.__init__(self, cell_method, call_func,
                             units_func=units_func, lazy_func=lazy_func,
-                            required=required, **kwargs)
+                            **kwargs)
 
         #: A list of keywords that trigger weighted behaviour.
         self._weighting_keywords = ["returned", "weights"]
@@ -1110,7 +1093,6 @@ def _peak(array, **kwargs):
 # Common partial Aggregation class constructors.
 #
 COUNT = Aggregator('count', _count,
-                   required='function',
                    units_func=lambda units: 1)
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
@@ -1301,15 +1283,11 @@ This aggregator handles masked data.
 """
 
 
-PERCENTILE = AdditiveAggregator('percentile',
-                                _percentile,
-                                'percent',
-                                alphap=1,
-                                betap=1)
+PERCENTILE = PercentileAggregator(alphap=1, betap=1)
 """
-An :class:`~iris.analysis.Aggregator` instance that calculates the
+An :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
-:func:`scipy.stats.mstats.scoreatpercentile`.
+:func:`scipy.stats.mstats.mquantiles`.
 
 **Required** kwargs associated with the use of this aggregator:
 
@@ -1338,7 +1316,6 @@ This aggregator handles masked data.
 
 PROPORTION = Aggregator('proportion',
                         _proportion,
-                        required='function',
                         units_func=lambda units: 1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
