@@ -932,10 +932,14 @@ def _percentile(data, axis, percent, **kwargs):
         if not isinstance(percent, collections.Iterable):
             percent = [percent]
         percent = np.array(percent)
-        # Account for the additive dimensin.
+        # Account for the additive dimension.
         if percent.shape > (1,):
             shape += percent.shape
         result = result.reshape(shape)
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,) and quantiles.ndim == 0:
+        result = result[0]
 
     return result
 

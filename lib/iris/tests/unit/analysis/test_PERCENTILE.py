@@ -38,7 +38,7 @@ class Test_aggregate(tests.IrisTest):
         data = np.arange(11)
         actual = PERCENTILE.aggregate(data, axis=0, percent=50)
         expected = 5
-        self.assertTupleEqual(actual.shape, (1,))
+        self.assertTupleEqual(actual.shape, ())
         self.assertEqual(actual, expected)
 
     def test_masked_1d_single(self):
@@ -46,7 +46,7 @@ class Test_aggregate(tests.IrisTest):
         data[3:7] = ma.masked
         actual = PERCENTILE.aggregate(data, axis=0, percent=50)
         expected = 7
-        self.assertTupleEqual(actual.shape, (1,))
+        self.assertTupleEqual(actual.shape, ())
         self.assertEqual(actual, expected)
 
     def test_1d_multi(self):
