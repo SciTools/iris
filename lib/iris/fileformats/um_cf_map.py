@@ -344,6 +344,7 @@ STASH_TO_CF = {
     'm01s03i237': CFName('specific_humidity', None, '1'),
     'm01s03i238': CFName('soil_temperature', None, 'K'),
     'm01s03i245': CFName('relative_humidity', None, '%'),
+    'm01s03i247': CFName('visibility_in_air', None, 'm'),
     'm01s03i249': CFName('wind_speed', None, 'm s-1'),
     'm01s03i250': CFName('dew_point_temperature', None, 'K'),
     'm01s03i256': CFName(None, 'Heat flux through sea ice', 'W/m^2'),
@@ -398,6 +399,7 @@ STASH_TO_CF = {
     'm01s03i456': CFName(None, 'Dust dry deposition flux division 6 from level 2', 'kg/m^2/s'),
     'm01s03i460': CFName('surface_downward_eastward_stress', None, 'Pa'),
     'm01s03i461': CFName('surface_downward_northward_stress', None, 'Pa'),
+    'm01s03i463': CFName('wind_speed_of_gust', None, 'm s-1'),
     'm01s04i004': CFName('air_temperature', None, 'K'),
     'm01s04i010': CFName('specific_humidity', None, '1'),
     'm01s04i201': CFName('stratiform_rainfall_amount', None, 'kg m-2'),
@@ -813,6 +815,18 @@ STASH_TO_CF = {
     'm02s32i220': CFName('downward_northward_stress_at_sea_ice_base', None, 'Pa'),
     'm03s00i177': CFName(None, 'prescribed_heat_flux_into_slab_ocean', 'W m-2'),
     'm04s06i001': CFName('sea_surface_wind_wave_significant_height', None, 'm'),
+    }
+
+STASHCODE_IMPLIED_HEIGHTS = {
+    'm01s03i225': (10.0,),
+    'm01s03i226': (10.0,),
+    'm01s03i236': (1.5,),
+    'm01s03i237': (1.5,),
+    'm01s03i245': (1.5,),
+    'm01s03i247': (1.5,),
+    'm01s03i250': (1.5,),
+    'm01s03i281': (1.5,),
+    'm01s03i463': (10.0,),
     }
 
 CF_TO_LBFC = {

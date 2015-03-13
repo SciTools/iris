@@ -26,7 +26,8 @@ from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
-from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
+from iris.fileformats.um_cf_map import (LBFC_TO_CF, STASH_TO_CF,
+                                        STASHCODE_IMPLIED_HEIGHTS)
 from iris.unit import Unit
 import iris.fileformats.pp
 import iris.unit
@@ -112,14 +113,14 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     # Height.
     if (lbvc == 1) and \
-            (not (str(stash) in _STASHCODE_IMPLIED_HEIGHTS)) and \
+            (not (str(stash) in STASHCODE_IMPLIED_HEIGHTS)) and \
             (np.all(blev != -1)):
         coord = _dim_or_aux(blev, standard_name='height', units='m',
                             attributes={'positive': 'up'})
         coords_and_dims.append((coord, dim))
 
-    if str(stash) in _STASHCODE_IMPLIED_HEIGHTS:
-        height = _STASHCODE_IMPLIED_HEIGHTS[str(stash)]
+    if str(stash) in STASHCODE_IMPLIED_HEIGHTS:
+        height = STASHCODE_IMPLIED_HEIGHTS[str(stash)]
         coord = DimCoord(height, standard_name='height', units='m',
                          attributes={'positive': 'up'})
         coords_and_dims.append((coord, None))
@@ -611,18 +612,6 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
     return coords_and_dims
 
 
-_STASHCODE_IMPLIED_HEIGHTS = {
-    'm01s03i225': 10.0,
-    'm01s03i226': 10.0,
-    'm01s03i236': 1.5,
-    'm01s03i237': 1.5,
-    'm01s03i245': 1.5,
-    'm01s03i247': 1.5,
-    'm01s03i250': 1.5,
-    'm01s03i281': 1.5,
-    'm01s03i463': 10.0}
-
-
 def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
                                     bhlev, bhrlev, brsvd1, brsvd2, brlev):
     """
@@ -637,16 +626,16 @@ def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     if \
             (lbvc == 1) and \
-            (not (str(stash) in _STASHCODE_IMPLIED_HEIGHTS.keys())) and \
+            (not (str(stash) in STASHCODE_IMPLIED_HEIGHTS.keys())) and \
             (blev != -1):
         coords_and_dims.append(
             (DimCoord(blev, standard_name='height', units='m',
                       attributes={'positive': 'up'}),
              None))
 
-    if str(stash) in _STASHCODE_IMPLIED_HEIGHTS.keys():
+    if str(stash) in STASHCODE_IMPLIED_HEIGHTS.keys():
         coords_and_dims.append(
-            (DimCoord(_STASHCODE_IMPLIED_HEIGHTS[str(stash)],
+            (DimCoord(STASHCODE_IMPLIED_HEIGHTS[str(stash)],
                       standard_name='height', units='m',
                       attributes={'positive': 'up'}),
              None))

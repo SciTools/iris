@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -278,12 +278,38 @@ class Mappings(object):
         ftype = FORMAT_URIS['cff']
         result = False
         cffield = hasattr(comp, 'com_type') and comp.com_type == ftype and \
-                  hasattr(comp, 'units') and (hasattr(comp, 'standard_name') or\
-                                              hasattr(comp, 'long_name'))
+            hasattr(comp, 'units') and (hasattr(comp, 'standard_name') or
+                                        hasattr(comp, 'long_name'))
         dimcoord = hasattr(comp, 'dim_coord') and \
-                   isinstance(comp.dim_coord, metarelate.ComponentProperty) and \
-                   comp.dim_coord.component.com_type.notation == 'DimCoord'
+            isinstance(comp.dim_coord, metarelate.ComponentProperty) and \
+            comp.dim_coord.component.com_type.notation == 'DimCoord'
         result = cffield and dimcoord
+        return result
+
+    def is_cf_height_constrained(self, comp):
+        item_sn = metarelate.Item(('<http://def.scitools.org.uk/cfdatamodel/'
+                                   'standard_name>'),
+                                  'standard_name')
+        item_h = metarelate.Item(('<http://vocab.nerc.ac.uk/standard_name/'
+                                  'height>'),
+                                 'height')
+        snprop = metarelate.StatementProperty(item_sn, item_h)
+        item_u = metarelate.Item(('<http://def.scitools.org.uk/cfdatamodel/'
+                                  'units>'),
+                                 'units')
+        uprop = metarelate.StatementProperty(item_u,
+                                             metarelate.Item('"m"', 'm'))
+        pts_pred = metarelate.Item(('<http://def.scitools.org.uk/cfdatamodel/'
+                                    'points>'),
+                                   'points')
+        result = False
+        if self.is_cf_constrained(comp):
+            props = comp.dim_coord.component.properties
+            if len(props) == 3:
+                if snprop in props and uprop in props:
+                    preds = [prop.predicate for prop in props]
+                    if pts_pred in preds:
+                        result = True
         return result
 
     def is_fieldcode(self, component):
@@ -510,7 +536,7 @@ class FieldcodeCFMappings(Mappings):
         return self.is_fieldcode(mapping.source) and self.is_cf(mapping.target)
 
 
-class StashCFMappings(Mappings):
+class StashCFNameMappings(Mappings):
     """
     Represents a container for UM stash-code to CF phenomenon metarelate
     mapping translations.
@@ -576,7 +602,79 @@ class StashCFMappings(Mappings):
             Boolean.
 
         """
-        return self.is_stash(mapping.source) and self.is_cf(mapping.target)
+        return (self.is_stash(mapping.source) and
+                (self.is_cf(mapping.target) or
+                 self.is_cf_constrained(mapping.target)))
+
+
+class StashCFHeightConstraintMappings(Mappings):
+    """
+    Represents a container for UM stash-code to CF phenomenon metarelate
+    mapping translations where a singular height constraint is defined by
+    the STASH code.
+
+    Encoding support is provided to generate the Python dictionary source
+    code representation of these mappings from UM stash-code to CF
+    standard name, long name, and units.
+
+    """
+    def _key(self, line):
+        """Provides the sort key of the mappings order."""
+        return line.split(':')[0].strip()
+
+    def msg_strings(self):
+        return('    {stash!r}',
+               '{dim_coord[points]},\n')
+
+    def get_initial_id_nones(self):
+        sourceid = {}
+        targetid = {}
+        return sourceid, targetid
+
+    @property
+    def mapping_name(self):
+        """
+        Property that specifies the name of the dictionary to contain the
+        encoding of this metarelate mapping translation.
+
+        """
+        return 'STASHCODE_IMPLIED_HEIGHTS'
+
+    @property
+    def source_scheme(self):
+        """
+        Property that specifies the name of the scheme for the source
+        :class:`metarelate.Component` defining this metarelate mapping
+        translation.
+
+        """
+        return FORMAT_URIS['umf']
+
+    @property
+    def target_scheme(self):
+        """
+        Property that specifies the name of the scheme for the target
+        :class:`metarelate.Component` defining this metarelate mapping
+        translation.
+
+        """
+        return FORMAT_URIS['cff']
+
+    def valid_mapping(self, mapping):
+        """
+        Determine whether the provided :class:`metarelate.Mapping` represents a
+        UM stash-code to CF translation.
+
+        Args:
+        * mapping:
+            A :class:`metarelate.Mapping` instance.
+
+        Returns:
+            Boolean.
+
+        """
+        return (self.is_stash(mapping.source) and
+                self.is_cf_height_constrained(mapping.target))
 
 
 class GRIB1LocalParamCFMappings(Mappings):
@@ -592,7 +690,7 @@ class GRIB1LocalParamCFMappings(Mappings):
     def _key(self, line):
         """Provides the sort key of the mappings order."""
         matchstr = ('^    G1LocalParam\(([0-9]+), ([0-9]+), '
-                         '([0-9]+), ([0-9]+)\):.*')
+                    '([0-9]+), ([0-9]+)\):.*')
         match = re.match(matchstr, line)
         if match is None:
             raise ValueError('encoding not sortable')
