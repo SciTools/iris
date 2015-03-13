@@ -1526,7 +1526,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     Demotes a DimCoord on the cube to an AuxCoord, leaving that
     dimension anonymous.
 
-    Args:    
+    Args:
 
     * cube
         An instance of :class:`iris.cube.Cube`
