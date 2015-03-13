@@ -545,7 +545,7 @@ class _Aggregator(object):
           keyword from a standard deviation aggregator).
 
         Returns:
-            The collapsed cube with it's aggregated data payload.
+            The collapsed cube with its aggregated data payload.
 
         """
         if isinstance(data_result, biggus.Array):
@@ -557,7 +557,7 @@ class _Aggregator(object):
 
     def aggregate_shape(self, **kwargs):
         """
-        The shape of the additive dimension created by the aggregator.
+        The shape of the new dimension/s created by the aggregator.
 
         Kwargs:
 
@@ -565,7 +565,7 @@ class _Aggregator(object):
           and should be passed the same keywords.
 
         Returns:
-            A tuple of the additive dimension shape.
+            A tuple of the aggregate shape.
 
         """
         return ()
