@@ -25,13 +25,13 @@ import iris.tests as tests
 import unittest
 
 import iris
-import iris.tests.stock
+import iris.tests.stock as stock
 
 
-class Test(iris.tests.IrisTest):
+class Test(tests.IrisTest):
 
     def setUp(self):
-        self.cube = iris.tests.stock.simple_2d_w_multidim_and_scalars()
+        self.cube = stock.simple_2d_w_multidim_and_scalars()
 
     def test_no_change(self):
         self.assertEqual(self.cube, iris.util.squeeze(self.cube))
