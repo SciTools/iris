@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Classes for representing multi-dimensional data with metadata.
 
@@ -2960,10 +2961,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_result = aggregator.aggregate(unrolled_data,
                                                axis=-1,
                                                **kwargs)
-
         aggregator.update_metadata(collapsed_cube, coords, axis=collapse_axis,
                                    **kwargs)
-        result = aggregator.post_process(collapsed_cube, data_result, **kwargs)
+        result = aggregator.post_process(collapsed_cube, data_result, coords,
+                                         **kwargs)
         return result
 
     def aggregated_by(self, coords, aggregator, **kwargs):
@@ -3040,11 +3041,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # We can't handle weights
         if isinstance(aggregator, iris.analysis.WeightedAggregator) and \
                 aggregator.uses_weighting(**kwargs):
-            raise ValueError('Invalid Aggregation, aggergated_by() cannot use'
+            raise ValueError('Invalid Aggregation, aggregated_by() cannot use'
                              ' weights.')
 
-        for coord in sorted(self._as_list_of_coords(coords),
-                            key=lambda coord: coord._as_defn()):
+        coords = self._as_list_of_coords(coords)
+        for coord in sorted(coords, key=lambda coord: coord._as_defn()):
             if coord.ndim > 1:
                 msg = 'Cannot aggregate_by coord %s as it is ' \
                       'multidimensional.' % coord.name()
@@ -3070,7 +3071,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         groupby = iris.analysis._Groupby(groupby_coords, shared_coords)
 
         # Create the resulting aggregate-by cube and remove the original
-        # coordinates which are going to be groupedby.
+        # coordinates that are going to be groupedby.
         key = [slice(None, None)] * self.ndim
         # Generate unique index tuple key to maintain monotonicity.
         key[dimension_to_groupby] = tuple(range(len(groupby)))
@@ -3080,7 +3081,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             aggregateby_cube.remove_coord(coord)
 
         # Determine the group-by cube data shape.
-        data_shape = list(self.shape)
+        data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
         data_shape[dimension_to_groupby] = len(groupby)
 
         # Aggregate the group-by data.
@@ -3124,8 +3125,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             else:
                 aggregateby_cube.add_aux_coord(coord.copy(),
                                                dimension_to_groupby)
-        # Attatch the aggregate-by data into the aggregate-by cube.
-        aggregateby_cube.data = aggregateby_data
+
+        # Attach the aggregate-by data into the aggregate-by cube.
+        aggregateby_cube = aggregator.post_process(aggregateby_cube,
+                                                   aggregateby_data,
+                                                   coords, **kwargs)
 
         return aggregateby_cube
 
@@ -3304,11 +3308,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 kwargs = dict(kwargs)
                 kwargs['weights'] = iris.util.broadcast_to_shape(
                     weights, rolling_window_data.shape, (dimension + 1,))
-        new_cube.data = aggregator.aggregate(rolling_window_data,
-                                             axis=dimension + 1,
-                                             **kwargs)
-
-        return new_cube
+        data_result = aggregator.aggregate(rolling_window_data,
+                                           axis=dimension + 1,
+                                           **kwargs)
+        result = aggregator.post_process(new_cube, data_result, [coord],
+                                         **kwargs)
+        return result
 
     def interpolate(self, sample_points, scheme, collapse_scalar=True):
         """

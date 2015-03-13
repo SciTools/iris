@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -53,6 +53,20 @@ class Test_lazy_aggregate(tests.IrisTest):
         result = agg.masked_array()
         expected = ma.mean(self.data, axis=self.axis)
         self.assertMaskedArrayAlmostEqual(result, expected)
+
+
+class Test_name(tests.IrisTest):
+    def test(self):
+        self.assertEqual(MEAN.name(), 'mean')
+
+
+class Test_aggregate_shape(tests.IrisTest):
+    def test(self):
+        shape = ()
+        kwargs = dict()
+        self.assertTupleEqual(MEAN.aggregate_shape(**kwargs), shape)
+        kwargs = dict(one=1, two=2)
+        self.assertTupleEqual(MEAN.aggregate_shape(**kwargs), shape)
 
 
 if __name__ == "__main__":

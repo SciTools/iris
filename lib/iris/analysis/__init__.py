@@ -348,12 +348,12 @@ def coord_comparison(*cubes):
     return result
 
 
-class Aggregator(object):
+class _Aggregator(object):
     """
-    The :class:`Aggregator` class provides common aggregation functionality.
+    The :class:`_Aggregator` base class provides common aggregation
+    functionality.
 
     """
-
     def __init__(self, cell_method, call_func, units_func=None,
                  lazy_func=None, **kwargs):
         """
@@ -446,9 +446,8 @@ class Aggregator(object):
 
         """
         if self.lazy_func is None:
-            raise LazyAggregatorError(
-                '{} aggregator does not support lazy operation.'.format(
-                    self.cell_method))
+            msg = '{} aggregator does not support lazy operation.'
+            raise LazyAggregatorError(msg.format(self.name()))
 
         # Combine keyword args with `kwargs` taking priority over those
         # provided to __init__.
@@ -506,6 +505,273 @@ class Aggregator(object):
 
     def update_metadata(self, cube, coords, **kwargs):
         """
+        Update common cube metadata w.r.t the aggregation function.
+
+        Args:
+
+        * cube (:class:`iris.cube.Cube`):
+            Source cube that requires metadata update.
+        * coords (:class:`iris.coords.Coord`):
+            The one or more coordinates that were aggregated.
+
+        Kwargs:
+
+        * This function is intended to be used in conjuction with aggregate()
+          and should be passed the same keywords (for example, the "ddof"
+          keyword for a standard deviation aggregator).
+
+        """
+        # Update the units if required.
+        if self.units_func is not None:
+            cube.units = self.units_func(cube.units)
+
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+        """
+        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Args:
+
+        * collapsed_cube:
+            A :class:`iris.cube.Cube`.
+        * data_result:
+            Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "ddof"
+          keyword from a standard deviation aggregator).
+
+        Returns:
+            The collapsed cube with its aggregated data payload.
+
+        """
+        if isinstance(data_result, biggus.Array):
+            collapsed_cube.lazy_data(data_result)
+        else:
+            collapsed_cube.data = data_result
+
+        return collapsed_cube
+
+    def aggregate_shape(self, **kwargs):
+        """
+        The shape of the new dimension/s created by the aggregator.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords.
+
+        Returns:
+            A tuple of the aggregate shape.
+
+        """
+        return ()
+
+    def name(self):
+        """
+        Returns the name of the aggregator.
+
+        """
+        try:
+            name = '_'.join(self.cell_method.split())
+        except AttributeError:
+            name = 'unknown'
+        return name
+
+
+class PercentileAggregator(_Aggregator):
+    """
+    The :class:`PercentileAggregator` class provides percentile aggregation
+    functionality.
+
+    This aggregator *may* introduce a new dimension to the data for the
+    statistic being calculated, but only if more than one quantile is required.
+    For example, calculating the 50th and 90th percentile will result in a new
+    data dimension with an extent of 2, for each of the quantiles calculated.
+
+    """
+    def __init__(self, units_func=None, lazy_func=None, **kwargs):
+        """
+        Create a percentile aggregator.
+
+        Kwargs:
+
+        * units_func (callable):
+            | *Call signature*: (units)
+
+            If provided, called to convert a cube's units.
+            Returns an :class:`iris.units.Unit`, or a
+            value that can be made into one.
+
+        * lazy_func (callable or None):
+            An alternative to :data:`call_func` implementing a lazy
+            aggregation. Note that, it need not support all features of the
+            main operation, but should raise an error in unhandled cases.
+
+        Additional kwargs::
+            Passed through to :data:`call_func` and :data:`lazy_func`.
+
+        This aggregator can used by cube aggregation methods such as
+        :meth:`~iris.cube.Cube.collapsed` and
+        :meth:`~iris.cube.Cube.aggregated_by`.  For example::
+
+            cube.collapsed('longitude', iris.analysis.PERCENTILE, percent=50)
+
+        """
+        self._name = 'percentile'
+        self._arg = 'percent'
+        _Aggregator.__init__(self, None, _percentile,
+                             units_func=units_func, lazy_func=lazy_func,
+                             **kwargs)
+
+    def aggregate(self, data, axis, **kwargs):
+        """
+        Perform the percentile aggregation over the given data.
+
+        Keyword arguments are passed through to the data aggregation function
+        (for example, the "percent" keyword for a percentile aggregator).
+        This function is usually used in conjunction with update_metadata(),
+        which should be passed the same keyword arguments.
+
+        Args:
+
+        * data (array):
+            Data array.
+
+        * axis (int):
+            Axis to aggregate over.
+
+        Kwargs:
+
+        * mdtol (float):
+            Tolerance of missing data. The value returned will be masked if
+            the fraction of data to missing data is less than or equal to
+            mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
+            will return the resulting value from the aggregation function.
+            Defaults to 1.
+
+        * kwargs:
+            All keyword arguments apart from those specified above, are
+            passed through to the data aggregation function.
+
+        Returns:
+            The aggregated data.
+
+        """
+        if self._arg not in kwargs:
+            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+            raise ValueError(msg.format(self.name(), self._arg))
+
+        return _Aggregator.aggregate(self, data, axis, **kwargs)
+
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+        """
+        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Args:
+
+        * collapsed_cube:
+            A :class:`iris.cube.Cube`.
+        * data_result:
+            Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "percent"
+          keywords from a percentile aggregator).
+
+        Returns:
+            The collapsed cube with it's aggregated data payload.
+
+        """
+        cubes = iris.cube.CubeList()
+        # The additive aggregator requires a mandatory keyword.
+        if self._arg not in kwargs:
+            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+            raise ValueError(msg.format(self.name(), self._arg))
+        points = kwargs[self._arg]
+        # Derive the name of the additive coordinate.
+        names = [coord.name() for coord in coords]
+        coord_name = '{}_over_{}'.format(self.name(), '_'.join(names))
+
+        if not isinstance(points, collections.Iterable):
+            points = [points]
+
+        # Decorate a collapsed cube with a scalar additive coordinate
+        # for each of the additive points, to result in a possibly higher
+        # order cube.
+        for point in points:
+            cube = collapsed_cube.copy()
+            coord = iris.coords.AuxCoord(point, long_name=coord_name)
+            cube.add_aux_coord(coord)
+            cubes.append(cube)
+
+        collapsed_cube = cubes.merge_cube()
+
+        # Ensure to roll the data payload additive dimension, which should
+        # be the last dimension for an additive operation with more than
+        # one point, to be the first dimension, thus matching the collapsed
+        # cube.
+        if self.aggregate_shape(**kwargs):
+            # Roll the last additive dimension to be the first.
+            data_result = np.rollaxis(data_result, -1)
+
+        # Marry the collapsed cube and the data payload together.
+        result = _Aggregator.post_process(self, collapsed_cube, data_result,
+                                          coords, **kwargs)
+        return result
+
+    def aggregate_shape(self, **kwargs):
+        """
+        The shape of the additive dimension created by the aggregator.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords.
+
+        Returns:
+            A tuple of the additive dimension shape.
+
+        """
+        if self._arg not in kwargs:
+            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+            raise ValueError(msg.format(self.name(), self._arg))
+
+        points = kwargs[self._arg]
+        shape = ()
+
+        if not isinstance(points, collections.Iterable):
+            points = [points]
+
+        points = np.array(points)
+
+        if points.shape > (1,):
+            shape = points.shape
+
+        return shape
+
+    def name(self):
+        """
+        Returns the name of the aggregator.
+
+        """
+        return self._name
+
+
+class Aggregator(_Aggregator):
+    """
+    The :class:`Aggregator` class provides common aggregation functionality.
+
+    """
+    def update_metadata(self, cube, coords, **kwargs):
+        """
         Update cube cell method metadata w.r.t the aggregation function.
 
         Args:
@@ -513,15 +779,17 @@ class Aggregator(object):
         * cube (:class:`iris.cube.Cube`):
             Source cube that requires metadata update.
         * coords (:class:`iris.coords.Coord`):
-            The coords that were aggregated.
+            The one or more coordinates that were aggregated.
 
         Kwargs:
 
         * This function is intended to be used in conjuction with aggregate()
-          and should be passed the same keywords (for example, the "percent"
-          keyword for a percentile aggregator).
+          and should be passed the same keywords (for example, the "ddof"
+          keyword for a standard deviation aggregator).
 
         """
+        _Aggregator.update_metadata(self, cube, coords, **kwargs)
+
         kwargs = dict(self._kwargs.items() + kwargs.items())
 
         if not isinstance(coords, (list, tuple)):
@@ -539,29 +807,6 @@ class Aggregator(object):
         cell_method = iris.coords.CellMethod(method_name, coord_names)
         cube.add_cell_method(cell_method)
 
-        # Update the units if required.
-        if self.units_func is not None:
-            cube.units = self.units_func(cube.units)
-
-    def post_process(self, collapsed_cube, data_result, **kwargs):
-        """
-        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
-
-        Args:
-
-        * collapsed_cube
-            A :class:`iris.cube.Cube`.
-        * data_result
-            Result from :func:`iris.analysis.Aggregator.aggregate`
-
-        """
-        if isinstance(data_result, biggus.Array):
-            collapsed_cube.lazy_data(data_result)
-        else:
-            collapsed_cube.data = data_result
-
-        return collapsed_cube
-
 
 class WeightedAggregator(Aggregator):
     """
@@ -577,6 +822,7 @@ class WeightedAggregator(Aggregator):
 
         * cell_method (string):
             Cell method string that supports string format substitution.
+
         * call_func (callable):
             Data aggregation function. Call signature `(data, axis, **kwargs)`.
 
@@ -584,12 +830,14 @@ class WeightedAggregator(Aggregator):
 
         * units_func (callable):
             Units conversion function.
+
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
-        * kwargs:
-            Passed through to :data:`call_func`.
+
+        Additional kwargs:
+            Passed through to :data:`call_func` and :data:`lazy_func`.
 
         """
         Aggregator.__init__(self, cell_method, call_func,
@@ -619,7 +867,7 @@ class WeightedAggregator(Aggregator):
                 break
         return result
 
-    def post_process(self, collapsed_cube, data_result, **kwargs):
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
         Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
@@ -628,10 +876,23 @@ class WeightedAggregator(Aggregator):
 
         Args:
 
-        * collapsed_cube
+        * collapsed_cube:
             A :class:`iris.cube.Cube`.
-        * data_result
+        * data_result:
             Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "weights"
+          keywords from a mean aggregator).
+
+        Returns:
+            The collapsed cube with it's aggregated data payload. Or a tuple
+            pair of (cube, weights) if the keyword "returned" is specified
+            and True.
 
         """
         if kwargs.get('returned', False):
@@ -640,25 +901,46 @@ class WeightedAggregator(Aggregator):
             result = (collapsed_cube, collapsed_weights)
         else:
             result = Aggregator.post_process(self, collapsed_cube,
-                                             data_result, **kwargs)
+                                             data_result, coords, **kwargs)
 
         return result
 
 
 def _percentile(data, axis, percent, **kwargs):
-    # NB. scipy.stats.mstats.scoreatpercentile always works across just the
-    # first dimension of its input data, and  returns a result that has one
-    # fewer dimension than the input.
-    # So shape=(3, 4, 5) -> shape(4, 5)
-    data = np.rollaxis(data, axis)
-    shape = data.shape[1:]
+    """
+    The percentile aggregator is an additive operation. This means that
+    it *may* introduce a new dimension to the data for the statistic being
+    calculated, but only if more than one percentile point is requested.
+
+    If a new additive dimension is formed, then it will always be the last
+    dimension of the resulting percentile data payload.
+
+    """
+    # Ensure that the target axis is the last dimension.
+    data = np.rollaxis(data, axis, start=data.ndim)
+    quantiles = np.array(percent) / 100.
+    shape = data.shape[:-1]
+    # Flatten any leading dimensions.
     if shape:
-        data = data.reshape([data.shape[0], np.prod(shape)])
-    result = scipy.stats.mstats.scoreatpercentile(data, percent, **kwargs)
+        data = data.reshape([np.prod(shape), data.shape[-1]])
+    # Perform the percentile calculation.
+    result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1, **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
+    # Ensure to unflatten any leading dimensions.
     if shape:
+        if not isinstance(percent, collections.Iterable):
+            percent = [percent]
+        percent = np.array(percent)
+        # Account for the additive dimension.
+        if percent.shape > (1,):
+            shape += percent.shape
         result = result.reshape(shape)
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,) and quantiles.ndim == 0:
+        result = result[0]
+
     return result
 
 
@@ -814,7 +1096,8 @@ def _peak(array, **kwargs):
 #
 # Common partial Aggregation class constructors.
 #
-COUNT = Aggregator('count', _count, lambda units: 1)
+COUNT = Aggregator('count', _count,
+                   units_func=lambda units: 1)
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
 of :class:`~iris.cube.Cube` data occurrences that satisfy a particular
@@ -1004,19 +1287,16 @@ This aggregator handles masked data.
 """
 
 
-PERCENTILE = Aggregator('percentile ({percent}%)',
-                        _percentile,
-                        alphap=1,
-                        betap=1)
+PERCENTILE = PercentileAggregator(alphap=1, betap=1)
 """
-An :class:`~iris.analysis.Aggregator` instance that calculates the
+An :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
-:func:`scipy.stats.mstats.scoreatpercentile`.
+:func:`scipy.stats.mstats.mquantiles`.
 
 **Required** kwargs associated with the use of this aggregator:
 
-* percent (float):
-    Percentile rank at which to extract value.
+* percent (float or sequence of floats):
+    Percentile rank/s at which to extract value/s.
 
 Additional kwargs associated with the use of this aggregator:
 
@@ -1029,16 +1309,18 @@ Additional kwargs associated with the use of this aggregator:
 
 **For example**:
 
-To compute the 90th percentile over *time*::
+To compute the 10th and 90th percentile over *time*::
 
-    result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=90)
+    result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=[10, 90])
 
 This aggregator handles masked data.
 
 """
 
 
-PROPORTION = Aggregator('proportion', _proportion, lambda units: 1)
+PROPORTION = Aggregator('proportion',
+                        _proportion,
+                        units_func=lambda units: 1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 proportion, as a fraction, of :class:`~iris.cube.Cube` data occurrences
@@ -1159,7 +1441,9 @@ This aggregator handles masked data.
 """
 
 
-VARIANCE = Aggregator('variance', ma.var, lambda units: units * units,
+VARIANCE = Aggregator('variance',
+                      ma.var,
+                      units_func=lambda units: units * units,
                       lazy_func=biggus.var, ddof=1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates

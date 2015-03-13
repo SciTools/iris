@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,6 @@ from iris.analysis import RMS
 
 
 class Test_aggregate(tests.IrisTest):
-
     def test_1d(self):
         # 1-dimensional input
         data = np.array([5, 2, 6, 4], dtype=np.float64)
@@ -86,6 +85,20 @@ class Test_aggregate(tests.IrisTest):
         expected_rms = 8.0
         rms = RMS.aggregate(data, 0, weights=weights)
         self.assertAlmostEqual(rms, expected_rms)
+
+
+class Test_name(tests.IrisTest):
+    def test(self):
+        self.assertEqual(RMS.name(), 'root_mean_square')
+
+
+class Test_aggregate_shape(tests.IrisTest):
+    def test(self):
+        shape = ()
+        kwargs = dict()
+        self.assertTupleEqual(RMS.aggregate_shape(**kwargs), shape)
+        kwargs = dict(tom='jerry', calvin='hobbes')
+        self.assertTupleEqual(RMS.aggregate_shape(**kwargs), shape)
 
 
 if __name__ == "__main__":
