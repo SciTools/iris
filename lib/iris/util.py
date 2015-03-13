@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -583,7 +583,7 @@ def column_slices_generator(full_slice, ndims):
     dimension_mapping = {None: None}
     _count_current_dim = 0
     for i, i_key in enumerate(full_slice):
-        if isinstance(i_key, int):
+        if isinstance(i_key, (int, np.integer)):
             dimension_mapping[i] = None
         else:
             dimension_mapping[i] = _count_current_dim
