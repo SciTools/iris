@@ -1,0 +1,83 @@
+What's new in Iris 1.8
+**********************
+
+:Release: 1.8.0
+:Date: ???
+
+This document explains the new/changed features of Iris in version 1.8.
+(:doc:`View all changes <index>`.)
+
+Iris 1.8 features
+=================
+
+* :meth: `iris.cube.Cube.slices_over` returns an iterator over all subcubes along a given
+  coordinate or dimension index.
+* :meth:`iris.cube.Cube.interpolate` now accepts instances of datetime.datetime and 
+  netcdftime.datetime for date or time coordinates.
+* Many new and updated translations between CF spec and STASH codes or GRIB2 parameter
+  codes.
+* PP/FF loader creates an implied scalar height coordinate for specific stash codes.
+* Lazy aggregator support for standard deviation has been added.
+* A speed improvement in calculation of :func:`iris.analysis.cartography.area_weights`.
+* Experimental UGRID support has been added with :func:`iris.experimental.ugrid`.
+* :meth:`iris.cube.CubeList.extract_overlapping` supports extraction of cubes over
+  regions where common coordinates overlap, over multiple coordinates.
+* Warnings raised due to invalid units in loaded data have been suppressed.
+* Low-level FieldsFile variant read and write access is nwo supported.
+* LBC type FieldFiles are now being handled specially in the FF loader.
+* PP headers that can't be interpreted will generate cubes for fields prior to the
+  problematic header before raising an exception.
+* NetCDF loader skips invalid global attributes, raising a warning rather than raising an
+  exception. 
+* NetCDF saving to all NetCDF4/HDF encodings (including the default) now uses biggus save
+  when the cube has lazy data.
+* biggus.save() streams the data payload during save, rather than loading the whole
+  dataset in one go.
+ * This enables cubes with data payloads larger than the system memory to be saved to
+  netCDF. 
+ * After saving, a cube's data payload will still be lazy, the data will not be loaded
+  into memory.
+ * :func:`iris.fileformats.netcdf.save`.
+* When AuxCoordFactory fails, a warning is now issued rather than an error.
+* Extended supported AuxCoord factories to include "ocean sigma coordinate", "ocean s
+  coordinate", "ocean s coordinate, generic form 1" and "ocean s coordinate, generic form 2".
+* :meth:`iris.cube.Cube.intersection` now supports taking a points only intersection,
+  ignoring, but retaining any bounds.
+* Grid 21 has been added to the FF loader's known handled grids.
+* A nearest neighbour scheme (:class:`iris.analysis.Nearest`) is now supported by
+  :meth:`iris.cube.Cube.interpolate` and :meth:`iris.cube.Cube.regrid`. 
+* :func:`iris.analysis.cartography.rotate_winds` supports transformation of wind vectors
+  to a different coordinate system.
+* :func:`iris.analysis.maths.apply_ufunc` can be used to apply numpy universal functions
+  to cubes and :class:`iris.analysis.maths.IFunc` contains functions to apply to the data
+  and units of cubes.
+
+Bugs fixed
+==========
+* Fix in netCDF loader to correctly determine whether the longitude is circular,
+  including for scalar coordinates.
+* :meth:`iris.cube.Cube.intersection` now supports bounds that extend slightly beyond 360
+  degrees.
+* Making a copy of a scalar cube with no data now correctly copies the data array.
+* Height coordinates in NAME trajectory output files have been changed to match other
+  NAME ouput file formats.
+* Fixed loading type for a fieldsfile 'integer_constants' array in FF loader.
+* FF/PP loader adds appropriate cell methods for lbtim.ib = 3 intervals.
+* An error is raised if the units of the latitude and longitude coordinates of the cube
+  passed into :func:`iris.analysis.cartography.area_weights` are not convertable to radians.
+* GRIB1 loader now creates a time coordinate for a time range indicator of 2.
+* NetCDF loader now loads units that are empty strings as dimensionless.
+
+Deprecations
+============
+* The previous GRIB loader has been deprecated and a new, template-based GRIB loader is
+  used in place.
+
+Documentation Changes
+=====================
+* A chapter on :doc:`merge and concatenate </userguide/merge_and_concat.rst>` has been
+  added to the :doc:`user guide </userguide/index>`.
+* A section on installing Iris using conda has been added to the :doc:`install guide
+  </installing.rst>`.
+* Updates to :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
+  have been added to the :doc:`user guide </userguide/index>`.
