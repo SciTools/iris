@@ -28,7 +28,7 @@ import iris.tests as tests
 import mock
 
 import iris.cube
-from iris.fileformats.name_loaders import _generate_cubes
+from iris.fileformats.name_loaders import _generate_cubes, NAMECoord
 
 
 class TestCellMethods(tests.IrisTest):
@@ -40,13 +40,64 @@ class TestCellMethods(tests.IrisTest):
         data_arrays = [mock.Mock(), mock.Mock()]
         cell_methods = ["cell_method_1", "cell_method_2"]
 
-        with mock.patch('iris.fileformats.name_loaders._cf_height_from_name'):
-            with mock.patch('iris.cube.Cube'):
-                cubes = list(_generate_cubes(header, column_headings, coords,
-                                             data_arrays, cell_methods))
+        self.patch('iris.fileformats.name_loaders._cf_height_from_name')
+        self.patch('iris.cube.Cube')
+        cubes = list(_generate_cubes(header, column_headings, coords,
+                                     data_arrays, cell_methods))
 
         cubes[0].assert_has_call(mock.call.add_cell_method('cell_method_1'))
         cubes[1].assert_has_call(mock.call.add_cell_method('cell_method_2'))
+
+
+class TestCircularLongitudes(tests.IrisTest):
+    def _simulate_with_coords(self, names, values, dimensions):
+        header = mock.MagicMock()
+        column_headings = {'Species': [1, 2, 3], 'Quantity': [4, 5, 6],
+                           "Unit": ['m', 'm', 'm'], 'Z': [1, 2, 3]}
+        coords = [NAMECoord(name, dim, vals)
+                  for name, vals, dim in zip(names, values, dimensions)]
+        data_arrays = [mock.Mock()]
+
+        self.patch('iris.fileformats.name_loaders._cf_height_from_name')
+        self.patch('iris.cube.Cube')
+        cubes = list(_generate_cubes(header, column_headings, coords,
+                                     data_arrays))
+        return cubes
+
+    def test_non_circular(self):
+        results = self._simulate_with_coords(names=['longitude'],
+                                             values=[[1, 7, 23]],
+                                             dimensions=[(0,)])
+        self.assertEqual(len(results), 1)
+        add_coord_calls = results[0].add_dim_coord.call_args_list
+        self.assertEqual(len(add_coord_calls), 1)
+        coord = add_coord_calls[0][0][0]
+        self.assertEqual(coord.circular, False)
+
+    def test_circular(self):
+        results = self._simulate_with_coords(
+            names=['longitude'],
+            values=[[5.0, 95.0, 185.0, 275.0]],
+            dimensions=[(0,)])
+        self.assertEqual(len(results), 1)
+        add_coord_calls = results[0].add_dim_coord.call_args_list
+        self.assertEqual(len(add_coord_calls), 1)
+        coord = add_coord_calls[0][0][0]
+        self.assertEqual(coord.circular, True)
+
+    def test_lat_lon_byname(self):
+        results = self._simulate_with_coords(
+            names=['longitude', 'latitude'],
+            values=[[5.0, 95.0, 185.0, 275.0],
+                    [5.0, 95.0, 185.0, 275.0]],
+            dimensions=[(0,), (1,)])
+        self.assertEqual(len(results), 1)
+        add_coord_calls = results[0].add_dim_coord.call_args_list
+        self.assertEqual(len(add_coord_calls), 2)
+        lon_coord = add_coord_calls[0][0][0]
+        lat_coord = add_coord_calls[1][0][0]
+        self.assertEqual(lon_coord.circular, True)
+        self.assertEqual(lat_coord.circular, False)
 
 
 if __name__ == "__main__":
