@@ -1175,5 +1175,23 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
 
+class Test_dtype(tests.IrisTest):
+    def test_int8(self):
+        cube = Cube(np.array([0, 1], dtype=np.int8))
+        self.assertEqual(cube.dtype, np.int8)
+
+    def test_float32(self):
+        cube = Cube(np.array([0, 1], dtype=np.float32))
+        self.assertEqual(cube.dtype, np.float32)
+
+    def test_lazy(self):
+        data = np.arange(6, dtype=np.float32).reshape(2, 3)
+        lazydata = biggus.NumpyArrayAdapter(data)
+        cube = Cube(lazydata)
+        self.assertEqual(cube.dtype, np.float32)
+        # Check that accessing the dtype does not trigger loading of the data.
+        self.assertTrue(cube.has_lazy_data())
+
+
 if __name__ == '__main__':
     tests.main()

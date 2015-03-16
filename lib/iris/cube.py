@@ -1399,6 +1399,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return shape
 
     @property
+    def dtype(self):
+        """The :class:`numpy.dtype` of the data of this cube."""
+        return self.lazy_data().dtype
+
+    @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
         return len(self.shape)
