@@ -29,10 +29,10 @@
       </coord>
     </coords>
     <cellMethods>
-      <cellMethod method="mean">
+      <cellMethod method="mean within years">
         <coord name="time"/>
       </cellMethod>
-      <cellMethod method="mean">
+      <cellMethod method="mean over years">
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
