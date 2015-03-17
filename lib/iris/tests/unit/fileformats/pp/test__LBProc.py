@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,8 +35,10 @@ class Test___init__(tests.IrisTest):
         _LBProc('245')
 
     def test_negative(self):
-        with self.assertRaises(ValueError):
-            _LBProc(-1)
+        with mock.patch('warnings.warn') as warn:
+            lbproc = _LBProc(-1)
+        self.assertEqual(warn.call_count, 1)
+        self.assertEqual(lbproc, -1)
 
     def test_invalid_str(self):
         with self.assertRaises(ValueError):
