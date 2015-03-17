@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -212,7 +212,6 @@ class TestOrder(tests.IrisTest):
         bottom = self._make_cube([-22.5, -67.5], [[0, -45], [-45, -90]])
         result = concatenate([top, bottom])
         self.assertEqual(len(result), 1)
-
 
 
 class TestConcatenateBiggus(tests.IrisTest):
