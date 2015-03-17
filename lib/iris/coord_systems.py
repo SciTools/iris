@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,8 @@ from __future__ import division
 from abc import ABCMeta, abstractmethod
 import warnings
 
-import cartopy.crs
+import cartopy
+import cartopy.crs as ccrs
 
 
 class CoordSystem(object):
@@ -736,7 +737,7 @@ class LambertConformal(CoordSystem):
         self.false_easting = false_easting
         #: Y offset from planar origin in metres.
         self.false_northing = false_northing
-        #: Latitudes of secant intersection.
+        #: The two standard parallels of the cone.
         self.secant_latitudes = secant_latitudes
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
@@ -763,10 +764,18 @@ class LambertConformal(CoordSystem):
         else:
             globe = cartopy.crs.Globe()
 
-        return cartopy.crs.LambertConformal(
-            self.central_lon, self.central_lat,
-            self.false_easting, self.false_northing,
-            self.secant_latitudes, globe, cutoff)
+        # Cartopy v0.12 deprecated the use of secant_latitudes.
+        if cartopy.__version__ < '0.12':
+            conic_position = dict(secant_latitudes=self.secant_latitudes)
+        else:
+            conic_position = dict(standard_parallels=self.secant_latitudes)
+
+        return ccrs.LambertConformal(
+            central_longitude=self.central_lon,
+            central_latitude=self.central_lat,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
+            globe=globe, cutoff=cutoff, **conic_position)
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
