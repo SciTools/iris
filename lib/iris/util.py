@@ -1211,6 +1211,38 @@ def as_compatible_shape(src_cube, target_cube):
     return new_cube
 
 
+def squeeze(cube):
+    """
+    Removes any dimension of length one. If it has an associated DimCoord or
+    AuxCoord, this becomes a scalar coord.
+
+    Args:
+
+    * cube (:class:`iris.cube.Cube`)
+        Source cube to remove length 1 dimension(s) from.
+
+    Returns:
+        A new :class:`iris.cube.Cube` instance without any dimensions of
+        length 1.
+
+    For example::
+
+        >>> cube.shape
+        (1, 360, 360)
+        >>> ncube = iris.util.squeeze(cube)
+        >>> ncube.shape
+        (360, 360)
+
+    """
+
+    slices = [0 if cube.shape[dim] == 1 else slice(None)
+              for dim in range(cube.ndim)]
+
+    squeezed = cube[tuple(slices)]
+
+    return squeezed
+
+
 def file_is_newer_than(result_path, source_paths):
     """
     Return whether the 'result' file has a later modification time than all of
@@ -1389,3 +1421,167 @@ def _is_circular(points, modulus, bounds=None):
             # We need to decide whether this is valid!
             circular = points[0] >= modulus
     return circular
+
+
+def promote_aux_coord_to_dim_coord(cube, name_or_coord):
+    """
+    Promotes an AuxCoord on the cube to a DimCoord. This AuxCoord must be
+    associated with a single cube dimension. If the AuxCoord is associated
+    with a dimension that already has a DimCoord, that DimCoord gets
+    demoted to an AuxCoord.
+
+    Args:
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * name_or_coord:
+        Either
+
+        (a) An instance of :class:`iris.coords.AuxCoord`
+
+        or
+
+        (b) the :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name` of an instance of an instance of
+        :class:`iris.coords.AuxCoord`.
+
+    For example::
+
+        >>> print cube
+        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  time                    x      -              -
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  year                    x      -              -
+        >>> promote_aux_coord_to_dim_coord(cube, 'year')
+        >>> print cube
+        air_temperature / (K)       (year: 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  year                    x      -              -
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  time                    x      -              -
+
+    """
+
+    if isinstance(name_or_coord, basestring):
+        aux_coord = cube.coord(name_or_coord)
+    elif isinstance(name_or_coord, iris.coords.Coord):
+        aux_coord = name_or_coord
+    else:
+        # Don't know how to handle this type
+        msg = ("Don't know how to handle coordinate of type {}. "
+               "Ensure all coordinates are of type basestring or "
+               "iris.coords.Coord.")
+        msg = msg.format(type(name_or_coord))
+        raise TypeError(msg)
+
+    if aux_coord in cube.dim_coords:
+        # nothing to do
+        return
+
+    if aux_coord not in cube.aux_coords:
+        msg = ("Attempting to promote an AuxCoord ({}) "
+               "which does not exist in the cube.")
+        msg = msg.format(aux_coord.name())
+        raise ValueError(msg)
+
+    coord_dim = cube.coord_dims(aux_coord)
+
+    if len(coord_dim) != 1:
+        msg = ("Attempting to promote an AuxCoord ({}) "
+               "which is associated with {} dimensions.")
+        msg = msg.format(aux_coord.name(), len(coord_dim))
+        raise ValueError(msg)
+
+    try:
+        dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
+    except ValueError, valerr:
+        msg = ("Attempt to promote an AuxCoord ({}) fails "
+               "when attempting to create a DimCoord from the "
+               "AuxCoord because: {}")
+        msg = msg.format(aux_coord.name(), valerr.message)
+        raise ValueError(msg)
+
+    old_dim_coord = cube.coords(dim_coords=True,
+                                contains_dimension=coord_dim[0])
+
+    if len(old_dim_coord) == 1:
+        demote_dim_coord_to_aux_coord(cube, old_dim_coord[0])
+
+    # order matters here: don't want to remove
+    # the aux_coord before have tried to make
+    # dim_coord in case that fails
+    cube.remove_coord(aux_coord)
+
+    cube.add_dim_coord(dim_coord, coord_dim)
+
+
+def demote_dim_coord_to_aux_coord(cube, name_or_coord):
+    """
+    Demotes a DimCoord on the cube to an AuxCoord, leaving that
+    dimension anonymous.
+
+    Args:
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * name_or_coord:
+        Either
+
+        (a) An instance of :class:`iris.coords.DimCoord`
+
+        or
+
+        (b) the :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name` of an instance of an instance of
+        :class:`iris.coords.DimCoord`.
+
+    For example::
+
+        >>> print cube
+        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  time                    x      -              -
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  year                    x      -              -
+        >>> demote_dim_coord_to_aux_coord(cube, 'time')
+        >>> print cube
+        air_temperature / (K)        (-- : 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  time                    x      -              -
+                  year                    x      -              -
+
+    """
+
+    if isinstance(name_or_coord, basestring):
+        dim_coord = cube.coord(name_or_coord)
+    elif isinstance(name_or_coord, iris.coords.Coord):
+        dim_coord = name_or_coord
+    else:
+        # Don't know how to handle this type
+        msg = ("Don't know how to handle coordinate of type {}. "
+               "Ensure all coordinates are of type basestring or "
+               "iris.coords.Coord.")
+        msg = msg.format(type(name_or_coord))
+        raise TypeError(msg)
+
+    if dim_coord not in cube.dim_coords:
+        # nothing to do
+        return
+
+    coord_dim = cube.coord_dims(dim_coord)
+
+    cube.remove_coord(dim_coord)
+
+    cube.add_aux_coord(dim_coord, coord_dim)
