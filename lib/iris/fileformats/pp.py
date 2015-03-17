@@ -1432,12 +1432,31 @@ class PPField(object):
         """Return a CoordSystem for this PPField.
 
         Returns:
-            Currently, a :class:`~iris.coord_systems.GeogCS` or :class:`~iris.coord_systems.RotatedGeogCS`.
+            Currently, a :class:`~iris.coord_systems.GeogCS` or
+            :class:`~iris.coord_systems.RotatedGeogCS`.
 
         """
-        geog_cs =  iris.coord_systems.GeogCS(EARTH_RADIUS)
-        if self.bplat != 90.0 or self.bplon != 0.0:
-            geog_cs = iris.coord_systems.RotatedGeogCS(self.bplat, self.bplon, ellipsoid=geog_cs)
+        geog_cs = iris.coord_systems.GeogCS(EARTH_RADIUS)
+
+        def degrees_ne(angle, ref_angle):
+            """
+            Return whether an angle differs significantly from a set value.
+
+            The inputs are in degrees.
+            The difference is judged significant if more than 0.0001 degrees.
+
+            """
+            return abs(angle - ref_angle) > 0.0001
+
+        if (degrees_ne(self.bplat, 90.0) or (degrees_ne(self.bplon, 0.0) and
+                                             degrees_ne(self.bplon, 180.0))):
+            # NOTE: when bplat,bplon=90,0 this encodes an unrotated system.
+            # However, the rotated system which is *equivalent* to an unrotated
+            # one actually has blat,bplon=90,180, due to a quirk in the
+            # definition equations.
+            # So we accept BPLON of 0 *or* 180 to mean 'unrotated'.
+            geog_cs = iris.coord_systems.RotatedGeogCS(
+                self.bplat, self.bplon, ellipsoid=geog_cs)
 
         return geog_cs
 

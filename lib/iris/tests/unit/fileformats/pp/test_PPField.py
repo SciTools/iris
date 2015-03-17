@@ -116,6 +116,44 @@ class Test_calendar(tests.IrisTest):
         self.assertEqual(field.calendar, '365_day')
 
 
+class Test_coord_system(tests.IrisTest):
+    def _check_cs(self, bplat, bplon, rotated):
+        field = TestPPField()
+        field.bplat = bplat
+        field.bplon = bplon
+        with mock.patch('iris.fileformats.pp.iris.coord_systems') \
+                as mock_cs_mod:
+            result = field.coord_system()
+        if not rotated:
+            # It should return a standard unrotated CS.
+            self.assertTrue(mock_cs_mod.GeogCS.call_count == 1)
+            self.assertEqual(result, mock_cs_mod.GeogCS())
+        else:
+            # It should return a rotated CS with the correct makeup.
+            self.assertTrue(mock_cs_mod.GeogCS.call_count == 1)
+            self.assertTrue(mock_cs_mod.RotatedGeogCS.call_count == 1)
+            self.assertEqual(result, mock_cs_mod.RotatedGeogCS())
+            self.assertEqual(mock_cs_mod.RotatedGeogCS.call_args_list[0],
+                             mock.call(bplat, bplon,
+                                       ellipsoid=mock_cs_mod.GeogCS()))
+
+    def test_normal_unrotated(self):
+        # Check that 'normal' BPLAT,BPLON=90,0 produces an unrotated system.
+        self._check_cs(bplat=90, bplon=0, rotated=False)
+
+    def test_bplon_180_unrotated(self):
+        # Check that BPLAT,BPLON=90,180 behaves the same as 90,0.
+        self._check_cs(bplat=90, bplon=180, rotated=False)
+
+    def test_odd_bplat_rotated(self):
+        # Show that BPLAT != 90 produces a rotated field.
+        self._check_cs(bplat=75, bplon=180, rotated=True)
+
+    def test_odd_bplon_rotated(self):
+        # Show that BPLON != 0 or 180 produces a rotated field.
+        self._check_cs(bplat=90, bplon=123.45, rotated=True)
+
+
 class Test__init__(tests.IrisTest):
     def setUp(self):
         header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int)
