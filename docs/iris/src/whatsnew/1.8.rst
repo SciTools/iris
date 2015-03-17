@@ -10,6 +10,10 @@ This document explains the new/changed features of Iris in version 1.8.
 Iris 1.8 features
 =================
 
+* :func:`iris.util.demote_dim_coord_to_aux_coord` and :func:`iris.util.promote_aux_coord_to_dim_coord`
+  allow a coordinate to be easily demoted or promoted within a cube.
+* :func:`iris.util.squeeze` removes all length 1 dimensions from a cube, and demotes
+  any associated squeeze dimension :class:`iris.coords.DimCoord` to be a scalar coordinate.
 * :func:`iris.cube.CubeList.concatenate` now works with biggus arrays and so
   now supports concatenation of deferred data cubes.
 * :meth: `iris.cube.Cube.slices_over` returns an iterator over all subcubes along a given
