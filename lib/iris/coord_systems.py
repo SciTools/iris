@@ -321,6 +321,7 @@ class RotatedGeogCS(CoordSystem):
             globe = self.ellipsoid.as_cartopy_globe()
         return ccrs.RotatedGeodetic(self.grid_north_pole_longitude,
                                     self.grid_north_pole_latitude,
+                                    self.north_pole_grid_longitude,
                                     globe=globe)
 
     def as_cartopy_projection(self):
@@ -329,6 +330,7 @@ class RotatedGeogCS(CoordSystem):
             globe = self.ellipsoid.as_cartopy_globe()
         return ccrs.RotatedPole(self.grid_north_pole_longitude,
                                 self.grid_north_pole_latitude,
+                                self.north_pole_grid_longitude,
                                 globe=globe)
 
 
