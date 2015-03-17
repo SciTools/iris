@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ from iris.coords import AuxCoord, DimCoord, CellMethod
 import iris.coord_systems
 import iris.cube
 from iris.exceptions import TranslationError
+import iris.util
 import iris.unit
 
 
@@ -405,10 +406,15 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
                 pts = time_unit.date2num(coord.values)
 
             if coord.dimension is not None:
+                if coord.name == 'longitude':
+                    circular = iris.util._is_circular(pts, 360.0)
+                else:
+                    circular = False
                 icoord = DimCoord(points=pts,
                                   standard_name=coord.name,
                                   units=coord_units,
-                                  coord_system=coord_sys)
+                                  coord_system=coord_sys,
+                                  circular=circular)
                 if coord.name == 'time' and 'Av or Int period' in \
                         field_headings:
                     dt = coord.values - \
