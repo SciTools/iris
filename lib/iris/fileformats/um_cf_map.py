@@ -326,6 +326,8 @@ STASH_TO_CF = {
     'm01s03i025': CFName('atmosphere_boundary_layer_thickness', None, 'm'),
     'm01s03i201': CFName('downward_heat_flux_in_sea_ice', None, 'W m-2'),
     'm01s03i202': CFName('downward_heat_flux_in_soil', None, 'unknown'),
+    'm01s03i209': CFName('x_wind', None, 'm s-1'),
+    'm01s03i210': CFName('y_wind', None, 'm s-1'),
     'm01s03i217': CFName('surface_upward_sensible_heat_flux', None, 'W m-2'),
     'm01s03i219': CFName('surface_downward_eastward_stress', None, 'Pa'),
     'm01s03i220': CFName('surface_downward_northward_stress', None, 'Pa'),
@@ -464,6 +466,7 @@ STASH_TO_CF = {
     'm01s08i234': CFName('surface_runoff_flux', None, 'kg m-2 s-1'),
     'm01s08i235': CFName('subsurface_runoff_flux', None, 'kg m-2 s-1'),
     'm01s08i245': CFName(None, 'Inland basin flow on atmospheric grid', 'kg/m^2/s'),
+    'm01s08i258': CFName('surface_runoff_flux', None, 'kg m-2 s-1'),
     'm01s09i004': CFName('air_temperature', None, 'K'),
     'm01s09i010': CFName('specific_humidity', None, '1'),
     'm01s09i201': CFName('stratiform_cloud_area_fraction_in_atmosphere_layer', None, '1'),
@@ -628,6 +631,7 @@ STASH_TO_CF = {
     'm01s30i313': CFName('upward_eliassen_palm_flux_in_air', None, 'kg s-2'),
     'm01s30i314': CFName('tendency_of_eastward_wind_due_to_eliassen_palm_flux_divergence', None, 'm s-2'),
     'm01s30i401': CFName('atmosphere_kinetic_energy_content', None, 'J m-2'),
+    'm01s30i404': CFName('atmosphere_mass_content_of_water', None, 'kg m-2'),
     'm01s30i405': CFName('atmosphere_cloud_liquid_water_content', None, 'kg m-2'),
     'm01s30i406': CFName('atmosphere_cloud_ice_content', None, 'kg m-2'),
     'm01s30i417': CFName('surface_air_pressure', None, 'Pa'),
@@ -818,6 +822,8 @@ STASH_TO_CF = {
     }
 
 STASHCODE_IMPLIED_HEIGHTS = {
+    'm01s03i209': (10.0,),
+    'm01s03i210': (10.0,),
     'm01s03i225': (10.0,),
     'm01s03i226': (10.0,),
     'm01s03i236': (1.5,),
