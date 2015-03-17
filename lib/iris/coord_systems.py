@@ -315,23 +315,30 @@ class RotatedGeogCS(CoordSystem):
     def xml_element(self, doc):
         return CoordSystem.xml_element(self, doc, self._pretty_attrs())
 
-    def as_cartopy_crs(self):
+    def _ccrs_kwargs(self):
         globe = None
         if self.ellipsoid is not None:
             globe = self.ellipsoid.as_cartopy_globe()
-        return ccrs.RotatedGeodetic(self.grid_north_pole_longitude,
-                                    self.grid_north_pole_latitude,
-                                    self.north_pole_grid_longitude,
-                                    globe=globe)
+        # Cartopy v0.12 provided the new arg north_pole_grid_longitude
+        cartopy_kwargs = {'pole_longitude': self.grid_north_pole_longitude,
+                          'pole_latitude': self.grid_north_pole_latitude,
+                          'globe': globe}
+
+        if cartopy.__version__ < '0.12':
+            warning.warn('"central_rotated_longitude" is not supported by '
+                         'cartopy{} and has been ignored in the '
+                         'creation of the cartopy '
+                         'projection/crs.'.format(cartopy.__version__))
+        else:
+            crl = 'central_rotated_longitude'
+            cartopy_kwargs[crl] = self.north_pole_grid_longitude
+        return cartopy_kwargs
+
+    def as_cartopy_crs(self):
+        return ccrs.RotatedGeodetic(**self._ccrs_kwargs())
 
     def as_cartopy_projection(self):
-        globe = None
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        return ccrs.RotatedPole(self.grid_north_pole_longitude,
-                                self.grid_north_pole_latitude,
-                                self.north_pole_grid_longitude,
-                                globe=globe)
+        return ccrs.RotatedPole(**self._ccrs_kwargs())
 
 
 class TransverseMercator(CoordSystem):
