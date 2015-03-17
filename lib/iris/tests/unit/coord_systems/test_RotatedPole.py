@@ -17,11 +17,13 @@
 """Unit tests for the :class:`iris.coord_systems.RotatedPole` class."""
 
 from __future__ import (absolute_import, division, print_function)
+import mock
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
+import cartopy
 import cartopy.crs as ccrs
 from iris.coord_systems import GeogCS, RotatedGeogCS
 
@@ -41,18 +43,30 @@ class Test_init(tests.IrisTest):
                          self.rp_crs.north_pole_grid_longitude)
 
     def test_as_cartopy_crs(self):
-        accrs = self.rp_crs.as_cartopy_crs()
-        expected = ccrs.RotatedGeodetic(self.pole_lon, self.pole_lat,
-                                        self.rotation_about_new_pole)
-        self.assertEqual(sorted(accrs.proj4_init.split(' +')),
-                         sorted(expected.proj4_init.split(' +')))
+        if cartopy.__version__ < '0.12':
+            with mock.patch('warnings.warn') as warn:
+                accrs = self.rp_crs.as_cartopy_crs()
+                self.assertEqual(warn.call_count, 1)
+            #self.assertRaises(Warning, self.rp_crs.as_cartopy_crs)
+        else:
+            accrs = self.rp_crs.as_cartopy_crs()
+            expected = ccrs.RotatedGeodetic(self.pole_lon, self.pole_lat,
+                                            self.rotation_about_new_pole)
+            self.assertEqual(sorted(accrs.proj4_init.split(' +')),
+                             sorted(expected.proj4_init.split(' +')))
 
     def test_as_cartopy_projection(self):
-        accrsp = self.rp_crs.as_cartopy_projection()
-        expected = ccrs.RotatedPole(self.pole_lon, self.pole_lat,
-                                    self.rotation_about_new_pole)
-        self.assertEqual(sorted(accrsp.proj4_init.split(' +')),
-                         sorted(expected.proj4_init.split(' +')))
+        if cartopy.__version__ < '0.12':
+            with mock.patch('warnings.warn') as warn:
+                accrs = self.rp_crs.as_cartopy_projection()
+                self.assertEqual(warn.call_count, 1)
+            # self.assertRaises(Warning, self.rp_crs.as_cartopy_projection)
+        else:
+            accrsp = self.rp_crs.as_cartopy_projection()
+            expected = ccrs.RotatedPole(self.pole_lon, self.pole_lat,
+                                        self.rotation_about_new_pole)
+            self.assertEqual(sorted(accrsp.proj4_init.split(' +')),
+                             sorted(expected.proj4_init.split(' +')))
 
 if __name__ == '__main__':
     tests.main()
