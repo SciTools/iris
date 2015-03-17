@@ -325,10 +325,10 @@ class RotatedGeogCS(CoordSystem):
                           'globe': globe}
 
         if cartopy.__version__ < '0.12':
-            warning.warn('"central_rotated_longitude" is not supported by '
-                         'cartopy{} and has been ignored in the '
-                         'creation of the cartopy '
-                         'projection/crs.'.format(cartopy.__version__))
+            warnings.warn('"central_rotated_longitude" is not supported by '
+                          'cartopy{} and has been ignored in the '
+                          'creation of the cartopy '
+                          'projection/crs.'.format(cartopy.__version__))
         else:
             crl = 'central_rotated_longitude'
             cartopy_kwargs[crl] = self.north_pole_grid_longitude
