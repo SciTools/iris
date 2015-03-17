@@ -140,7 +140,7 @@ class TestGDT5(tests.IrisTest):
                 'gridDefinitionTemplateNumber = 5',
                 'Ni = {:d}'.format(cube.shape[-1]),
                 'Nj = {:d}'.format(cube.shape[-2]),
-                'shapeOfTheEarth = 1',
+                'shapeOfTheEarth = 6',
                 'scaledValueOfRadiusOfSphericalEarth = {:d}'.format(
                     int(UM_DEFAULT_EARTH_RADIUS)),
                 'resolutionAndComponentFlags = 0',

@@ -177,7 +177,6 @@ def identification(cube, grib):
 
 
 def shape_of_the_earth(cube, grib):
-    # assume latlon
     cs = cube.coord(dimensions=[0]).coord_system
 
     # Initially set shape_of_earth keys to missing (255 for byte, -1 for long).
@@ -199,13 +198,23 @@ def shape_of_the_earth(cube, grib):
 
     # Spherical earth.
     if ellipsoid.inverse_flattening == 0.0:
-        gribapi.grib_set_long(grib, "shapeOfTheEarth", 1)
-        gribapi.grib_set_long(grib, "scaleFactorOfRadiusOfSphericalEarth", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth",
-                              ellipsoid.semi_major_axis)
+        # Set shapeOfTheEarth key based on value of spherical earth radius.
+        if int(ellipsoid.semi_major_axis) == 6367470:
+            gribapi.grib_set_long(grib, "shapeOfTheEarth", 0)
+        elif int(ellipsoid.semi_major_axis) == 6371229:
+            gribapi.grib_set_long(grib, "shapeOfTheEarth", 6)
+        else:
+            gribapi.grib_set_long(grib, "shapeOfTheEarth", 1)
+            gribapi.grib_set_long(grib,
+                                  "scaleFactorOfRadiusOfSphericalEarth", 0)
+            gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth",
+                                  ellipsoid.semi_major_axis)
     # Oblate spheroid earth.
     else:
-        gribapi.grib_set_long(grib, "shapeOfTheEarth", 7)
+        if isinstance(cs, iris.coord_systems.OSGB):
+            gribapi.grib_set_long(grib, "shapeOfTheEarth", 9)
+        else:
+            gribapi.grib_set_long(grib, "shapeOfTheEarth", 7)
         gribapi.grib_set_long(grib, "scaleFactorOfEarthMajorAxis", 0)
         gribapi.grib_set_long(grib, "scaledValueOfEarthMajorAxis",
                               ellipsoid.semi_major_axis)

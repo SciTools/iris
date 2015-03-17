@@ -80,14 +80,6 @@ class Test(tests.IrisTest, GdtTestMixin):
         grid_definition_template_12(self.test_cube, self.mock_grib)
         self._check_key('gridDefinitionTemplateNumber', 12)
 
-    def test__shape_of_earth(self):
-        grid_definition_template_12(self.test_cube, self.mock_grib)
-        self._check_key('shapeOfTheEarth', 7)
-        self._check_key('scaleFactorOfEarthMajorAxis', 0)
-        self._check_key('scaledValueOfEarthMajorAxis', 6377563.396)
-        self._check_key('scaleFactorOfEarthMinorAxis', 0)
-        self._check_key('scaledValueOfEarthMinorAxis', 6356256.909)
-
     def test__grid_shape(self):
         test_cube = self._make_test_cube(x_points=np.arange(13),
                                          y_points=np.arange(6))
