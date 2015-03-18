@@ -47,7 +47,6 @@ class Test_init(tests.IrisTest):
             with mock.patch('warnings.warn') as warn:
                 accrs = self.rp_crs.as_cartopy_crs()
                 self.assertEqual(warn.call_count, 1)
-            #self.assertRaises(Warning, self.rp_crs.as_cartopy_crs)
         else:
             accrs = self.rp_crs.as_cartopy_crs()
             expected = ccrs.RotatedGeodetic(self.pole_lon, self.pole_lat,
@@ -60,7 +59,6 @@ class Test_init(tests.IrisTest):
             with mock.patch('warnings.warn') as warn:
                 accrs = self.rp_crs.as_cartopy_projection()
                 self.assertEqual(warn.call_count, 1)
-            # self.assertRaises(Warning, self.rp_crs.as_cartopy_projection)
         else:
             accrsp = self.rp_crs.as_cartopy_projection()
             expected = ccrs.RotatedPole(self.pole_lon, self.pole_lat,
