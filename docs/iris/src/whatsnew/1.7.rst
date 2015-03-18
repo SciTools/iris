@@ -2,7 +2,7 @@ What's new in Iris 1.7
 **********************
 
 :Release: 1.7.4
-:Date: 17th March 2015
+:Date: ???
 
 Iris 1.7 features
 =================
@@ -200,10 +200,14 @@ Bugs fixed in v1.7.3
 
 Bugs fixed in v1.7.4
 ^^^^^^^^^^^^^^^^^^^^
+* :meth:`Coord.guess_bounds` can now deal with circular coordinates.
+* :meth:`Coord.nearest_neighbour_index` can now work with descending bounds.
+* Passing `weights` to :meth:`Cube.rolling_window` no longer prevents other
+  keyword arguments from being passed to the aggregator.
 * Several minor fixes to allow use of Iris on Windows.
 * Made use of the new standard_parallels keyword in Cartopy's LambertConformal
-  projection (Cartopy v0.12). Older versions of Iris will not be able to create LambertConformal
-  coordinate systems with with Cartopy >= 0.12.
+  projection (Cartopy v0.12). Older versions of Iris will not be able to
+  create LambertConformal coordinate systems with Cartopy >= 0.12.
 
 Incompatible changes
 ====================
