@@ -37,7 +37,7 @@ from iris.fileformats.grib._load_convert import grid_definition_template_40
 MDI = 2 ** 32 - 1
 
 
-class Test(tests.IrisTest):
+class Test_regular(tests.IrisTest):
 
     def section_3(self):
         section = {
@@ -56,6 +56,8 @@ class Test(tests.IrisTest):
                                            -31.70409175, -10.56988231,
                                            10.56988231,  31.70409175,
                                            52.81294319,  73.79921363]),
+            'numberOfOctectsForNumberOfPoints': 0,
+            'interpretationOfNumberOfPoints': 0,
         }
         return section
 
@@ -106,6 +108,62 @@ class Test(tests.IrisTest):
         metadata = empty_metadata()
         grid_definition_template_40(section, metadata)
         expected = self.expected(0, 1, y_neg=True)
+        self.assertEqual(metadata, expected)
+
+
+class Test_reduced(tests.IrisTest):
+
+    def section_3(self):
+        section = {
+            'shapeOfTheEarth': 0,
+            'scaleFactorOfRadiusOfSphericalEarth': 0,
+            'scaledValueOfRadiusOfSphericalEarth': 6367470,
+            'scaleFactorOfEarthMajorAxis': 0,
+            'scaledValueOfEarthMajorAxis': MDI,
+            'scaleFactorOfEarthMinorAxis': 0,
+            'scaledValueOfEarthMinorAxis': MDI,
+            'longitudes': np.array([0., 180.,
+                                    0., 120., 240.,
+                                    0., 120., 240.,
+                                    0., 180.]),
+            'latitudes': np.array([-59.44440829, -59.44440829,
+                                   -19.87571915, -19.87571915, -19.87571915,
+                                   19.87571915, 19.87571915, 19.87571915,
+                                   59.44440829, 59.44440829]),
+            'numberOfOctectsForNumberOfPoints': 1,
+            'interpretationOfNumberOfPoints': 1,
+        }
+        return section
+
+    def expected(self):
+        # Prepare the expectation.
+        expected = empty_metadata()
+        cs = iris.coord_systems.GeogCS(6367470)
+        x_points = np.array([0., 180.,
+                             0., 120., 240.,
+                             0., 120., 240.,
+                             0., 180.])
+        y_points = np.array([-59.44440829, -59.44440829,
+                             -19.87571915, -19.87571915, -19.87571915,
+                             19.87571915, 19.87571915, 19.87571915,
+                             59.44440829, 59.44440829])
+        x = iris.coords.AuxCoord(x_points,
+                                 standard_name='longitude',
+                                 units='degrees_east',
+                                 coord_system=cs)
+        y = iris.coords.AuxCoord(y_points,
+                                 standard_name='latitude',
+                                 units='degrees_north',
+                                 coord_system=cs)
+        expected['aux_coords_and_dims'].append((y, 0))
+        expected['aux_coords_and_dims'].append((x, 0))
+        return expected
+
+    def test(self):
+        section = self.section_3()
+        metadata = empty_metadata()
+        expected = self.expected()
+        grid_definition_template_40(section, metadata)
         self.assertEqual(metadata, expected)
 
 

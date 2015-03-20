@@ -95,12 +95,13 @@ class _GribMessage(object):
                 'Unsupported source of grid definition: {}'.format(
                     grid_section['sourceOfGridDefinition']))
 
-        if (grid_section['numberOfOctectsForNumberOfPoints'] != 0 or
-                grid_section['interpretationOfNumberOfPoints'] != 0):
-            raise TranslationError('Grid Definition Section 3 contains '
+        reduced = (grid_section['numberOfOctectsForNumberOfPoints'] != 0 or
+                   grid_section['interpretationOfNumberOfPoints'] != 0)
+        template = grid_section['gridDefinitionTemplateNumber']
+        if reduced and template not in (40,):
+            raise TranslationError('Grid definition Section 3 contains '
                                    'unsupported quasi-regular grid.')
 
-        template = grid_section['gridDefinitionTemplateNumber']
         if template in (0, 1, 5, 12, 40, 90):
             # We can ignore the first two bits (i-neg, j-pos) because
             # that is already captured in the coordinate values.
@@ -110,6 +111,8 @@ class _GribMessage(object):
                 raise TranslationError(msg)
             if template == 90:
                 shape = (grid_section['Ny'], grid_section['Nx'])
+            elif template == 40 and reduced:
+                shape = (grid_section['numberOfDataPoints'],)
             else:
                 shape = (grid_section['Nj'], grid_section['Ni'])
             proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
