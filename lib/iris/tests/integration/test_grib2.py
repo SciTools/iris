@@ -215,8 +215,15 @@ class TestGDT5(tests.IrisTest):
 
 @tests.skip_data
 class TestGDT40(tests.IrisTest):
+
     def test_regular(self):
         path = tests.get_data_path(('GRIB', 'gaussian', 'regular_gg.grib2'))
+        with FUTURE.context(strict_grib_load=True):
+            cube = load_cube(path)
+        self.assertCMLApproxData(cube)
+
+    def test_reduced(self):
+        path = tests.get_data_path(('GRIB', 'reduced', 'reduced_gg.grib2'))
         with FUTURE.context(strict_grib_load=True):
             cube = load_cube(path)
         self.assertCMLApproxData(cube)
