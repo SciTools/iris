@@ -10,81 +10,138 @@ This document explains the new/changed features of Iris in version 1.8.
 Iris 1.8 features
 =================
 
+.. _showcase:
+
+.. admonition:: Showcase: Rotate winds
+
+    Iris can now rotate and unrotate wind vector data by transforming the wind
+    vector data to another coordinate system.
+
+    For example::
+
+        >>> u_cube = iris.load_cube('my_rotated_u_wind_cube.pp')
+        >>> v_cube = iris.load_cube('my_rotated_v_wind_cube.pp')
+        >>> target_cs = iris.coord_systems.GeogCS(6371229.0)
+        >>> u_prime, v_prime = rotate_winds(u_cube, v_cube, target_cs)
+
+.. admonition:: Showcase: Nearest-neighbour scheme
+
+    A nearest-neighbour scheme for interpolation and regridding has been added
+    to Iris. This joins the existing ``Linear`` and ``Area-weighted`` interpolation
+    and regridding schemes.
+
+    For example::
+
+        >>> result = cube.interpolate(sample_points, iris.analysis.Nearest())
+        >>> regridded_cube = cube.regrid(target_grid, iris.analysis.Nearest())
+
+.. admonition:: Showcase: Slices over a coordinate
+
+    Slices over a given dimensions of a cube can be requested using :meth:`iris.cube.Cube.slices_over`.
+    This provides similar functionality to :meth:`~iris.cube.Cube.slices` but with
+    almost the opposite outcome.
+    
+    Using :meth:`~iris.cube.Cube.slices` to slice a cube on a selected dimension returns
+    all possible slices of the cube with the selected dimension retaining its dimensionality.
+    Using :meth:`~iris.cube.Cube.slices_over` to slice a cube on a selected
+    dimension returns all possible slices of the cube over the selected dimension. 
+    
+    To demonstrate this::
+
+        >>> cube = iris.load(iris.sample_data_path('colpex.pp'))[0]
+        >>> print cube.summary(shorten=True)
+        air_potential_temperature / (K)     (time: 6; model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
+        >>> slice = next(cube.slices('time'))
+        >>> slice_over = next(cube.slices_over('time'))
+        >>> print slice.summary(shorten=True)
+        air_potential_temperature / (K)     (time: 6)
+        >>> print slice_over.summary(shorten=True)
+        air_potential_temperature / (K)     (model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
+    
+    The slice of the cube returns the selected dimension and the scalar coordinate
+    values of the next combination of all the unselected dimensions.
+    The slice over the selected coordinate returns the next slice of that coordinate
+    as a scalar coordinate value across the unselected dimensions.
+
+* :func:`iris.cube.CubeList.concatenate` now works with biggus arrays and so
+  now supports concatenation of cubes with deferred data.
+* Improvements to NetCDF saving through using `biggus <http://biggus.readthedocs.org/>`_:
+ * A cube's lazy data payload will still be lazy after saving; the data will not
+   be loaded into memory by the save operation.
+ * Cubes with data payloads larger than system memory can now be saved to NetCDF
+   through biggus streaming the data to disk.
 * :func:`iris.util.demote_dim_coord_to_aux_coord` and :func:`iris.util.promote_aux_coord_to_dim_coord`
   allow a coordinate to be easily demoted or promoted within a cube.
 * :func:`iris.util.squeeze` removes all length 1 dimensions from a cube, and demotes
   any associated squeeze dimension :class:`iris.coords.DimCoord` to be a scalar coordinate.
-* :func:`iris.cube.CubeList.concatenate` now works with biggus arrays and so
-  now supports concatenation of deferred data cubes.
-* :meth: `iris.cube.Cube.slices_over` returns an iterator over all subcubes along a given
+* :meth:`iris.cube.Cube.slices_over`, which returns an iterator of all sub-cubes along a given
   coordinate or dimension index.
-* :meth:`iris.cube.Cube.interpolate` now accepts instances of datetime.datetime and 
-  netcdftime.datetime for date or time coordinates.
+* :meth:`iris.cube.Cube.interpolate` now accepts datetime.datetime and 
+  netcdftime.datetime instances for date or time coordinates.
 * Many new and updated translations between CF spec and STASH codes or GRIB2 parameter
   codes.
-* PP/FF loader creates an implied scalar height coordinate for specific stash codes.
-* Lazy aggregator support for standard deviation has been added.
+* PP/FF loader creates a height coordinate at 1.5m or 10m for certain relevant stash codes.
+* Lazy aggregator support for the :class:`standard deviation <iris.analysis.STD_DEV>`
+  aggregator has been added.
 * A speed improvement in calculation of :func:`iris.analysis.cartography.area_weights`.
-* Experimental UGRID support has been added with :func:`iris.experimental.ugrid`.
+* Experimental support for unstructured grids has been added with :func:`iris.experimental.ugrid`.
+  This has been implemented using `UGRID <https://github.com/pyugrid/pyugrid>`_.
 * :meth:`iris.cube.CubeList.extract_overlapping` supports extraction of cubes over
   regions where common coordinates overlap, over multiple coordinates.
 * Warnings raised due to invalid units in loaded data have been suppressed.
-* Low-level FieldsFile variant read and write access is nwo supported.
-* LBC type FieldFiles are now being handled specially in the FF loader.
-* PP headers that can't be interpreted will generate cubes for fields prior to the
+* Experimental low-level read and write access for FieldsFile variants is now supported
+  via :class:`iris.experimental.um.FieldsFileVariant`.
+* PP files with a problematic header will generate cubes for all fields prior to the
   problematic header before raising an exception.
 * NetCDF loader skips invalid global attributes, raising a warning rather than raising an
-  exception. 
-* NetCDF saving to all NetCDF4/HDF encodings (including the default) now uses biggus save
-  when the cube has lazy data.
-* biggus.save() streams the data payload during save, rather than loading the whole
-  dataset in one go.
- * This enables cubes with data payloads larger than the system memory to be saved to
-  netCDF. 
- * After saving, a cube's data payload will still be lazy, the data will not be loaded
-  into memory.
- * :func:`iris.fileformats.netcdf.save`.
-* When AuxCoordFactory fails, a warning is now issued rather than an error.
-* Extended supported AuxCoord factories to include "ocean sigma coordinate", "ocean s
-  coordinate", "ocean s coordinate, generic form 1" and "ocean s coordinate, generic form 2".
-* :meth:`iris.cube.Cube.intersection` now supports taking a points only intersection,
-  ignoring, but retaining any bounds.
+  exception.
+* A warning is now raised rather than an exception when constructing an
+  :class:`~iris.aux_factory.AuxCoordFactory` fails.
+* Supported :class:`aux coordinate factories <iris.aux_factory.AuxCoordFactory>` have been extended to include
+  ``ocean sigma coordinate``, ``ocean s coordinate``, ``ocean s coordinate, generic form 1``
+  and ``ocean s coordinate, generic form 2``.
+* :meth:`iris.cube.Cube.intersection` now supports taking a points only intersection.
+  Any bounds on intersected coordinates are ignored but retained.
 * Grid 21 has been added to the FF loader's known handled grids.
-* A nearest neighbour scheme (:class:`iris.analysis.Nearest`) is now supported by
+* A :class:`nearest neighbour <iris.analysis.Nearest>` scheme is now provided for
   :meth:`iris.cube.Cube.interpolate` and :meth:`iris.cube.Cube.regrid`. 
 * :func:`iris.analysis.cartography.rotate_winds` supports transformation of wind vectors
   to a different coordinate system.
-* :func:`iris.analysis.maths.apply_ufunc` can be used to apply numpy universal functions
-  to cubes and :class:`iris.analysis.maths.IFunc` contains functions to apply to the data
-  and units of cubes.
+* NumPy universal functions can now be applied to cubes using
+  :func:`iris.analysis.maths.apply_ufunc`.
+* Generic functions can be applied to :class:`~iris.cube.Cube` instances using 
+  :class:`iris.analysis.maths.IFunc`. 
 
 Bugs fixed
 ==========
-* Fix in netCDF loader to correctly determine whether the longitude is circular,
-  including for scalar coordinates.
+* Fix in netCDF loader to correctly determine whether the longitude coordinate
+  is circular, including for scalar coordinates.
 * :meth:`iris.cube.Cube.intersection` now supports bounds that extend slightly beyond 360
   degrees.
+* Lateral Boundary Condition (LBC) type FieldFiles are now handled correctly by the FF loader.
 * Making a copy of a scalar cube with no data now correctly copies the data array.
 * Height coordinates in NAME trajectory output files have been changed to match other
-  NAME ouput file formats.
-* Fixed loading type for a fieldsfile 'integer_constants' array in FF loader.
-* FF/PP loader adds appropriate cell methods for lbtim.ib = 3 intervals.
-* An error is raised if the units of the latitude and longitude coordinates of the cube
-  passed into :func:`iris.analysis.cartography.area_weights` are not convertable to radians.
+  NAME output file formats.
+* Fixed datatype when loading an ``integer_constants`` array from a fieldsfile.
+* FF/PP loader adds appropriate cell methods for ``lbtim.ib = 3`` intervals.
+* An exception is raised if the units of the latitude and longitude coordinates
+  of the cube passed into :func:`iris.analysis.cartography.area_weights` are not
+  convertible to radians.
 * GRIB1 loader now creates a time coordinate for a time range indicator of 2.
 * NetCDF loader now loads units that are empty strings as dimensionless.
 
 Deprecations
 ============
-* The previous GRIB loader has been deprecated and a new, template-based GRIB loader is
-  used in place.
+* The previous GRIB loader has been deprecated and a new, template-based GRIB
+  loader is used instead.
 
 Documentation Changes
 =====================
-* A chapter on :doc:`merge and concatenate </userguide/merge_and_concat.rst>` has been
+* A chapter on :doc:`merge and concatenate </userguide/merge_and_concat>` has been
   added to the :doc:`user guide </userguide/index>`.
-* A section on installing Iris using conda has been added to the :doc:`install guide
-  </installing.rst>`.
-* Updates to :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
+* A section on installing Iris using `conda <http://conda.pydata.org/>`_ has been
+  added to the :doc:`install guide </installing>`.
+* Updates to the chapter on
+  :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
   have been added to the :doc:`user guide </userguide/index>`.
 
