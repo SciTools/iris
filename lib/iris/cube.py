@@ -3111,29 +3111,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
 
-    def add_history(self, string):
-        """
-        Add the given string to the cube's history.
-        If the history coordinate does not exist, then one will be created.
-
-        .. deprecated:: 1.6
-            Add/modify history metadata within
-            :attr:`~iris.cube.Cube.attributes` as needed.
-
-        """
-        warn_deprecated("Cube.add_history() has been deprecated - "
-                        "please modify/create cube.attributes['history'] "
-                        "as needed.")
-
-        timestamp = datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")
-        string = '%s Iris: %s' % (timestamp, string)
-
-        try:
-            history = self.attributes['history']
-            self.attributes['history'] = '%s\n%s' % (history, string)
-        except KeyError:
-            self.attributes['history'] = string
-
     # START ANALYSIS ROUTINES
 
     regridded = iris.util._wrap_function_for_method(
