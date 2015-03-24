@@ -19,6 +19,7 @@ Iris 1.8 features
 
     For example::
 
+        >>> from iris.analysis.cartography import rotate_winds
         >>> u_cube = iris.load_cube('my_rotated_u_wind_cube.pp')
         >>> v_cube = iris.load_cube('my_rotated_v_wind_cube.pp')
         >>> target_cs = iris.coord_systems.GeogCS(6371229.0)
@@ -27,8 +28,8 @@ Iris 1.8 features
 .. admonition:: Showcase: Nearest-neighbour scheme
 
     A nearest-neighbour scheme for interpolation and regridding has been added
-    to Iris. This joins the existing ``Linear`` and ``Area-weighted`` interpolation
-    and regridding schemes.
+    to Iris. This joins the existing :class:`~iris.analysis.Linear` and
+    :class:`~iris.analysis.AreaWeighted` interpolation and regridding schemes.
 
     For example::
 
@@ -37,7 +38,7 @@ Iris 1.8 features
 
 .. admonition:: Showcase: Slices over a coordinate
 
-    Slices over a given dimensions of a cube can be requested using :meth:`iris.cube.Cube.slices_over`.
+    You can slice over one or more dimensions of a cube using :meth:`iris.cube.Cube.slices_over`.
     This provides similar functionality to :meth:`~iris.cube.Cube.slices` but with
     almost the opposite outcome.
     
@@ -51,21 +52,17 @@ Iris 1.8 features
         >>> cube = iris.load(iris.sample_data_path('colpex.pp'))[0]
         >>> print cube.summary(shorten=True)
         air_potential_temperature / (K)     (time: 6; model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
-        >>> slice = next(cube.slices('time'))
-        >>> slice_over = next(cube.slices_over('time'))
-        >>> print slice.summary(shorten=True)
+        >>> my_slice = next(cube.slices('time'))
+        >>> my_slice_over = next(cube.slices_over('time'))
+        >>> print my_slice.summary(shorten=True)
         air_potential_temperature / (K)     (time: 6)
-        >>> print slice_over.summary(shorten=True)
+        >>> print my_slice_over.summary(shorten=True)
         air_potential_temperature / (K)     (model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
     
-    The slice of the cube returns the selected dimension and the scalar coordinate
-    values of the next combination of all the unselected dimensions.
-    The slice over the selected coordinate returns the next slice of that coordinate
-    as a scalar coordinate value across the unselected dimensions.
 
-* :func:`iris.cube.CubeList.concatenate` now works with biggus arrays and so
+* :func:`iris.cube.CubeList.concatenate` now works with `biggus <http://biggus.readthedocs.org/>`_ arrays and so
   now supports concatenation of cubes with deferred data.
-* Improvements to NetCDF saving through using `biggus <http://biggus.readthedocs.org/>`_:
+* Improvements to NetCDF saving through using biggus:
  * A cube's lazy data payload will still be lazy after saving; the data will not
    be loaded into memory by the save operation.
  * Cubes with data payloads larger than system memory can now be saved to NetCDF
@@ -73,7 +70,7 @@ Iris 1.8 features
 * :func:`iris.util.demote_dim_coord_to_aux_coord` and :func:`iris.util.promote_aux_coord_to_dim_coord`
   allow a coordinate to be easily demoted or promoted within a cube.
 * :func:`iris.util.squeeze` removes all length 1 dimensions from a cube, and demotes
-  any associated squeeze dimension :class:`iris.coords.DimCoord` to be a scalar coordinate.
+  any associated squeeze dimension :class:`~iris.coords.DimCoord` to be a scalar coordinate.
 * :meth:`iris.cube.Cube.slices_over`, which returns an iterator of all sub-cubes along a given
   coordinate or dimension index.
 * :meth:`iris.cube.Cube.interpolate` now accepts datetime.datetime and 
@@ -91,18 +88,21 @@ Iris 1.8 features
 * Warnings raised due to invalid units in loaded data have been suppressed.
 * Experimental low-level read and write access for FieldsFile variants is now supported
   via :class:`iris.experimental.um.FieldsFileVariant`.
-* PP files with a problematic header will generate cubes for all fields prior to the
-  problematic header before raising an exception.
+* PP loader will return cubes for all fields prior to a field with a problematic
+  header before raising an exception.
 * NetCDF loader skips invalid global attributes, raising a warning rather than raising an
   exception.
 * A warning is now raised rather than an exception when constructing an
   :class:`~iris.aux_factory.AuxCoordFactory` fails.
-* Supported :class:`aux coordinate factories <iris.aux_factory.AuxCoordFactory>` have been extended to include
-  ``ocean sigma coordinate``, ``ocean s coordinate``, ``ocean s coordinate, generic form 1``
-  and ``ocean s coordinate, generic form 2``.
-* :meth:`iris.cube.Cube.intersection` now supports taking a points only intersection.
+* Supported :class:`aux coordinate factories <iris.aux_factory.AuxCoordFactory>`
+  have been extended to include:
+ * ``ocean sigma coordinate``,
+ * ``ocean s coordinate``,
+ * ``ocean s coordinate, generic form 1``, and
+ * ``ocean s coordinate, generic form 2``.
+* :meth:`iris.cube.Cube.intersection` now supports taking a points-only intersection.
   Any bounds on intersected coordinates are ignored but retained.
-* Grid 21 has been added to the FF loader's known handled grids.
+* The FF loader's known handled grids now includes ``Grid 21``.
 * A :class:`nearest neighbour <iris.analysis.Nearest>` scheme is now provided for
   :meth:`iris.cube.Cube.interpolate` and :meth:`iris.cube.Cube.regrid`. 
 * :func:`iris.analysis.cartography.rotate_winds` supports transformation of wind vectors
@@ -115,14 +115,14 @@ Iris 1.8 features
 Bugs fixed
 ==========
 * Fix in netCDF loader to correctly determine whether the longitude coordinate
-  is circular, including for scalar coordinates.
+  (including scalar coordinates) is circular.
 * :meth:`iris.cube.Cube.intersection` now supports bounds that extend slightly beyond 360
   degrees.
 * Lateral Boundary Condition (LBC) type FieldFiles are now handled correctly by the FF loader.
 * Making a copy of a scalar cube with no data now correctly copies the data array.
 * Height coordinates in NAME trajectory output files have been changed to match other
   NAME output file formats.
-* Fixed datatype when loading an ``integer_constants`` array from a fieldsfile.
+* Fixed datatype when loading an ``integer_constants`` array from a FieldsFile.
 * FF/PP loader adds appropriate cell methods for ``lbtim.ib = 3`` intervals.
 * An exception is raised if the units of the latitude and longitude coordinates
   of the cube passed into :func:`iris.analysis.cartography.area_weights` are not
@@ -132,8 +132,8 @@ Bugs fixed
 
 Deprecations
 ============
-* The previous GRIB loader has been deprecated and a new, template-based GRIB
-  loader is used instead.
+* The original GRIB loader has been deprecated and replaced with a new
+  template-based GRIB loader.
 
 Documentation Changes
 =====================
