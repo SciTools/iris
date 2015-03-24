@@ -2083,15 +2083,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return summary
 
-    def assert_valid(self):
-        """
-        Does nothing and returns None.
-
-        .. deprecated:: 0.8
-
-        """
-        warn_deprecated('Cube.assert_valid() has been deprecated.')
-
     def __str__(self):
         # six has a decorator for this bit, but it doesn't do errors='replace'.
         if six.PY3:
