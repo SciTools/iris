@@ -72,7 +72,7 @@ class LazyArray(object):
 
     def _cached_array(self):
         if self._array is None:
-            self._array = self._func()
+            self._array = np.asarray(self._func())
             del self._func
         return self._array
 
@@ -271,7 +271,8 @@ class AuxCoordFactory(CFVariableMixin):
         bounds.shape = tuple(nd_shape)
         return bounds
 
-    def _nd_points(self, coord, dims, ndim):
+    @staticmethod
+    def _nd_points(coord, dims, ndim):
         """
         Returns the coord's points in Cube-orientation and
         broadcastable to N dimensions.
@@ -289,14 +290,20 @@ class AuxCoordFactory(CFVariableMixin):
         transpose_order = [pair[0] for pair in sorted_pairs]
         points = coord._points
         if dims and transpose_order != range(len(dims)):
-            points = np.array(points)
             points = points.transpose(transpose_order)
 
         # Expand dimensionality to be consistent with the Cube.
-        keys = [None] * ndim
-        for dim, size in zip(dims, coord.shape):
-            keys[dim] = slice(None)
-        points = points[tuple(keys)]
+        if dims:
+            keys = [None] * ndim
+            for dim, size in zip(dims, coord.shape):
+                keys[dim] = slice(None)
+            points = points[tuple(keys)]
+        else:
+            # Scalar coordinates have one dimensional points despite
+            # mapping to zero dimensions, so we only need to add N-1
+            # new dimensions.
+            keys = (None,) * (ndim - 1)
+            points = points[keys]
         return points
 
     def _remap(self, dependency_dims, derived_dims):
@@ -314,16 +321,10 @@ class AuxCoordFactory(CFVariableMixin):
                 # Restrict to just the dimensions relevant to the
                 # derived coord. NB. These are always in Cube-order, so
                 # no transpose is needed.
-                shape = []
-                for dim in derived_dims:
-                    shape.append(nd_points.shape[dim])
-                # Ensure the array always has at least one dimension to be
-                # compatible with normal coordinates.
-                if not derived_dims:
-                    shape.append(1)
-                if nd_points.shape != tuple(shape):
-                    nd_points = np.array(nd_points)
-                    nd_points.shape = shape
+                if derived_dims:
+                    keys = tuple(slice(None) if dim in derived_dims else 0 for
+                                 dim in xrange(ndim))
+                    nd_points = nd_points[keys]
             else:
                 # If no coord, treat value as zero.
                 # Use a float16 to provide `shape` attribute and avoid
