@@ -39,52 +39,6 @@ import iris
 import iris.exceptions
 
 
-def broadcast_weights(weights, array, dims):
-    """
-    Broadcast a weights array to the shape of another array.
-
-    Each dimension of the weights array must correspond to a dimension
-    of the other array.
-
-    .. deprecated:: 1.6
-
-       Please use :func:`~iris.util.broadcast_to_shape()`.
-
-    Args:
-
-    * weights (:class:`numpy.ndarray`-like):
-        An array of weights to broadcast.
-
-    * array (:class:`numpy.ndarray`-like):
-        An array whose shape is the target shape for *weights*.
-
-    * dims (:class:`list` :class:`tuple` etc.):
-        A sequence of dimension indices, specifying which dimensions of
-        *array* are represented in *weights*. The order the dimensions
-        are given in is not important, but the order of the dimensions
-        in *weights* should be the same as the relative ordering of the
-        corresponding dimensions in *array*. For example, if *array* is
-        4d with dimensions (ntime, nlev, nlat, nlon) and *weights*
-        provides latitude-longitude grid weightings then *dims* could be
-        set to [2, 3] or [3, 2] but *weights* must have shape
-        (nlat, nlon) since the latitude dimension comes before the
-        longitude dimension in *array*.
-
-    """
-    warnings.warn('broadcast_weights() is deprecated and will be removed '
-                  'in a future release. Consider converting existing code '
-                  'to use broadcast_to_shape() as a replacement.',
-                  stacklevel=2)
-    # Create a shape array, which *weights* can be re-shaped to, allowing
-    # them to be broadcast with *array*.
-    weights_shape = np.ones(array.ndim)
-    for dim in dims:
-        if dim is not None:
-            weights_shape[dim] = array.shape[dim]
-    # Broadcast the arrays together.
-    return np.broadcast_arrays(weights.reshape(weights_shape), array)[0]
-
-
 def broadcast_to_shape(array, shape, dim_map):
     """
     Broadcast an array to a given shape.
