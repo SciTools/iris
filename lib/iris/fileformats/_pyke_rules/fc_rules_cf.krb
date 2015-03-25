@@ -1246,28 +1246,25 @@ fc_extras
         # Get units
         attr_units = get_attr_units(cf_coord_var, attributes)
 
+        def cf_var_as_biggus(cf_var):
+            dtype = cf_var.dtype
+            fill_value = getattr(cf_var.cf_data, '_FillValue',
+                                 netCDF4.default_fillvals[dtype.str[1:]])
+            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
+                cf_var.shape, dtype, engine.filename,
+                cf_var.cf_name, fill_value)
+            return biggus.OrthoArrayAdapter(proxy)
+
         # Get any coordinate point data.
         if isinstance(cf_coord_var, cf.CFLabelVariable):
             points_data = cf_coord_var.cf_label_data(cf_var)
         else:
-            dtype = cf_coord_var.dtype
-            fill_value = getattr(cf_coord_var.cf_data, '_FillValue',
-                                 netCDF4.default_fillvals[dtype.str[1:]])
-            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
-                cf_coord_var.shape, dtype, engine.filename,
-                cf_coord_var.cf_name, fill_value)
-            points_data = biggus.OrthoArrayAdapter(proxy)
+            points_data = cf_var_as_biggus(cf_coord_var)
 
         # Get any coordinate bounds.
         cf_bounds_var = get_cf_bounds_var(cf_coord_var)
         if cf_bounds_var is not None:
-            dtype = cf_bounds_var.dtype
-            fill_value = getattr(cf_bounds_var.cf_data, '_FillValue',
-                                 netCDF4.default_fillvals[dtype.str[1:]])
-            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
-                cf_bounds_var.shape, dtype, engine.filename,
-                cf_bounds_var.cf_name, fill_value)
-            bounds_data = biggus.OrthoArrayAdapter(proxy)
+            bounds_data = cf_var_as_biggus(cf_bounds_var)
 
             # Handle transposed bounds where the vertex dimension is not
             # the last one. Test based on shape to support different

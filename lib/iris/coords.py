@@ -449,6 +449,9 @@ class Coord(CFVariableMixin):
         else:
             points = self._points
             if isinstance(points, iris.aux_factory.LazyArray):
+                # This triggers the LazyArray to compute its values
+                # (if it hasn't already), which will also trigger any
+                # deferred loading of its dependencies.
                 points = points.view()
             bounds = self._bounds
             if isinstance(bounds, iris.aux_factory.LazyArray):
@@ -1519,7 +1522,8 @@ class AuxCoord(Coord):
         # than the desired (1,)
         if isinstance(points, biggus.Array):
             if points.shape == ():
-                points = biggus.ArrayStack(np.array([points]))
+                points = biggus.ConstantArray((1,), points.ndarray(),
+                                              points.dtype)
         elif not isinstance(points, iris.aux_factory.LazyArray):
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
