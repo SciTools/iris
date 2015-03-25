@@ -893,7 +893,9 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         information. The default behaviour is to interpolate cubes on a
         reduced grid to an equivalent regular grid.
 
-        .. deprecated:: 1.8. Please use the `regularise` kwarg instead.
+        .. deprecated:: 1.8. Please use strict_grib_load and regrid instead.
+        
+
 
     """
     if auto_regularise is not None:
