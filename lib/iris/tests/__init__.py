@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -558,8 +558,10 @@ class IrisTest(unittest.TestCase):
     @contextlib.contextmanager
     def temp_filename(self, suffix=''):
         filename = iris.util.create_temp_filename(suffix)
-        yield filename
-        os.remove(filename)
+        try:
+            yield filename
+        finally:
+            os.remove(filename)
 
     def file_checksum(self, file_path):
         """
