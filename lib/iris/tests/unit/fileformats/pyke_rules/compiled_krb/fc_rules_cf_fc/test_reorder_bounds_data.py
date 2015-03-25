@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -58,7 +58,8 @@ class Test(tests.IrisTest):
     def test_slowest_varying_lazy(self):
         bounds_data = np.arange(24).reshape(4, 2, 3)
         func = lambda: bounds_data
-        lazy_bounds_data = LazyArray(bounds_data.shape, func)
+        lazy_bounds_data = LazyArray(bounds_data.shape, func,
+                                     bounds_data.dtype)
         cf_bounds_var = mock.Mock(dimensions=('nv', 'foo', 'bar'))
         cf_coord_var = mock.Mock(dimensions=('foo', 'bar'))
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -1604,7 +1604,11 @@ class ProtoCube(object):
         # the CoordDefn used by scalar_defns: `coord.points.dtype` and
         # `type(coord)`.
         def key_func(coord):
-            return (not np.issubdtype(coord.points.dtype, np.number),
+            # Try to avoid evaluating LazyArray instances.
+            points_dtype = coord._points.dtype
+            if points_dtype is None:
+                points_dtype = coord.points.dtype
+            return (not np.issubdtype(points_dtype, np.number),
                     not isinstance(coord, iris.coords.DimCoord),
                     hint_dict.get(coord.name(), len(hint_dict) + 1),
                     axis_dict.get(iris.util.guess_coord_axis(coord),

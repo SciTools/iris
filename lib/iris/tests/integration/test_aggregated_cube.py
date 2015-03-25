@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,9 +22,10 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
+import biggus
+
 import iris
 from iris.analysis import MEAN
-from iris.aux_factory import LazyArray
 
 
 class Test_aggregated_by(tests.IrisTest):
@@ -36,12 +37,14 @@ class Test_aggregated_by(tests.IrisTest):
 
         # Test aggregating by aux coord, notably the `forecast_period` aux
         # coord on `cube`, whose `_points` attribute is of type
-        # :class:`iris.aux_factory.LazyArray`. This test then ensures that
+        # :class:`biggus.Array`. This test then ensures that
         # aggregating using `points` instead is successful.
 
-        # First confirm we've got a `LazyArray`.
+        # First confirm we've got a `biggus.Array`.
+        # NB. This checks the merge process in `load_cube()` hasn't
+        # triggered the load of the coordinate's data.
         forecast_period_coord = cube.coord('forecast_period')
-        self.assertIsInstance(forecast_period_coord._points, LazyArray)
+        self.assertIsInstance(forecast_period_coord._points, biggus.Array)
 
         # Now confirm we can aggregate along this coord.
         res_cube = cube.aggregated_by('forecast_period', MEAN)

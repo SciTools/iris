@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -43,8 +43,9 @@ class TestLazy(unittest.TestCase):
     def setUp(self):
         # Start with a coord with LazyArray points.
         shape = (3, 4)
-        point_func = lambda: np.arange(12).reshape(shape)
-        points = iris.aux_factory.LazyArray(shape, point_func)
+        dtype = np.int64
+        point_func = lambda: np.arange(12, dtype=dtype).reshape(shape)
+        points = iris.aux_factory.LazyArray(shape, point_func, dtype)
         self.coord = iris.coords.AuxCoord(points=points)
 
     def _check_lazy(self, coord):
