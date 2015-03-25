@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -872,7 +872,7 @@ def grib_generator(filename, auto_regularise=True):
             gribapi.grib_release(grib_message)
 
 
-def load_cubes(filenames, callback=None, regularise=True, auto_regularise=None):
+def load_cubes(filenames, callback=None, auto_regularise=True):
     """
     Returns a generator of cubes from the given list of filenames.
 
@@ -886,13 +886,6 @@ def load_cubes(filenames, callback=None, regularise=True, auto_regularise=None):
     * callback (callable function):
         Function which can be passed on to :func:`iris.io.run_callback`.
 
-    * regularise (*True* | *False*):
-        If *True*, any cube defined on a reduced grid will be interpolated
-        to an equivalent regular grid. If *False*, any cube defined on a
-        reduced grid will be loaded on the raw reduced grid with no shape
-        information. The default behaviour is to interpolate cubes on a
-        reduced grid to an equivalent regular grid.
-
     * auto_regularise (*True* | *False*):
         If *True*, any cube defined on a reduced grid will be interpolated
         to an equivalent regular grid. If *False*, any cube defined on a
@@ -902,30 +895,22 @@ def load_cubes(filenames, callback=None, regularise=True, auto_regularise=None):
 
         .. deprecated:: 1.8. Please use the `regularise` kwarg instead.
 
-    .. note::
-
-       To make use of the *regularise* keyword the normal Iris loading
-       pipeline cannot be used, the loading must be performed manually::
-
-           cube_generator = iris.fileformats.grib.load_cubes(
-               "reduced.grib", regularise=False)
-           cubes = iris.cube.CubeList(cube_generator).merge()
-
     """
     if auto_regularise is not None:
         warnings.warn('the`auto_regularise` kwarg is deprecated and '
-                      'will be removed in a future release. Please use '
-                      '`regularise` instead.')
-        regularise = auto_regularise
+                      'will be removed in a future release. Resampling '
+                      'quasi-regular grids on load will no longer be '
+                      'available.  Resampling should be done on the '
+                      'loaded cube instead using Cube.regrid.')
 
     if iris.FUTURE.strict_grib_load:
         grib_loader = iris.fileformats.rules.Loader(
             _GribMessage.messages_from_filename,
-            {'regularise': regularise},
+            {},
             iris.fileformats.grib._load_convert.convert, None)
     else:
         grib_loader = iris.fileformats.rules.Loader(
-            grib_generator, {'auto_regularise': regularise},
+            grib_generator, {'auto_regularise': auto_regularise},
             iris.fileformats.grib.load_rules.convert,
             _load_rules)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
