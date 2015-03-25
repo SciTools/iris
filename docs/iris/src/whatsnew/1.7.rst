@@ -224,6 +224,9 @@ Deprecations
 * :func:`iris.util.ensure_array` has been deprecated.
 * Deprecated the :func:`iris.fileformats.pp.reset_load_rules` and
   :func:`iris.fileformats.grib.reset_load_rules` functions.
+* Deprecated the NetCDF behaviour of assigning the outermost dimension to be unlimited.
+  Switch to the new behaviour with no auto assignment by setting `iris.FUTURE.netcdf_no_unlimited_dims`
+  to True.
 * Matplotlib is no longer a core Iris dependency.
 
 Documentation Changes
