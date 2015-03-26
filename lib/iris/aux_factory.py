@@ -918,6 +918,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         dim, = dependency_dims['zlev']
         index = derived_dims.index(dim)
         nsigma_slice[index] = slice(0, int(nd_points_by_key['nsigma']))
+        nsigma_slice = tuple(nsigma_slice)
 
         # Define the function here to obtain a closure.
         def calc_points():
@@ -940,7 +941,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
             bounds_shape = self._shape(nd_values_by_key)
             bounds_dtype = self._dtype(nd_values_by_key, shape=(),
                                        nsigma_slice=())
-            nsigma_slice_bounds = nsigma_slice + [slice(None)]
+            nsigma_slice_bounds = nsigma_slice + (slice(None),)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
