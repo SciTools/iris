@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,4 +26,4 @@ from iris.fileformats.grib._message import _GribMessage
 def _make_test_message(sections):
     raw_message = mock.Mock(sections=sections)
     recreate_raw = mock.Mock(return_value=raw_message)
-    return _GribMessage(raw_message, recreate_raw, None)
+    return _GribMessage(raw_message, recreate_raw)

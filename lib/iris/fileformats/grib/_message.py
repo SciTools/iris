@@ -39,7 +39,7 @@ class _GribMessage(object):
     """
 
     @staticmethod
-    def messages_from_filename(filename, regularise=True):
+    def messages_from_filename(filename):
         """
         Return a generator of :class:`_GribMessage` instances; one for
         each message in the supplied GRIB file.
@@ -58,9 +58,9 @@ class _GribMessage(object):
                     break
                 raw_message = _RawGribMessage(grib_id)
                 recreate_raw = _MessageLocation(filename, offset)
-                yield _GribMessage(raw_message, recreate_raw, regularise)
+                yield _GribMessage(raw_message, recreate_raw)
 
-    def __init__(self, raw_message, recreate_raw, regularise):
+    def __init__(self, raw_message, recreate_raw):
         """
 
         Args:
@@ -72,7 +72,6 @@ class _GribMessage(object):
         """
         self._raw_message = raw_message
         self._recreate_raw = recreate_raw
-        self._regularise = regularise
 
     @property
     def sections(self):
@@ -113,7 +112,7 @@ class _GribMessage(object):
             else:
                 shape = (grid_section['Nj'], grid_section['Ni'])
             proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
-                               self._recreate_raw, self._regularise)
+                               self._recreate_raw)
             data = biggus.NumpyArrayAdapter(proxy)
         else:
             fmt = 'Grid definition template {} is not supported'
@@ -130,14 +129,13 @@ class _MessageLocation(namedtuple('_MessageLocation', 'filename offset')):
 class _DataProxy(object):
     """A reference to the data payload of a single GRIB message."""
 
-    __slots__ = ('shape', 'dtype', 'fill_value', 'recreate_raw', 'regularise')
+    __slots__ = ('shape', 'dtype', 'fill_value', 'recreate_raw')
 
-    def __init__(self, shape, dtype, fill_value, recreate_raw, regularise):
+    def __init__(self, shape, dtype, fill_value, recreate_raw):
         self.shape = shape
         self.dtype = dtype
         self.fill_value = fill_value
         self.recreate_raw = recreate_raw
-        self.regularise = regularise
 
     @property
     def ndim(self):
@@ -209,8 +207,7 @@ class _DataProxy(object):
     def __repr__(self):
         msg = '<{self.__class__.__name__} shape={self.shape} ' \
             'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
-            'recreate_raw={self.recreate_raw!r} ' \
-            'regularise={self.regularise}>'
+            'recreate_raw={self.recreate_raw!r} '
         return msg.format(self=self)
 
     def __getstate__(self):
