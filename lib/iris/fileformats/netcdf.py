@@ -1661,7 +1661,23 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
         NetCDF Context manager (:class:`~Saver`).
 
+    .. deprecated:: 1.8.0
+
+        NetCDF default saving behaviour currently assigns the outermost
+        dimensions to unlimited. This behaviour is to be deprecated, in
+        favour of no automatic assignment. To switch to the new behaviour,
+        set `iris.FUTURE.netcdf_no_unlimited` to True.
+
     """
+    msg = ('NetCDF default saving behaviour currently assigns the '
+           'outermost dimensions to unlimited. This behaviour is to be '
+           'deprecated, in favour of no automatic assignment. To switch '
+           'to the new behaviour, set iris.FUTURE.netcdf_no_unlimited to '
+           'True.')
+    if (unlimited_dimensions is None and not
+            iris.FUTURE.netcdf_no_unlimited):
+        warnings.warn(msg)
+
     if isinstance(cube, iris.cube.Cube):
         cubes = iris.cube.CubeList()
         cubes.append(cube)
