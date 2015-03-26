@@ -170,9 +170,8 @@ class Future(threading.local):
         encounters a GRIB message which uses a template not supported
         by the conversion.
 
-        The option `netcdf_no_unlimited` controls whether the netCDF saver
-        chooses the leading dimension of a cube to make unlimited or not in
-        the resulting netCDF file.
+        The option `netcdf_no_unlimited` controls whether the default behaviour
+        of the netCDF saver is to make the leading dimension unlimited.
 
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects

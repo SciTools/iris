@@ -726,12 +726,21 @@ class Saver(object):
 
         .. deprecated:: 1.8.0
 
-            NetCDF saving currently assigns the outermost dimensions to
-            unlimited. This behaviour is to be deprecated, in favour of
-            no automatic assignment. To switch to the new behaviour, set
-            `iris.FUTURE.netcdf_no_unlimited` to True.
+            NetCDF default saving behaviour currently assigns the outermost
+            dimensions to unlimited. This behaviour is to be deprecated, in
+            favour of no automatic assignment. To switch to the new behaviour,
+            set `iris.FUTURE.netcdf_no_unlimited` to True.
 
         """
+        msg = ('NetCDF default saving behaviour currently assigns the '
+               'outermost dimensions to unlimited. This behaviour is to be '
+               'deprecated, in favour of no automatic assignment. To switch '
+               'to the new behaviour, set iris.FUTURE.netcdf_no_unlimited to '
+               'True.')
+        if (unlimited_dimensions is None and not
+                iris.FUTURE.netcdf_no_unlimited):
+            warnings.warn(msg)
+
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
                                 in [None, False])
         if cf_profile_available:
@@ -828,15 +837,9 @@ class Saver(object):
             None.
 
         """
-        msg = ('NetCDF saving currently assigns the outermost dimensions to '
-               'unlimited. This behaviour is to be deprecated, in favour of '
-               'no automatic assignment. To switch to the new behaviour, set '
-               'iris.FUTURE.netcdf_no_unlimited to True.')
-
         unlimited_dim_names = []
         if unlimited_dimensions is None:
-            if dimension_names and not iris.FUTURE.netcdf_no_unlimited:
-                warnings.warn(msg)
+            if dimension_names:
                 unlimited_dim_names.append(dimension_names[0])
         else:
             for coord in unlimited_dimensions:
