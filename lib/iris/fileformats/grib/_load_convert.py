@@ -466,6 +466,13 @@ def grid_definition_template_0_and_1(section, metadata, y_name, x_name, cs):
         the X and Y coordinates.
 
     """
+    # Abort if this is a reduced grid, that case isn't handled yet.
+    if section['numberOfOctectsForNumberOfPoints'] != 0 or \
+            section['interpretationOfNumberOfPoints'] != 0:
+        msg = 'Grid definition section 3 contains unsupported ' \
+            'quasi-regular grid'
+        raise TranslationError(msg)
+
     scan = scanning_mode(section['scanningMode'])
 
     # Calculate longitude points.
@@ -761,7 +768,7 @@ def grid_definition_template_12(section, metadata):
 
 def grid_definition_template_40(section, metadata):
     """
-    Translate template representing a regular Gaussian grid.
+    Translate template representing a Gaussian grid.
 
     Updates the metadata in-place with the translations.
 
@@ -774,10 +781,22 @@ def grid_definition_template_40(section, metadata):
         :class:`collections.OrderedDict` of metadata.
 
     """
-    scan = scanning_mode(section['scanningMode'])
-
     major, minor, radius = ellipsoid_geometry(section)
     cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
+
+    if section['numberOfOctectsForNumberOfPoints'] != 0 or \
+            section['interpretationOfNumberOfPoints'] != 0:
+        grid_definition_template_40_reduced(section, metadata, cs)
+    else:
+        grid_definition_template_40_regular(section, metadata, cs)
+
+
+def grid_definition_template_40_regular(section, metadata, cs):
+    """
+    Translate template representing a regular Gaussian grid.
+
+    """
+    scan = scanning_mode(section['scanningMode'])
 
     # Calculate longitude points.
     x_inc = section['iDirectionIncrement'] * _GRID_ACCURACY_IN_DEGREES
@@ -839,6 +858,35 @@ def grid_definition_template_40(section, metadata):
     # Add the lat/lon coordinates to the metadata dim coords.
     metadata['dim_coords_and_dims'].append((y_coord, y_dim))
     metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
+def grid_definition_template_40_reduced(section, metadata, cs):
+    """
+    Translate template representing a reduced Gaussian grid.
+
+    """
+    # Get the latitude and longitude points.
+    #
+    # The same comments made in grid_definition_template_40_regular regarding
+    # computation of Gaussian lattiudes applies here too. Further to this the
+    # reduced Gaussian grid is not rectangular, the number of points along
+    # each latitude circle vary with latitude. Whilst it is possible to
+    # compute the latitudes and longitudes individually for each grid point
+    # from coded keys, it would be complex and time-consuming compared to
+    # loading the latitude and longitude arrays directly using the computed
+    # keys 'latitudes' and 'longitudes'.
+    x_points = section['longitudes']
+    y_points = section['latitudes']
+
+    # Create lat/lon coordinates.
+    x_coord = AuxCoord(x_points, standard_name='longitude',
+                       units='degrees_east', coord_system=cs)
+    y_coord = AuxCoord(y_points, standard_name='latitude',
+                       units='degrees_north', coord_system=cs)
+
+    # Add the lat/lon coordinates to the metadata dim coords.
+    metadata['aux_coords_and_dims'].append((y_coord, 0))
+    metadata['aux_coords_and_dims'].append((x_coord, 0))
 
 
 def grid_definition_template_90(section, metadata):
@@ -966,12 +1014,6 @@ def grid_definition_section(section, metadata):
     if value != 0:
         msg = 'Grid definition section 3 contains unsupported ' \
             'source of grid definition [{}]'.format(value)
-        raise TranslationError(msg)
-
-    if section['numberOfOctectsForNumberOfPoints'] != 0 or \
-            section['interpretationOfNumberOfPoints'] != 0:
-        msg = 'Grid definition section 3 contains unsupported ' \
-            'quasi-regular grid'
         raise TranslationError(msg)
 
     # Reference GRIB2 Code Table 3.1.

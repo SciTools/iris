@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -124,7 +124,8 @@ class Test_data__unsupported(tests.IrisTest):
     def test_unsupported_quasi_regular__number_of_octets(self):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
-                 'numberOfOctectsForNumberOfPoints': 1},
+                 'numberOfOctectsForNumberOfPoints': 1,
+                 'gridDefinitionTemplateNumber': 0},
              6: SECTION_6_NO_BITMAP})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
@@ -133,7 +134,8 @@ class Test_data__unsupported(tests.IrisTest):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
                  'numberOfOctectsForNumberOfPoints': 0,
-                 'interpretationOfNumberOfPoints': 1},
+                 'interpretationOfNumberOfPoints': 1,
+                 'gridDefinitionTemplateNumber': 0},
              6: SECTION_6_NO_BITMAP})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
@@ -217,6 +219,12 @@ class Test_data__grid_template_5(tests.IrisTest, Mixin_data__grid_template):
 class Test_data__grid_template_12(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(12, scanning_mode)
+
+
+class Test_data__grid_template_40_regular(tests.IrisTest,
+                                          Mixin_data__grid_template):
+    def section_3(self, scanning_mode):
+        return _example_section_3(40, scanning_mode)
 
 
 class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
