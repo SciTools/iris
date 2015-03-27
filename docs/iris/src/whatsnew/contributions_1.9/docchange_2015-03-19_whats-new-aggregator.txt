@@ -1,0 +1,1 @@
+* Added script and documentation for building a what's new page from developer-submitted contributions.
