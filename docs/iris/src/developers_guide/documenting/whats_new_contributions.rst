@@ -62,9 +62,8 @@ For example:
 Writing a Contribution
 ======================
 
-Each contribution should be written in the form of one concise bullet point.
-This bullet point should describe the change that has been made, to an audience
-of an Iris user.
+Each contribution should be written in the form of bullet points highlighting the change.
+The content should describe the change that has been made, targeting an Iris user as the audience.
 
 Compiling a Draft
 =================
