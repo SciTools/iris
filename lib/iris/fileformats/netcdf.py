@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -724,7 +724,23 @@ class Saver(object):
             `chunksizes` and `endian` keywords are silently ignored for netCDF
             3 files that do not use HDF5.
 
+        .. deprecated:: 1.8.0
+
+            NetCDF default saving behaviour currently assigns the outermost
+            dimensions to unlimited. This behaviour is to be deprecated, in
+            favour of no automatic assignment. To switch to the new behaviour,
+            set `iris.FUTURE.netcdf_no_unlimited` to True.
+
         """
+        msg = ('NetCDF default saving behaviour currently assigns the '
+               'outermost dimensions to unlimited. This behaviour is to be '
+               'deprecated, in favour of no automatic assignment. To switch '
+               'to the new behaviour, set iris.FUTURE.netcdf_no_unlimited to '
+               'True.')
+        if (unlimited_dimensions is None and not
+                iris.FUTURE.netcdf_no_unlimited):
+            warnings.warn(msg)
+
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
                                 in [None, False])
         if cf_profile_available:
@@ -1645,7 +1661,23 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
         NetCDF Context manager (:class:`~Saver`).
 
+    .. deprecated:: 1.8.0
+
+        NetCDF default saving behaviour currently assigns the outermost
+        dimensions to unlimited. This behaviour is to be deprecated, in
+        favour of no automatic assignment. To switch to the new behaviour,
+        set `iris.FUTURE.netcdf_no_unlimited` to True.
+
     """
+    msg = ('NetCDF default saving behaviour currently assigns the '
+           'outermost dimensions to unlimited. This behaviour is to be '
+           'deprecated, in favour of no automatic assignment. To switch '
+           'to the new behaviour, set iris.FUTURE.netcdf_no_unlimited to '
+           'True.')
+    if (unlimited_dimensions is None and not
+            iris.FUTURE.netcdf_no_unlimited):
+        warnings.warn(msg)
+
     if isinstance(cube, iris.cube.Cube):
         cubes = iris.cube.CubeList()
         cubes.append(cube)
