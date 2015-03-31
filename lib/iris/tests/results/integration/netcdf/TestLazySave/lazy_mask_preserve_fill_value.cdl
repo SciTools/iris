@@ -1,0 +1,10 @@
+dimensions:
+	dim0 = 2 ;
+variables:
+	int64 unknown(dim0) ;
+		unknown:_FillValue = -1L ;
+		unknown:units = "1" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+}
