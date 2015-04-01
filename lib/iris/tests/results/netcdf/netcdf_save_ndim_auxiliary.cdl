@@ -5,6 +5,7 @@ dimensions:
 	rlon = 174 ;
 variables:
 	float pr(time, rlat, rlon) ;
+		pr:_FillValue = 1.e+30f ;
 		pr:standard_name = "precipitation_flux" ;
 		pr:long_name = "Precipitation" ;
 		pr:units = "kg m-2 s-1" ;
