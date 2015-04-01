@@ -215,6 +215,8 @@ class Field(object):
 
     #: Zero-based index for lblrec.
     LBLREC_OFFSET = 14
+    #: Zero-based index for lbpack.
+    LBPACK_OFFSET = 20
     #: Zero-based index for lbrel.
     LBREL_OFFSET = 21
     #: Zero-based index for lbegin.
@@ -283,6 +285,17 @@ class Field(object):
             data = self._data_provider.read_data(self)
         return data
 
+    def get_data_to_write(self):
+        """
+        Return the data for this field that is appropriate to be written out
+        to disk.
+
+        For example, data packed with the WGDOS archive method will not be
+        unpacked if the field's lbpack value indicates it is packed data.
+
+        """
+        return self._data_provider.data_to_write(self)
+
     def set_data(self, data):
         """
         Set the data payload for this field.
@@ -333,12 +346,20 @@ class _NormalDataProvider(object):
     to the data payload for a standard FieldsFile LOOKUP entry.
 
     """
-    def __init__(self, source, offset, word_size):
+    def __init__(self, source, offset, word_size, lbpack):
         self.source = source
         self.offset = offset
         self.word_size = word_size
+        # The lbpack of the field when a instance of this class is created.
+        self.lbpack = lbpack
+
+    def _packed_data_bytes(self, lbnrec):
+        """Return the packed data bytes from disk."""
+        data_size = ((lbnrec * 2) - 1) * _WGDOS_SIZE
+        return self.source.read(data_size)
 
     def read_data(self, field):
+        """Return a NumPy array of the data."""
         self.source.seek(self.offset)
         lbpack = field.lbpack
         # Ensure lbpack.n4 (number format) is: native, CRAY, or IEEE.
@@ -362,12 +383,43 @@ class _NormalDataProvider(object):
             data = data.reshape(rows, cols)
         elif lbpack == 1:
             from iris.fileformats.pp_packing import wgdos_unpack
-            data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
-            data_bytes = self.source.read(data_size)
+            data_bytes = self._packed_data_bytes(field.lbnrec)
             data = wgdos_unpack(data_bytes, field.lbrow, field.lbnpt,
                                 field.bmdi)
         else:
             raise ValueError('Unsupported lbpack: {}'.format(field.lbpack))
+        return data
+
+    def data_to_write(self, field):
+        """Return the data that is appropriate to write to disk."""
+
+        # Check lbpack has been set to a valid value.
+        if field.lbpack not in range(3):
+            msg = 'Unsupported lbpack: {}'
+            raise ValueError(msg.format(field.lbpack))
+
+        if self.lbpack != field.lbpack:
+            # Value of lbpack has been updated.
+            if self.lbpack == 1:
+                # Data has been unpacked.
+                data = self.read_data(field)
+            else:
+                # Data was not initially packed.
+                if field.lbpack == 1:
+                    # lbpack has been changed to 1, indicating data is packed.
+                    # XXX this does not solve fixing an incorrect lbpack.
+                    raise ValueError('Cannot pack data.')
+                else:
+                    # lbpack has been swapped between 0 and 2.
+                    # These are treated as equivalent by the load code.
+                    data = self.read_data(field)
+        else:
+            # Value of lbpack is unchanged.
+            if field.lbpack == 1:
+                # The data should remain packed; i.e. the bytes from disk.
+                data = self._packed_data_bytes(field.lbnrec)
+            else:
+                data = self.read_data(field)
         return data
 
 
@@ -381,7 +433,7 @@ class _BoundaryDataProvider(object):
     "unrolled" version of all the boundary points.
 
     """
-    def __init__(self, source, offset, word_size):
+    def __init__(self, source, offset, word_size, lbpack):
         self.source = source
         self.offset = offset
         self.word_size = word_size
@@ -406,6 +458,9 @@ class _BoundaryDataProvider(object):
             msg = 'Unsupported lbpack for LBC: {}'.format(field.lbpack)
             raise ValueError(msg)
         return data
+
+    def data_to_write(self, field):
+        return self.read_data(field)
 
 
 class FieldsFileVariant(object):
@@ -519,7 +574,9 @@ class FieldsFileVariant(object):
                         data_provider = None
                     else:
                         offset = running_offset
-                        data_provider = data_class(source, offset, word_size)
+                        lbpack = raw_headers[Field.LBPACK_OFFSET]
+                        data_provider = data_class(source, offset,
+                                                   word_size, lbpack)
                     klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
                     ints = raw_headers[:_NUM_FIELD_INTS]
                     reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
@@ -532,7 +589,9 @@ class FieldsFileVariant(object):
                         data_provider = None
                     else:
                         offset = raw_headers[Field.LBEGIN_OFFSET] * word_size
-                        data_provider = data_class(source, offset, word_size)
+                        lbpack = raw_headers[Field.LBPACK_OFFSET]
+                        data_provider = data_class(source, offset,
+                                                   word_size, lbpack)
                     klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
                     ints = raw_headers[:_NUM_FIELD_INTS]
                     reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
@@ -636,12 +695,16 @@ class FieldsFileVariant(object):
             dataset_type = self.fixed_length_header.dataset_type
             sector_size = self._WORDS_PER_SECTOR * self._word_size
             for field in self.fields:
-                data = field.get_data()
+                data = field.get_data_to_write()
                 if data is not None:
                     field.lbegin = output_file.tell() / self._word_size
                     # Round the data length up to the nearest whole
                     # number of "sectors".
-                    size = data.size
+                    # Catch when data is `str` (when the data is packed).
+                    try:
+                        size = data.size
+                    except AttributeError:
+                        size = len(data)
                     size -= size % -self._WORDS_PER_SECTOR
                     field.lbnrec = size
                     kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
