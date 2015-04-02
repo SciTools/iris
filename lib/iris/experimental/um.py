@@ -21,9 +21,11 @@ Low level support for UM FieldsFile variants.
 
 from __future__ import (absolute_import, division, print_function)
 
+import copy
 import os
 import os.path
 import tempfile
+import warnings
 
 import numpy as np
 
@@ -719,3 +721,115 @@ class FieldsFileVariant(object):
                     os.rename(tmp_file.name, self.filename)
             finally:
                 self._source.close()
+
+
+def cutout(ffv_src, filename, cutout_params):
+    """
+    Subset a UM FieldsFile variant to a specified i, j index and number of
+    points along the x and y axes.
+
+    Args:
+
+    * ffv_src (:class:`FieldsFileVariant`)
+        A source FieldFileVariant to subset.
+    * filename (string)
+        The name of the file containing the subset of the source UM
+        FieldsFile variant.
+    * cutout_params (list)
+        The cutout parameters [i index, j index, number of x points, number
+        of y points].)
+
+    Returns:
+        An instance of :class:`FieldsFileVariant` in `CREATE_MODE`.
+
+    """
+
+    dx = ffv_src.real_constants[0]
+    dy = ffv_src.real_constants[1]
+    zx0 = ffv_src.real_constants[2]
+    zy0 = ffv_src.real_constants[3]
+    nx0 = ffv_src.integer_constants[5]
+    ny0 = ffv_src.integer_constants[6]
+
+    x_index, y_index, nx1, ny1 = cutout_params
+
+    msg = ("The given cutout parameters extend outside the available area."
+           "Returned area is limited by the area of the source "
+           "FieldsFileVariant.")
+    warnings.simplefilter('always')
+    if x_index + nx1 > nx0:
+        nx1 = nx0 - x_index
+        warnings.warn(msg)
+    if y_index + ny1 > ny0:
+        ny1 = ny0 - y_index
+        warnings.warn(msg)
+    warnings.simplefilter('default')
+
+    zx1 = zx0 + (x_index * dx)
+    zy1 = zy0 + (y_index * dy)
+
+    ffv_dest = FieldsFileVariant(filename, FieldsFileVariant.CREATE_MODE)
+
+    ffv_dest.fixed_length_header = copy.copy(ffv_src.fixed_length_header)
+    for name, kind in FieldsFileVariant._COMPONENTS:
+        setattr(ffv_dest, name, copy.copy(getattr(ffv_src, name)))
+
+    ffv_dest.fixed_length_header.horiz_grid_type = 3
+    ffv_dest.real_constants[2] = zx1
+    ffv_dest.real_constants[3] = zy1
+    ffv_dest.integer_constants[5] = nx1
+    ffv_dest.integer_constants[6] = ny1
+
+    for field_src in ffv_src.fields:
+        # Only subset fields that have been written with either of below ifs
+        # if field_src.real_headers[0] != -99.0:
+        if hasattr(field_src, 'lbuser1'):
+
+            if field_src.lbcode not in (1, 2, 3):
+                raise ValueError('Cutout is not supported on the source grid')
+
+            dx = field_src.bdx
+            dy = field_src.bdy
+            zx0 = field_src.bzx
+            zy0 = field_src.bzy
+            nx0 = field_src.lbnpt
+            ny0 = field_src.lbrow
+
+            zx1 = zx0 + (x_index * dx)
+            zy1 = zy0 + (y_index * dy)
+
+            data_provider = _CutoutDataProvider(field_src, (x_index, y_index,
+                                                            nx1, ny1))
+            field = type(field_src)(field_src.int_headers.copy(),
+                                    field_src.real_headers.copy(),
+                                    data_provider)
+            field.lbhem = 3
+            field.lbpack = 0
+            field.bzx = zx1
+            field.bzy = zy1
+            field.lbnpt = nx1
+            field.lbrow = ny1
+
+            ffv_dest.fields.append(field)
+        else:
+            ffv_dest.fields.append(field_src)
+
+    return ffv_dest
+
+
+class _CutoutDataProvider(object):
+    """
+    Provides access to a simple 2-dimensional array of data that is a subset to
+    the data payload for a source standard FieldsFile LOOKUP entry, as defined
+    by the given cutout parameters.
+
+    """
+    def __init__(self, field_src, cutout_params):
+        self.field_src = field_src
+        self.cutout_params = cutout_params
+
+    def read_data(self, field):
+        zx, zy, nx, ny = self.cutout_params
+        data = self.field_src.get_data()
+        cut_data = data[zy:zy+ny, zx:zx+nx]
+        return cut_data
