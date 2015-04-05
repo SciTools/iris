@@ -60,6 +60,9 @@ Iris 1.8 features
         air_potential_temperature / (K)     (model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
     
 
+* The :class:`iris.analysis.Linear` scheme now supports regridding as well as interpolation.
+  This enables :meth:`iris.cube.Cube.regrid` to perform bilinear regridding, which now
+  replaces the experimental routine  "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid".
 * :func:`iris.cube.CubeList.concatenate` now works with `biggus <http://biggus.readthedocs.org/>`_ arrays and so
   now supports concatenation of cubes with deferred data.
 * Improvements to NetCDF saving through using biggus:
@@ -134,6 +137,10 @@ Deprecations
 ============
 * The original GRIB loader has been deprecated and replaced with a new
   template-based GRIB loader.
+* The former experimental method
+  "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid" has been removed, as
+  :class:`iris.analysis.Linear` now includes this functionality.
+  (This is not a true deprecation, as experimental functionality is subject to change without warning).
 
 Documentation Changes
 =====================
