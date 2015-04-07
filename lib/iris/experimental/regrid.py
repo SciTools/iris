@@ -33,6 +33,7 @@ import iris.analysis.cartography
 from iris.analysis._interpolation import get_xy_dim_coords
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
+import iris.exceptions
 import iris.cube
 import iris.unit
 
@@ -112,6 +113,29 @@ def _get_xy_coords(cube):
                          "same data dimension.")
 
     return x_coord, y_coord
+
+
+def regrid_bilinear_rectilinear_src_and_grid(src, grid,
+                                             extrapolation_mode='mask'):
+    """
+    Return a new Cube that is the result of regridding the source Cube
+    onto the grid of the grid Cube using bilinear interpolation.
+
+    .. note::
+
+        This routine has now been removed, and should be replaced by a call to
+        :meth:`iris.cube.Cube.regrid`, passing an instance of
+        :class:`iris.analysis.Linear` as the 'scheme' argument.
+
+    For example, replace
+        "regrid_bilinear_rectilinear_src_and_grid(src, grid, mode)", with
+        "src.regrid(grid, iris.analysis.Linear(mode))".
+
+    """
+    msg = ("This routine has now been removed, and should be replaced by "
+           "a call to iris.cube.Cube.regrid, passing an instance of "
+           "iris.analysis.Linear as the 'scheme' argument.")
+    raise iris.exceptions.IrisError(msg)
 
 
 def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
