@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -590,16 +590,16 @@ class FieldsFileVariant(object):
         # Now deal with the LOOKUP and DATA components.
         if self.fields:
             header.lookup_start = word_number
-            header_lengths = [field.num_values() for field in self.fields]
-            if len(set(header_lengths)) != 1:
-                msg = 'Inconsistent header lengths - {}'.format(header_lengths)
-                raise ValueError(msg)
-            header_length = header_lengths.pop()
+            lookup_lengths = {field.num_values() for field in self.fields}
+            if len(lookup_lengths) != 1:
+                msg = 'Inconsistent lookup header lengths - {}'
+                raise ValueError(msg.format(lookup_lengths))
+            lookup_length = lookup_lengths.pop()
             n_fields = len(self.fields)
-            header.lookup_shape = (header_length, n_fields)
+            header.lookup_shape = (lookup_length, n_fields)
 
             # make space for the lookup
-            word_number += header_length * n_fields
+            word_number += lookup_length * n_fields
             # Round up to the nearest whole number of "sectors".
             offset = word_number - 1
             offset -= offset % -self._WORDS_PER_SECTOR
