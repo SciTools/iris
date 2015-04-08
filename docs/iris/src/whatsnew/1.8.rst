@@ -111,6 +111,9 @@ Iris 1.8 features
   :func:`iris.analysis.maths.apply_ufunc`.
 * Generic functions can be applied to :class:`~iris.cube.Cube` instances using 
   :class:`iris.analysis.maths.IFunc`. 
+* The :class:`iris.analysis.Linear` scheme now supports regridding as well as interpolation.
+  This enables :meth:`iris.cube.Cube.regrid` to perform bilinear regridding, which now
+  replaces the experimental routine "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid".
 
 Bugs fixed
 ==========
@@ -137,6 +140,9 @@ Deprecations
 * Deprecated default NetCDF save behaviour of assigning the outermost
   dimension to be unlimited.  Switch to the new behaviour with no auto
   assignment by setting :data:`iris.FUTURE.netcdf_no_unlimited` to True.
+* The former experimental method
+  "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid" has been removed, as
+  :class:`iris.analysis.Linear` now includes this functionality.
 
 Documentation Changes
 =====================
