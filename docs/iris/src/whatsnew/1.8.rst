@@ -134,6 +134,9 @@ Deprecations
 ============
 * The original GRIB loader has been deprecated and replaced with a new
   template-based GRIB loader.
+* Deprecated default NetCDF save behaviour of assigning the outermost
+  dimension to be unlimited.  Switch to the new behaviour with no auto
+  assignment by setting :data:`iris.FUTURE.netcdf_no_unlimited` to True.
 
 Documentation Changes
 =====================

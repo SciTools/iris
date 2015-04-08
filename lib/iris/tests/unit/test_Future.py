@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,12 @@ from iris import Future
 
 
 class Test___setattr__(tests.IrisTest):
+    def test_valid_netcdf_no_unlimited(self):
+        future = Future()
+        new_value = not future.netcdf_no_unlimited
+        future.netcdf_no_unlimited = new_value
+        self.assertEqual(future.netcdf_no_unlimited, new_value)
+
     def test_valid_cell_datetime_objects(self):
         future = Future()
         new_value = not future.cell_datetime_objects
