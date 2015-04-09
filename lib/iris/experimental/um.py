@@ -765,14 +765,14 @@ def cutout(ffv_src, filename, cutout_params):
     """
     def check_regular_grid(dx, dy, fail_context, mdi=0.0):
         # Raise error if dx or dy values indicate an 'irregular' grid.
-        invalid_values = np.array([0.0, FixedLengthHeader.IMDI, mdi])
-        if np.any(dx == invalid_values) or np.any(dy == invalid_values):
+        invalid_values = [0.0, mdi]
+        if dx in invalid_values or dy in invalid_values:
             msg = "Source grid in {} is not regular."
             raise ValueError(msg.format(fail_context))
 
     dx = ffv_src.real_constants[0]
     dy = ffv_src.real_constants[1]
-    check_regular_grid(dx, dy, fail_context='header')
+    check_regular_grid(dx, dy, fail_context='header', mdi=-2.0e30)
     zx0 = ffv_src.real_constants[2]
     zy0 = ffv_src.real_constants[3]
     nx0 = ffv_src.integer_constants[5]

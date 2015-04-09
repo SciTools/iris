@@ -212,8 +212,8 @@ class Test_cutout(tests.IrisTest):
             ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
                               [2, 1, 4, 5])
 
-    def test_fail_fixed_dy_imdi(self):
-        self.input_ffv.real_constants[0] = FixedLengthHeader.IMDI
+    def test_fail_fixed_dy_rmdi(self):
+        self.input_ffv.real_constants[0] = -2.0e30
         msg_re = 'Source grid in header is not regular'
         with self.assertRaisesRegexp(ValueError, msg_re):
             ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
