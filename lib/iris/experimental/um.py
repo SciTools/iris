@@ -21,6 +21,7 @@ Low level support for UM FieldsFile variants.
 
 from __future__ import (absolute_import, division, print_function)
 
+import copy
 import os
 import os.path
 import tempfile
@@ -719,3 +720,142 @@ class FieldsFileVariant(object):
                     os.rename(tmp_file.name, self.filename)
             finally:
                 self._source.close()
+
+
+def cutout(ffv_src, filename, cutout_params):
+    """
+    Subset a UM FieldsFile variant to a specified i, j index and number of
+    points along the x and y axes.
+
+    Args:
+
+    * ffv_src (:class:`FieldsFileVariant`)
+        A source FieldsFileVariant to subset.
+    * filename (string)
+        The filename for the new result object (another FieldsFileVariant).
+    * cutout_params (list)
+        The cutout parameters : (i index, j index, number of x points, number
+        of y points).
+        The result has shape [number of x points, number of y points], starting
+        at position [i index, j index] in the source data.
+        The index values are zero-based.
+        An error is raised if the cutout exceeds the bounds of the source data.
+
+    Returns:
+
+        A new, open :class:`FieldsFileVariant` at 'filename', opened with
+        mode=:data:`~FieldsFileVariant.CREATE_MODE`.
+
+    .. note::
+
+        As the result is extracted according to cell indices, the total
+        resulting area covered is not consistent between data on different grid
+        positions, such as P, U and V grids.
+
+    .. note::
+
+        This routine cannot handle a variable grid, and will raise an error
+        if such a grid is present.
+
+    .. note::
+
+        This routine cannot fields with extension data, and will raise an error
+        if any is present.
+
+    """
+    def check_regular_grid(dx, dy, fail_context, mdi=0.0):
+        # Raise error if dx or dy values indicate an 'irregular' grid.
+        invalid_values = [0.0, mdi]
+        if dx in invalid_values or dy in invalid_values:
+            msg = "Source grid in {} is not regular."
+            raise ValueError(msg.format(fail_context))
+
+    dx = ffv_src.real_constants[0]
+    dy = ffv_src.real_constants[1]
+    check_regular_grid(dx, dy, fail_context='header', mdi=-2.0e30)
+    zx0 = ffv_src.real_constants[2]
+    zy0 = ffv_src.real_constants[3]
+    nx0 = ffv_src.integer_constants[5]
+    ny0 = ffv_src.integer_constants[6]
+
+    x_index, y_index, nx1, ny1 = cutout_params
+
+    msg = ("The given cutout parameters extend outside the dimensions of the "
+           "grid contained in the source file.")
+    if x_index + nx1 > nx0 or y_index + ny1 > ny0:
+        raise ValueError(msg)
+
+    zx1 = zx0 + (x_index * dx)
+    zy1 = zy0 + (y_index * dy)
+
+    ffv_dest = FieldsFileVariant(filename, FieldsFileVariant.CREATE_MODE)
+
+    ffv_dest.fixed_length_header = copy.copy(ffv_src.fixed_length_header)
+    for name, kind in FieldsFileVariant._COMPONENTS:
+        setattr(ffv_dest, name, copy.copy(getattr(ffv_src, name)))
+
+    ffv_dest.fixed_length_header.horiz_grid_type = 3
+    ffv_dest.real_constants[2] = zx1
+    ffv_dest.real_constants[3] = zy1
+    ffv_dest.integer_constants[5] = nx1
+    ffv_dest.integer_constants[6] = ny1
+
+    for i_field, field_src in enumerate(ffv_src.fields):
+        if field_src.int_headers[0] == -99:
+            # Pass through 'missing' lookup entries.
+            field = field_src
+        else:
+            # Section everything else, complain if not suitable.
+            dx = field_src.bdx
+            dy = field_src.bdy
+            check_regular_grid(dx, dy,
+                               fail_context='field#{:d}'.format(i_field),
+                               mdi=field_src.bmdi)
+            zx0 = field_src.bzx
+            zy0 = field_src.bzy
+            nx0 = field_src.lbnpt
+            ny0 = field_src.lbrow
+
+            zx1 = zx0 + (x_index * dx)
+            zy1 = zy0 + (y_index * dy)
+
+            data_provider = _CutoutDataProvider(field_src, (x_index, y_index,
+                                                            nx1, ny1))
+            field = type(field_src)(field_src.int_headers.copy(),
+                                    field_src.real_headers.copy(),
+                                    data_provider)
+            field.lbhem = 3
+            # Correct record packing + size for unpacked result.
+            # For output, data is *always* unpacked (at present).
+            if field.lbext != 0:
+                msg = ('field#{} has extension data, which cutout '
+                       'does not support')
+                raise ValueError(msg.format(i_field))
+            field.lbpack = 0
+            field.lblrec = nx1 * ny1
+            field.bzx = zx1
+            field.bzy = zy1
+            field.lbnpt = nx1
+            field.lbrow = ny1
+
+        ffv_dest.fields.append(field)
+
+    return ffv_dest
+
+
+class _CutoutDataProvider(object):
+    """
+    Provides access to a simple 2-dimensional array of data that is a subset to
+    the data payload for a source standard FieldsFile LOOKUP entry, as defined
+    by the given cutout parameters.
+
+    """
+    def __init__(self, field_src, cutout_params):
+        self.field_src = field_src
+        self.cutout_params = cutout_params
+
+    def read_data(self, field):
+        zx, zy, nx, ny = self.cutout_params
+        data = self.field_src.get_data()
+        cut_data = data[zy:zy+ny, zx:zx+nx]
+        return cut_data
