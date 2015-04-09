@@ -32,7 +32,8 @@ import tempfile
 from contextlib import contextmanager
 import numpy as np
 
-from iris.experimental.um import FieldsFileVariant, Field, Field3, cutout
+from iris.experimental.um import FieldsFileVariant, cutout, Field, Field3,\
+    FixedLengthHeader
 
 
 class Test___init__(tests.IrisTest):
@@ -192,7 +193,7 @@ class Test_cutout(tests.IrisTest):
         self.assertEqual(ffv_dest.fields[0].bzx, 10)
         self.assertEqual(ffv_dest.fields[0].bzy, 10)
 
-    def test_too_many_nx_ny(self):
+    def test_fail_too_many_nx_ny(self):
         msg_re = 'cutout .* outside the dimensions of the grid'
         with self.assertRaisesRegexp(ValueError, msg_re):
             ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
@@ -202,6 +203,40 @@ class Test_cutout(tests.IrisTest):
         ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [1, 0, 2, 1])
         array = np.array([[1., 2.]])
         self.assertArrayEqual(ffv_dest.fields[0].get_data(), array)
+
+    def test_fail_fixed_dx_0(self):
+        self.input_ffv.real_constants[0] = 0.0
+        msg_re = 'Source grid in header is not regular'
+        with self.assertRaisesRegexp(ValueError, msg_re):
+            ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
+                              [2, 1, 4, 5])
+
+    def test_fail_fixed_dy_imdi(self):
+        self.input_ffv.real_constants[0] = FixedLengthHeader.IMDI
+        msg_re = 'Source grid in header is not regular'
+        with self.assertRaisesRegexp(ValueError, msg_re):
+            ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
+                              [2, 1, 4, 5])
+
+    def test_fail_field_dx_0(self):
+        self.input_ffv.fields[0].bdx = 0.0
+        msg_re = 'Source grid in field#0 is not regular'
+        with self.assertRaisesRegexp(ValueError, msg_re):
+            ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
+                              [2, 1, 4, 5])
+
+    def test_fail_field2_dy_mdi(self):
+        field1 = self.input_ffv.fields[0]
+        field2 = Field3(field1.int_headers.copy(),
+                        field1.real_headers.copy(),
+                        field1.get_data())
+        self.input_ffv.fields = [field1, field2]
+        field2.bmdi = 123.45
+        field2.bdy = 123.45
+        msg_re = 'Source grid in field#1 is not regular'
+        with self.assertRaisesRegexp(ValueError, msg_re):
+            ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
+                              [2, 1, 4, 5])
 
 
 if __name__ == '__main__':

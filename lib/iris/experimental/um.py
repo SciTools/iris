@@ -763,7 +763,7 @@ def cutout(ffv_src, filepath, cutout_params):
         invalid_values = np.array([0.0, FixedLengthHeader.IMDI, mdi])
         if np.any(dx == invalid_values) or np.any(dy == invalid_values):
             msg = "Source grid in {} is not regular."
-            raise ValueError(msg.format(context))
+            raise ValueError(msg.format(fail_context))
 
     dx = ffv_src.real_constants[0]
     dy = ffv_src.real_constants[1]
@@ -796,7 +796,7 @@ def cutout(ffv_src, filepath, cutout_params):
     ffv_dest.integer_constants[6] = ny1
 
     for i_field, field_src in enumerate(ffv_src.fields):
-        if field_src.real_headers[0] == -99.0:
+        if field_src.int_headers[0] == -99:
             # Pass through 'missing' lookup entries.
             field = field_src
         else:
@@ -804,7 +804,8 @@ def cutout(ffv_src, filepath, cutout_params):
             dx = field_src.bdx
             dy = field_src.bdy
             check_regular_grid(dx, dy,
-                               fail_context='field#{:d}'.format(i_field))
+                               fail_context='field#{:d}'.format(i_field),
+                               mdi=field_src.bmdi)
             zx0 = field_src.bzx
             zy0 = field_src.bzy
             nx0 = field_src.lbnpt
