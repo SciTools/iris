@@ -315,7 +315,7 @@ class Field3(Field):
 
 
 # Maps lbrel to a Field class.
-_FIELD_CLASSES = {2: Field2, 3: Field3, -99: Field}
+_FIELD_CLASSES = {2: Field2, 3: Field3}
 
 
 # Maps word size and then lbuser1 (i.e. the field's data type) to a dtype.
@@ -520,7 +520,8 @@ class FieldsFileVariant(object):
                     else:
                         offset = running_offset
                         data_provider = data_class(source, offset, word_size)
-                    klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
+                    klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
+                                               Field)
                     ints = raw_headers[:_NUM_FIELD_INTS]
                     reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
                     fields.append(klass(ints, reals, data_provider))
@@ -533,7 +534,8 @@ class FieldsFileVariant(object):
                     else:
                         offset = raw_headers[Field.LBEGIN_OFFSET] * word_size
                         data_provider = data_class(source, offset, word_size)
-                    klass = _FIELD_CLASSES[raw_headers[Field.LBREL_OFFSET]]
+                    klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
+                                               Field)
                     ints = raw_headers[:_NUM_FIELD_INTS]
                     reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
                     fields.append(klass(ints, reals, data_provider))

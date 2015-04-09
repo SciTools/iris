@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,7 +31,7 @@ import tempfile
 
 import numpy as np
 
-from iris.experimental.um import FieldsFileVariant
+from iris.experimental.um import FieldsFileVariant, Field, Field3
 
 
 class Test___init__(tests.IrisTest):
@@ -74,6 +74,17 @@ class Test_filename(tests.IrisTest):
         path = tests.get_data_path(('FF', 'n48_multi_field'))
         ffv = FieldsFileVariant(path)
         self.assertEqual(ffv.filename, path)
+
+
+@tests.skip_data
+class Test_class_assignment(tests.IrisTest):
+    def test_lbrel_class(self):
+        path = tests.get_data_path(('FF', 'lbrel_test_data'))
+        ffv = FieldsFileVariant(path)
+        self.assertEquals(type(ffv.fields[0]), Field)
+        self.assertEquals(type(ffv.fields[1]), Field3)
+        self.assertEqual(ffv.fields[0].int_headers[Field.LBREL_OFFSET], -32768)
+        self.assertEqual(ffv.fields[1].int_headers[Field.LBREL_OFFSET], 3)
 
 
 class Test_mode(tests.IrisTest):
