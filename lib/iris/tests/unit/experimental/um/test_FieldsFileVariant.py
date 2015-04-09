@@ -114,13 +114,6 @@ class Test_mode(tests.IrisTest):
 
 
 class Test_cutout(tests.IrisTest):
-    @contextmanager
-    def temp_ff(self):
-        with self.temp_filename() as temp_path:
-            ffv = FieldsFileVariant(temp_path,
-                                    mode=FieldsFileVariant.CREATE_MODE)
-            yield ffv
-
     def simple_p_grid(self, ffv, nx, ny):
         ffv.fixed_length_header.horiz_grid_type = 0
         ffv.fixed_length_header.sub_model = 1
@@ -147,76 +140,69 @@ class Test_cutout(tests.IrisTest):
         field.lbcode = 1
         ffv.fields.append(field)
 
+    def setUp(self):
+        # Create a temporary test directory.
+        self.temp_dirpath = tempfile.mkdtemp()
+        self.input_ffv_path = os.path.join(self.temp_dirpath, 'in_ff')
+        self.output_ffv_path = os.path.join(self.temp_dirpath, 'out_ff')
+
+        # Create a test input file (and leave this *open*).
+        self.input_ffv = FieldsFileVariant(self.input_ffv_path,
+                                          mode=FieldsFileVariant.CREATE_MODE)
+
+        # Define a standard grid on the input file.
+        self.simple_p_grid(self.input_ffv, 10, 12)
+
+    def tearDown(self):
+        # Close the test input file and delete the whole test directory.
+        # NOTE: any created ffvs already got closed, as they left scope on exit
+        # from the test routine.
+        self.input_ffv.close()
+        shutil.rmtree(self.temp_dirpath)
+
     def test_fixed_length_header(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
-                self.assertEqual(ffv_dest.fixed_length_header.sub_model, 1)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [2, 1, 4, 5])
+        self.assertEqual(ffv_dest.fixed_length_header.sub_model, 1)
 
     def test_horiz_grid_type(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
-                self.assertEqual(ffv_dest.fixed_length_header.horiz_grid_type,
-                                 3)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [2, 1, 4, 5])
+        self.assertEqual(ffv_dest.fixed_length_header.horiz_grid_type, 3)
 
     def test_integer_constants(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
-                self.assertEqual(ffv_dest.integer_constants[5], 4)
-                self.assertEqual(ffv_dest.integer_constants[6], 5)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [2, 1, 4, 5])
+        self.assertEqual(ffv_dest.integer_constants[5], 4)
+        self.assertEqual(ffv_dest.integer_constants[6], 5)
 
     def test_real_constants(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
-                self.assertEqual(ffv_dest.real_constants[2], 10)
-                self.assertEqual(ffv_dest.real_constants[3], 10)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [2, 1, 4, 5])
+        self.assertEqual(ffv_dest.real_constants[2], 10)
+        self.assertEqual(ffv_dest.real_constants[3], 10)
 
     def test_lbhem(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
-                self.assertEqual(ffv_dest.fields[0].lbhem, 3)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [2, 1, 4, 5])
+        self.assertEqual(ffv_dest.fields[0].lbhem, 3)
 
     def test_lbnpt_lbrow(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
-                self.assertEqual(ffv_dest.fields[0].lbnpt, 4)
-                self.assertEqual(ffv_dest.fields[0].lbrow, 5)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [2, 1, 4, 5])
+        self.assertEqual(ffv_dest.fields[0].lbnpt, 4)
+        self.assertEqual(ffv_dest.fields[0].lbrow, 5)
 
     def test_bzx_bzy(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
-                self.assertEqual(ffv_dest.fields[0].bzx, 10)
-                self.assertEqual(ffv_dest.fields[0].bzy, 10)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [2, 1, 4, 5])
+        self.assertEqual(ffv_dest.fields[0].bzx, 10)
+        self.assertEqual(ffv_dest.fields[0].bzy, 10)
 
     def test_too_many_nx_ny(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [5, 5, 100, 100])
-                self.assertEqual(ffv_dest.integer_constants[5], 5)
-                self.assertEqual(ffv_dest.integer_constants[6], 7)
-                # Add test to check warning is raised
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
+                          [5, 5, 100, 100])
+        self.assertEqual(ffv_dest.integer_constants[5], 5)
+        self.assertEqual(ffv_dest.integer_constants[6], 7)
+        # Add test to check warning is raised
 
     def test_get_data(self):
-        with self.temp_ff() as ffv:
-            with self.temp_filename() as temp_path:
-                self.simple_p_grid(ffv, 10, 12)
-                ffv_dest = cutout(ffv, temp_path, [1, 0, 2, 1])
-                array = np.array([[1., 2.]])
-                self.assertArrayEqual(ffv_dest.fields[0].get_data(), array)
+        ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [1, 0, 2, 1])
+        array = np.array([[1., 2.]])
+        self.assertArrayEqual(ffv_dest.fields[0].get_data(), array)
 
 
 if __name__ == '__main__':
