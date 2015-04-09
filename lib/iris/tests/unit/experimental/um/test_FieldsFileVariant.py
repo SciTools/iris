@@ -148,7 +148,7 @@ class Test_cutout(tests.IrisTest):
 
         # Create a test input file (and leave this *open*).
         self.input_ffv = FieldsFileVariant(self.input_ffv_path,
-                                          mode=FieldsFileVariant.CREATE_MODE)
+                                           mode=FieldsFileVariant.CREATE_MODE)
 
         # Define a standard grid on the input file.
         self.simple_p_grid(self.input_ffv, 10, 12)
@@ -193,11 +193,10 @@ class Test_cutout(tests.IrisTest):
         self.assertEqual(ffv_dest.fields[0].bzy, 10)
 
     def test_too_many_nx_ny(self):
-        ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
-                          [5, 5, 100, 100])
-        self.assertEqual(ffv_dest.integer_constants[5], 5)
-        self.assertEqual(ffv_dest.integer_constants[6], 7)
-        # Add test to check warning is raised
+        msg_re = 'cutout .* outside the dimensions of the grid'
+        with self.assertRaisesRegexp(ValueError, msg_re):
+            ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
+                              [5, 5, 100, 100])
 
     def test_get_data(self):
         ffv_dest = cutout(self.input_ffv, self.output_ffv_path, [1, 0, 2, 1])

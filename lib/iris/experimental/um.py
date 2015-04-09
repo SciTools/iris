@@ -25,7 +25,6 @@ import copy
 import os
 import os.path
 import tempfile
-import warnings
 
 import numpy as np
 
@@ -723,7 +722,7 @@ class FieldsFileVariant(object):
                 self._source.close()
 
 
-def cutout(ffv_src, filename, cutout_params):
+def cutout(ffv_src, filepath, cutout_params):
     """
     Subset a UM FieldsFile variant to a specified i, j index and number of
     points along the x and y axes.
@@ -732,20 +731,43 @@ def cutout(ffv_src, filename, cutout_params):
 
     * ffv_src (:class:`FieldsFileVariant`)
         A source FieldFileVariant to subset.
-    * filename (string)
-        The name of the file containing the subset of the source UM
-        FieldsFile variant.
+    * filepath (string)
+        The name of the resulting output file, containing a subset of the
+        source UM FieldsFile variant.
     * cutout_params (list)
-        The cutout parameters [i index, j index, number of x points, number
-        of y points].)
+        The cutout parameters : (i index, j index, number of x points, number
+        of y points).
+        The result has shape [number of x points, number of y points], starting
+        at position [i index, j index] in the source data. The index values are
+        zero-based.
 
     Returns:
-        An instance of :class:`FieldsFileVariant` in `CREATE_MODE`.
+
+        A new, open :class:`FieldsFileVariant` at 'filepath', opened with
+        mode=:data:`~FieldsFileVariant.CREATE_MODE`.
+
+    .. note::
+
+        As the result is extracted according to cell indices, the total
+        resulting area covered is not consistent between data on different grid
+        positions, such as P, U and V grids.
+
+    .. note::
+
+        This routine can not handle a variable grid, and will raise an error
+        if such a grid is present.
 
     """
+    def check_regular_grid(dx, dy, fail_context, mdi=0.0):
+        # Raise error if dx or dy values indicate an 'irregular' grid.
+        invalid_values = np.array([0.0, FixedLengthHeader.IMDI, mdi])
+        if np.any(dx == invalid_values) or np.any(dy == invalid_values):
+            msg = "Source grid in {} is not regular."
+            raise ValueError(msg.format(context))
 
     dx = ffv_src.real_constants[0]
     dy = ffv_src.real_constants[1]
+    check_regular_grid(dx, dy, fail_context='header')
     zx0 = ffv_src.real_constants[2]
     zy0 = ffv_src.real_constants[3]
     nx0 = ffv_src.integer_constants[5]
@@ -753,22 +775,15 @@ def cutout(ffv_src, filename, cutout_params):
 
     x_index, y_index, nx1, ny1 = cutout_params
 
-    msg = ("The given cutout parameters extend outside the available area."
-           "Returned area is limited by the area of the source "
-           "FieldsFileVariant.")
-    warnings.simplefilter('always')
-    if x_index + nx1 > nx0:
-        nx1 = nx0 - x_index
-        warnings.warn(msg)
-    if y_index + ny1 > ny0:
-        ny1 = ny0 - y_index
-        warnings.warn(msg)
-    warnings.simplefilter('default')
+    msg = ("The given cutout parameters extend outside the dimensions of the "
+           "grid contained in the source file.")
+    if x_index + nx1 > nx0 or y_index + ny1 > ny0:
+        raise ValueError(msg)
 
     zx1 = zx0 + (x_index * dx)
     zy1 = zy0 + (y_index * dy)
 
-    ffv_dest = FieldsFileVariant(filename, FieldsFileVariant.CREATE_MODE)
+    ffv_dest = FieldsFileVariant(filepath, FieldsFileVariant.CREATE_MODE)
 
     ffv_dest.fixed_length_header = copy.copy(ffv_src.fixed_length_header)
     for name, kind in FieldsFileVariant._COMPONENTS:
@@ -780,16 +795,16 @@ def cutout(ffv_src, filename, cutout_params):
     ffv_dest.integer_constants[5] = nx1
     ffv_dest.integer_constants[6] = ny1
 
-    for field_src in ffv_src.fields:
-        # Only subset fields that have been written with either of below ifs
-        # if field_src.real_headers[0] != -99.0:
-        if hasattr(field_src, 'lbuser1'):
-
-            if field_src.lbcode not in (1, 2, 3):
-                raise ValueError('Cutout is not supported on the source grid')
-
+    for i_field, field_src in enumerate(ffv_src.fields):
+        if field_src.real_headers[0] == -99.0:
+            # Pass through 'missing' lookup entries.
+            field = field_src
+        else:
+            # Section everything else, complain if not suitable.
             dx = field_src.bdx
             dy = field_src.bdy
+            check_regular_grid(dx, dy,
+                               fail_context='field#{:d}'.format(i_field))
             zx0 = field_src.bzx
             zy0 = field_src.bzy
             nx0 = field_src.lbnpt
@@ -810,9 +825,7 @@ def cutout(ffv_src, filename, cutout_params):
             field.lbnpt = nx1
             field.lbrow = ny1
 
-            ffv_dest.fields.append(field)
-        else:
-            ffv_dest.fields.append(field_src)
+        ffv_dest.fields.append(field)
 
     return ffv_dest
 
