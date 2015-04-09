@@ -595,6 +595,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     See the :doc:`user guide</userguide/index>` for more information.
 
     """
+
+    #: Indicates to client code that the object supports
+    #: "orthogonal indexing", which means that slices that are 1d arrays
+    #: or lists slice along each dimension independently. This behavior
+    #: is similar to Fortran or Matlab, but different than numpy.
+    __orthogonal_indexing__ = True
+
     def __init__(self, data, standard_name=None, long_name=None,
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
