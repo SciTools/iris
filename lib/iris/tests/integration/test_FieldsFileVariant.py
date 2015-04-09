@@ -22,12 +22,16 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
+import os.path
 import shutil
+import tempfile
 
 import numpy as np
 
+import iris
+
 from iris.experimental.um import (Field, Field2, Field3, FieldsFileVariant,
-                                  FixedLengthHeader)
+                                  FixedLengthHeader, cutout)
 
 
 IMDI = -32768
@@ -366,6 +370,41 @@ class TestCreate(tests.IrisTest):
             for field in ffv.fields:
                 data = field.get_data()
                 self.assertArrayEqual(data, src_data)
+
+
+class Test_cutout(tests.IrisTest):
+    def test(self):
+        temp_dirpath = tempfile.mkdtemp()
+        temp_output_filepath = os.path.join(temp_dirpath, 'output_ff')
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        ffv_in = FieldsFileVariant(src_path)
+
+        ffv_cutout = cutout(ffv_in, temp_output_filepath,
+                            [10, 15, 33, 21])
+        ffv_cutout.close()
+
+        # Load *with Iris* and check it is as expected, compared to original.
+        cubes_old = iris.load(src_path)
+        cubes = iris.load(temp_output_filepath)
+
+        # Check same number of cubes.
+        self.assertEqual(len(cubes), len(cubes_old))
+
+        # Check first cube has expected dimensions.
+        cube = cubes[0]
+        self.assertEqual(cube.shape, (21, 33))
+
+        # Check first cube has expected coordinates.
+        old_cube = cubes_old[0]
+        self.assertEqual(cube.coord('longitude'),
+                         old_cube.coord('longitude')[10:10+33])
+        self.assertEqual(cube.coord('latitude'),
+                         old_cube.coord('latitude')[15:15+21])
+
+        # Check that data matches the correct cutout portion of the old data.
+        data = cube.data
+        old_data = cubes_old[0].data
+        self.assertArrayAllClose(data, old_data[15:15+21, 10:10+33])
 
 
 if __name__ == '__main__':

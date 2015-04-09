@@ -139,6 +139,7 @@ class Test_cutout(tests.IrisTest):
         field.lbnpt = nx
         field.lbrow = ny
         field.lbcode = 1
+        field.lbext = 0
         ffv.fields.append(field)
 
     def setUp(self):
@@ -234,6 +235,13 @@ class Test_cutout(tests.IrisTest):
         field2.bmdi = 123.45
         field2.bdy = 123.45
         msg_re = 'Source grid in field#1 is not regular'
+        with self.assertRaisesRegexp(ValueError, msg_re):
+            ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
+                              [2, 1, 4, 5])
+
+    def test_fail_field_extension_data(self):
+        self.input_ffv.fields[0].lbext = 1
+        msg_re = 'field#0 has extension data'
         with self.assertRaisesRegexp(ValueError, msg_re):
             ffv_dest = cutout(self.input_ffv, self.output_ffv_path,
                               [2, 1, 4, 5])

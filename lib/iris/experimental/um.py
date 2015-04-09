@@ -722,7 +722,7 @@ class FieldsFileVariant(object):
                 self._source.close()
 
 
-def cutout(ffv_src, filepath, cutout_params):
+def cutout(ffv_src, filename, cutout_params):
     """
     Subset a UM FieldsFile variant to a specified i, j index and number of
     points along the x and y axes.
@@ -730,20 +730,20 @@ def cutout(ffv_src, filepath, cutout_params):
     Args:
 
     * ffv_src (:class:`FieldsFileVariant`)
-        A source FieldFileVariant to subset.
-    * filepath (string)
-        The name of the resulting output file, containing a subset of the
-        source UM FieldsFile variant.
+        A source FieldsFileVariant to subset.
+    * filename (string)
+        The filename for the new result object (another FieldsFileVariant).
     * cutout_params (list)
         The cutout parameters : (i index, j index, number of x points, number
         of y points).
         The result has shape [number of x points, number of y points], starting
-        at position [i index, j index] in the source data. The index values are
-        zero-based.
+        at position [i index, j index] in the source data.
+        The index values are zero-based.
+        An error is raised if the cutout exceeds the bounds of the source data.
 
     Returns:
 
-        A new, open :class:`FieldsFileVariant` at 'filepath', opened with
+        A new, open :class:`FieldsFileVariant` at 'filename', opened with
         mode=:data:`~FieldsFileVariant.CREATE_MODE`.
 
     .. note::
@@ -754,8 +754,13 @@ def cutout(ffv_src, filepath, cutout_params):
 
     .. note::
 
-        This routine can not handle a variable grid, and will raise an error
+        This routine cannot handle a variable grid, and will raise an error
         if such a grid is present.
+
+    .. note::
+
+        This routine cannot fields with extension data, and will raise an error
+        if any is present.
 
     """
     def check_regular_grid(dx, dy, fail_context, mdi=0.0):
@@ -783,7 +788,7 @@ def cutout(ffv_src, filepath, cutout_params):
     zx1 = zx0 + (x_index * dx)
     zy1 = zy0 + (y_index * dy)
 
-    ffv_dest = FieldsFileVariant(filepath, FieldsFileVariant.CREATE_MODE)
+    ffv_dest = FieldsFileVariant(filename, FieldsFileVariant.CREATE_MODE)
 
     ffv_dest.fixed_length_header = copy.copy(ffv_src.fixed_length_header)
     for name, kind in FieldsFileVariant._COMPONENTS:
@@ -820,7 +825,14 @@ def cutout(ffv_src, filepath, cutout_params):
                                     field_src.real_headers.copy(),
                                     data_provider)
             field.lbhem = 3
+            # Correct record packing + size for unpacked result.
+            # For output, data is *always* unpacked (at present).
+            if field.lbext != 0:
+                msg = ('field#{} has extension data, which cutout '
+                       'does not support')
+                raise ValueError(msg.format(i_field))
             field.lbpack = 0
+            field.lblrec = nx1 * ny1
             field.bzx = zx1
             field.bzy = zy1
             field.lbnpt = nx1
