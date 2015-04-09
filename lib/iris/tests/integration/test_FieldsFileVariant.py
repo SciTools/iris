@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -252,6 +252,37 @@ class TestUpdate(tests.IrisTest):
             ffv = FieldsFileVariant(temp_path)
             field = ffv.fields[0]
             self.assertArrayEqual(field.get_data()[0, 604:607], [10, 11, 11])
+
+    def test_large_lookup(self):
+        # Check more space is allocated for the lookups when a lot of blank
+        # lookups are added.
+        src_path = tests.get_data_path(('FF', 'ancillary', 'qrparm.mask'))
+        with self.temp_filename() as temp_path:
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            field = ffv.fields[0]
+            original_field_data = field.get_data()
+            blank_int_headers = field.int_headers.copy()
+            blank_real_headers = field.real_headers.copy()
+            blank_int_headers[:] = -99  # The 'invalid' signature
+            blank_real_headers[:] = 0.0
+            # Work out how many lookups fills a file 'sector'.
+            lookups_per_sector = ffv._WORDS_PER_SECTOR / field.num_values()
+            # Make a new fields list with many "blank" and one "real" field.
+            n_blank_lookups = 2 * int(np.ceil(lookups_per_sector))
+            new_fields = [Field(int_headers=blank_int_headers,
+                                real_headers=blank_real_headers,
+                                data_provider=None)
+                          for _ in range(n_blank_lookups)]
+            new_fields.append(field)
+            ffv.fields = new_fields
+            ffv.close()
+
+            ffv = FieldsFileVariant(temp_path)
+            self.assertEqual(len(ffv.fields), n_blank_lookups + 1)
+            # Check that the data of the last ("real") field is correct.
+            field = ffv.fields[-1]
+            self.assertArrayEqual(field.get_data(), original_field_data)
 
 
 class TestCreate(tests.IrisTest):
