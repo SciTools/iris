@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,9 +29,10 @@ import os.path
 import shutil
 import tempfile
 
+from contextlib import contextmanager
 import numpy as np
 
-from iris.experimental.um import FieldsFileVariant
+from iris.experimental.um import FieldsFileVariant, cutout, Field3
 
 
 class Test___init__(tests.IrisTest):
@@ -99,6 +100,112 @@ class Test_mode(tests.IrisTest):
                                     mode=FieldsFileVariant.CREATE_MODE)
             self.assertIs(ffv.mode, FieldsFileVariant.CREATE_MODE)
             del ffv
+
+
+class Test_cutout(tests.IrisTest):
+    @contextmanager
+    def temp_ff(self):
+        with self.temp_filename() as temp_path:
+            ffv = FieldsFileVariant(temp_path,
+                                    mode=FieldsFileVariant.CREATE_MODE)
+            yield ffv
+
+    def simple_p_grid(self, ffv, nx, ny):
+        ffv.fixed_length_header.horiz_grid_type = 0
+        ffv.fixed_length_header.sub_model = 1
+        ffv.integer_constants = np.arange(46, dtype='>i8')
+        ffv.real_constants = np.arange(38, dtype='>f8')
+        ffv.integer_constants[5] = nx
+        ffv.integer_constants[6] = ny
+        ffv.real_constants[0] = 5
+        ffv.real_constants[1] = 10
+        ffv.real_constants[2] = 0
+        ffv.real_constants[3] = 0
+
+        field = Field3(np.arange(45, dtype='>i8'),
+                       np.arange(19, dtype='>f8'),
+                       np.arange(nx * ny, dtype='>f8').reshape([ny, nx])
+                       )
+        field.lbhem = 0
+        field.bdx = 5
+        field.bzx = 0
+        field.bdy = 10
+        field.bzy = 0
+        field.lbnpt = nx
+        field.lbrow = ny
+        field.lbcode = 1
+        ffv.fields.append(field)
+
+    def test_fixed_length_header(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
+                self.assertEqual(ffv_dest.fixed_length_header.sub_model, 1)
+
+    def test_horiz_grid_type(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
+                self.assertEqual(ffv_dest.fixed_length_header.horiz_grid_type,
+                                 3)
+
+    def test_integer_constants(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
+                self.assertEqual(ffv_dest.integer_constants[5], 4)
+                self.assertEqual(ffv_dest.integer_constants[6], 5)
+
+    def test_real_constants(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
+                self.assertEqual(ffv_dest.real_constants[2], 10)
+                self.assertEqual(ffv_dest.real_constants[3], 10)
+
+    def test_lbhem(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
+                self.assertEqual(ffv_dest.fields[0].lbhem, 3)
+
+    def test_lbnpt_lbrow(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
+                self.assertEqual(ffv_dest.fields[0].lbnpt, 4)
+                self.assertEqual(ffv_dest.fields[0].lbrow, 5)
+
+    def test_bzx_bzy(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [2, 1, 4, 5])
+                self.assertEqual(ffv_dest.fields[0].bzx, 10)
+                self.assertEqual(ffv_dest.fields[0].bzy, 10)
+
+    def test_too_many_nx_ny(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [5, 5, 100, 100])
+                self.assertEqual(ffv_dest.integer_constants[5], 5)
+                self.assertEqual(ffv_dest.integer_constants[6], 7)
+                # Add test to check warning is raised
+
+    def test_get_data(self):
+        with self.temp_ff() as ffv:
+            with self.temp_filename() as temp_path:
+                self.simple_p_grid(ffv, 10, 12)
+                ffv_dest = cutout(ffv, temp_path, [1, 0, 2, 1])
+                array = np.array([[1., 2.]])
+                self.assertArrayEqual(ffv_dest.fields[0].get_data(), array)
 
 
 if __name__ == '__main__':
