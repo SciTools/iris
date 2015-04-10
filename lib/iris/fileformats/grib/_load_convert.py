@@ -1875,7 +1875,12 @@ def data_representation_section(section):
     # Reference GRIB2 Code Table 5.0.
     template = section['dataRepresentationTemplateNumber']
 
-    if template != 0:
+    # Supported templates for both grid point and spectral data:
+    grid_point_templates = (0, 1, 2, 3, 4, 40, 41, 61)
+    spectral_templates = tuple()
+    supported_templates = grid_point_templates + spectral_templates
+
+    if template not in supported_templates:
         msg = 'Data Representation Section Template [{}] is not ' \
             'supported'.format(template)
         raise TranslationError(msg)
