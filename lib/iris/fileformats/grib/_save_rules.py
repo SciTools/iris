@@ -570,7 +570,7 @@ def _non_missing_forecast_period(cube):
     if fp - int(fp):
         warnings.warn("forecast_period encoding problem: "
                       "scaling required.")
-    fp = int(fp)
+    fp = int(round(fp))
 
     # Turn negative forecast times into grib negative numbers?
     from iris.fileformats.grib import hindcast_workaround

@@ -27,10 +27,11 @@ import iris.unit
 
 
 class Test(tests.IrisTest):
-    def _cube(self, t_bounds=False):
+    def _cube(self, fp_value=10, t_bounds=False):
         time_coord = iris.coords.DimCoord(15, standard_name='time',
                                           units='hours since epoch')
-        fp_coord = iris.coords.DimCoord(10, standard_name='forecast_period',
+        fp_coord = iris.coords.DimCoord(fp_value,
+                                        standard_name='forecast_period',
                                         units='hours')
         if t_bounds:
             time_coord.bounds = [[8, 100]]
@@ -42,6 +43,16 @@ class Test(tests.IrisTest):
 
     def test_time_point(self):
         cube = self._cube()
+        rt, rt_meaning, fp, fp_meaning = _non_missing_forecast_period(cube)
+        self.assertEqual((rt_meaning, fp, fp_meaning), (1, 10, 1))
+
+    def test_time_point_round_up(self):
+        cube = self._cube(fp_value=9.999999)
+        rt, rt_meaning, fp, fp_meaning = _non_missing_forecast_period(cube)
+        self.assertEqual((rt_meaning, fp, fp_meaning), (1, 10, 1))
+
+    def test_time_point_round_down(self):
+        cube = self._cube(fp_value=10.00001)
         rt, rt_meaning, fp, fp_meaning = _non_missing_forecast_period(cube)
         self.assertEqual((rt_meaning, fp, fp_meaning), (1, 10, 1))
 
