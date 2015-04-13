@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -118,6 +118,29 @@ class TestLBTIMx1x_Forecast(TestField):
 
     def test_time_cross_section(self):
         self._check_forecast(_lbcode(ix=1, iy=20), expect_match=False)
+
+    def test_exact_hours(self):
+        lbtim = _lbtim(ib=1, ic=1)
+        t1 = nc_datetime(2015, 1, 20, hour=7, minute=0, second=0)
+        t2 = nc_datetime(2015, 1, 20, hour=0, minute=0, second=0)
+        coords_and_dims = _convert_time_coords(
+            lbcode=_lbcode(1), lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=None)
+        (fp, _), (t, _), (frt, _) = coords_and_dims
+        # These should both be exact whole numbers.
+        self.assertEqual(fp.points[0], 7)
+        self.assertEqual(t.points[0], 394927)
+
+    def test_not_exact_hours(self):
+        lbtim = _lbtim(ib=1, ic=1)
+        t1 = nc_datetime(2015, 1, 20, hour=7, minute=10, second=0)
+        t2 = nc_datetime(2015, 1, 20, hour=0, minute=0, second=0)
+        coords_and_dims = _convert_time_coords(
+            lbcode=_lbcode(1), lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=None)
+        (fp, _), (t, _), (frt, _) = coords_and_dims
+        self.assertEqual(fp.points[0], 7.1666666641831398)
+        self.assertEqual(t.points[0], 394927.16666666418)
 
 
 class TestLBTIMx2x_TimePeriod(TestField):
