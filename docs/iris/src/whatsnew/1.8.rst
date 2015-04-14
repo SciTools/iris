@@ -2,7 +2,7 @@ What's new in Iris 1.8
 **********************
 
 :Release: 1.8.0
-:Date: ???
+:Date: 14th April 2015
 
 This document explains the new/changed features of Iris in version 1.8.
 (:doc:`View all changes <index>`.)
