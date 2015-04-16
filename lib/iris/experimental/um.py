@@ -516,6 +516,10 @@ class FieldsFileVariant(object):
                 running_offset = ((self.fixed_length_header.data_start - 1) *
                                   word_size)
             for raw_headers in lookup.T:
+                ints = raw_headers[:_NUM_FIELD_INTS]
+                reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
+                field_class = _FIELD_CLASSES.get(ints[Field.LBREL_OFFSET],
+                                                 Field)
                 if raw_headers[0] == -99:
                     data_provider = None
                 else:
@@ -524,11 +528,8 @@ class FieldsFileVariant(object):
                     else:
                         offset = raw_headers[Field.LBEGIN_OFFSET] * word_size
                     data_provider = data_class(source, offset, word_size)
-                klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
-                                           Field)
-                ints = raw_headers[:_NUM_FIELD_INTS]
-                reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
-                fields.append(klass(ints, reals, data_provider))
+                field = field_class(ints, reals, data_provider)
+                fields.append(field)
                 if is_model_dump:
                     running_offset += (raw_headers[Field.LBLREC_OFFSET] *
                                        word_size)
