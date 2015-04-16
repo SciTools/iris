@@ -508,37 +508,30 @@ class FieldsFileVariant(object):
         lookup = constants('lookup', int_dtype)
         fields = []
         if lookup is not None:
-            if lookup[Field.LBNREC_OFFSET, 0] == 0:
+            is_model_dump = lookup[Field.LBNREC_OFFSET, 0] == 0
+            if is_model_dump:
                 # A model dump has no direct addressing - only relative,
                 # so we need to update the offset as we create each
                 # Field.
                 running_offset = ((self.fixed_length_header.data_start - 1) *
                                   word_size)
-                for raw_headers in lookup.T:
-                    if raw_headers[0] == -99:
-                        data_provider = None
-                    else:
+            for raw_headers in lookup.T:
+                if raw_headers[0] == -99:
+                    data_provider = None
+                else:
+                    if is_model_dump:
                         offset = running_offset
-                        data_provider = data_class(source, offset, word_size)
-                    klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
-                                               Field)
-                    ints = raw_headers[:_NUM_FIELD_INTS]
-                    reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
-                    fields.append(klass(ints, reals, data_provider))
-                    running_offset += (raw_headers[Field.LBLREC_OFFSET] *
-                                       word_size)
-            else:
-                for raw_headers in lookup.T:
-                    if raw_headers[0] == -99:
-                        data_provider = None
                     else:
                         offset = raw_headers[Field.LBEGIN_OFFSET] * word_size
-                        data_provider = data_class(source, offset, word_size)
-                    klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
-                                               Field)
-                    ints = raw_headers[:_NUM_FIELD_INTS]
-                    reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
-                    fields.append(klass(ints, reals, data_provider))
+                    data_provider = data_class(source, offset, word_size)
+                klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
+                                           Field)
+                ints = raw_headers[:_NUM_FIELD_INTS]
+                reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
+                fields.append(klass(ints, reals, data_provider))
+                if is_model_dump:
+                    running_offset += (raw_headers[Field.LBLREC_OFFSET] *
+                                       word_size)
         self.fields = fields
 
     def __del__(self):
