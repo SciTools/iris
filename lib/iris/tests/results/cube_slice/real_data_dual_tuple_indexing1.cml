@@ -8,7 +8,7 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="73141289" points="[0.0, 3.99999999627, 5.00000000373, 2.00000000373]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <auxCoord id="73141289" points="[0.0, 4.0, 5.0, 2.0]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="f8c7ad26" points="[319536.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
