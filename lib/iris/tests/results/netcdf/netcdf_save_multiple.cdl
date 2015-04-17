@@ -5,6 +5,7 @@ dimensions:
 	longitude = 96 ;
 variables:
 	float air_temperature(time, latitude, longitude) ;
+		air_temperature:_FillValue = -1.e+30f ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
 		air_temperature:um_stash_source = "m01s03i236" ;
@@ -44,6 +45,7 @@ variables:
 		height:standard_name = "height" ;
 		height:positive = "up" ;
 	float air_temperature_0(time, latitude, longitude) ;
+		air_temperature_0:_FillValue = -1.e+30f ;
 		air_temperature_0:standard_name = "air_temperature" ;
 		air_temperature_0:units = "K" ;
 		air_temperature_0:um_stash_source = "m01s03i236" ;
@@ -51,6 +53,7 @@ variables:
 		air_temperature_0:grid_mapping = "latitude_longitude" ;
 		air_temperature_0:coordinates = "forecast_period forecast_reference_time height" ;
 	float precipitation_flux(time, latitude, longitude) ;
+		precipitation_flux:_FillValue = -1.e+30f ;
 		precipitation_flux:standard_name = "precipitation_flux" ;
 		precipitation_flux:units = "kg m-2 s-1" ;
 		precipitation_flux:um_stash_source = "m01s05i216" ;

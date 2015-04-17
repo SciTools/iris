@@ -1458,9 +1458,12 @@ class Saver(object):
 
         else:
             # Create the cube CF-netCDF data variable.
+            # Explicitly assign the fill_value, which will be the type default
+            # in the case of an unmasked array.
             cf_var = self._dataset.createVariable(
                 cf_name, cube.lazy_data().dtype.newbyteorder('='),
-                dimension_names, **kwargs)
+                dimension_names, fill_value=cube.lazy_data().fill_value,
+                **kwargs)
             # stream the data
             biggus.save([cube.lazy_data()], [cf_var], masked=True)
 
