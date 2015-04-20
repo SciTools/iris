@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,9 +23,61 @@ from __future__ import (absolute_import, division, print_function)
 
 # Because this file is imported by setup.py, there may be additional runtime
 # imports later in the file.
+import glob
 import multiprocessing
 import os
 import sys
+
+
+def _failed_images_iter():
+    """
+    Return a generator of [expected, actual, diff] filenames for all failed
+    image tests since the test output directory was created.
+    """
+    baseline_img_dir = os.path.join(os.path.dirname(__file__), os.path.pardir,
+                                    'results', 'visual_tests')
+    diff_dir = os.path.join(os.path.dirname(__file__), os.path.pardir,
+                            'result_image_comparison')
+    if not os.access(diff_dir, os.W_OK):
+        diff_dir = os.path.join(os.getcwd(), 'iris_image_test_output')
+
+    baselines = sorted(glob.glob(os.path.join(baseline_img_dir, '*.png')))
+    for expected_fname in baselines:
+        result_fname = os.path.join(
+            diff_dir,
+            'result-' + os.path.basename(expected_fname))
+        diff_fname = result_fname[:-4] + '-failed-diff.png'
+        if os.path.exists(diff_fname):
+            yield expected_fname, result_fname, diff_fname
+
+
+def failed_images_html():
+    """
+    Generates HTML which shows the image failures side-by-side
+    when viewed in a web browser.
+    """
+    data_uri_template = '<img alt="{alt}" src="data:image/png;base64,{img}">'
+
+    def image_as_base64(fname):
+        with open(fname, "rb") as fh:
+            return fh.read().encode("base64").replace("\n", "")
+
+    html = ['<!DOCTYPE html>', '<html>', '<body>']
+
+    for expected, actual, diff in _failed_images_iter():
+        expected_html = data_uri_template.format(
+            alt='expected', img=image_as_base64(expected))
+        actual_html = data_uri_template.format(
+            alt='actual', img=image_as_base64(actual))
+        diff_html = data_uri_template.format(
+            alt='diff', img=image_as_base64(diff))
+
+        html.extend([expected, '<br>',
+                     expected_html, actual_html, diff_html,
+                     '<br><hr>'])
+
+    html.extend(['</body>', '</html>'])
+    return '\n'.join(html)
 
 
 class TestRunner():
@@ -47,9 +99,12 @@ class TestRunner():
         ('num-processors=', 'p', 'The number of processors used for running '
                                  'the tests.'),
         ('create-missing', 'm', 'Create missing test result files.'),
+        ('print-failed-images', 'f', 'Print HTML encoded version of failed '
+                                     'images.'),
     ]
     boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests',
-                       'default-tests', 'coding-tests', 'create-missing']
+                       'default-tests', 'coding-tests', 'create-missing',
+                       'print-failed-images']
 
     def initialize_options(self):
         self.no_data = False
@@ -60,6 +115,7 @@ class TestRunner():
         self.coding_tests = False
         self.num_processors = None
         self.create_missing = False
+        self.print_failed_images = False
 
     def finalize_options(self):
         # These enviroment variables will be propagated to all the
@@ -137,4 +193,6 @@ class TestRunner():
             #   word Mixin.
             result &= nose.run(argv=args)
         if result is False:
+            if self.print_failed_images:
+                print(failed_images_html())
             exit(1)
