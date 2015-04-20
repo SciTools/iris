@@ -21,6 +21,7 @@ Low level support for UM FieldsFile variants.
 
 from __future__ import (absolute_import, division, print_function)
 
+from contextlib import contextmanager
 import os
 import os.path
 import tempfile
@@ -280,7 +281,7 @@ class Field(object):
         if isinstance(self._data_provider, np.ndarray):
             data = self._data_provider
         elif self._data_provider is not None:
-            data = self._data_provider.read_data(self)
+            data = self._data_provider.read_data()
         return data
 
     def set_data(self, data):
@@ -327,51 +328,94 @@ _CRAY32_SIZE = 4
 _WGDOS_SIZE = 4
 
 
-class _NormalDataProvider(object):
+class _DataProvider(object):
+    def __init__(self, sourcefile, filename, lookup, offset, word_size):
+        """
+        Create a provider that can load a lookup's data.
+
+        Args:
+        * sourcefile: (file)
+            An open file.  This is essentially a shortcut, to avoid having to
+            always open a file. If it is *not* open when get_data is called,
+            a temporary file will be opened for 'filename'.
+        * filename: (string)
+            Path to the containing file.
+        * lookup: (Field)
+            The lookup which the provider relates to.  This encapsulates the
+            original encoding information in the input file.
+        * offset: (int)
+            The data offset in the file (bytes).
+        * word_size: (int)
+            Number of bytes in a header word -- either 4 or 8.
+
+        """
+        self.source = sourcefile
+        self.reopen_path = filename
+        self.offset = offset
+        self.word_size = word_size
+        self.lookup_entry = lookup
+
+    @contextmanager
+    def _with_source(self):
+        # Context manager to temporarily reopen the sourcefile if the original
+        # provided at create time has been closed.
+        field = self.lookup_entry
+        reopen_required = self.source.closed
+        close_required = False
+
+        try:
+            if reopen_required:
+                self.source = open(self.reopen_path)
+                close_required = True
+            yield self.source
+        finally:
+            if close_required:
+                self.source.close()
+
+
+class _NormalDataProvider(_DataProvider):
     """
     Provides access to a simple 2-dimensional array of data, corresponding
     to the data payload for a standard FieldsFile LOOKUP entry.
 
     """
-    def __init__(self, source, offset, word_size):
-        self.source = source
-        self.offset = offset
-        self.word_size = word_size
-
-    def read_data(self, field):
-        self.source.seek(self.offset)
-        lbpack = field.lbpack
-        # Ensure lbpack.n4 (number format) is: native, CRAY, or IEEE.
-        format = (lbpack // 1000) % 10
-        if format not in (0, 2, 3):
-            raise ValueError('Unsupported number format: {}'.format(format))
-        lbpack = lbpack % 1000
-        # NB. This comparison includes checking for the absence of any
-        # compression.
-        if lbpack == 0 or lbpack == 2:
-            if lbpack == 0:
-                word_size = self.word_size
+    def read_data(self):
+        field = self.lookup_entry
+        with self._with_source():
+            self.source.seek(self.offset)
+            lbpack = field.lbpack
+            # Ensure lbpack.n4 (number format) is: native, CRAY, or IEEE.
+            format = (lbpack // 1000) % 10
+            if format not in (0, 2, 3):
+                msg = 'Unsupported number format: {}'
+                raise ValueError(msg.format(format))
+            lbpack = lbpack % 1000
+            # NB. This comparison includes checking for the absence of any
+            # compression.
+            if lbpack == 0 or lbpack == 2:
+                if lbpack == 0:
+                    word_size = self.word_size
+                else:
+                    word_size = _CRAY32_SIZE
+                dtype = _DATA_DTYPES[word_size][field.lbuser1]
+                rows = field.lbrow
+                cols = field.lbnpt
+                # The data is stored in rows, so with the shape (rows, cols)
+                # we don't need to invoke Fortran order.
+                data = np.fromfile(self.source, dtype, count=rows * cols)
+                data = data.reshape(rows, cols)
+            elif lbpack == 1:
+                from iris.fileformats.pp_packing import wgdos_unpack
+                data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
+                data_bytes = self.source.read(data_size)
+                data = wgdos_unpack(data_bytes, field.lbrow, field.lbnpt,
+                                    field.bmdi)
             else:
-                word_size = _CRAY32_SIZE
-            dtype = _DATA_DTYPES[word_size][field.lbuser1]
-            rows = field.lbrow
-            cols = field.lbnpt
-            # The data is stored in rows, so with the shape (rows, cols)
-            # we don't need to invoke Fortran order.
-            data = np.fromfile(self.source, dtype, count=rows * cols)
-            data = data.reshape(rows, cols)
-        elif lbpack == 1:
-            from iris.fileformats.pp_packing import wgdos_unpack
-            data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
-            data_bytes = self.source.read(data_size)
-            data = wgdos_unpack(data_bytes, field.lbrow, field.lbnpt,
-                                field.bmdi)
-        else:
-            raise ValueError('Unsupported lbpack: {}'.format(field.lbpack))
+                raise ValueError('Unsupported lbpack: {}'.format(field.lbpack))
         return data
 
 
-class _BoundaryDataProvider(object):
+class _BoundaryDataProvider(_DataProvider):
     """
     Provides access to the data payload corresponding to a LOOKUP entry
     in a lateral boundary condition FieldsFile variant.
@@ -381,30 +425,28 @@ class _BoundaryDataProvider(object):
     "unrolled" version of all the boundary points.
 
     """
-    def __init__(self, source, offset, word_size):
-        self.source = source
-        self.offset = offset
-        self.word_size = word_size
-
-    def read_data(self, field):
-        self.source.seek(self.offset)
-        lbpack = field.lbpack
-        # Ensure lbpack.n4 (number format) is: native, CRAY, or IEEE.
-        format = (lbpack // 1000) % 10
-        if format not in (0, 2, 3):
-            raise ValueError('Unsupported number format: {}'.format(format))
-        lbpack = lbpack % 1000
-        if lbpack == 0 or lbpack == 2:
-            if lbpack == 0:
-                word_size = self.word_size
+    def read_data(self):
+        field = self.lookup_entry
+        with self._with_source():
+            self.source.seek(self.offset)
+            lbpack = field.lbpack
+            # Ensure lbpack.n4 (number format) is: native, CRAY, or IEEE.
+            format = (lbpack // 1000) % 10
+            if format not in (0, 2, 3):
+                msg = 'Unsupported number format: {}'
+                raise ValueError(msg.format(format))
+            lbpack = lbpack % 1000
+            if lbpack == 0 or lbpack == 2:
+                if lbpack == 0:
+                    word_size = self.word_size
+                else:
+                    word_size = _CRAY32_SIZE
+                dtype = _DATA_DTYPES[word_size][field.lbuser1]
+                data = np.fromfile(self.source, dtype, count=field.lblrec)
+                data = data.reshape(field.lbhem - 100, -1)
             else:
-                word_size = _CRAY32_SIZE
-            dtype = _DATA_DTYPES[word_size][field.lbuser1]
-            data = np.fromfile(self.source, dtype, count=field.lblrec)
-            data = data.reshape(field.lbhem - 100, -1)
-        else:
-            msg = 'Unsupported lbpack for LBC: {}'.format(field.lbpack)
-            raise ValueError(msg)
+                msg = 'Unsupported lbpack for LBC: {}'.format(field.lbpack)
+                raise ValueError(msg)
         return data
 
 
@@ -508,37 +550,39 @@ class FieldsFileVariant(object):
         lookup = constants('lookup', int_dtype)
         fields = []
         if lookup is not None:
-            if lookup[Field.LBNREC_OFFSET, 0] == 0:
+            is_model_dump = lookup[Field.LBNREC_OFFSET, 0] == 0
+            if is_model_dump:
                 # A model dump has no direct addressing - only relative,
                 # so we need to update the offset as we create each
                 # Field.
                 running_offset = ((self.fixed_length_header.data_start - 1) *
                                   word_size)
-                for raw_headers in lookup.T:
-                    if raw_headers[0] == -99:
-                        data_provider = None
-                    else:
+
+            for raw_headers in lookup.T:
+                ints = raw_headers[:_NUM_FIELD_INTS]
+                reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
+                field_class = _FIELD_CLASSES.get(ints[Field.LBREL_OFFSET],
+                                                 Field)
+                if raw_headers[0] == -99:
+                    data_provider = None
+                else:
+                    if is_model_dump:
                         offset = running_offset
-                        data_provider = data_class(source, offset, word_size)
-                    klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
-                                               Field)
-                    ints = raw_headers[:_NUM_FIELD_INTS]
-                    reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
-                    fields.append(klass(ints, reals, data_provider))
-                    running_offset += (raw_headers[Field.LBLREC_OFFSET] *
-                                       word_size)
-            else:
-                for raw_headers in lookup.T:
-                    if raw_headers[0] == -99:
-                        data_provider = None
                     else:
                         offset = raw_headers[Field.LBEGIN_OFFSET] * word_size
-                        data_provider = data_class(source, offset, word_size)
-                    klass = _FIELD_CLASSES.get(raw_headers[Field.LBREL_OFFSET],
-                                               Field)
-                    ints = raw_headers[:_NUM_FIELD_INTS]
-                    reals = raw_headers[_NUM_FIELD_INTS:].view(real_dtype)
-                    fields.append(klass(ints, reals, data_provider))
+                    # Make a *copy* of field lookup data, as it was in the
+                    # untouched original file, as a context for data loading.
+                    # (N.B. most importantly, includes the original LBPACK)
+                    lookup_reference = field_class(ints[:], reals[:], None)
+                    # Make a "provider" that can fetch the data on request.
+                    data_provider = data_class(source, filename,
+                                               lookup_reference,
+                                               offset, word_size)
+                field = field_class(ints, reals, data_provider)
+                fields.append(field)
+                if is_model_dump:
+                    running_offset += (raw_headers[Field.LBLREC_OFFSET] *
+                                       word_size)
         self.fields = fields
 
     def __del__(self):

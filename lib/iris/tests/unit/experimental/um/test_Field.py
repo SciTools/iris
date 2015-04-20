@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -116,7 +116,7 @@ class Test_get_data(tests.IrisTest):
         self.assertIs(field.get_data(), data)
 
     def test_provider(self):
-        provider = mock.Mock(read_data=lambda field: mock.sentinel.DATA)
+        provider = mock.Mock(read_data=lambda: mock.sentinel.DATA)
         field = Field([], [], provider)
         self.assertIs(field.get_data(), mock.sentinel.DATA)
 
@@ -135,7 +135,7 @@ class Test_set_data(tests.IrisTest):
         self.assertArrayEqual(field.get_data(), data)
 
     def test_provider(self):
-        provider = mock.Mock(read_data=lambda field: mock.sentinel.DATA)
+        provider = mock.Mock(read_data=lambda: mock.sentinel.DATA)
         field = Field([], [], None)
         field.set_data(provider)
         self.assertIs(field.get_data(), mock.sentinel.DATA)

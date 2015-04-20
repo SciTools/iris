@@ -23,6 +23,7 @@ from __future__ import (absolute_import, division, print_function)
 import iris.tests as tests
 
 import shutil
+import tempfile
 
 import numpy as np
 
@@ -283,6 +284,41 @@ class TestUpdate(tests.IrisTest):
             # Check that the data of the last ("real") field is correct.
             field = ffv.fields[-1]
             self.assertArrayEqual(field.get_data(), original_field_data)
+
+    def test_getdata_while_open(self):
+        # Check that data is read from the original file if it is still open.
+        src_path = tests.get_data_path(('FF', 'ancillary', 'qrparm.mask'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE (maybe not strictly necessary?)
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            test_field = ffv.fields[0]
+            original_file = test_field._data_provider.source
+            # Fetch data.
+            test_field.get_data()
+            # Check that it used the existing open file.
+            last_used_file = ffv.fields[0]._data_provider.source
+            self.assertEqual(last_used_file, original_file)
+            self.assertFalse(original_file.closed)
+            ffv.close()
+
+    def test_getdata_after_close(self):
+        # Check that data is read from a new file if the original is closed,
+        # and that it is was then closed.
+        src_path = tests.get_data_path(('FF', 'ancillary', 'qrparm.mask'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE (maybe not strictly necessary?)
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            test_field = ffv.fields[0]
+            original_file = test_field._data_provider.source
+            ffv.close()
+            # Fetch data.
+            test_field.get_data()
+            # Check that it used the existing open file.
+            last_used_file = ffv.fields[0]._data_provider.source
+            self.assertNotEqual(last_used_file, original_file)
+            self.assertTrue(last_used_file.closed)
 
 
 class TestCreate(tests.IrisTest):
