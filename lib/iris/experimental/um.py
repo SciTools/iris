@@ -340,13 +340,13 @@ class _DataProvider(object):
             a temporary file will be opened for 'filename'.
         * filename: (string)
             Path to the containing file.
+        * lookup: (Field)
+            The lookup which the provider relates to.  This encapsulates the
+            original encoding information in the input file.
         * offset: (int)
             The data offset in the file (bytes).
         * word_size: (int)
             Number of bytes in a header word -- either 4 or 8.
-        * lookup: (Field)
-            The lookup which the provider relates to.  This encapsulates the
-            original encoding information in the input file.
 
         """
         self.source = sourcefile
