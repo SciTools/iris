@@ -359,7 +359,6 @@ class _DataProvider(object):
     def _with_source(self):
         # Context manager to temporarily reopen the sourcefile if the original
         # provided at create time has been closed.
-        field = self.lookup_entry
         reopen_required = self.source.closed
         close_required = False
 
