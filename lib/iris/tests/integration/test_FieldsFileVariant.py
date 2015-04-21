@@ -348,6 +348,89 @@ class TestUpdate(tests.IrisTest):
             test_data_new = ffv.fields[0].get_data()
             self.assertArrayAllClose(test_data_old, test_data_new)
 
+    def test_save_packed_unchanged(self):
+        # Check that we can copy packed fields without ever unpacking them.
+        original_getdata_call = Field.get_data
+        patch_getdata_call = self.patch('iris.experimental.um.Field.get_data')
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE.
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            self.assertEqual(ffv.fields[0].lbpack, 1)
+            old_size = ffv.fields[0].lbnrec
+            test_data_old = original_getdata_call(ffv.fields[0])
+            ffv.close()
+
+            ffv = FieldsFileVariant(temp_path)
+            self.assertEqual(ffv.fields[0].lbpack, 1)
+            new_size = ffv.fields[0].lbnrec
+            msg = 'unpacked LBNREC({}) is != packed({})'
+            self.assertEqual(new_size, old_size,
+                             msg=msg.format(new_size, old_size))
+            test_data_new = original_getdata_call(ffv.fields[0])
+            self.assertArrayAllClose(test_data_old, test_data_new)
+        # Finally, check we never fetched any field data.
+        self.assertEqual(patch_getdata_call.call_count, 0)
+
+    def test_save_packed_mixed(self):
+        # Check all save options, and show we can "partially" unpack a file.
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE.
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+
+            # Reduce to only the first 3 fields.
+            ffv.fields = ffv.fields[:3]
+            # Check that these fields are all WGDOS packed.
+            self.assertTrue(all(fld.lbpack == 1 for fld in ffv.fields))
+
+            # Modify the fields to exercise all 3 saving 'styles'.
+            # Field#0 : store packed as unpacked.
+            data_0 = ffv.fields[0].get_data()
+            ffv.fields[0].lbpack = 2000
+            # Field#1 : pass-through packed as packed.
+            data_1 = ffv.fields[1].get_data()
+            # Field#2 : save array as unpacked.
+            shape2 = (ffv.fields[2].lbrow, ffv.fields[2].lbnpt)
+            data_2 = np.arange(np.prod(shape2)).reshape(shape2)
+            ffv.fields[2].set_data(data_2)
+            ffv.fields[2].lbpack = 3000
+            ffv.close()
+
+            # Read the test file back in, and check all is as expected.
+            ffv = FieldsFileVariant(temp_path)
+            self.assertEqual(len(ffv.fields), 3)
+            # Field#0.
+            self.assertEqual(ffv.fields[0].lbpack, 2000)
+            self.assertArrayAllClose(ffv.fields[0].get_data(), data_0)
+            # Field#1.
+            self.assertEqual(ffv.fields[1].lbpack, 1)
+            self.assertArrayAllClose(ffv.fields[1].get_data(), data_1)
+            # Field#2.
+            self.assertEqual(ffv.fields[2].lbpack, 3000)
+            self.assertArrayAllClose(ffv.fields[2].get_data(), data_2)
+
+    def test_fail_save_with_packing(self):
+        # Check that trying to save data as packed causes an error.
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE.
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+
+            # Reduce to just one field.
+            field = ffv.fields[0]
+            ffv.fields = [field]
+            # Actualise the data to a concrete array.
+            field.set_data(field.get_data())
+            # Attempt to save back to a packed format.
+            field.lbpack = 1
+            msg = 'Cannot save.*lbpack=1.*packing not supported'
+            with self.assertRaisesRegexp(ValueError, msg):
+                ffv.close()
+
 
 class TestCreate(tests.IrisTest):
     @tests.skip_data

@@ -1,0 +1,3 @@
+* When a Fieldsfile is opened for update as a :class:`iris.experimental.um.FieldsFileVariant`,
+  unmodified packed data in the file can now be retained in the original form
+  (whereas previously it could only be stored in an unpacked form).
