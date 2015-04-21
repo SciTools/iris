@@ -572,7 +572,8 @@ class FieldsFileVariant(object):
                     # Make a *copy* of field lookup data, as it was in the
                     # untouched original file, as a context for data loading.
                     # (N.B. most importantly, includes the original LBPACK)
-                    lookup_reference = field_class(ints[:], reals[:], None)
+                    lookup_reference = field_class(ints.copy(), reals.copy(),
+                                                   None)
                     # Make a "provider" that can fetch the data on request.
                     data_provider = data_class(source, filename,
                                                lookup_reference,
