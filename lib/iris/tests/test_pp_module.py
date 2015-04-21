@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -196,31 +196,50 @@ class TestPPField_GlobalTemperature(IrisPPTest):
         
         f.save(open(temp_filename, 'wb'))
         self.assertEqual(self.file_checksum(temp_filename), self.file_checksum(filepath))
-        
+
         os.remove(temp_filename)
-    
+
 
 @tests.skip_data
 class TestPackedPP(IrisPPTest):
     def test_wgdos(self):
-        r = pp.load(tests.get_data_path(('PP', 'wgdos_packed', 'nae.20100104-06_0001.pp')))
-        
-        # Check that the result is a generator and convert to a list so that we can index and get the first one
-        self.assertEqual( type(r), GeneratorType)
+        filepath = tests.get_data_path(('PP', 'wgdos_packed',
+                                        'nae.20100104-06_0001.pp'))
+        r = pp.load(filepath)
+
+        # Check that the result is a generator and convert to a list so that we
+        # can index and get the first one
+        self.assertEqual(type(r), GeneratorType)
         r = list(r)
-        
+
         self.check_pp(r, ('PP', 'nae_unpacked.pp.txt'))
-        
-        # check that trying to save this field again raises an error (we cannot currently write WGDOS packed fields)
+
+        # check that trying to save this field again raises an error
+        # (we cannot currently write WGDOS packed fields without mo_pack)
         temp_filename = iris.util.create_temp_filename(".pp")
-        self.assertRaises(NotImplementedError, r[0].save, open(temp_filename, 'wb'))
+        with mock.patch('iris.fileformats.pp.mo_pack', None):
+            with self.assertRaises(NotImplementedError):
+                r[0].save(open(temp_filename, 'wb'))
         os.remove(temp_filename)
-        
+
+    @unittest.skipIf(pp.mo_pack is None, 'Requires mo_pack.')
+    def test_wgdos_mo_pack(self):
+        filepath = tests.get_data_path(('PP', 'wgdos_packed',
+                                        'nae.20100104-06_0001.pp'))
+        input_fields = pp.load(filepath)
+        with self.temp_filename('.pp') as temp_filename:
+            for field in input_fields:
+                field.save(open(temp_filename, 'ab'))
+            saved_fields = pp.load(temp_filename)
+            for i, j in zip(input_fields, saved_fields):
+                self.assertEqual(i.data.mean(), j.data.mean())
+
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))
 
-        # Check that the result is a generator and convert to a list so that we can index and get the first one
-        self.assertEqual( type(r), GeneratorType)
+        # Check that the result is a generator and convert to a list so that we
+        # can index and get the first one
+        self.assertEqual(type(r), GeneratorType)
         r = list(r)
 
         self.check_pp(r, ('PP', 'rle_unpacked.pp.txt'))

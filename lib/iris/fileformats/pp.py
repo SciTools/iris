@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -43,6 +43,11 @@ import iris.fileformats.pp_rules
 import iris.coord_systems
 import iris.proxy
 iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
+
+try:
+    import mo_pack
+except ImportError:
+    mo_pack = None
 
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
@@ -888,8 +893,14 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
     if lbpack.n1 in (0, 2):
         data = np.frombuffer(data_bytes, dtype=data_type)
     elif lbpack.n1 == 1:
-        data = pp_packing.wgdos_unpack(data_bytes, data_shape[0],
-                                       data_shape[1], mdi)
+        if mo_pack is not None:
+            data = mo_pack.unpack_wgdos(data_bytes,
+                                        data_shape[0], data_shape[1], mdi)
+        else:
+            msg = 'iris.fileformats.pp_packing.wgdos_unpack has been ' \
+                  'deprecated. Unpacking PP fields with LBPACK of {} ' \
+                  'now requires mo_pack to be installed'.format(lbpack.n1)
+            raise NotImplementedError(msg)
     elif lbpack.n1 == 4:
         data = pp_packing.rle_decode(data_bytes, data_shape[0], data_shape[1], mdi)
     else:
@@ -1356,13 +1367,24 @@ class PPField(object):
 
         # populate lbext in WORDS
         lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload // PP_WORD_DEPTH
-
+        
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
-        len_of_data_payload += data.size * PP_WORD_DEPTH
+        if lb[self.HEADER_DICT['lbpack'][0]] == 0:
+            len_of_data_payload += data.size * PP_WORD_DEPTH
+        elif lb[self.HEADER_DICT['lbpack'][0]] == 1:
+            if mo_pack is not None:
+                packed_data = mo_pack.pack_wgdos(data.astype(np.float32),
+                                                 b[self.HEADER_DICT['bacc'][0]-45],
+                                                 b[self.HEADER_DICT['bmdi'][0]-45])
+                len_of_data_payload += len(packed_data)
+            else:
+                msg = 'Writing packed pp data with lbpack of {} ' \
+                      'requires mo_pack to be installed.'.format(lb[self.HEADER_DICT['lbpack'][0]])
+                raise NotImplementedError(msg)
 
         # populate lbrec in WORDS
         lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload // PP_WORD_DEPTH
-
+        
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
             lb[self.HEADER_DICT['lbuser'][0]] = 1
@@ -1389,9 +1411,9 @@ class PPField(object):
         # header length
         pp_file.write(struct.pack(">L", PP_HEADER_DEPTH))
 
-        # 49 integers
+        # 45 integers
         lb.tofile(pp_file)
-        # 16 floats
+        # 19 floats
         b.tofile(pp_file)
 
         #Header length (again)
@@ -1399,13 +1421,15 @@ class PPField(object):
 
         # Data length (including extra data length)
         pp_file.write(struct.pack(">L", int(len_of_data_payload)))
-
+        
         # the data itself
         if lb[self.HEADER_DICT['lbpack'][0]] == 0:
             data.tofile(pp_file)
+        elif lb[self.HEADER_DICT['lbpack'][0]] == 1:
+            pp_file.write(packed_data)
         else:
             msg = 'Writing packed pp data with lbpack of {} ' \
-                'is not supported.'.format(lb[self.HEADER_DICT['lbpack'][0]])
+                  'is not supported.'.format(lb[self.HEADER_DICT['lbpack'][0]])
             raise NotImplementedError(msg)
 
         # extra data elements
@@ -1770,7 +1794,7 @@ def _field_gen(filename, read_data_bytes):
         # Get the FLOAT header entries
         header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH, count=NUM_FLOAT_HEADERS)
         header = tuple(header_longs) + tuple(header_floats)
-
+    
         # Make a PPField of the appropriate sub-class (depends on header release number)
         try:
             pp_field = make_pp_field(header)

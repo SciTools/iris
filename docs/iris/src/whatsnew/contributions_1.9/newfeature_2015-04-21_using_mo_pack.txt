@@ -1,0 +1,1 @@
+* `mo_pack <https://github.com/SciTools/mo_pack>`_ is an optional dependency and can be used to unpack WGDOS packed data. mo_pack also provides the functionality of data packing.

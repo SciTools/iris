@@ -145,6 +145,9 @@ shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric
     objects.
 
+mo_pack 0.1.0dev0 (https://github.com/SciTools/mo_pack)
+    A Python wrapper to libmo_unpack.
+
 * Those packages have been tested with a specific build.
 
 Packed PP
