@@ -30,7 +30,7 @@ import numpy as np
 
 # Borrow some definitions...
 from iris.fileformats.ff import _FF_HEADER_POINTERS, FF_HEADER as _FF_HEADER
-from iris.fileformats.pp import _header_defn
+from iris.fileformats.pp import _header_defn, SplittableInt
 
 
 DEFAULT_WORD_SIZE = 8  # In bytes.
@@ -206,6 +206,15 @@ class _FieldMetaclass(type):
                                                        bases, class_dict)
 
 
+def lbpack_digits(required_lbpack):
+    # Separate off anything above 4 digits
+    digits_5up = required_lbpack // 10000
+    # Make a 4-digit splittable from the rest.
+    digits_1to4 = SplittableInt(required_lbpack % 10000,
+                                {'n4': 3, 'n3': 2, 'n2': 1, 'n1': 0})
+    return digits_5up, digits_1to4
+
+
 class Field(object):
     """
     Represents a single entry in the LOOKUP component and its
@@ -284,6 +293,17 @@ class Field(object):
             data = self._data_provider.read_data()
         return data
 
+    def _get_raw_payload_bytes(self):
+        """
+        Return a NumPy array containing the raw bytes.
+
+        The field data must be a deferred-data provider, not an array.
+        Typically, that means a deferred data reference to an existing file.
+        This enables us to handle packed data without interpreting it.
+
+        """
+        return self._data_provider._read_raw_payload_bytes()
+
     def set_data(self, data):
         """
         Set the data payload for this field.
@@ -295,6 +315,64 @@ class Field(object):
 
         """
         self._data_provider = data
+
+    def _raw_data_is_useable_with_lbpack(self, required_lbpack):
+        """
+        Return whether the field's raw payload can be reused unmodified,
+        for the specified output packing format.
+
+        """
+        if isinstance(self._data_provider, np.ndarray):
+            # The original data payload has been replaced by plain array data.
+            return False
+
+        existing_lbpack = self._data_provider.lookup_entry.lbpack
+        new_lbpack_upper, new_lbpack = lbpack_digits(required_lbpack)
+        old_lbpack_upper, old_lbpack = lbpack_digits(existing_lbpack)
+        # We can treat data word types 0, 2 and 3 as the same.
+        data_types_equivalent = (new_lbpack.n4 == old_lbpack.n4 or
+                                 ((new_lbpack.n4 in (0, 2, 3)) and
+                                  (old_lbpack.n4 in (0, 2, 3))))
+        # The packing words are compatible if nothing else is different.
+        compatible = (data_types_equivalent and
+                      new_lbpack_upper == old_lbpack_upper and
+                      ((new_lbpack.n3, new_lbpack.n2, new_lbpack.n1) ==
+                       (old_lbpack.n3, old_lbpack.n2, old_lbpack.n1)))
+        return compatible
+
+    def _check_valid_data_encoding(self, required_lbpack):
+        """
+        Check if we can save this field's data to a specified packing format.
+
+        If not, raise an explanatory exception.
+
+        """
+        new_lbpack_upper, new_lbpack = lbpack_digits(required_lbpack)
+
+        # Any data can be output as unpacked.
+        required_unpacked = (new_lbpack_upper == 0 and
+                             new_lbpack.n4 in (0, 2, 3) and
+                             new_lbpack.n3 == 0 and
+                             new_lbpack.n2 == 0 and
+                             new_lbpack.n1 == 0)
+        if required_unpacked:
+            return
+
+        # 'Else' the target is a packed format...
+        # Unpacked data can not currently be re-coded in any packed form.
+        if isinstance(self._data_provider, np.ndarray):
+            # An assigned array has replaced the original deferred data
+            # reference :  We can only cope with unpacked formats.
+            msg = ('Cannot save array data to format lbpack={} : '
+                   'requires unsupported encoding method')
+            raise ValueError(msg.format(new_lbpack))
+
+        # Packed data can be copied unchanged, to a compatible format.
+        if not self._raw_data_is_useable_with_lbpack(required_lbpack):
+            msg = ('Cannot save file data in format lbpack={} to the required '
+                   'format lbpack={} : requires an unsupported re-encoding')
+            existing_lbpack = self._data_provider.lookup_entry.lbpack
+            raise ValueError(msg.format(existing_lbpack, required_lbpack))
 
 
 class Field2(Field):
@@ -359,7 +437,6 @@ class _DataProvider(object):
     def _with_source(self):
         # Context manager to temporarily reopen the sourcefile if the original
         # provided at create time has been closed.
-        field = self.lookup_entry
         reopen_required = self.source.closed
         close_required = False
 
@@ -371,6 +448,18 @@ class _DataProvider(object):
         finally:
             if close_required:
                 self.source.close()
+
+    def _read_raw_payload_bytes(self):
+        # Return the raw data payload, as an array of bytes.
+        # This is independent of the packing representation.
+        field = self.lookup_entry
+        with self._with_source():
+            self.source.seek(self.offset)
+            data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
+            # This size calculation seems rather questionable, but derives from
+            # a very long code legacy, so appeal to a "sleeping dogs" policy.
+            data_bytes = self.source.read(data_size)
+        return data_bytes
 
 
 class _NormalDataProvider(_DataProvider):
@@ -406,8 +495,7 @@ class _NormalDataProvider(_DataProvider):
                 data = data.reshape(rows, cols)
             elif lbpack == 1:
                 from iris.fileformats.pp_packing import wgdos_unpack
-                data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
-                data_bytes = self.source.read(data_size)
+                data_bytes = self._read_raw_payload_bytes()
                 data = wgdos_unpack(data_bytes, field.lbrow, field.lbnpt,
                                     field.bmdi)
             else:
@@ -573,7 +661,8 @@ class FieldsFileVariant(object):
                     # Make a *copy* of field lookup data, as it was in the
                     # untouched original file, as a context for data loading.
                     # (N.B. most importantly, includes the original LBPACK)
-                    lookup_reference = field_class(ints[:], reals[:], None)
+                    lookup_reference = field_class(ints.copy(), reals.copy(),
+                                                   None)
                     # Make a "provider" that can fetch the data on request.
                     data_provider = data_class(source, filename,
                                                lookup_reference,
@@ -685,19 +774,43 @@ class FieldsFileVariant(object):
             output_file.seek((header.data_start - 1) * self._word_size)
             dataset_type = self.fixed_length_header.dataset_type
             sector_size = self._WORDS_PER_SECTOR * self._word_size
+
             for field in self.fields:
-                data = field.get_data()
-                if data is not None:
+                if isinstance(field, (Field2, Field3)):
+                    # Output 'recognised' lookup types (not blank entries).
                     field.lbegin = output_file.tell() / self._word_size
-                    # Round the data length up to the nearest whole
-                    # number of "sectors".
-                    size = data.size
-                    size -= size % -self._WORDS_PER_SECTOR
-                    field.lbnrec = size
-                    kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
-                                                        data.dtype.kind)
-                    data = normalise(data, kind)
-                    output_file.write(data)
+                    required_lbpack = field.lbpack
+                    field._check_valid_data_encoding(required_lbpack)
+                    if field._raw_data_is_useable_with_lbpack(required_lbpack):
+                        # Original data is encoded as wanted, so pass it
+                        # through unchanged.  In this case, we should also
+                        # leave the lookup controls unchanged -- i.e. do not
+                        # recalculate LBLREC and LBNREC.
+                        data = field._get_raw_payload_bytes()
+                        output_file.write(data)
+                    else:
+                        # The data needs to be re-encoded in some way.
+                        # For now, this *only* means writing unpacked data, as
+                        # we don't support any other encodings at present.
+                        data = field.get_data()
+
+                        # Ensure the output is coded right.
+                        # NOTE: For now, as we don't do compression, this just
+                        # means fixing data wordlength and endian-ness.
+                        kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
+                                                            data.dtype.kind)
+                        data = normalise(data, kind)
+                        output_file.write(data)
+
+                        # Record the payload size in the lookup control words.
+                        data_size = data.size
+                        data_sectors_size = data_size
+                        data_sectors_size -= \
+                            data_size % -self._WORDS_PER_SECTOR
+                        field.lblrec = data_size
+                        field.lbnrec = data_sectors_size
+
+                    # Pad out the data section to a whole number of sectors.
                     overrun = output_file.tell() % sector_size
                     if overrun != 0:
                         padding = np.zeros(sector_size - overrun, 'i1')

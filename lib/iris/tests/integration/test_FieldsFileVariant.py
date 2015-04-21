@@ -320,6 +320,80 @@ class TestUpdate(tests.IrisTest):
             self.assertNotEqual(last_used_file, original_file)
             self.assertTrue(last_used_file.closed)
 
+    def test_save_packed_as_unpacked(self):
+        # Check that we can successfully re-save a packed datafile as unpacked.
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE (maybe not strictly necessary?)
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            self.assertEqual(ffv.fields[0].lbpack, 1)
+            old_sizes = [fld.lbnrec for fld in ffv.fields
+                         if hasattr(fld, 'lbpack')]
+            test_data_old = ffv.fields[0].get_data()
+            for fld in ffv.fields:
+                if hasattr(fld, 'lbpack'):
+                    fld.lbpack = 0
+            ffv.close()
+
+            ffv = FieldsFileVariant(temp_path)
+            new_sizes = [fld.lbnrec for fld in ffv.fields
+                         if hasattr(fld, 'lbpack')]
+            for i_field, (new_size, old_size) in enumerate(zip(new_sizes,
+                                                               old_sizes)):
+                msg = 'unpacked LBNREC({}) is <= packed({})'
+                self.assertGreater(new_size, old_size,
+                                   msg=msg.format(new_size, old_size))
+
+            test_data_new = ffv.fields[0].get_data()
+            self.assertArrayAllClose(test_data_old, test_data_new)
+
+    def test_save_packed_unchanged(self):
+        # Check that we can successfully save a packed datafile as packed.
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE (maybe not strictly necessary?)
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            self.assertEqual(ffv.fields[0].lbpack, 1)
+            old_size = ffv.fields[0].lbnrec
+            test_data_old = ffv.fields[0].get_data()
+            ffv.close()
+
+            ffv = FieldsFileVariant(temp_path)
+            self.assertEqual(ffv.fields[0].lbpack, 1)
+            new_size = ffv.fields[0].lbnrec
+            test_data_new = ffv.fields[0].get_data()
+            msg = 'unpacked LBNREC({}) is != packed({})'
+            self.assertEqual(new_size, old_size,
+                             msg=msg.format(new_size, old_size))
+
+            test_data_new = ffv.fields[0].get_data()
+            self.assertArrayAllClose(test_data_old, test_data_new)
+
+#    def test_save_packed_mixed(self):
+#        # Check that we can partially a unpack some data + save it.
+#        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+#        with self.temp_filename() as temp_path:
+#            # Make a copy and open for UPDATE (maybe not strictly necessary?)
+#            shutil.copyfile(src_path, temp_path)
+#            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+#            self.assertEqual(ffv.fields[0].lbpack, 1)
+#            old_size = ffv.fields[0].lbnrec
+#            test_data_old = ffv.fields[0].get_data()
+#            ffv.close()
+#
+#            ffv = FieldsFileVariant(temp_path)
+#            self.assertEqual(ffv.fields[0].lbpack, 1)
+#            new_size = ffv.fields[0].lbnrec
+#            test_data_new = ffv.fields[0].get_data()
+#            msg = 'unpacked LBNREC({}) is != packed({})'
+#            self.assertEqual(new_size, old_size,
+#                             msg=msg.format(new_size, old_size))
+#
+#            test_data_new = ffv.fields[0].get_data()
+#            self.assertArrayAllClose(test_data_old, test_data_new)
+
 
 class TestCreate(tests.IrisTest):
     @tests.skip_data
