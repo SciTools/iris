@@ -141,5 +141,96 @@ class Test_set_data(tests.IrisTest):
         self.assertIs(field.get_data(), mock.sentinel.DATA)
 
 
+class Test__raw_data_is_useable_with_lbpack(tests.IrisTest):
+    def _check_formats(self, old_lbpack, new_lbpack, absent_provider=False):
+        provider = mock.Mock(lookup_entry=mock.Mock(lbpack=old_lbpack))
+        if absent_provider:
+            # Replace the provider with a simple array.
+            provider = np.zeros(2)
+        field = Field(range(45), range(19), provider)
+        return field._raw_data_is_useable_with_lbpack(new_lbpack)
+
+    def test_okay_simple(self):
+        self.assertTrue(self._check_formats(1234, 1234))
+
+    def test_fail_simple(self):
+        self.assertFalse(self._check_formats(1234, 1238))
+
+    def test_fail_nodata(self):
+        self.assertFalse(self._check_formats(1234, 1234, absent_provider=True))
+
+    def test_fail_different_n1(self):
+        self.assertFalse(self._check_formats(3000, 3001))
+
+    def test_fail_different_n2(self):
+        self.assertFalse(self._check_formats(3000, 3010))
+
+    def test_fail_different_n3(self):
+        self.assertFalse(self._check_formats(3000, 3100))
+
+    def test_okay_compatible_n4(self):
+        self.assertTrue(self._check_formats(2007, 3007))
+        self.assertTrue(self._check_formats(7, 3007))
+
+    def test_fail_incompatible_n4(self):
+        self.assertFalse(self._check_formats(2007, 4007))
+
+    def test_okay_same_unknown_n4(self):
+        self.assertTrue(self._check_formats(8001, 8001))
+
+    def test_fail_different_uppers(self):
+        self.assertFalse(self._check_formats(101001111, 102001111))
+
+    def test_okay_unknown_uppers(self):
+        self.assertTrue(self._check_formats(123401111, 123401111))
+
+
+class Test__check_valid_data_encoding(tests.IrisTest):
+    def _check_formats(self, old_lbpack, new_lbpack, absent_provider=False):
+        provider = mock.Mock(lookup_entry=mock.Mock(lbpack=old_lbpack))
+        if absent_provider:
+            # Replace the provider with a simple array.
+            provider = np.zeros(2)
+        field = Field(range(45), range(19), provider)
+        field._check_valid_data_encoding(new_lbpack)
+
+    def test_okay_unpacked_as_unpacked(self):
+        self._check_formats(0, 0)
+
+    def test_fail_unpacked_as_packed(self):
+        re = 'lbpack=0 to .* lbpack=1 .* unsupported re-encoding'
+        with self.assertRaisesRegexp(ValueError, re):
+            self._check_formats(0, 1)
+
+    def test_fail_array_as_packed(self):
+        re = 'array .* lbpack=1 .* unsupported encoding'
+        with self.assertRaisesRegexp(ValueError, re):
+            self._check_formats(1, 1, absent_provider=True)
+
+    def test_okay_unpacked_as_unpacked_equivalent_wordtypes(self):
+        self._check_formats(2000, 3000)
+
+    def test_fail_unpacked_as_unpacked_different_wordtypes(self):
+        re = 'lbpack=2000 to .* lbpack=7000 .* unsupported re-encoding'
+        with self.assertRaisesRegexp(ValueError, re):
+            self._check_formats(2000, 7000)
+
+    def test_okay_packed_as_packed(self):
+        self._check_formats(1, 1)
+
+    def test_fail_packed_as_packed_different(self):
+        re = 'lbpack=1 to .* lbpack=2 .* unsupported re-encoding'
+        with self.assertRaisesRegexp(ValueError, re):
+            self._check_formats(1, 2)
+
+    def test_okay_packed_as_packed_equivalent_wordtypes(self):
+        self._check_formats(1, 3001)
+
+    def test_fail_packed_as_packed_different_wordtypes(self):
+        re = 'lbpack=2001 to .* lbpack=7001 .* unsupported re-encoding'
+        with self.assertRaisesRegexp(ValueError, re):
+            self._check_formats(2001, 7001)
+
+
 if __name__ == '__main__':
     tests.main()
