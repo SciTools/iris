@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,11 +22,12 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
-import iris.fileformats.cf
 import mock
 import netCDF4
 import numpy as np
 
+from iris.coords import DimCoord
+import iris.fileformats.cf
 from iris.fileformats.netcdf import _load_cube
 
 
@@ -100,6 +101,126 @@ class TestFillValue(tests.IrisTest):
         cf_var = self._make_cf_var(dtype)
         cf_var.scale_factor = np.float64(1.5)
         self._test(cf_var, netCDF4.default_fillvals['i2'])
+
+
+class TestCoordAttributes(tests.IrisTest):
+    @staticmethod
+    def _patcher(engine, cf, cf_group):
+        coordinates = []
+        for coord in cf_group:
+            engine.cube.add_aux_coord(coord)
+            coordinates.append((coord, coord.name()))
+        engine.provides['coordinates'] = coordinates
+
+    def setUp(self):
+        this = 'iris.fileformats.netcdf._assert_case_specific_facts'
+        patch = mock.patch(this, side_effect=self._patcher)
+        patch.start()
+        self.addCleanup(patch.stop)
+        self.engine = mock.Mock()
+        self.filename = 'DUMMY'
+        self.flag_masks = mock.sentinel.flag_masks
+        self.flag_meanings = mock.sentinel.flag_meanings
+        self.flag_values = mock.sentinel.flag_values
+
+    def _make(self, names, attrs):
+        coords = [DimCoord(i, long_name=name) for i, name in enumerate(names)]
+
+        cf_group = {}
+        for name, cf_attrs in zip(names, attrs):
+            cf_attrs_unused = mock.Mock(return_value=cf_attrs)
+            cf_group[name] = mock.Mock(cf_attrs_unused=cf_attrs_unused)
+        cf = mock.Mock(cf_group=cf_group)
+
+        cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
+                                dtype=np.dtype('i4'),
+                                cf_data=mock.Mock(),
+                                cf_name='DUMMY_VAR',
+                                cf_group=coords,
+                                shape=(1,))
+        return cf, cf_var
+
+    def test_flag_pass_thru(self):
+        items = [('masks', 'flag_masks', self.flag_masks),
+                 ('meanings', 'flag_meanings', self.flag_meanings),
+                 ('values', 'flag_values', self.flag_values)]
+        for name, attr, value in items:
+            names = [name]
+            attrs = [[(attr, value)]]
+            cf, cf_var = self._make(names, attrs)
+            cube = _load_cube(self.engine, cf, cf_var, self.filename)
+            self.assertEqual(len(cube.coords(name)), 1)
+            coord = cube.coord(name)
+            self.assertEqual(len(coord.attributes), 1)
+            self.assertEqual(coord.attributes.keys(), [attr])
+            self.assertEqual(coord.attributes.values(), [value])
+
+    def test_flag_pass_thru_multi(self):
+        names = ['masks', 'meanings', 'values']
+        attrs = [[('flag_masks', self.flag_masks),
+                  ('wibble', 'wibble')],
+                 [('flag_meanings', self.flag_meanings),
+                  ('add_offset', 'add_offset')],
+                 [('flag_values', self.flag_values)]]
+        cf, cf_var = self._make(names, attrs)
+        cube = _load_cube(self.engine, cf, cf_var, self.filename)
+        self.assertEqual(len(cube.coords()), 3)
+        self.assertEqual(set([c.name() for c in cube.coords()]), set(names))
+        expected = [attrs[0],
+                    [attrs[1][0]],
+                    attrs[2]]
+        for name, expect in zip(names, expected):
+            attributes = cube.coord(name).attributes
+            self.assertEqual(set(attributes.items()), set(expect))
+
+
+class TestCubeAttributes(tests.IrisTest):
+    def setUp(self):
+        this = 'iris.fileformats.netcdf._assert_case_specific_facts'
+        patch = mock.patch(this)
+        patch.start()
+        self.addCleanup(patch.stop)
+        self.engine = mock.Mock()
+        self.cf = None
+        self.filename = 'DUMMY'
+        self.flag_masks = mock.sentinel.flag_masks
+        self.flag_meanings = mock.sentinel.flag_meanings
+        self.flag_values = mock.sentinel.flag_values
+
+    def _make(self, attrs):
+        cf_attrs_unused = mock.Mock(return_value=attrs)
+        cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
+                                dtype=np.dtype('i4'),
+                                cf_data=mock.Mock(),
+                                cf_name='DUMMY_VAR',
+                                cf_group=mock.Mock(),
+                                cf_attrs_unused=cf_attrs_unused,
+                                shape=mock.MagicMock())
+        return cf_var
+
+    def test_flag_pass_thru(self):
+        attrs = [('flag_masks', self.flag_masks),
+                 ('flag_meanings', self.flag_meanings),
+                 ('flag_values', self.flag_values)]
+        for key, value in attrs:
+            cf_var = self._make([(key, value)])
+            cube = _load_cube(self.engine, self.cf, cf_var, self.filename)
+            self.assertEqual(len(cube.attributes), 1)
+            self.assertEqual(cube.attributes.keys(), [key])
+            self.assertEqual(cube.attributes.values(), [value])
+
+    def test_flag_pass_thru_multi(self):
+        attrs = [('flag_masks', self.flag_masks),
+                 ('wibble', 'wobble'),
+                 ('flag_meanings', self.flag_meanings),
+                 ('add_offset', 'add_offset'),
+                 ('flag_values', self.flag_values),
+                 ('standard_name', 'air_temperature')]
+        expected = set([attrs[0], attrs[1], attrs[2], attrs[4]])
+        cf_var = self._make(attrs)
+        cube = _load_cube(self.engine, self.cf, cf_var, self.filename)
+        self.assertEqual(len(cube.attributes), len(expected))
+        self.assertEqual(set(cube.attributes.items()), expected)
 
 
 if __name__ == "__main__":
