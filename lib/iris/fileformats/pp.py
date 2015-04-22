@@ -901,9 +901,10 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
             data = mo_pack.unpack_wgdos(data_bytes,
                                         data_shape[0], data_shape[1], mdi)
         elif pp_packing is not None:
-            msg = 'The WGDOS unpacking functionality is deprecated and will ' \
-                  'be removed in a future release. Install mo_pack to make ' \
-                  'use of the new unpacking functionality.'
+            msg = 'iris.fileformats.pp_packing.wgdos_unpack has been ' \
+                  'deprecated and will be removed in a future release. ' \
+                  'Install mo_pack to make use of the new unpacking ' \
+                  'functionality.'
             warnings.warn(msg)
             data = pp_packing.wgdos_unpack(data_bytes,
                                            data_shape[0], data_shape[1], mdi)

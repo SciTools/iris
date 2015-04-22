@@ -415,9 +415,7 @@ class _NormalDataProvider(_DataProvider):
                     data = mo_pack.unpack_wgdos(data_bytes, field.lbrow,
                                                 field.lbnpt, field.bmdi)
                 else:
-                    msg = 'iris.fileformats.pp_packing.wgdos_unpack has been ' \
-                          'deprecated. Unpacking PP fields with LBPACK of {} ' \
-                          'now requires mo_pack to be installed'.format(lbpack)
+                    msg = 'mo_pack is required to read WGDOS packed data'
                     raise NotImplementedError(msg)
             else:
                 raise ValueError('Unsupported lbpack: {}'.format(field.lbpack))
