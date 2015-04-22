@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -68,6 +68,9 @@ SPATIO_TEMPORAL_AXES = ['t', 'z', 'y', 'x']
 # Pass through CF attributes:
 #  - comment
 #  - Conventions
+#  - flag_masks
+#  - flag_meanings
+#  - flag_values
 #  - history
 #  - institution
 #  - reference
@@ -77,10 +80,9 @@ SPATIO_TEMPORAL_AXES = ['t', 'z', 'y', 'x']
 #
 _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
              'cell_measures', 'cell_methods', 'climatology', 'compress',
-             'coordinates', '_FillValue', 'flag_masks', 'flag_meanings',
-             'flag_values', 'formula_terms', 'grid_mapping', 'leap_month',
-             'leap_year', 'long_name', 'missing_value', 'month_lengths',
-             'scale_factor', 'standard_error_multiplier',
+             'coordinates', '_FillValue', 'formula_terms', 'grid_mapping',
+             'leap_month', 'leap_year', 'long_name', 'missing_value',
+             'month_lengths', 'scale_factor', 'standard_error_multiplier',
              'standard_name', 'units', 'valid_max', 'valid_min', 'valid_range']
 
 # CF attributes that should not be global.
