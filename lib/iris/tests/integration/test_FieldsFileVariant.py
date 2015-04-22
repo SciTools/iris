@@ -341,9 +341,9 @@ class TestUpdate(tests.IrisTest):
                          if hasattr(fld, 'lbpack')]
             for i_field, (new_size, old_size) in enumerate(zip(new_sizes,
                                                                old_sizes)):
-                msg = 'unpacked LBNREC({}) is <= packed({})'
-                self.assertGreater(new_size, old_size,
-                                   msg=msg.format(new_size, old_size))
+                msg = 'unpacked LBNREC({}) is < packed({})'
+                self.assertGreaterEqual(new_size, old_size,
+                                        msg=msg.format(new_size, old_size))
 
             test_data_new = ffv.fields[0].get_data()
             self.assertArrayAllClose(test_data_old, test_data_new)
@@ -372,6 +372,44 @@ class TestUpdate(tests.IrisTest):
             self.assertArrayAllClose(test_data_old, test_data_new)
         # Finally, check we never fetched any field data.
         self.assertEqual(patch_getdata_call.call_count, 0)
+
+    def test_save_with_wgdos_packing(self):
+        # Check that we can pack data with the WGDOS method.
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE (maybe not strictly necessary?)
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            # Grab a single field to fiddle with (as a shortcut).
+            field = ffv.fields[0]
+            # Make a new test data array, compatible with the existing header.
+            shape = (field.lbrow, field.lbnpt)
+            data = np.arange(np.prod(shape))
+            data = data.reshape(shape)
+            # Make two copied Fields, with the new data.
+            field1 = field.__class__(field.int_headers.copy(),
+                                     field.real_headers.copy(),
+                                     data.copy())
+            field2 = field.__class__(field.int_headers.copy(),
+                                     field.real_headers.copy(),
+                                     data.copy())
+            # Setup one to be wgdos-packed and one to be left unpacked.
+            field1.lbpack = 1
+            field1.bacc = -13
+            field2.lbpack = 0
+            # Rewrite the test file with just these fields.
+            ffv.fields = [field1, field2]
+            ffv.close()
+
+            # Read the test file back in, and check all is as expected.
+            ffv = FieldsFileVariant(temp_path)
+            self.assertEqual(len(ffv.fields), 2)
+            # Check lbpacks.
+            self.assertEqual(ffv.fields[0].lbpack, 1)
+            self.assertEqual(ffv.fields[1].lbpack, 0)
+            # Check that the data arrays are approximately the same.
+            self.assertArrayAllClose(ffv.fields[0].get_data(),
+                                     ffv.fields[1].get_data())
 
     def test_save_packed_mixed(self):
         # Check all save options, and show we can "partially" unpack a file.
@@ -412,7 +450,7 @@ class TestUpdate(tests.IrisTest):
             self.assertEqual(ffv.fields[2].lbpack, 3000)
             self.assertArrayAllClose(ffv.fields[2].get_data(), data_2)
 
-    def test_fail_save_with_packing(self):
+    def test_fail_save_with_unknown_packing(self):
         # Check that trying to save data as packed causes an error.
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
@@ -425,9 +463,9 @@ class TestUpdate(tests.IrisTest):
             ffv.fields = [field]
             # Actualise the data to a concrete array.
             field.set_data(field.get_data())
-            # Attempt to save back to a packed format.
-            field.lbpack = 1
-            msg = 'Cannot save.*lbpack=1.*packing not supported'
+            # Attempt to save back to an unrecognised packed format.
+            field.lbpack = 7
+            msg = 'Cannot save.*lbpack=7.*unsupported'
             with self.assertRaisesRegexp(ValueError, msg):
                 ffv.close()
 

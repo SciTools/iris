@@ -751,25 +751,53 @@ class FieldsFileVariant(object):
                         # equivalent.
                         data = field.get_data()
 
-                        # Ensure the output is coded right.
-                        # NOTE: For now, as we don't do compression, this just
-                        # means fixing data wordlength and endian-ness.
-                        kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
-                                                            data.dtype.kind)
+                        # When not compressing, preparation is just to fix
+                        # the data wordlength and endian-ness.
+                        kind = {1: 'f', 2: 'i', 3: 'i'}.get(
+                            field.lbuser1, data.dtype.kind)
                         data = normalise(data, kind)
+
+                        # Write data.
                         output_file.write(data)
 
+                        # Size is one word per point.
+                        n_data_words = data.size
+                    elif required_lbpack in (1, 2001, 3001):
+                        # Write WGDOS packed results.
+                        if not mo_pack:
+                            msg = ('cannot pack data with lbpack={} :'
+                                   'WGDOS packing library "mo_pack" is '
+                                   'not available.')
+                            raise ValueError(msg.format(required_lbpack))
+
+                        data = field.get_data()
+                        wgdos_packed_bytes = mo_pack.pack_wgdos(
+                            data.astype(np.float32), field.bacc, field.bmdi)
+
+                        # Write data.
+                        output_file.write(wgdos_packed_bytes)
+
+                        # Pad to a whole word boundary, if needed.
+                        n_data_bytes = len(wgdos_packed_bytes)
+                        n_data_words = n_data_bytes // self._word_size
+                        n_pad_bytes = \
+                            n_data_bytes - (n_data_words * self._word_size)
+                        if n_pad_bytes > 0:
+                            pad_bytes = np.zeros(n_pad_bytes, dtype='>i1')
+                            output_file.write(pad_bytes)
+                            n_data_words += 1
+
                         # Record the payload size in the lookup control words.
-                        data_size = data.size
-                        data_sectors_size = data_size
-                        data_sectors_size -= \
-                            data_size % -self._WORDS_PER_SECTOR
-                        field.lblrec = data_size
-                        field.lbnrec = data_sectors_size
+                        n_data_sectors = \
+                            np.ceil(n_data_words / self._WORDS_PER_SECTOR)
+                        data_fullsectors_words = \
+                            n_data_sectors * self._WORDS_PER_SECTOR
+                        field.lblrec = n_data_words
+                        field.lbnrec = data_fullsectors_words
                     else:
-                        # No packing is supported.
+                        # Unrecognised lbpack value.
                         msg = ('Cannot save data with lbpack={} : '
-                               'packing not supported.')
+                               'unsupported or unknown packing type.')
                         raise ValueError(msg.format(required_lbpack))
 
                     # Pad out the data section to a whole number of sectors.
