@@ -1,1 +1,0 @@
-* The :func:`pp_packing.wgdos_unpacking` has been deprecated in favour of the WGDOS unpacking functionality provided by `mo_pack <https://github.com/SciTools/mo_pack>`_.

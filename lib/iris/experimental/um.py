@@ -32,6 +32,10 @@ import numpy as np
 from iris.fileformats.ff import _FF_HEADER_POINTERS, FF_HEADER as _FF_HEADER
 from iris.fileformats.pp import _header_defn
 
+try:
+    import mo_pack
+except ImportError:
+    mo_pack = None
 
 DEFAULT_WORD_SIZE = 8  # In bytes.
 
@@ -405,17 +409,16 @@ class _NormalDataProvider(_DataProvider):
                 data = np.fromfile(self.source, dtype, count=rows * cols)
                 data = data.reshape(rows, cols)
             elif lbpack == 1:
-                try:
-                    from mo_pack import unpack_wgdos
-                except ImportError:
+                if mo_pack is not None:
+                    data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
+                    data_bytes = self.source.read(data_size)
+                    data = mo_pack.unpack_wgdos(data_bytes, field.lbrow,
+                                                field.lbnpt, field.bmdi)
+                else:
                     msg = 'iris.fileformats.pp_packing.wgdos_unpack has been ' \
                           'deprecated. Unpacking PP fields with LBPACK of {} ' \
                           'now requires mo_pack to be installed'.format(lbpack)
                     raise NotImplementedError(msg)
-                data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
-                data_bytes = self.source.read(data_size)
-                data = unpack_wgdos(data_bytes, field.lbrow, field.lbnpt,
-                                    field.bmdi)
             else:
                 raise ValueError('Unsupported lbpack: {}'.format(field.lbpack))
         return data

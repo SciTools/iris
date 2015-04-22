@@ -42,12 +42,16 @@ import iris.unit
 import iris.fileformats.pp_rules
 import iris.coord_systems
 import iris.proxy
-iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
 
 try:
     import mo_pack
 except ImportError:
     mo_pack = None
+
+try:
+    from iris.fileformats import pp_packing
+except ImportError:
+    pp_packing = None
 
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
@@ -896,13 +900,21 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         if mo_pack is not None:
             data = mo_pack.unpack_wgdos(data_bytes,
                                         data_shape[0], data_shape[1], mdi)
+        elif pp_packing is not None:
+            msg = 'The WGDOS unpacking functionality is deprecated and will ' \
+                  'be removed in a future release. Install mo_pack to make ' \
+                  'use of the new unpacking functionality.'
+            warnings.warn(msg)
+            data = pp_packing.wgdos_unpack(data_bytes,
+                                           data_shape[0], data_shape[1], mdi)
+
         else:
-            msg = 'iris.fileformats.pp_packing.wgdos_unpack has been ' \
-                  'deprecated. Unpacking PP fields with LBPACK of {} ' \
-                  'now requires mo_pack to be installed'.format(lbpack.n1)
+            msg = 'Unpacking PP fields with LBPACK of {} ' \
+                  'requires mo_pack to be installed'.format(lbpack.n1)
             raise NotImplementedError(msg)
     elif lbpack.n1 == 4:
-        data = pp_packing.rle_decode(data_bytes, data_shape[0], data_shape[1], mdi)
+        data = pp_packing.rle_decode(data_bytes,
+                                     data_shape[0], data_shape[1], mdi)
     else:
         raise iris.exceptions.NotYetImplementedError(
                 'PP fields with LBPACK of %s are not yet supported.' % lbpack)
@@ -1367,7 +1379,7 @@ class PPField(object):
 
         # populate lbext in WORDS
         lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload // PP_WORD_DEPTH
-        
+
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
         if lb[self.HEADER_DICT['lbpack'][0]] == 0:
             len_of_data_payload += data.size * PP_WORD_DEPTH
@@ -1384,7 +1396,7 @@ class PPField(object):
 
         # populate lbrec in WORDS
         lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload // PP_WORD_DEPTH
-        
+
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
             lb[self.HEADER_DICT['lbuser'][0]] = 1
@@ -1421,7 +1433,7 @@ class PPField(object):
 
         # Data length (including extra data length)
         pp_file.write(struct.pack(">L", int(len_of_data_payload)))
-        
+
         # the data itself
         if lb[self.HEADER_DICT['lbpack'][0]] == 0:
             data.tofile(pp_file)
@@ -1794,7 +1806,7 @@ def _field_gen(filename, read_data_bytes):
         # Get the FLOAT header entries
         header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH, count=NUM_FLOAT_HEADERS)
         header = tuple(header_longs) + tuple(header_floats)
-    
+
         # Make a PPField of the appropriate sub-class (depends on header release number)
         try:
             pp_field = make_pp_field(header)
