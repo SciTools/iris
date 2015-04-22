@@ -1051,6 +1051,14 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
 
+    def test_numerical_tolerance(self):
+        # test the tolerance on the coordinate value is not causing a
+        # modulus wrapping
+        cube = create_cube(28.5, 68.5, bounds=True)
+        result = cube.intersection(longitude=(27.74, 68.61))
+        self.assertAlmostEqual(result.coord('longitude').points[0], 28.5)
+        self.assertAlmostEqual(result.coord('longitude').points[-1], 67.5)
+
 
 def unrolled_cube():
     data = np.arange(5, dtype='f4')
