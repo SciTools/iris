@@ -688,7 +688,7 @@ class FieldsFileVariant(object):
             for field in self.fields:
                 data = field.get_data()
 
-                if hasattr(field, "lbpack"):
+                if data is not None:
                     lbpack = field.lbpack
                     packing = lbpack % 10
                     compression = (lbpack // 10) % 10
@@ -699,7 +699,6 @@ class FieldsFileVariant(object):
                         raise ValueError("Unsupported LBPACK: {!s}".format(
                                          lbpack))
 
-                if data is not None:
                     field.lbegin = output_file.tell() / self._word_size
                     # Round the data length up to the nearest whole
                     # number of "sectors".
