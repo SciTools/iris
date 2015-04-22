@@ -41,7 +41,6 @@ import iris.fileformats.rules
 import iris.unit
 import iris.fileformats.pp_rules
 import iris.coord_systems
-import iris.proxy
 
 try:
     import mo_pack
@@ -912,7 +911,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
                   'requires mo_pack to be installed'.format(lbpack.n1)
-            raise NotImplementedError(msg)
+            raise ValueError(msg)
     elif lbpack.n1 == 4:
         data = pp_packing.rle_decode(data_bytes,
                                      data_shape[0], data_shape[1], mdi)
