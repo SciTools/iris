@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -41,8 +41,16 @@ import iris.fileformats.rules
 import iris.unit
 import iris.fileformats.pp_rules
 import iris.coord_systems
-import iris.proxy
-iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
+
+try:
+    import mo_pack
+except ImportError:
+    mo_pack = None
+
+try:
+    from iris.fileformats import pp_packing
+except ImportError:
+    pp_packing = None
 
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
@@ -888,10 +896,24 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
     if lbpack.n1 in (0, 2):
         data = np.frombuffer(data_bytes, dtype=data_type)
     elif lbpack.n1 == 1:
-        data = pp_packing.wgdos_unpack(data_bytes, data_shape[0],
-                                       data_shape[1], mdi)
+        if mo_pack is not None:
+            data = mo_pack.unpack_wgdos(data_bytes,
+                                        data_shape[0], data_shape[1], mdi)
+        elif pp_packing is not None:
+            msg = 'iris.fileformats.pp_packing.wgdos_unpack has been ' \
+                  'deprecated and will be removed in a future release. ' \
+                  'Install mo_pack to make use of the new unpacking ' \
+                  'functionality.'
+            warnings.warn(msg)
+            data = pp_packing.wgdos_unpack(data_bytes,
+                                           data_shape[0], data_shape[1], mdi)
+        else:
+            msg = 'Unpacking PP fields with LBPACK of {} ' \
+                  'requires mo_pack to be installed'.format(lbpack.n1)
+            raise ValueError(msg)
     elif lbpack.n1 == 4:
-        data = pp_packing.rle_decode(data_bytes, data_shape[0], data_shape[1], mdi)
+        data = pp_packing.rle_decode(data_bytes,
+                                     data_shape[0], data_shape[1], mdi)
     else:
         raise iris.exceptions.NotYetImplementedError(
                 'PP fields with LBPACK of %s are not yet supported.' % lbpack)
@@ -1358,7 +1380,19 @@ class PPField(object):
         lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload // PP_WORD_DEPTH
 
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
-        len_of_data_payload += data.size * PP_WORD_DEPTH
+        lbpack = lb[self.HEADER_DICT['lbpack'][0]]
+        if lbpack == 0:
+            len_of_data_payload += data.size * PP_WORD_DEPTH
+        elif lbpack == 1:
+            if mo_pack is not None:
+                packed_data = mo_pack.pack_wgdos(data.astype(np.float32),
+                                                 b[self.HEADER_DICT['bacc'][0]-45],
+                                                 b[self.HEADER_DICT['bmdi'][0]-45])
+                len_of_data_payload += len(packed_data)
+            else:
+                msg = 'Writing packed pp data with lbpack of {} ' \
+                      'requires mo_pack to be installed.'.format(lbpack)
+                raise NotImplementedError(msg)
 
         # populate lbrec in WORDS
         lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload // PP_WORD_DEPTH
@@ -1389,9 +1423,9 @@ class PPField(object):
         # header length
         pp_file.write(struct.pack(">L", PP_HEADER_DEPTH))
 
-        # 49 integers
+        # 45 integers
         lb.tofile(pp_file)
-        # 16 floats
+        # 19 floats
         b.tofile(pp_file)
 
         #Header length (again)
@@ -1401,11 +1435,13 @@ class PPField(object):
         pp_file.write(struct.pack(">L", int(len_of_data_payload)))
 
         # the data itself
-        if lb[self.HEADER_DICT['lbpack'][0]] == 0:
+        if lbpack == 0:
             data.tofile(pp_file)
+        elif lbpack == 1:
+            pp_file.write(packed_data)
         else:
             msg = 'Writing packed pp data with lbpack of {} ' \
-                'is not supported.'.format(lb[self.HEADER_DICT['lbpack'][0]])
+                  'is not supported.'.format(lbpack)
             raise NotImplementedError(msg)
 
         # extra data elements

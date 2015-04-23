@@ -1,0 +1,2 @@
+* `mo_pack <https://github.com/SciTools/mo_pack>`_ was added as an optional dependency.
+   It is used to encode and decode data in WGDOS packed form.
