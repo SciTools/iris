@@ -75,23 +75,27 @@ class Test_filename(tests.IrisTest):
         ffv = FieldsFileVariant(path)
         self.assertEqual(ffv.filename, path)
 
+
 @tests.skip_data
-class Test_lbpack(tests.IrisTest):
-    def test_lbpack_packing(self):
+class Test_packing_exceptions(tests.IrisTest):
+    def test_fail_unknown_pack_method(self):
         path = tests.get_data_path(('FF', 'n48_multi_field'))
-        ffv = FieldsFileVariant(path, mode = FieldsFileVariant.UPDATE_MODE)
+        ffv = FieldsFileVariant(path, mode=FieldsFileVariant.UPDATE_MODE)
         ffv.fields[0].lbpack = 2
         self.assertRaises(ValueError, ffv.close)
-    def test_lbpack_compression(self):
+
+    def test_fail_unknown_compression_method(self):
         path = tests.get_data_path(('FF', 'n48_multi_field'))
-        ffv = FieldsFileVariant(path, mode = FieldsFileVariant.UPDATE_MODE)
+        ffv = FieldsFileVariant(path, mode=FieldsFileVariant.UPDATE_MODE)
         ffv.fields[0].lbpack = 30
         self.assertRaises(ValueError, ffv.close)
-    def test_lbpack_number_format(self):
+
+    def test_fail_unknown_number_format(self):
         path = tests.get_data_path(('FF', 'n48_multi_field'))
-        ffv = FieldsFileVariant(path, mode = FieldsFileVariant.UPDATE_MODE)
+        ffv = FieldsFileVariant(path, mode=FieldsFileVariant.UPDATE_MODE)
         ffv.fields[0].lbpack = 4000
         self.assertRaises(ValueError, ffv.close)
+
 
 @tests.skip_data
 class Test_class_assignment(tests.IrisTest):
