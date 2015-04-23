@@ -1,0 +1,2 @@
+* The :meth:meth:`iris.experimental.um.Field.get_data` method can now be used to read Fieldsfile data
+  after the original :class:`iris.experimental.um.FieldsFileVariant` has been closed.
