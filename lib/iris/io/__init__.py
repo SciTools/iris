@@ -75,7 +75,7 @@ def run_saver_callback(callback, cube, field, filename):
     .. note::
 
         It is possible that this function returns None for certain callbacks,
-        the caller of this function should hangle this case.
+        the caller of this function should handle this case.
 
     """
     if callback is None:
