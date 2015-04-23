@@ -409,14 +409,14 @@ class _NormalDataProvider(_DataProvider):
                 data = np.fromfile(self.source, dtype, count=rows * cols)
                 data = data.reshape(rows, cols)
             elif lbpack == 1:
-                if mo_pack is not None:
-                    data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
-                    data_bytes = self.source.read(data_size)
-                    data = mo_pack.unpack_wgdos(data_bytes, field.lbrow,
-                                                field.lbnpt, field.bmdi)
-                else:
+                if mo_pack is None:
                     msg = 'mo_pack is required to read WGDOS packed data'
-                    raise NotImplementedError(msg)
+                    raise ValueError(msg)
+
+                data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
+                data_bytes = self.source.read(data_size)
+                data = mo_pack.unpack_wgdos(data_bytes, field.lbrow,
+                                            field.lbnpt, field.bmdi)
             else:
                 raise ValueError('Unsupported lbpack: {}'.format(field.lbpack))
         return data

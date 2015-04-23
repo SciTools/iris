@@ -907,7 +907,6 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
             warnings.warn(msg)
             data = pp_packing.wgdos_unpack(data_bytes,
                                            data_shape[0], data_shape[1], mdi)
-
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
                   'requires mo_pack to be installed'.format(lbpack.n1)
@@ -1381,9 +1380,10 @@ class PPField(object):
         lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload // PP_WORD_DEPTH
 
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
-        if lb[self.HEADER_DICT['lbpack'][0]] == 0:
+        lbpack = lb[self.HEADER_DICT['lbpack'][0]]
+        if lbpack == 0:
             len_of_data_payload += data.size * PP_WORD_DEPTH
-        elif lb[self.HEADER_DICT['lbpack'][0]] == 1:
+        elif lbpack == 1:
             if mo_pack is not None:
                 packed_data = mo_pack.pack_wgdos(data.astype(np.float32),
                                                  b[self.HEADER_DICT['bacc'][0]-45],
@@ -1391,7 +1391,7 @@ class PPField(object):
                 len_of_data_payload += len(packed_data)
             else:
                 msg = 'Writing packed pp data with lbpack of {} ' \
-                      'requires mo_pack to be installed.'.format(lb[self.HEADER_DICT['lbpack'][0]])
+                      'requires mo_pack to be installed.'.format(lbpack)
                 raise NotImplementedError(msg)
 
         # populate lbrec in WORDS
@@ -1435,13 +1435,13 @@ class PPField(object):
         pp_file.write(struct.pack(">L", int(len_of_data_payload)))
 
         # the data itself
-        if lb[self.HEADER_DICT['lbpack'][0]] == 0:
+        if lbpack == 0:
             data.tofile(pp_file)
-        elif lb[self.HEADER_DICT['lbpack'][0]] == 1:
+        elif lbpack == 1:
             pp_file.write(packed_data)
         else:
             msg = 'Writing packed pp data with lbpack of {} ' \
-                  'is not supported.'.format(lb[self.HEADER_DICT['lbpack'][0]])
+                  'is not supported.'.format(lbpack)
             raise NotImplementedError(msg)
 
         # extra data elements

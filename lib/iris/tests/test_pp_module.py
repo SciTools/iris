@@ -28,6 +28,7 @@ import unittest
 import biggus
 import mock
 import netcdftime
+from numpy.testing import assert_array_equal
 
 import iris.fileformats
 import iris.fileformats.pp as pp
@@ -226,13 +227,14 @@ class TestPackedPP(IrisPPTest):
     def test_wgdos_mo_pack(self):
         filepath = tests.get_data_path(('PP', 'wgdos_packed',
                                         'nae.20100104-06_0001.pp'))
-        input_fields = pp.load(filepath)
+        orig_fields = pp.load(filepath)
         with self.temp_filename('.pp') as temp_filename:
-            for field in input_fields:
-                field.save(open(temp_filename, 'ab'))
+            with open(temp_filename, 'wb') as fh:
+                for field in orig_fields:
+                    field.save(fh)
             saved_fields = pp.load(temp_filename)
-            for i, j in zip(input_fields, saved_fields):
-                self.assertEqual(i.data.mean(), j.data.mean())
+            for orig_field, saved_field in zip(orig_fields, saved_fields):
+                assert_array_equal(orig_field.data, saved_field.data)
 
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))

@@ -146,7 +146,7 @@ shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     objects.
 
 mo_pack 0.1.0dev0 (https://github.com/SciTools/mo_pack)
-    A Python wrapper to libmo_unpack.
+    A Python wrapper to libmo_unpack, giving WGDOS packing and unpacking.
 
 * Those packages have been tested with a specific build.
 
