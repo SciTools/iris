@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ from contextlib import nested
 import mock
 import numpy as np
 
+import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod
 from iris.cube import Cube
@@ -489,6 +490,27 @@ class TestCoordinateForms(tests.IrisTest):
         self.assertEqual(pp_field.bdx, 0.0)
         self.assertArrayAllClose(pp_field.x, x_values)
         self.assertEqual(pp_field.lbnpt, nx)
+
+
+@tests.skip_data
+class TestSaverCallback(tests.IrisTest):
+    def test_pp(self):
+        expected = 2000.0
+
+        def callback_save(cube, field, fname):
+            self.assertEqual(field.blev, 1000.0)
+            # Clobber the original pressure level.
+            field.blev = expected
+
+        def callback_check(cube, field, fname):
+            self.assertEqual(field.blev, expected)
+
+        fname = 'global.pp'
+        path = tests.get_data_path(('PP', 'simple_pp', fname))
+        cube = iris.load_cube(path)
+        with self.temp_filename(fname) as fo:
+            iris.save(cube, fo, callback=callback_save)
+            iris.load_cube(fo, callback=callback_check)
 
 
 if __name__ == "__main__":

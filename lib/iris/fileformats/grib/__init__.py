@@ -918,31 +918,37 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 
 
-def save_grib2(cube, target, append=False, **kwargs):
+def save_grib2(cube, target, append=False, callback=None, **kwargs):
     """
     Save a cube to a GRIB2 file.
 
     Args:
 
-        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
-        * target    - A filename or open file handle.
+    * cube:
+        A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+    * target:
+        A filename or open file handle.
 
     Kwargs:
 
-        * append    - Whether to start a new file afresh or add the cube(s) to the end of the file.
-                      Only applicable when target is a filename, not a file handle.
-                      Default is False.
+    * append:
+        Whether to start a new file afresh or add the cube(s) to the end of the file.
+        Only applicable when target is a filename, not a file handle.
+        Default is False.
+    * callback:
+        A modifier/filter function.
 
     See also :func:`iris.io.save`.
 
     """
-
     # grib file (this bit is common to the pp and grib savers...)
     if isinstance(target, basestring):
         grib_file = open(target, "ab" if append else "wb")
+        filename = target
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
+        filename = target.name
         grib_file = target
     else:
         raise ValueError("Can only save grib to filename or writable")
@@ -954,10 +960,19 @@ def save_grib2(cube, target, append=False, **kwargs):
 
     # Save each latlon slice2D in the cube
     for slice2D in cube.slices([y_coords[0], x_coords[0]]):
-
         # Save this slice to the grib file
         grib_message = gribapi.grib_new_from_samples("GRIB2")
         _save_rules.run(slice2D, grib_message)
+
+        # Perform any user registered callback function.
+        grib_message = iris.io.run_saver_callback(callback, slice2D,
+                                                  grib_message, filename)
+
+        # Callback mechanism may return None, which must not be saved.
+        if grib_message is None:
+            continue
+
+        # Write to file.
         gribapi.grib_write(grib_message, grib_file)
         gribapi.grib_release(grib_message)
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -170,6 +170,27 @@ class TestLazySave(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(acube)
         self.assertTrue(acube.has_lazy_data())
+
+
+@tests.skip_data
+class TestSaverCallback(tests.IrisTest):
+    def test_netcdf(self):
+        expected = 'K'
+
+        def callback_save(cube, field, filename):
+            self.assertEqual(field.units, 'kg m**-2')
+            # Clobber the original units attribute.
+            field.units = expected
+
+        def callback_check(cube, field, filename):
+            self.assertEqual(field.units, expected)
+
+        fname = 'SMALL_total_column_co2.nc'
+        path = tests.get_data_path(('NetCDF', 'global', 'xyt', fname))
+        cube = iris.load_cube(path)
+        with self.temp_filename(fname) as fo:
+            iris.save(cube, fo, callback=callback_save)
+            iris.load_cube(fo, callback=callback_check)
 
 
 if __name__ == "__main__":

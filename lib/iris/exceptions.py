@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -79,6 +79,14 @@ class NotYetImplementedError(IrisError):
 
 class TranslationError(IrisError):
     """Raised when Iris is unable to translate format-specific codes."""
+    pass
+
+
+class IgnoreFieldException(IrisError):
+    """
+    Raised from a callback function when a field should be ignored on save.
+
+    """
     pass
 
 
