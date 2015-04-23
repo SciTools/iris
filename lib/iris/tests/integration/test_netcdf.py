@@ -98,6 +98,19 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
                 self.assertRaisesRegexp(ValueError, 'multiple aux factories'):
             iris.save(cube, filename)
 
+    def test_hybrid_height_cubes(self):
+        hh1 = stock.simple_4d_with_hybrid_height()
+        hh1.attributes['cube'] = 'hh1'
+        hh2 = stock.simple_4d_with_hybrid_height()
+        hh2.attributes['cube'] = 'hh2'
+        sa = hh2.coord('surface_altitude')
+        sa.points = sa.points * 10
+        with self.temp_filename('.nc') as fname:
+            iris.save([hh1, hh2], fname)
+            cubes = iris.load(fname)
+            cubes = sorted(cubes, key=lambda cube: cube.attributes['cube'])
+            self.assertCML(cubes)
+
 
 class TestUmVersionAttribute(tests.IrisTest):
     def test_single_saves_as_global(self):
