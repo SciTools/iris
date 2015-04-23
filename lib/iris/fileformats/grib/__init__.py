@@ -948,7 +948,7 @@ def save_grib2(cube, target, append=False, callback=None, **kwargs):
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
-        filename = target.name
+        filename = target.name if hasattr(target, 'name') else None
         grib_file = target
     else:
         raise ValueError("Can only save grib to filename or writable")

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -47,45 +47,68 @@ if not os.path.exists(_DOT_EXECUTABLE_PATH):
 DOT_AVAILABLE = _DOT_EXECUTABLE_PATH is not None
 
 
-def save(cube, target):
-    """Save a dot representation of the cube.
+def save(cube, target, callback=None):
+    """
+    Save a dot representation of the cube.
 
     Args:
 
-        * cube   - A :class:`iris.cube.Cube`.
-        * target - A filename or open file handle.
+    * cube:
+        A :class:`iris.cube.Cube`.
+    * target:
+        A filename or open file handle.
+
+    Kwargs:
+
+    * callback:
+        Function which can be passed on to :func:`iris.io.run_saver_callback`.
 
     See also :func:`iris.io.save`.
 
     """
     if isinstance(target, basestring):
         dot_file = open(target, "wt")
+        filename = target
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" in target.mode:
             raise ValueError("Target is binary")
         dot_file = target
+        filename = target.name if hasattr(target, 'name') else None
     else:
         raise ValueError("Can only save dot to filename or filehandle")
 
-    dot_file.write(cube_text(cube))
+    dot_text = cube_text(cube)
+
+    # Perform any user registered callback function.
+    dot_text = iris.io.run_saver_callback(callback, cube, dot_text, filename)
+
+    # Callback mechanism may return None, which must not be saved.
+    if dot_text is not None:
+        # Write to file.
+        dot_file.write(dot_text)
 
     if isinstance(target, basestring):
         dot_file.close()
 
 
-def save_png(source, target, launch=False):
+def save_png(source, target, launch=False, callback=None):
     """
     Produces a "dot" instance diagram by calling dot and optionally launching the resulting image.
 
     Args:
 
-        * source - A :class:`iris.cube.Cube`, or dot filename.
-        * target - A filename or open file handle.
-                   If passing a file handle, take care to open it for binary output.
+    * source:
+        A :class:`iris.cube.Cube`, or dot filename.
+    * target:
+        A filename or open file handle.
+        If passing a file handle, take care to open it for binary output.
 
     Kwargs:
 
-        * launch - Display the image. Default is False.
+    * launch:
+        Display the image. Default is False.
+    * callback:
+        Function which can be passed on to :func:`iris.io.run_saver_callback`.
 
     See also :func:`iris.io.save`.
 
@@ -94,7 +117,7 @@ def save_png(source, target, launch=False):
     if isinstance(source, iris.cube.Cube):
         # Create dot file
         dot_file_path = iris.util.create_temp_filename(".dot")
-        save(source, dot_file_path)
+        save(source, dot_file_path, callback=callback)
     elif isinstance(source, basestring):
         dot_file_path = source
     else:
