@@ -694,7 +694,18 @@ class FieldsFileVariant(object):
             sector_size = self._WORDS_PER_SECTOR * self._word_size
             for field in self.fields:
                 data = field.get_data()
+
                 if data is not None:
+                    lbpack = field.lbpack
+                    packing = lbpack % 10
+                    compression = (lbpack // 10) % 10
+                    number_format = (lbpack // 1000) % 10
+                    if (packing not in (0, 1) or
+                            compression != 0 or
+                            number_format not in (0, 2, 3)):
+                        raise ValueError("Unsupported LBPACK: {!s}".format(
+                                         lbpack))
+
                     field.lbegin = output_file.tell() / self._word_size
                     # Round the data length up to the nearest whole
                     # number of "sectors".
