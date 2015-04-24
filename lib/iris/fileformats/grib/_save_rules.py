@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -164,9 +164,18 @@ def identification(cube, grib):
     # operational product, operational test, research product, etc
     # (missing for now)
     gribapi.grib_set_long(grib, "productionStatusOfProcessedData", 255)
+
+    # Code table 1.4
     # analysis, forecast, processed satellite, processed radar,
-    # (analysis and forecast products for now)
-    gribapi.grib_set_long(grib, "typeOfProcessedData", 2)
+    if cube.coords('realization'):
+        # assume realization will always have 1 and only 1 point
+        # as cubes saving to GRIB2 a 2D horizontal slices
+        if cube.coord('realization').points[0] != 0:
+            gribapi.grib_set_long(grib, "typeOfProcessedData", 4)
+        else:
+            gribapi.grib_set_long(grib, "typeOfProcessedData", 3)
+    else:
+        gribapi.grib_set_long(grib, "typeOfProcessedData", 2)
 
 
 ###############################################################################

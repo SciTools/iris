@@ -6,6 +6,7 @@ dimensions:
 	model_level_number = 10 ;
 variables:
 	float air_potential_temperature(time, model_level_number, grid_latitude, grid_longitude) ;
+		air_potential_temperature:_FillValue = -1.073742e+09f ;
 		air_potential_temperature:standard_name = "air_potential_temperature" ;
 		air_potential_temperature:units = "K" ;
 		air_potential_temperature:um_stash_source = "m01s00i004" ;
