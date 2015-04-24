@@ -1,11 +1,11 @@
 What's new in Iris 1.7
 **********************
 
-:Release: 1.7.3
-:Date: 16th December 2014
-
 This document explains the new/changed features of Iris in version 1.7.
 (:doc:`View all changes <index>`.)
+
+:Release: 1.7.4
+:Date: 15th April 2015
 
 Iris 1.7 features
 =================
@@ -200,6 +200,17 @@ Bugs fixed in v1.7.3
 * Arbitrary names can no longer be set for elements of a :class:`iris.fileformats.pp.SplittableInt`.
 * Cubes that contain a pseudo-level coordinate can now be saved to PP.
 * Fixed a bug in the FieldsFile loader that prevented it always loading all available fields.
+
+Bugs fixed in v1.7.4
+^^^^^^^^^^^^^^^^^^^^
+* :meth:`Coord.guess_bounds` can now deal with circular coordinates.
+* :meth:`Coord.nearest_neighbour_index` can now work with descending bounds.
+* Passing `weights` to :meth:`Cube.rolling_window` no longer prevents other
+  keyword arguments from being passed to the aggregator.
+* Several minor fixes to allow use of Iris on Windows.
+* Made use of the new standard_parallels keyword in Cartopy's LambertConformal
+  projection (Cartopy v0.12). Older versions of Iris will not be able to
+  create LambertConformal coordinate systems with Cartopy >= 0.12.
 
 Incompatible changes
 ====================
