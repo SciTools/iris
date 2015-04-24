@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ import iris.tests as tests
 
 from contextlib import contextmanager
 import mock
+import numpy as np
 
 import iris
 from iris.cube import Cube, CubeList
@@ -170,6 +171,17 @@ class TestLazySave(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(acube)
         self.assertTrue(acube.has_lazy_data())
+
+    def test_lazy_mask_preserve_fill_value(self):
+        cube = iris.cube.Cube(np.ma.array([0, 1], mask=[False, True],
+                                          fill_value=-1))
+        with self.temp_filename(suffix='.nc') as filename, \
+                self.temp_filename(suffix='.nc') as other_filename:
+            iris.save(cube, filename, unlimited_dimensions=[])
+            ncube = iris.load_cube(filename)
+            # Lazy save of the masked cube
+            iris.save(ncube, other_filename, unlimited_dimensions=[])
+            self.assertCDL(other_filename)
 
 
 if __name__ == "__main__":

@@ -2120,7 +2120,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if modulus is None:
             raise ValueError('coordinate units with no modulus are not yet'
                              ' supported')
-
         subsets, points, bounds = self._intersect_modulus(coord,
                                                           minimum, maximum,
                                                           min_inclusive,
@@ -2241,8 +2240,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # and call the new bounds = the new points + the difference.
             pre_wrap_delta = np.diff(coord.bounds[inside_indices])
             post_wrap_delta = np.diff(bounds[inside_indices])
-            split_cell_indices, _ = np.where(pre_wrap_delta != post_wrap_delta)
-            if split_cell_indices.size:
+            close_enough = np.allclose(pre_wrap_delta, post_wrap_delta)
+            if not close_enough:
+                split_cell_indices, _ = np.where(pre_wrap_delta !=
+                                                 post_wrap_delta)
+
                 # Recalculate the extended minimum.
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]

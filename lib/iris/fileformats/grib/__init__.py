@@ -890,27 +890,31 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         If *True*, any cube defined on a reduced grid will be interpolated
         to an equivalent regular grid. If *False*, any cube defined on a
         reduced grid will be loaded on the raw reduced grid with no shape
-        information. The default behaviour is to interpolate cubes on a
-        reduced grid to an equivalent regular grid.
+        information. If `iris.FUTURE.strict_grib_load` is `True` then this
+        keyword has no effect, raw grids are always used. If the older GRIB
+        loader is in use then the default behaviour is to interpolate cubes
+        on a reduced grid to an equivalent regular grid.
 
         .. deprecated:: 1.8. Please use strict_grib_load and regrid instead.
         
 
 
     """
-    if auto_regularise is not None:
-        warnings.warn('the`auto_regularise` kwarg is deprecated and '
-                      'will be removed in a future release. Resampling '
-                      'quasi-regular grids on load will no longer be '
-                      'available.  Resampling should be done on the '
-                      'loaded cube instead using Cube.regrid.')
-
     if iris.FUTURE.strict_grib_load:
         grib_loader = iris.fileformats.rules.Loader(
             _GribMessage.messages_from_filename,
             {},
             iris.fileformats.grib._load_convert.convert, None)
     else:
+        if auto_regularise is not None:
+            # The old loader supports the auto_regularise keyword, but in
+            # deprecation mode, so warning if it is found.
+            warnings.warn('the`auto_regularise` kwarg is deprecated and '
+                          'will be removed in a future release. Resampling '
+                          'quasi-regular grids on load will no longer be '
+                          'available.  Resampling should be done on the '
+                          'loaded cube instead using Cube.regrid.')
+
         grib_loader = iris.fileformats.rules.Loader(
             grib_generator, {'auto_regularise': auto_regularise},
             iris.fileformats.grib.load_rules.convert,

@@ -423,15 +423,16 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
     t1, t2, lbft = _reshape_vector_args([(t1, t1_dims), (t2, t2_dims),
                                          (lbft, lbft_dims)])
 
-    def date2hours(times_array):
-        """Convert datetime values to hours-since-epoch values."""
-        # Use a minimum-1D form, as netcdftime.date2num doesn't like scalars.
-        times_array = np.asarray(times_array)
-        return epoch_hours_unit.date2num(
-            np.atleast_1d(times_array)).reshape(times_array.shape)
+    def date2hours(t):
+        epoch_hours = epoch_hours_unit.date2num(t)
+        if t.minute == 0 and t.second == 0:
+            epoch_hours = round(epoch_hours)
+        return epoch_hours
 
-    t1_epoch_hours = date2hours(t1)
-    t2_epoch_hours = date2hours(t2)
+    dates2hours = np.vectorize(date2hours)
+
+    t1_epoch_hours = dates2hours(t1)
+    t2_epoch_hours = dates2hours(t2)
     hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
     hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
     coords_and_dims = []
@@ -557,8 +558,14 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
     Returns a list of coords_and_dims.
 
     """
-    t1_epoch_hours = epoch_hours_unit.date2num(t1)
-    t2_epoch_hours = epoch_hours_unit.date2num(t2)
+    def date2hours(t):
+        epoch_hours = epoch_hours_unit.date2num(t)
+        if t.minute == 0 and t.second == 0:
+            epoch_hours = round(epoch_hours)
+        return epoch_hours
+
+    t1_epoch_hours = date2hours(t1)
+    t2_epoch_hours = date2hours(t2)
     hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
     hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
     coords_and_dims = []
