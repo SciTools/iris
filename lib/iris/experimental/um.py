@@ -693,9 +693,9 @@ class FieldsFileVariant(object):
                     packing = lbpack % 10
                     compression = (lbpack // 10) % 10
                     number_format = (lbpack // 1000) % 10
-                    if (packing not in (0, 1) or
-                            compression != 0 or
-                            number_format not in (0, 2, 3)):
+                    if not (packing in (0, 1) and
+                            compression == 0 and
+                            number_format in (0, 2, 3)):
                         raise ValueError("Unsupported LBPACK: {!s}".format(
                                          lbpack))
 
