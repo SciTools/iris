@@ -141,5 +141,31 @@ class Test_set_data(tests.IrisTest):
         self.assertIs(field.get_data(), mock.sentinel.DATA)
 
 
+class Test__can_copy_deferred_data(tests.IrisTest):
+    def _check_formats(self,
+                       old_lbpack, new_lbpack,
+                       old_bacc=-6, new_bacc=-6,
+                       absent_provider=False):
+        lookup_entry = mock.Mock(lbpack=old_lbpack, bacc=old_bacc)
+        provider = mock.Mock(lookup_entry=lookup_entry)
+        if absent_provider:
+            # Replace the provider with a simple array.
+            provider = np.zeros(2)
+        field = Field(range(45), range(19), provider)
+        return field._can_copy_deferred_data(new_lbpack, new_bacc)
+
+    def test_okay_simple(self):
+        self.assertTrue(self._check_formats(1234, 1234))
+
+    def test_fail_different_lbpack(self):
+        self.assertFalse(self._check_formats(1234, 1238))
+
+    def test_fail_nodata(self):
+        self.assertFalse(self._check_formats(1234, 1234, absent_provider=True))
+
+    def test_fail_different_bacc(self):
+        self.assertFalse(self._check_formats(1234, 1234, new_bacc=-8))
+
+
 if __name__ == '__main__':
     tests.main()

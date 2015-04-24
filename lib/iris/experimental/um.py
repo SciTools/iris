@@ -288,6 +288,17 @@ class Field(object):
             data = self._data_provider.read_data()
         return data
 
+    def _get_raw_payload_bytes(self):
+        """
+        Return a buffer containing the raw bytes of the data payload.
+
+        The field data must be a deferred-data provider, not an array.
+        Typically, that means a deferred data reference to an existing file.
+        This enables us to handle packed data without interpreting it.
+
+        """
+        return self._data_provider._read_raw_payload_bytes()
+
     def set_data(self, data):
         """
         Set the data payload for this field.
@@ -299,6 +310,25 @@ class Field(object):
 
         """
         self._data_provider = data
+
+    def _can_copy_deferred_data(self, required_lbpack, required_bacc):
+        """
+        Return whether the field's raw payload can be reused unmodified,
+        for the specified output packing format.
+
+        """
+        # Check that the original data payload has not been replaced by plain
+        # array data.
+        compatible = hasattr(self._data_provider, 'read_data')
+        if compatible:
+            src_lbpack = self._data_provider.lookup_entry.lbpack
+            src_bacc = self._data_provider.lookup_entry.bacc
+
+            # The packing words are compatible if nothing else is different.
+            compatible = (required_lbpack == src_lbpack and
+                          required_bacc == src_bacc)
+
+        return compatible
 
 
 class Field2(Field):
@@ -375,6 +405,18 @@ class _DataProvider(object):
             if close_required:
                 self.source.close()
 
+    def _read_raw_payload_bytes(self):
+        # Return the raw data payload, as an array of bytes.
+        # This is independent of the content type.
+        field = self.lookup_entry
+        with self._with_source():
+            self.source.seek(self.offset)
+            data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
+            # This size calculation seems rather questionable, but derives from
+            # a very long code legacy, so appeal to a "sleeping dogs" policy.
+            data_bytes = self.source.read(data_size)
+        return data_bytes
+
 
 class _NormalDataProvider(_DataProvider):
     """
@@ -412,8 +454,7 @@ class _NormalDataProvider(_DataProvider):
                     msg = 'mo_pack is required to read WGDOS packed data'
                     raise ValueError(msg)
 
-                data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
-                data_bytes = self.source.read(data_size)
+                data_bytes = self._read_raw_payload_bytes()
                 data = mo_pack.unpack_wgdos(data_bytes, field.lbrow,
                                             field.lbnpt, field.bmdi)
             else:
@@ -692,19 +733,46 @@ class FieldsFileVariant(object):
             output_file.seek((header.data_start - 1) * self._word_size)
             dataset_type = self.fixed_length_header.dataset_type
             sector_size = self._WORDS_PER_SECTOR * self._word_size
+
             for field in self.fields:
-                data = field.get_data()
-                if data is not None:
+                if hasattr(field, '_HEADER_DEFN'):
+                    # Output 'recognised' lookup types (not blank entries).
                     field.lbegin = output_file.tell() / self._word_size
-                    # Round the data length up to the nearest whole
-                    # number of "sectors".
-                    size = data.size
-                    size -= size % -self._WORDS_PER_SECTOR
-                    field.lbnrec = size
-                    kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
-                                                        data.dtype.kind)
-                    data = normalise(data, kind)
-                    output_file.write(data)
+                    required_lbpack, required_bacc = field.lbpack, field.bacc
+                    if field._can_copy_deferred_data(
+                            required_lbpack, required_bacc):
+                        # The original, unread file data is encoded as wanted,
+                        # so pass it through unchanged.  In this case, we
+                        # should also leave the lookup controls unchanged
+                        # -- i.e. do not recalculate LBLREC and LBNREC.
+                        output_file.write(field._get_raw_payload_bytes())
+                    elif required_lbpack in (0, 2000, 3000):
+                        # Write unpacked data -- in supported word types, all
+                        # equivalent.
+                        data = field.get_data()
+
+                        # Ensure the output is coded right.
+                        # NOTE: For now, as we don't do compression, this just
+                        # means fixing data wordlength and endian-ness.
+                        kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
+                                                            data.dtype.kind)
+                        data = normalise(data, kind)
+                        output_file.write(data)
+
+                        # Record the payload size in the lookup control words.
+                        data_size = data.size
+                        data_sectors_size = data_size
+                        data_sectors_size -= \
+                            data_size % -self._WORDS_PER_SECTOR
+                        field.lblrec = data_size
+                        field.lbnrec = data_sectors_size
+                    else:
+                        # No packing is supported.
+                        msg = ('Cannot save data with lbpack={} : '
+                               'packing not supported.')
+                        raise ValueError(msg.format(required_lbpack))
+
+                    # Pad out the data section to a whole number of sectors.
                     overrun = output_file.tell() % sector_size
                     if overrun != 0:
                         padding = np.zeros(sector_size - overrun, 'i1')
@@ -751,6 +819,15 @@ class FieldsFileVariant(object):
 
         Calling `close()` more than once is allowed, but only the first
         call will have any effect.
+
+        .. note::
+
+            On output, each field's data is encoded according to the LBPACK
+            and BACC words in the field.  A field data array defined using
+            :meth:`Field.set_data` can *only* be written in an "unpacked"
+            form, corresponding to LBACK=0 (or the equivalent 2000 / 3000).
+            However, data from the input file can be saved in its original
+            packed form, as long as the data, LBPACK and BACC remain unchanged.
 
         """
         if not self._source.closed:
