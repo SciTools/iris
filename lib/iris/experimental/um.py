@@ -874,11 +874,14 @@ class FieldsFileVariant(object):
         .. note::
 
             On output, each field's data is encoded according to the LBPACK
-            and BACC words in the field.  A field data array defined using
-            :meth:`Field.set_data` can *only* be written in an "unpacked"
-            form, corresponding to LBACK=0 (or the equivalent 2000 / 3000).
-            However, data from the input file can be saved in its original
-            packed form, as long as the data, LBPACK and BACC remain unchanged.
+            and BACC words in the field.
+            Data copied from the input file can be saved in any original
+            packed form, i.e. if LBPACK and BACC remain unchanged.
+            However, data set with :meth:`Field.set_data`, or which is to be
+            re-coded in a different packing format to the original, can be
+            *only* be saved in certain supported packing formats :  At present,
+            these are "unpacked" (for lback=0/2000/3000), or "WGDOS packed"
+            (for lbpack=1/2001/3001, with BACC specifying the bit depth).
 
         """
         if not self._source.closed:

@@ -439,7 +439,7 @@ class TestUpdate(tests.IrisTest):
             field_1_lbnrec = field_1.lbnrec
 
             # Field#2 : save an array as unpacked.
-            shape_2 = (30, 17)  # NOTE: deliberately different from the original.
+            shape_2 = (30, 17)  # NOTE: different from the original.
             data_2 = np.arange(np.prod(shape_2)).reshape(shape_2)
             field_2.lbrow = shape_2[0]
             field_2.lbnpt = shape_2[1]
