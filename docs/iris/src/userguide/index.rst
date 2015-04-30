@@ -34,5 +34,6 @@ User guide table of contents
    merge_and_concat.rst
    cube_statistics.rst
    cube_maths.rst
+   saving_iris_cubes.rst
    citation.rst
    end_of_userguide.rst
