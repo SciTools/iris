@@ -28,10 +28,21 @@ import iris.tests as tests
 import os.path
 import shutil
 import tempfile
+import unittest
 
 import numpy as np
 
 from iris.experimental.um import FieldsFileVariant, Field, Field3
+
+try:
+    import mo_unpack
+except ImportError:
+    # Disable all these tests if mo_unpack is not installed.
+    mo_unpack = None
+
+skip_mo_unpack = unittest.skipIf(mo_unpack is None,
+                                 'Test(s) require "mo_unpack", '
+                                 'which is not available.')
 
 
 class Test___init__(tests.IrisTest):
@@ -78,6 +89,7 @@ class Test_filename(tests.IrisTest):
 
 @tests.skip_data
 class Test_class_assignment(tests.IrisTest):
+    @skip_mo_unpack
     def test_lbrel_class(self):
         path = tests.get_data_path(('FF', 'lbrel_test_data'))
         ffv = FieldsFileVariant(path)
