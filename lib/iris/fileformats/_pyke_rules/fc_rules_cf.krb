@@ -1029,6 +1029,9 @@ fc_extras
         try:
             iris.unit.as_unit(attr_units)
         except ValueError:
+        # formatting a unicode string causes an exception. Test for that.
+            if isinstance(attr_units, unicode):
+                attr_units = attr_units.encode('ascii', errors='backslashreplace')
             msg = 'Ignoring netCDF variable {!r} invalid units {!r}'
             msg_name = '{}'.format(cf_var.cf_name)
             msg_units = '{}'.format(attr_units)
