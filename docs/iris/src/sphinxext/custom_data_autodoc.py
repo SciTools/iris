@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,7 +18,12 @@
 from __future__ import (absolute_import, division, print_function)
 
 from sphinx.ext.autodoc import DataDocumenter, ModuleLevelDocumenter
-from sphinx.util.inspect import safe_repr
+try:
+    # Use 'object_description' in place of the former 'safe_repr' function.
+    from sphinx.util.inspect import object_description as safe_repr
+except ImportError:
+    # 'safe_repr' is the old usage, for Sphinx<1.3.
+    from sphinx.util.inspect import safe_repr
 
 from iris.analysis import Aggregator
 
