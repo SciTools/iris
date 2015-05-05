@@ -18,7 +18,7 @@ cfchecker
 mock
 nose
 pep8=1.5.7
-sphinx=1.2
+sphinx
 
 # Optional iris dependencies
 ecmwf_grib=1.12.1

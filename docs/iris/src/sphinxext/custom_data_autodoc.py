@@ -18,7 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 from sphinx.ext.autodoc import DataDocumenter, ModuleLevelDocumenter
-from sphinx.util.inspect import safe_repr
+from sphinx.util.inspect import object_description as safe_repr
 
 from iris.analysis import Aggregator
 
