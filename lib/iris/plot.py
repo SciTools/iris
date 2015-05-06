@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -978,7 +978,7 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
     if axes is None:
         axes = plt.gca()
 
-    offsets = np.array(zip(x, y))
+    offsets = np.array(list(zip(x, y)))
 
     # XXX "match_original" doesn't work ... so brute-force it instead.
     #   PatchCollection constructor ignores all non-style keywords when using
