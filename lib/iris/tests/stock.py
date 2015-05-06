@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -401,6 +401,42 @@ def simple_4d_with_hybrid_height():
                                     delta=cube.coord("level_height"),
                                     sigma=cube.coord("sigma"),
                                     orography=cube.coord("surface_altitude")))
+    return cube
+
+
+def realistic_3d():
+    """
+    Returns a realistic 3d cube.
+
+    >>> print(repr(realistic_3d()))
+    <iris 'Cube' of air_potential_temperature (time: 7; grid_latitude: 9;
+    grid_longitude: 11)>
+
+    """
+    data = np.arange(7*9*11).reshape((7,9,11))
+    lat_pts = np.linspace(-4, 4, 9)
+    lon_pts = np.linspace(-5, 5, 11)
+    time_pts = np.linspace(394200, 394236, 7)
+    forecast_period_pts = np.linspace(0, 36, 7)
+    ll_cs = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
+
+    lat = icoords.DimCoord(lat_pts, standard_name='grid_latitude',
+                           units='degrees', coord_system=ll_cs)
+    lon = icoords.DimCoord(lon_pts, standard_name='grid_longitude',
+                           units='degrees', coord_system=ll_cs)
+    time = icoords.DimCoord(time_pts, standard_name='time',
+                            units='hours since 1970-01-01 00:00:00')
+    forecast_period = icoords.DimCoord(forecast_period_pts,
+                                       standard_name='forecast_period',
+                                       units='hours')
+    height = icoords.DimCoord(1000.0, standard_name='air_pressure',
+                              units='Pa')
+    cube = iris.cube.Cube(data, standard_name='air_potential_temperature',
+                          units='K',
+                          dim_coords_and_dims=[(time, 0), (lat, 1), (lon, 2)],
+                          aux_coords_and_dims=[(forecast_period, 0),
+                                               (height, None)],
+                          attributes={'source': 'Iris test case'})
     return cube
 
 
