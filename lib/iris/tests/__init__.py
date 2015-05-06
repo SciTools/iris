@@ -39,12 +39,12 @@ import filecmp
 import functools
 import gzip
 import inspect
+import io
 import logging
 import mock
 import os
 import os.path
 import shutil
-import StringIO
 import subprocess
 import sys
 import unittest
@@ -117,7 +117,7 @@ def main():
     """A wrapper for unittest.main() which adds iris.test specific options to the help (-h) output."""
     if '-h' in sys.argv or '--help' in sys.argv:
         stdout = sys.stdout
-        buff = StringIO.StringIO()
+        buff = io.StringIO()
         # NB. unittest.main() raises an exception after it's shown the help text
         try:
             sys.stdout = buff
