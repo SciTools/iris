@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -49,8 +49,8 @@ class Test(tests.IrisTest):
         self.assertEqual(expected, res)
 
     def test__get_message_sections__section_numbers(self):
-        res = self.message.sections.keys()
-        self.assertEqual(res, range(9))
+        res = list(self.message.sections.keys())
+        self.assertEqual(res, list(range(9)))
 
     def test_sections__numberOfSection_value(self):
         # The key `numberOfSection` is repeated in every section meaning that

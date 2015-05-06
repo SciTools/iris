@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -55,7 +55,7 @@ def _mock_gribapi_fetch(message, key):
     If the key is not present, raise the diagnostic exception.
 
     """
-    if key in message.keys():
+    if key in message:
         return message[key]
     else:
         raise _mock_gribapi.GribInternalError

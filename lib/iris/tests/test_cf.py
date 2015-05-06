@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -282,7 +282,7 @@ class TestClimatology(tests.IrisTest):
         time = self.cfr.cf_group['temp_dmax_tmean_abs'].cf_group.coordinates['time']
         climatology = time.cf_group.climatology
         self.assertEqual(len(climatology), 1)
-        self.assertEqual(climatology.keys(), ['climatology_bounds'])
+        self.assertEqual(list(climatology.keys()), ['climatology_bounds'])
 
         climatology_var = climatology['climatology_bounds']
         self.assertEqual(climatology_var.ndim, 2)

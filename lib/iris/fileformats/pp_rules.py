@@ -633,14 +633,14 @@ def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     if \
             (lbvc == 1) and \
-            (not (str(stash) in STASHCODE_IMPLIED_HEIGHTS.keys())) and \
+            (str(stash) not in STASHCODE_IMPLIED_HEIGHTS) and \
             (blev != -1):
         coords_and_dims.append(
             (DimCoord(blev, standard_name='height', units='m',
                       attributes={'positive': 'up'}),
              None))
 
-    if str(stash) in STASHCODE_IMPLIED_HEIGHTS.keys():
+    if str(stash) in STASHCODE_IMPLIED_HEIGHTS:
         coords_and_dims.append(
             (DimCoord(STASHCODE_IMPLIED_HEIGHTS[str(stash)],
                       standard_name='height', units='m',

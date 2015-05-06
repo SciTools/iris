@@ -470,7 +470,7 @@ class SplittableInt(object):
 
     def __setattr__(self, name, value):
         # if the attribute is a special value, update the index value which will in turn update the attribute value
-        if (name != '_name_lookup' and name in self._name_lookup.keys()):
+        if name != '_name_lookup' and name in self._name_lookup:
             self[self._name_lookup[name]] = value
         else:
             object.__setattr__(self, name, value)
@@ -1024,7 +1024,7 @@ def _pp_attribute_names(header_defn):
     """
     normal_headers = list(name for name, positions in header_defn if name not in _SPECIAL_HEADERS)
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
-    extra_data = EXTRA_DATA.values()
+    extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
                           'boundary_packing']
     return normal_headers + special_headers + extra_data + special_attributes
@@ -1130,7 +1130,7 @@ class PPField(object):
         attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
 
         # With the attributes sorted the order will remain stable if extra attributes are added.
-        public_attribute_names =  attribute_priority_lookup.keys() + EXTRA_DATA.values()
+        public_attribute_names = list(attribute_priority_lookup.keys()) + list(EXTRA_DATA.values())
         self_attrs = [(name, getattr(self, name, None)) for name in public_attribute_names]
         self_attrs = filter(lambda pair: pair[1] is not None, self_attrs)
 
@@ -1937,7 +1937,7 @@ def _convert_constraints(constraints):
     unhandled_constraints = False
     for con in constraints:
         if isinstance(con, iris.AttributeConstraint) and \
-                con._attributes.keys() == ['STASH']:
+                list(con._attributes.keys()) == ['STASH']:
             # Convert a STASH constraint.
             stashobj = con._attributes['STASH']
             if not isinstance(stashobj, STASH):

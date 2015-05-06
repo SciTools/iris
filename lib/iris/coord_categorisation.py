@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -234,7 +234,7 @@ def _validate_seasons(seasons):
         c.update(_months_in_season(season))
     # Make a list of months that are not present...
     not_present = [calendar.month_abbr[month] for month in xrange(1, 13)
-                   if month not in c.keys()]
+                   if month not in c]
     if not_present:
         raise ValueError('some months do not appear in any season: '
                          '{!s}'.format(', '.join(not_present)))
