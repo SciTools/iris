@@ -730,7 +730,7 @@ def _wrap_function_for_method(function, docstring=None):
     # NB. There's an outstanding bug with "exec" where the locals and globals
     # dictionaries must be the same if we're to get closure behaviour.
     my_locals = {'function': function}
-    exec source in my_locals, my_locals
+    exec(source, my_locals, my_locals)
 
     # Update the docstring if required, and return the modified function
     wrapper = my_locals[function.__name__]
@@ -768,7 +768,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
                 # Create a default __init__ method for the class
                 method_source = ('def __init__(self, %s):\n '
                                  'self._init_from_tuple((%s,))' % (args, args))
-                exec method_source in namespace
+                exec(method_source, namespace)
 
             # Ensure the class has a "helper constructor" with explicit
             # arguments.
@@ -776,7 +776,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
                 # Create a default _init method for the class
                 method_source = ('def _init(self, %s):\n '
                                  'self._init_from_tuple((%s,))' % (args, args))
-                exec method_source in namespace
+                exec(method_source, namespace)
 
         return super(_MetaOrderedHashable, cls).__new__(
             cls, name, bases, namespace)
