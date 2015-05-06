@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,36 +14,39 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.fileformats.grib.as_messages` function."""
+"""Unit tests for the `iris.fileformats.pp.as_pairs` function."""
 
 from __future__ import (absolute_import, division, print_function)
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
 import iris.tests as tests
 
 import mock
 
-import gribapi
-
-import iris
 from iris.coords import DimCoord
-import iris.fileformats.grib as grib
+from iris.fileformats._ff_cross_references import STASH_TRANS
+import iris.fileformats.pp as pp
 import iris.tests.stock as stock
 
 
-class TestAsMessages(tests.IrisTest):
+class TestAsFields(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_3d()
 
-    def test_as_messages(self):
-        realization = 2
-        type_of_process = 4
-        coord = DimCoord(realization, standard_name='realization', units='1')
-        self.cube.add_aux_coord(coord)
-        messages = grib.as_messages(self.cube)
-        for message in messages:
-            self.assertEqual(gribapi.grib_get_long(message,
-                                                   'typeOfProcessedData'),
-                             type_of_process)
+    def test_cube_only(self):
+        slices_and_fields = pp.as_pairs(self.cube)
+        for aslice, field in slices_and_fields:
+            self.assertEqual(aslice.shape, (9, 11))
+            self.assertEqual(field.lbcode, 101)
+
+    def test_field_coords(self):
+        slices_and_fields = pp.as_pairs(self.cube,
+                                        field_coords=['grid_longitude',
+                                                      'grid_latitude'])
+        for aslice, field in slices_and_fields:
+            self.assertEqual(aslice.shape, (11, 9))
+            self.assertEqual(field.lbcode, 101)
 
 
 if __name__ == "__main__":

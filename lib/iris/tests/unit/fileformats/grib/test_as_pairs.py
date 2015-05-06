@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.fileformats.grib.as_messages` function."""
+"""Unit tests for the `iris.fileformats.grib.as_pairs` function."""
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -39,8 +39,9 @@ class TestAsMessages(tests.IrisTest):
         type_of_process = 4
         coord = DimCoord(realization, standard_name='realization', units='1')
         self.cube.add_aux_coord(coord)
-        messages = grib.as_messages(self.cube)
-        for message in messages:
+        slices_and_messages = grib.as_pairs(self.cube)
+        for aslice, message in slices_and_messages:
+            self.assertEqual(aslice.shape, (9, 11))
             self.assertEqual(gribapi.grib_get_long(message,
                                                    'typeOfProcessedData'),
                              type_of_process)

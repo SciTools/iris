@@ -896,7 +896,6 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         on a reduced grid to an equivalent regular grid.
 
         .. deprecated:: 1.8. Please use strict_grib_load and regrid instead.
-        
 
 
     """
@@ -928,28 +927,34 @@ def save_grib2(cube, target, append=False, **kwargs):
 
     Args:
 
-        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
+                      list of cubes.
         * target    - A filename or open file handle.
 
     Kwargs:
 
-        * append    - Whether to start a new file afresh or add the cube(s) to the end of the file.
-                      Only applicable when target is a filename, not a file handle.
-                      Default is False.
+        * append    - Whether to start a new file afresh or add the cube(s) to
+                      the end of the file.
+                      Only applicable when target is a filename, not a file
+                      handle. Default is False.
 
     See also :func:`iris.io.save`.
 
     """
     messages = as_messages(cube)
-    save(messages, target, append=append)
+    save_messages(messages, target, append=append)
 
 
 def as_pairs(cube):
     """
     Convert one or more cubes to (2D cube, GRIB message) pairs.
+    Returns an iterable of tuples each consisting of one 2D cubes and
+    one GRIB message, the result of the 2D cube being processed by the GRIB
+    save rules.
 
     Args:
-        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
+        list of cubes.
 
     """
     x_coords = cube.coords(axis='x', dim_coords=True)
@@ -967,15 +972,17 @@ def as_pairs(cube):
 def as_messages(cube):
     """
     Convert one or more cubes to GRIB messages.
+    Returns an iterable of grib_api GRIB messages.
 
     Args:
-        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
+                      list of cubes.
 
     """
     return (message for cube, message in as_pairs(cube))
 
 
-def save(messages, target, append=False):
+def save_messages(messages, target, append=False):
     """
     Save a messages to a GRIB2 file.
 
@@ -986,64 +993,10 @@ def save(messages, target, append=False):
 
     Kwargs:
 
-        * append    - Whether to start a new file afresh or add the cube(s) to the end of the file.
-                      Only applicable when target is a filename, not a file handle.
-                      Default is False.
-
-    """
-    # grib file (this bit is common to the pp and grib savers...)
-    if isinstance(target, basestring):
-        grib_file = open(target, "ab" if append else "wb")
-    elif hasattr(target, "write"):
-        if hasattr(target, "mode") and "b" not in target.mode:
-            raise ValueError("Target not binary")
-        grib_file = target
-    else:
-        raise ValueError("Can only save grib to filename or writable")
-
-    for message in messages:
-        gribapi.grib_write(message, grib_file)
-        gribapi.grib_release(message)
-
-    # (this bit is common to the pp and grib savers...)
-    if isinstance(target, basestring):
-        grib_file.close()
-
-
-def as_messages(cube):
-    """
-    Convert one or more cubes to GRIB messages.
-
-    Args:
-        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
-
-    """
-    x_coords = cube.coords(axis='x', dim_coords=True)
-    y_coords = cube.coords(axis='y', dim_coords=True)
-    if len(x_coords) != 1 or len(y_coords) != 1:
-        raise TranslationError("Did not find one (and only one) x or y coord")
-
-    # Save each latlon slice2D in the cube
-    for slice2D in cube.slices([y_coords[0], x_coords[0]]):
-        grib_message = gribapi.grib_new_from_samples("GRIB2")
-        _save_rules.run(slice2D, grib_message)
-        yield grib_message
-
-
-def save(messages, target, append=False):
-    """
-    Save a messages to a GRIB2 file.
-
-    Args:
-
-        * messages
-        * target    - A filename or open file handle.
-
-    Kwargs:
-
-        * append    - Whether to start a new file afresh or add the cube(s) to the end of the file.
-                      Only applicable when target is a filename, not a file handle.
-                      Default is False.
+        * append    - Whether to start a new file afresh or add the cube(s) to
+                      the end of the file.
+                      Only applicable when target is a filename, not a file
+                      handle. Default is False.
 
     """
     # grib file (this bit is common to the pp and grib savers...)

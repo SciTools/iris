@@ -2032,11 +2032,11 @@ def save(cube, target, append=False, field_coords=None):
     See also :func:`iris.io.save`.
 
     """
-    fields = as_fields(cube)
+    fields = as_fields(cube, field_coords)
     save_fields(fields, target, append=append)
 
 
-def as_pairs(cube, field_coords=None):
+def as_pairs(cube, field_coords=None, target=None):
     """
     Use the PP saving rules (and any user rules) to convert a cube to
     an iterable of (2D cube, PP field) pairs.
@@ -2142,12 +2142,16 @@ def as_pairs(cube, field_coords=None):
 
         # Log the rules used
         # XXX Get rid of this? Or have an optional `target` parameter?
-        #iris.fileformats.rules.log('PP_SAVE', target if isinstance(target, basestring) else target.name, verify_rules_ran)
+        if target is None:
+            target = 'None'
+        elif not isinstance(target, basestring):
+            target = target.name
+        iris.fileformats.rules.log('PP_SAVE', str(target), verify_rules_ran)
 
         yield (slice2D, pp_field)
 
 
-def as_fields(cube, field_coords=None):
+def as_fields(cube, field_coords=None, target=None):
     """
     Use the PP saving rules (and any user rules) to convert a cube to
     an iterable of PP fields.
@@ -2166,7 +2170,8 @@ def as_fields(cube, field_coords=None):
         If None, the final two  dimensions are chosen for slicing.
 
     """
-    return (field for cube, field in as_pairs(cube, field_coords=field_coords))
+    return (field for cube, field in as_pairs(cube, field_coords=field_coords,
+                                              target=target))
 
 
 def save_fields(fields, target, append=False):

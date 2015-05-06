@@ -27,6 +27,7 @@ User guide table of contents
 
    iris_cubes.rst
    loading_iris_cubes.rst
+   saving_iris_cubes.rst
    navigating_a_cube.rst
    subsetting_a_cube.rst
    plotting_a_cube.rst
@@ -34,6 +35,5 @@ User guide table of contents
    merge_and_concat.rst
    cube_statistics.rst
    cube_maths.rst
-   saving_iris_cubes.rst
    citation.rst
    end_of_userguide.rst
