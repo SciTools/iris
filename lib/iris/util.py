@@ -1500,7 +1500,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
     try:
         dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
-    except ValueError, valerr:
+    except ValueError as valerr:
         msg = ("Attempt to promote an AuxCoord ({}) fails "
                "when attempting to create a DimCoord from the "
                "AuxCoord because: {}")

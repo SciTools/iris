@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,7 +36,7 @@ from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 from iris.fileformats.grib._save_rules import grid_definition_template_12
 
 
-class FakeGribError(StandardError):
+class FakeGribError(Exception):
     pass
 
 
