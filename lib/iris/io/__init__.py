@@ -50,9 +50,55 @@ class _SaversDict(dict):
 _savers = _SaversDict()
 
 
+def run_saver_callback(callback, cube, field, filename):
+    """
+    Runs the saver callback mechanism given the appropriate arguments.
+
+    Args:
+
+    * callback:
+        A function to manipulate the field generated from the associated
+        cube, obeying the following rules:
+
+            1. Function signature must be: ``(cube, field, filename)``.
+            2. Modifies the given field inplace, unless a new field is
+               returned by the function.
+            3. If the field is to be rejected the callback must raise
+               an :class:`iris.exceptions.IgnoreFieldException`.
+    * cube:
+        The cube that generated the field.
+    * field:
+        The field to be saved.
+    * filename:
+        The name of the file to save the field.
+
+    .. note::
+
+        It is possible that this function returns None for certain callbacks,
+        the caller of this function should handle this case.
+
+    """
+    if callback is None:
+        return field
+
+    # Call the callback function on the field.
+    try:
+        result = callback(cube, field, filename)
+    except iris.exceptions.IgnoreFieldException:
+        result = None
+    else:
+        if result is None:
+            result = field
+        elif not isinstance(result, type(field)):
+            msg = 'Saver callback function returned an unhandled ' \
+                'data type, expected {}'.format(type(field))
+            raise TypeError(msg)
+    return result
+
+
 def run_callback(callback, cube, field, filename):
     """
-    Runs the callback mechanism given the appropriate arguments.
+    Runs the loader callback mechanism given the appropriate arguments.
 
     Args:
 
@@ -65,6 +111,12 @@ def run_callback(callback, cube, field, filename):
                returned by the function.
             3. If the cube is to be rejected the callback must raise
                an :class:`iris.exceptions.IgnoreCubeException`.
+    * cube:
+        The cube generated from the loaded field.
+    * field:
+        The loaded field that generated the cube.
+    * filename:
+        The name of the file from which the field was loaded.
 
     .. note::
 
@@ -86,8 +138,9 @@ def run_callback(callback, cube, field, filename):
         if result is None:
             result = cube
         elif not isinstance(result, iris.cube.Cube):
-                raise TypeError("Callback function returned an "
-                                "unhandled data type.")
+            msg = 'Loader callback function returned an unhandled ' \
+                'data type, expected {}'.format(type(cube))
+            raise TypeError(msg)
     return result
 
 
@@ -279,7 +332,7 @@ def find_saver(filespec):
     return _savers[matches[0]] if matches else None
 
 
-def save(source, target, saver=None, **kwargs):
+def save(source, target, saver=None, callback=None, **kwargs):
     """
     Save one or more Cubes to file (or other writable).
 
@@ -298,23 +351,35 @@ def save(source, target, saver=None, **kwargs):
 
     Args:
 
-        * source    - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
-                      sequence of cubes.
-        * target    - A filename (or writable, depending on file format).
-                      When given a filename or file, Iris can determine the
-                      file format.
+    * source:
+        A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
+        sequence of cubes.
+    * target:
+        A filename (or writable, depending on file format).
+        When given a filename or file, Iris can determine the
+        file format.
 
     Kwargs:
 
-        * saver     - Optional. Specifies the save function to use.
-                      If omitted, Iris will attempt to determine the format.
+    * saver:
+        Optional. Specifies the save function to use.
+        If omitted, Iris will attempt to determine the format.
 
-                      This keyword can be used to implement a custom save
-                      format. Function form must be:
-                      ``my_saver(cube, target)`` plus any custom keywords. It
-                      is assumed that a saver will accept an ``append`` keyword
-                      if it's file format can handle multiple cubes. See also
-                      :func:`iris.io.add_saver`.
+        This keyword can be used to implement a custom save
+        format. Function form must be:
+        ``my_saver(cube, target)`` plus any custom keywords. It
+        is assumed that a saver will accept an ``append`` keyword
+        if it's file format can handle multiple cubes. See also
+        :func:`iris.io.add_saver`.
+    * callback:
+        A function to manipulate the field generated from the associated
+        cube, obeying the following rules:
+
+            1. Function signature must be: ``(cube, field, filename)``.
+            2. Modifies the given field inplace, unless a new field is
+               returned by the function.
+            3. If the field is to be rejected the callback must raise
+               an :class:`iris.exception.IgnoreFieldException`.
 
     All other keywords are passed through to the saver function; see the
     relevant saver documentation for more information on keyword arguments.
@@ -347,7 +412,7 @@ def save(source, target, saver=None, **kwargs):
 
     # Single cube?
     if isinstance(source, iris.cube.Cube):
-        saver(source, target, **kwargs)
+        saver(source, target, callback=callback, **kwargs)
 
     # CubeList or sequence of cubes?
     elif (isinstance(source, iris.cube.CubeList) or
@@ -367,10 +432,10 @@ def save(source, target, saver=None, **kwargs):
             for i, cube in enumerate(source):
                 if i != 0:
                     kwargs['append'] = True
-                saver(cube, target, **kwargs)
+                saver(cube, target, callback=callback, **kwargs)
         # Netcdf saver.
         else:
-            saver(source, target, **kwargs)
+            saver(source, target, callback=callback, **kwargs)
 
     else:
         raise ValueError("Cannot save; non Cube found in source")

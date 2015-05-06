@@ -26,6 +26,7 @@ import numpy.ma as ma
 
 from iris import FUTURE, load_cube
 
+import gribapi
 from subprocess import check_output
 
 from iris import FUTURE, load_cube, save
@@ -227,6 +228,28 @@ class TestGDT40(tests.IrisTest):
         with FUTURE.context(strict_grib_load=True):
             cube = load_cube(path)
         self.assertCMLApproxData(cube)
+
+
+@tests.skip_data
+class TestSaverCallback(tests.IrisTest):
+    def test_grib2(self):
+        def callback_save(cube, field, fname):
+            self.assertEqual(gribapi.grib_get(field, 'centre'), 'egrr')
+            # Clobber the original GRIB message section-1, "centre"
+            # to be ECMWF = 98 (Code Table-0).
+            gribapi.grib_set_long(field, 'centre', 98)
+
+        def callback_check(cube, field, fname):
+            self.assertEqual(field.sections[1]['centre'],
+                             'ecmf')
+
+        fname = 'uk_t.grib2'
+        path = tests.get_data_path(('GRIB', 'uk_t', fname))
+        with FUTURE.context(strict_grib_load=True):
+            cube = load_cube(path)
+            with self.temp_filename(fname) as fo:
+                save(cube, fo, callback=callback_save)
+                load_cube(fo, callback=callback_check)
 
 
 if __name__ == '__main__':

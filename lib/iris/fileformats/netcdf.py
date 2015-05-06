@@ -572,7 +572,7 @@ def load_cubes(filenames, callback=None):
 class Saver(object):
     """A manager for saving netcdf files."""
 
-    def __init__(self, filename, netcdf_format):
+    def __init__(self, filename, netcdf_format, callback=None):
         """
         A manager for saving netcdf files.
 
@@ -585,8 +585,11 @@ class Saver(object):
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 
-        Returns:
-            None.
+        Kwargs:
+
+        * callback (callable):
+            Function which can be passed on to
+            :func:`iris.io.run_saver_callback`.
 
         For example::
 
@@ -601,7 +604,8 @@ class Saver(object):
                                  'NETCDF3_CLASSIC', 'NETCDF3_64BIT']:
             raise ValueError('Unknown netCDF file format, got %r' %
                              netcdf_format)
-
+        self.filename = filename
+        self.callback = callback
         # All persistent variables
         #: CF name mapping with iris coordinates
         self._name_coord_map = CFNameCoordMap()
@@ -792,6 +796,13 @@ class Saver(object):
                 msg = 'cf_profile is available but no {} defined.'.format(
                     'cf_patch')
                 warnings.warn(msg)
+
+        # Perform any user registered callback function.
+        # As the NetCDF saver commits to disk as it processes the cube and
+        # its metadata, it is not possible to skip or ignore the derived
+        # NetCDF representation of a cube as with other file format savers.
+        iris.io.run_saver_callback(self.callback, cube,
+                                   cf_var_cube, self.filename)
 
     def update_global_attributes(self, attributes=None, **kwargs):
         """
@@ -1554,7 +1565,7 @@ class Saver(object):
 def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
          unlimited_dimensions=None, zlib=False, complevel=4, shuffle=True,
          fletcher32=False, contiguous=False, chunksizes=None, endian='native',
-         least_significant_digit=None):
+         least_significant_digit=None, callback=None):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
@@ -1651,6 +1662,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         in unpacked data that is a reliable value". Default is `None`, or no
         quantization, or 'lossless' compression.
 
+    * callback (callable):
+        Function which can be passed on to :func:`iris.io.run_saver_callback`.
+
     Returns:
         None.
 
@@ -1706,7 +1720,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         local_keys.update(different_value_keys)
 
     # Initialise Manager for saving
-    with Saver(filename, netcdf_format) as sman:
+    with Saver(filename, netcdf_format, callback=callback) as sman:
         # Iterate through the cubelist.
         for cube in cubes:
             sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,

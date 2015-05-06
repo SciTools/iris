@@ -2009,30 +2009,34 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
                                              pp_filter)
 
 
-def save(cube, target, append=False, field_coords=None):
+def save(cube, target, append=False, field_coords=None, callback=None):
     """
     Use the PP saving rules (and any user rules) to save a cube to a PP file.
 
     Args:
 
-        * cube         - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
-        * target       - A filename or open file handle.
+    * cube:
+        A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+    * target:
+        A filename or open file handle.
 
     Kwargs:
 
-        * append       - Whether to start a new file afresh or add the cube(s) to the end of the file.
-                         Only applicable when target is a filename, not a file handle.
-                         Default is False.
-
-        * field_coords - list of 2 coords or coord names which are to be used for
-                         reducing the given cube into 2d slices, which will ultimately
-                         determine the x and y coordinates of the resulting fields.
-                         If None, the final two  dimensions are chosen for slicing.
+    * append:
+        Whether to start a new file afresh or add the cube(s) to the end of the file.
+        Only applicable when target is a filename, not a file handle.
+        Default is False.
+    * field_coords:
+        List of 2 coords or coord names which are to be used for
+        reducing the given cube into 2d slices, which will ultimately
+        determine the x and y coordinates of the resulting fields.
+        If None, the final two  dimensions are chosen for slicing.
+    * callback:
+        A modifier/filter function.
 
     See also :func:`iris.io.save`.
 
     """
-
     # Open issues
     # Could use rules in "sections" ... e.g. to process the extensive dimensions; ...?
     # Could pre-process the cube to add extra convenient terms?
@@ -2075,9 +2079,11 @@ def save(cube, target, append=False, field_coords=None):
     # pp file
     if isinstance(target, basestring):
         pp_file = open(target, "ab" if append else "wb")
+        filename = target
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
+        filename = target.name if hasattr(target, 'name') else None
         pp_file = target
     else:
         raise ValueError("Can only save pp to filename or writable")
@@ -2130,6 +2136,13 @@ def save(cube, target, append=False, field_coords=None):
 
         # Log the rules used
         iris.fileformats.rules.log('PP_SAVE', target if isinstance(target, basestring) else target.name, verify_rules_ran)
+
+        # Perform any user registered callback function.
+        pp_field = iris.io.run_saver_callback(callback, slice2D, pp_field, filename)
+
+        # Callback mechanism may return None, which must not be saved.
+        if pp_field is None:
+            continue
 
         # Write to file
         pp_field.save(pp_file)
