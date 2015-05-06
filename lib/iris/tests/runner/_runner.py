@@ -80,6 +80,7 @@ def failed_images_html():
     return '\n'.join(html)
 
 
+# NOTE: Do not inherit from object as distutils does not like it.
 class TestRunner():
     """Run the Iris tests under nose and multiprocessor for performance"""
 

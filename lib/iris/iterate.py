@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -272,7 +272,7 @@ class _ZipSlicesIterator(collections.Iterator):
         return tuple(subcubes)
 
 
-class _CoordWrapper:
+class _CoordWrapper(object):
     """
     Class for creating a coordinate wrapper that allows the use of an
     alternative equality function based on metadata rather than
