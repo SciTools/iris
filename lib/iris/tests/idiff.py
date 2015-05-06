@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,6 +23,8 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 import os.path
 import shutil

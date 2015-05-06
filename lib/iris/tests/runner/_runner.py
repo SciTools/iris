@@ -21,6 +21,8 @@ Provides testing capabilities for installed copies of Iris.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 # Because this file is imported by setup.py, there may be additional runtime
 # imports later in the file.
 import glob

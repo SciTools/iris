@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,8 @@ Wrapper for animating iris cubes using iris or matplotlib plotting functions
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 import warnings
 

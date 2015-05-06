@@ -26,6 +26,8 @@ with no public API. It is invoked from
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import warnings
 
 import gribapi

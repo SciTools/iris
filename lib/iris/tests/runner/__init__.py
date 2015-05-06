@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,3 +20,5 @@ Empty file to allow import.
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+import six

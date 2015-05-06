@@ -23,6 +23,8 @@ See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import collections
 import warnings
 

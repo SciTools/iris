@@ -22,6 +22,8 @@ Classes for representing multi-dimensional data with metadata.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from xml.dom.minidom import Document
 import collections
 import copy

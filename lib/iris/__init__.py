@@ -97,6 +97,8 @@ All the load functions share very similar arguments:
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import contextlib
 import itertools
 import logging

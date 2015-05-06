@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,8 @@
 """A collection of helpers for interpolation."""
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 from collections import namedtuple
 from itertools import product

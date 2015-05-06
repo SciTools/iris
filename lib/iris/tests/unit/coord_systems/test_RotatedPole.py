@@ -17,6 +17,8 @@
 """Unit tests for the :class:`iris.coord_systems.RotatedPole` class."""
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 import mock
 
 # Import iris.tests first so that some things can be initialised before

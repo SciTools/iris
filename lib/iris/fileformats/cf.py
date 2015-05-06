@@ -27,6 +27,8 @@ References:
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from abc import ABCMeta, abstractmethod
 from collections import Iterable
 import os

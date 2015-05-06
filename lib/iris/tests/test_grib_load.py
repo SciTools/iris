@@ -17,6 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 # Import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests

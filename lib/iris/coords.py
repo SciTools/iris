@@ -21,6 +21,8 @@ Definitions of coordinates.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from abc import ABCMeta, abstractproperty
 import collections
 import copy

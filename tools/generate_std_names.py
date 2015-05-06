@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,13 +30,15 @@ as obtained from:
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import argparse
 import pprint
 import xml.etree.ElementTree as ET
 
 
 STD_VALUES_FILE_TEMPLATE = '''
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -72,6 +74,8 @@ Or for more control (e.g. to use an alternative XML file) via:
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 
 STD_NAMES = '''.lstrip()

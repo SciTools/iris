@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,8 @@ Tests for `iris.fileformats.grib._load_convert.product_definition_template_31`.
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
