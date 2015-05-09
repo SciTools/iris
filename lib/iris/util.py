@@ -24,6 +24,7 @@ from __future__ import (absolute_import, division, print_function)
 import abc
 import collections
 import copy
+import functools
 import inspect
 import os
 import os.path
@@ -782,6 +783,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
             cls, name, bases, namespace)
 
 
+@functools.total_ordering
 class _OrderedHashable(collections.Hashable):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
@@ -855,12 +857,11 @@ class _OrderedHashable(collections.Hashable):
 
     # Provide default ordering semantics
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         if isinstance(other, _OrderedHashable):
-            result = cmp(self._identity(), other._identity())
+            return self._identity() < other._identity()
         else:
-            result = NotImplemented
-        return result
+            return NotImplemented
 
 
 def create_temp_filename(suffix=''):
