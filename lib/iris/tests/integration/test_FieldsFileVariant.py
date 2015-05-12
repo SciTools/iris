@@ -341,9 +341,9 @@ class TestUpdate(tests.IrisTest):
                          if hasattr(fld, 'lbpack')]
             for i_field, (new_size, old_size) in enumerate(zip(new_sizes,
                                                                old_sizes)):
-                msg = 'unpacked LBNREC({}) is <= packed({})'
-                self.assertGreater(new_size, old_size,
-                                   msg=msg.format(new_size, old_size))
+                msg = 'unpacked LBNREC({}) is < packed({})'
+                self.assertGreaterEqual(new_size, old_size,
+                                        msg=msg.format(new_size, old_size))
 
             test_data_new = ffv.fields[0].get_data()
             self.assertArrayAllClose(test_data_old, test_data_new)
@@ -373,6 +373,44 @@ class TestUpdate(tests.IrisTest):
         # Finally, check we never fetched any field data.
         self.assertEqual(patch_getdata_call.call_count, 0)
 
+    def test_save_with_wgdos_packing(self):
+        # Check that we can pack data with the WGDOS method.
+        src_path = tests.get_data_path(('FF', 'n48_multi_field'))
+        with self.temp_filename() as temp_path:
+            # Make a copy and open for UPDATE (maybe not strictly necessary?)
+            shutil.copyfile(src_path, temp_path)
+            ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
+            # Grab a single field to fiddle with (as a shortcut).
+            field = ffv.fields[0]
+            # Make a new test data array, compatible with the existing header.
+            shape = (field.lbrow, field.lbnpt)
+            data = np.arange(np.prod(shape))
+            data = data.reshape(shape)
+            # Make two copied Fields, with the new data.
+            field1 = field.__class__(field.int_headers.copy(),
+                                     field.real_headers.copy(),
+                                     data.copy())
+            field2 = field.__class__(field.int_headers.copy(),
+                                     field.real_headers.copy(),
+                                     data.copy())
+            # Setup one to be wgdos-packed and one to be left unpacked.
+            field1.lbpack = 1
+            field1.bacc = -13
+            field2.lbpack = 0
+            # Rewrite the test file with just these fields.
+            ffv.fields = [field1, field2]
+            ffv.close()
+
+            # Read the test file back in, and check all is as expected.
+            ffv = FieldsFileVariant(temp_path)
+            self.assertEqual(len(ffv.fields), 2)
+            # Check lbpacks.
+            self.assertEqual(ffv.fields[0].lbpack, 1)
+            self.assertEqual(ffv.fields[1].lbpack, 0)
+            # Check that the data arrays are approximately the same.
+            self.assertArrayAllClose(ffv.fields[0].get_data(),
+                                     ffv.fields[1].get_data())
+
     def test_save_packed_mixed(self):
         # Check all save options, and show we can "partially" unpack a file.
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
@@ -381,38 +419,90 @@ class TestUpdate(tests.IrisTest):
             shutil.copyfile(src_path, temp_path)
             ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
 
-            # Reduce to only the first 3 fields.
-            ffv.fields = ffv.fields[:3]
-            # Check that these fields are all WGDOS packed.
-            self.assertTrue(all(fld.lbpack == 1 for fld in ffv.fields))
+            # Grab the first 3 fields.
+            three_fields = ffv.fields[:3]
+            field_0, field_1, field_2 = three_fields
+
+            # Check that these fields are all WGDOS packed in the source.
+            self.assertTrue(all(fld.lbpack == 1 for fld in three_fields))
 
             # Modify the fields to exercise all 3 saving 'styles'.
+            ny, nx = field_0.lbrow, field_0.lbnpt  # NB all fields the same.
+
             # Field#0 : store packed as unpacked.
             data_0 = ffv.fields[0].get_data()
-            ffv.fields[0].lbpack = 2000
+            field_0.lbpack = 2000
+
             # Field#1 : pass-through packed as packed.
-            data_1 = ffv.fields[1].get_data()
-            # Field#2 : save array as unpacked.
-            shape2 = (ffv.fields[2].lbrow, ffv.fields[2].lbnpt)
-            data_2 = np.arange(np.prod(shape2)).reshape(shape2)
-            ffv.fields[2].set_data(data_2)
-            ffv.fields[2].lbpack = 3000
+            data_1 = field_1.get_data()
+            field_1_lblrec = field_1.lblrec
+            field_1_lbnrec = field_1.lbnrec
+
+            # Field#2 : save an array as unpacked.
+            shape_2 = (30, 17)  # NOTE: different from the original.
+            data_2 = np.arange(np.prod(shape_2)).reshape(shape_2)
+            field_2.lbrow = shape_2[0]
+            field_2.lbnpt = shape_2[1]
+            field_2.set_data(data_2)
+            field_2.lbpack = 3000
+
+            # Field#3 : copy field#2, but save with WGDOS packing.
+            field_3 = Field3(field_2.int_headers.copy(),
+                             field_2.real_headers.copy(),
+                             data_2.copy())
+            field_3.lbpack = 1
+
+            # Save results
+            ffv.fields = [field_0, field_1, field_2, field_3]
             ffv.close()
+
+            # Check that the payload control words were updated correctly.
+            original_words = nx * ny
+            wps = ffv._WORDS_PER_SECTOR
+            original_sectors = wps * np.ceil(original_words / wps)
+            new_words_2 = np.prod(shape_2)
+            new_sectors_2 = wps * np.ceil(new_words_2 / wps)
+            self.assertEqual(field_0.lblrec, original_words)
+            self.assertEqual(field_0.lbnrec, original_sectors)
+            self.assertEqual(field_1.lblrec, field_1_lblrec)
+            self.assertEqual(field_1.lbnrec, field_1_lbnrec)
+            self.assertEqual(field_2.lblrec, new_words_2)
+            self.assertEqual(field_2.lbnrec, new_sectors_2)
+            # NOTE: we don't actually know the data size of the last one.
+            words_3 = field_3.lblrec
+            sectors_3 = field_3.lbnrec
+            self.assertLessEqual(words_3, new_words_2)
+            self.assertLessEqual(sectors_3, new_sectors_2)
 
             # Read the test file back in, and check all is as expected.
             ffv = FieldsFileVariant(temp_path)
-            self.assertEqual(len(ffv.fields), 3)
-            # Field#0.
-            self.assertEqual(ffv.fields[0].lbpack, 2000)
-            self.assertArrayAllClose(ffv.fields[0].get_data(), data_0)
-            # Field#1.
-            self.assertEqual(ffv.fields[1].lbpack, 1)
-            self.assertArrayAllClose(ffv.fields[1].get_data(), data_1)
-            # Field#2.
-            self.assertEqual(ffv.fields[2].lbpack, 3000)
-            self.assertArrayAllClose(ffv.fields[2].get_data(), data_2)
+            self.assertEqual(len(ffv.fields), 4)
+            field_0, field_1, field_2, field_3 = ffv.fields
 
-    def test_fail_save_with_packing(self):
+            # Field#0.
+            self.assertEqual(field_0.lbpack, 2000)
+            self.assertArrayAllClose(field_0.get_data(), data_0)
+            # Field#1.
+            self.assertEqual(field_1.lbpack, 1)
+            self.assertArrayAllClose(field_1.get_data(), data_1)
+            # Field#2.
+            self.assertEqual(field_2.lbpack, 3000)
+            self.assertArrayAllClose(field_2.get_data(), data_2)
+            # Field#2.
+            self.assertEqual(field_3.lbpack, 1)
+            self.assertArrayAllClose(field_2.get_data(), data_2)
+
+            # Re-check the control words (should all be unchanged)
+            self.assertEqual(field_0.lblrec, original_words)
+            self.assertEqual(field_0.lbnrec, original_sectors)
+            self.assertEqual(field_1.lblrec, field_1_lblrec)
+            self.assertEqual(field_1.lbnrec, field_1_lbnrec)
+            self.assertEqual(field_2.lblrec, new_words_2)
+            self.assertEqual(field_2.lbnrec, new_sectors_2)
+            self.assertEqual(field_3.lblrec, words_3)
+            self.assertEqual(field_3.lbnrec, sectors_3)
+
+    def test_fail_save_with_unknown_packing(self):
         # Check that trying to save data as packed causes an error.
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
         with self.temp_filename() as temp_path:
@@ -420,14 +510,14 @@ class TestUpdate(tests.IrisTest):
             shutil.copyfile(src_path, temp_path)
             ffv = FieldsFileVariant(temp_path, FieldsFileVariant.UPDATE_MODE)
 
-            # Reduce to just one field.
-            field = ffv.fields[0]
-            ffv.fields = [field]
+            # Reduce to just one field_2.
+            field_2 = ffv.fields[0]
+            ffv.fields = [field_2]
             # Actualise the data to a concrete array.
-            field.set_data(field.get_data())
-            # Attempt to save back to a packed format.
-            field.lbpack = 1
-            msg = 'Cannot save.*lbpack=1.*packing not supported'
+            field_2.set_data(field_2.get_data())
+            # Attempt to save back to an unrecognised packed format.
+            field_2.lbpack = 7
+            msg = 'Cannot save.*lbpack=7.*unsupported'
             with self.assertRaisesRegexp(ValueError, msg):
                 ffv.close()
 
@@ -459,7 +549,7 @@ class TestCreate(tests.IrisTest):
             # instead of 1 to mark an unused dimension length.
             self.assertArrayEqual(dest[changed_indices[:-1]], [IMDI] * 9)
             # The last difference is to the length of the DATA component
-            # because we've padded the last field.
+            # because we've padded the last field_2.
             self.assertEqual(dest[160], 956416)
 
     def test_create(self):
@@ -510,8 +600,8 @@ class TestCreate(tests.IrisTest):
             self.assertArrayEqual(ffv.integer_constants, constants)
             self.assertIsNone(ffv.real_constants)
             self.assertEqual(len(ffv.fields), 1)
-            for field in ffv.fields:
-                data = field.get_data()
+            for field_2 in ffv.fields:
+                data = field_2.get_data()
                 self.assertArrayEqual(data, src_data)
 
 

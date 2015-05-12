@@ -152,7 +152,9 @@ class Test__can_copy_deferred_data(tests.IrisTest):
             # Replace the provider with a simple array.
             provider = np.zeros(2)
         field = Field(range(45), range(19), provider)
-        return field._can_copy_deferred_data(new_lbpack, new_bacc)
+        field.lbpack = new_lbpack
+        field.bacc = new_bacc
+        return field._can_copy_deferred_data()
 
     def test_okay_simple(self):
         self.assertTrue(self._check_formats(1234, 1234))

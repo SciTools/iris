@@ -210,6 +210,12 @@ class _FieldMetaclass(type):
                                                        bases, class_dict)
 
 
+# Helper function to ensure an array is big-endian and of the
+# correct dtype kind and word size for writing to file.
+def normalise(values, kind, word_size):
+    return values.astype('>{}{}'.format(kind, word_size))
+
+
 class Field(object):
     """
     Represents a single entry in the LOOKUP component and its
@@ -311,24 +317,100 @@ class Field(object):
         """
         self._data_provider = data
 
-    def _can_copy_deferred_data(self, required_lbpack, required_bacc):
+    def _can_copy_deferred_data(self):
         """
-        Return whether the field's raw payload can be reused unmodified,
-        for the specified output packing format.
+        Return whether a field's payload contains deferred data that can be
+        reused unmodified, for the specified output packing format.
+
+        This is true if our data is a deferred provider, with a lookup from
+        the original file which specifies exactly the same packing that the
+        field wants.
 
         """
         # Check that the original data payload has not been replaced by plain
         # array data.
-        compatible = hasattr(self._data_provider, 'read_data')
+        compatible = hasattr(self._data_provider, 'lookup_entry')
         if compatible:
             src_lbpack = self._data_provider.lookup_entry.lbpack
             src_bacc = self._data_provider.lookup_entry.bacc
 
             # The packing words are compatible if nothing else is different.
-            compatible = (required_lbpack == src_lbpack and
-                          required_bacc == src_bacc)
+            compatible = (self.lbpack == src_lbpack and
+                          self.bacc == src_bacc)
 
         return compatible
+
+    def _write_payload(self, output_file, word_size, words_per_sector):
+        """
+        Write the field data payload to the provided file.
+
+        This includes handling supported packing types, and updating the field
+        itself appropriately.
+
+        """
+        self.lbegin = output_file.tell() / word_size
+        if self._can_copy_deferred_data():
+            # The original, unread file data is encoded as wanted, so pass it
+            # through unchanged.  In this case, we should also leave the lookup
+            # controls unchanged
+            # -- i.e. do not recalculate LBLREC and LBNREC.
+            output_file.write(self._get_raw_payload_bytes())
+        else:
+            # Output in the format specified by LBPACK.
+            if self.lbpack in (0, 2000, 3000):
+                # Write unpacked data -- in any of the supported word types,
+                # which are all equivalent.
+                data = self.get_data()
+
+                # When not compressing, preparation is just to fix the data
+                # wordlength and endian-ness.
+                kind = {1: 'f', 2: 'i', 3: 'i'}.get(
+                    self.lbuser1, data.dtype.kind)
+                data = normalise(data, kind, word_size)
+
+                # Write data.
+                output_file.write(data)
+
+                # Size is one word per point.
+                n_data_words = data.size
+
+            elif self.lbpack in (1, 2001, 3001):
+                # Write WGDOS packed results.
+                if not mo_pack:
+                    msg = ('cannot pack data with lbpack={} :'
+                           'WGDOS packing library "mo_pack" is not available.')
+                    raise ValueError(msg.format(self.lbpack))
+
+                data = self.get_data()
+                wgdos_packed_bytes = mo_pack.pack_wgdos(
+                    data.astype(np.float32), self.bacc, self.bmdi)
+
+                # Write data.
+                output_file.write(wgdos_packed_bytes)
+
+                # Pad to a whole word boundary, if needed.
+                n_data_bytes = len(wgdos_packed_bytes)
+                n_data_words = n_data_bytes // word_size
+                n_pad_bytes = \
+                    n_data_bytes - (n_data_words * word_size)
+                if n_pad_bytes > 0:
+                    # Add padding bytes and increment the word length.
+                    pad_bytes = np.zeros(n_pad_bytes, dtype='>i1')
+                    output_file.write(pad_bytes)
+                    n_data_words += 1
+            else:
+                # Unrecognised lbpack value.
+                msg = ('Cannot save data with lbpack={} : '
+                       'unsupported or unknown packing type.')
+                raise ValueError(msg.format(self.lbpack))
+
+            # Record the payload size in the lookup control words.
+            # NOTE: this is *not* done on pass-through of an uninterpreted
+            # payload.
+            n_data_sectors = np.ceil(n_data_words / words_per_sector)
+            data_fullsectors_words = n_data_sectors * words_per_sector
+            self.lblrec = n_data_words
+            self.lbnrec = data_fullsectors_words
 
 
 class Field2(Field):
@@ -707,21 +789,19 @@ class FieldsFileVariant(object):
     def _write_new(self, output_file):
         self._update_fixed_length_header()
 
-        # Helper function to ensure an array is big-endian and of the
-        # correct dtype kind and word size.
-        def normalise(values, kind):
-            return values.astype('>{}{}'.format(kind, self._word_size))
-
         # Skip the fixed length header. We'll write it at the end
         # once we know how big the DATA component needs to be.
         header = self.fixed_length_header
+        word_size = self._word_size
+        words_per_sector = self._WORDS_PER_SECTOR
         output_file.seek(header.NUM_WORDS * self._word_size)
 
         # Write all the normal components which have a value.
         for name, kind in self._COMPONENTS:
             values = getattr(self, name)
             if values is not None:
-                output_file.write(np.ravel(normalise(values, kind), order='F'))
+                output_file.write(np.ravel(normalise(values, kind, word_size),
+                                           order='F'))
 
         if self.fields:
             # Skip the LOOKUP component and write the DATA component.
@@ -731,48 +811,15 @@ class FieldsFileVariant(object):
             # until we've adjusted them all and write them out in
             # one go.
             output_file.seek((header.data_start - 1) * self._word_size)
-            dataset_type = self.fixed_length_header.dataset_type
-            sector_size = self._WORDS_PER_SECTOR * self._word_size
 
             for field in self.fields:
                 if hasattr(field, '_HEADER_DEFN'):
                     # Output 'recognised' lookup types (not blank entries).
-                    field.lbegin = output_file.tell() / self._word_size
-                    required_lbpack, required_bacc = field.lbpack, field.bacc
-                    if field._can_copy_deferred_data(
-                            required_lbpack, required_bacc):
-                        # The original, unread file data is encoded as wanted,
-                        # so pass it through unchanged.  In this case, we
-                        # should also leave the lookup controls unchanged
-                        # -- i.e. do not recalculate LBLREC and LBNREC.
-                        output_file.write(field._get_raw_payload_bytes())
-                    elif required_lbpack in (0, 2000, 3000):
-                        # Write unpacked data -- in supported word types, all
-                        # equivalent.
-                        data = field.get_data()
-
-                        # Ensure the output is coded right.
-                        # NOTE: For now, as we don't do compression, this just
-                        # means fixing data wordlength and endian-ness.
-                        kind = {1: 'f', 2: 'i', 3: 'i'}.get(field.lbuser1,
-                                                            data.dtype.kind)
-                        data = normalise(data, kind)
-                        output_file.write(data)
-
-                        # Record the payload size in the lookup control words.
-                        data_size = data.size
-                        data_sectors_size = data_size
-                        data_sectors_size -= \
-                            data_size % -self._WORDS_PER_SECTOR
-                        field.lblrec = data_size
-                        field.lbnrec = data_sectors_size
-                    else:
-                        # No packing is supported.
-                        msg = ('Cannot save data with lbpack={} : '
-                               'packing not supported.')
-                        raise ValueError(msg.format(required_lbpack))
+                    field._write_payload(output_file,
+                                         word_size, words_per_sector)
 
                     # Pad out the data section to a whole number of sectors.
+                    sector_size = words_per_sector * word_size
                     overrun = output_file.tell() % sector_size
                     if overrun != 0:
                         padding = np.zeros(sector_size - overrun, 'i1')
@@ -780,22 +827,26 @@ class FieldsFileVariant(object):
 
             # Update the fixed length header to reflect the extent
             # of the DATA component.
+            dataset_type = self.fixed_length_header.dataset_type
             if dataset_type == 5:
                 header.data_shape = 0
             else:
-                header.data_shape = ((output_file.tell() // self._word_size) -
+                header.data_shape = ((output_file.tell() // word_size) -
                                      header.data_start + 1)
 
             # Go back and write the LOOKUP component.
-            output_file.seek((header.lookup_start - 1) * self._word_size)
+            output_file.seek((header.lookup_start - 1) * word_size)
             for field in self.fields:
-                output_file.write(normalise(field.int_headers, 'i'))
-                output_file.write(normalise(field.real_headers, 'f'))
+                output_file.write(
+                    normalise(field.int_headers, 'i', word_size))
+                output_file.write(
+                    normalise(field.real_headers, 'f', word_size))
 
         # Write the fixed length header - now that we know how big
         # the DATA component was.
         output_file.seek(0)
-        output_file.write(normalise(self.fixed_length_header.raw, 'i'))
+        output_file.write(
+            normalise(self.fixed_length_header.raw, 'i', word_size))
 
     def close(self):
         """
@@ -823,11 +874,14 @@ class FieldsFileVariant(object):
         .. note::
 
             On output, each field's data is encoded according to the LBPACK
-            and BACC words in the field.  A field data array defined using
-            :meth:`Field.set_data` can *only* be written in an "unpacked"
-            form, corresponding to LBACK=0 (or the equivalent 2000 / 3000).
-            However, data from the input file can be saved in its original
-            packed form, as long as the data, LBPACK and BACC remain unchanged.
+            and BACC words in the field.
+            Data copied from the input file can be saved in any original
+            packed form, i.e. if LBPACK and BACC remain unchanged.
+            However, data set with :meth:`Field.set_data`, or which is to be
+            re-coded in a different packing format to the original, can be
+            *only* be saved in certain supported packing formats :  At present,
+            these are "unpacked" (for lback=0/2000/3000), or "WGDOS packed"
+            (for lbpack=1/2001/3001, with BACC specifying the bit depth).
 
         """
         if not self._source.closed:
