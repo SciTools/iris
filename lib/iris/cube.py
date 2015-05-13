@@ -3313,7 +3313,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # needed
         if isinstance(aggregator, iris.analysis.WeightedAggregator) and \
                 aggregator.uses_weighting(**kwargs):
-            if 'weights' in kwargs.keys():
+            if 'weights' in kwargs:
                 weights = kwargs['weights']
                 if weights.ndim > 1 or weights.shape[0] != window:
                     raise ValueError('Weights for rolling window aggregation '

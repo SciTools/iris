@@ -61,7 +61,7 @@ class CoordSystem(object):
 
         if attrs is None:
             attrs = self.__dict__.items()
-        attrs.sort(key=lambda attr: attr[0])
+        attrs = sorted(attrs, key=lambda attr: attr[0])
 
         for name, value in attrs:
             coord_system_xml_element.setAttribute(name, str(value))

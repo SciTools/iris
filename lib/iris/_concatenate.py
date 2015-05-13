@@ -372,9 +372,9 @@ class _CubeSignature(object):
         # Set up {name: coord_metadata} dictionaries.
         self_dict = {x.name(): x for x in getattr(self, attr)}
         other_dict = {x.name(): x for x in getattr(other, attr)}
-        if len(self_dict.keys()) == 0:
+        if len(self_dict) == 0:
             self_dict = {'< None >': None}
-        if len(other_dict.keys()) == 0:
+        if len(other_dict) == 0:
             other_dict = {'< None >': None}
         self_names = sorted(self_dict.keys())
         other_names = sorted(other_dict.keys())

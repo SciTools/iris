@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -121,7 +121,7 @@ def nearest_neighbour_indices(cube, sample_points):
     """
     if isinstance(sample_points, dict):
         warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
-        sample_points = sample_points.items()
+        sample_points = list(sample_points.items())
 
     if sample_points:
         try:
@@ -196,7 +196,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
 
     if isinstance(sample_point, dict):
         warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
-        sample_point = sample_point.items()
+        sample_point = list(sample_point.items())
 
     if sample_point:
         try:
@@ -632,8 +632,8 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
 
     """
     if isinstance(sample_points, dict):
-        sample_points = sample_points.items()
-    
+        sample_points = list(sample_points.items())
+
     # catch the case where a user passes a single (coord/name, value) pair rather than a list of pairs
     if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], basestring)):
         raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))

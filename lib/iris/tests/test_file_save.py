@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,7 @@ from __future__ import (absolute_import, division, print_function)
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import cStringIO
+import io
 import os
 import unittest
 
@@ -125,20 +125,20 @@ class TestSaveDot(TestSaveMethods):
         with self.assertRaises(ValueError):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, binary_mode = True)
 
-    def test_cstringio(self):
-        string_io = cStringIO.StringIO()
+    def test_bytesio(self):
+        bio = io.BytesIO()
 
         # Save from dot direct
         dot.save(self.cube1, self.temp_filename1)
 
         # Call save on iris
-        iris.save(self.cube1, string_io, iris.io.find_saver(self.ext))
+        iris.save(self.cube1, bio, iris.io.find_saver(self.ext))
 
         with open(self.temp_filename1) as infile:
             data = infile.read()
 
         # Compare files
-        self.assertEquals(data, string_io.getvalue(), "Mismatch in data when comparing iris cstringio save and dot.save.")
+        self.assertEquals(data, bio.getvalue(), "Mismatch in data when comparing iris bytesio save and dot.save.")
 
 
 @skip_dotpng

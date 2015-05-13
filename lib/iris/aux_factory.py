@@ -176,8 +176,7 @@ class AuxCoordFactory(CFVariableMixin):
         def arg_text(item):
             key, coord = item
             return '{}={}'.format(key, str(coord and repr(coord.name())))
-        items = self.dependencies.items()
-        items.sort(key=lambda item: item[0])
+        items = sorted(self.dependencies.items(), key=lambda item: item[0])
         args = map(arg_text, items)
         return '<{}({})>'.format(type(self).__name__, ', '.join(args))
 

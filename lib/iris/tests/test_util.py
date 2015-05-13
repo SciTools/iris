@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,7 @@ from __future__ import (absolute_import, division, print_function)
 import iris.tests as tests
 
 import inspect
-import StringIO
+import io
 import unittest
 
 import numpy as np
@@ -182,15 +182,13 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
 
-        return_str_IO = StringIO.StringIO()
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_bio = io.BytesIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_bio)
+        return_str = return_bio.getvalue().decode()
 
         self.assertString(return_str, 'compatible_cubes.str.txt')
 
     def test_different(self):
-        return_str_IO = StringIO.StringIO()
-        
         # test incompatible attributes
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
@@ -198,8 +196,9 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.attributes['Conventions'] = 'CF-1.5'
         test_cube_b.attributes['Conventions'] = 'CF-1.6'
         
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_bio = io.BytesIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_bio)
+        return_str = return_bio.getvalue().decode()
         
         self.assertString(return_str, 'incompatible_attr.str.txt')
         
@@ -209,9 +208,9 @@ class TestDescribeDiff(iris.tests.IrisTest):
 
         test_cube_a.standard_name = "relative_humidity"
 
-        return_str_IO.truncate(0)
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_bio = io.BytesIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_bio)
+        return_str = return_bio.getvalue().decode()
 
         self.assertString(return_str, 'incompatible_name.str.txt')
 
@@ -221,9 +220,9 @@ class TestDescribeDiff(iris.tests.IrisTest):
         
         test_cube_a.units = iris.unit.Unit('m')
 
-        return_str_IO.truncate(0)
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_bio = io.BytesIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_bio)
+        return_str = return_bio.getvalue().decode()
         
         self.assertString(return_str, 'incompatible_unit.str.txt')
         
@@ -231,9 +230,9 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
 
-        return_str_IO.truncate(0)
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_bio = io.BytesIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_bio)
+        return_str = return_bio.getvalue().decode()
 
         self.assertString(return_str, 'incompatible_meth.str.txt')
 

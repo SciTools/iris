@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ from __future__ import (absolute_import, division, print_function)
 import iris.tests as tests
 
 import cPickle
-import StringIO
+import io
 
 import numpy as np
 
@@ -36,12 +36,12 @@ class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
         """Returns a generator of ("cpickle protocol number", object) tuples."""
         for protocol in xrange(1 + cPickle.HIGHEST_PROTOCOL):
-            str_buffer = StringIO.StringIO()
-            cPickle.dump(obj, str_buffer, protocol)
+            bio = io.BytesIO()
+            cPickle.dump(obj, bio, protocol)
 
-            # move the str_buffer back to the start and reconstruct
-            str_buffer.seek(0)
-            reconstructed_obj = cPickle.load(str_buffer)
+            # move the bio back to the start and reconstruct
+            bio.seek(0)
+            reconstructed_obj = cPickle.load(bio)
 
             yield protocol, reconstructed_obj
 

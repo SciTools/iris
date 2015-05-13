@@ -451,7 +451,7 @@ class _Aggregator(object):
 
         # Combine keyword args with `kwargs` taking priority over those
         # provided to __init__.
-        kwargs = dict(self._kwargs.items() + kwargs.items())
+        kwargs = dict(list(self._kwargs.items()) + list(kwargs.items()))
 
         return self.lazy_func(data, axis, **kwargs)
 
@@ -489,7 +489,7 @@ class _Aggregator(object):
             The aggregated data.
 
         """
-        kwargs = dict(self._kwargs.items() + kwargs.items())
+        kwargs = dict(list(self._kwargs.items()) + list(kwargs.items()))
         mdtol = kwargs.pop('mdtol', None)
 
         result = self.call_func(data, axis=axis, **kwargs)
@@ -790,7 +790,7 @@ class Aggregator(_Aggregator):
         """
         _Aggregator.update_metadata(self, cube, coords, **kwargs)
 
-        kwargs = dict(self._kwargs.items() + kwargs.items())
+        kwargs = dict(list(self._kwargs.items()) + list(kwargs.items()))
 
         if not isinstance(coords, (list, tuple)):
             coords = [coords]
@@ -1785,7 +1785,7 @@ class Linear(object):
 
     """
 
-    LINEAR_EXTRAPOLATION_MODES = EXTRAPOLATION_MODES.keys() + ['linear']
+    LINEAR_EXTRAPOLATION_MODES = list(EXTRAPOLATION_MODES.keys()) + ['linear']
 
     def __init__(self, extrapolation_mode='linear'):
         """

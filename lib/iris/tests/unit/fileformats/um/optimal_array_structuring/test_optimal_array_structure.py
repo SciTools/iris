@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,7 +32,7 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure, _optimal_dimensioning_structure
 
 
-class Test__optimal_dimensioning_structure():
+class Test__optimal_dimensioning_structure(object):
     pass
 
 

@@ -152,8 +152,8 @@ class TestCoordAttributes(tests.IrisTest):
             self.assertEqual(len(cube.coords(name)), 1)
             coord = cube.coord(name)
             self.assertEqual(len(coord.attributes), 1)
-            self.assertEqual(coord.attributes.keys(), [attr])
-            self.assertEqual(coord.attributes.values(), [value])
+            self.assertEqual(list(coord.attributes.keys()), [attr])
+            self.assertEqual(list(coord.attributes.values()), [value])
 
     def test_flag_pass_thru_multi(self):
         names = ['masks', 'meanings', 'values']
@@ -206,8 +206,8 @@ class TestCubeAttributes(tests.IrisTest):
             cf_var = self._make([(key, value)])
             cube = _load_cube(self.engine, self.cf, cf_var, self.filename)
             self.assertEqual(len(cube.attributes), 1)
-            self.assertEqual(cube.attributes.keys(), [key])
-            self.assertEqual(cube.attributes.values(), [value])
+            self.assertEqual(list(cube.attributes.keys()), [key])
+            self.assertEqual(list(cube.attributes.values()), [value])
 
     def test_flag_pass_thru_multi(self):
         attrs = [('flag_masks', self.flag_masks),

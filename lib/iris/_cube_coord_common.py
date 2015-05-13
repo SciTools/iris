@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -66,11 +66,11 @@ class LimitedAttributeDict(dict):
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):
-            keys += other.keys()
+            keys += list(other.keys())
         else:
             keys += [k for k, v in other]
 
-        keys += kwargs.keys()
+        keys += list(kwargs.keys())
 
         # Check validity of keys
         for key in keys:

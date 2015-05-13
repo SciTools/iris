@@ -1005,7 +1005,7 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     weighted_mean[rows] = numerator[rows] / sum_weights[rows]
 
     # Construct the final regridded weighted mean cube.
-    dim_coords_and_dims = zip((ty.copy(), tx.copy()), (ty_dim, tx_dim))
+    dim_coords_and_dims = list(zip((ty.copy(), tx.copy()), (ty_dim, tx_dim)))
     cube = iris.cube.Cube(weighted_mean.reshape(grid_cube.shape),
                           dim_coords_and_dims=dim_coords_and_dims)
     cube.metadata = copy.deepcopy(src_cube.metadata)
