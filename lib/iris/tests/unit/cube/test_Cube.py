@@ -768,6 +768,14 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
 # Check what happens with a global, points-only circular intersection
 # coordinate.
 class Test_intersection__GlobalSrcModulus(tests.IrisTest):
+    def test_global_wrapped_extreme(self):
+        # Ensure that we can correctly handle points defined at (base + period)
+        cube = create_cube(-180., 180.)
+        lons = cube.coord('longitude')
+        result = cube.intersection(longitude=(lons.points.min(),
+                                              lons.points.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
     def test_global(self):
         cube = create_cube(0, 360)
         result = cube.intersection(longitude=(0, 360))
@@ -933,6 +941,22 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
 class Test_intersection__ModulusBounds(tests.IrisTest):
+    def test_global_wrapped_extreme_increasing(self):
+        # Ensure that we can correctly handle bounds defined at (base + period)
+        cube = create_cube(-180., 180., bounds=True)
+        lons = cube.coord('longitude')
+        result = cube.intersection(longitude=(lons.bounds.min(),
+                                              lons.bounds.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
+    def test_global_wrapped_extreme_decreasing(self):
+        # Ensure that we can correctly handle bounds defined at (base + period)
+        cube = create_cube(180., -180., bounds=True)
+        lons = cube.coord('longitude')
+        result = cube.intersection(longitude=(lons.bounds.min(),
+                                              lons.bounds.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
     def test_misaligned_points_inside(self):
         cube = create_cube(0, 360, bounds=True)
         result = cube.intersection(longitude=(169.75, 190.25))
