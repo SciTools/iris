@@ -28,6 +28,7 @@ import math
 import threading
 import warnings
 
+import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
 
@@ -52,6 +53,10 @@ ScanningMode = namedtuple('ScanningMode', ['i_negative',
                                            'j_positive',
                                            'j_consecutive',
                                            'i_alternative'])
+
+ProjectionCentre = namedtuple('ProjectionCentre',
+                              ['south_pole_on_projection_plane',
+                               'bipolar_and_symmetric'])
 
 ResolutionFlags = namedtuple('ResolutionFlags',
                              ['i_increments_given',
@@ -299,6 +304,27 @@ def reference_time_coord(section):
 # Grid Definition Section 3
 #
 ###############################################################################
+
+def projection_centre(projectionCentreFlag):
+    """
+    Translate the projection centre flag bitmask.
+
+    Reference GRIB2 Flag Tabel 3.5.
+
+    Args:
+
+    * projectionCentreFlag
+        Message section 3, coded key value.
+
+    Returns:
+        A :class:`collections.namedtuple` representation.
+
+    """
+    south_pole_on_projection_plane = bool(projectionCentreFlag & 0x80)
+    bipolar_and_symmetric = bool(projectionCentreFlag & 0x40)
+    return ProjectionCentre(south_pole_on_projection_plane,
+                            bipolar_and_symmetric)
+
 
 def scanning_mode(scanningMode):
     """
@@ -766,6 +792,87 @@ def grid_definition_template_12(section, metadata):
     metadata['dim_coords_and_dims'].append((x_coord, x_dim))
 
 
+def grid_definition_template_30(section, metadata):
+    """
+    Translate template representing a Lambert Conformal grid.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    major, minor, radius = ellipsoid_geometry(section)
+    geog_cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
+
+    central_latitude = section['LaD'] * _GRID_ACCURACY_IN_DEGREES
+    central_longitude = section['LoV'] * _GRID_ACCURACY_IN_DEGREES
+    false_easting = 0
+    false_northing = 0
+    secant_latitudes = (section['Latin1'] * _GRID_ACCURACY_IN_DEGREES,
+                        section['Latin2'] * _GRID_ACCURACY_IN_DEGREES)
+
+    cs = icoord_systems.LambertConformal(central_latitude,
+                                         central_longitude,
+                                         false_easting,
+                                         false_northing,
+                                         secant_latitudes=secant_latitudes,
+                                         ellipsoid=geog_cs)
+
+    # A projection centre flag is defined for GDT30. However, we don't need to
+    # know which pole is in the projection plane as Cartopy handles that. The
+    # Other component of the projection centre flag determines if there are
+    # multiple projection centres. There is no support for this in Proj4 or
+    # Cartopy so a translation error is raised if this flag is set.
+    proj_centre = projection_centre(section['projectionCentreFlag'])
+    if proj_centre.bipolar_and_symmetric:
+        msg = 'Unsupported projection centre: Bipolar and symmetric.'
+        raise TranslationError(msg)
+
+    res_flags = resolution_flags(section['resolutionAndComponentFlags'])
+    if not res_flags.uv_resolved and options.warn_on_unsupported:
+        # Vector components are given as relative to east an north, rather than
+        # relative to the projection coordinates, issue a warning in this case.
+        # (ideally we need a way to add this information to a cube)
+        msg = 'Unable to translate resolution and component flags.'
+        warnings.warn(msg)
+
+    # Construct the coordinate points, the start point is given in millidegrees
+    # but the distance measurement is in 10-3 m, so a conversion is necessary
+    # to find the origin in m.
+    scan = scanning_mode(section['scanningMode'])
+    lon_0 = section['longitudeOfFirstGridPoint'] * _GRID_ACCURACY_IN_DEGREES
+    lat_0 = section['latitudeOfFirstGridPoint'] * _GRID_ACCURACY_IN_DEGREES
+    x0_m, y0_m = cs.as_cartopy_crs().transform_point(
+        lon_0, lat_0, ccrs.Geodetic())
+    dx_m = section['Dx'] * 1e-3
+    dy_m = section['Dy'] * 1e-3
+    x_dir = -1 if scan.i_negative else 1
+    y_dir = 1 if scan.j_positive else -1
+    x_points = x0_m + dx_m * x_dir * np.arange(section['Nx'], dtype=np.float64)
+    y_points = y0_m + dy_m * y_dir * np.arange(section['Ny'], dtype=np.float64)
+
+    # Create the dimension coordinates.
+    x_coord = DimCoord(x_points, standard_name='projection_x_coordinate',
+                       units='m', coord_system=cs)
+    y_coord = DimCoord(y_points, standard_name='projection_y_coordinate',
+                       units='m', coord_system=cs)
+
+    # Determine the order of the dimensions.
+    y_dim, x_dim = 0, 1
+    if scan.j_consecutive:
+        y_dim, x_dim = 1, 0
+
+    # Add the projection coordinates to the metadata dim coords.
+    metadata['dim_coords_and_dims'].append((y_coord, y_dim))
+    metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
 def grid_definition_template_40(section, metadata):
     """
     Translate template representing a Gaussian grid.
@@ -1034,6 +1141,9 @@ def grid_definition_section(section, metadata):
     elif template == 12:
         # Process transverse Mercator.
         grid_definition_template_12(section, metadata)
+    elif template == 30:
+        # Process Lambert conformal:
+        grid_definition_template_30(section, metadata)
     elif template == 40:
         grid_definition_template_40(section, metadata)
     elif template == 90:
