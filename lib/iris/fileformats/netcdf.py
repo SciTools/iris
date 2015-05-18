@@ -925,6 +925,10 @@ class Saver(object):
 
         * cube (:class:`iris.cube.Cube`):
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
+        * cf_var_cube (:class:`netcdf.netcdf_variable`)
+            CF variable cube representation.
+        * dimension_names (list):
+            Names associated with the dimensions of the cube.
 
         """
         primaries = []
@@ -959,6 +963,16 @@ class Saver(object):
                 if hasattr(cf_var, 'formula_terms'):
                     if cf_var.formula_terms != formula_terms or \
                             cf_var.standard_name != std_name:
+                        # TODO: We need to resolve this corner-case where
+                        # the dimensionless vertical coordinate containing the
+                        # formula_terms is a dimension coordinate of the
+                        # associated cube and a new alternatively named
+                        # dimensionless vertical coordinate is required with
+                        # new formula_terms and a renamed dimension.
+                        if cf_name in dimension_names:
+                            msg = 'Unable to create dimensonless vertical ' \
+                                'coordinate.'
+                            raise ValueError(msg)
                         key = (cf_name, std_name, formula_terms)
                         name = self._formula_terms_cache.get(key)
                         if name is None:

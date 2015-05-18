@@ -111,6 +111,16 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
             cubes = sorted(cubes, key=lambda cube: cube.attributes['cube'])
             self.assertCML(cubes)
 
+    def test_hybrid_height_cubes_on_dimension_coordinate(self):
+        hh1 = stock.hybrid_height()
+        hh2 = stock.hybrid_height()
+        sa = hh2.coord('surface_altitude')
+        sa.points = sa.points * 10
+        emsg = 'Unable to create dimensonless vertical coordinate.'
+        with self.temp_filename('.nc') as fname, \
+                self.assertRaisesRegexp(ValueError, emsg):
+            iris.save([hh1, hh2], fname)
+
 
 class TestUmVersionAttribute(tests.IrisTest):
     def test_single_saves_as_global(self):
