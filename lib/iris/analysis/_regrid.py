@@ -288,13 +288,15 @@ class RectilinearRegridder(object):
 
         interp_coords = np.dstack(interp_coords)
 
+        weights = interpolator.compute_interp_weights(interp_coords)
+
         def interpolate(data):
             # Update the interpolator for this data slice.
             data = data.astype(interpolator.values.dtype)
             if y_dim < x_dim:
                 data = data.T
             interpolator.values = data
-            data = interpolator(interp_coords)
+            data = interpolator.interp_using_pre_computed_weights(weights)
             if y_dim > x_dim:
                 data = data.T
             return data

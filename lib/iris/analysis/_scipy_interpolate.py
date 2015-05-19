@@ -138,17 +138,40 @@ class _RegularGridInterpolator(object):
         Parameters
         ----------
         xi : ndarray of shape (..., ndim)
-            The coordinates to sample the gridded data at
+            The coordinates to sample the gridded data at.
 
         method : str
             The method of interpolation to perform. Supported are "linear" and
             "nearest".
 
         """
-        method = self.method if method is None else method
-        if method not in ["linear", "nearest"]:
-            raise ValueError("Method '%s' is not defined" % method)
+        # Note: No functionality should live in this method. It should all be
+        # decomposed into the two interfaces (compute weights + use weights).
+        weights = self.compute_interp_weights(xi, method)
+        return self.interp_using_pre_computed_weights(weights)
 
+    def compute_interp_weights(self, xi, method=None):
+        """
+        Prepare the interpolator for interpolation to the given sample points.
+
+        .. note::
+            For normal interpolation, simply call the interpolator with the
+            sample points, rather using this decomposed interface.
+
+        Parameters
+        ----------
+        xi : ndarray of shape (..., ndim)
+            The coordinates to sample the gridded data at.
+
+        Returns
+        -------
+        An the items necessary for passing to
+        :meth:`interp_using_pre_computed_weights`. The contents of this return
+        value are not guaranteed to be consistent across Iris versions, and
+        should only be used for passing to
+        :meth:`interp_using_pre_computed_weights`.
+
+        """
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)
         if xi.shape[-1] != len(self.grid):
@@ -166,7 +189,31 @@ class _RegularGridInterpolator(object):
                     raise ValueError("One of the requested xi is out of "
                                      "bounds in dimension %d" % i)
 
-        indices, norm_distances, out_of_bounds = self._find_indices(xi.T)
+        return (xi_shape, method) + self._find_indices(xi.T)
+
+    def interp_using_pre_computed_weights(self, computed_weights):
+        """
+        Do the interpolation, given pre-computed interpolation weights.
+
+        .. note::
+            For normal interpolation, simply call the interpolator with the
+            sample points, rather using this decomposed interface.
+
+        Parameters
+        ----------
+        computed_weights : *intentionally undefined interface*
+            The pre-computed interpolation weights which come from calling
+            :meth:`compute_interp_weights`.
+
+        """
+        [xi_shape, method, indices,
+         norm_distances, out_of_bounds] = computed_weights
+
+        method = self.method if method is None else method
+        if method not in ["linear", "nearest"]:
+            raise ValueError("Method '%s' is not defined" % method)
+
+        ndim = len(self.grid)
         if method == "linear":
             result = self._evaluate_linear(
                 indices, norm_distances, out_of_bounds)
