@@ -2032,7 +2032,7 @@ def save(cube, target, append=False, field_coords=None):
     See also :func:`iris.io.save`.
 
     """
-    fields = as_fields(cube, field_coords)
+    fields = as_fields(cube, field_coords, target)
     save_fields(fields, target, append=append)
 
 
@@ -2053,6 +2053,9 @@ def as_pairs(cube, field_coords=None, target=None):
         reducing the given cube into 2d slices, which will ultimately
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
+
+    * target:
+        A filename or open file handle.
 
     """
     # Open issues
@@ -2141,7 +2144,6 @@ def as_pairs(cube, field_coords=None, target=None):
         verify_rules_ran = rules_result.matching_rules
 
         # Log the rules used
-        # XXX Get rid of this? Or have an optional `target` parameter?
         if target is None:
             target = 'None'
         elif not isinstance(target, basestring):
@@ -2169,6 +2171,9 @@ def as_fields(cube, field_coords=None, target=None):
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
 
+    * target:
+        A filename or open file handle.
+
     """
     return (field for cube, field in as_pairs(cube, field_coords=field_coords,
                                               target=target))
@@ -2181,7 +2186,7 @@ def save_fields(fields, target, append=False):
     Args:
 
     * fields:
-        TODO
+        An iterable of PP fields.
     * target:
         A filename or open file handle.
 

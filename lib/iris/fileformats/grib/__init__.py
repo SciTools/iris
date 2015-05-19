@@ -948,8 +948,8 @@ def save_grib2(cube, target, append=False, **kwargs):
 def as_pairs(cube):
     """
     Convert one or more cubes to (2D cube, GRIB message) pairs.
-    Returns an iterable of tuples each consisting of one 2D cubes and
-    one GRIB message, the result of the 2D cube being processed by the GRIB
+    Returns an iterable of tuples each consisting of one 2D cube and
+    one GRIB message ID, the result of the 2D cube being processed by the GRIB
     save rules.
 
     Args:
@@ -984,11 +984,12 @@ def as_messages(cube):
 
 def save_messages(messages, target, append=False):
     """
-    Save a messages to a GRIB2 file.
+    Save messages to a GRIB2 file.
+    The messages will be released as part of the save.
 
     Args:
 
-        * messages
+        * messages  - An iterable of grib_api message IDs.
         * target    - A filename or open file handle.
 
     Kwargs:
