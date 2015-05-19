@@ -1,6 +1,9 @@
-
 from __future__ import (absolute_import, division, print_function)
 
+import itertools
+import time
+
+from scipy.sparse import csc_matrix
 import numpy as np
 
 
@@ -171,6 +174,7 @@ class _RegularGridInterpolator(object):
         :meth:`interp_using_pre_computed_weights`.
 
         """
+        t0 = time.time()
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)
         if xi.shape[-1] != len(self.grid):
@@ -188,7 +192,9 @@ class _RegularGridInterpolator(object):
                     raise ValueError("One of the requested xi is out of "
                                      "bounds in dimension %d" % i)
 
-        return (xi_shape, method) + self._find_indices(xi.T)
+        prepared = (xi_shape, method) + self._find_indices(xi.T)
+        print('Prepare:', time.time() - t0)
+        return prepared
 
     def interp_using_pre_computed_weights(self, computed_weights):
         """
@@ -213,9 +219,14 @@ class _RegularGridInterpolator(object):
             raise ValueError("Method '%s' is not defined" % method)
 
         ndim = len(self.grid)
+
         if method == "linear":
-            result = self._evaluate_linear(
-                indices, norm_distances, out_of_bounds)
+            if len(self.grid) == 2 and 1:
+                result = self._evaluate_2d_linear(
+                    indices, norm_distances, out_of_bounds)
+            else:
+                result = self._evaluate_linear(
+                    indices, norm_distances, out_of_bounds)
         elif method == "nearest":
             result = self._evaluate_nearest(
                 indices, norm_distances, out_of_bounds)
@@ -224,7 +235,40 @@ class _RegularGridInterpolator(object):
 
         return result.reshape(xi_shape[:-1] + self.values.shape[ndim:])
 
+    def _evaluate_2d_linear(self, indices, norm_distances, out_of_bounds):
+        t0 = time.time()
+        corners = itertools.product(*[[(i, 1 - n), (i + 1, n)]
+                                       for i, n in zip(indices,
+                                                       norm_distances)])
+        corners = list(corners)
+        all_n_indices = []
+        all_weights = []
+        for corner in corners:
+            corner_indices = [i for i, w in corner]
+            # For each target point, where in N does this corner
+            # come from?
+            n_indices = np.ravel_multi_index(corner_indices,
+                                             self.values.shape)
+            all_n_indices.append(n_indices)
+            weights = 1.
+            for i, w in corner:
+                weights *= w
+            all_weights.append(weights)
+
+        rows = np.tile(np.arange(len(indices[0])), len(corners))
+        cols = np.hstack(all_n_indices)
+        weights = np.hstack(all_weights)
+        sparse_matrix = csc_matrix((weights, (rows, cols)),
+                                   shape=(len(indices[0]),
+                                          np.prod(map(len, self.grid))))
+        print('Convert:', time.time() - t0)
+        t0 = time.time()
+        result = sparse_matrix * self.values.reshape(-1)
+        print('Apply:', time.time() - t0)
+        return result
+
     def _evaluate_linear(self, indices, norm_distances, out_of_bounds):
+        t0 = time.time()
         # slice for broadcasting over trailing dimensions in self.values
         vslice = (slice(None),) + (np.newaxis,) * \
             (self.values.ndim - len(indices))
@@ -237,8 +281,13 @@ class _RegularGridInterpolator(object):
         for edge_indices in edges:
             weight = 1.
             for ei, i, yi in zip(edge_indices, indices, norm_distances):
-                weight *= np.where(ei == i, 1 - yi, yi)
+                #weight *= np.where(ei == i, 1 - yi, yi)
+                if ei[0] == i[0]:
+                    weight *= 1 - yi
+                else:
+                    weight *= yi
             values += np.asarray(self.values[edge_indices]) * weight[vslice]
+        print('Apply:', time.time() - t0)
         return values
 
     def _evaluate_nearest(self, indices, norm_distances, out_of_bounds):
