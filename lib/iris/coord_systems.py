@@ -798,3 +798,73 @@ class LambertConformal(CoordSystem):
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
+
+
+class LambertAzimuthalEqualArea(CoordSystem):
+    """
+    A coordinate system in the Lambert Azimuthal Equal-Area projection.
+
+    """
+
+    grid_mapping_name = "lambert_azimuthal_equal_area"
+
+    def __init__(self, central_lat=0.0, central_lon=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 ellipsoid=None):
+        """
+        Constructs a Lambert Azimuthal Equal Area coord system.
+
+        Args:
+
+            * central_lat
+                    The central latitude.
+
+            * central_lon
+                    The central longitude.
+
+            * false_easting
+                    X offset from planar origin in metres.
+
+            * false_northing
+                    Y offset from planar origin in metres.
+
+        Kwargs:
+
+            * ellipsoid
+                    :class:`GeogCS` defining the ellipsoid.
+
+        """
+
+        #: True latitude of planar origin in degrees.
+        self.central_lat = central_lat
+        #: True longitude of planar origin in degrees.
+        self.central_lon = central_lon
+        #: X offset from planar origin in metres.
+        self.false_easting = false_easting
+        #: Y offset from planar origin in metres.
+        self.false_northing = false_northing
+        #: Ellipsoid definition.
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return "LambertAzimuthalEqualArea(central_lat={!r}, central_lon={!r}, "\
+               "false_easting={!r}, false_northing={!r}, "\
+               "ellipsoid={!r})".format(self.central_lat, self.central_lon,
+                                        self.false_easting,
+                                        self.false_northing,
+                                        self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
+        else:
+            globe = ccrs.Globe()
+        return ccrs.LambertAzimuthalEqualArea(
+            central_longitude=self.central_lon,
+            central_latitude=self.central_lat,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
+            globe=globe)
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
