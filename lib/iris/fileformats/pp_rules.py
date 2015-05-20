@@ -1021,17 +1021,25 @@ def _all_other_rules(f):
                       coord_system=f.coord_system()),
              1 if f.lbcode.ix == 13 else 0))
 
-    # LBPROC codings (--> cell methods + attributes)
-    if f.lbproc == 128:
-        method = 'mean'
+    # LBPROC codings (--> cell method + attributes)
+    unhandled_lbproc = True
+    zone_method = None
+    time_method = None
+    if f.lbproc == 0:
+        unhandled_lbproc = False
+    elif f.lbproc == 64:
+        zone_method = 'mean'
+    elif f.lbproc == 128:
+        time_method = 'mean'
     elif f.lbproc == 4096:
-        method = 'minimum'
+        time_method = 'minimum'
     elif f.lbproc == 8192:
-        method = 'maximum'
-    else:
-        method = None
+        time_method = 'maximum'
+    elif f.lbproc == 192:
+        time_method = 'mean'
+        zone_method = 'mean'
 
-    if method is not None:
+    if time_method is not None:
         if f.lbtim.ia != 0:
             intervals = '{} hour'.format(f.lbtim.ia)
         else:
@@ -1039,26 +1047,41 @@ def _all_other_rules(f):
 
         if f.lbtim.ib == 2:
             # Aggregation over a period of time.
-            cell_methods.append(CellMethod(method,
+            cell_methods.append(CellMethod(time_method,
                                            coords='time',
                                            intervals=intervals))
+            unhandled_lbproc = False
         elif f.lbtim.ib == 3 and f.lbproc == 128:
             # Aggregation over a period of time within a year, over a number
             # of years.
             # Only mean (lbproc of 128) is handled as the min/max
             # interpretation is ambiguous e.g. decadal mean of daily max,
             # decadal max of daily mean, decadal mean of max daily mean etc.
-            cell_methods.append(CellMethod('{} within years'.format(method),
-                                           coords='time',
-                                           intervals=intervals))
-            cell_methods.append(CellMethod('{} over years'.format(method),
-                                           coords='time'))
+            cell_methods.append(
+                CellMethod('{} within years'.format(time_method),
+                           coords='time', intervals=intervals))
+            cell_methods.append(
+                CellMethod('{} over years'.format(time_method),
+                           coords='time'))
+            unhandled_lbproc = False
         else:
             # Generic cell method to indicate a time aggregation.
-            cell_methods.append(CellMethod(method,
+            cell_methods.append(CellMethod(time_method,
                                            coords='time'))
+            unhandled_lbproc = False
 
-    if f.lbproc not in [0, 128, 4096, 8192]:
+    if zone_method is not None:
+        if f.lbcode == 1:
+            cell_methods.append(CellMethod(zone_method, coords='longitude'))
+            unhandled_lbproc = False
+        elif f.lbcode == 101:
+            cell_methods.append(CellMethod(zone_method,
+                                           coords='grid_longitude'))
+            unhandled_lbproc = False
+        else:
+            unhandled_lbproc = True
+
+    if unhandled_lbproc:
         attributes["ukmo__process_flags"] = tuple(sorted(
             [name for value, name in iris.fileformats.pp.lbproc_map.iteritems()
              if isinstance(value, int) and f.lbproc & value]))

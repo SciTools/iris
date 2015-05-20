@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -151,13 +151,14 @@ class TestPPLoadRules(tests.IrisTest):
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
         # Values that result in cell methods being created
-        cell_method_values = {128: "mean within years",
+        cell_method_values = {64: "mean",
+                              128: "mean within years",
                               4096: "minimum",
                               8192: "maximum"}
 
         # Make test values as list of single bit values and some multiple bit values
         single_bit_values = list(iris.fileformats.pp.LBPROC_PAIRS)
-        multiple_bit_values = [(128 + 64, ""), (4096 + 2096, ""), (8192 + 1024, "")]
+        multiple_bit_values = [(128 + 32, ""), (4096 + 2096, ""), (8192 + 1024, "")]
         test_values = list(single_bit_values) + multiple_bit_values
 
         for value, _ in test_values:
@@ -186,7 +187,7 @@ class TestPPLoadRules(tests.IrisTest):
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
         # Values that result in process flags attribute NOT being created
-        omit_process_flags_values = (128, 4096, 8192)
+        omit_process_flags_values = (64, 128, 4096, 8192)
 
         # Test single flag values
         for value, _ in iris.fileformats.pp.LBPROC_PAIRS:
@@ -210,7 +211,7 @@ class TestPPLoadRules(tests.IrisTest):
             os.remove(temp_filename)
 
         # Test multiple flag values
-        multiple_bit_values = ((128, 64), (4096, 1024), (8192, 1024))
+        multiple_bit_values = ((128, 32), (4096, 1024), (8192, 1024))
 
         # Maps lbproc value to the process flags that should be created
         multiple_map = {sum(x) : [iris.fileformats.pp.lbproc_map[y] for y in x] for x in multiple_bit_values}
