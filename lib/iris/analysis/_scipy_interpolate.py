@@ -1,7 +1,15 @@
-
 from __future__ import (absolute_import, division, print_function)
 
+import itertools
+import time
+
+from scipy.sparse import csc_matrix
+from scipy.sparse import csr_matrix
 import numpy as np
+
+
+SPARSE = 1
+TIMINGS = 0
 
 
 # ============================================================================
@@ -137,17 +145,41 @@ class _RegularGridInterpolator(object):
         Parameters
         ----------
         xi : ndarray of shape (..., ndim)
-            The coordinates to sample the gridded data at
+            The coordinates to sample the gridded data at.
 
         method : str
             The method of interpolation to perform. Supported are "linear" and
             "nearest".
 
         """
-        method = self.method if method is None else method
-        if method not in ["linear", "nearest"]:
-            raise ValueError("Method '%s' is not defined" % method)
+        # Note: No functionality should live in this method. It should all be
+        # decomposed into the two interfaces (compute weights + use weights).
+        weights = self.compute_interp_weights(xi, method)
+        return self.interp_using_pre_computed_weights(weights)
 
+    def compute_interp_weights(self, xi, method=None):
+        """
+        Prepare the interpolator for interpolation to the given sample points.
+
+        .. note::
+            For normal interpolation, simply call the interpolator with the
+            sample points, rather using this decomposed interface.
+
+        Parameters
+        ----------
+        xi : ndarray of shape (..., ndim)
+            The coordinates to sample the gridded data at.
+
+        Returns
+        -------
+        An the items necessary for passing to
+        :meth:`interp_using_pre_computed_weights`. The contents of this return
+        value are not guaranteed to be consistent across Iris versions, and
+        should only be used for passing to
+        :meth:`interp_using_pre_computed_weights`.
+
+        """
+        t0 = time.time()
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)
         if xi.shape[-1] != len(self.grid):
@@ -165,10 +197,76 @@ class _RegularGridInterpolator(object):
                     raise ValueError("One of the requested xi is out of "
                                      "bounds in dimension %d" % i)
 
-        indices, norm_distances, out_of_bounds = self._find_indices(xi.T)
+        prepared = (xi_shape, method) + self._find_indices(xi.T)
+        if TIMINGS:
+            print('Prepare:', time.time() - t0)
+
+        if SPARSE:
+            t0 = time.time()
+
+            xi_shape, method, indices, norm_distances, out_of_bounds = prepared
+
+            # Allocate arrays for describing the sparse matrix.
+            n_src_values_per_result_value = 2 ** len(self.grid)
+            n_result_values = len(indices[0])
+            n_non_zero = n_result_values * n_src_values_per_result_value
+            weights = np.ones(n_non_zero, dtype=norm_distances[0].dtype)
+            col_indices = np.empty(n_non_zero)
+            row_ptrs = np.arange(0, n_non_zero + n_src_values_per_result_value,
+                                 n_src_values_per_result_value)
+
+            corners = itertools.product(*[[(i, 1 - n), (i + 1, n)]
+                                           for i, n in zip(indices,
+                                                           norm_distances)])
+            for i, corner in enumerate(corners):
+                corner_indices = [ci for ci, cw in corner]
+                n_indices = np.ravel_multi_index(corner_indices,
+                                                 self.values.shape)
+                col_indices[i::n_src_values_per_result_value] = n_indices
+                for ci, cw in corner:
+                    weights[i::n_src_values_per_result_value] *= cw
+
+            n_src_values = np.prod(map(len, self.grid))
+            sparse_matrix = csr_matrix((weights, col_indices, row_ptrs),
+                                       shape=(n_result_values, n_src_values))
+            if TIMINGS:
+                print('Convert:', time.time() - t0)
+
+            # XXX Hacky-Mc-Hack-Hack
+            prepared = (xi_shape, method, sparse_matrix, None, out_of_bounds)
+
+        return prepared
+
+    def interp_using_pre_computed_weights(self, computed_weights):
+        """
+        Do the interpolation, given pre-computed interpolation weights.
+
+        .. note::
+            For normal interpolation, simply call the interpolator with the
+            sample points, rather using this decomposed interface.
+
+        Parameters
+        ----------
+        computed_weights : *intentionally undefined interface*
+            The pre-computed interpolation weights which come from calling
+            :meth:`compute_interp_weights`.
+
+        """
+        [xi_shape, method, indices,
+         norm_distances, out_of_bounds] = computed_weights
+
+        method = self.method if method is None else method
+        if method not in ["linear", "nearest"]:
+            raise ValueError("Method '%s' is not defined" % method)
+
+        ndim = len(self.grid)
+
         if method == "linear":
-            result = self._evaluate_linear(
-                indices, norm_distances, out_of_bounds)
+            if SPARSE:
+                result = self._evaluate_linear_sparse(indices)
+            else:
+                result = self._evaluate_linear(
+                    indices, norm_distances, out_of_bounds)
         elif method == "nearest":
             result = self._evaluate_nearest(
                 indices, norm_distances, out_of_bounds)
@@ -177,7 +275,17 @@ class _RegularGridInterpolator(object):
 
         return result.reshape(xi_shape[:-1] + self.values.shape[ndim:])
 
+    def _evaluate_linear_sparse(self, sparse_matrix):
+        t0 = time.time()
+        # TODO: Consider handling of non-grid dimensions.
+        result = sparse_matrix * self.values.reshape(-1)
+        if TIMINGS:
+            print('Apply:', time.time() - t0)
+
+        return result
+
     def _evaluate_linear(self, indices, norm_distances, out_of_bounds):
+        t0 = time.time()
         # slice for broadcasting over trailing dimensions in self.values
         vslice = (slice(None),) + (np.newaxis,) * \
             (self.values.ndim - len(indices))
@@ -190,8 +298,14 @@ class _RegularGridInterpolator(object):
         for edge_indices in edges:
             weight = 1.
             for ei, i, yi in zip(edge_indices, indices, norm_distances):
-                weight *= np.where(ei == i, 1 - yi, yi)
+                #weight *= np.where(ei == i, 1 - yi, yi)
+                if ei[0] == i[0]:
+                    weight *= 1 - yi
+                else:
+                    weight *= yi
             values += np.asarray(self.values[edge_indices]) * weight[vslice]
+        if TIMINGS:
+            print('Apply:', time.time() - t0)
         return values
 
     def _evaluate_nearest(self, indices, norm_distances, out_of_bounds):
