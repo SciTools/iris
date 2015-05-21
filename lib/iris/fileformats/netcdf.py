@@ -609,6 +609,8 @@ class Saver(object):
         self._coord_systems = []
         #: A dictionary, listing dimension names and corresponding length
         self._existing_dim = {}
+        #: A dictionary, mapping formula terms to owner cf variable name
+        self._formula_terms_cache = {}
         #: NetCDF dataset
         try:
             self._dataset = netCDF4.Dataset(filename, mode='w',
@@ -767,7 +769,7 @@ class Saver(object):
 
         # Add the formula terms to the appropriate cf variables for each
         # aux factory in the cube.
-        self._add_aux_factories(cube)
+        self._add_aux_factories(cube, cf_var_cube, dimension_names)
 
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:
@@ -913,7 +915,7 @@ class Saver(object):
                                                    coord)
                 self._name_coord_map.append(cf_name, coord)
 
-    def _add_aux_factories(self, cube):
+    def _add_aux_factories(self, cube, cf_var_cube, dimension_names):
         """
         Modifies the variables of the NetCDF dataset to represent
         the presence of dimensionless vertical coordinates based on
@@ -923,6 +925,10 @@ class Saver(object):
 
         * cube (:class:`iris.cube.Cube`):
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
+        * cf_var_cube (:class:`netcdf.netcdf_variable`)
+            CF variable cube representation.
+        * dimension_names (list):
+            Names associated with the dimensions of the cube.
 
         """
         primaries = []
@@ -944,15 +950,53 @@ class Saver(object):
                           'single coordinate is not supported.'
                     raise ValueError(msg.format(cube, primary_coord.name()))
                 primaries.append(primary_coord)
+
                 cf_name = self._name_coord_map.name(primary_coord)
                 cf_var = self._dataset.variables[cf_name]
-                cf_var.standard_name = factory_defn.std_name
-                cf_var.axis = 'Z'
+
                 names = {key: self._name_coord_map.name(coord) for
                          key, coord in factory.dependencies.iteritems()}
                 formula_terms = factory_defn.formula_terms_format.format(
                     **names)
-                cf_var.formula_terms = formula_terms
+                std_name = factory_defn.std_name
+
+                if hasattr(cf_var, 'formula_terms'):
+                    if cf_var.formula_terms != formula_terms or \
+                            cf_var.standard_name != std_name:
+                        # TODO: We need to resolve this corner-case where
+                        # the dimensionless vertical coordinate containing the
+                        # formula_terms is a dimension coordinate of the
+                        # associated cube and a new alternatively named
+                        # dimensionless vertical coordinate is required with
+                        # new formula_terms and a renamed dimension.
+                        if cf_name in dimension_names:
+                            msg = 'Unable to create dimensonless vertical ' \
+                                'coordinate.'
+                            raise ValueError(msg)
+                        key = (cf_name, std_name, formula_terms)
+                        name = self._formula_terms_cache.get(key)
+                        if name is None:
+                            # Create a new variable
+                            name = self._create_cf_variable(cube,
+                                                            dimension_names,
+                                                            primary_coord)
+                            cf_var = self._dataset.variables[name]
+                            cf_var.standard_name = std_name
+                            cf_var.axis = 'Z'
+                            # Update the formula terms.
+                            ft = formula_terms.split()
+                            ft = [name if t == cf_name else t for t in ft]
+                            cf_var.formula_terms = ' '.join(ft)
+                            # Update the cache.
+                            self._formula_terms_cache[key] = name
+                        # Update the associated cube variable.
+                        coords = cf_var_cube.coordinates.split()
+                        coords = [name if c == cf_name else c for c in coords]
+                        cf_var_cube.coordinates = ' '.join(coords)
+                else:
+                    cf_var.standard_name = std_name
+                    cf_var.axis = 'Z'
+                    cf_var.formula_terms = formula_terms
 
     def _get_dim_names(self, cube):
         """
