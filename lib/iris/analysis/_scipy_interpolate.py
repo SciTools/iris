@@ -201,7 +201,8 @@ class _RegularGridInterpolator(object):
         if TIMINGS:
             print('Prepare:', time.time() - t0)
 
-        if SPARSE:
+        method = self.method if method is None else method
+        if SPARSE and method == 'linear':
             t0 = time.time()
 
             xi_shape, method, indices, norm_distances, out_of_bounds = prepared
