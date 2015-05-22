@@ -229,5 +229,16 @@ class TestGDT40(tests.IrisTest):
         self.assertCMLApproxData(cube)
 
 
+@tests.skip_data
+class TestDRT3(tests.IrisTest):
+
+    def test_grid_complex_spatial_differencing(self):
+        path = tests.get_data_path(('GRIB', 'missing_values',
+                                    'missing_values.grib2'))
+        with FUTURE.context(strict_grib_load=True):
+            cube = load_cube(path)
+        self.assertCMLApproxData(cube)
+
+
 if __name__ == '__main__':
     tests.main()
