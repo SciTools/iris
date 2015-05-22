@@ -345,6 +345,12 @@ def save(source, target, saver=None, **kwargs):
     if saver is None:
         raise ValueError("Cannot save; no saver")
 
+    # Don't overwrite!
+    if ((not('append' in kwargs) or kwargs['append'] is False)
+            and os.path.exists(target)):
+        msg = "File \'{!s}\' exists and \'append\' has not been set True."
+        raise ValueError(msg.format(target))
+
     # Single cube?
     if isinstance(source, iris.cube.Cube):
         saver(source, target, **kwargs)
