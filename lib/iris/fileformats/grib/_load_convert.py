@@ -1870,12 +1870,20 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
 def data_representation_section(section):
     """
     Translate section 5 from the GRIB2 message.
+    Grid point template decoding is fully provided by the ECMWF GRIB API,
+    all grid point and spectral templates are supported, the data payload
+    is returned from the GRIB API already unpacked.
 
     """
     # Reference GRIB2 Code Table 5.0.
     template = section['dataRepresentationTemplateNumber']
 
-    if template != 0:
+    # Supported templates for both grid point and spectral data:
+    grid_point_templates = (0, 1, 2, 3, 4, 40, 41, 61)
+    spectral_templates = (50, 51)
+    supported_templates = grid_point_templates + spectral_templates
+
+    if template not in supported_templates:
         msg = 'Data Representation Section Template [{}] is not ' \
             'supported'.format(template)
         raise TranslationError(msg)

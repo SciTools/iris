@@ -98,6 +98,29 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
                 self.assertRaisesRegexp(ValueError, 'multiple aux factories'):
             iris.save(cube, filename)
 
+    def test_hybrid_height_cubes(self):
+        hh1 = stock.simple_4d_with_hybrid_height()
+        hh1.attributes['cube'] = 'hh1'
+        hh2 = stock.simple_4d_with_hybrid_height()
+        hh2.attributes['cube'] = 'hh2'
+        sa = hh2.coord('surface_altitude')
+        sa.points = sa.points * 10
+        with self.temp_filename('.nc') as fname:
+            iris.save([hh1, hh2], fname)
+            cubes = iris.load(fname)
+            cubes = sorted(cubes, key=lambda cube: cube.attributes['cube'])
+            self.assertCML(cubes)
+
+    def test_hybrid_height_cubes_on_dimension_coordinate(self):
+        hh1 = stock.hybrid_height()
+        hh2 = stock.hybrid_height()
+        sa = hh2.coord('surface_altitude')
+        sa.points = sa.points * 10
+        emsg = 'Unable to create dimensonless vertical coordinate.'
+        with self.temp_filename('.nc') as fname, \
+                self.assertRaisesRegexp(ValueError, emsg):
+            iris.save([hh1, hh2], fname)
+
 
 class TestUmVersionAttribute(tests.IrisTest):
     def test_single_saves_as_global(self):
