@@ -1,8 +1,8 @@
 What's new in Iris 1.8
 **********************
 
-:Release: 1.8.0
-:Date: 14th April 2015
+:Release: 1.8.1rc1
+:Date: 21st May 2015
 
 This document explains the new/changed features of Iris in version 1.8.
 (:doc:`View all changes <index>`.)
@@ -117,6 +117,9 @@ Iris 1.8 features
 
 Bugs fixed
 ==========
+
+1.8.0
+------
 * Fix in netCDF loader to correctly determine whether the longitude coordinate
   (including scalar coordinates) is circular.
 * :meth:`iris.cube.Cube.intersection` now supports bounds that extend slightly beyond 360
@@ -132,6 +135,18 @@ Bugs fixed
   convertible to radians.
 * GRIB1 loader now creates a time coordinate for a time range indicator of 2.
 * NetCDF loader now loads units that are empty strings as dimensionless.
+
+1.8.1
+------
+* The PP loader now carefully handles floating point errors in date time conversions to hours.
+* The handling fill values for lazy data loaded from NetCDF files is altered, such that the 
+  _FillValue set in the file is preserved through lazy operations.
+* The risk that cube intersections could return incorrect results due to floating point
+  tolerances is reduced.
+* The new GRIB2 loading code is altered to enable the loading of various data representation
+  templates; the data value unpacking is handled by the GRIB API.
+* Saving cube collections to NetCDF, where multiple similar aux-factories exist within the cubes, 
+  is now carefully handled such that extra file variables are created where required in some cases.
 
 Deprecations
 ============
