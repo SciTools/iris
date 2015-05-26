@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -48,6 +48,33 @@ class Test(tests.IrisTest):
         self.assertEqual(
             gribapi.grib_get_double(grib, "scaledValueOfSecondFixedSurface"),
             609.0)
+        self.assertEqual(
+            gribapi.grib_get_long(grib, "typeOfFirstFixedSurface"),
+            102)
+        self.assertEqual(
+            gribapi.grib_get_long(grib, "typeOfSecondFixedSurface"),
+            102)
+
+    def test_theta_level(self):
+        cube = iris.cube.Cube([0])
+        cube.add_aux_coord(iris.coords.AuxCoord(
+            230.0, standard_name='air_potential_temperature',
+            units='K', attributes={'positive': 'up'},
+            bounds=np.array([220.0, 240.0])))
+        grib = gribapi.grib_new_from_samples("GRIB2")
+        set_fixed_surfaces(cube, grib)
+        self.assertEqual(
+            gribapi.grib_get_double(grib, "scaledValueOfFirstFixedSurface"),
+            220.0)
+        self.assertEqual(
+            gribapi.grib_get_double(grib, "scaledValueOfSecondFixedSurface"),
+            240.0)
+        self.assertEqual(
+            gribapi.grib_get_long(grib, "typeOfFirstFixedSurface"),
+            107)
+        self.assertEqual(
+            gribapi.grib_get_long(grib, "typeOfSecondFixedSurface"),
+            107)
 
 
 if __name__ == "__main__":
