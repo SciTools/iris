@@ -670,6 +670,11 @@ def set_fixed_surfaces(cube, grib):
         output_unit = iris.unit.Unit("m")
         v_coord = cube.coord("height")
 
+    elif cube.coords("air_potential_temperature"):
+        grib_v_code = 107
+        output_unit = iris.unit.Unit('K')
+        v_coord = cube.coord("air_potential_temperature")
+
     # unknown / absent
     else:
         # check for *ANY* height coords at all...
