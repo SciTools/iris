@@ -28,10 +28,9 @@ References:
 from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod
-from collections import Iterable
+from collections import Iterable, MutableMapping
 import os
 import re
-import UserDict
 import warnings
 
 import netCDF4
@@ -784,7 +783,7 @@ class CFMeasureVariable(CFVariable):
 
 
 ################################################################################
-class CFGroup(object, UserDict.DictMixin):
+class CFGroup(MutableMapping, object):
     """
     Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
     Conventions' variables and netCDF global attributes.
@@ -855,6 +854,13 @@ class CFGroup(object, UserDict.DictMixin):
     def keys(self):
         """Return the names of all the CF-netCDF variables in the group."""
         return self._cf_variables.keys()
+
+    def __len__(self):
+        return len(self._cf_variables)
+
+    def __iter__(self):
+        for item in self._cf_variables:
+            yield item
 
     def __setitem__(self, name, variable):
         if not isinstance(variable, CFVariable):

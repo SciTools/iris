@@ -27,7 +27,6 @@ import collections
 import copy
 import datetime
 import operator
-import UserDict
 import warnings
 import zlib
 
@@ -3432,7 +3431,7 @@ calendar='gregorian')
         return regridder(self)
 
 
-class ClassDict(object, UserDict.DictMixin):
+class ClassDict(collections.MutableMapping, object):
     """
     A mapping that stores objects keyed on their superclasses and their names.
 
@@ -3482,6 +3481,9 @@ class ClassDict(object, UserDict.DictMixin):
         except KeyError:
             raise KeyError('Coordinate system %r does not exist.' % class_)
 
+    def __setitem__(self, key, value):
+        raise NotImplementedError('You must call the add method instead.')
+
     def __delitem__(self, class_):
         cs = self[class_]
         keys = [k for k, v in self._retrieval_map.iteritems() if v == cs]
@@ -3489,6 +3491,13 @@ class ClassDict(object, UserDict.DictMixin):
             del self._retrieval_map[key]
         del self._basic_map[type(cs)]
         return cs
+
+    def __len__(self):
+        return len(self._basic_map)
+
+    def __iter__(self):
+        for item in self._basic_map:
+            yield item
 
     def keys(self):
         '''Return the keys of the dictionary mapping.'''
