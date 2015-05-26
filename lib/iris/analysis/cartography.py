@@ -820,7 +820,22 @@ def _crs_distance_differentials(crs, x, y):
     return ds_dx, ds_dy
 
 
-def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs):
+def _calc_distance_scalings(src_crs, x, y, tgt_crs):
+    """
+    Calculate the distance scalings for the source and target coordinate
+    reference systems.
+
+    """
+    # Get distance scalings for source crs.
+    ds_dx1, ds_dy1 = _crs_distance_differentials(src_crs, x, y)
+    # Get distance scalings for target crs.
+    x2, y2 = _transform_xy(src_crs, x, y, tgt_crs)
+    ds_dx2, ds_dy2 = _crs_distance_differentials(tgt_crs, x2, y2)
+    return ds_dx1, ds_dy1, ds_dx2, ds_dy2
+
+
+def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs,
+                                ds_dx1, ds_dy1, ds_dx2, ds_dy2):
     """
     Transform distance vectors from one coordinate reference system to
     another, preserving magnitude and physical direction.
@@ -840,11 +855,6 @@ def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs):
         along the x and y directions of 'tgt_crs' at each location.
 
     """
-    # Get distance scalings for source crs.
-    ds_dx1, ds_dy1 = _crs_distance_differentials(src_crs, x, y)
-    # Get distance scalings for target crs.
-    x2, y2 = _transform_xy(src_crs, x, y, tgt_crs)
-    ds_dx2, ds_dy2 = _crs_distance_differentials(tgt_crs, x2, y2)
     # Scale input distance vectors --> source-coordinate differentials.
     u1, v1 = u_dist / ds_dx1, v_dist / ds_dy1
     # Transform vectors into the target system.
@@ -858,7 +868,8 @@ def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs):
     return u2_dist, v2_dist
 
 
-def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
+def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs,
+                                               ds_dx1, ds_dy1, ds_dx2, ds_dy2):
     """
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
@@ -883,9 +894,13 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
     u_one_t, v_zero_t = _transform_distance_vectors(src_crs, x, y,
-                                                    ones, zeros, tgt_crs)
+                                                    ones, zeros, tgt_crs,
+                                                    ds_dx1, ds_dy1,
+                                                    ds_dx2, ds_dy2)
     u_zero_t, v_one_t = _transform_distance_vectors(src_crs, x, y,
-                                                    zeros, ones, tgt_crs)
+                                                    zeros, ones, tgt_crs,
+                                                    ds_dx1, ds_dy1,
+                                                    ds_dx2, ds_dy2)
     # Squared magnitudes should be equal to one within acceptable tolerance.
     # A value of atol=2e-3 is used, which corresponds to a change in magnitude
     # of approximately 0.1%.
@@ -1027,9 +1042,15 @@ def rotate_winds(u_cube, v_cube, target_cs):
     ut_cube.rename('transformed_{}'.format(u_cube.name()))
     vt_cube.rename('transformed_{}'.format(v_cube.name()))
 
+    # calculate distance scalings
+    ds_dx1, ds_dy1, ds_dx2, ds_dy2 = _calc_distance_scalings(src_crs, x, y,
+                                                             target_crs)
+
     # Calculate mask based on preservation of magnitude.
     mask = _transform_distance_vectors_tolerance_mask(src_crs, x, y,
-                                                      target_crs)
+                                                      target_crs,
+                                                      ds_dx1, ds_dy1,
+                                                      ds_dx2, ds_dy2)
     apply_mask = mask.any()
     if apply_mask:
         # Make masked arrays to accept masking.
@@ -1049,7 +1070,8 @@ def rotate_winds(u_cube, v_cube, target_cs):
         index = tuple(index)
         u = u_cube.data[index]
         v = v_cube.data[index]
-        ut, vt = _transform_distance_vectors(src_crs, x, y, u, v, target_crs)
+        ut, vt = _transform_distance_vectors(src_crs, x, y, u, v, target_crs,
+                                             ds_dx1, ds_dy1, ds_dx2, ds_dy2)
         if apply_mask:
             ut = ma.asanyarray(ut)
             ut[mask] = ma.masked
