@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import cPickle as pickle
+import six.moves.cPickle as pickle
 
 from iris.fileformats.grib import _GribMessage
 

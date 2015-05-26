@@ -25,7 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import cPickle
+import six.moves.cPickle as pickle
 import io
 
 import numpy as np
@@ -36,13 +36,13 @@ import iris
 class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
         """Returns a generator of ("cpickle protocol number", object) tuples."""
-        for protocol in range(1 + cPickle.HIGHEST_PROTOCOL):
+        for protocol in range(1 + pickle.HIGHEST_PROTOCOL):
             bio = io.BytesIO()
-            cPickle.dump(obj, bio, protocol)
+            pickle.dump(obj, bio, protocol)
 
             # move the bio back to the start and reconstruct
             bio.seek(0)
-            reconstructed_obj = cPickle.load(bio)
+            reconstructed_obj = pickle.load(bio)
 
             yield protocol, reconstructed_obj
 

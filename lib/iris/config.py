@@ -61,7 +61,7 @@ defined by :mod:`ConfigParser`.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import ConfigParser
+from six.moves import configparser
 import os.path
 import warnings
 
@@ -106,7 +106,7 @@ ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 CONFIG_PATH = os.path.join(ROOT_PATH, 'etc')
 
 # Load the optional "site.cfg" file if it exists.
-config = ConfigParser.SafeConfigParser()
+config = configparser.SafeConfigParser()
 config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
 
 

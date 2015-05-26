@@ -26,7 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import deque, namedtuple
 import copy
-from Queue import Queue
+from six.moves.queue import Queue
 import re
 from threading import Thread
 import warnings
