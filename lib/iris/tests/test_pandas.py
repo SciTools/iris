@@ -319,11 +319,11 @@ class TestSeriesAsCube(tests.IrisTest):
     def test_series_datetime_gregorian(self):
         series = pandas.Series(
             [0, 1, 2, 3, 4],
-            index=[datetime.datetime(2001, 01, 01, 01, 01, 01),
-                   datetime.datetime(2002, 02, 02, 02, 02, 02),
-                   datetime.datetime(2003, 03, 03, 03, 03, 03),
-                   datetime.datetime(2004, 04, 04, 04, 04, 04),
-                   datetime.datetime(2005, 05, 05, 05, 05, 05)])
+            index=[datetime.datetime(2001, 1, 1, 1, 1, 1),
+                   datetime.datetime(2002, 2, 2, 2, 2, 2),
+                   datetime.datetime(2003, 3, 3, 3, 3, 3),
+                   datetime.datetime(2004, 4, 4, 4, 4, 4),
+                   datetime.datetime(2005, 5, 5, 5, 5, 5)])
         self.assertCML(
             iris.pandas.as_cube(series),
             tests.get_result_path(('pandas', 'as_cube',
@@ -332,11 +332,11 @@ class TestSeriesAsCube(tests.IrisTest):
     def test_series_netcdftime_360(self):
         series = pandas.Series(
             [0, 1, 2, 3, 4],
-            index=[netcdftime.datetime(2001, 01, 01, 01, 01, 01),
-                   netcdftime.datetime(2002, 02, 02, 02, 02, 02),
-                   netcdftime.datetime(2003, 03, 03, 03, 03, 03),
-                   netcdftime.datetime(2004, 04, 04, 04, 04, 04),
-                   netcdftime.datetime(2005, 05, 05, 05, 05, 05)])
+            index=[netcdftime.datetime(2001, 1, 1, 1, 1, 1),
+                   netcdftime.datetime(2002, 2, 2, 2, 2, 2),
+                   netcdftime.datetime(2003, 3, 3, 3, 3, 3),
+                   netcdftime.datetime(2004, 4, 4, 4, 4, 4),
+                   netcdftime.datetime(2005, 5, 5, 5, 5, 5)])
         self.assertCML(
             iris.pandas.as_cube(series,
                                 calendars={0: iris.unit.CALENDAR_360_DAY}),
@@ -393,8 +393,8 @@ class TestDataFrameAsCube(tests.IrisTest):
         data_frame = pandas.DataFrame(
             [[0, 1, 2, 3, 4],
              [5, 6, 7, 8, 9]],
-            index=[netcdftime.datetime(2001, 01, 01, 01, 01, 01),
-                   netcdftime.datetime(2002, 02, 02, 02, 02, 02)],
+            index=[netcdftime.datetime(2001, 1, 1, 1, 1, 1),
+                   netcdftime.datetime(2002, 2, 2, 2, 2, 2)],
             columns=[10, 11, 12, 13, 14])
         self.assertCML(
             iris.pandas.as_cube(
@@ -407,8 +407,8 @@ class TestDataFrameAsCube(tests.IrisTest):
         data_frame = pandas.DataFrame(
             [[0, 1, 2, 3, 4],
              [5, 6, 7, 8, 9]],
-            index=[datetime.datetime(2001, 01, 01, 01, 01, 01),
-                   datetime.datetime(2002, 02, 02, 02, 02, 02)],
+            index=[datetime.datetime(2001, 1, 1, 1, 1, 1),
+                   datetime.datetime(2002, 2, 2, 2, 2, 2)],
             columns=[10, 11, 12, 13, 14])
         self.assertCML(
             iris.pandas.as_cube(data_frame),

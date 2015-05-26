@@ -539,22 +539,22 @@ class TestGribTimecodes(tests.IrisTest):
             gribapi_ver = gribapi.grib_get_api_version()
 
         if StrictVersion(gribapi_ver) < StrictVersion('1.9.18'):
-            exp_end_date = datetime.datetime(year=2007, month=03, day=25,
+            exp_end_date = datetime.datetime(year=2007, month=3, day=25,
                                              hour=12, minute=0, second=0)
         else:
-            exp_end_date = datetime.datetime(year=2007, month=03, day=25,
+            exp_end_date = datetime.datetime(year=2007, month=3, day=25,
                                              hour=19, minute=0, second=0)
 
         # Check that it captures the statistics time period info.
         # (And for now, nothing else)
         self.assertEqual(
             grib_wrapper._referenceDateTime,
-            datetime.datetime(year=2007, month=03, day=23,
+            datetime.datetime(year=2007, month=3, day=23,
                               hour=12, minute=0, second=0)
         )
         self.assertEqual(
             grib_wrapper._periodStartDateTime,
-            datetime.datetime(year=2007, month=03, day=23,
+            datetime.datetime(year=2007, month=3, day=23,
                               hour=22, minute=0, second=0)
         )
         self.assertEqual(grib_wrapper._periodEndDateTime, exp_end_date)
