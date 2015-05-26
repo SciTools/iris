@@ -331,7 +331,7 @@ if not _ud_system:
     if _ud_system is None:
         _alt_xml_path = os.path.join(sys.prefix, 'share',
                                      'udunits', 'udunits2.xml')
-        _ud_system = _ut_read_xml(_alt_xml_path)
+        _ud_system = _ut_read_xml(_alt_xml_path.encode())
     # reinstate old error handler
     _ut_set_error_message_handler(_default_handler)
     del _func_type
@@ -925,7 +925,7 @@ class Unit(iris.util._OrderedHashable):
             unit = _NO_UNIT_STRING
         else:
             category = _CATEGORY_UDUNIT
-            ut_unit = _ut_parse(_ud_system, unit, UT_ASCII)
+            ut_unit = _ut_parse(_ud_system, unit.encode('ascii'), UT_ASCII)
             # _ut_parse returns 0 on failure
             if ut_unit is None:
                 self._raise_error('Failed to parse unit "%s"' % unit)
@@ -1019,7 +1019,7 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            day = _ut_get_unit_by_name(_ud_system, 'day')
+            day = _ut_get_unit_by_name(_ud_system, b'day')
             result = _ut_are_convertible(self.ut_unit, day) != 0
         return result
 
@@ -1045,10 +1045,10 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            bar = _ut_get_unit_by_name(_ud_system, 'bar')
+            bar = _ut_get_unit_by_name(_ud_system, b'bar')
             result = _ut_are_convertible(self.ut_unit, bar) != 0
             if not result:
-                meter = _ut_get_unit_by_name(_ud_system, 'meter')
+                meter = _ut_get_unit_by_name(_ud_system, b'meter')
                 result = _ut_are_convertible(self.ut_unit, meter) != 0
         return result
 
@@ -1277,7 +1277,7 @@ class Unit(iris.util._OrderedHashable):
                                ctypes.sizeof(string_buffer), bitmask)
             if depth < 0:
                 self._raise_error('Failed to format %r' % self)
-        return string_buffer.value
+        return str(string_buffer.value.decode('ascii'))
 
     @property
     def name(self):
