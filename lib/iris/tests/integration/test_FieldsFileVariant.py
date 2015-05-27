@@ -32,14 +32,14 @@ from iris.experimental.um import (Field, Field2, Field3, FieldsFileVariant,
                                   FixedLengthHeader)
 
 try:
-    import mo_unpack
+    import mo_pack
 except ImportError:
-    # Disable all these tests if mo_unpack is not installed.
-    mo_unpack = None
+    # Disable all these tests if mo_pack is not installed.
+    mo_pack = None
 
-skip_mo_unpack = unittest.skipIf(mo_unpack is None,
-                                 'Test(s) require "mo_unpack", '
-                                 'which is not available.')
+skip_mo_pack = unittest.skipIf(mo_pack is None,
+                               'Test(s) require "mo_pack", '
+                               'which is not available.')
 
 IMDI = -32768
 RMDI = -1073741824.0
@@ -111,7 +111,7 @@ class TestRead(tests.IrisTest):
         ffv = self.load()
         self.assertEqual(ffv.fields[0].lbfc, 16)
 
-    @skip_mo_unpack
+    @skip_mo_pack
     def test_fields__data_wgdos(self):
         ffv = self.load()
         data = ffv.fields[0].get_data()
@@ -331,7 +331,7 @@ class TestUpdate(tests.IrisTest):
             self.assertNotEqual(last_used_file, original_file)
             self.assertTrue(last_used_file.closed)
 
-    @skip_mo_unpack
+    @skip_mo_pack
     def test_save_packed_as_unpacked(self):
         # Check that we can successfully re-save a packed datafile as unpacked.
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
@@ -360,7 +360,7 @@ class TestUpdate(tests.IrisTest):
             test_data_new = ffv.fields[0].get_data()
             self.assertArrayAllClose(test_data_old, test_data_new)
 
-    @skip_mo_unpack
+    @skip_mo_pack
     def test_save_packed_unchanged(self):
         # Check that we can copy packed fields without ever unpacking them.
         original_getdata_call = Field.get_data
@@ -386,7 +386,7 @@ class TestUpdate(tests.IrisTest):
         # Finally, check we never fetched any field data.
         self.assertEqual(patch_getdata_call.call_count, 0)
 
-    @skip_mo_unpack
+    @skip_mo_pack
     def test_save_packed_mixed(self):
         # Check all save options, and show we can "partially" unpack a file.
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
@@ -426,7 +426,7 @@ class TestUpdate(tests.IrisTest):
             self.assertEqual(ffv.fields[2].lbpack, 3000)
             self.assertArrayAllClose(ffv.fields[2].get_data(), data_2)
 
-    @skip_mo_unpack
+    @skip_mo_pack
     def test_fail_save_with_packing(self):
         # Check that trying to save data as packed causes an error.
         src_path = tests.get_data_path(('FF', 'n48_multi_field'))
