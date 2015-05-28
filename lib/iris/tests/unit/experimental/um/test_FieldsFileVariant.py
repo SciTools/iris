@@ -35,14 +35,14 @@ import numpy as np
 from iris.experimental.um import FieldsFileVariant, Field, Field3
 
 try:
-    import mo_unpack
+    import mo_pack
 except ImportError:
-    # Disable all these tests if mo_unpack is not installed.
-    mo_unpack = None
+    # Disable all these tests if mo_pack is not installed.
+    mo_pack = None
 
-skip_mo_unpack = unittest.skipIf(mo_unpack is None,
-                                 'Test(s) require "mo_unpack", '
-                                 'which is not available.')
+skip_mo_pack = unittest.skipIf(mo_pack is None,
+                               'Test(s) require "mo_pack", '
+                               'which is not available.')
 
 
 class Test___init__(tests.IrisTest):
@@ -89,7 +89,7 @@ class Test_filename(tests.IrisTest):
 
 @tests.skip_data
 class Test_class_assignment(tests.IrisTest):
-    @skip_mo_unpack
+    @skip_mo_pack
     def test_lbrel_class(self):
         path = tests.get_data_path(('FF', 'lbrel_test_data'))
         ffv = FieldsFileVariant(path)
