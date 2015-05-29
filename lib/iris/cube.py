@@ -563,10 +563,6 @@ class CubeList(list):
             :func:`iris.util.unify_time_units` to normalise the epochs of the
             time coordinates so that the cubes can be concatenated.
 
-        .. warning::
-
-            This routine will load your data payload!
-
         """
         return iris._concatenate.concatenate(self)
 
