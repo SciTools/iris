@@ -12,16 +12,16 @@
         <auxCoord id="64f42873" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="c8464af7" points="[-2396487.0124, -2392487.0124, -2388487.0124,
+        <dimCoord id="8bd5d01c" points="[-2396487.0124, -2392487.0124, -2388487.0124,
 		..., 2387512.9876, 2391512.9876, 2395512.9876]" shape="(1199,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64">
-          <lambertConformal central_lat="60.0" central_lon="262.0" ellipsoid="GeogCS(6371229.0)" false_easting="0" false_northing="0" secant_latitudes="(60.0, 30.0)"/>
+          <lambertConformal central_lat="60.0" central_lon="262.0" ellipsoid="GeogCS(6371229.0)" false_easting="0" false_northing="0" standard_parallels="[60.0, 30.0]"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="5561d9d4" points="[-3870311.24926, -3866311.24926, -3862311.24926,
+        <dimCoord id="5c7af8a4" points="[-3870311.24926, -3866311.24926, -3862311.24926,
 		..., -686311.249256, -682311.249256,
 		-678311.249256]" shape="(799,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64">
-          <lambertConformal central_lat="60.0" central_lon="262.0" ellipsoid="GeogCS(6371229.0)" false_easting="0" false_northing="0" secant_latitudes="(60.0, 30.0)"/>
+          <lambertConformal central_lat="60.0" central_lon="262.0" ellipsoid="GeogCS(6371229.0)" false_easting="0" false_northing="0" standard_parallels="[60.0, 30.0]"/>
         </dimCoord>
       </coord>
       <coord>

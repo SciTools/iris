@@ -48,6 +48,21 @@ import iris.tests.stock as stock
 
 
 @tests.skip_data
+def _write_nc_var(ds, name, dims=(), data=None, attributes={}):
+    """Helper to create a new netCDF4 Variable in a dataset."""
+    if data is None:
+        datatype = 'c'
+    else:
+        data = np.array(data)
+        datatype = data.dtype
+    nc_var = ds.createVariable(name, datatype, dims)
+    for att_name, att_val in attributes.iteritems():
+        nc_var.setncattr(att_name, att_val)
+    if data is not None:
+        nc_var[:] = data
+
+
+@tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
     def test_monotonic(self):
         cubes = iris.load(tests.get_data_path(
