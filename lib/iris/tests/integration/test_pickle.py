@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ import cPickle as pickle
 from iris.fileformats.grib import _GribMessage
 
 
+@tests.skip_data
 class TestGribMessage(tests.IrisTest):
     def test(self):
         # Check that a _GribMessage pickles without errors.

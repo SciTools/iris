@@ -185,6 +185,8 @@ class TestConventionsAttributes(tests.IrisTest):
 
 
 class TestLazySave(tests.IrisTest):
+
+    @tests.skip_data
     def test_lazy_preserved_save(self):
         fpath = tests.get_data_path(('NetCDF', 'label_and_climate',
                                      'small_FC_167_mon_19601101.nc'))
