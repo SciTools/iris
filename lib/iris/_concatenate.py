@@ -42,8 +42,6 @@ from iris.util import guess_coord_axis, array_equal, unify_time_units
 #
 #   * Cope with auxiliary coordinate factories.
 #
-#   * Don't load the cube data payload.
-#
 #   * Deal with anonymous dimensions.
 #
 #   * Allow concatentation over a user specified dimension.
@@ -247,10 +245,6 @@ def concatenate(cubes, error_on_mismatch=False):
     Returns:
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube`
         instances.
-
-    .. warning::
-
-        This routine will load your data payload!
 
     """
     proto_cubes_by_name = defaultdict(list)
