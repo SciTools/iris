@@ -200,6 +200,25 @@ this can be achieved by passing the constraint a function::
 
         bottom_16_levels = lambda cell: cell <= 16
 
+
+.. warning::
+
+    Caution is required when using equality constraints with floating point coordinates.
+    Printing the points of a coordinate does not necessarily show the full precision of the underlying number.
+    It is very easy return no matches to a constraint when one was expected because of floating-point inaccuracies.
+    This can be avoided by using a function as the argument to the constraint::
+
+       def near_zero(cell):
+          """Returns true if the cell is between -0.1 and 0.1."""
+          return -0.1 < cell < 0.1
+
+       equator_constraint = iris.Constraint(grid_latitude=near_zero)
+
+    This could also be written as a lambda function on a single line::
+
+        equator_constraint = iris.Constraint(grid_latitude=lambda cell: -0.1 < cell < 0.1)
+
+
 Cube attributes can also be part of the constraint criteria. Supposing a 
 cube attribute of ``STASH`` existed, as is the case when loading ``PP`` files, 
 then specific STASH codes can be filtered::
