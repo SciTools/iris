@@ -200,6 +200,10 @@ this can be achieved by passing the constraint a function::
 
         bottom_16_levels = lambda cell: cell <= 16
 
+
+Note also the :ref:`warning on equality constraints with floating point coordinates <floating-point-warning>`.
+
+
 Cube attributes can also be part of the constraint criteria. Supposing a 
 cube attribute of ``STASH`` existed, as is the case when loading ``PP`` files, 
 then specific STASH codes can be filtered::
