@@ -37,6 +37,7 @@ In this example we start with a 3 dimensional cube, with dimensions of ``height`
 and extract every point where the latitude is 0, resulting in a 2d cube with axes of ``height`` and ``grid_longitude``.
 
 
+.. _floating-point-warning:
 .. warning::
 
     Caution is required when using equality constraints with floating point coordinates such as ``grid_latitude``.
