@@ -17,7 +17,7 @@
 """A collection of helpers for interpolation."""
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range
+from six.moves import range, zip
 
 from collections import namedtuple
 from itertools import product

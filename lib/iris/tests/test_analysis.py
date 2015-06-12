@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,11 +17,10 @@
 
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
-
-import itertools
 
 import cartopy.crs as ccrs
 import numpy as np
@@ -1065,7 +1064,7 @@ class TestProject(tests.GraphicsTest):
         # Set up figure
         fig = plt.figure(figsize=(10, 10))
         gs = matplotlib.gridspec.GridSpec(nrows=3, ncols=3, hspace=1.5, wspace=0.5)
-        for subplot_spec, (name, target_proj) in itertools.izip(gs, projections.iteritems()):
+        for subplot_spec, (name, target_proj) in zip(gs, projections.iteritems()):
             # Set up axes and title
             ax = plt.subplot(subplot_spec, frameon=False, projection=target_proj)
             ax.set_title(name)

@@ -20,7 +20,7 @@ Cube functions for iteration in step.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range
+from six.moves import range, zip
 
 import collections
 import itertools
@@ -96,7 +96,7 @@ def izip(*cubes, **kwargs):
     # For each input cube, generate the union of all describing dimensions for
     # the resulting subcube.
     requested_dims_by_cube = []
-    for coords, cube in itertools.izip(coords_by_cube, cubes):
+    for coords, cube in zip(coords_by_cube, cubes):
         requested_dims = set()
         for coord in coords:
             requested_dims.update(cube.coord_dims(coord))
@@ -116,7 +116,7 @@ def izip(*cubes, **kwargs):
     # dimensioned coordinates that will be iterated over (i.e exclude slice
     # coords).
     dimensioned_iter_coords_by_cube = []
-    for requested_dims, cube in itertools.izip(requested_dims_by_cube, cubes):
+    for requested_dims, cube in zip(requested_dims_by_cube, cubes):
         dimensioned_iter_coords = set()
         # Loop over dimensioned coords in each cube.
         for dim in range(len(cube.shape)):
@@ -196,8 +196,7 @@ class _ZipSlicesIterator(collections.Iterator):
         master_dimensioned_coord_list = []
         master_dims_index = []
         self._offsets_by_cube = []
-        for requested_dims, cube in itertools.izip(requested_dims_by_cube,
-                                                   cubes):
+        for requested_dims, cube in zip(requested_dims_by_cube, cubes):
             # Create a list of the shape of each cube, and set the dimensions
             # which have been requested to length 1.
             dims_index = list(cube.shape)
@@ -248,7 +247,7 @@ class _ZipSlicesIterator(collections.Iterator):
         master_index_tuple = next(self._ndindex)
 
         subcubes = []
-        for offsets, requested_dims, coords, cube in itertools.izip(
+        for offsets, requested_dims, coords, cube in zip(
                 self._offsets_by_cube, self._requested_dims_by_cube,
                 self._coords_by_cube, self._cubes):
             # Extract the index_list for each cube from the master index using

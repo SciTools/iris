@@ -23,6 +23,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 import collections
 import datetime

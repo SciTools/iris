@@ -18,8 +18,9 @@ References
 
 
 """
+from six.moves import zip
+
 import os.path
-import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -65,7 +66,8 @@ def main():
 
 
     # Iterate over each latitude longitude slice for both e1 and a1b scenarios simultaneously
-    for e1_slice, a1b_slice in itertools.izip(e1.slices(['latitude', 'longitude']), a1b.slices(['latitude', 'longitude'])):
+    for e1_slice, a1b_slice in zip(e1.slices(['latitude', 'longitude']),
+                                   a1b.slices(['latitude', 'longitude'])):
 
         time_coord = a1b_slice.coord('time')
 

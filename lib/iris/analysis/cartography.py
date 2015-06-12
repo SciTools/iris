@@ -20,9 +20,9 @@ Various utilities and numeric transformations relevant to cartography.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 import copy
-import itertools
 import warnings
 
 import numpy as np
@@ -641,7 +641,7 @@ def project(cube, target_proj, nx=None, ny=None):
 
     # Step through cube data, regrid onto desired projection and insert results
     # in new_data array
-    for index, ll_slice in itertools.izip(index_it, slice_it):
+    for index, ll_slice in zip(index_it, slice_it):
         # Regrid source data onto target grid
         index = list(index)
         index[xdim] = slice(None, None)

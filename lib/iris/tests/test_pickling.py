@@ -20,7 +20,7 @@ Test pickling of Iris objects.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range
+from six.moves import range, zip
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests

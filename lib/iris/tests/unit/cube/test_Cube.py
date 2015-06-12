@@ -17,13 +17,11 @@
 """Unit tests for the `iris.cube.Cube` class."""
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range
+from six.moves import range, zip
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import itertools
 
 import biggus
 import mock
@@ -426,7 +424,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_coord_given(self):
         res = self.cube.slices_over(self.cube.coord('model_level_number'))
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
@@ -436,7 +434,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_coord_name_given(self):
         res = self.cube.slices_over('model_level_number')
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
@@ -446,7 +444,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_dimension_given(self):
         res = self.cube.slices_over(1)
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
@@ -527,13 +525,13 @@ class Test_slices_over(tests.IrisTest):
 
     def test_duplicate_coordinate_given(self):
         res = self.cube.slices_over([1, 1])
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
     def test_non_orthogonal_coordinates_given(self):
         res = self.cube.slices_over(['model_level_number', 'sigma'])
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 

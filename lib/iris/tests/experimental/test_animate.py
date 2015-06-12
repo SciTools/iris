@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,12 +20,11 @@ Test the animation of cubes within iris.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
-
-import itertools
 
 import numpy as np
 
@@ -75,7 +74,7 @@ class IntegrationTest(tests.GraphicsTest):
 
         ani = [ani]
         # Extract frame data
-        for data in itertools.izip(*[a.new_saved_frame_seq() for a in ani]):
+        for data in zip(*[a.new_saved_frame_seq() for a in ani]):
             # Draw each frame
             for anim, d in zip(ani, data):
                 anim._draw_next_frame(d, blit=False)

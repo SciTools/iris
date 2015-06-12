@@ -20,6 +20,7 @@ Unit tests for :func:`iris.analysis.name_loaders._generate_cubes`.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
