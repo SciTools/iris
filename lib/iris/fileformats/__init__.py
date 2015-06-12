@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,8 @@ A package for converting cubes to and from specific file formats.
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 from iris.io.format_picker import (FileExtension, FormatAgent,
                                    FormatSpecification, MagicNumber,

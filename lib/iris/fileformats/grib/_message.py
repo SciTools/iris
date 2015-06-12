@@ -21,6 +21,8 @@ Defines a lightweight wrapper class to wrap a single GRIB message.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from collections import namedtuple
 import re
 

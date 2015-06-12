@@ -17,6 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
@@ -378,6 +380,10 @@ class TestFutureImports(unittest.TestCase):
         r"print_function(,\s*unicode_literals)?\)$",
         flags=re.MULTILINE)
 
+    six_import_pattern = re.compile(
+        r"^import six$",
+        flags=re.MULTILINE)
+
     def test_future_imports(self):
         # Tests that every single Python file includes the appropriate
         # __future__ import to enforce consistent behaviour.
@@ -402,6 +408,12 @@ class TestFutureImports(unittest.TestCase):
 
                     if re.search(self.future_imports_pattern, content) is None:
                         print('The file {} has no valid __future__ imports '
+                              'and has not been excluded from the imports '
+                              'test.'.format(full_fname))
+                        failed = True
+
+                    if re.search(self.six_import_pattern, content) is None:
+                        print('The file {} has no valid six import '
                               'and has not been excluded from the imports '
                               'test.'.format(full_fname))
                         failed = True

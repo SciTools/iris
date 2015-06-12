@@ -21,6 +21,8 @@ A collection of routines which create standard Cubes for test purposes.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import os.path
 
 import numpy as np

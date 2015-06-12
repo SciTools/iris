@@ -22,6 +22,8 @@ cube metadata.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from collections import namedtuple, Iterable, OrderedDict
 from datetime import datetime, timedelta
 import math

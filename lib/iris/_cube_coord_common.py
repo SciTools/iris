@@ -17,6 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 # TODO: Is this a mixin or a base class?
 
 import string

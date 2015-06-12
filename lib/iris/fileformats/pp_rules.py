@@ -17,6 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 

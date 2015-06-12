@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,8 @@
 """Provides NIMROD file format capabilities."""
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 import glob
 import numpy as np

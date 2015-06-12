@@ -21,6 +21,8 @@ Low level support for UM FieldsFile variants.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from contextlib import contextmanager
 import os
 import os.path

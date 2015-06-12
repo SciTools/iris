@@ -52,6 +52,8 @@ The calling sequence of handler is dependent on the function given in the origin
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import collections
 import functools
 import os

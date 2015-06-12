@@ -24,6 +24,8 @@ Relates grid code and field code to the stash code.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from collections import namedtuple
 
 

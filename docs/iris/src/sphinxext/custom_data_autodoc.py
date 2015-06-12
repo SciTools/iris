@@ -17,6 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from sphinx.ext.autodoc import DataDocumenter, ModuleLevelDocumenter
 try:
     # Use 'object_description' in place of the former 'safe_repr' function.

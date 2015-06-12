@@ -21,6 +21,8 @@ Definitions of derived coordinates.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
 import zlib

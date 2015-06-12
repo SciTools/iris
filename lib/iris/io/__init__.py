@@ -21,6 +21,8 @@ Provides an interface to manage URI scheme support in iris.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import glob
 import os.path
 import types

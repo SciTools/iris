@@ -24,6 +24,8 @@ Typically the cube merge process is handled by
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
 

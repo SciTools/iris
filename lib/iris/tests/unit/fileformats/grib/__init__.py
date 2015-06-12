@@ -18,6 +18,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import mock
 
 from iris.fileformats.grib._message import _GribMessage

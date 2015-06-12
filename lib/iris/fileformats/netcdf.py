@@ -26,6 +26,8 @@ Version 1.4, 27 February 2009.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import collections
 import itertools
 import os
