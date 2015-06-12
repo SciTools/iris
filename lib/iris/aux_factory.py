@@ -20,7 +20,7 @@ Definitions of derived coordinates.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range, zip
+from six.moves import map, range, zip
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings

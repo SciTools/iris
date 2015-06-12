@@ -23,7 +23,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import zip
+from six.moves import map, zip
 
 import collections
 import datetime
@@ -58,7 +58,7 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     def as_coord(coord):
         coord = cube.coord(coord)
         return coord
-    coords = map(as_coord, coords)
+    coords = list(map(as_coord, coords))
 
     # Check that we were given the right number of coordinates
     if len(coords) != ndims:
@@ -70,7 +70,7 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
 
     # Check which dimensions are spanned by each coordinate.
     get_span = lambda coord: set(cube.coord_dims(coord))
-    spans = map(get_span, coords)
+    spans = list(map(get_span, coords))
     for span, coord in zip(spans, coords):
         if not span:
             msg = 'The coordinate {!r} doesn\'t span a data dimension.'
@@ -130,7 +130,7 @@ def _get_plot_defn(cube, mode, ndims=2):
 
     # When appropriate, restrict to 1D with bounds.
     if mode == iris.coords.BOUND_MODE:
-        coords = map(_valid_bound_coord, coords)
+        coords = list(map(_valid_bound_coord, coords))
 
     def guess_axis(coord):
         axis = None
@@ -155,7 +155,7 @@ def _get_plot_defn(cube, mode, ndims=2):
         # along the Z axis. This results in a preference for using the
         # derived altitude over model_level_number or level_height.
         # Limit to Z axis to avoid preferring latitude over grid_latitude etc.
-        axes = map(guess_axis, coords)
+        axes = list(map(guess_axis, coords))
         axis = 'Z'
         if axis in axes:
             for coord in cube.coords(dim_coords=False):

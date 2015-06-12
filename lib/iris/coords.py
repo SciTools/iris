@@ -20,7 +20,7 @@ Definitions of coordinates.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range
+from six.moves import map, range
 
 from abc import ABCMeta, abstractproperty
 import collections
@@ -1681,9 +1681,9 @@ class CellMethod(iris.util._OrderedHashable):
         cellMethod_xml_element = doc.createElement('cellMethod')
         cellMethod_xml_element.setAttribute('method', self.method)
 
-        for coord_name, interval, comment in map(None, self.coord_names,
-                                                 self.intervals,
-                                                 self.comments):
+        for coord_name, interval, comment in izip_longest(self.coord_names,
+                                                          self.intervals,
+                                                          self.comments):
             coord_xml_element = doc.createElement('coord')
             if coord_name is not None:
                 coord_xml_element.setAttribute('name', coord_name)

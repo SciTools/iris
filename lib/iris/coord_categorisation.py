@@ -217,7 +217,7 @@ def _months_in_season(season):
         # Can't match the season, raise an error.
         raise ValueError('unrecognised season: {!s}'.format(season))
     m1 = m0 + len(season)
-    return map(lambda month: (month % 12) + 1, range(m0, m1))
+    return [(month % 12) + 1 for month in range(m0, m1)]
 
 
 def _validate_seasons(seasons):

@@ -21,7 +21,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range, zip
+from six.moves import map, range, zip
 
 from xml.dom.minidom import Document
 import collections
@@ -2476,14 +2476,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         def remap_dim_coord(coord_and_dim):
             coord, dim = coord_and_dim
             return coord, dim_mapping[dim]
-        self._dim_coords_and_dims = map(remap_dim_coord,
-                                        self._dim_coords_and_dims)
+        self._dim_coords_and_dims = list(map(remap_dim_coord,
+                                             self._dim_coords_and_dims))
 
         def remap_aux_coord(coord_and_dims):
             coord, dims = coord_and_dims
             return coord, tuple(dim_mapping[dim] for dim in dims)
-        self._aux_coords_and_dims = map(remap_aux_coord,
-                                        self._aux_coords_and_dims)
+        self._aux_coords_and_dims = list(map(remap_aux_coord,
+                                             self._aux_coords_and_dims))
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """

@@ -31,6 +31,7 @@ graphical test results.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import map
 
 import collections
 import contextlib
@@ -288,7 +289,7 @@ class IrisTest(unittest.TestCase):
         elif isinstance(flags, basestring):
             flags = flags.split()
         else:
-            flags = map(str, flags)
+            flags = list(map(str, flags))
 
         with open(cdl_filename, 'w') as cdl_file:
             subprocess.check_call(['ncdump'] + flags + [netcdf_filename],
