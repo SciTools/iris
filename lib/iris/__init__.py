@@ -369,7 +369,7 @@ def load_cubes(uris, constraints=None, callback=None):
     collection = _load_collection(uris, constraints, callback).merged()
 
     # Make sure we have exactly one merged cube per constraint
-    bad_pairs = filter(lambda pair: len(pair) != 1, collection.pairs)
+    bad_pairs = [pair for pair in collection.pairs if len(pair) != 1]
     if bad_pairs:
         fmt = '   {} -> {} cubes'
         bits = [fmt.format(pair.constraint, len(pair)) for pair in bad_pairs]

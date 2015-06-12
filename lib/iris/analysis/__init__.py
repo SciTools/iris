@@ -47,7 +47,7 @@ The gallery contains several interesting worked examples of how an
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range, zip
+from six.moves import filter, range, zip
 
 import collections
 
@@ -93,8 +93,8 @@ class _CoordGroup(object):
         as (cube, coord).
 
         """
-        return filter(lambda cube_coord: cube_coord[1] is not None,
-                      zip(self.cubes, self.coords))[0]
+        return next(filter(lambda cube_coord: cube_coord[1] is not None,
+                           zip(self.cubes, self.coords)))
 
     def __repr__(self):
         # No exact repr, so a helpful string is given instead

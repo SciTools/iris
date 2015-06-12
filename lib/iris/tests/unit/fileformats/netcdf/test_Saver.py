@@ -210,8 +210,8 @@ class TestCoordSystems(tests.IrisTest):
     def variable_attributes(self, mocked_variable):
         """Get the attributes dictionary from a mocked NetCDF variable."""
         # Get the attributes defined on the mock object.
-        attributes = filter(lambda name: not name.startswith('_'),
-                            sorted(mocked_variable.__dict__.keys()))
+        attributes = [name for name in sorted(mocked_variable.__dict__.keys())
+                      if not name.startswith('_')]
         attributes.remove('method_calls')
         return {key: getattr(mocked_variable, key) for key in attributes}
 

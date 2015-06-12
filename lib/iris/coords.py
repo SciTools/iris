@@ -20,7 +20,7 @@ Definitions of coordinates.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import map, range
+from six.moves import filter, map, range
 
 from abc import ABCMeta, abstractproperty
 import collections

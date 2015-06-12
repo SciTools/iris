@@ -1133,7 +1133,7 @@ class PPField(object):
         # With the attributes sorted the order will remain stable if extra attributes are added.
         public_attribute_names = list(attribute_priority_lookup.keys()) + list(EXTRA_DATA.values())
         self_attrs = [(name, getattr(self, name, None)) for name in public_attribute_names]
-        self_attrs = filter(lambda pair: pair[1] is not None, self_attrs)
+        self_attrs = [pair for pair in self_attrs if pair[1] is not None]
 
         # Output any masked data as separate `data` and `mask`
         # components, to avoid the standard MaskedArray output

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,7 @@
 """Unit tests for :func:`iris.fileformats.pp_rules.convert`."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import filter
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -163,7 +164,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
             coord, dims = coord_and_dims
             return coord.standard_name == 'time'
 
-        coords_and_dims = filter(is_t_coord, aux_coords_and_dims)
+        coords_and_dims = list(filter(is_t_coord, aux_coords_and_dims))
         self.assertEqual(len(coords_and_dims), 1)
         coord, dims = coords_and_dims[0]
         self.assertEqual(guess_coord_axis(coord), 'T')

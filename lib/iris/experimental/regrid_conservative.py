@@ -220,8 +220,8 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     fullcube_data = np.ma.zeros(dst_shape)
 
     # Iterate 2d slices over all possible indices of the 'other' dimensions
-    all_other_dims = filter(lambda i_dim: i_dim not in src_dims_xy,
-                            range(source_cube.ndim))
+    all_other_dims = [i_dim for i_dim in range(source_cube.ndim)
+                      if i_dim not in src_dims_xy]
     all_combinations_of_other_inds = np.ndindex(*dst_shape[all_other_dims])
     for other_indices in all_combinations_of_other_inds:
         # Construct a tuple of slices to address the 2d xy field

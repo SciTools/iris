@@ -236,7 +236,7 @@ class Test_collapsed__warning(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator)
 
-        coords = filter(lambda coord: 'latitude' in coord, coords)
+        coords = [coord for coord in coords if 'latitude' in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
 
     def test_lat_lon_weighted_aggregator_with_weights(self):
@@ -260,7 +260,7 @@ class Test_collapsed__warning(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator)
 
-        coords = filter(lambda coord: 'latitude' in coord, coords)
+        coords = [coord for coord in coords if 'latitude' in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
 
     def test_no_lat_weighted_aggregator_mixed(self):

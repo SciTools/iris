@@ -142,9 +142,8 @@ def _get_plot_defn(cube, mode, ndims=2):
     for dim, coord in enumerate(coords):
         if coord is None:
             aux_coords = cube.coords(dimensions=dim)
-            aux_coords = filter(lambda coord:
-                                isinstance(coord, iris.coords.DimCoord),
-                                aux_coords)
+            aux_coords = [coord for coord in aux_coords
+                          if isinstance(coord, iris.coords.DimCoord)]
             if aux_coords:
                 key_func = lambda coord: coord._as_defn()
                 aux_coords.sort(key=key_func)

@@ -108,10 +108,10 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 
 def _get_lat_lon_coords(cube):
-    lat_coords = filter(lambda coord: "latitude" in coord.name(),
-                        cube.coords())
-    lon_coords = filter(lambda coord: "longitude" in coord.name(),
-                        cube.coords())
+    lat_coords = [coord for coord in cube.coords()
+                  if "latitude" in coord.name()]
+    lon_coords = [coord for coord in cube.coords()
+                  if "longitude" in coord.name()]
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
             "Calling _get_lat_lon_coords() with multiple lat or lon coords"
@@ -372,7 +372,7 @@ def area_weights(cube, normalize=False):
     # Now we create an array of weights for each cell. This process will
     # handle adding the required extra dimensions and also take care of
     # the order of dimensions.
-    broadcast_dims = filter(lambda x: x is not None, (lat_dim, lon_dim))
+    broadcast_dims = [x for x in (lat_dim, lon_dim) if x is not None]
     wshape = []
     for idim, dim in zip((0, 1), (lat_dim, lon_dim)):
         if dim is not None:
@@ -421,8 +421,8 @@ def cosine_latitude_weights(cube):
 
     """
     # Find all latitude coordinates, we want one and only one.
-    lat_coords = filter(lambda coord: "latitude" in coord.name(),
-                        cube.coords())
+    lat_coords = [coord for coord in cube.coords()
+                  if "latitude" in coord.name()]
     if len(lat_coords) > 1:
         raise ValueError("Multiple latitude coords are currently disallowed.")
     try:
@@ -455,7 +455,7 @@ def cosine_latitude_weights(cube):
 
     # Create weights for each grid point. This operation handles adding extra
     # dimensions and also the order of the dimensions.
-    broadcast_dims = filter(lambda x: x is not None, lat_dims)
+    broadcast_dims = [x for x in lat_dims if x is not None]
     wshape = []
     for idim, dim in enumerate(lat_dims):
         if dim is not None:

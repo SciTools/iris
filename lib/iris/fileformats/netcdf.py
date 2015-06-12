@@ -25,10 +25,9 @@ Version 1.4, 27 February 2009.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range
+from six.moves import filter, range
 
 import collections
-import itertools
 import os
 import os.path
 import string
@@ -406,12 +405,12 @@ def _load_cube(engine, cf, cf_var, filename):
     attribute_predicate = lambda item: item[0] not in _CF_ATTRS
 
     for coord, cf_var_name in coordinates:
-        tmpvar = itertools.ifilter(attribute_predicate,
-                                   cf.cf_group[cf_var_name].cf_attrs_unused())
+        tmpvar = filter(attribute_predicate,
+                        cf.cf_group[cf_var_name].cf_attrs_unused())
         for attr_name, attr_value in tmpvar:
             _set_attributes(coord.attributes, attr_name, attr_value)
 
-    tmpvar = itertools.ifilter(attribute_predicate, cf_var.cf_attrs_unused())
+    tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
     # Attach untouched attributes of the associated CF-netCDF data variable to
     # the cube.
     for attr_name, attr_value in tmpvar:

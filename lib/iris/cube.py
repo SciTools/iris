@@ -21,7 +21,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import map, range, zip
+from six.moves import filter, map, range, zip
 
 from xml.dom.minidom import Document
 import collections
@@ -744,8 +744,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             try:
                 value = CubeMetadata(*value)
             except TypeError:
-                attr_check = lambda name: not hasattr(value, name)
-                missing_attrs = filter(attr_check, CubeMetadata._fields)
+                missing_attrs = [field for field in CubeMetadata._fields
+                                 if not hasattr(value, field)]
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
@@ -2866,8 +2866,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
                 not aggregator.uses_weighting(**kwargs)):
             msg = "Collapsing spatial coordinate {!r} without weighting"
-            lat_match = filter(lambda coord: 'latitude' in coord.name(),
-                               coords)
+            lat_match = [coord for coord in coords
+                         if 'latitude' in coord.name()]
             if lat_match:
                 for coord in lat_match:
                     warnings.warn(msg.format(coord.name()))
@@ -3078,8 +3078,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Determine the other coordinates that share the same group-by
         # coordinate dimension.
-        shared_coords = filter(lambda coord_: coord_ not in groupby_coords,
-                               self.coords(dimensions=dimension_to_groupby))
+        shared_coords = list(filter(
+            lambda coord_: coord_ not in groupby_coords,
+            self.coords(dimensions=dimension_to_groupby)))
 
         # Create the aggregation group-by instance.
         groupby = iris.analysis._Groupby(groupby_coords, shared_coords)

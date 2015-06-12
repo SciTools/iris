@@ -22,7 +22,7 @@ See also: :mod:`NumPy <numpy>`.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import zip
+from six.moves import filter, zip
 
 import re
 import warnings

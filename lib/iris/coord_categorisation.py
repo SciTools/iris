@@ -259,8 +259,9 @@ def _month_year_adjusts(seasons):
     month_year_adjusts = [None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for season in seasons:
         months = _months_in_season(season)
-        for month in filter(lambda m: m > months[-1], months):
-            month_year_adjusts[month] = 1
+        for month in months:
+            if month > months[-1]:
+                month_year_adjusts[month] = 1
     return month_year_adjusts
 
 
