@@ -1,0 +1,2 @@
+* Support for loading GRIB2 messages defined on a Lambert conformal grid has been added to
+  the new GRIB2 loader.

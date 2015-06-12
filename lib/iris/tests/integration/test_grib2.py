@@ -214,6 +214,16 @@ class TestGDT5(tests.IrisTest):
 
 
 @tests.skip_data
+class TestGDT30(tests.IrisTest):
+
+    def test_lambert(self):
+        path = tests.get_data_path(('GRIB', 'lambert', 'lambert.grib2'))
+        with FUTURE.context(strict_grib_load=True):
+            cube = load_cube(path)
+        self.assertCMLApproxData(cube)
+
+
+@tests.skip_data
 class TestGDT40(tests.IrisTest):
 
     def test_regular(self):
