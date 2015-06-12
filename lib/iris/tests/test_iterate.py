@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,7 @@ Test the iteration of cubes in step.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -211,7 +212,7 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(count, nslices)
 
     def test_izip_subcube_of_same(self):
-        for _ in xrange(3):
+        for _ in range(3):
             super_cube = self.cube_a
             # Random int to pick coord value to calc subcube
             k = random.randint(0, super_cube.shape[0]-1)
@@ -253,7 +254,7 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(count, nslices)
         # Two coords
         nslices = self.cube_a.shape[0]
-        i_iterator = iter(xrange(self.cube_a.shape[0]))
+        i_iterator = iter(range(self.cube_a.shape[0]))
         count = 0
         for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
                                                       coords=self.coord_names):

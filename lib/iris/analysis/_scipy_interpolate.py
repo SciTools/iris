@@ -1,5 +1,6 @@
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import numpy as np
 
@@ -22,7 +23,7 @@ def _ndim_coords_from_arrays(points, ndim=None):
         points = points[0]
     if isinstance(points, tuple):
         p = np.broadcast_arrays(*points)
-        for j in xrange(1, len(p)):
+        for j in range(1, len(p)):
             if p[j].shape != p[0].shape:
                 raise ValueError(
                     "coordinate arrays do not have the same shape")

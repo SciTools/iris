@@ -22,6 +22,7 @@ See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import collections
 import warnings
@@ -58,7 +59,7 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
 
     # Find lat and lon coord indices
     i_lat = i_lon = None
-    i_non_latlon = range(len(sample_point_coord_names))
+    i_non_latlon = list(range(len(sample_point_coord_names)))
     for i, name in enumerate(sample_point_coord_names):
         if "latitude" in name:
             i_lat = i
@@ -730,7 +731,7 @@ class Linear1dExtrapolator(object):
 
                 r = self._interpolator(requested_x[ok])
                 # Reshape the properly formed array to put the interpolator.axis last i.e. dims 0, 1, 2 -> 0, 2, 1 if axis = 1
-                axes = range(r.ndim)
+                axes = list(range(r.ndim))
                 del axes[self._interpolator.axis]
                 axes.append(self._interpolator.axis)
 
@@ -748,7 +749,7 @@ class Linear1dExtrapolator(object):
                 grad = (self.y[..., -1:] - self.y[..., -2:-1]) / (self.x[-1] - self.x[-2])
                 result[interpolator_result_index] = self.y[..., -1:] + (requested_x[gt] - self.x[-1]) * grad
 
-            axes = range(len(interpolator_result_index))
+            axes = list(range(len(interpolator_result_index)))
             axes.insert(self._interpolator.axis, axes.pop(axes[-1]))
             result = result.transpose(axes)
 

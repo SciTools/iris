@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,7 @@ Support for conservative regridding via ESMPy.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import ESMF via iris.proxy, just so we can build the docs with no ESMF.
 import iris.proxy
@@ -220,7 +221,7 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
     # Iterate 2d slices over all possible indices of the 'other' dimensions
     all_other_dims = filter(lambda i_dim: i_dim not in src_dims_xy,
-                            xrange(source_cube.ndim))
+                            range(source_cube.ndim))
     all_combinations_of_other_inds = np.ndindex(*dst_shape[all_other_dims])
     for other_indices in all_combinations_of_other_inds:
         # Construct a tuple of slices to address the 2d xy field

@@ -17,6 +17,7 @@
 """Test function :func:`iris._concatenate.concatenate.py`."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -184,7 +185,7 @@ class TestOrder(tests.IrisTest):
         data = np.arange(len(points) * nx).reshape(len(points), nx)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         lat = iris.coords.DimCoord(points, 'latitude', bounds=bounds)
-        lon = iris.coords.DimCoord(range(nx), 'longitude')
+        lon = iris.coords.DimCoord(np.arange(nx), 'longitude')
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
         return cube
@@ -220,7 +221,7 @@ class TestConcatenateBiggus(tests.IrisTest):
         data = biggus.NumpyArrayAdapter(data)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         lat = iris.coords.DimCoord(points, 'latitude', bounds=bounds)
-        lon = iris.coords.DimCoord(range(nx), 'longitude')
+        lon = iris.coords.DimCoord(np.arange(nx), 'longitude')
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
         return cube

@@ -20,6 +20,7 @@ Miscellaneous utility functions.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import abc
 import collections
@@ -602,7 +603,7 @@ def column_slices_generator(full_slice, ndims):
 
     # stg1: Take a copy of the full_slice specification, turning all tuples
     # into a full slice
-    if tuple_indices != range(len(full_slice)):
+    if tuple_indices != list(range(len(full_slice))):
         first_slice = list(full_slice)
         for tuple_index in tuple_indices:
             first_slice[tuple_index] = slice(None, None)

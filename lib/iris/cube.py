@@ -21,6 +21,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 from xml.dom.minidom import Document
 import collections
@@ -1619,11 +1620,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Create a set to contain the axis names for each data dimension.
-        dim_names = [set() for dim in xrange(len(self.shape))]
+        dim_names = [set() for dim in range(len(self.shape))]
 
         # Add the dim_coord names that participate in the associated data
         # dimensions.
-        for dim in xrange(len(self.shape)):
+        for dim in range(len(self.shape)):
             dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
             if dim_coords:
                 dim_names[dim].add(dim_coords[0].name())
@@ -1736,7 +1737,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     # - WITH dimension markers.
                     for index, coord in enumerate(vector_coords):
                         dims = self.coord_dims(coord)
-                        for dim in xrange(len(self.shape)):
+                        for dim in range(len(self.shape)):
                             width = alignment[dim] - len(vector_summary[index])
                             char = 'x' if dim in dims else '-'
                             line = '{pad:{width}}{char}'.format(pad=' ',
@@ -3548,7 +3549,7 @@ class _SliceIterator(collections.Iterator):
         cube = self._cube[tuple(index_list)]
 
         if self._ordered:
-            if any(self._mod_requested_dims != range(len(cube.shape))):
+            if any(self._mod_requested_dims != list(range(len(cube.shape)))):
                 cube.transpose(self._mod_requested_dims)
 
         return cube

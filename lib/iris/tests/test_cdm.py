@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -338,9 +338,13 @@ class TestCubeStringRepresentations(IrisDotTest):
     def test_cube_summary_alignment(self):
         # Test the cube summary dimension alignment and coord name clipping
         cube = iris.tests.stock.simple_1d()
-        aux = iris.coords.AuxCoord(range(11), long_name='This is a really, really, really long long_name that requires to be clipped because it is too long')
+        aux = iris.coords.AuxCoord(
+            np.arange(11),
+            long_name='This is a really, really, really, really long '
+                      'long_name that must be clipped because it is too long')
         cube.add_aux_coord(aux, 0)
-        aux = iris.coords.AuxCoord(range(11), long_name='This is a short long_name')
+        aux = iris.coords.AuxCoord(np.arange(11),
+                                   long_name='This is a short long_name')
         cube.add_aux_coord(aux, 0)
         self.assertString(str(cube), ('cdm', 'str_repr', 'simple.__str__.txt'))
 

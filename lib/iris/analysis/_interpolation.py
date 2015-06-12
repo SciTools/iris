@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,7 @@
 """A collection of helpers for interpolation."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 from collections import namedtuple
 from itertools import product
@@ -500,7 +501,7 @@ class RectilinearInterpolator(object):
             instance of the interpolated data.
 
         """
-        dims = range(self._src_cube.ndim)
+        dims = list(range(self._src_cube.ndim))
         data_dims = data_dims or dims
 
         if len(data_dims) != data.ndim:
@@ -514,7 +515,7 @@ class RectilinearInterpolator(object):
             raise NotImplementedError(msg)
 
         # Broadcast the data into the shape of the original cube.
-        if data_dims != range(self._src_cube.ndim):
+        if data_dims != list(range(self._src_cube.ndim)):
             strides = list(data.strides)
             for dim in range(self._src_cube.ndim):
                 if dim not in data_dims:

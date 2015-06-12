@@ -17,6 +17,7 @@
 """NAME file format loading functions."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import collections
 import datetime

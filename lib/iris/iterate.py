@@ -20,6 +20,7 @@ Cube functions for iteration in step.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import collections
 import itertools
@@ -118,7 +119,7 @@ def izip(*cubes, **kwargs):
     for requested_dims, cube in itertools.izip(requested_dims_by_cube, cubes):
         dimensioned_iter_coords = set()
         # Loop over dimensioned coords in each cube.
-        for dim in xrange(len(cube.shape)):
+        for dim in range(len(cube.shape)):
             if dim not in requested_dims:
                 dimensioned_iter_coords.update(
                     cube.coords(contains_dimension=dim))
@@ -204,7 +205,7 @@ class _ZipSlicesIterator(collections.Iterator):
                 dims_index[dim] = 1
             offsets = []
             # Loop over dimensions in each cube.
-            for i in xrange(len(cube.shape)):
+            for i in range(len(cube.shape)):
                 # Obtain the coordinates for this dimension.
                 cube_coords = cube.coords(dimensions=i)
                 found = False
@@ -265,7 +266,7 @@ class _ZipSlicesIterator(collections.Iterator):
                 transpose_order = []
                 for coord in coords:
                     transpose_order += sorted(subcube.coord_dims(coord))
-                if transpose_order != range(subcube.ndim):
+                if transpose_order != list(range(subcube.ndim)):
                     subcube.transpose(transpose_order)
             subcubes.append(subcube)
 

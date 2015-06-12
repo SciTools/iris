@@ -47,6 +47,7 @@ The gallery contains several interesting worked examples of how an
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import collections
 
@@ -1074,7 +1075,7 @@ def _peak(array, **kwargs):
                 column_peaks.append(column[0])
                 continue
 
-            tck = scipy.interpolate.splrep(range(column.size), column, k=k)
+            tck = scipy.interpolate.splrep(np.arange(column.size), column, k=k)
             npoints = column.size * 100
             points = np.linspace(0, column.size - 1, npoints)
             spline = scipy.interpolate.splev(points, tck)

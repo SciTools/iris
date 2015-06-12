@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,7 @@ Defines a Trajectory class, and a routine to extract a sub-cube along a trajecto
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import math
 
@@ -76,7 +77,8 @@ class Trajectory(object):
         self.sample_count = sample_count
 
         # create line segments from the waypoints
-        segments = [_Segment(self.waypoints[i], self.waypoints[i+1]) for i in range(len(self.waypoints) - 1)]
+        segments = [_Segment(self.waypoints[i], self.waypoints[i+1])
+                    for i in range(len(self.waypoints) - 1)]
 
         # calculate our total length
         self.length = sum([seg.length for seg in segments])

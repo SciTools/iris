@@ -20,6 +20,7 @@ Unit tests for the :class:`iris.analysis.PercentileAggregator` class instance.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -57,8 +58,8 @@ class Test_post_process(tests.IrisTest):
         self.cube_simple = Cube(data)
         self.cube_simple.add_dim_coord(self.coord_simple, 0)
 
-        self.coord_multi_0 = DimCoord(range(shape[0]), 'time')
-        self.coord_multi_1 = DimCoord(range(shape[1]), 'height')
+        self.coord_multi_0 = DimCoord(np.arange(shape[0]), 'time')
+        self.coord_multi_1 = DimCoord(np.arange(shape[1]), 'height')
         self.cube_multi = Cube(data.reshape(shape))
         self.cube_multi.add_dim_coord(self.coord_multi_0, 0)
         self.cube_multi.add_dim_coord(self.coord_multi_1, 1)

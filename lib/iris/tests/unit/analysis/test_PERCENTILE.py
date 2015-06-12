@@ -17,6 +17,7 @@
 """Unit tests for the :data:`iris.analysis.PERCENTILE` aggregator."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -92,7 +93,7 @@ class Test_aggregate(tests.IrisTest):
         percent = np.array([10, 50, 90, 100])
         actual = PERCENTILE.aggregate(data, axis=0, percent=percent)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.array(range(shape[-1]) * percent.size)
+        expected = np.tile(np.arange(shape[-1]), percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T + 1
         expected = expected + (percent / 10 - 1)
         self.assertArrayAlmostEqual(actual, expected)
@@ -104,7 +105,7 @@ class Test_aggregate(tests.IrisTest):
         percent = np.array([10, 50, 70, 80])
         actual = PERCENTILE.aggregate(data, axis=0, percent=percent)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.array(range(shape[-1]) * percent.size)
+        expected = np.tile(np.arange(shape[-1]), percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T
         expected = expected + (percent / 10 * 2)
         self.assertArrayAlmostEqual(actual, expected)
@@ -136,7 +137,7 @@ class Test_aggregate_shape(tests.IrisTest):
     def test_mandatory_kwarg_shape(self):
         kwargs = dict(percent=(10, 20))
         self.assertTupleEqual(PERCENTILE.aggregate_shape(**kwargs), (2,))
-        kwargs = dict(percent=range(13))
+        kwargs = dict(percent=list(range(13)))
         self.assertTupleEqual(PERCENTILE.aggregate_shape(**kwargs), (13,))
 
 

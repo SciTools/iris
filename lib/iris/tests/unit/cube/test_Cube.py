@@ -17,6 +17,7 @@
 """Unit tests for the `iris.cube.Cube` class."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -416,7 +417,7 @@ class Test_slices_over(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_4d()
         # Define expected iterators for 1D and 2D test cases.
-        self.exp_iter_1d = xrange(
+        self.exp_iter_1d = range(
             len(self.cube.coord('model_level_number').points))
         self.exp_iter_2d = np.ndindex(6, 70, 1, 1)
         # Define maximum number of interations for particularly long
@@ -647,7 +648,7 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertFalse(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 170)
         self.assertEqual(result.data[0, 0, -1], 190)
 
@@ -657,7 +658,7 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertFalse(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
 
@@ -666,7 +667,7 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertTrue(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 170)
         self.assertEqual(result.data[0, 0, -1], 190)
 
@@ -675,7 +676,7 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertTrue(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
 
@@ -685,7 +686,7 @@ class Test_intersection_Points(tests.IrisTest):
         cube = create_cube(0, 30, bounds=True)
         result = cube.intersection(longitude=(9.5, 12.5), ignore_bounds=True)
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(10, 13))
+                              np.arange(10, 13))
         self.assertArrayEqual(result.coord('longitude').bounds[0],
                               [9.5, 10.5])
         self.assertArrayEqual(result.coord('longitude').bounds[-1],
@@ -698,54 +699,58 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
     def test_request_subset(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(45, 50))
-        self.assertArrayEqual(result.coord('longitude').points, range(45, 51))
-        self.assertArrayEqual(result.data[0, 0], range(5, 11))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(45, 51))
+        self.assertArrayEqual(result.data[0, 0], np.arange(5, 11))
 
     def test_request_left(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35, 45))
-        self.assertArrayEqual(result.coord('longitude').points, range(40, 46))
-        self.assertArrayEqual(result.data[0, 0], range(0, 6))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(40, 46))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 6))
 
     def test_request_right(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(55, 65))
-        self.assertArrayEqual(result.coord('longitude').points, range(55, 60))
-        self.assertArrayEqual(result.data[0, 0], range(15, 20))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(55, 60))
+        self.assertArrayEqual(result.data[0, 0], np.arange(15, 20))
 
     def test_request_superset(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35, 65))
-        self.assertArrayEqual(result.coord('longitude').points, range(40, 60))
-        self.assertArrayEqual(result.data[0, 0], range(0, 20))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(40, 60))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 20))
 
     def test_request_subset_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(45 + 360, 50 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(45 + 360, 51 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(5, 11))
+                              np.arange(45 + 360, 51 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(5, 11))
 
     def test_request_left_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35 + 360, 45 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(40 + 360, 46 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(0, 6))
+                              np.arange(40 + 360, 46 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 6))
 
     def test_request_right_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(55 + 360, 65 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(55 + 360, 60 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(15, 20))
+                              np.arange(55 + 360, 60 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(15, 20))
 
     def test_request_superset_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35 + 360, 65 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(40 + 360, 60 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(0, 20))
+                              np.arange(40 + 360, 60 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 20))
 
     def test_tolerance_f4(self):
         cube = create_cube(0, 5)
@@ -1091,7 +1096,7 @@ class Test_intersection__ScatterModulus(tests.IrisTest):
         result = cube.intersection(longitude=(0, 15))
         self.assertArrayEqual(result.coord('longitude').points,
                               [5, 10, 8, 5, 3])
-        self.assertArrayEqual(result.data, range(5))
+        self.assertArrayEqual(result.data, np.arange(5))
 
 
 # Test the API of the cube interpolation method.

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -46,7 +46,7 @@ class Test_linear__circular_wrapping(tests.IrisTest):
     def test_symmetric(self):
         # Check we can interpolate from a Cube defined over [-180, 180).
         cube = self._create_cube([-180, -90, 0, 90])
-        samples = [('longitude', range(-360, 720, 45))]
+        samples = [('longitude', np.arange(-360, 720, 45))]
         result = interpolate.linear(cube, samples, extrapolation_mode='nan')
         normalise_order(result)
         self.assertCMLApproxData(result, ('analysis', 'interpolation',
@@ -56,7 +56,7 @@ class Test_linear__circular_wrapping(tests.IrisTest):
     def test_positive(self):
         # Check we can interpolate from a Cube defined over [0, 360).
         cube = self._create_cube([0, 90, 180, 270])
-        samples = [('longitude', range(-360, 720, 45))]
+        samples = [('longitude', np.arange(-360, 720, 45))]
         result = interpolate.linear(cube, samples, extrapolation_mode='nan')
         normalise_order(result)
         self.assertCMLApproxData(result, ('analysis', 'interpolation',

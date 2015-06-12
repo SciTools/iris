@@ -28,6 +28,7 @@ All the functions provided here add a new coordinate to a cube.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import calendar
 import collections
@@ -233,13 +234,13 @@ def _validate_seasons(seasons):
     for season in seasons:
         c.update(_months_in_season(season))
     # Make a list of months that are not present...
-    not_present = [calendar.month_abbr[month] for month in xrange(1, 13)
+    not_present = [calendar.month_abbr[month] for month in range(1, 13)
                    if month not in c]
     if not_present:
         raise ValueError('some months do not appear in any season: '
                          '{!s}'.format(', '.join(not_present)))
     # Make a list of months that appear multiple times...
-    multi_present = [calendar.month_abbr[month] for month in xrange(1, 13)
+    multi_present = [calendar.month_abbr[month] for month in range(1, 13)
                      if c[month] > 1]
     if multi_present:
         raise ValueError('some months appear in more than one season: '

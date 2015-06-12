@@ -21,6 +21,7 @@ translations.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import deque, namedtuple

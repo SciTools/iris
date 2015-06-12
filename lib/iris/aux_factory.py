@@ -20,6 +20,7 @@ Definitions of derived coordinates.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
@@ -288,7 +289,7 @@ class AuxCoordFactory(CFVariableMixin):
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs]
         points = coord._points
-        if dims and transpose_order != range(len(dims)):
+        if dims and transpose_order != list(range(len(dims))):
             points = points.transpose(transpose_order)
 
         # Expand dimensionality to be consistent with the Cube.
@@ -322,7 +323,7 @@ class AuxCoordFactory(CFVariableMixin):
                 # no transpose is needed.
                 if derived_dims:
                     keys = tuple(slice(None) if dim in derived_dims else 0 for
-                                 dim in xrange(ndim))
+                                 dim in range(ndim))
                     nd_points = nd_points[keys]
             else:
                 # If no coord, treat value as zero.

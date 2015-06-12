@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,6 +21,7 @@ Unit tests for
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -119,7 +120,7 @@ class TestLBVC001_Height(TestField):
                            expect_normal=False, expect_fixed_height=10.0)
 
     def test_implied_height_10m__vector(self):
-        data = range(10)
+        data = list(range(10))
         dim = 4
         for blev in [data, np.asarray(data)]:
             for dim_i in [dim, (dim,)]:
@@ -312,7 +313,7 @@ class TestLBVC019_PotentialTemperature(TestField):
         self._check_potm(_lbcode(0))
 
     def test_normal__vector(self):
-        blev = range(10)
+        blev = list(range(10))
         self._check_potm(_lbcode(0), blev=blev, dim=0)
 
     def test_cross_section(self):
@@ -366,7 +367,7 @@ class TestLBVC009_HybridPressure(TestField):
         self._check()
 
     def test_normal__vector(self):
-        lblev = range(3)
+        lblev = list(range(3))
         bhlev = [10, 20, 30]
         bhrlev = [5, 15, 25]
         brsvd2 = [15, 25, 35]

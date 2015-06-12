@@ -25,6 +25,7 @@ Version 1.4, 27 February 2009.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import collections
 import itertools
@@ -1015,7 +1016,7 @@ class Saver(object):
 
         """
         dimension_names = []
-        for dim in xrange(cube.ndim):
+        for dim in range(cube.ndim):
             coords = cube.coords(dimensions=dim, dim_coords=True)
             if coords:
                 coord = coords[0]

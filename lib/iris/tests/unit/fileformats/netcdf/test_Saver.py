@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,10 +40,10 @@ class Test_write(tests.IrisTest):
         cube = Cube(data, 'air_pressure_anomaly')
         trans_merc = TransverseMercator(49.0, -2.0, -400000.0, 100000.0,
                                         0.9996012717, ellipsoid)
-        coord = DimCoord(range(3), 'projection_y_coordinate', units='m',
+        coord = DimCoord(np.arange(3), 'projection_y_coordinate', units='m',
                          coord_system=trans_merc)
         cube.add_dim_coord(coord, 0)
-        coord = DimCoord(range(4), 'projection_x_coordinate', units='m',
+        coord = DimCoord(np.arange(4), 'projection_x_coordinate', units='m',
                          coord_system=trans_merc)
         cube.add_dim_coord(coord, 1)
         return cube
