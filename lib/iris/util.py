@@ -786,7 +786,8 @@ class _MetaOrderedHashable(abc.ABCMeta):
 
 
 @functools.total_ordering
-class _OrderedHashable(collections.Hashable):
+class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
+                                          collections.Hashable)):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
 
@@ -804,9 +805,6 @@ class _OrderedHashable(collections.Hashable):
         its attributes are themselves hashable.
 
     """
-
-    # The metaclass adds default __init__ methods when appropriate.
-    __metaclass__ = _MetaOrderedHashable
 
     @abc.abstractproperty
     def _names(self):

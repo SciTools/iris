@@ -21,6 +21,7 @@ Low level support for UM FieldsFile variants.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from contextlib import contextmanager
 import os
@@ -104,7 +105,7 @@ class _HeaderMetaclass(type):
                                                         bases, class_dict)
 
 
-class FixedLengthHeader(object):
+class FixedLengthHeader(six.with_metaclass(_HeaderMetaclass, object)):
     """
     Represents the FIXED_LENGTH_HEADER component of a UM FieldsFile
     variant.
@@ -115,8 +116,6 @@ class FixedLengthHeader(object):
     view of the header.
 
     """
-
-    __metaclass__ = _HeaderMetaclass
 
     NUM_WORDS = 256
     IMDI = -32768
@@ -211,13 +210,12 @@ class _FieldMetaclass(type):
                                                        bases, class_dict)
 
 
-class Field(object):
+class Field(six.with_metaclass(_FieldMetaclass, object)):
     """
     Represents a single entry in the LOOKUP component and its
     corresponding section of the DATA component.
 
     """
-    __metaclass__ = _FieldMetaclass
 
     #: Zero-based index for lblrec.
     LBLREC_OFFSET = 14

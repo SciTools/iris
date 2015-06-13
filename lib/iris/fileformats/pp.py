@@ -669,11 +669,9 @@ class _FlagMetaclass(type):
         return type.__new__(cls, classname, bases, class_dict)
 
 
-class _LBProc(BitwiseInt):
+class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
     # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
     # properties.
-    __metaclass__ = _FlagMetaclass
-
     def __init__(self, value):
         """
         Args:
@@ -1047,7 +1045,7 @@ def _pp_attribute_names(header_defn):
     return normal_headers + special_headers + extra_data + special_attributes
 
 
-class PPField(object):
+class PPField(six.with_metaclass(abc.ABCMeta, object)):
     """
     A generic class for PP fields - not specific to a particular header release number.
 
@@ -1065,8 +1063,6 @@ class PPField(object):
 
     # NB. Subclasses must define the attribute HEADER_DEFN to be their
     # zero-based header definition. See PPField2 and PPField3 for examples.
-
-    __metaclass__ = abc.ABCMeta
 
     __slots__ = ()
 

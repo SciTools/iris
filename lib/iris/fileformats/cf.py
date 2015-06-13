@@ -71,10 +71,8 @@ reference_terms = dict(atmosphere_sigma_coordinate=['ps'],
 
 
 ################################################################################
-class CFVariable(object):
+class CFVariable(six.with_metaclass(ABCMeta, object)):
     """Abstract base class wrapper for a CF-netCDF variable."""
-
-    __metaclass__ = ABCMeta
 
     #: Name of the netCDF variable attribute that identifies this
     #: CF-netCDF variable.

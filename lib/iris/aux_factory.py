@@ -21,6 +21,7 @@ Definitions of derived coordinates.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
@@ -105,7 +106,7 @@ class LazyArray(object):
         return self._cached_array().view(*args, **kwargs)
 
 
-class AuxCoordFactory(CFVariableMixin):
+class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
     """
     Represents a "factory" which can manufacture an additional auxiliary
     coordinate on demand, by combining the values of other coordinates.
@@ -118,7 +119,6 @@ class AuxCoordFactory(CFVariableMixin):
     properties of the resulting auxiliary coordinates.
 
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         #: Descriptive name of the coordinate made by the factory

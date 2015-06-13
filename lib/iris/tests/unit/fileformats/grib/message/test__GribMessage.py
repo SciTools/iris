@@ -21,6 +21,7 @@ Unit tests for the `iris.fileformats.grib.message._GribMessage` class.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -153,9 +154,7 @@ class Test_data__unsupported(tests.IrisTest):
 
 # Abstract, mix-in class for testing the `data` attribute for various
 # grid definition templates.
-class Mixin_data__grid_template(object):
-    __metaclass__ = ABCMeta
-
+class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
     @abstractmethod
     def section_3(self, scanning_mode):
         raise NotImplementedError()

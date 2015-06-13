@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -28,9 +29,7 @@ from abc import ABCMeta, abstractproperty
 import numpy as np
 
 
-class _MaskedArrayEquality(object):
-    __metaclass__ = ABCMeta
-
+class _MaskedArrayEquality(six.with_metaclass(ABCMeta, object)):
     def setUp(self):
         self.arr1 = np.ma.array([1, 2, 3, 4], mask=[False, True, True, False])
         self.arr2 = np.ma.array([1, 3, 2, 4], mask=[False, True, True, False])

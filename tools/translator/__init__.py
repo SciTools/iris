@@ -22,6 +22,7 @@ translations.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import deque, namedtuple
@@ -99,13 +100,12 @@ class EncodableMap(object):
                                         self.targetmsg.format(**self.targetid))
 
 
-class Mappings(object):
+class Mappings(six.with_metaclass(ABCMeta, object)):
     """
     Abstract base class to support the encoding of specific metarelate
     mapping translations.
 
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, mappings):
         """

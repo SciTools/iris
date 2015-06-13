@@ -349,12 +349,11 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         return np.min(self.bound) <= point <= np.max(self.bound)
 
 
-class Coord(CFVariableMixin):
+class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     """
     Abstract superclass for coordinates.
 
     """
-    __metaclass__ = ABCMeta
 
     _MODE_ADD = 1
     _MODE_SUB = 2
