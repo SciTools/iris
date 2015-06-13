@@ -21,6 +21,7 @@ Provides objects for building up expressions useful for pattern matching.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 import operator
@@ -91,7 +92,7 @@ class Constraint(object):
         :class:`iris.coords.Cell`.
 
         """
-        if not (name is None or isinstance(name, basestring)):
+        if not (name is None or isinstance(name, six.string_types)):
             raise TypeError('name must be None or string, got %r' % name)
         if not (cube_func is None or callable(cube_func)):
             raise TypeError('cube_func must be None or callable, got %r'
@@ -259,7 +260,7 @@ class _CoordConstraint(object):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, collections.Iterable) and
                 not isinstance(self._coord_thing,
-                               (basestring, iris.coords.Cell))):
+                               (six.string_types, iris.coords.Cell))):
             call_func = lambda cell: cell in list(self._coord_thing)
         else:
             call_func = lambda c: c == self._coord_thing
@@ -420,7 +421,7 @@ def as_constraint(thing):
         return thing
     elif thing is None:
         return Constraint()
-    elif isinstance(thing, basestring):
+    elif isinstance(thing, six.string_types):
         return Constraint(thing)
     else:
         raise TypeError('%r cannot be cast to a constraint.' % thing)

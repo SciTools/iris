@@ -27,6 +27,7 @@ References:
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from abc import ABCMeta, abstractmethod
 from collections import Iterable, MutableMapping
@@ -106,7 +107,7 @@ class CFVariable(object):
 
         if target is None:
             target = variables
-        elif isinstance(target, basestring):
+        elif isinstance(target, six.string_types):
             if target not in variables:
                 raise ValueError('Cannot identify unknown target CF-netCDF variable %r' % target)
             target = {target: variables[target]}
@@ -1059,7 +1060,7 @@ class CFReader(object):
                     cf_root_var = self.cf_group[cf_root]
                     name = cf_root_var.standard_name or cf_root_var.long_name
                     terms = reference_terms.get(name, [])
-                    if isinstance(terms, basestring) or \
+                    if isinstance(terms, six.string_types) or \
                             not isinstance(terms, Iterable):
                         terms = [terms]
                     cf_var_name = cf_var.cf_name

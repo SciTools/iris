@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -277,7 +278,7 @@ class _MergeTest(object):
         return str(arc.exception)
 
     def check_fail(self, *substrs):
-        if isinstance(substrs, basestring):
+        if isinstance(substrs, six.string_types):
             substrs = [substrs]
         msg = self.check_merge_fails_with_message()
         for substr in substrs:

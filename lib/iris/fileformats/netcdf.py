@@ -26,6 +26,7 @@ Version 1.4, 27 February 2009.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 import os
@@ -539,7 +540,7 @@ def load_cubes(filenames, callback=None):
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
-    if isinstance(filenames, basestring):
+    if isinstance(filenames, six.string_types):
         filenames = [filenames]
 
     for filename in filenames:

@@ -23,6 +23,7 @@ See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 import warnings
@@ -132,7 +133,7 @@ def nearest_neighbour_indices(cube, sample_points):
 
     points = []
     for coord, values in sample_points:
-        if isinstance(coord, basestring):
+        if isinstance(coord, six.string_types):
             coord = cube.coord(coord)
         else:
             coord = cube.coord(coord)
@@ -209,7 +210,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     point = []
     ok_coord_ids = set(map(id, cube.dim_coords + cube.aux_coords))
     for coord, value in sample_point:
-        if isinstance(coord, basestring):
+        if isinstance(coord, six.string_types):
             coord = cube.coord(coord)
         else:
             coord = cube.coord(coord)
@@ -636,7 +637,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         sample_points = list(sample_points.items())
 
     # catch the case where a user passes a single (coord/name, value) pair rather than a list of pairs
-    if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], basestring)):
+    if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], six.string_types)):
         raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))
 
     scheme = Linear(extrapolation_mode)

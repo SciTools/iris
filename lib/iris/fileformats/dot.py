@@ -21,6 +21,7 @@ Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import os
 import subprocess
@@ -59,7 +60,7 @@ def save(cube, target):
     See also :func:`iris.io.save`.
 
     """
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         dot_file = open(target, "wt")
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" in target.mode:
@@ -70,7 +71,7 @@ def save(cube, target):
 
     dot_file.write(cube_text(cube))
 
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         dot_file.close()
 
 
@@ -96,7 +97,7 @@ def save_png(source, target, launch=False):
         # Create dot file
         dot_file_path = iris.util.create_temp_filename(".dot")
         save(source, dot_file_path)
-    elif isinstance(source, basestring):
+    elif isinstance(source, six.string_types):
         dot_file_path = source
     else:
         raise ValueError("Can only write dot png for a Cube or DOT file")
@@ -106,7 +107,7 @@ def save_png(source, target, launch=False):
         raise ValueError('Executable "dot" not found: '
                          'Review dot_path setting in site.cfg.')
     # To filename or open file handle?
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         subprocess.call([_DOT_EXECUTABLE_PATH, '-T', 'png', '-o', target,
                          dot_file_path])
     elif hasattr(target, "write"):
