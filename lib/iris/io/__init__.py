@@ -340,7 +340,7 @@ def save(source, target, saver=None, **kwargs):
     # Determine format from filename
     if isinstance(target, six.string_types) and saver is None:
         saver = find_saver(target)
-    elif isinstance(target, types.FileType) and saver is None:
+    elif hasattr(target, 'name') and saver is None:
         saver = find_saver(target.name)
     elif isinstance(saver, six.string_types):
         saver = find_saver(saver)

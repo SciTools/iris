@@ -1431,7 +1431,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # NB: lbegin, lbnrec, lbuser[1] not set up
 
         # Now that we have done the manouvering required, write to the file...
-        if not isinstance(file_handle, file):
+        if not hasattr(file_handle, 'write'):
             raise TypeError('The file_handle argument must be an instance of a Python file object, but got %r. \n'
                              'e.g. open(filename, "wb") to open a binary file with write permission.' % type(file_handle))
 
