@@ -124,7 +124,7 @@ class TestIterateFunctions(tests.IrisTest):
         zip_iterator = iris.iterate.izip(self.cube_b, coords=[])
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue try to
@@ -136,7 +136,7 @@ class TestIterateFunctions(tests.IrisTest):
         zip_iterator = iris.iterate.izip(self.cube_b, coords=self.coord_names)
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try
@@ -148,7 +148,7 @@ class TestIterateFunctions(tests.IrisTest):
         zip_iterator = iris.iterate.izip(self.cube_b, coords='grid_latitude')
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try
@@ -163,7 +163,7 @@ class TestIterateFunctions(tests.IrisTest):
                                                               'grid_longitude'])
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try

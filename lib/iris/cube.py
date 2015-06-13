@@ -3541,7 +3541,7 @@ class _SliceIterator(collections.Iterator):
         self._mod_requested_dims = np.argsort(requested_dims)
         self._ordered = ordered
 
-    def next(self):
+    def __next__(self):
         # NB. When self._ndindex runs out it will raise StopIteration for us.
         index_tuple = next(self._ndindex)
 
@@ -3561,3 +3561,5 @@ class _SliceIterator(collections.Iterator):
                 cube.transpose(self._mod_requested_dims)
 
         return cube
+
+    next = __next__

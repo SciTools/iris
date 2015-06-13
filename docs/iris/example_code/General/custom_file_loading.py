@@ -71,8 +71,8 @@ def load_NAME_III(filename):
     """
 
     # Loading a file gives a generator of lines which can be progressed using
-    # the next() method. This will come in handy as we wish to progress through
-    # the file line by line.
+    # the next() function. This will come in handy as we wish to progress
+    # through the file line by line.
     with open(filename) as file_handle:
         # Define a dictionary which can hold the header metadata for this file.
         headers = {}
@@ -84,7 +84,7 @@ def load_NAME_III(filename):
         # Read the next 16 lines of header information, putting the form
         # "header name:    header value" into a dictionary.
         for _ in range(16):
-            header_name, header_value = file_handle.next().split(':')
+            header_name, header_value = next(file_handle).split(':')
 
             # Strip off any spurious space characters in the header name and
             # value.
@@ -111,7 +111,7 @@ def load_NAME_III(filename):
         column_headings = {}
         for column_header_name in COLUMN_NAMES:
             column_headings[column_header_name] = [
-                col.strip() for col in file_handle.next().split(',')
+                col.strip() for col in next(file_handle).split(',')
             ][:-1]
 
         # Convert the time to python datetimes.
