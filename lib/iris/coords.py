@@ -26,7 +26,8 @@ import six
 from abc import ABCMeta, abstractproperty
 import collections
 import copy
-from itertools import chain, izip_longest
+from itertools import chain
+from six.moves import zip_longest
 import operator
 import warnings
 import zlib
@@ -1660,8 +1661,8 @@ class CellMethod(iris.util._OrderedHashable):
     def __str__(self):
         """Return a custom string representation of CellMethod"""
         # Group related coord names intervals and comments together
-        cell_components = izip_longest(self.coord_names, self.intervals,
-                                       self.comments, fillvalue="")
+        cell_components = zip_longest(self.coord_names, self.intervals,
+                                      self.comments, fillvalue="")
 
         collection_summaries = []
         cm_summary = "%s: " % self.method
@@ -1689,9 +1690,9 @@ class CellMethod(iris.util._OrderedHashable):
         cellMethod_xml_element = doc.createElement('cellMethod')
         cellMethod_xml_element.setAttribute('method', self.method)
 
-        for coord_name, interval, comment in izip_longest(self.coord_names,
-                                                          self.intervals,
-                                                          self.comments):
+        for coord_name, interval, comment in zip_longest(self.coord_names,
+                                                         self.intervals,
+                                                         self.comments):
             coord_xml_element = doc.createElement('coord')
             if coord_name is not None:
                 coord_xml_element.setAttribute('name', coord_name)
