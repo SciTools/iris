@@ -507,34 +507,34 @@ class RulesContainer(object):
         IN_ACTION = 2
 
         rule_file = os.path.expanduser(filepath)
-        file = open(rule_file, 'r')
-
         conditions = []
         actions = []
         state = None
-        for line in file:
-            line = line.rstrip()
-            if line == "IF":
-                if conditions and actions:
-                    self._rules.append(self.rule_type(conditions, actions))
-                conditions = []
-                actions = []
-                state = IN_CONDITION
-            elif line == "THEN":
-                state = IN_ACTION
-            elif len(line) == 0:
-                pass
-            elif line.strip().startswith('#'):
-                pass
-            elif state == IN_CONDITION:
-                conditions.append(line)
-            elif state == IN_ACTION:
-                actions.append(line)
-            else:
-                raise Exception('Rule file not read correctly at line: ' + line)
+
+        with open(rule_file, 'r') as file:
+            for line in file:
+                line = line.rstrip()
+                if line == "IF":
+                    if conditions and actions:
+                        self._rules.append(self.rule_type(conditions, actions))
+                    conditions = []
+                    actions = []
+                    state = IN_CONDITION
+                elif line == "THEN":
+                    state = IN_ACTION
+                elif len(line) == 0:
+                    pass
+                elif line.strip().startswith('#'):
+                    pass
+                elif state == IN_CONDITION:
+                    conditions.append(line)
+                elif state == IN_ACTION:
+                    actions.append(line)
+                else:
+                    raise Exception('Rule file not read correctly at line: ' +
+                                    line)
         if conditions and actions:
             self._rules.append(self.rule_type(conditions, actions))
-        file.close()
 
     def verify(self, cube, field):
         """

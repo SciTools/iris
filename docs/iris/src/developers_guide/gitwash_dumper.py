@@ -57,16 +57,19 @@ def filename_search_replace(sr_pairs, filename, backup=False):
     ''' Search and replace for expressions in files
 
     '''
-    in_txt = open(filename, 'rt').read(-1)
+    with open(filename, 'rt') as in_fh:
+        in_txt = in_fh.read(-1)
     out_txt = in_txt[:]
     for in_exp, out_exp in sr_pairs:
         in_exp = re.compile(in_exp)
         out_txt = in_exp.sub(out_exp, out_txt)
     if in_txt == out_txt:
         return False
-    open(filename, 'wt').write(out_txt)
+    with open(filename, 'wt') as out_fh:
+        out_fh.write(out_txt)
     if backup:
-        open(filename + '.bak', 'wt').write(in_txt)
+        with open(filename + '.bak', 'wt') as bak_fh:
+            bak_fh.write(in_txt)
     return True
 
 
@@ -117,7 +120,8 @@ def make_link_targets(proj_name,
     .. _`proj_name`: url
     .. _`proj_name` mailing list: url
     """
-    link_contents = open(known_link_fname, 'rt').readlines()
+    with open(known_link_fname, 'rt') as link_fh:
+        link_contents = link_fh.readlines()
     have_url = not url is None
     have_ml_url = not ml_url is None
     have_gh_url = None
@@ -150,9 +154,8 @@ def make_link_targets(proj_name,
         return
     # A neat little header line
     lines = ['.. %s\n' % proj_name] + lines
-    out_links = open(out_link_fname, 'wt')
-    out_links.writelines(lines)
-    out_links.close()
+    with open(out_link_fname, 'wt') as out_links:
+        out_links.writelines(lines)
 
 
 USAGE = ''' <output_directory> <project_name>

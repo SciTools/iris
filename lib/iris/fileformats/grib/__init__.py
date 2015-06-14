@@ -1012,10 +1012,11 @@ def save_messages(messages, target, append=False):
     else:
         raise ValueError("Can only save grib to filename or writable")
 
-    for message in messages:
-        gribapi.grib_write(message, grib_file)
-        gribapi.grib_release(message)
-
-    # (this bit is common to the pp and grib savers...)
-    if isinstance(target, six.string_types):
-        grib_file.close()
+    try:
+        for message in messages:
+            gribapi.grib_write(message, grib_file)
+            gribapi.grib_release(message)
+    finally:
+        # (this bit is common to the pp and grib savers...)
+        if isinstance(target, six.string_types):
+            grib_file.close()

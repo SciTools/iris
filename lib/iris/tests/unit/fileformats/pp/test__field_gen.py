@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import contextlib
+import io
 
 import mock
 import numpy as np
@@ -74,14 +75,16 @@ class Test(tests.IrisTest):
                              lbext=0,
                              lbuser=[0])
         with self.mock_for_field_gen([pp_field]):
-            open_fh = mock.Mock()
+            open_fh = mock.MagicMock(spec=io.RawIOBase)
             open.return_value = open_fh
             next(pp._field_gen('mocked', read_data_bytes=False))
-            calls = [mock.call(open_fh, count=45, dtype='>i4'),
-                     mock.call(open_fh, count=19, dtype='>f4')]
+            with open_fh as open_fh_ctx:
+                calls = [mock.call(open_fh_ctx, count=45, dtype='>i4'),
+                         mock.call(open_fh_ctx, count=19, dtype='>f4')]
             np.fromfile.assert_has_calls(calls)
-        expected_deferred_bytes = ('mocked', open_fh.tell(),
-                                   4, np.dtype('>f4'))
+        with open_fh as open_fh_ctx:
+            expected_deferred_bytes = ('mocked', open_fh_ctx.tell(),
+                                       4, np.dtype('>f4'))
         self.assertEqual(pp_field._data, expected_deferred_bytes)
 
     def test_read_data_call(self):
@@ -90,11 +93,12 @@ class Test(tests.IrisTest):
                              lbext=0,
                              lbuser=[0])
         with self.mock_for_field_gen([pp_field]):
-            open_fh = mock.Mock()
+            open_fh = mock.MagicMock(spec=io.RawIOBase)
             open.return_value = open_fh
             next(pp._field_gen('mocked', read_data_bytes=True))
-        expected_loaded_bytes = pp.LoadedArrayBytes(open_fh.read(),
-                                                    np.dtype('>f4'))
+        with open_fh as open_fh_ctx:
+            expected_loaded_bytes = pp.LoadedArrayBytes(open_fh_ctx.read(),
+                                                        np.dtype('>f4'))
         self.assertEqual(pp_field._data, expected_loaded_bytes)
 
     def test_invalid_header_release(self):

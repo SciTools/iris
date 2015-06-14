@@ -69,10 +69,11 @@ def save(cube, target):
     else:
         raise ValueError("Can only save dot to filename or filehandle")
 
-    dot_file.write(cube_text(cube))
-
-    if isinstance(target, six.string_types):
-        dot_file.close()
+    try:
+        dot_file.write(cube_text(cube))
+    finally:
+        if isinstance(target, six.string_types):
+            dot_file.close()
 
 
 def save_png(source, target, launch=False):

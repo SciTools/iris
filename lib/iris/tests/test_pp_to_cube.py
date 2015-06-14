@@ -168,7 +168,8 @@ class TestPPLoadRules(tests.IrisTest):
 
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
-            f.save(open(temp_filename, 'wb'))
+            with open(temp_filename, 'wb') as temp_fh:
+                f.save(temp_fh)
 
             # Load pp file
             cube = iris.load_cube(temp_filename)
@@ -197,7 +198,8 @@ class TestPPLoadRules(tests.IrisTest):
 
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
-            f.save(open(temp_filename, 'wb'))
+            with open(temp_filename, 'wb') as temp_fh:
+                f.save(temp_fh)
 
             # Load pp file
             cube = iris.load_cube(temp_filename)
@@ -223,7 +225,8 @@ class TestPPLoadRules(tests.IrisTest):
 
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
-            f.save(open(temp_filename, 'wb'))
+            with open(temp_filename, 'wb') as temp_fh:
+                f.save(temp_fh)
 
             # Load pp file
             cube = iris.load_cube(temp_filename)

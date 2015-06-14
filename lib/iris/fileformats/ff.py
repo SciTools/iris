@@ -650,107 +650,108 @@ class FF2PP(object):
         table_offset = (table_index - 1) * self._word_depth       # in bytes
         table_entry_depth = table_entry_depth * self._word_depth  # in bytes
         # Open the FF for processing.
-        ff_file = open(self._ff_header.ff_filename, 'rb')
-        ff_file_seek = ff_file.seek
+        with open(self._ff_header.ff_filename, 'rb') as ff_file:
+            ff_file_seek = ff_file.seek
 
-        is_boundary_packed = self._ff_header.dataset_type == 5
-
-        grid = self._ff_header.grid()
-
-        # Process each FF LOOKUP table entry.
-        while table_count:
-            table_count -= 1
-            # Move file pointer to the start of the current FF LOOKUP
-            # table entry.
-            ff_file_seek(table_offset, os.SEEK_SET)
-
-            # Read the current PP header entry from the FF LOOKUP table.
-            header_longs = np.fromfile(
-                ff_file, dtype='>i{0}'.format(self._word_depth),
-                count=pp.NUM_LONG_HEADERS)
-            # Check whether the current FF LOOKUP table entry is valid.
-            if header_longs[0] == _FF_LOOKUP_TABLE_TERMINATE:
-                # There are no more FF LOOKUP table entries to read.
-                break
-            header_floats = np.fromfile(
-                ff_file, dtype='>f{0}'.format(self._word_depth),
-                count=pp.NUM_FLOAT_HEADERS)
-            header = tuple(header_longs) + tuple(header_floats)
-
-            # Calculate next FF LOOKUP table entry.
-            table_offset += table_entry_depth
-
-            # Construct a PPField object and populate using the header_data
-            # read from the current FF LOOKUP table.
-            # (The PPField sub-class will depend on the header release number.)
-            field = pp.make_pp_field(header)
-
-            # Fast stash look-up.
-            stash_s = field.lbuser[3] // 1000
-            stash_i = field.lbuser[3] % 1000
-            stash = 'm{:02}s{:02}i{:03}'.format(field.lbuser[6],
-                                                stash_s, stash_i)
-            stash_entry = STASH_TRANS.get(stash, None)
-            if stash_entry is None:
-                subgrid = None
-                warnings.warn('The STASH code {0} was not found in the '
-                              'STASH to grid type mapping. Picking the P '
-                              'position as the cell type'.format(stash))
-            else:
-                subgrid = stash_entry.grid_code
-                if subgrid not in HANDLED_GRIDS:
-                    warnings.warn('The stash code {} is on a grid {} which '
-                                  'has not been explicitly handled by the '
-                                  'fieldsfile loader. Assuming the data is on '
-                                  'a P grid.'.format(stash, subgrid))
-
-            field.x, field.y = grid.vectors(subgrid)
-
-            # Use the per-file grid if no per-field metadata is available.
-            no_x = field.bzx in (0, field.bmdi) and field.x is None
-            no_y = field.bzy in (0, field.bmdi) and field.y is None
-            if no_x and no_y:
-                field.bzx, field.bdx = grid.regular_x(subgrid)
-                field.bzy, field.bdy = grid.regular_y(subgrid)
-                field.bplat = grid.pole_lat
-                field.bplon = grid.pole_lon
-            elif no_x or no_y:
-                warnings.warn('Partially missing X or Y coordinate values.')
-
-            # Check for LBC fields.
             is_boundary_packed = self._ff_header.dataset_type == 5
-            if is_boundary_packed:
-                # Apply adjustments specific to LBC data.
-                self._adjust_field_for_lbc(field)
 
-            # Calculate start address of the associated PP header data.
-            data_offset = field.lbegin * self._word_depth
-            # Determine PP field payload depth and type.
-            data_depth, data_type = self._payload(field)
+            grid = self._ff_header.grid()
 
-            # Produce (yield) output fields.
-            if is_boundary_packed:
-                fields = self._fields_over_all_levels(field)
-            else:
-                fields = [field]
-            for result_field in fields:
-                # Add a field data element.
-                if self._read_data:
-                    # Read the actual bytes. This can then be converted to a
-                    # numpy array at a higher level.
-                    ff_file_seek(data_offset, os.SEEK_SET)
-                    result_field._data = pp.LoadedArrayBytes(
-                        ff_file.read(data_depth), data_type)
+            # Process each FF LOOKUP table entry.
+            while table_count:
+                table_count -= 1
+                # Move file pointer to the start of the current FF LOOKUP
+                # table entry.
+                ff_file_seek(table_offset, os.SEEK_SET)
+
+                # Read the current PP header entry from the FF LOOKUP table.
+                header_longs = np.fromfile(
+                    ff_file, dtype='>i{0}'.format(self._word_depth),
+                    count=pp.NUM_LONG_HEADERS)
+                # Check whether the current FF LOOKUP table entry is valid.
+                if header_longs[0] == _FF_LOOKUP_TABLE_TERMINATE:
+                    # There are no more FF LOOKUP table entries to read.
+                    break
+                header_floats = np.fromfile(
+                    ff_file, dtype='>f{0}'.format(self._word_depth),
+                    count=pp.NUM_FLOAT_HEADERS)
+                header = tuple(header_longs) + tuple(header_floats)
+
+                # Calculate next FF LOOKUP table entry.
+                table_offset += table_entry_depth
+
+                # Construct a PPField object and populate using the header_data
+                # read from the current FF LOOKUP table.
+                # (The PPField sub-class will depend on the header release
+                # number.)
+                field = pp.make_pp_field(header)
+
+                # Fast stash look-up.
+                stash_s = field.lbuser[3] // 1000
+                stash_i = field.lbuser[3] % 1000
+                stash = 'm{:02}s{:02}i{:03}'.format(field.lbuser[6],
+                                                    stash_s, stash_i)
+                stash_entry = STASH_TRANS.get(stash, None)
+                if stash_entry is None:
+                    subgrid = None
+                    warnings.warn('The STASH code {0} was not found in the '
+                                  'STASH to grid type mapping. Picking the P '
+                                  'position as the cell type'.format(stash))
                 else:
-                    # Provide enough context to read the data bytes later on.
-                    result_field._data = (self._filename, data_offset,
-                                          data_depth, data_type)
+                    subgrid = stash_entry.grid_code
+                    if subgrid not in HANDLED_GRIDS:
+                        warnings.warn('The stash code {} is on a grid {} '
+                                      'which has not been explicitly handled '
+                                      'by the fieldsfile loader. Assuming the '
+                                      'data is on a P grid.'.format(stash,
+                                                                    subgrid))
 
-                data_offset += data_depth
+                field.x, field.y = grid.vectors(subgrid)
 
-                yield result_field
+                # Use the per-file grid if no per-field metadata is available.
+                no_x = field.bzx in (0, field.bmdi) and field.x is None
+                no_y = field.bzy in (0, field.bmdi) and field.y is None
+                if no_x and no_y:
+                    field.bzx, field.bdx = grid.regular_x(subgrid)
+                    field.bzy, field.bdy = grid.regular_y(subgrid)
+                    field.bplat = grid.pole_lat
+                    field.bplon = grid.pole_lon
+                elif no_x or no_y:
+                    warnings.warn(
+                        'Partially missing X or Y coordinate values.')
 
-        ff_file.close()
+                # Check for LBC fields.
+                is_boundary_packed = self._ff_header.dataset_type == 5
+                if is_boundary_packed:
+                    # Apply adjustments specific to LBC data.
+                    self._adjust_field_for_lbc(field)
+
+                # Calculate start address of the associated PP header data.
+                data_offset = field.lbegin * self._word_depth
+                # Determine PP field payload depth and type.
+                data_depth, data_type = self._payload(field)
+
+                # Produce (yield) output fields.
+                if is_boundary_packed:
+                    fields = self._fields_over_all_levels(field)
+                else:
+                    fields = [field]
+                for result_field in fields:
+                    # Add a field data element.
+                    if self._read_data:
+                        # Read the actual bytes. This can then be converted to
+                        # a numpy array at a higher level.
+                        ff_file_seek(data_offset, os.SEEK_SET)
+                        result_field._data = pp.LoadedArrayBytes(
+                            ff_file.read(data_depth), data_type)
+                    else:
+                        # Provide enough context to read the data bytes later.
+                        result_field._data = (self._filename, data_offset,
+                                              data_depth, data_type)
+
+                    data_offset += data_depth
+
+                    yield result_field
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())

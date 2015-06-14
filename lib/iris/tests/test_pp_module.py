@@ -89,11 +89,13 @@ class IrisPPTest(tests.IrisTest):
         test_string = str(pp_fields)
         reference_path = tests.get_result_path(reference_filename)
         if os.path.isfile(reference_path):
-            reference = ''.join(open(reference_path, 'r').readlines())
+            with open(reference_path, 'r') as reference_fh:
+                reference = ''.join(reference_fh.readlines())
             self._assert_str_same(reference+'\n', test_string+'\n', reference_filename, type_comparison_name='PP files')
         else:
             tests.logger.warning('Creating result file: %s', reference_path)
-            open(reference_path, 'w').writelines(test_string)
+            with open(reference_path, 'w') as reference_fh:
+                reference_fh.writelines(test_string)
 
 
 class TestPPHeaderDerived(unittest.TestCase):
@@ -185,7 +187,8 @@ class TestPPField_GlobalTemperature(IrisPPTest):
 
     def test_save_single(self):
         temp_filename = iris.util.create_temp_filename(".pp")
-        self.r[0].save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            self.r[0].save(temp_fh)
         self.assertEqual(self.file_checksum(temp_filename), self.file_checksum(self.original_pp_filepath))
         os.remove(temp_filename)
            
@@ -196,7 +199,8 @@ class TestPPField_GlobalTemperature(IrisPPTest):
 
         temp_filename = iris.util.create_temp_filename(".pp")
         
-        f.save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            f.save(temp_fh)
         self.assertEqual(self.file_checksum(temp_filename), self.file_checksum(filepath))
 
         os.remove(temp_filename)
@@ -221,7 +225,8 @@ class TestPackedPP(IrisPPTest):
         temp_filename = iris.util.create_temp_filename(".pp")
         with mock.patch('iris.fileformats.pp.mo_pack', None):
             with self.assertRaises(NotImplementedError):
-                r[0].save(open(temp_filename, 'wb'))
+                with open(temp_filename, 'wb') as temp_fh:
+                    r[0].save(temp_fh)
         os.remove(temp_filename)
 
     @unittest.skipIf(pp.mo_pack is None, 'Requires mo_pack.')
@@ -251,7 +256,8 @@ class TestPackedPP(IrisPPTest):
         # (we cannot currently write RLE packed fields)
         with self.temp_filename('.pp') as temp_filename:
             with self.assertRaises(NotImplementedError):
-                r[0].save(open(temp_filename, 'wb'))
+                with open(temp_filename, 'wb') as temp_fh:
+                    r[0].save(temp_fh)
 
 
 @tests.skip_data
@@ -279,7 +285,8 @@ class TestPPFileExtraXData(IrisPPTest):
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
-        f.save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            f.save(temp_fh)
         
         s = next(pp.load(temp_filename))
         
@@ -318,7 +325,8 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
-        f.save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            f.save(temp_fh)
         
         s = next(pp.load(temp_filename))
         
