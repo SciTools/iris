@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -894,7 +894,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         grib_loader = iris.fileformats.rules.Loader(
             _GribMessage.messages_from_filename,
             {},
-            iris.fileformats.grib._load_convert.convert)
+            iris.fileformats.grib._load_convert.convert, None, True)
     else:
         if auto_regularise is not None:
             # The old loader supports the auto_regularise keyword, but in
@@ -907,7 +907,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
 
         grib_loader = iris.fileformats.rules.Loader(
             grib_generator, {'auto_regularise': auto_regularise},
-            iris.fileformats.grib.load_rules.convert)
+            iris.fileformats.grib.load_rules.convert, None, False)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 
 

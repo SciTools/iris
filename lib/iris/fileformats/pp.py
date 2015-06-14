@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -2036,7 +2036,7 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
         pp_filter = _convert_constraints(constraints)
     pp_loader = iris.fileformats.rules.Loader(
         loading_function, loading_function_kwargs or {},
-        iris.fileformats.pp_rules.convert)
+        iris.fileformats.pp_rules.convert, None, False)
     return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader,
                                              pp_filter)
 

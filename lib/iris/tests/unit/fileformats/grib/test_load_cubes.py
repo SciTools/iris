@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -47,7 +47,7 @@ class TestToggle(tests.IrisTest):
                     kw_args = {'auto_regularise': mock.sentinel.REGULARISE}
                 loader = iris.fileformats.rules.Loader(
                     generator, kw_args,
-                    converter, None)
+                    converter, None, mode)
                 rules_load.assert_called_once_with(mock.sentinel.FILES,
                                                    mock.sentinel.CALLBACK,
                                                    loader)

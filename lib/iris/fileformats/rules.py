@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -779,10 +779,10 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
 
 
 _loader_attrs = ('field_generator', 'field_generator_kwargs',
-                 'converter', 'legacy_custom_rules')
+                 'converter', 'legacy_custom_rules', 'fault_tolerant')
 class Loader(collections.namedtuple('Loader', _loader_attrs)):
     def __new__(cls, field_generator, field_generator_kwargs, converter,
-                legacy_custom_rules=None):
+                legacy_custom_rules=None, fault_tolerant=False):
         """
         Create a definition of a field-based Cube loader.
 
@@ -807,12 +807,19 @@ class Loader(collections.namedtuple('Loader', _loader_attrs)):
 
             .. deprecated:: 1.9
 
+        * fault_tolerant
+            If `True` then failure to translate an individual field will
+            not cause the load process to abort. If `False` the load process
+            will raise an exception if a single field cannot be translated.
+            Default is `False`.
+
         """
         if legacy_custom_rules is not None:
             warnings.warn('The `legacy_custom_rules` attribute is '
                           'deprecated.')
         return tuple.__new__(cls, (field_generator, field_generator_kwargs,
-                                   converter, legacy_custom_rules))
+                                   converter, legacy_custom_rules,
+                                   fault_tolerant))
 
 
 ConversionMetadata = collections.namedtuple('ConversionMetadata',
@@ -866,6 +873,8 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
     if isinstance(filenames, six.string_types):
         filenames = [filenames]
 
+    skipped_fields = 0
+
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
             # evaluate field against format specific desired attributes
@@ -873,7 +882,14 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
             if filter_function is not None and not filter_function(field):
                 continue
             # Convert the field to a Cube.
-            cube, factories, references = _make_cube(field, loader.converter)
+            try:
+                cube, factories, references = _make_cube(field,
+                                                         loader.converter)
+            except iris.exceptions.TranslationError as e:
+                if loader.fault_tolerant:
+                    skipped_fields += 1
+                    continue
+                raise e
 
             # Run any custom user-provided rules.
             if loader.legacy_custom_rules:
@@ -900,6 +916,10 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
                 results_needing_reference.append((cube, factories))
             else:
                 yield cube
+
+    if skipped_fields != 0:
+        msg = '{} fields could not be converted during load and were skipped'
+        warnings.warn(msg.format(skipped_fields))
 
     regrid_cache = {}
     for cube, factories in results_needing_reference:
