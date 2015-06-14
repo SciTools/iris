@@ -56,6 +56,13 @@ import iris.plot as iplt
 
 UTC_format = '%H%M%Z %d/%m/%Y'
 
+FLOAT_HEADERS = ['X grid origin', 'Y grid origin',
+                 'X grid resolution', 'Y grid resolution']
+INT_HEADERS = ['X grid size', 'Y grid size', 'Number of fields']
+DATE_HEADERS = ['Run time', 'Start of release', 'End of release']
+COLUMN_NAMES = ['species_category', 'species', 'cell_measure', 'quantity',
+                'unit', 'z_level', 'time']
+
 
 def load_NAME_III(filename):
     """
@@ -82,11 +89,11 @@ def load_NAME_III(filename):
         header_value = header_value.strip()
 
         # cast some headers into floats or integers if they match a given header name
-        if header_name in ['X grid origin', 'Y grid origin', 'X grid resolution', 'Y grid resolution']:
+        if header_name in FLOAT_HEADERS:
             header_value = float(header_value)
-        elif header_name in ['X grid size', 'Y grid size', 'Number of fields']:
+        elif header_name in INT_HEADERS:
             header_value = int(header_value)
-        elif header_name in ['Run time', 'Start of release', 'End of release']:
+        elif header_name in DATE_HEADERS:
             # convert the time to python datetimes
             header_value = datetime.datetime.strptime(header_value, UTC_format)
 
@@ -97,7 +104,7 @@ def load_NAME_III(filename):
 
     # Read the next 7 lines of column definitions
     column_headings = {}
-    for column_header_name in ['species_category', 'species', 'cell_measure', 'quantity', 'unit', 'z_level', 'time']:
+    for column_header_name in COLUMN_NAMES:
         column_headings[column_header_name] = [col.strip() for col in file_handle.next().split(',')][:-1]
 
     # convert the time to python datetimes
