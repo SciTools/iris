@@ -23,6 +23,7 @@ from __future__ import (absolute_import, division, print_function)
 import iris.tests as tests
 
 import itertools
+import warnings
 
 import biggus
 import mock
@@ -63,6 +64,21 @@ class Test___init___data(tests.IrisTest):
         cube = Cube(data)
         self.assertEqual(type(cube.data), np.ndarray)
         self.assertArrayEqual(cube.data, data)
+
+
+class Test___getitem__(tests.IrisTest):
+    def test_full_masked_array_warning(self):
+        # Check that a warning is raised when a cube's data that is a
+        # full masked array is cast to a numpy array.
+        # This happens when such a cube is indexed.
+        data = np.ma.array(np.arange(12).reshape(3, 4))
+        cube = Cube(data)
+        self.assertEqual(type(cube.data), np.ma.MaskedArray)
+        with warnings.catch_warnings():
+            # Cause all warnings to raise Exceptions.
+            warnings.simplefilter('error')
+            with self.assertRaisesRegexp(UserWarning, 'Casting full masked'):
+                cube[:2]
 
 
 class Test_extract(tests.IrisTest):

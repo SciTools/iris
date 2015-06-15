@@ -1942,6 +1942,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
             if ma.count_masked(data) == 0:
+                msg = 'Casting full masked array to NumPy array.'
+                warnings.warn(msg)
                 data = data.filled()
 
         # Make the new cube slice
