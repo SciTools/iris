@@ -622,7 +622,7 @@ class PercentileAggregator(_Aggregator):
 
         """
         self._name = 'percentile'
-        self._arg = 'percent'
+        self._args = ['percent']
         _Aggregator.__init__(self, None, _percentile,
                              units_func=units_func, lazy_func=lazy_func,
                              **kwargs)
@@ -661,9 +661,10 @@ class PercentileAggregator(_Aggregator):
             The aggregated data.
 
         """
-        if self._arg not in kwargs:
-            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
-            raise ValueError(msg.format(self.name(), self._arg))
+        for arg in self._args:
+            if arg not in kwargs:
+                msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+                raise ValueError(msg.format(self.name(), arg))
 
         return _Aggregator.aggregate(self, data, axis, **kwargs)
 
@@ -692,10 +693,11 @@ class PercentileAggregator(_Aggregator):
         """
         cubes = iris.cube.CubeList()
         # The additive aggregator requires a mandatory keyword.
-        if self._arg not in kwargs:
-            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
-            raise ValueError(msg.format(self.name(), self._arg))
-        points = kwargs[self._arg]
+        for arg in self._args:
+            if arg not in kwargs:
+                msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+                raise ValueError(msg.format(self.name(), arg))
+        points = kwargs[self._args[0]]
         # Derive the name of the additive coordinate.
         names = [coord.name() for coord in coords]
         coord_name = '{}_over_{}'.format(self.name(), '_'.join(names))
@@ -740,11 +742,12 @@ class PercentileAggregator(_Aggregator):
             A tuple of the additive dimension shape.
 
         """
-        if self._arg not in kwargs:
-            msg = '{} aggregator requires the mandatory keyword argument {!r}.'
-            raise ValueError(msg.format(self.name(), self._arg))
+        for arg in self._args:
+            if arg not in kwargs:
+                msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+                raise ValueError(msg.format(self.name(), arg))
 
-        points = kwargs[self._arg]
+        points = kwargs[self._args[0]]
         shape = ()
 
         if not isinstance(points, collections.Iterable):
@@ -763,6 +766,97 @@ class PercentileAggregator(_Aggregator):
 
         """
         return self._name
+
+
+class WeightedPercentileAggregator(PercentileAggregator):
+    """
+    The :class:`WeightedPercentileAggregator` class provides percentile aggregation
+    functionality.
+
+    This aggregator *may* introduce a new dimension to the data for the
+    statistic being calculated, but only if more than one quantile is required.
+    For example, calculating the 50th and 90th percentile will result in a new
+    data dimension with an extent of 2, for each of the quantiles calculated.
+
+    """
+    def __init__(self, units_func=None, lazy_func=None, **kwargs):
+        """
+        Create a weighted percentile aggregator.
+
+        Kwargs:
+
+        * units_func (callable):
+            | *Call signature*: (units)
+
+            If provided, called to convert a cube's units.
+            Returns an :class:`iris.units.Unit`, or a
+            value that can be made into one.
+
+        * lazy_func (callable or None):
+            An alternative to :data:`call_func` implementing a lazy
+            aggregation. Note that, it need not support all features of the
+            main operation, but should raise an error in unhandled cases.
+
+        Additional kwargs::
+            Passed through to :data:`call_func` and :data:`lazy_func`.
+
+        This aggregator can used by cube aggregation methods such as
+        :meth:`~iris.cube.Cube.collapsed` and
+        :meth:`~iris.cube.Cube.aggregated_by`.  For example::
+
+            cube.collapsed('longitude', iris.analysis.WPERCENTILE, percent=50, 
+                             weights=iris.analysis.cartography.area_weights(cube))
+
+        """
+        _Aggregator.__init__(self, None, _weighted_percentile,
+                             units_func=units_func, lazy_func=lazy_func,
+                             **kwargs)
+        
+        self._name = "weighted_percentile"
+        self._args = ["percent", "weights"]
+
+        #: A list of keywords associated with weighted behaviour.
+        self._weighting_keywords = ["returned", "weights"]
+
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+        """
+        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Returns a tuple(cube, weights) if a tuple(data, weights) was returned
+        from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Args:
+
+        * collapsed_cube:
+            A :class:`iris.cube.Cube`.
+        * data_result:
+            Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "weights"
+          keyword).
+
+        Returns:
+            The collapsed cube with it's aggregated data payload. Or a tuple
+            pair of (cube, weights) if the keyword "returned" is specified
+            and True.
+
+        """
+        if kwargs.get('returned', False):
+            # Package the data into the cube and return a tuple
+            collapsed_cube = PercentileAggregator(self, collapsed_cube, 
+                                                  data_result[0], coords, **kwargs)
+                                                  
+            result = (collapsed_cube, data_result[1])
+        else:
+            result = PercentileAggregator.post_process(self, collapsed_cube,
+                                                       data_result, coords, **kwargs)
+
+        return result
 
 
 class Aggregator(_Aggregator):
@@ -942,6 +1036,125 @@ def _percentile(data, axis, percent, **kwargs):
         result = result[0]
 
     return result
+
+
+def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
+    """
+    Compute the weighted quantile of a 1D numpy array.
+    
+    Adapted from https://github.com/nudomarinero/wquantiles/
+
+    Args:
+    
+    * data (array)
+        One dimensional data array
+    * weights (array)
+        Array of the same size of `data`.  If data is masked, weights must have 
+        matching mask.
+    * quantiles : (float or sequence of floats)
+        Quantile(s) to compute. Must have a value between 0 and 1.
+        
+    **kwargs
+        passed to `scipy.interpolate.interp1d`
+
+    Returns:    
+        array or float.  Calculated quantile values (set to np.nan wherever sum 
+        of weights is zero or masked)
+    """
+    # Return np.nan if no useable points found
+    if np.isclose(weights.sum(), 0.) or weights.sum() is ma.masked:
+        return np.resize(np.array(np.nan), len(quantiles))
+    # Sort the data
+    ind_sorted = ma.argsort(data)
+    sorted_data = data[ind_sorted]
+    sorted_weights = weights[ind_sorted]
+    # Compute the auxiliary arrays
+    Sn = np.cumsum(sorted_weights)
+    Pn = (Sn-0.5*sorted_weights)/np.sum(sorted_weights)
+    # Get the value of the weighted quantiles
+    interpolator = scipy.interpolate.interp1d(Pn, sorted_data, bounds_error=False, **kwargs)
+    result = interpolator(quantiles)
+    # Set cases where quantile falls outside data range to min or max
+    np.place(result, Pn.min() > quantiles, sorted_data.min())
+    np.place(result, Pn.max() < quantiles, sorted_data.max())    
+    
+    return result
+
+
+def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs):
+    """
+    The weighted_percentile aggregator is an additive operation. This means that
+    it *may* introduce a new dimension to the data for the statistic being
+    calculated, but only if more than one percentile point is requested.
+
+    If a new additive dimension is formed, then it will always be the last
+    dimension of the resulting percentile data payload.
+    
+    Args:
+    
+    * data: ndarray or masked array
+         
+    * axis: int
+         axis to calculate percentiles over
+         
+    * weights: ndarray
+         array with the weights.  Must have same shape as data
+         
+    * percent: float or sequence of floats
+         Percentile rank/s at which to extract value/s.
+         
+    * returned: bool, optional
+         Default False.  If True, returns a tuple with the percentiles as the first 
+         element and the sum of the weights as the second element.
+
+    """
+    # Ensure that data and weights arrays are same shape.
+    if data.shape != weights.shape:
+        raise ValueError('_weighted_percentile: weights wrong shape.')
+    # Ensure that the target axis is the last dimension.
+    data = np.rollaxis(data, axis, start=data.ndim)
+    weights = np.rollaxis(weights, axis, start=data.ndim)
+    quantiles = np.array(percent) / 100.
+    # Add data mask to weights if necessary.
+    if ma.isMaskedArray(data):
+        weights = ma.array(weights, mask=data.mask)
+    shape = data.shape[:-1]
+    # Flatten any leading dimensions and loop over them
+    if shape:    
+        data = data.reshape([np.prod(shape), data.shape[-1]])
+        weights = weights.reshape([np.prod(shape), data.shape[-1]])
+        result = np.empty((np.prod(shape), quantiles.size))
+        # Perform the percentile calculation.
+        for res, dat, wt in zip(result, data, weights):
+            res[:] = _weighted_quantile_1D(dat, wt, quantiles, **kwargs)
+    else:
+        # Data is 1D
+        result = _weighted_quantile_1D(data, weights, quantiles, **kwargs)
+    
+    if np.any(np.isnan(result)):
+        result = ma.masked_invalid(result)
+    
+    if not ma.isMaskedArray(data) and not ma.is_masked(result):
+        result = np.asarray(result)
+        
+    # Ensure to unflatten any leading dimensions.
+    if shape:
+        if not isinstance(percent, collections.Iterable):
+            percent = [percent]
+        percent = np.array(percent)
+        # Account for the additive dimension.
+        if percent.shape > (1,):
+            shape += percent.shape
+        result = result.reshape(shape)
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,) and quantiles.ndim == 0:
+        result = result[0]
+    
+    if returned:
+        return result, weights.sum(axis=-1)
+    else:
+        return result
 
 
 def _count(array, function, axis, **kwargs):
@@ -1314,6 +1527,36 @@ To compute the 10th and 90th percentile over *time*::
     result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=[10, 90])
 
 This aggregator handles masked data.
+
+"""
+
+
+WPERCENTILE = WeightedPercentileAggregator()
+"""
+An :class:`~iris.analysis.WeightedPercentileAggregator` instance that calculates 
+the weighted percentile over a :class:`~iris.cube.Cube`.
+
+**Required** kwargs associated with the use of this aggregator:
+
+* percent (float or sequence of floats):
+    Percentile rank/s at which to extract value/s.
+    
+* weights (float ndarray):
+    Weights matching the shape of the cube or the length of the window
+    for rolling window operations. Note that, latitude/longitude area
+    weights can be calculated using
+    :func:`iris.analysis.cartography.area_weights`.
+
+Additional kwargs associated with the use of this aggregator:
+
+* returned (boolean):
+    Set this to True to indicate that the collapsed weights are to be
+    returned along with the collapsed data. Defaults to False.
+    
+* kind (string or int):
+    Specifies the kind of interpolation used, see :func:`scipy.interpolate.interp1d`
+    Defaults to "linear", which is equivalent to alphap=0.5, betap=0.5 in
+    iris.analysis.PERCENTILE
 
 """
 
