@@ -28,7 +28,7 @@ import iris.tests as tests
 from mock import sentinel
 import numpy as np
 
-from weighted import WeightedPercentileAggregator, _weighted_percentile
+from iris.analysis import WeightedPercentileAggregator, _weighted_percentile
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 

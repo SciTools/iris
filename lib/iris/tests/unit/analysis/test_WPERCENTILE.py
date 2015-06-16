@@ -25,7 +25,7 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
-from weighted import WPERCENTILE
+from iris.analysis import WPERCENTILE
 
 
 class Test_aggregate(tests.IrisTest):
