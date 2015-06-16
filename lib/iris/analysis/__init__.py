@@ -1531,36 +1531,6 @@ This aggregator handles masked data.
 """
 
 
-WPERCENTILE = WeightedPercentileAggregator()
-"""
-An :class:`~iris.analysis.WeightedPercentileAggregator` instance that calculates 
-the weighted percentile over a :class:`~iris.cube.Cube`.
-
-**Required** kwargs associated with the use of this aggregator:
-
-* percent (float or sequence of floats):
-    Percentile rank/s at which to extract value/s.
-    
-* weights (float ndarray):
-    Weights matching the shape of the cube or the length of the window
-    for rolling window operations. Note that, latitude/longitude area
-    weights can be calculated using
-    :func:`iris.analysis.cartography.area_weights`.
-
-Additional kwargs associated with the use of this aggregator:
-
-* returned (boolean):
-    Set this to True to indicate that the collapsed weights are to be
-    returned along with the collapsed data. Defaults to False.
-    
-* kind (string or int):
-    Specifies the kind of interpolation used, see :func:`scipy.interpolate.interp1d`
-    Defaults to "linear", which is equivalent to alphap=0.5, betap=0.5 in
-    iris.analysis.PERCENTILE
-
-"""
-
-
 PROPORTION = Aggregator('proportion',
                         _proportion,
                         units_func=lambda units: 1)
@@ -1714,6 +1684,36 @@ To obtain the biased variance::
     Lazy operation is supported, via :func:`biggus.var`.
 
 This aggregator handles masked data.
+
+"""
+
+
+WPERCENTILE = WeightedPercentileAggregator()
+"""
+An :class:`~iris.analysis.WeightedPercentileAggregator` instance that calculates 
+the weighted percentile over a :class:`~iris.cube.Cube`.
+
+**Required** kwargs associated with the use of this aggregator:
+
+* percent (float or sequence of floats):
+    Percentile rank/s at which to extract value/s.
+    
+* weights (float ndarray):
+    Weights matching the shape of the cube or the length of the window
+    for rolling window operations. Note that, latitude/longitude area
+    weights can be calculated using
+    :func:`iris.analysis.cartography.area_weights`.
+
+Additional kwargs associated with the use of this aggregator:
+
+* returned (boolean):
+    Set this to True to indicate that the collapsed weights are to be
+    returned along with the collapsed data. Defaults to False.
+    
+* kind (string or int):
+    Specifies the kind of interpolation used, see :func:`scipy.interpolate.interp1d`
+    Defaults to "linear", which is equivalent to alphap=0.5, betap=0.5 in
+    iris.analysis.PERCENTILE
 
 """
 
