@@ -1042,7 +1042,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
     """
     Compute the weighted quantile of a 1D numpy array.
     
-    Adapted from https://github.com/nudomarinero/wquantiles/
+    Adapted from `wquantiles <https://github.com/nudomarinero/wquantiles/>`_
 
     Args:
     
@@ -1713,7 +1713,7 @@ Additional kwargs associated with the use of this aggregator:
 * kind (string or int):
     Specifies the kind of interpolation used, see :func:`scipy.interpolate.interp1d`
     Defaults to "linear", which is equivalent to alphap=0.5, betap=0.5 in
-    iris.analysis.PERCENTILE
+    `iris.analysis.PERCENTILE`
 
 """
 
