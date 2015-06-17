@@ -30,13 +30,15 @@ from iris.analysis import WPERCENTILE
 
 class Test_aggregate(tests.IrisTest):
     def test_missing_mandatory_kwargs(self):
-        emsg = "weighted_percentile aggregator requires .* keyword argument 'percent'"
+        emsg = "weighted_percentile aggregator requires " \
+               ".* keyword argument 'percent'"
         with self.assertRaisesRegexp(ValueError, emsg):
             WPERCENTILE.aggregate('dummy', axis=0, weights=None)
-        emsg = "weighted_percentile aggregator requires .* keyword argument 'weights'"
+        emsg = "weighted_percentile aggregator requires " \
+               ".* keyword argument 'weights'"
         with self.assertRaisesRegexp(ValueError, emsg):
             WPERCENTILE.aggregate('dummy', axis=0, percent=50)
-            
+
     def test_wrong_weights_shape(self):
         data = np.arange(11)
         weights = np.ones(10)
@@ -47,7 +49,8 @@ class Test_aggregate(tests.IrisTest):
     def test_1d_single(self):
         data = np.arange(11)
         weights = np.ones(data.shape)
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=50, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=50,
+                                       weights=weights)
         expected = 5
         self.assertTupleEqual(actual.shape, ())
         self.assertEqual(actual, expected)
@@ -56,8 +59,8 @@ class Test_aggregate(tests.IrisTest):
         data = np.arange(12)
         weights = np.ones(data.shape)
         weights[0:3] = 3
-        actual, weight_total = WPERCENTILE.aggregate(data, axis=0, percent=50,
-                                                     weights=weights, returned=True)
+        actual, weight_total = WPERCENTILE.aggregate(
+            data, axis=0, percent=50, weights=weights, returned=True)
         expected = 2.75
         self.assertTupleEqual(actual.shape, ())
         self.assertEqual(actual, expected)
@@ -67,7 +70,8 @@ class Test_aggregate(tests.IrisTest):
         data = ma.arange(11)
         weights = np.ones(data.shape)
         data[3:7] = ma.masked
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=50, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=50,
+                                       weights=weights)
         expected = 7
         self.assertTupleEqual(actual.shape, ())
         self.assertEqual(actual, expected)
@@ -76,7 +80,8 @@ class Test_aggregate(tests.IrisTest):
         data = np.arange(11)
         weights = np.ones(data.shape)
         percent = np.array([20, 50, 90])
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
+                                       weights=weights)
         expected = [1.7, 5, 9.4]
         self.assertTupleEqual(actual.shape, percent.shape)
         self.assertArrayAlmostEqual(actual, expected)
@@ -84,9 +89,10 @@ class Test_aggregate(tests.IrisTest):
     def test_1d_multi_unequal(self):
         data = np.arange(13)
         weights = np.ones(data.shape)
-        weights[1::2]=3
+        weights[1::2] = 3
         percent = np.array([20, 50, 96])
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
+                                       weights=weights)
         expected = [2.25, 6, 11.75]
         self.assertTupleEqual(actual.shape, percent.shape)
         self.assertArrayAlmostEqual(actual, expected)
@@ -96,7 +102,8 @@ class Test_aggregate(tests.IrisTest):
         weights = np.ones(data.shape)
         data[3:9] = ma.masked
         percent = np.array([25, 50, 75])
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
+                                       weights=weights)
         expected = [0.75, 2, 9.25]
         self.assertTupleEqual(actual.shape, percent.shape)
         self.assertArrayAlmostEqual(actual, expected)
@@ -105,7 +112,8 @@ class Test_aggregate(tests.IrisTest):
         shape = (2, 11)
         data = np.arange(np.prod(shape)).reshape(shape)
         weights = np.ones(shape)
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=50, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=50,
+                                       weights=weights)
         self.assertTupleEqual(actual.shape, shape[-1:])
         expected = np.arange(shape[-1]) + 5.5
         self.assertArrayEqual(actual, expected)
@@ -116,7 +124,8 @@ class Test_aggregate(tests.IrisTest):
         data[0, ::2] = ma.masked
         data[1, 1::2] = ma.masked
         weights = np.ones(shape)
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=50, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=50,
+                                       weights=weights)
         self.assertTupleEqual(actual.shape, shape[-1:])
         expected = np.empty(shape[-1:])
         expected[1::2] = data[0, 1::2]
@@ -128,12 +137,13 @@ class Test_aggregate(tests.IrisTest):
         data = np.arange(np.prod(shape)).reshape(shape)
         weights = np.ones(shape)
         percent = np.array([10, 50, 70, 100])
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
+                                       weights=weights)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
         expected = np.array(range(shape[-1]) * percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T
-        expected[:,1:-1] += (percent[1:-1]-25)*0.2
-        expected[:,-1] += 10.
+        expected[:, 1:-1] += (percent[1:-1]-25)*0.2
+        expected[:, -1] += 10.
         self.assertArrayAlmostEqual(actual, expected)
 
     def test_masked_2d_multi(self):
@@ -142,12 +152,13 @@ class Test_aggregate(tests.IrisTest):
         weights = np.ones(shape)
         data[1] = ma.masked
         percent = np.array([10, 50, 70, 80])
-        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent, weights=weights)
+        actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
+                                       weights=weights)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
         expected = np.array(range(shape[-1]) * percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T
-        expected[:,1:-1] += (percent[1:-1]-25)*0.4
-        expected[:,-1] += 20.
+        expected[:, 1:-1] += (percent[1:-1]-25)*0.4
+        expected[:, -1] += 20.
         self.assertArrayAlmostEqual(actual, expected)
 
     def test_masked_2d_multi_unequal(self):
@@ -157,13 +168,15 @@ class Test_aggregate(tests.IrisTest):
         weights[0] = 3
         data[1] = ma.masked
         percent = np.array([30, 50, 75, 80])
-        actual, weight_total = WPERCENTILE.aggregate(data, axis=0, percent=percent,
-                                                     weights=weights, returned=True)
+        actual, weight_total = WPERCENTILE.aggregate(
+            data, axis=0, percent=percent, weights=weights, returned=True)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
         expected = np.array(range(shape[-1]) * percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T
-        expected[:,1:] = 2.0*((0.875 - percent[1:]/100.0) * data[0,np.newaxis].T
-                                  + (percent[1:]/100.0 - 0.375) * data[-1,np.newaxis].T)
+        expected[:, 1:] = 2.0 * (
+            (0.875 - percent[1:]/100.0) * data[0, np.newaxis].T +
+            (percent[1:]/100.0 - 0.375) * data[-1, np.newaxis].T
+            )
         self.assertArrayAlmostEqual(actual, expected)
         self.assertTupleEqual(weight_total.shape, (shape[-1],))
         self.assertArrayEqual(weight_total, np.repeat(4, shape[-1]))
@@ -176,8 +189,10 @@ class Test_name(tests.IrisTest):
 
 class Test_aggregate_shape(tests.IrisTest):
     def test_missing_mandatory_kwarg(self):
-        emsg_pc = "weighted_percentile aggregator requires .* keyword argument 'percent'"
-        emsg_wt = "weighted_percentile aggregator requires .* keyword argument 'weights'"
+        emsg_pc = "weighted_percentile aggregator requires " \
+                  ".* keyword argument 'percent'"
+        emsg_wt = "weighted_percentile aggregator requires " \
+                  ".* keyword argument 'weights'"
         with self.assertRaisesRegexp(ValueError, emsg_pc):
             WPERCENTILE.aggregate_shape(weights=None)
         with self.assertRaisesRegexp(ValueError, emsg_pc):

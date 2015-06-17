@@ -40,7 +40,7 @@ class Test(tests.IrisTest):
         units_func = sentinel.units_func
         lazy_func = sentinel.lazy_func
         aggregator = WeightedPercentileAggregator(units_func=units_func,
-                                          lazy_func=lazy_func)
+                                                  lazy_func=lazy_func)
         self.assertEqual(aggregator.name(), name)
         self.assertIs(aggregator.call_func, call_func)
         self.assertIs(aggregator.units_func, units_func)
@@ -67,10 +67,12 @@ class Test_post_process(tests.IrisTest):
 
     def test_missing_mandatory_kwarg(self):
         aggregator = WeightedPercentileAggregator()
-        emsg = "weighted_percentile aggregator requires .* keyword argument 'percent'"
+        emsg = "weighted_percentile aggregator requires " \
+               ".* keyword argument 'percent'"
         with self.assertRaisesRegexp(ValueError, emsg):
             aggregator.aggregate('dummy', axis=0, weights=None)
-        emsg = "weighted_percentile aggregator requires .* keyword argument 'weights'"
+        emsg = "weighted_percentile aggregator requires " \
+               ".* keyword argument 'weights'"
         with self.assertRaisesRegexp(ValueError, emsg):
             aggregator.aggregate('dummy', axis=0, percent=50)
 
