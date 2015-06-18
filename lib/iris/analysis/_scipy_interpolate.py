@@ -217,8 +217,8 @@ class _RegularGridInterpolator(object):
                                  n_src_values_per_result_value)
 
             corners = itertools.product(*[[(i, 1 - n), (i + 1, n)]
-                                           for i, n in zip(indices,
-                                                           norm_distances)])
+                                          for i, n in zip(indices,
+                                                          norm_distances)])
             shape = self.values.shape[:ndim]
 
             for i, corner in enumerate(corners):
@@ -304,7 +304,7 @@ class _RegularGridInterpolator(object):
         for edge_indices in edges:
             weight = 1.
             for ei, i, yi in zip(edge_indices, indices, norm_distances):
-                #weight *= np.where(ei == i, 1 - yi, yi)
+                # weight *= np.where(ei == i, 1 - yi, yi)
                 if ei[0] == i[0]:
                     weight *= 1 - yi
                 else:
