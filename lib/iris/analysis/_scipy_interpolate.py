@@ -279,7 +279,6 @@ class _RegularGridInterpolator(object):
 
     def _evaluate_linear_sparse(self, sparse_matrix):
         t0 = time.time()
-        # TODO: Consider handling of non-grid dimensions.
         ndim = len(self.grid)
         if ndim == self.values.ndim:
             result = sparse_matrix * self.values.reshape(-1)
