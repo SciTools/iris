@@ -183,7 +183,7 @@ class _RegularGridInterpolator(object):
         t0 = time.time()
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)
-        if xi.shape[-1] != len(self.grid):
+        if xi.shape[-1] != ndim:
             raise ValueError("The requested sample points xi have dimension "
                              "%d, but this RegularGridInterpolator has "
                              "dimension %d" % (xi.shape[1], ndim))
@@ -198,18 +198,18 @@ class _RegularGridInterpolator(object):
                     raise ValueError("One of the requested xi is out of "
                                      "bounds in dimension %d" % i)
 
+        method = self.method if method is None else method
         prepared = (xi_shape, method) + self._find_indices(xi.T)
         if TIMINGS:
             print('Prepare:', time.time() - t0)
 
-        method = self.method if method is None else method
         if SPARSE and method == 'linear':
             t0 = time.time()
 
             xi_shape, method, indices, norm_distances, out_of_bounds = prepared
 
             # Allocate arrays for describing the sparse matrix.
-            n_src_values_per_result_value = 2 ** len(self.grid)
+            n_src_values_per_result_value = 2 ** ndim
             n_result_values = len(indices[0])
             n_non_zero = n_result_values * n_src_values_per_result_value
             weights = np.ones(n_non_zero, dtype=norm_distances[0].dtype)
@@ -218,12 +218,14 @@ class _RegularGridInterpolator(object):
                                  n_src_values_per_result_value)
 
             corners = itertools.product(*[[(i, 1 - n), (i + 1, n)]
-                                           for i, n in zip(indices,
-                                                           norm_distances)])
+                                          for i, n in zip(indices,
+                                                          norm_distances)])
+            shape = self.values.shape[:ndim]
+
             for i, corner in enumerate(corners):
                 corner_indices = [ci for ci, cw in corner]
-                n_indices = np.ravel_multi_index(corner_indices,
-                                                 self.values.shape)
+                n_indices = np.ravel_multi_index(corner_indices, shape,
+                                                 mode='wrap')
                 col_indices[i::n_src_values_per_result_value] = n_indices
                 for ci, cw in corner:
                     weights[i::n_src_values_per_result_value] *= cw
@@ -279,8 +281,12 @@ class _RegularGridInterpolator(object):
 
     def _evaluate_linear_sparse(self, sparse_matrix):
         t0 = time.time()
-        # TODO: Consider handling of non-grid dimensions.
-        result = sparse_matrix * self.values.reshape(-1)
+        ndim = len(self.grid)
+        if ndim == self.values.ndim:
+            result = sparse_matrix * self.values.reshape(-1)
+        else:
+            shape = (sparse_matrix.shape[1], -1)
+            result = sparse_matrix * self.values.reshape(shape)
         if TIMINGS:
             print('Apply:', time.time() - t0)
 
@@ -300,7 +306,7 @@ class _RegularGridInterpolator(object):
         for edge_indices in edges:
             weight = 1.
             for ei, i, yi in zip(edge_indices, indices, norm_distances):
-                #weight *= np.where(ei == i, 1 - yi, yi)
+                # weight *= np.where(ei == i, 1 - yi, yi)
                 if ei[0] == i[0]:
                     weight *= 1 - yi
                 else:
