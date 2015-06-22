@@ -21,6 +21,7 @@ Test cube indexing, slicing, and extracting, and also the dot graphs.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -253,7 +254,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
         self.cube_2d = iris.load_cube(path)
         # Generate the unicode cube up here now it's used in two tests.
-        unicode_str = unichr(40960) + u'abcd' + unichr(1972)
+        unicode_str = six.unichr(40960) + u'abcd' + six.unichr(1972)
         self.unicode_cube = iris.tests.stock.simple_1d()
         self.unicode_cube.attributes['source'] = unicode_str
 
@@ -296,7 +297,7 @@ class TestCubeStringRepresentations(IrisDotTest):
     def test_basic_0d_cube(self):
         self.assertString(repr(self.cube_2d[0, 0]),
                           ('cdm', 'str_repr', '0d_cube.__repr__.txt'))
-        self.assertString(unicode(self.cube_2d[0, 0]),
+        self.assertString(six.text_type(self.cube_2d[0, 0]),
                           ('cdm', 'str_repr', '0d_cube.__unicode__.txt'))
         self.assertString(str(self.cube_2d[0, 0]),
                           ('cdm', 'str_repr', '0d_cube.__str__.txt'))
@@ -378,8 +379,8 @@ class TestCubeStringRepresentations(IrisDotTest):
 
     def test_unicode_attribute(self):
         self.assertString(
-            unicode(self.unicode_cube), ('cdm', 'str_repr',
-                                         'unicode_attribute.__unicode__.txt'))
+            six.text_type(self.unicode_cube),
+            ('cdm', 'str_repr', 'unicode_attribute.__unicode__.txt'))
 
 
 @tests.skip_data

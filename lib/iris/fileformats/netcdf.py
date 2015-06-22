@@ -355,7 +355,7 @@ def _pyke_stats(engine, cf_name):
 def _set_attributes(attributes, key, value):
     """Set attributes dictionary, converting unicode strings appropriately."""
 
-    if isinstance(value, unicode):
+    if isinstance(value, six.text_type):
         try:
             attributes[str(key)] = str(value)
         except UnicodeEncodeError:

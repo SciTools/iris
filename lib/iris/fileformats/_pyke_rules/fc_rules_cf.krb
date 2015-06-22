@@ -913,7 +913,7 @@ fc_extras
         # Set the cube global attributes. 
         for attr_name, attr_value in six.iteritems(cf_var.cf_group.global_attributes):
             try:
-                if isinstance(attr_value, unicode):
+                if six.PY2 and isinstance(attr_value, six.text_type):
                     try:
                         cube.attributes[str(attr_name)] = str(attr_value)
                     except UnicodeEncodeError:
