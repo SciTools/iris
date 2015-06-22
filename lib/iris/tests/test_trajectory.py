@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -158,7 +159,7 @@ class TestTrajectory(tests.IrisTest):
         cube.coord('depth').bounds = cube.coord('depth').bounds.astype(np.float32)
 
         # define a latitude trajectory (put coords in a different order to the cube, just to be awkward)
-        latitudes = range(-90, 90, 2)
+        latitudes = list(range(-90, 90, 2))
         longitudes = [-90]*len(latitudes)
         sample_points = [('longitude', longitudes), ('latitude', latitudes)]
 

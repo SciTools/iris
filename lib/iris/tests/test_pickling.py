@@ -20,6 +20,7 @@ Test pickling of Iris objects.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range, zip
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -35,7 +36,7 @@ import iris
 class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
         """Returns a generator of ("cpickle protocol number", object) tuples."""
-        for protocol in xrange(1 + cPickle.HIGHEST_PROTOCOL):
+        for protocol in range(1 + cPickle.HIGHEST_PROTOCOL):
             bio = io.BytesIO()
             cPickle.dump(obj, bio, protocol)
 

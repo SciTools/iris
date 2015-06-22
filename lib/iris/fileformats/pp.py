@@ -20,6 +20,7 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range, zip
 
 import abc
 import collections
@@ -658,7 +659,7 @@ class _FlagMetaclass(type):
     NUM_BITS = 18
 
     def __new__(cls, classname, bases, class_dict):
-        for i in xrange(cls.NUM_BITS):
+        for i in range(cls.NUM_BITS):
             value = 2 ** i
             name = 'flag{}'.format(value)
             class_dict[name] = property(_make_flag_getter(value),
@@ -794,7 +795,7 @@ class _LBProc(BitwiseInt):
     def flags(self):
         warnings.warn('The `flags` attribute is deprecated - please use '
                       'integer bitwise operators instead.')
-        return tuple(2 ** i for i in xrange(self.NUM_BITS)
+        return tuple(2 ** i for i in range(self.NUM_BITS)
                      if self._value & 2 ** i)
 
 
@@ -1132,7 +1133,7 @@ class PPField(object):
         # With the attributes sorted the order will remain stable if extra attributes are added.
         public_attribute_names = list(attribute_priority_lookup.keys()) + list(EXTRA_DATA.values())
         self_attrs = [(name, getattr(self, name, None)) for name in public_attribute_names]
-        self_attrs = filter(lambda pair: pair[1] is not None, self_attrs)
+        self_attrs = [pair for pair in self_attrs if pair[1] is not None]
 
         # Output any masked data as separate `data` and `mask`
         # components, to avoid the standard MaskedArray output

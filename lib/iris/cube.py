@@ -21,6 +21,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import filter, map, range, zip
 
 from xml.dom.minidom import Document
 import collections
@@ -743,8 +744,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             try:
                 value = CubeMetadata(*value)
             except TypeError:
-                attr_check = lambda name: not hasattr(value, name)
-                missing_attrs = filter(attr_check, CubeMetadata._fields)
+                missing_attrs = [field for field in CubeMetadata._fields
+                                 if not hasattr(value, field)]
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
@@ -1619,11 +1620,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Create a set to contain the axis names for each data dimension.
-        dim_names = [set() for dim in xrange(len(self.shape))]
+        dim_names = [set() for dim in range(len(self.shape))]
 
         # Add the dim_coord names that participate in the associated data
         # dimensions.
-        for dim in xrange(len(self.shape)):
+        for dim in range(len(self.shape)):
             dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
             if dim_coords:
                 dim_names[dim].add(dim_coords[0].name())
@@ -1736,7 +1737,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     # - WITH dimension markers.
                     for index, coord in enumerate(vector_coords):
                         dims = self.coord_dims(coord)
-                        for dim in xrange(len(self.shape)):
+                        for dim in range(len(self.shape)):
                             width = alignment[dim] - len(vector_summary[index])
                             char = 'x' if dim in dims else '-'
                             line = '{pad:{width}}{char}'.format(pad=' ',
@@ -2475,14 +2476,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         def remap_dim_coord(coord_and_dim):
             coord, dim = coord_and_dim
             return coord, dim_mapping[dim]
-        self._dim_coords_and_dims = map(remap_dim_coord,
-                                        self._dim_coords_and_dims)
+        self._dim_coords_and_dims = list(map(remap_dim_coord,
+                                             self._dim_coords_and_dims))
 
         def remap_aux_coord(coord_and_dims):
             coord, dims = coord_and_dims
             return coord, tuple(dim_mapping[dim] for dim in dims)
-        self._aux_coords_and_dims = map(remap_aux_coord,
-                                        self._aux_coords_and_dims)
+        self._aux_coords_and_dims = list(map(remap_aux_coord,
+                                             self._aux_coords_and_dims))
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """
@@ -2865,8 +2866,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
                 not aggregator.uses_weighting(**kwargs)):
             msg = "Collapsing spatial coordinate {!r} without weighting"
-            lat_match = filter(lambda coord: 'latitude' in coord.name(),
-                               coords)
+            lat_match = [coord for coord in coords
+                         if 'latitude' in coord.name()]
             if lat_match:
                 for coord in lat_match:
                     warnings.warn(msg.format(coord.name()))
@@ -3077,8 +3078,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Determine the other coordinates that share the same group-by
         # coordinate dimension.
-        shared_coords = filter(lambda coord_: coord_ not in groupby_coords,
-                               self.coords(dimensions=dimension_to_groupby))
+        shared_coords = list(filter(
+            lambda coord_: coord_ not in groupby_coords,
+            self.coords(dimensions=dimension_to_groupby)))
 
         # Create the aggregation group-by instance.
         groupby = iris.analysis._Groupby(groupby_coords, shared_coords)
@@ -3548,7 +3550,7 @@ class _SliceIterator(collections.Iterator):
         cube = self._cube[tuple(index_list)]
 
         if self._ordered:
-            if any(self._mod_requested_dims != range(len(cube.shape))):
+            if any(self._mod_requested_dims != list(range(len(cube.shape)))):
                 cube.transpose(self._mod_requested_dims)
 
         return cube

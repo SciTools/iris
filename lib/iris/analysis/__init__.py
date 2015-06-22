@@ -47,6 +47,7 @@ The gallery contains several interesting worked examples of how an
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import filter, range, zip
 
 import collections
 
@@ -92,8 +93,8 @@ class _CoordGroup(object):
         as (cube, coord).
 
         """
-        return filter(lambda cube_coord: cube_coord[1] is not None,
-                      zip(self.cubes, self.coords))[0]
+        return next(filter(lambda cube_coord: cube_coord[1] is not None,
+                           zip(self.cubes, self.coords)))
 
     def __repr__(self):
         # No exact repr, so a helpful string is given instead
@@ -1074,7 +1075,7 @@ def _peak(array, **kwargs):
                 column_peaks.append(column[0])
                 continue
 
-            tck = scipy.interpolate.splrep(range(column.size), column, k=k)
+            tck = scipy.interpolate.splrep(np.arange(column.size), column, k=k)
             npoints = column.size * 100
             points = np.linspace(0, column.size - 1, npoints)
             spline = scipy.interpolate.splev(points, tck)

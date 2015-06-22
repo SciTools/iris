@@ -1188,7 +1188,8 @@ fc_extras
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
-        common_dims = filter(lambda dim: dim in cf_var.dimensions, cf_coord_var.dimensions)
+        common_dims = [dim for dim in cf_coord_var.dimensions
+                       if dim in cf_var.dimensions]
         data_dims = None
         if common_dims:
             # Calculate the offset of each common dimension.
@@ -1281,7 +1282,8 @@ fc_extras
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
-        common_dims = filter(lambda dim: dim in cf_var.dimensions, cf_coord_var.dimensions)
+        common_dims = [dim for dim in cf_coord_var.dimensions
+                       if dim in cf_var.dimensions]
         data_dims = None    
         if common_dims:
             # Calculate the offset of each common dimension.

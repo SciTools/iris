@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ An example using numpy arrays:
 
     >>> import numpy as np
     >>> orig_x, orig_y = np.arange(2), np.arange(3)
-    >>> x, y = np.meshgrid(range(2), range(3))
+    >>> x, y = np.meshgrid(orig_x, orig_y)
 
     >>> # Remove the dimensional structure from the arrays.
     >>> x, y = x.flatten(), y.flatten()
@@ -55,6 +55,7 @@ An example using numpy arrays:
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 from collections import namedtuple
 

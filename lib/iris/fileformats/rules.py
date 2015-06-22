@@ -20,6 +20,7 @@ Processing of simple IF-THEN rules.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import filter
 
 import abc
 import collections
@@ -704,7 +705,7 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
         # ensure each target coord is either a scalar or maps to a
         # single, distinct dimension.
         target_dims = [target_cube.coord_dims(coord) for coord in target_coords]
-        target_dims = filter(None, target_dims)
+        target_dims = list(filter(None, target_dims))
         unique_dims = set()
         for dims in target_dims:
             unique_dims.update(dims)

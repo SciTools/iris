@@ -65,7 +65,7 @@ def load_NAME_III(filename):
 
     # loading a file gives a generator of lines which can be progressed using the next() method.
     # This will come in handy as we wish to progress through the file line by line.
-    file_handle = file(filename)
+    file_handle = open(filename)
 
     # define a dictionary which can hold the header metadata about this file
     headers = {}

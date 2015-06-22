@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,6 +21,7 @@ Unit tests for the
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -100,7 +101,7 @@ class TestGroupStructure_possible_structures(tests.IrisTest):
     def test_shared_first_dimension(self):
         # One 2d potential as well as one 3d, using the same first dimension.
         array_structures = regular_array_structures((4, 2, 3))
-        array_structures['bc combined'] = ArrayStructure(4, range(6))
+        array_structures['bc combined'] = ArrayStructure(4, np.arange(6))
         self.assert_potentials(24, array_structures, [['a', 'bc combined'],
                                                       ['a', 'b', 'c']])
 
@@ -108,7 +109,7 @@ class TestGroupStructure_possible_structures(tests.IrisTest):
         # One 2d potential as well as one 3d, using the same first dimension.
         array_structures = regular_array_structures((4, 2, 3))
         array_structures.pop('c')
-        array_structures['strange_length'] = ArrayStructure(4, range(5))
+        array_structures['strange_length'] = ArrayStructure(4, np.arange(5))
         self.assert_potentials(24, array_structures, [])
 
     def test_completely_unstructured_element(self):
@@ -173,7 +174,7 @@ class TestGroupStructure_build_arrays(tests.IrisTest):
         # gets used. Check that 'd' which would make a good 1D array, doesn't
         # get used in a specific shape.
         elements = regular_array_structures((2, 2, 3))
-        elements['d'] = ArrayStructure(3, range(4))
+        elements['d'] = ArrayStructure(3, np.arange(4))
         grp = GroupStructure(12, elements, array_order='f')
 
         d = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]).reshape((3, 4),

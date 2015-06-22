@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -61,7 +61,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
 
     def test_formula_terms_a_p0(self):
-        coord_a = DimCoord(range(5), units='Pa')
+        coord_a = DimCoord(np.arange(5), units='Pa')
         coord_p0 = DimCoord(10, units='1')
         coord_expected = DimCoord(np.arange(5) * 10, units='Pa',
                                   long_name='vertical pressure', var_name='ap')
@@ -89,14 +89,14 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
 
     def test_formula_terms_p0_non_scalar(self):
-        coord_p0 = DimCoord(range(5))
+        coord_p0 = DimCoord(np.arange(5))
         self.provides['coordinates'].append((coord_p0, 'p0'))
         self.requires['formula_terms'] = dict(p0='p0')
         with self.assertRaises(ValueError):
             _load_aux_factory(self.engine, self.cube)
 
     def test_formula_terms_p0_bounded(self):
-        coord_a = DimCoord(range(5))
+        coord_a = DimCoord(np.arange(5))
         coord_p0 = DimCoord(1, bounds=[0, 2], var_name='p0')
         self.provides['coordinates'].extend([(coord_a, 'a'), (coord_p0, 'p0')])
         self.requires['formula_terms'] = dict(a='a', b='b', ps='ps', p0='p0')

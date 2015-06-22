@@ -17,6 +17,7 @@
 """Unit tests for :class:`iris.analysis._regrid.RectilinearRegridder`."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -617,9 +618,9 @@ def uk_cube():
     data = np.arange(12, dtype=np.float32).reshape(3, 4)
     uk = Cube(data)
     cs = OSGB()
-    y_coord = DimCoord(range(3), 'projection_y_coordinate', units='m',
+    y_coord = DimCoord(np.arange(3), 'projection_y_coordinate', units='m',
                        coord_system=cs)
-    x_coord = DimCoord(range(4), 'projection_x_coordinate', units='m',
+    x_coord = DimCoord(np.arange(4), 'projection_x_coordinate', units='m',
                        coord_system=cs)
     uk.add_dim_coord(y_coord, 0)
     uk.add_dim_coord(x_coord, 1)

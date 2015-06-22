@@ -19,6 +19,7 @@ Tests map creation.
 
 """
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -156,7 +157,7 @@ class TestLowLevel(tests.GraphicsTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
         self.few = 4
-        self.few_levels = range(280, 300, 5)
+        self.few_levels = list(range(280, 300, 5))
         self.many_levels = np.linspace(
             self.cube.data.min(), self.cube.data.max(), 40)
 

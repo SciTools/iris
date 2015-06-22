@@ -20,6 +20,7 @@ Unit tests for the `iris.fileformats.grib.message._RawGribMessage` class.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.

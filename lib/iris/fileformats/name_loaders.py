@@ -17,10 +17,10 @@
 """NAME file format loading functions."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range, zip
 
 import collections
 import datetime
-from itertools import izip
 import re
 import warnings
 
@@ -844,7 +844,7 @@ def load_NAMEIII_trajectory(filename):
 
     # Every column up to Z becomes a coordinate.
     coords = []
-    for name, values in izip(headings[:z_column+1], columns[:z_column+1]):
+    for name, values in zip(headings[:z_column+1], columns[:z_column+1]):
         values = np.array(values)
         if np.all(np.array(values) == values[0]):
             values = [values[0]]
@@ -883,7 +883,7 @@ def load_NAMEIII_trajectory(filename):
         coords.append(coord)
 
     # Every numerical column after the Z becomes a cube.
-    for name, values in izip(headings[z_column+1:], columns[z_column+1:]):
+    for name, values in zip(headings[z_column+1:], columns[z_column+1:]):
         try:
             float(values[0])
         except ValueError:

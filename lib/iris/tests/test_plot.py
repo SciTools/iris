@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -856,8 +857,10 @@ class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
 @tests.skip_plot
 class TestSymbols(tests.GraphicsTest):
     def test_cloud_cover(self):
-        iplt.symbols(range(10), [0] * 10, [iris.symbols.CLOUD_COVER[i]
-                                           for i in range(10)], 0.375)
+        iplt.symbols(list(range(10)),
+                     [0] * 10,
+                     [iris.symbols.CLOUD_COVER[i] for i in range(10)],
+                     0.375)
         iplt.plt.axis('off')
         self.check_graphic()
 

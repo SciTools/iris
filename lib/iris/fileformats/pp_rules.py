@@ -16,6 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py

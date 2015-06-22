@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,7 @@
 """Unit tests for :func:`iris.fileformats.pp_rules._dim_or_aux`."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -28,7 +29,7 @@ from iris.fileformats.pp_rules import _dim_or_aux
 
 class Test(tests.IrisTest):
     def setUp(self):
-        self.mono = range(5)
+        self.mono = list(range(5))
         self.non_mono = [0, 1, 3, 2, 4]
         self.std_name = 'depth'
         self.units = 'm'

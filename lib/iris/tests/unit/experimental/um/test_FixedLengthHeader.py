@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,7 @@ Unit tests for :class:`iris.experimental.um.FixedLengthHeader`.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -74,39 +75,39 @@ class Test_from_file(tests.IrisTest):
 class Test___init__(tests.IrisTest):
     def test_invalid_length(self):
         with self.assertRaisesRegexp(ValueError, 'Incorrect number of words'):
-            FixedLengthHeader(range(15))
+            FixedLengthHeader(list(range(15)))
 
 
 class Test___eq__(tests.IrisTest):
     def test_equal(self):
-        ffv1 = FixedLengthHeader(range(256))
-        ffv2 = FixedLengthHeader(range(256))
+        ffv1 = FixedLengthHeader(list(range(256)))
+        ffv2 = FixedLengthHeader(np.arange(256))
         self.assertTrue(ffv1.__eq__(ffv2))
 
     def test_not_equal(self):
-        ffv1 = FixedLengthHeader(range(256))
-        ffv2 = FixedLengthHeader(range(256, 512))
+        ffv1 = FixedLengthHeader(list(range(256)))
+        ffv2 = FixedLengthHeader(np.arange(256, 512))
         self.assertFalse(ffv1.__eq__(ffv2))
 
     def test_invalid(self):
-        ffv1 = FixedLengthHeader(range(256))
-        self.assertIs(ffv1.__eq__(range(256)), NotImplemented)
+        ffv1 = FixedLengthHeader(list(range(256)))
+        self.assertIs(ffv1.__eq__(np.arange(256)), NotImplemented)
 
 
 class Test___ne__(tests.IrisTest):
     def test_equal(self):
-        ffv1 = FixedLengthHeader(range(256))
-        ffv2 = FixedLengthHeader(range(256))
+        ffv1 = FixedLengthHeader(list(range(256)))
+        ffv2 = FixedLengthHeader(np.arange(256))
         self.assertFalse(ffv1.__ne__(ffv2))
 
     def test_not_equal(self):
-        ffv1 = FixedLengthHeader(range(256))
-        ffv2 = FixedLengthHeader(range(256, 512))
+        ffv1 = FixedLengthHeader(list(range(256)))
+        ffv2 = FixedLengthHeader(np.arange(256, 512))
         self.assertTrue(ffv1.__ne__(ffv2))
 
     def test_invalid(self):
-        ffv1 = FixedLengthHeader(range(256))
-        self.assertIs(ffv1.__ne__(range(256)), NotImplemented)
+        ffv1 = FixedLengthHeader(list(range(256)))
+        self.assertIs(ffv1.__ne__(np.arange(256)), NotImplemented)
 
 
 def make_header():

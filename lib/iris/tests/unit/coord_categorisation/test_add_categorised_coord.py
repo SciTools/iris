@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,7 @@
 """Test function :func:`iris.coord_categorisation.add_categorised_coord`."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -91,15 +92,16 @@ class Test_add_categorised_coord(tests.IrisTest):
 class Test_add_day_of_year(tests.IrisTest):
     def setUp(self):
         self.expected = {
-            'standard': np.array(range(360, 367) + range(1, 4)),
-            'gregorian': np.array(range(360, 367) + range(1, 4)),
-            'proleptic_gregorian': np.array(range(360, 367) + range(1, 4)),
-            'noleap': np.array(range(359, 366) + range(1, 4)),
-            'julian': np.array(range(360, 367) + range(1, 4)),
-            'all_leap': np.array(range(360, 367) + range(1, 4)),
-            '365_day': np.array(range(359, 366) + range(1, 4)),
-            '366_day': np.array(range(360, 367) + range(1, 4)),
-            '360_day': np.array(range(355, 361) + range(1, 5))}
+            'standard': np.array(list(range(360, 367)) + list(range(1, 4))),
+            'gregorian': np.array(list(range(360, 367)) + list(range(1, 4))),
+            'proleptic_gregorian': np.array(list(range(360, 367)) +
+                                            list(range(1, 4))),
+            'noleap': np.array(list(range(359, 366)) + list(range(1, 4))),
+            'julian': np.array(list(range(360, 367)) + list(range(1, 4))),
+            'all_leap': np.array(list(range(360, 367)) + list(range(1, 4))),
+            '365_day': np.array(list(range(359, 366)) + list(range(1, 4))),
+            '366_day': np.array(list(range(360, 367)) + list(range(1, 4))),
+            '360_day': np.array(list(range(355, 361)) + list(range(1, 5)))}
 
     def make_cube(self, calendar):
         n_times = 10

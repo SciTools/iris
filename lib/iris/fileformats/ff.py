@@ -20,6 +20,7 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 import os
 import warnings

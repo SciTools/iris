@@ -17,6 +17,7 @@
 """Integration tests for loading UM FieldsFile variants."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range, zip
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -497,7 +498,7 @@ class TestCreate(tests.IrisTest):
             ints[20] = 0  # LBPACK
             ints[21] = 2  # LBREL
             ints[38] = 1  # LBUSER(1)
-            reals = range(19)
+            reals = list(range(19))
             src_data = np.arange(20, dtype='f4').reshape((4, 5))
             ffv.fields = [Field2(ints, reals, src_data)]
             ffv.close()

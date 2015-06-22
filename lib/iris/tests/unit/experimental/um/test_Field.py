@@ -20,6 +20,7 @@ Unit tests for :class:`iris.experimental.um.Field`.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -33,75 +34,75 @@ from iris.experimental.um import Field
 
 class Test_int_headers(tests.IrisTest):
     def test(self):
-        field = Field(range(45), range(19), None)
-        self.assertArrayEqual(field.int_headers, range(45))
+        field = Field(np.arange(45), list(range(19)), None)
+        self.assertArrayEqual(field.int_headers, np.arange(45))
 
 
 class Test_real_headers(tests.IrisTest):
     def test(self):
-        field = Field(range(45), range(19), None)
-        self.assertArrayEqual(field.real_headers, range(19))
+        field = Field(list(range(45)), np.arange(19), None)
+        self.assertArrayEqual(field.real_headers, np.arange(19))
 
 
 class Test___eq__(tests.IrisTest):
     def test_equal(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45), range(19), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45), np.arange(19), None)
         self.assertTrue(field1.__eq__(field2))
 
     def test_not_equal_ints(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45, 90), range(19), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45, 90), np.arange(19), None)
         self.assertFalse(field1.__eq__(field2))
 
     def test_not_equal_reals(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45), range(19, 38), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45), np.arange(19, 38), None)
         self.assertFalse(field1.__eq__(field2))
 
     def test_not_equal_data(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45), range(19), np.zeros(3))
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45), np.arange(19), np.zeros(3))
         self.assertFalse(field1.__eq__(field2))
 
     def test_invalid(self):
-        field1 = Field(range(45), range(19), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
         self.assertIs(field1.__eq__('foo'), NotImplemented)
 
 
 class Test___ne__(tests.IrisTest):
     def test_equal(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45), range(19), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45), np.arange(19), None)
         self.assertFalse(field1.__ne__(field2))
 
     def test_not_equal_ints(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45, 90), range(19), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45, 90), np.arange(19), None)
         self.assertTrue(field1.__ne__(field2))
 
     def test_not_equal_reals(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45), range(19, 38), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45), np.arange(19, 38), None)
         self.assertTrue(field1.__ne__(field2))
 
     def test_not_equal_data(self):
-        field1 = Field(range(45), range(19), None)
-        field2 = Field(range(45), range(19), np.zeros(3))
+        field1 = Field(list(range(45)), list(range(19)), None)
+        field2 = Field(np.arange(45), np.arange(19), np.zeros(3))
         self.assertTrue(field1.__ne__(field2))
 
     def test_invalid(self):
-        field1 = Field(range(45), range(19), None)
+        field1 = Field(list(range(45)), list(range(19)), None)
         self.assertIs(field1.__ne__('foo'), NotImplemented)
 
 
 class Test_num_values(tests.IrisTest):
     def test_64(self):
-        field = Field(range(45), range(19), None)
+        field = Field(list(range(45)), list(range(19)), None)
         self.assertEqual(field.num_values(), 64)
 
     def test_128(self):
-        field = Field(range(45), range(83), None)
+        field = Field(list(range(45)), list(range(83)), None)
         self.assertEqual(field.num_values(), 128)
 
 
@@ -151,7 +152,7 @@ class Test__can_copy_deferred_data(tests.IrisTest):
         if absent_provider:
             # Replace the provider with a simple array.
             provider = np.zeros(2)
-        field = Field(range(45), range(19), provider)
+        field = Field(list(range(45)), list(range(19)), provider)
         return field._can_copy_deferred_data(new_lbpack, new_bacc)
 
     def test_okay_simple(self):

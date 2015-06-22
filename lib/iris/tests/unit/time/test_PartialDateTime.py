@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,7 @@
 """Unit tests for the `iris.time.PartialDateTime` class."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -48,7 +49,7 @@ class Test___init__(tests.IrisTest):
 
 class Test___repr__(tests.IrisTest):
     def test_full(self):
-        pd = PartialDateTime(*range(7))
+        pd = PartialDateTime(*list(range(7)))
         result = repr(pd)
         self.assertEqual(result, 'PartialDateTime(year=0, month=1, day=2,'
                                  ' hour=3, minute=4, second=5,'
@@ -69,7 +70,7 @@ class Test_timetuple(tests.IrisTest):
     def test_exists(self):
         # Check that the PartialDateTime class implements a timetuple (needed
         # because of http://bugs.python.org/issue8005).
-        pd = PartialDateTime(*range(7))
+        pd = PartialDateTime(*list(range(7)))
         self.assertTrue(hasattr(pd, 'timetuple'))
 
 

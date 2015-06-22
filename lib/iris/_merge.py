@@ -23,6 +23,7 @@ Typically the cube merge process is handled by
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import map, range, zip
 
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
@@ -1171,7 +1172,7 @@ class ProtoCube(object):
             self._report_duplicate(nd_indexes, group_by_nd_index)
 
         # Generate group-depth merged cubes from the source-cubes.
-        for level in xrange(group_depth):
+        for level in range(group_depth):
             # Stack up all the data from all of the relevant source
             # cubes in a single biggus ArrayStack.
             # If it turns out that all the source cubes already had

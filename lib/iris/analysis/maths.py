@@ -20,6 +20,7 @@ Basic mathematical and statistical operations.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import filter
 
 import warnings
 import math

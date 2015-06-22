@@ -26,6 +26,7 @@ See also: `UDUNITS-2
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 from contextlib import contextmanager
 import copy

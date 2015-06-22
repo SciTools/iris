@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,7 @@
 """Unit tests for the `iris.fileformats.netcdf.Saver` class."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import zip
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -40,10 +41,10 @@ class Test_write(tests.IrisTest):
         cube = Cube(data, 'air_pressure_anomaly')
         trans_merc = TransverseMercator(49.0, -2.0, -400000.0, 100000.0,
                                         0.9996012717, ellipsoid)
-        coord = DimCoord(range(3), 'projection_y_coordinate', units='m',
+        coord = DimCoord(np.arange(3), 'projection_y_coordinate', units='m',
                          coord_system=trans_merc)
         cube.add_dim_coord(coord, 0)
-        coord = DimCoord(range(4), 'projection_x_coordinate', units='m',
+        coord = DimCoord(np.arange(4), 'projection_x_coordinate', units='m',
                          coord_system=trans_merc)
         cube.add_dim_coord(coord, 1)
         return cube
@@ -209,8 +210,8 @@ class TestCoordSystems(tests.IrisTest):
     def variable_attributes(self, mocked_variable):
         """Get the attributes dictionary from a mocked NetCDF variable."""
         # Get the attributes defined on the mock object.
-        attributes = filter(lambda name: not name.startswith('_'),
-                            sorted(mocked_variable.__dict__.keys()))
+        attributes = [name for name in sorted(mocked_variable.__dict__.keys())
+                      if not name.startswith('_')]
         attributes.remove('method_calls')
         return {key: getattr(mocked_variable, key) for key in attributes}
 

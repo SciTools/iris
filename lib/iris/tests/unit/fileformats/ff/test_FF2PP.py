@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,6 +17,7 @@
 """Unit tests for the :class:`iris.fileformat.ff.FF2PP` class."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -366,7 +367,8 @@ class Test__fields_over_all_levels(tests.IrisTest):
             self.assertEqual(results[0].lblev, self.original_lblev)
         else:
             self.assertEqual(len(results), n_levels)
-            self.assertEqual([fld.lblev for fld in results], range(n_levels))
+            self.assertEqual([fld.lblev for fld in results],
+                             list(range(n_levels)))
 
     def test__is_lbc(self):
         ff2pp = FF2PP('dummy_filename')

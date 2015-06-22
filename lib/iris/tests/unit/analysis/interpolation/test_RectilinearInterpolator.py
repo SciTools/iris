@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -47,9 +47,9 @@ EXTRAPOLATE = 'extrapolate'
 class ThreeDimCube(tests.IrisTest):
     def setUp(self):
         cube = stock.simple_3d_w_multidim_coords()
-        cube.add_aux_coord(iris.coords.DimCoord(range(2), 'height'), 0)
-        cube.add_dim_coord(iris.coords.DimCoord(range(3), 'latitude'), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), 'longitude'), 2)
+        cube.add_aux_coord(iris.coords.DimCoord(np.arange(2), 'height'), 0)
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(3), 'latitude'), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(4), 'longitude'), 2)
         self.data = np.arange(24).reshape(2, 3, 4).astype(np.float32)
         cube.data = self.data
         self.cube = cube
@@ -502,7 +502,8 @@ class Test___call___time(tests.IrisTest):
         cube = iris.cube.Cube(data)
         time_coord = iris.coords.DimCoord(np.arange(0.0, 48.0, 12.0), 'time',
                                           units='hours since epoch')
-        height_coord = iris.coords.DimCoord(range(3), 'altitude', units='m')
+        height_coord = iris.coords.DimCoord(np.arange(3), 'altitude',
+                                            units='m')
         cube.add_dim_coord(time_coord, 0)
         cube.add_dim_coord(height_coord, 1)
         return RectilinearInterpolator(cube, ['time'], method, EXTRAPOLATE)

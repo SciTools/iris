@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,7 @@ High-speed loading of structured FieldsFiles.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import filter, range, zip
 
 from iris.coords import DimCoord
 from iris.cube import CubeList
