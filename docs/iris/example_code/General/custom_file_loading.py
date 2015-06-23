@@ -214,9 +214,12 @@ def NAME_to_cube(filenames, callback):
 
 # Create a format_picker specification of the NAME file format giving it a
 # priority greater than the built in NAME loader.
-_NAME_III_spec = format_picker.FormatSpecification('Name III', format_picker.LeadingLine(),
-                                      lambda line: line.startswith("NAME III"), NAME_to_cube,
-                                      priority=6)
+_NAME_III_spec = format_picker.FormatSpecification(
+    'Name III',
+    format_picker.LeadingLine(),
+    lambda line: line.startswith(b"NAME III"),
+    NAME_to_cube,
+    priority=6)
 
 # Register the NAME loader with iris
 iris.fileformats.FORMAT_AGENT.add_spec(_NAME_III_spec)
