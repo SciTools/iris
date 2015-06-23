@@ -1835,7 +1835,7 @@ def _field_gen(filename, read_data_bytes):
             except ValueError as e:
                 msg = 'Unable to interpret field {}. {}. Skipping ' \
                       'the remainder of the file.'.format(field_count,
-                                                          e.message)
+                                                          str(e))
                 warnings.warn(msg)
                 break
 

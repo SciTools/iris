@@ -922,7 +922,7 @@ fc_extras
                     cube.attributes[str(attr_name)] = attr_value
             except ValueError as e:
                 msg = 'Skipping global attribute {!r}: {}'
-                warnings.warn(msg.format(attr_name, e.message))
+                warnings.warn(msg.format(attr_name, str(e)))
 
 
 

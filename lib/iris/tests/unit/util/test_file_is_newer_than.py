@@ -121,14 +121,14 @@ class TestFileIsNewer(tests.IrisTest):
     def test_error_missing_source(self):
         with self.assertRaises(IOError) as error_trap:
             self._test(False, 'example_result', ['older_sour*', 'non_exist'])
-        self.assertTrue(error_trap.exception.message.startswith(
-            'One or more of the files specified did not exist'))
+        self.assertIn('One or more of the files specified did not exist',
+                      str(error_trap.exception))
 
     def test_error_missing_wild(self):
         with self.assertRaises(IOError) as error_trap:
             self._test(False, 'example_result', ['older_sour*', 'unknown_*'])
-        self.assertTrue(error_trap.exception.message.startswith(
-            'One or more of the files specified did not exist'))
+        self.assertIn('One or more of the files specified did not exist',
+                      str(error_trap.exception))
 
 
 if __name__ == '__main__':

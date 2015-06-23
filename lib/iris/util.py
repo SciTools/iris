@@ -1505,7 +1505,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         msg = ("Attempt to promote an AuxCoord ({}) fails "
                "when attempting to create a DimCoord from the "
                "AuxCoord because: {}")
-        msg = msg.format(aux_coord.name(), valerr.message)
+        msg = msg.format(aux_coord.name(), str(valerr))
         raise ValueError(msg)
 
     old_dim_coord = cube.coords(dim_coords=True,

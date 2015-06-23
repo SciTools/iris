@@ -45,8 +45,8 @@ class TestLoad(tests.IrisTest):
         )
         with self.assertRaises(IOError) as error_trap:
             cubes = iris.load(paths)
-        self.assertTrue(error_trap.exception.message.startswith(
-            'One or more of the files specified did not exist'))
+        self.assertIn('One or more of the files specified did not exist',
+                      str(error_trap.exception))
 
     def test_nonexist_wild(self):
         paths = (
@@ -55,8 +55,8 @@ class TestLoad(tests.IrisTest):
         )
         with self.assertRaises(IOError) as error_trap:
             cubes = iris.load(paths)
-        self.assertTrue(error_trap.exception.message.startswith(
-            'One or more of the files specified did not exist'))
+        self.assertIn('One or more of the files specified did not exist',
+                      str(error_trap.exception))
 
     def test_bogus(self):
         paths = (

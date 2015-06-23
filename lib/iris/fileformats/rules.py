@@ -831,7 +831,7 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
                 args = _dereference_args(factory, concrete_reference_targets,
                                          regrid_cache, cube)
             except _ReferenceError as e:
-                msg = 'Unable to create instance of {factory}. ' + e.message
+                msg = 'Unable to create instance of {factory}. ' + str(e)
                 factory_name = factory.factory_class.__name__
                 warnings.warn(msg.format(filenames=filenames,
                                          factory=factory_name))
