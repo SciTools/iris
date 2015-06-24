@@ -1394,6 +1394,11 @@ class DimCoord(Coord):
 
     # The __ne__ operator from Coord implements the not __eq__ method.
 
+    # This is necessary for merging, but probably shouldn't be used otherwise.
+    # See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
+
     def __getitem__(self, key):
         coord = super(DimCoord, self).__getitem__(key)
         coord.circular = self.circular and coord.shape == self.shape
@@ -1594,6 +1599,11 @@ class AuxCoord(Coord):
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
         self._bounds = bounds
+
+    # This is necessary for merging, but probably shouldn't be used otherwise.
+    # See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
 
 
 class CellMethod(iris.util._OrderedHashable):

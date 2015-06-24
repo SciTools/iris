@@ -2736,6 +2736,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = not result
         return result
 
+    # Must supply __hash__, Python 3 does not enable it if __eq__ is defined
+    # This is necessary for merging, but probably shouldn't be used otherwise.
+    # See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
+
     def __add__(self, other):
         return iris.analysis.maths.add(self, other, ignore=True)
     __radd__ = __add__
