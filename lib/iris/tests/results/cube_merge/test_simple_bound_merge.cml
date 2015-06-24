@@ -5,19 +5,19 @@
       <coord datadims="[1]">
         <dimCoord bounds="[[0, 5],
 		[5, 10],
-		[10, 15]]" id="7c9a33bf" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+		[10, 15]]" id="434cbbd8" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[2]">
         <dimCoord bounds="[[-15, 0],
 		[0, 15],
 		[15, 30],
-		[30, 45]]" id="549be28b" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
+		[30, 45]]" id="b0d35dcf" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="5b34144a" long_name="pressure" points="[10, 11]" shape="(2,)" units="Unit('Pa')" value_type="int32"/>
+        <dimCoord id="302bf438" long_name="pressure" points="[10, 11]" shape="(2,)" units="Unit('Pa')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x553f89b5" dtype="int32" shape="(2, 3, 4)"/>
+    <data checksum="0xaac0764b" dtype="int32" shape="(2, 3, 4)"/>
   </cube>
 </cubes>

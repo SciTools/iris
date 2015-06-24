@@ -3,10 +3,10 @@
   <cube long_name="thingness" units="1">
     <coords>
       <coord>
-        <dimCoord bounds="[[0, 11]]" id="549be28b" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord bounds="[[0, 11]]" id="b0d35dcf" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="88f09ece" long_name="percentile_over_foo" points="[25]" shape="(1,)" units="Unit('1')" value_type="int64"/>
+        <dimCoord id="3d9231d0" long_name="percentile_over_foo" points="[25]" shape="(1,)" units="Unit('1')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -6,10 +6,10 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="b62ac022" points="[100]" shape="(1,)" standard_name="height" units="Unit('meters')" value_type="int32" var_name="height"/>
+        <dimCoord id="f1596e20" points="[100]" shape="(1,)" standard_name="height" units="Unit('meters')" value_type="int32" var_name="height"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="46ab7d6e" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="time" units="Unit('unknown')" value_type="int32" var_name="time">
+        <dimCoord id="29088a42" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="time" units="Unit('unknown')" value_type="int32" var_name="time">
           <attributes>
             <attribute name="invalid_units" value="wibble"/>
           </attributes>
@@ -17,6 +17,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x240d403e" dtype="int32" shape="(5,)"/>
+    <data checksum="0xdbf2bfc2" dtype="int32" shape="(5,)"/>
   </cube>
 </cubes>

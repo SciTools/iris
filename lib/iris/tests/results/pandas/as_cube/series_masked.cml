@@ -3,10 +3,10 @@
   <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="931e7cde" long_name="index" points="[5, 6, 7, 8, 9]" shape="(5,)" units="Unit('unknown')" value_type="int64"/>
+        <dimCoord id="343cbc01" long_name="index" points="[5, 6, 7, 8, 9]" shape="(5,)" units="Unit('unknown')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x774bf47c" dtype="float64" fill_value="1e+20" mask_checksum="0x6785a139" shape="(5,)"/>
+    <data checksum="0x88b40b84" dtype="float64" fill_value="1e+20" mask_checksum="0x6785a139" shape="(5,)"/>
   </cube>
 </cubes>
