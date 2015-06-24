@@ -17,6 +17,7 @@
 """Unit tests for the :data:`iris.analysis.PERCENTILE` aggregator."""
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import range
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -140,7 +141,7 @@ class Test_aggregate(tests.IrisTest):
         actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
                                        weights=weights)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.array(range(shape[-1]) * percent.size)
+        expected = np.tile(np.arange(shape[-1]), percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T
         expected[:, 1:-1] += (percent[1:-1]-25)*0.2
         expected[:, -1] += 10.
@@ -155,7 +156,7 @@ class Test_aggregate(tests.IrisTest):
         actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
                                        weights=weights)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.array(range(shape[-1]) * percent.size)
+        expected = np.tile(np.arange(shape[-1]), percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T
         expected[:, 1:-1] += (percent[1:-1]-25)*0.4
         expected[:, -1] += 20.
@@ -171,7 +172,7 @@ class Test_aggregate(tests.IrisTest):
         actual, weight_total = WPERCENTILE.aggregate(
             data, axis=0, percent=percent, weights=weights, returned=True)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.array(range(shape[-1]) * percent.size)
+        expected = np.tile(np.arange(shape[-1]), percent.size)
         expected = expected.reshape(percent.size, shape[-1]).T
         expected[:, 1:] = 2.0 * (
             (0.875 - percent[1:]/100.0) * data[0, np.newaxis].T +
