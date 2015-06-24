@@ -167,6 +167,10 @@ class CFVariable(six.with_metaclass(ABCMeta, object)):
         # CF variable names are unique.
         return self.cf_name != other.cf_name
 
+    def __hash__(self):
+        # CF variable names are unique.
+        return hash(self.cf_name)
+
     def __getattr__(self, name):
         # Accessing netCDF attributes is surprisingly slow. Since
         # they're often read repeatedly, caching the values makes things
