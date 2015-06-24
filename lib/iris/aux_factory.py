@@ -92,7 +92,8 @@ class LazyArray(object):
 
         """
         crc = zlib.crc32(np.array(self._cached_array(), order='C'))
-        return 'LazyArray(shape={}, checksum={})'.format(self.shape, crc)
+        crc &= 0xffffffff
+        return 'LazyArray(shape={}, checksum=0x{:08x})'.format(self.shape, crc)
 
     def view(self, *args, **kwargs):
         """
