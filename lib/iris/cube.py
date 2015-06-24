@@ -2568,17 +2568,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # sensitive to unused numbers. Use a fixed value so
                 # a change in fill_value doesn't affect the
                 # checksum.
-                crc = hex(zlib.crc32(normalise(data.filled(0))))
+                crc = '0x%08x' % (
+                    zlib.crc32(normalise(data.filled(0))) & 0xffffffff, )
                 data_xml_element.setAttribute("checksum", crc)
                 if ma.is_masked(data):
-                    crc = hex(zlib.crc32(normalise(data.mask)))
+                    crc = '0x%08x' % (
+                        zlib.crc32(normalise(data.mask)) & 0xffffffff, )
                 else:
                     crc = 'no-masked-elements'
                 data_xml_element.setAttribute("mask_checksum", crc)
                 data_xml_element.setAttribute('fill_value',
                                               str(data.fill_value))
             else:
-                crc = hex(zlib.crc32(normalise(data)))
+                crc = '0x%08x' % (zlib.crc32(normalise(data)) & 0xffffffff, )
                 data_xml_element.setAttribute("checksum", crc)
         elif self.has_lazy_data():
             data_xml_element.setAttribute("state", "deferred")

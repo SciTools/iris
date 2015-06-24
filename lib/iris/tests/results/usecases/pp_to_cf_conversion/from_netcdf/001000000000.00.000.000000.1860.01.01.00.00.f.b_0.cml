@@ -28,6 +28,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x463aa758" dtype="float32" fill_value="-1e+30" mask_checksum="-0x2abd30b6" shape="(94, 128)"/>
+    <data checksum="0xb9c558a8" dtype="float32" fill_value="-1e+30" mask_checksum="0xd542cf4a" shape="(94, 128)"/>
   </cube>
 </cubes>

@@ -19,7 +19,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x10e8e9a5" dtype="float32" shape="(2, 2, 2)"/>
+    <data checksum="0xef17165b" dtype="float32" shape="(2, 2, 2)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -82,6 +82,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x1350eb16" dtype="float32" shape="(2, 2, 2)"/>
+    <data checksum="0xecaf14ea" dtype="float32" shape="(2, 2, 2)"/>
   </cube>
 </cubes>

@@ -35,7 +35,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x7f16c5ec" dtype="float32" shape="(145, 192)"/>
+    <data checksum="0x80e93a14" dtype="float32" shape="(145, 192)"/>
   </cube>
   <cube standard_name="air_temperature" units="K">
     <attributes>
@@ -76,7 +76,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x7a9be3d0" dtype="float32" shape="(145, 192)"/>
+    <data checksum="0x85641c30" dtype="float32" shape="(145, 192)"/>
   </cube>
   <cube standard_name="air_temperature" units="K">
     <attributes>
@@ -117,7 +117,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x3d5c2e9" dtype="float32" shape="(145, 192)"/>
+    <data checksum="0x03d5c2e9" dtype="float32" shape="(145, 192)"/>
   </cube>
   <cube standard_name="air_temperature" units="K">
     <attributes>
@@ -158,7 +158,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x53642c18" dtype="float32" shape="(145, 192)"/>
+    <data checksum="0xac9bd3e8" dtype="float32" shape="(145, 192)"/>
   </cube>
   <cube standard_name="air_temperature" units="K">
     <attributes>

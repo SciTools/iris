@@ -512,6 +512,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x4d29110c" dtype="float32" shape="(2, 70, 100, 100)"/>
+    <data checksum="0xb2d6eef4" dtype="float32" shape="(2, 70, 100, 100)"/>
   </cube>
 </cubes>

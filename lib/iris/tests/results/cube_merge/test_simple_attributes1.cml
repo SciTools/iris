@@ -16,7 +16,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x49adf4af" dtype="int32" shape="(3, 4)"/>
+    <data checksum="0xb6520b51" dtype="int32" shape="(3, 4)"/>
   </cube>
   <cube long_name="thingness" units="1">
     <coords>
@@ -31,6 +31,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x49adf4af" dtype="int32" shape="(3, 4)"/>
+    <data checksum="0xb6520b51" dtype="int32" shape="(3, 4)"/>
   </cube>
 </cubes>

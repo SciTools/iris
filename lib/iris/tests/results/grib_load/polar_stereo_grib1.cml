@@ -29,6 +29,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x75146405" dtype="float64" fill_value="nan" mask_checksum="-0x241f25ac" shape="(881, 1121)"/>
+    <data checksum="0x75146405" dtype="float64" fill_value="nan" mask_checksum="0xdbe0da54" shape="(881, 1121)"/>
   </cube>
 </cubes>

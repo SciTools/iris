@@ -27,6 +27,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x3c16afb2" dtype="float64" shape="(481, 640)"/>
+    <data checksum="0xc3e9504e" dtype="float64" shape="(481, 640)"/>
   </cube>
 </cubes>

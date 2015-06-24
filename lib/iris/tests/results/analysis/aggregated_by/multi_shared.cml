@@ -58,6 +58,6 @@
         <coord name="level"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x7791c6fa" dtype="float64" shape="(9, 3, 3)"/>
+    <data checksum="0x886e3906" dtype="float64" shape="(9, 3, 3)"/>
   </cube>
 </cubes>

@@ -67,6 +67,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x74835693" dtype="float32" shape="(95, 85)"/>
+    <data checksum="0x8b7ca96d" dtype="float32" shape="(95, 85)"/>
   </cube>
 </cubes>

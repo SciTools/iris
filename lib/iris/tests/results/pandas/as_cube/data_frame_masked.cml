@@ -10,6 +10,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x27c9ba71" dtype="float64" fill_value="1e+20" mask_checksum="-0x1215b28c" shape="(2, 5)"/>
+    <data checksum="0xd836458f" dtype="float64" fill_value="1e+20" mask_checksum="0xedea4d74" shape="(2, 5)"/>
   </cube>
 </cubes>

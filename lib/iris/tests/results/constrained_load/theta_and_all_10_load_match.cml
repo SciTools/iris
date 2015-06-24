@@ -240,7 +240,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xf9c7d63" dtype="float32" shape="(145, 192)"/>
+    <data checksum="0x0f9c7d63" dtype="float32" shape="(145, 192)"/>
   </cube>
   <cube standard_name="x_wind" units="m s-1">
     <attributes>
@@ -292,7 +292,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x27be8882" dtype="float32" shape="(145, 192)"/>
+    <data checksum="0xd841777e" dtype="float32" shape="(145, 192)"/>
   </cube>
   <cube standard_name="y_wind" units="m s-1">
     <attributes>

@@ -138,6 +138,6 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x5a5d7c38" dtype="float32" shape="(38, 192)"/>
+    <data checksum="0xa5a283c8" dtype="float32" shape="(38, 192)"/>
   </cube>
 </cubes>
