@@ -635,8 +635,14 @@ class TestLog(tests.IrisTest):
 
 
 class TestMaskedArrays(tests.IrisTest):
-    ops = (operator.add, operator.sub, operator.mul, operator.div)
-    iops = (operator.iadd, operator.isub, operator.imul, operator.idiv)
+    ops = (operator.add, operator.sub, operator.mul)
+    iops = (operator.iadd, operator.isub, operator.imul)
+    try:
+        ops = ops + (operator.div, )
+        iops = iops + (operator.idiv, )
+    except AttributeError:
+        ops = ops + (operator.truediv, )
+        iops = iops + (operator.itruediv, )
 
     def setUp(self):
         self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8,]], mask=[[0, 1, 0], [0, 0, 1]])
