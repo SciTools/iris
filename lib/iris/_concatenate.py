@@ -146,6 +146,9 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                                                       kwargs)
         return metadata
 
+    def __hash__(self):
+        return super(_CoordMetaData, self).__hash__()
+
     def __eq__(self, other):
         result = NotImplemented
         if isinstance(other, _CoordMetaData):

@@ -210,6 +210,9 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
             bound = tuple([val + mod for val in bound])
         return Cell(point, bound)
 
+    def __hash__(self):
+        return super(Cell, self).__hash__()
+
     def __eq__(self, other):
         """
         Compares Cell equality depending on the type of the object to be
