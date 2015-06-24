@@ -613,8 +613,14 @@ def column_slices_generator(full_slice, ndims):
 
         list_of_slices.append(first_slice)
 
-    data_ndims = max(dimension_mapping.values())
-    if data_ndims is not None:
+    try:
+        data_ndims = max(dim
+                         for dim in dimension_mapping.values()
+                         if dim is not None)
+    except ValueError:
+        # No non-None dimensions
+        data_ndims = None
+    else:
         data_ndims += 1
 
     # stg2 iterate over each of the tuples
