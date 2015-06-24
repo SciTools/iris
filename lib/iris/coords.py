@@ -1240,13 +1240,20 @@ class Coord(CFVariableMixin):
 
     def _xml_id(self):
         # Returns a consistent, unique string identifier for this coordinate.
-        unique_value = (self.standard_name, self.long_name, self.units,
-                        tuple(sorted(self.attributes.items())),
-                        self.coord_system)
+        unique_value = b''
+        if self.standard_name:
+            unique_value += self.standard_name.encode('utf-8')
+        unique_value += b'\0'
+        if self.long_name:
+            unique_value += self.long_name.encode('utf-8')
+        unique_value += b'\0'
+        unique_value += str(self.units).encode('utf-8') + b'\0'
+        for k, v in sorted(self.attributes.items()):
+            unique_value += (str(k) + ':' + str(v)).encode('utf-8') + b'\0'
+        unique_value += str(self.coord_system).encode('utf-8') + b'\0'
         # Mask to ensure consistency across Python versions & platforms.
-        crc = zlib.crc32(str(unique_value)) & 0xffffffff
-        # 'L' added by 32-bit systems.
-        return hex(crc).lstrip('0x').rstrip('L')
+        crc = zlib.crc32(unique_value) & 0xffffffff
+        return '%08x' % (crc, )
 
     def _value_type_name(self):
         """

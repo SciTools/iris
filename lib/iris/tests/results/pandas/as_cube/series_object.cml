@@ -3,7 +3,7 @@
   <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="931e7cde" long_name="index" points="[A Thing, A Thing, A Thing, A Thing, A Thing]" shape="(5,)" units="Unit('unknown')" value_type="object"/>
+        <auxCoord id="343cbc01" long_name="index" points="[A Thing, A Thing, A Thing, A Thing, A Thing]" shape="(5,)" units="Unit('unknown')" value_type="object"/>
       </coord>
     </coords>
     <cellMethods/>
