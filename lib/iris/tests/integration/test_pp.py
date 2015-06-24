@@ -23,8 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from contextlib import nested
-
 import mock
 import numpy as np
 
@@ -211,8 +209,8 @@ class TestVertical(tests.IrisTest):
                                             pressure_field,
                                             pressure_field]))
         msg = 'Multiple reference cubes for surface_air_pressure'
-        with nested(mock.patch('iris.fileformats.pp.load', new=load),
-                    mock.patch('warnings.warn')) as (load, warn):
+        with mock.patch('iris.fileformats.pp.load',
+                        new=load) as load, mock.patch('warnings.warn') as warn:
             _, _, _ = iris.fileformats.pp.load_cubes('DUMMY')
             warn.assert_called_with(msg)
 
