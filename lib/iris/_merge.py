@@ -24,6 +24,7 @@ Typically the cube merge process is handled by
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
@@ -1300,7 +1301,8 @@ class ProtoCube(object):
         def axis_and_name(name):
             axis_dict = {'T': 1, 'Z': 2, 'Y': 3, 'X': 4}
             axis_index = axis_dict.get(self._guess_axis(name), 0)
-            return (axis_index, name)
+            # The middle element ensures sorting is the same as Python 2.
+            return (axis_index, not isinstance(name, six.integer_types), name)
         names = sorted(space, key=axis_and_name)
         dim_by_name = {}
 
