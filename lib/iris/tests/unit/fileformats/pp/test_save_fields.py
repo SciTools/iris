@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -44,15 +45,23 @@ class TestSaveFields(tests.IrisTest):
         self.pp_field.save = asave
 
     def test_save(self):
+        if six.PY3:
+            open_func = 'builtins.open'
+        else:
+            open_func = '__builtin__.open'
         m = mock.mock_open()
-        with mock.patch('__builtin__.open', m, create=True):
+        with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], 'foo.pp')
         self.assertTrue(call('foo.pp', 'wb') in m.mock_calls)
         self.assertTrue(call().write('saved') in m.mock_calls)
 
     def test_save_append(self):
+        if six.PY3:
+            open_func = 'builtins.open'
+        else:
+            open_func = '__builtin__.open'
         m = mock.mock_open()
-        with mock.patch('__builtin__.open', m, create=True):
+        with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], 'foo.pp', append=True)
         self.assertTrue(call('foo.pp', 'ab') in m.mock_calls)
         self.assertTrue(call().write('saved') in m.mock_calls)

@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -73,8 +74,12 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         grid.vectors = mock.Mock(return_value=(x, y))
         ff2pp._ff_header.grid = mock.Mock(return_value=grid)
 
+        if six.PY3:
+            open_func = 'builtins.open'
+        else:
+            open_func = '__builtin__.open'
         with mock.patch('numpy.fromfile', return_value=[0]), \
-                mock.patch('__builtin__.open'), \
+                mock.patch(open_func), \
                 mock.patch('struct.unpack_from', return_value=[4]), \
                 mock.patch('iris.fileformats.pp.make_pp_field',
                            side_effect=fields), \
