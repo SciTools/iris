@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -154,7 +155,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
                            lbyr=2013, lbmon=1, lbdat=1, lbhr=12, lbmin=0,
                            lbsec=0,
                            spec=PPField3)
-        f.time_unit = types.MethodType(PPField3.time_unit, f)
+        f.time_unit = six.create_bound_method(PPField3.time_unit, f)
         f.calendar = iris.unit.CALENDAR_365_DAY
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
