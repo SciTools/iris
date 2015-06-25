@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -125,8 +125,8 @@ class TestCells(unittest.TestCase):
         
         # Ensure the Cell's operators return NotImplemented.
         class Terry(object): pass
-        self.assertEquals(self.d.__eq__(Terry()), NotImplemented)
-        self.assertEquals(self.d.__ne__(Terry()), NotImplemented)
+        self.assertEqual(self.d.__eq__(Terry()), NotImplemented)
+        self.assertEqual(self.d.__ne__(Terry()), NotImplemented)
 
     def test_numpy_int_equality(self):
         dtypes = (np.int, np.int16, np.int32, np.int64)

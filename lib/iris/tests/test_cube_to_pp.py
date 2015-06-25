@@ -272,7 +272,8 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             iris.save(ll_cube, temp_filename)
      
             # Check the lbproc is what we expect
-            self.assertEquals(self.lbproc_from_pp(temp_filename), iris.fileformats.pp.lbproc_map[process_desc])
+            self.assertEqual(self.lbproc_from_pp(temp_filename),
+                             iris.fileformats.pp.lbproc_map[process_desc])
 
             os.remove(temp_filename)
 
@@ -291,7 +292,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             iris.save(ll_cube, temp_filename)
             
             # Check the lbproc is what we expect
-            self.assertEquals(self.lbproc_from_pp(temp_filename), lbproc)
+            self.assertEqual(self.lbproc_from_pp(temp_filename), lbproc)
 
             os.remove(temp_filename)
             

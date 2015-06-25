@@ -603,7 +603,7 @@ class TestGetterSetter(tests.IrisTest):
         
         # get bounds
         bounds = coord.bounds
-        self.assertEquals(bounds.shape, (100, 2))
+        self.assertEqual(bounds.shape, (100, 2))
         
         self.assertEqual(bounds.shape[-1], coord.nbounds)
         
