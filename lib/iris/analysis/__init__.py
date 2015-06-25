@@ -852,9 +852,8 @@ class WeightedPercentileAggregator(PercentileAggregator):
         """
         if kwargs.get('returned', False):
             # Package the data into the cube and return a tuple
-            collapsed_cube = PercentileAggregator(self, collapsed_cube,
-                                                  data_result[0], coords,
-                                                  **kwargs)
+            collapsed_cube = PercentileAggregator.post_process(
+                self, collapsed_cube, data_result[0], coords, **kwargs)
 
             result = (collapsed_cube, data_result[1])
         else:
