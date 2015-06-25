@@ -42,11 +42,14 @@ if tests.MPL_AVAILABLE:
 
 
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
-    def assertComparisonDict(self, comarison_dict, reference_filename):
+    def assertComparisonDict(self, comparison_dict, reference_filename):
         string = ''
-        for key, coord_groups in six.iteritems(comarison_dict):
+        for key in sorted(comparison_dict):
+            coord_groups = comparison_dict[key]
             string += ('%40s  ' % key)
-            names = [[coord.name() if coord is not None else 'None' for coord in coords] for coords in coord_groups]
+            names = [[coord.name() if coord is not None else 'None'
+                      for coord in coords]
+                     for coords in coord_groups]
             string += str(sorted(names))
             string += '\n'
         self.assertString(string, reference_filename)
