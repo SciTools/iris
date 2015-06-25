@@ -423,10 +423,6 @@ class IrisTest(unittest.TestCase):
             reference_path = self.result_path(None, 'txt')
         else:
             reference_path = get_result_path(reference_filename)
-        # If the test string is a unicode string, encode as
-        # utf-8 before comparison to the reference string.
-        if isinstance(string, unicode):
-            string = string.encode('utf-8')
         self._check_same(string, reference_path,
                          type_comparison_name='Strings')
 
@@ -435,17 +431,17 @@ class IrisTest(unittest.TestCase):
 
     def _check_same(self, item, reference_path, type_comparison_name='CML'):
         if self._check_reference_file(reference_path):
-            with open(reference_path, 'r') as reference_fh:
-                reference = ''.join(reference_fh.readlines())
+            with open(reference_path, 'rb') as reference_fh:
+                reference = ''.join(part.decode('utf-8')
+                                    for part in reference_fh.readlines())
             self._assert_str_same(reference, item, reference_path,
                                   type_comparison_name)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            with open(reference_path, 'w') as reference_fh:
+            with open(reference_path, 'wb') as reference_fh:
                 reference_fh.writelines(
                     part.encode('utf-8')
-                    if isinstance(part, unicode) else part
                     for part in item)
 
     def assertXMLElement(self, obj, reference_filename):
