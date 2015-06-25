@@ -506,7 +506,7 @@ def grid_definition_section(cube, grib):
 
     else:
         raise ValueError('Grib saving is not supported for coordinate system: '
-                         '{:s}'.format(cs))
+                         '{}'.format(cs))
 
 
 ###############################################################################
