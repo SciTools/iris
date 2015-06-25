@@ -36,11 +36,14 @@ class Test___init__(tests.IrisTest):
         _LBProc('245')
 
     def test_negative(self):
-        with self.assertRaises(ValueError):
+        msg = 'Negative numbers not supported with splittable integers object'
+        with self.assertRaisesRegexp(ValueError, msg):
             _LBProc(-1)
+        with self.assertRaisesRegexp(ValueError, msg):
+            _LBProc('-1')
 
     def test_invalid_str(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, 'invalid literal for int'):
             _LBProc('asdf')
 
 
