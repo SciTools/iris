@@ -93,8 +93,8 @@ class Test_class_assignment(tests.IrisTest):
     def test_lbrel_class(self):
         path = tests.get_data_path(('FF', 'lbrel_test_data'))
         ffv = FieldsFileVariant(path)
-        self.assertEquals(type(ffv.fields[0]), Field)
-        self.assertEquals(type(ffv.fields[1]), Field3)
+        self.assertEqual(type(ffv.fields[0]), Field)
+        self.assertEqual(type(ffv.fields[1]), Field3)
         self.assertEqual(ffv.fields[0].int_headers[Field.LBREL_OFFSET], -32768)
         self.assertEqual(ffv.fields[1].int_headers[Field.LBREL_OFFSET], 3)
 

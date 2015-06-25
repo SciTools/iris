@@ -229,7 +229,10 @@ class TestPPLoadRules(tests.IrisTest):
             cube = iris.load_cube(temp_filename)
 
             # Check the process flags created
-            self.assertEquals(set(cube.attributes["ukmo__process_flags"]), set(multiple_map[sum(bit_values)]), "Mismatch between expected and actual process flags.")
+            self.assertEqual(set(cube.attributes['ukmo__process_flags']),
+                             set(multiple_map[sum(bit_values)]),
+                             'Mismatch between expected and actual process '
+                             'flags.')
 
             os.remove(temp_filename)
 

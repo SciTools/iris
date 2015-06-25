@@ -171,8 +171,8 @@ class Test_cell(tests.IrisTest):
         coord = self._mock_coord()
         cell = Coord.cell(coord, 0)
         self.assertIs(cell.point, mock.sentinel.time)
-        self.assertEquals(cell.bound,
-                          (mock.sentinel.lower, mock.sentinel.upper))
+        self.assertEqual(cell.bound,
+                         (mock.sentinel.lower, mock.sentinel.upper))
 
     def test_time_as_object(self):
         # When iris.FUTURE.cell_datetime_objects is True, ensure
@@ -186,9 +186,9 @@ class Test_cell(tests.IrisTest):
         with mock.patch('iris.FUTURE', cell_datetime_objects=True):
             cell = Coord.cell(coord, 0)
         self.assertIs(cell.point, mock.sentinel.datetime)
-        self.assertEquals(cell.bound,
-                          (mock.sentinel.datetime_lower,
-                           mock.sentinel.datetime_upper))
+        self.assertEqual(cell.bound,
+                         (mock.sentinel.datetime_lower,
+                          mock.sentinel.datetime_upper))
         self.assertEqual(coord.units.num2date.call_args_list,
                          [mock.call((mock.sentinel.time,)),
                           mock.call((mock.sentinel.lower,

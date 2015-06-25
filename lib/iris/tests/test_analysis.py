@@ -123,12 +123,12 @@ class TestAnalysisWeights(tests.IrisTest):
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
         b.data = np.asarray(b.data)
         self.assertCMLApproxData(b, ('analysis', 'weighted_mean_lon.cml'))
-        self.assertEquals(b.coord("dummy").shape, (1,))
+        self.assertEqual(b.coord('dummy').shape, (1, ))
 
         # test collapsing multiple coordinates (and the fact that one of the coordinates isn't the same coordinate instance as on the cube)
         c = cube.collapsed([lat_coord[:], lon_coord], iris.analysis.MEAN, weights=weights)
         self.assertCMLApproxData(c, ('analysis', 'weighted_mean_latlon.cml'))
-        self.assertEquals(c.coord("dummy").shape, (1,))
+        self.assertEqual(c.coord('dummy').shape, (1, ))
 
         # Check new coord bounds - made from points
         self.assertArrayEqual(c.coord('lat').bounds, [[1, 3]])
@@ -162,7 +162,7 @@ class TestAnalysisWeights(tests.IrisTest):
         f, collapsed_area_weights = e.collapsed('latitude', iris.analysis.MEAN, weights=area_weights, returned=True)
         g = f.collapsed('longitude', iris.analysis.MEAN, weights=collapsed_area_weights)
         # check it's a 0d, scalar cube
-        self.assertEquals(g.shape, ())
+        self.assertEqual(g.shape, ())
         # check the value - pp_area_avg's result of 287.927 differs by factor of 1.00002959
         np.testing.assert_approx_equal(g.data, 287.935, significant=5)
 

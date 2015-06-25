@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -95,7 +95,7 @@ class Test_save(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             checksum_64 = field_checksum(data_64.astype('>f8'))
 
-        self.assertEquals(checksum_32, checksum_64)
+        self.assertEqual(checksum_32, checksum_64)
         warn.assert_called()
 
 

@@ -89,14 +89,18 @@ class TestSavePP(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, pp.save)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
     def test_filehandle(self):
         # Save using iris.save and pp.save
         save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, pp.save, binary_mode = True)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
         # Check we can't save when file handle is not binary
         with self.assertRaises(ValueError):
@@ -112,14 +116,18 @@ class TestSaveDot(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
     def test_filehandle(self):
         # Save using iris.save and dot.save
         save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, binary_mode = False)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
         # Check we can't save when file handle is binary
         with self.assertRaises(ValueError):
@@ -138,7 +146,9 @@ class TestSaveDot(TestSaveMethods):
             data = infile.read()
 
         # Compare files
-        self.assertEquals(data, bio.getvalue(), "Mismatch in data when comparing iris bytesio save and dot.save.")
+        self.assertEqual(data, bio.getvalue(),
+                         'Mismatch in data when comparing iris bytesio save '
+                         'and dot.save.')
 
 
 @skip_dotpng
@@ -151,14 +161,18 @@ class TestSavePng(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save_png)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
     def test_filehandle(self):
         # Save using iris.save and dot.save_png
         save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save_png, binary_mode = True)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
         # Check we can't save when file handle is not binary
         with self.assertRaises(ValueError):
@@ -174,7 +188,9 @@ class TestSaver(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, pp.save, pp_saver)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
     def test_dot(self):
         # Make our own saver
@@ -182,7 +198,9 @@ class TestSaver(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, dot_saver)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
     @skip_dotpng
     def test_png(self):
@@ -191,7 +209,9 @@ class TestSaver(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save_png, png_saver)
 
         # Compare files
-        self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
+        self.assertEqual(self.file_checksum(self.temp_filename2),
+                         self.file_checksum(self.temp_filename1),
+                         CHKSUM_ERR.format(self.ext))
 
 class TestSaveInvalid(TestSaveMethods):
     """Test iris cannot automatically save to file extensions it does not know about"""

@@ -114,7 +114,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, least_significant_digit=1)
             cube_saved = iris.load_cube(nc_path)
-            self.assertEquals(
+            self.assertEqual(
                 cube_saved.attributes['least_significant_digit'], 1)
             self.assertFalse(np.all(cube.data == cube_saved.data))
             self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)

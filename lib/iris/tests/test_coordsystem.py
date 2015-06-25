@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -86,7 +86,7 @@ class TestCoordSystemSame(tests.IrisTest):
     def test_simple(self):
         a = self.cs1
         b = self.cs2
-        self.assertEquals(a, b)
+        self.assertEqual(a, b)
 
     def test_different_class(self):
         a = self.cs1
@@ -106,7 +106,7 @@ class TestCoordSystemSame(tests.IrisTest):
 
         # a and b should be the same
         b.foo = 'a'
-        self.assertEquals(a, b)
+        self.assertEqual(a, b)
 
         b.foo = 'b'
         # a and b should not be the same

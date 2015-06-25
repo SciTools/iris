@@ -1152,22 +1152,24 @@ class TestConversionToCoordList(tests.IrisTest):
         cube = iris.tests.stock.realistic_4d()
         
         # Single string
-        self.assertEquals(len(cube._as_list_of_coords('grid_longitude')), 1)
+        self.assertEqual(len(cube._as_list_of_coords('grid_longitude')), 1)
         
         # List of string and unicode
-        self.assertEquals(len(cube._as_list_of_coords(['grid_longitude', u'grid_latitude'], )), 2)
+        self.assertEqual(len(cube._as_list_of_coords(['grid_longitude',
+                                                      u'grid_latitude'], )), 2)
         
         # Coord object(s)
         lat = cube.coords("grid_latitude")[0]
         lon = cube.coords("grid_longitude")[0]
-        self.assertEquals(len(cube._as_list_of_coords(lat)), 1)
-        self.assertEquals(len(cube._as_list_of_coords([lat, lon])), 2)
+        self.assertEqual(len(cube._as_list_of_coords(lat)), 1)
+        self.assertEqual(len(cube._as_list_of_coords([lat, lon])), 2)
         
         # Mix of string-like and coord
-        self.assertEquals(len(cube._as_list_of_coords(["grid_latitude", lon])), 2)
+        self.assertEqual(len(cube._as_list_of_coords(['grid_latitude', lon])),
+                         2)
 
         # Empty list
-        self.assertEquals(len(cube._as_list_of_coords([])), 0)
+        self.assertEqual(len(cube._as_list_of_coords([])), 0)
         
         # Invalid coords
         invalid_choices = [iris.analysis.MEAN, # Caused by mixing up argument order in call to cube.collasped for example

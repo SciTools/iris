@@ -161,7 +161,8 @@ class TestClipString(unittest.TestCase):
         self.assertLess(len(result), len(self.test_string), "String was not clipped.")
 
         rider_returned = result[-len(arg_dict["rider"]):]
-        self.assertEquals(rider_returned, arg_dict["rider"], "Default rider was not applied.")
+        self.assertEqual(rider_returned, arg_dict['rider'],
+                         'Default rider was not applied.')
 
     def test_trim_string_with_no_spaces(self):
 
@@ -175,7 +176,11 @@ class TestClipString(unittest.TestCase):
         expected_length = clip_length + len(self.rider)
 
         # Check the length of the returned string is equal to clip length + length of rider
-        self.assertEquals(len(result), expected_length, "Mismatch in expected length of clipped string. Length was %s, expected value is %s" % (len(result), expected_length))
+        self.assertEqual(
+            len(result),
+            expected_length,
+            'Mismatch in expected length of clipped string. Length was %s, '
+            'expected value is %s' % (len(result), expected_length))
         
 
 class TestDescribeDiff(iris.tests.IrisTest):

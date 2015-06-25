@@ -245,19 +245,19 @@ class TestLoad(tests.IrisTest):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                         'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(cube.coord('time').attributes, {})
+        self.assertEqual(cube.coord('time').attributes, {})
 
     def test_attributes_contain_positive(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                         'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(cube.coord('height').attributes['positive'], 'up')
+        self.assertEqual(cube.coord('height').attributes['positive'], 'up')
 
     def test_attributes_populated(self):
         filename = tests.get_data_path(
             ('NetCDF', 'label_and_climate', 'small_FC_167_mon_19601101.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(
+        self.assertEqual(
             sorted(cube.coord('longitude').attributes.items()), 
             [('data_type', 'float'), 
              ('modulo', 360), 
@@ -268,7 +268,11 @@ class TestLoad(tests.IrisTest):
     def test_cell_methods(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(cube.cell_methods, (iris.coords.CellMethod(method=u'mean', coords=(u'time',), intervals=(u'6 minutes',), comments=()),))
+        self.assertEqual(cube.cell_methods,
+                         (iris.coords.CellMethod(method=u'mean',
+                                                 coords=(u'time', ),
+                                                 intervals=(u'6 minutes', ),
+                                                 comments=()), ))
 
 
 @tests.skip_data
