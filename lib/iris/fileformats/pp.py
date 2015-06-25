@@ -681,10 +681,11 @@ class _LBProc(BitwiseInt):
             The initial value which will determine the flags.
 
         """
+        value = int(value)
         if value < 0:
             raise ValueError('Negative numbers not supported with '
                              'splittable integers object')
-        self._value = int(value)
+        self._value = value
 
     def __len__(self):
         """
