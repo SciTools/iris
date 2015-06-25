@@ -201,7 +201,7 @@ class _CoordPayload(namedtuple('CoordPayload',
                     diff_defns.append(defn_a)
             diff_defns.extend(defns_b)
             if diff_defns:
-                names = set(defn.name() for defn in diff_defns)
+                names = sorted(set(defn.name() for defn in diff_defns))
                 msgs.append('Coordinates in {} differ: {}.'.format(
                     coord_group, ', '.join(names)))
             else:
