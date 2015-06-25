@@ -100,10 +100,11 @@ class Test_post_process(tests.IrisTest):
         data = np.empty(shape)
         total_weights = 1.
         coords = [self.coord_simple]
-        actual = aggregator.post_process(self.cube_simple,
-            (data, total_weights), coords, **kwargs)
+        actual = aggregator.post_process(
+            self.cube_simple, (data, total_weights), coords, **kwargs)
         self.assertEqual(len(actual), 2)
-        self.assertEqual(actual[0].shape, percent.shape + self.cube_simple.shape)
+        self.assertEqual(actual[0].shape,
+                         percent.shape + self.cube_simple.shape)
         expected = np.rollaxis(data, -1)
         self.assertArrayEqual(actual[0].data, expected)
         self.assertIs(actual[1], total_weights)
