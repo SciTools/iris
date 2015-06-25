@@ -105,8 +105,7 @@ class Test(tests.IrisTest):
         # Check that an unknown LBREL value just results in a warning
         # and the end of the file iteration instead of raising an error.
         with self.temp_filename() as temp_path:
-            with open(temp_path, 'w') as f:
-                f.write(np.zeros(65, dtype='i4'))
+            np.zeros(65, dtype='i4').tofile(temp_path)
             generator = pp._field_gen(temp_path, False)
             with mock.patch('warnings.warn') as warn:
                 with self.assertRaises(StopIteration):
