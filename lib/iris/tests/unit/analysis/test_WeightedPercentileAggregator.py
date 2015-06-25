@@ -94,17 +94,22 @@ class Test_post_process(tests.IrisTest):
     def test_simple_multiple_points(self):
         aggregator = WeightedPercentileAggregator()
         percent = np.array([10, 20, 50, 90])
-        kwargs = dict(percent=percent, weights=self.weights_simple)
+        kwargs = dict(percent=percent, weights=self.weights_simple,
+                      returned=True)
         shape = self.cube_simple.shape + percent.shape
         data = np.empty(shape)
+        total_weights = 1.
         coords = [self.coord_simple]
-        actual = aggregator.post_process(self.cube_simple, data, coords,
-                                         **kwargs)
-        self.assertEqual(actual.shape, percent.shape + self.cube_simple.shape)
+        actual = aggregator.post_process(
+            self.cube_simple, (data, total_weights), coords, **kwargs)
+        self.assertEqual(len(actual), 2)
+        self.assertEqual(actual[0].shape,
+                         percent.shape + self.cube_simple.shape)
         expected = np.rollaxis(data, -1)
-        self.assertArrayEqual(actual.data, expected)
+        self.assertArrayEqual(actual[0].data, expected)
+        self.assertIs(actual[1], total_weights)
         name = 'weighted_percentile_over_time'
-        coord = actual.coord(name)
+        coord = actual[0].coord(name)
         expected = AuxCoord(percent, long_name=name)
         self.assertEqual(coord, expected)
 
