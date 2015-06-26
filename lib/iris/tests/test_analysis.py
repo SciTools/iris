@@ -1047,7 +1047,8 @@ class TestProject(tests.GraphicsTest):
         # Set up figure
         fig = plt.figure(figsize=(10, 10))
         gs = matplotlib.gridspec.GridSpec(nrows=3, ncols=3, hspace=1.5, wspace=0.5)
-        for subplot_spec, (name, target_proj) in zip(gs, six.iteritems(projections)):
+        for subplot_spec, name in zip(gs, sorted(projections)):
+            target_proj = projections[name]
             # Set up axes and title
             ax = plt.subplot(subplot_spec, frameon=False, projection=target_proj)
             ax.set_title(name)
