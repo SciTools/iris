@@ -11,13 +11,13 @@
       <coord datadims="[0]">
         <dimCoord id="71a1116e" points="[-20.069997, -19.959999, -19.850001, ...,
 		19.199289, 19.309287, 19.419285]" shape="(360,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
-          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="152.46698"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="152.4669799999999"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="b2f338a6" points="[326.219965, 326.329959, 326.439953, ...,
 		391.886383, 391.996377, 392.106371]" shape="(600,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
-          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="152.46698"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="152.4669799999999"/>
         </dimCoord>
       </coord>
       <coord>

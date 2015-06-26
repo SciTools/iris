@@ -13,7 +13,7 @@
         <dimCoord id="9c8bdf81" points="[243363.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord id="99e1c155" points="[[-86.7919126364, -86.7919126364, -86.7919126364,
+        <auxCoord id="cf6eec38" points="[[-86.7919126364, -86.7919126364, -86.7919126364,
  		..., -86.7919126364, -86.7919126364,
  		-86.7919126364],
 		[-82.4663018441, -82.4663018441, -82.4663018441,
@@ -32,11 +32,11 @@
 		[86.7919126364, 86.7919126364, 86.7919126364,
  		..., 86.7919126364, 86.7919126364,
  		86.7919126364]]" shape="(73, 96)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
-          <geogCS semi_major_axis="6378137.0" semi_minor_axis="6356752.31425"/>
+          <geogCS semi_major_axis="6378137.0" semi_minor_axis="6356752.314245179"/>
         </auxCoord>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord id="de65d9e7" points="[[39.9621553628, 46.6997941973, 53.4374330318,
+        <auxCoord id="dd77119d" points="[[39.9621553628, 46.6997941973, 53.4374330318,
  		..., -53.4374330318, -46.6997941973,
  		-39.9621553628],
 		[61.2515118973, 67.5409537521, 73.8303956069,
@@ -55,7 +55,7 @@
 		[39.9621553628, 46.6997941973, 53.4374330318,
  		..., -53.4374330318, -46.6997941973,
  		-39.9621553628]]" shape="(73, 96)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
-          <geogCS semi_major_axis="6378137.0" semi_minor_axis="6356752.31425"/>
+          <geogCS semi_major_axis="6378137.0" semi_minor_axis="6356752.314245179"/>
         </auxCoord>
       </coord>
       <coord>
