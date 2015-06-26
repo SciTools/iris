@@ -23,137 +23,96 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 import numpy as np
-
 import iris
+from iris.util import broadcast_to_shape
 
 
-def _get_calc_view(cube_a, cube_b, corr_coords):
+def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.):
     """
-    This function takes two cubes and returns cubes which are
-    flattened so that efficient comparisons can be performed
-    between the two.
-
-    Args:
-
-    * cube_a:
-        First cube of data
-    * cube_b:
-        Second cube of data, compatible with cube_a
-    * corr_coords:
-        Names of the dimension coordinates over which
-        to calculate correlations.
-
-    Returns:
-
-    * reshaped_a/reshaped_b:
-        The data arrays of cube_a/cube_b reshaped
-        so that the dimensions to be compared are
-        flattened into the 0th dimension of the
-        return array and other dimensions are
-        preserved.
-    * res_ind:
-        The indices of the dimensions that we
-        are not comparing, in terms of cube_a/cube_b
-
-    """
-
-    # Following lists to be filled with:
-    # indices of dimension we are not comparing
-    res_ind = []
-    # indices of dimensions we are comparing
-    slice_ind = []
-    for i, c in enumerate(cube_a.dim_coords):
-        if not c.name() in corr_coords:
-            res_ind.append(i)
-        else:
-            slice_ind.append(i)
-
-    # sanitise input
-    dim_coord_names = [c.name() for c in cube_a.dim_coords]
-    if corr_coords is None:
-        corr_coords = dim_coord_names
-
-    if ([c.name() for c in cube_a.dim_coords] !=
-            [c.name() for c in cube_b.dim_coords]):
-        raise ValueError("Cubes are incompatible.")
-
-    for c in corr_coords:
-        if c not in dim_coord_names:
-            raise ValueError("%s coord "
-                             "does not exist in cube." % c)
-
-    # Reshape data to be data to correlate in 0th dim and
-    # other grid points in 1st dim.
-    # Transpose to group the correlation data dims before the
-    # grid point dims.
-    data_a = cube_a.data.view()
-    data_b = cube_b.data.view()
-    dim_i_len = np.prod(np.array(cube_a.shape)[slice_ind])
-    dim_j_len = np.prod(np.array(cube_a.shape)[res_ind])
-    reshaped_a = data_a.transpose(slice_ind+res_ind)\
-                       .reshape(dim_i_len, dim_j_len)
-    reshaped_b = data_b.transpose(slice_ind+res_ind)\
-                       .reshape(dim_i_len, dim_j_len)
-
-    return reshaped_a, reshaped_b, res_ind
-
-
-def pearsonr(cube_a, cube_b, corr_coords=None):
-    """
-    Calculates the n-D Pearson's r correlation
-    cube over the dimensions associated with the
-    given coordinates.
-
-    Returns a cube of the correlation between the two
-    cubes along the dimensions of the given
-    coordinates, at each point in the remaining
-    dimensions of the cubes.
-
-    For example providing two time/altitude/latitude/longitude
-    cubes and corr_coords of 'latitude' and 'longitude' will result
-    in a time/altitude cube describing the latitude/longitude
-    (i.e. pattern) correlation at each time/altitude point.
+    Calculate the Pearson's r correlation coefficient over specified
+    dimensions.
 
     Args:
 
     * cube_a, cube_b (cubes):
-        Between which the correlation field will be calculated.
-        Cubes should be the same shape and have the
-        same dimension coordinates.
-    * corr_coords (list of str):
-        The cube coordinate names over which to calculate
-        correlations. If no names are provided then
-        correlation will be calculated over all cube
-        dimensions.
+        Cubes between which the correlation will be calculated.  The cubes
+        should either be the same shape and have the same dimension coordinates
+        or one cube should be broadcastable to the other.
+    * corr_coords (str or list of str):
+        The cube coordinate name(s) over which to calculate correlations. If no
+        names are provided then correlation will be calculated over all common
+        cube dimensions.
+    * weights (numpy.ndarray, optional):
+        Weights array of same shape as (the smaller of) cube_a and cube_b. Note
+        that latitude/longitude area weights can be calculated using
+        :func:`iris.analysis.cartography.area_weights`.
+    * mdtol (float, optional):
+        Tolerance of missing data. The missing data fraction is calculated
+        based on the number of grid cells masked in both cube_a and cube_b. If
+        this fraction exceed mdtol, the returned value in the corresponding
+        cell is masked. mdtol=0 means no missing data is tolerated while
+        mdtol=1 means the resulting element will be masked if and only if all
+        contributing elements are masked in cube_a or cube_b. Defaults to 1.
 
     Returns:
-        Cube of correlations.
+        A cube of the correlation between the two input cubes along the
+        specified dimensions, at each point in the remaining dimensions of the
+        cubes.
+
+        For example providing two time/altitude/latitude/longitude cubes and
+        corr_coords of 'latitude' and 'longitude' will result in a
+        time/altitude cube describing the latitude/longitude (i.e. pattern)
+        correlation at each time/altitude point.
 
     Reference:
         http://www.statsoft.com/textbook/glosp.html#Pearson%20Correlation
 
     """
 
-    # If no coords passed then set to all coords of cube.
+    # Assign larger cube to cube_1
+    if cube_b.ndim > cube_a.ndim:
+        cube_1 = cube_b
+        cube_2 = cube_a
+    else:
+        cube_1 = cube_a
+        cube_2 = cube_b
+
+    dim_coords_1 = [coord.name() for coord in cube_1.dim_coords]
+    dim_coords_2 = [coord.name() for coord in cube_2.dim_coords]
+    common_dim_coords = list(set(dim_coords_1) & set(dim_coords_2))
+    # If no coords passed then set to all common dimcoords of cubes.
     if corr_coords is None:
-        corr_coords = [c.name() for c in cube_a.dim_coords]
+        corr_coords = common_dim_coords
 
-    vec_a, vec_b, res_ind = _get_calc_view(cube_a,
-                                           cube_b,
-                                           corr_coords)
+    # Broadcast weights to shape of cube_1 if necessary.
+    if weights is None or cube_1.shape == cube_2.shape:
+        weights_1 = weights
+        weights_2 = weights
+    else:
+        if weights.shape != cube_2.shape:
+            raise ValueError("weights array should have dimensions {}".
+                             format(cube_2.shape))
+        dims_1_common = [i for i in range(cube_1.ndim) if
+                         dim_coords_1[i] in common_dim_coords]
+        weights_1 = broadcast_to_shape(weights, cube_1.shape, dims_1_common)
+        weights_2 = weights
 
-    sa = vec_a - np.mean(vec_a, 0)
-    sb = vec_b - np.mean(vec_b, 0)
-    flat_corrs = np.sum((sa*sb), 0)/np.sqrt(np.sum(sa**2, 0)*np.sum(sb**2, 0))
+    # Calculate correlations.
+    s1 = cube_1 - cube_1.collapsed(corr_coords, iris.analysis.MEAN,
+                                   weights=weights_1)
+    s2 = cube_2 - cube_2.collapsed(corr_coords, iris.analysis.MEAN,
+                                   weights=weights_2)
 
-    corrs = flat_corrs.reshape([cube_a.shape[i] for i in res_ind])
+    covar = (s1*s2).collapsed(corr_coords, iris.analysis.SUM,
+                              weights=weights_1, mdtol=mdtol)
+    var_1 = (s1**2).collapsed(corr_coords, iris.analysis.SUM,
+                              weights=weights_1)
+    var_2 = (s2**2).collapsed(corr_coords, iris.analysis.SUM,
+                              weights=weights_2)
 
-    # Construct cube to hold correlation results.
-    corrs_cube = iris.cube.Cube(corrs)
-    corrs_cube.long_name = "Pearson's r"
-    corrs_cube.units = "1"
-    for i, dim in enumerate(res_ind):
-        c = cube_a.dim_coords[dim]
-        corrs_cube.add_dim_coord(c, i)
+    denom = iris.analysis.maths.apply_ufunc(np.sqrt, var_1*var_2,
+                                            new_unit=covar.units)
+    corr_cube = covar / denom
+    corr_cube.rename("Pearson's r")
 
-    return corrs_cube
+    return corr_cube
