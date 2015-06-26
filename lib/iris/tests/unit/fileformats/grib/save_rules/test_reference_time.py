@@ -24,10 +24,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
-import mock
 
 import iris.fileformats.grib
 from iris.fileformats.grib._save_rules import reference_time
+from iris.tests import mock
 import iris.tests.stock as stock
 from iris.tests.test_grib_load import TestGribSimple
 

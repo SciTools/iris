@@ -25,10 +25,10 @@ import iris.tests as tests
 
 import datetime
 
-import mock
 import netcdftime
 
 from iris.coords import Cell
+from iris.tests import mock
 from iris.time import PartialDateTime
 
 

@@ -24,10 +24,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import copy
-import mock
 
 import iris
 from iris.fileformats.grib._load_convert import grib2_convert
+from iris.tests import mock
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 

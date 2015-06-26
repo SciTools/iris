@@ -23,9 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import iris.exceptions
 import iris.io
+from iris.tests import mock
 
 
 class Test_run_callback(tests.IrisTest):

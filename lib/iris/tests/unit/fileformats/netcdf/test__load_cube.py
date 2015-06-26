@@ -23,13 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import netCDF4
 import numpy as np
 
 from iris.coords import DimCoord
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _load_cube
+from iris.tests import mock
 
 
 class TestFillValue(tests.IrisTest):

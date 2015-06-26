@@ -27,9 +27,9 @@ import iris.tests as tests
 import datetime
 import operator
 
-import mock
 import netcdftime
 
+from iris.tests import mock
 from iris.time import PartialDateTime
 
 

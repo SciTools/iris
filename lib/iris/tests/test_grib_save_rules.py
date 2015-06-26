@@ -24,12 +24,12 @@ import iris.tests as tests
 
 import gribapi
 import numpy as np
-import mock
 import warnings
 
 import iris.cube
 import iris.coords
 import iris.fileformats.grib._save_rules as grib_save_rules
+from iris.tests import mock
 
 
 class Test_set_fixed_surfaces(tests.IrisTest):

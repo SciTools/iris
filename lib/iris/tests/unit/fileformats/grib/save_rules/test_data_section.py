@@ -27,12 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-import mock
 import numpy as np
 
 import iris.cube
 
 from iris.fileformats.grib._save_rules import data_section
+from iris.tests import mock
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'

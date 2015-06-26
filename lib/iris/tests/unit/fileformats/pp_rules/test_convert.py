@@ -26,7 +26,6 @@ import iris.tests as tests
 
 import types
 
-import mock
 import numpy as np
 
 from iris.fileformats.pp_rules import convert
@@ -34,6 +33,7 @@ from iris.util import guess_coord_axis
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp import STASH
 from iris.fileformats.pp import PPField3
+from iris.tests import mock
 import iris.tests.unit.fileformats
 import iris.unit
 

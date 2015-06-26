@@ -27,10 +27,9 @@ import iris.tests as tests
 
 import unittest
 
-import mock
-
 import iris
 import iris.fileformats.cf as cf
+from iris.tests import mock
 
 
 class TestCaching(unittest.TestCase):

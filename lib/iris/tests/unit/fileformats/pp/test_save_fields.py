@@ -24,11 +24,10 @@ import six
 # importing anything else.
 import iris.tests as tests
 
-import mock
-from mock import call
 import numpy as np
 
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 def asave(afilehandle):
@@ -52,8 +51,8 @@ class TestSaveFields(tests.IrisTest):
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], 'foo.pp')
-        self.assertTrue(call('foo.pp', 'wb') in m.mock_calls)
-        self.assertTrue(call().write('saved') in m.mock_calls)
+        self.assertTrue(mock.call('foo.pp', 'wb') in m.mock_calls)
+        self.assertTrue(mock.call().write('saved') in m.mock_calls)
 
     def test_save_append(self):
         if six.PY3:
@@ -63,8 +62,8 @@ class TestSaveFields(tests.IrisTest):
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], 'foo.pp', append=True)
-        self.assertTrue(call('foo.pp', 'ab') in m.mock_calls)
-        self.assertTrue(call().write('saved') in m.mock_calls)
+        self.assertTrue(mock.call('foo.pp', 'ab') in m.mock_calls)
+        self.assertTrue(mock.call().write('saved') in m.mock_calls)
 
 
 if __name__ == "__main__":

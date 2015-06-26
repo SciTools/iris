@@ -25,11 +25,11 @@ import iris.tests as tests
 
 import shutil
 
-import mock
 import numpy as np
 
 import iris
 import iris.experimental.um as um
+from iris.tests import mock
 
 
 @tests.skip_data

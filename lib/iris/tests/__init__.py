@@ -43,7 +43,6 @@ import gzip
 import inspect
 import io
 import logging
-import mock
 import os
 import os.path
 import shutil
@@ -53,6 +52,11 @@ import unittest
 import warnings
 import xml.dom.minidom
 import zlib
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 import numpy as np
 import numpy.ma as ma

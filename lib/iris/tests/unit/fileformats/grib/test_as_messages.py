@@ -21,13 +21,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import iris.tests as tests
 
-import mock
-
 import gribapi
 
 import iris
 from iris.coords import DimCoord
 import iris.fileformats.grib as grib
+from iris.tests import mock
 import iris.tests.stock as stock
 
 

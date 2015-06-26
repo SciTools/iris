@@ -19,9 +19,8 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import mock
-
 from iris.fileformats.grib._message import _GribMessage
+from iris.tests import mock
 
 
 def _make_test_message(sections):

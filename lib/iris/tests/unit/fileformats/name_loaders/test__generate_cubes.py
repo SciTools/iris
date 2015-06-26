@@ -26,10 +26,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import iris.cube
 from iris.fileformats.name_loaders import _generate_cubes, NAMECoord
+from iris.tests import mock
 
 
 class TestCellMethods(tests.IrisTest):

@@ -27,11 +27,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-import mock
-
 from iris.coords import CellMethod
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     _parse_cell_methods
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

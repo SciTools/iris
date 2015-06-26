@@ -23,7 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -31,6 +30,7 @@ from iris.coords import AuxCoord, CellMethod
 from iris.cube import Cube
 import iris.fileformats.pp
 import iris.fileformats.pp_rules
+from iris.tests import mock
 
 
 class TestVertical(tests.IrisTest):

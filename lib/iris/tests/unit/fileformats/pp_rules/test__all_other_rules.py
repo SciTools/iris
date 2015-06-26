@@ -23,12 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import iris
 from iris.fileformats.pp_rules import _all_other_rules
 from iris.fileformats.pp import SplittableInt
 from iris.coords import CellMethod
+from iris.tests import mock
 
 
 # iris.fileformats.pp._all_other_rules() returns a tuple of

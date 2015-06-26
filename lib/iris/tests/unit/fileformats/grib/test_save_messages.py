@@ -25,11 +25,10 @@ import six
 import iris.tests as tests
 
 import gribapi
-import mock
-from mock import call
 import numpy as np
 
 import iris.fileformats.grib as grib
+from iris.tests import mock
 
 
 class TestSaveMessages(tests.IrisTest):
@@ -49,7 +48,7 @@ class TestSaveMessages(tests.IrisTest):
             # this is deemed acceptable within the scope of this unit test
             with self.assertRaises(AssertionError):
                 grib.save_messages([self.grib_message], 'foo.grib2')
-        self.assertTrue(call('foo.grib2', 'wb') in m.mock_calls)
+        self.assertTrue(mock.call('foo.grib2', 'wb') in m.mock_calls)
 
     def test_save_append(self):
         if six.PY3:
@@ -64,7 +63,7 @@ class TestSaveMessages(tests.IrisTest):
             with self.assertRaises(AssertionError):
                 grib.save_messages([self.grib_message], 'foo.grib2',
                                    append=True)
-        self.assertTrue(call('foo.grib2', 'ab') in m.mock_calls)
+        self.assertTrue(mock.call('foo.grib2', 'ab') in m.mock_calls)
 
 
 if __name__ == "__main__":

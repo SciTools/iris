@@ -28,10 +28,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
-import mock
 
 from iris.coords import CellMethod, DimCoord
 from iris.unit import Unit
+from iris.tests import mock
 import iris.tests.stock as stock
 from iris.fileformats.grib._save_rules import product_definition_template_11
 

@@ -23,13 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 import warnings
 
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import _load_aux_factory
+from iris.tests import mock
 
 
 class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):

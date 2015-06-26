@@ -27,10 +27,10 @@ import iris.tests as tests
 import contextlib
 import io
 
-import mock
 import numpy as np
 
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

@@ -26,7 +26,6 @@ import iris.tests as tests
 
 import abc
 
-import mock
 import numpy as np
 import numpy.ma as ma
 
@@ -35,6 +34,7 @@ from iris._merge import ProtoCube
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import DimCoord, AuxCoord
 from iris.exceptions import MergeError
+from iris.tests import mock
 
 
 def example_cube():

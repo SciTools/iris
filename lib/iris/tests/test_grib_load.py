@@ -26,12 +26,12 @@ import datetime
 from distutils.version import StrictVersion
 
 import gribapi
-import mock
 import numpy as np
 
 import iris
 import iris.exceptions
 import iris.fileformats.grib
+from iris.tests import mock
 import iris.tests.stock
 import iris.util
 

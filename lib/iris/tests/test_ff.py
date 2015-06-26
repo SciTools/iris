@@ -28,12 +28,12 @@ import iris.tests as tests
 
 import collections
 
-import mock
 import numpy as np
 
 import iris
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 _MockField = collections.namedtuple('_MockField',

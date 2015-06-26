@@ -29,11 +29,11 @@ import iris.tests as tests
 from copy import deepcopy
 import warnings
 
-import mock
 import numpy as np
 
 from iris.coords import AuxCoord
 from iris.fileformats.grib._load_convert import product_definition_template_31
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

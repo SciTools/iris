@@ -23,7 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 
 from iris.analysis._regrid import RectilinearRegridder as Regridder
@@ -31,6 +30,7 @@ from iris.aux_factory import HybridHeightFactory
 from iris.coord_systems import GeogCS, OSGB
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.tests import mock
 from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
 
 

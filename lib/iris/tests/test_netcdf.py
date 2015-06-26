@@ -34,7 +34,6 @@ import stat
 import tempfile
 
 import biggus
-import mock
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -46,6 +45,7 @@ import iris.fileformats.netcdf
 import iris.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
+from iris.tests import mock
 import iris.tests.stock as stock
 
 

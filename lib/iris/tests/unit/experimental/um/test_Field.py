@@ -26,10 +26,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-import mock
 import numpy as np
 
 from iris.experimental.um import Field
+from iris.tests import mock
 
 
 class Test_int_headers(tests.IrisTest):

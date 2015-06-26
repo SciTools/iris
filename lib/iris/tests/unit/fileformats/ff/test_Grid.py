@@ -23,9 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.fileformats.ff import Grid
+from iris.tests import mock
 
 
 class Test___init__(tests.IrisTest):

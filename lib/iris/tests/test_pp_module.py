@@ -27,12 +27,12 @@ from types import GeneratorType
 import unittest
 
 import biggus
-import mock
 import netcdftime
 from numpy.testing import assert_array_equal
 
 import iris.fileformats
 import iris.fileformats.pp as pp
+from iris.tests import mock
 import iris.util
 
 

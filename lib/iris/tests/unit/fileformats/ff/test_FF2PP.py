@@ -26,15 +26,14 @@ import iris.tests as tests
 
 import contextlib
 import copy
-import mock
 import numpy as np
 import warnings
 
 from iris.exceptions import NotYetImplementedError
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
-
 from iris.fileformats.ff import FF2PP
+from iris.tests import mock
 
 
 class Test____iter__(tests.IrisTest):

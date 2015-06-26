@@ -28,10 +28,10 @@ import iris.tests as tests
 
 import io
 
-import mock
 import numpy as np
 
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
