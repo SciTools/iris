@@ -14,13 +14,13 @@
       <coord datadims="[0]">
         <auxCoord id="c85f5f64" long_name="my_month" points="[Jan, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug,
 		Sep, Sep, Oct, Nov, Dec, Jan, Feb, Mar, Apr,
-		May, May, Jun, Jul, Aug]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+		May, May, Jun, Jul, Aug]" shape="(23,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="bd3bcb89" long_name="my_month_fullname" points="[January, January, February, March, April, May,
 		June, July, August, September, September,
 		October, November, December, January, February,
-		March, April, May, May, June, July, August]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+		March, April, May, May, June, July, August]" shape="(23,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="58dfe2e3" long_name="my_month_in_quarter" points="[0, 0, 1, 2, 0, 1, 2, 0, 1, 2, 2, 0, 1, 2, 0, 1,
@@ -33,7 +33,7 @@
       <coord datadims="[0]">
         <auxCoord id="538bccc4" long_name="my_season" points="[djf, djf, djf, mam, mam, mam, jja, jja, jja,
 		son, son, son, son, djf, djf, djf, mam, mam,
-		mam, mam, jja, jja, jja]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+		mam, mam, jja, jja, jja]" shape="(23,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="f0259071" long_name="my_season_number" points="[0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0,
@@ -47,14 +47,14 @@
       <coord datadims="[0]">
         <auxCoord id="0c9978e7" long_name="my_weekday" points="[Thu, Wed, Tue, Mon, Sun, Sat, Fri, Thu, Wed,
 		Tue, Mon, Sun, Sat, Fri, Thu, Wed, Tue, Mon,
-		Sun, Sat, Fri, Thu, Wed]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+		Sun, Sat, Fri, Thu, Wed]" shape="(23,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="34e46a5f" long_name="my_weekday_fullname" points="[Thursday, Wednesday, Tuesday, Monday, Sunday,
 		Saturday, Friday, Thursday, Wednesday, Tuesday,
 		Monday, Sunday, Saturday, Friday, Thursday,
 		Wednesday, Tuesday, Monday, Sunday, Saturday,
-		Friday, Thursday, Wednesday]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+		Friday, Thursday, Wednesday]" shape="(23,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="521df3b7" long_name="my_weekday_number" points="[3, 2, 1, 0, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2,
