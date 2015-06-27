@@ -30,6 +30,7 @@ from contextlib import contextmanager
 import os
 import re
 import sys
+import unittest
 
 import numpy as np
 import numpy.ma as ma
@@ -360,6 +361,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         sys.setdefaultencoding(default_encoding)
         del sys.setdefaultencoding
 
+    @unittest.skipIf(six.PY3, 'Encodings are sane in Python 3.')
     def test_adjusted_default_encoding(self):
         # Test cube str representation on non-system-default encodings.
         # Doing this requires access to a sys method that is removed by default
