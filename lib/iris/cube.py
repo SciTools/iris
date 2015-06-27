@@ -2522,9 +2522,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for name in sorted(six.iterkeys(self.attributes)):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
-                value = str(self.attributes[name])
+
+                value = self.attributes[name]
+                # Strict check because we don't want namedtuples.
+                if type(value) in (list, tuple):
+                    delimiter = '[]' if isinstance(value, list) else '()'
+                    value = ', '.join(("'%s'"
+                                       if isinstance(item, six.string_types)
+                                       else '%s') % (item, ) for item in value)
+                    value = delimiter[0] + value + delimiter[1]
+                else:
+                    value = str(value)
+
                 attribute_element.setAttribute('value', value)
                 attributes_element.appendChild(attribute_element)
+
             cube_xml_element.appendChild(attributes_element)
 
         coords_xml_element = doc.createElement("coords")
