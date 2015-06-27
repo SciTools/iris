@@ -37,7 +37,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <auxCoord id="61bde96d" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="61bde96d" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord>
         <dimCoord id="6eef7051" long_name="pressure" points="[850]" shape="(1,)" units="Unit('hPa')" value_type="int32"/>

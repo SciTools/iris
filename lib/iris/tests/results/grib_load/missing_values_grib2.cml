@@ -25,7 +25,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <auxCoord id="61bde96d" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="61bde96d" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord>
         <dimCoord id="cb784457" points="[380304.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
