@@ -265,7 +265,10 @@ class NetCDFDataProxy(object):
     def ndim(self):
         return len(self.shape)
 
-    def __getitem__(self, keys):
+    def __getitem__(self, inkeys):
+        # Alter length one tuples to slice objects for safer indexing
+        keys = tuple([(slice(key[0], key[0] + 1) if isinstance(key, tuple) and
+                       len(key) == 1 else key) for key in inkeys])
         dataset = netCDF4.Dataset(self.path)
         try:
             variable = dataset.variables[self.variable_name]
