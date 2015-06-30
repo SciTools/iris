@@ -3,7 +3,6 @@ from six.moves import range, zip
 
 import itertools
 
-from scipy.sparse import csc_matrix
 from scipy.sparse import csr_matrix
 import numpy as np
 
