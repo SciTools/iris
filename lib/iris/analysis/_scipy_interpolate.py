@@ -6,6 +6,7 @@ import itertools
 from scipy.sparse import csr_matrix
 import numpy as np
 
+
 # ============================================================================
 # |                        Copyright SciPy                                   |
 # | Code from this point unto the termination banner is copyright SciPy.     |
@@ -232,7 +233,7 @@ class _RegularGridInterpolator(object):
             sparse_matrix = csr_matrix((weights, col_indices, row_ptrs),
                                        shape=(n_result_values, n_src_values))
 
-            prepared = (xi_shape, method, sparse_matrix, out_of_bounds)
+            prepared = (xi_shape, method, sparse_matrix, None, out_of_bounds)
 
         return prepared
 
@@ -253,7 +254,8 @@ class _RegularGridInterpolator(object):
             :meth:`compute_interp_weights`.
 
         """
-        [xi_shape, method, indices, out_of_bounds] = computed_weights
+        [xi_shape, method, indices, norm_distances,
+         out_of_bounds] = computed_weights
 
         method = self.method if method is None else method
         if method not in ["linear", "nearest"]:
@@ -265,7 +267,7 @@ class _RegularGridInterpolator(object):
             result = self._evaluate_linear_sparse(indices)
         elif method == "nearest":
             result = self._evaluate_nearest(
-                indices, None, out_of_bounds)
+                indices, norm_distances, out_of_bounds)
         if not self.bounds_error and self.fill_value is not None:
             result[out_of_bounds] = self.fill_value
 
