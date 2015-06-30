@@ -58,8 +58,8 @@ class Test_post_process(tests.IrisTest):
         self.cube_simple.add_dim_coord(self.coord_simple, 0)
         self.weights_simple = np.ones_like(data, dtype=float)
 
-        self.coord_multi_0 = DimCoord(range(shape[0]), 'time')
-        self.coord_multi_1 = DimCoord(range(shape[1]), 'height')
+        self.coord_multi_0 = DimCoord(np.arange(shape[0]), 'time')
+        self.coord_multi_1 = DimCoord(np.arange(shape[1]), 'height')
         self.cube_multi = Cube(data.reshape(shape))
         self.cube_multi.add_dim_coord(self.coord_multi_0, 0)
         self.cube_multi.add_dim_coord(self.coord_multi_1, 1)
