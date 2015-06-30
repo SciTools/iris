@@ -31,7 +31,7 @@ import numpy as np
 
 from iris.analysis._interpolation import get_xy_dim_coords
 import iris
-import iris.experimental.regrid as i_regrid
+from iris.analysis._regrid import RectilinearRegridder
 
 
 #: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
@@ -279,13 +279,12 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     # NOTE: as seen in "regrid_bilinear_rectilinear_src_and_grid"
     # TODO: can this not also be wound into the _create_cube method ?
     src_cs = src_coords[0].coord_system
-    sample_grid_x, sample_grid_y = i_regrid._sample_grid(src_cs,
-                                                         dst_coords[0],
-                                                         dst_coords[1])
+    sample_grid_x, sample_grid_y = RectilinearRegridder._sample_grid(
+        src_cs, dst_coords[0], dst_coords[1])
 
     # Return result as a new cube based on the source.
     # TODO: please tidy this interface !!!
-    return i_regrid._create_cube(
+    return RectilinearRegridder._create_cube(
         fullcube_data,
         src=source_cube,
         x_dim=src_dims_xy[0],
@@ -296,4 +295,4 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         grid_y_coord=dst_coords[1],
         sample_grid_x=sample_grid_x,
         sample_grid_y=sample_grid_y,
-        regrid_callback=i_regrid._regrid_bilinear_array)
+        regrid_callback=RectilinearRegridder._regrid)
