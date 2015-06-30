@@ -7,10 +7,6 @@ from scipy.sparse import csc_matrix
 from scipy.sparse import csr_matrix
 import numpy as np
 
-
-SPARSE = True
-
-
 # ============================================================================
 # |                        Copyright SciPy                                   |
 # | Code from this point unto the termination banner is copyright SciPy.     |
@@ -163,7 +159,7 @@ class _RegularGridInterpolator(object):
         .. note::
             This interface provides the ability to reuse weights on multiple
             data sources, such as in the case of regridding. For normal
-            interpolation, simply call the interpolator with the sample points,
+            interpolation, simply call the interpolator with the sample points.
 
         Parameters
         ----------
@@ -207,7 +203,7 @@ class _RegularGridInterpolator(object):
         method = self.method if method is None else method
         prepared = (xi_shape, method) + self._find_indices(xi.T)
 
-        if SPARSE and method == 'linear':
+        if method == 'linear':
 
             xi_shape, method, indices, norm_distances, out_of_bounds = prepared
 
@@ -237,8 +233,7 @@ class _RegularGridInterpolator(object):
             sparse_matrix = csr_matrix((weights, col_indices, row_ptrs),
                                        shape=(n_result_values, n_src_values))
 
-            # XXX Hacky-Mc-Hack-Hack
-            prepared = (xi_shape, method, sparse_matrix, None, out_of_bounds)
+            prepared = (xi_shape, method, sparse_matrix, out_of_bounds)
 
         return prepared
 
@@ -259,8 +254,7 @@ class _RegularGridInterpolator(object):
             :meth:`compute_interp_weights`.
 
         """
-        [xi_shape, method, indices,
-         norm_distances, out_of_bounds] = computed_weights
+        [xi_shape, method, indices, out_of_bounds] = computed_weights
 
         method = self.method if method is None else method
         if method not in ["linear", "nearest"]:
@@ -269,14 +263,10 @@ class _RegularGridInterpolator(object):
         ndim = len(self.grid)
 
         if method == "linear":
-            if SPARSE:
-                result = self._evaluate_linear_sparse(indices)
-            else:
-                result = self._evaluate_linear(
-                    indices, norm_distances, out_of_bounds)
+            result = self._evaluate_linear_sparse(indices)
         elif method == "nearest":
             result = self._evaluate_nearest(
-                indices, norm_distances, out_of_bounds)
+                indices, None, out_of_bounds)
         if not self.bounds_error and self.fill_value is not None:
             result[out_of_bounds] = self.fill_value
 
@@ -291,27 +281,6 @@ class _RegularGridInterpolator(object):
             result = sparse_matrix * self.values.reshape(shape)
 
         return result
-
-    def _evaluate_linear(self, indices, norm_distances, out_of_bounds):
-        # slice for broadcasting over trailing dimensions in self.values
-        vslice = (slice(None),) + (np.newaxis,) * \
-            (self.values.ndim - len(indices))
-
-        # find relevant values
-        # each i and i+1 represents a edge
-        import itertools
-        edges = itertools.product(*[[i, i + 1] for i in indices])
-        values = 0.
-        for edge_indices in edges:
-            weight = 1.
-            for ei, i, yi in zip(edge_indices, indices, norm_distances):
-                # weight *= np.where(ei == i, 1 - yi, yi)
-                if ei[0] == i[0]:
-                    weight *= 1 - yi
-                else:
-                    weight *= yi
-            values += np.asarray(self.values[edge_indices]) * weight[vslice]
-        return values
 
     def _evaluate_nearest(self, indices, norm_distances, out_of_bounds):
         idx_res = []

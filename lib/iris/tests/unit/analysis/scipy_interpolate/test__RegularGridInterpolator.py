@@ -72,7 +72,7 @@ class Test(tests.IrisTest):
     def test_compute_interp_weights(self):
         weights = self.weights
         self.assertIsInstance(weights, tuple)
-        self.assertEqual(len(weights), 5)
+        self.assertEqual(len(weights), 4)
         self.assertEqual(weights[0], self.tgrid.shape)
         self.assertEqual(weights[1], 'linear')
         self.assertIsInstance(weights[2], csr_matrix)
