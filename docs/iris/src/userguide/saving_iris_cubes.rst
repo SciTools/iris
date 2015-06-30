@@ -22,6 +22,23 @@ and the keyword argument `saver` is not required.
     >>> cube = cubes[0]
     >>> iris.save(cubes, '/tmp/uk_hires.nc')
 
+.. warning::
+
+    Saving a cube whose data has been loaded lazily
+    (if `cube.has_lazy_data()` returns `True`) to the same file it expects
+    to load data from will cause both the data in-memory and the data on
+    disk to be lost.
+
+    .. code-block:: python
+
+        cube = iris.load_cube('somefile.nc')
+        # The next line causes data loss in 'somefile.nc' and the cube.
+        iris.save(cube, 'somefile.nc')
+
+    In general, overwriting a file which is the source for any lazily loaded
+    data can result in corruption. Users should proceed with caution when
+    attempting to overwrite an existing file.
+
 
 Controlling the save process
 -----------------------------
