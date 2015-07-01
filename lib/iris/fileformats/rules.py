@@ -20,7 +20,7 @@ Processing of simple IF-THEN rules.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import filter
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import abc
 import collections

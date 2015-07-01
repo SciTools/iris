@@ -21,7 +21,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import filter, map, range, zip
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 from xml.dom.minidom import Document
 import collections

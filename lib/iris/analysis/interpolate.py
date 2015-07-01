@@ -22,7 +22,7 @@ See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import map, range, zip
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import collections
 import warnings
