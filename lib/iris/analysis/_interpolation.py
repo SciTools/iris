@@ -20,7 +20,6 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
-from itertools import product
 import operator
 
 from numpy.lib.stride_tricks import as_strided
@@ -472,6 +471,18 @@ class RectilinearInterpolator(object):
             result = np.result_type(_DEFAULT_DTYPE, dtype)
         return result
 
+    @staticmethod
+    def _product(dimensions):
+        # Calculate cartesian product using numpy instead of itertools.
+        # inspired by http://stackoverflow.com/posts/11146645/revisions
+        ndim = len(dimensions)
+        shape = [len(points) for points in dimensions] + [ndim]
+        product = np.empty(shape, dtype=dimensions[0].dtype)
+        mesh = np.ix_(*dimensions)
+        for index, points in enumerate(mesh):
+            product[..., index] = points
+        return product.reshape(-1, ndim)
+
     def _points(self, sample_points, data, data_dims=None):
         """
         Interpolate the given data values at the specified list of orthogonal
@@ -550,7 +561,7 @@ class RectilinearInterpolator(object):
 
         # Convert the interpolation points into a cross-product array
         # with shape (n_cross_points, n_dims)
-        interp_points = np.asarray([pts for pts in product(*interp_points)])
+        interp_points = self._product(interp_points)
 
         # Adjust for circularity.
         interp_points, data = self._account_for_circular(interp_points, data)
