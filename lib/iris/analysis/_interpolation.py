@@ -125,7 +125,7 @@ def extend_circular_data(data, coord_dim):
     return data
 
 
-def get_xy_dim_coords(cube, dim_coords=True):
+def get_xy_dim_coords(cube):
     """
     Return the x and y dimension coordinates from a cube.
 
@@ -143,13 +143,13 @@ def get_xy_dim_coords(cube, dim_coords=True):
         A tuple containing the cube's x and y dimension coordinates.
 
     """
-    x_coords = cube.coords(axis='x', dim_coords=dim_coords)
+    x_coords = cube.coords(axis='x', dim_coords=True)
     if len(x_coords) != 1:
         raise ValueError('Cube {!r} must contain a single 1D x '
                          'coordinate.'.format(cube.name()))
     x_coord = x_coords[0]
 
-    y_coords = cube.coords(axis='y', dim_coords=dim_coords)
+    y_coords = cube.coords(axis='y', dim_coords=True)
     if len(y_coords) != 1:
         raise ValueError('Cube {!r} must contain a single 1D y '
                          'coordinate.'.format(cube.name()))
@@ -163,13 +163,13 @@ def get_xy_dim_coords(cube, dim_coords=True):
     return x_coord, y_coord
 
 
-def snapshot_grid(cube, dim_coords=True):
+def snapshot_grid(cube):
     """
     Helper function that returns deep copies of lateral (dimension) coordinates
     from a cube.
 
     """
-    x, y = get_xy_dim_coords(cube, dim_coords=dim_coords)
+    x, y = get_xy_dim_coords(cube)
     return x.copy(), y.copy()
 
 

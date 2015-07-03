@@ -1047,6 +1047,30 @@ class CurvilinearRegridder(object):
         self._target_cube = target_grid_cube.copy()
         self.weights = weights
 
+    @staticmethod
+    def _get_horizontal_coord(cube, axis):
+        """
+        Gets the horizontal coordinate on the supplied cube along the
+        specified axis.
+
+        Args:
+
+        * cube:
+            An instance of :class:`iris.cube.Cube`.
+        * axis:
+            Locate coordinates on `cube` along this axis.
+
+        Returns:
+            The horizontal coordinate on the specified axis of the supplied
+            cube.
+
+        """
+        coords = cube.coords(axis=axis, dim_coords=False)
+        if len(coords) != 1:
+            raise ValueError('Cube {!r} must contain a single 1D {} '
+                             'coordinate.'.format(cube.name()), axis)
+        return coords[0]
+
     def __call__(self, src):
         """
         Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
@@ -1071,8 +1095,12 @@ class CurvilinearRegridder(object):
         if not isinstance(src, iris.cube.Cube):
             raise TypeError("'src' must be a Cube")
 
-        src_grid = snapshot_grid(self._src_cube, dim_coords=False)
-        if get_xy_dim_coords(src, dim_coords=False) != src_grid:
+        gx = self._get_horizontal_coord(self._src_cube, 'x')
+        gy = self._get_horizontal_coord(self._src_cube, 'y')
+        src_grid = (gx.copy(), gy.copy())
+        sx = self._get_horizontal_coord(src, 'x')
+        sy = self._get_horizontal_coord(src, 'y')
+        if (sx, sy) != src_grid:
             raise ValueError('The given cube is not defined on the same '
                              'source grid as this regridder.')
 

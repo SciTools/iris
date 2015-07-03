@@ -17,7 +17,6 @@
 """Unit tests for :class:`iris.experimental.regrid.CurvilinearRegridder`."""
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import zip
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -27,10 +26,6 @@ import mock
 import numpy as np
 
 from iris.experimental.regrid import CurvilinearRegridder as Regridder
-from iris.aux_factory import HybridHeightFactory
-from iris.coord_systems import GeogCS, OSGB
-from iris.coords import AuxCoord, DimCoord
-from iris.cube import Cube
 from iris.tests.stock import global_pp, lat_lon_cube
 
 
