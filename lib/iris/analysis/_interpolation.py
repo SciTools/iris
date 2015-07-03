@@ -165,7 +165,7 @@ def get_xy_dim_coords(cube):
 
 def snapshot_grid(cube):
     """
-    Helper function that returns deep copies of lateral dimension coordinates
+    Helper function that returns deep copies of lateral (dimension) coordinates
     from a cube.
 
     """

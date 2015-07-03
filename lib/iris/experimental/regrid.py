@@ -31,7 +31,7 @@ import numpy.ma as ma
 from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
-from iris.analysis._interpolation import get_xy_dim_coords
+from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
@@ -818,10 +818,6 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         msg = 'The source cube and weights require the same data shape.'
         raise ValueError(msg)
 
-    if src_cube.ndim != 2 or grid_cube.ndim != 2:
-        msg = 'The source cube and target grid cube must reference 2D data.'
-        raise ValueError(msg)
-
     if src_cube.aux_factories:
         msg = 'All source cube derived coordinates will be ignored.'
         warnings.warn(msg)
@@ -1015,3 +1011,151 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         cube.add_aux_coord(coord.copy())
 
     return cube
+
+
+class CurvilinearRegridder(object):
+    """
+    This class provides support for performing point-in-cell regridding
+    between a curvilinear source grid and a rectilinear target grid.
+
+    """
+    def __init__(self, src_grid_cube, target_grid_cube, weights):
+        """
+        Create a regridder for conversions between the source
+        and target grids.
+
+        Args:
+
+        * src_grid_cube:
+            The :class:`~iris.cube.Cube` providing the source grid.
+        * tgt_grid_cube:
+            The :class:`~iris.cube.Cube` providing the target grid.
+        * weights:
+            A :class:`numpy.ndarray` instance that defines the weights
+            for the grid cells of the source grid. Must have the same shape
+            as the data of the source grid.
+
+        """
+        # Validity checks.
+        if not isinstance(src_grid_cube, iris.cube.Cube):
+            raise TypeError("'src_grid_cube' must be a Cube")
+        if not isinstance(target_grid_cube, iris.cube.Cube):
+            raise TypeError("'target_grid_cube' must be a Cube")
+        # Snapshot the state of the cubes to ensure that the regridder
+        # is impervious to external changes to the original source cubes.
+        self._src_cube = src_grid_cube.copy()
+        self._target_cube = target_grid_cube.copy()
+        self.weights = weights
+
+    @staticmethod
+    def _get_horizontal_coord(cube, axis):
+        """
+        Gets the horizontal coordinate on the supplied cube along the
+        specified axis.
+
+        Args:
+
+        * cube:
+            An instance of :class:`iris.cube.Cube`.
+        * axis:
+            Locate coordinates on `cube` along this axis.
+
+        Returns:
+            The horizontal coordinate on the specified axis of the supplied
+            cube.
+
+        """
+        coords = cube.coords(axis=axis, dim_coords=False)
+        if len(coords) != 1:
+            raise ValueError('Cube {!r} must contain a single 1D {} '
+                             'coordinate.'.format(cube.name()), axis)
+        return coords[0]
+
+    def __call__(self, src):
+        """
+        Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
+        this :class:`CurvilinearRegridder`.
+
+        The given cube must be defined with the same grid as the source
+        grid used to create this :class:`CurvilinearRegridder`.
+
+        Args:
+
+        * src:
+            A :class:`~iris.cube.Cube` to be regridded.
+
+        Returns:
+            A cube defined with the horizontal dimensions of the target
+            and the other dimensions from this cube. The data values of
+            this cube will be converted to values on the new grid using
+            point-in-cell regridding.
+
+        """
+        # Validity checks.
+        if not isinstance(src, iris.cube.Cube):
+            raise TypeError("'src' must be a Cube")
+
+        gx = self._get_horizontal_coord(self._src_cube, 'x')
+        gy = self._get_horizontal_coord(self._src_cube, 'y')
+        src_grid = (gx.copy(), gy.copy())
+        sx = self._get_horizontal_coord(src, 'x')
+        sy = self._get_horizontal_coord(src, 'y')
+        if (sx, sy) != src_grid:
+            raise ValueError('The given cube is not defined on the same '
+                             'source grid as this regridder.')
+
+        # Call the regridder function.
+        res = regrid_weighted_curvilinear_to_rectilinear(src, self.weights,
+                                                         self._target_cube)
+        return res
+
+
+class PointInCell(object):
+    """
+    This class describes the point-in-cell regridding scheme for regridding
+    over one or more orthogonal coordinates, typically for use with
+    :meth:`iris.cube.Cube.regrid()`.
+
+    """
+    def __init__(self, weights):
+        """
+        Point-in-cell regridding scheme suitable for regridding over one
+        or more orthogonal coordinates.
+
+        Args:
+
+        * weights:
+            A :class:`numpy.ndarray` instance that defines the weights
+            for the grid cells of the source grid. Must have the same shape
+            as the data of the source grid.
+
+        """
+        self.weights = weights
+
+    def regridder(self, src_grid, target_grid):
+        """
+        Creates a point-in-cell regridder to perform regridding from the
+        source grid to the target grid.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_grid:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_grid`
+            that is to be regridded to the `target_grid`.
+
+        """
+        return CurvilinearRegridder(src_grid, target_grid, self.weights)
