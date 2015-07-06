@@ -325,7 +325,10 @@ def fields_from_cube(cubes):
     to a temporary file, and then subsequently loading them again 
     """
     with tempfile.NamedTemporaryFile('w+b', suffix='.pp') as tmp_file:
-        fh = tmp_file.file
+        if six.PY2:
+            fh = tmp_file.file
+        else:
+            fh = tmp_file
         iris.save(cubes, fh, saver='pp')
         
         # make sure the fh is written to disk, and move it back to the
