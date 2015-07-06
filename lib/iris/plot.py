@@ -260,7 +260,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                                               ['xaxis', 'yaxis'],
                                               [1, 0]):
             if coord:
-                if coord.points.dtype.char == 'S':
+                if coord.points.dtype.char in 'SU':
                     if coord.points.ndim != 1:
                         msg = 'Coord {!r} must be one-dimensional.'
                         raise ValueError(msg.format(coord))
@@ -336,7 +336,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
         for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
             # Replace any string coordinates with "index" coordinates.
-            if values.dtype.char == 'S':
+            if values.dtype.char in 'SU':
                 if values.ndim != 1:
                     raise ValueError('Multi-dimensional string coordinates '
                                      'not supported.')
@@ -446,7 +446,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
     for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
         # Replace any string coordinates with "index" coordinates.
-        if values.dtype.char == 'S':
+        if values.dtype.char in 'SU':
             if values.ndim != 1:
                 msg = 'Multi-dimensional string coordinates are not supported.'
                 raise ValueError(msg)
