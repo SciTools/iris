@@ -78,11 +78,11 @@ def read_header(file_handle):
     header = {}
     header['NAME Version'] = next(file_handle).strip()
     for line in file_handle:
-        words = line.split(':', 1)
+        words = line.split(b':', 1)
         if len(words) != 2:
             break
         key, value = [word.strip() for word in words]
-        header[key] = value
+        header[key.decode()] = value
 
     # Cast some values into floats or integers if they match a
     # given name. Set any empty string values to None.
@@ -97,6 +97,8 @@ def read_header(file_handle):
                          'Number of fields',
                          'Number of series']:
                 header[key] = int(value)
+            else:
+                header[key] = value.decode()
         else:
             header[key] = None
 
@@ -118,7 +120,7 @@ def _read_data_arrays(file_handle, n_arrays, shape):
     for line in file_handle:
         # Split the line by comma, removing the last empty column
         # caused by the trailing comma
-        vals = line.split(',')[:-1]
+        vals = line.split(b',')[:-1]
 
         # Cast the x and y grid positions to integers and convert
         # them to zero based indices
@@ -518,7 +520,7 @@ def load_NAMEIII_field(filename):
     # Loading a file gives a generator of lines which can be progressed using
     # the next() function. This will come in handy as we wish to progress
     # through the file line by line.
-    with open(filename, 'r') as file_handle:
+    with open(filename, 'rb') as file_handle:
         # Create a dictionary which can hold the header metadata about this
         # file.
         header = read_header(file_handle)
@@ -536,7 +538,8 @@ def load_NAMEIII_field(filename):
                                    'Vertical Av or Int', 'Prob Perc',
                                    'Prob Perc Ens', 'Prob Perc Time',
                                    'Time', 'Z', 'D']:
-            cols = [col.strip() for col in next(file_handle).split(',')]
+            cols = [col.strip()
+                    for col in next(file_handle).decode().split(',')]
             column_headings[column_header_name] = cols[4:-1]
 
         # Convert the time to python datetimes.
@@ -588,7 +591,7 @@ def load_NAMEII_field(filename):
         A generator :class:`iris.cube.Cube` instances.
 
     """
-    with open(filename, 'r') as file_handle:
+    with open(filename, 'rb') as file_handle:
         # Create a dictionary which can hold the header metadata about this
         # file.
         header = read_header(file_handle)
@@ -607,7 +610,8 @@ def load_NAMEII_field(filename):
         for column_header_name in ['Species Category', 'Species',
                                    'Time Av or Int', 'Quantity',
                                    'Unit', 'Z', 'Time']:
-            cols = [col.strip() for col in next(file_handle).split(',')]
+            cols = [col.strip()
+                    for col in next(file_handle).decode().split(',')]
             column_headings[column_header_name] = cols[4:-1]
 
         # Convert the time to python datetimes
@@ -667,7 +671,7 @@ def load_NAMEIII_timeseries(filename):
         A generator :class:`iris.cube.Cube` instances.
 
     """
-    with open(filename, 'r') as file_handle:
+    with open(filename, 'rb') as file_handle:
         # Create a dictionary which can hold the header metadata about this
         # file.
         header = read_header(file_handle)
@@ -683,7 +687,8 @@ def load_NAMEIII_timeseries(filename):
                                    'Vertical Av or Int', 'Prob Perc',
                                    'Prob Perc Ens', 'Prob Perc Time',
                                    'Location', 'X', 'Y', 'Z', 'D']:
-            cols = [col.strip() for col in next(file_handle).split(',')]
+            cols = [col.strip()
+                    for col in next(file_handle).decode().split(',')]
             column_headings[column_header_name] = cols[1:-1]
 
         # Determine the coordinates of the data and store in namedtuples.
@@ -707,10 +712,10 @@ def load_NAMEIII_timeseries(filename):
         for line in file_handle:
             # Split the line by comma, removing the last empty column caused
             # by the trailing comma.
-            vals = line.split(',')[:-1]
+            vals = line.split(b',')[:-1]
 
             # Time is stored in the first column.
-            t = vals[0].strip()
+            t = vals[0].decode().strip()
             dt = datetime.datetime.strptime(t, NAMEIII_DATETIME_FORMAT)
             time_list.append(dt)
 
@@ -741,7 +746,7 @@ def load_NAMEII_timeseries(filename):
         A generator :class:`iris.cube.Cube` instances.
 
     """
-    with open(filename, 'r') as file_handle:
+    with open(filename, 'rb') as file_handle:
         # Create a dictionary which can hold the header metadata about this
         # file.
         header = read_header(file_handle)
@@ -751,7 +756,8 @@ def load_NAMEII_timeseries(filename):
         for column_header_name in ['Y', 'X', 'Location',
                                    'Species Category', 'Species',
                                    'Quantity', 'Z', 'Unit']:
-            cols = [col.strip() for col in next(file_handle).split(',')]
+            cols = [col.strip()
+                    for col in next(file_handle).decode().split(',')]
             column_headings[column_header_name] = cols[1:-1]
 
         # Determine the coordinates of the data and store in namedtuples.
@@ -771,10 +777,10 @@ def load_NAMEII_timeseries(filename):
         for line in file_handle:
             # Split the line by comma, removing the last empty column caused
             # by the trailing comma.
-            vals = line.split(',')[:-1]
+            vals = line.split(b',')[:-1]
 
             # Time is stored in the first two columns.
-            t = (vals[0].strip() + ' ' + vals[1].strip())
+            t = (vals[0].strip() + b' ' + vals[1].strip()).decode()
             dt = datetime.datetime.strptime(
                 t, NAMEII_TIMESERIES_DATETIME_FORMAT)
             time_list.append(dt)
@@ -809,21 +815,22 @@ def load_NAMEIII_trajectory(filename):
     time_unit = iris.unit.Unit('hours since epoch',
                                calendar=iris.unit.CALENDAR_GREGORIAN)
 
-    with open(filename, 'r') as infile:
+    with open(filename, 'rb') as infile:
         header = read_header(infile)
 
         # read the column headings
         for line in infile:
-            if line.startswith("    "):
+            if line.startswith(b'    '):
                 break
-        headings = [heading.strip() for heading in line.split(",")]
+        headings = [heading.strip() for heading in line.decode().split(',')]
 
         # read the columns
         columns = [[] for i in range(len(headings))]
         for line in infile:
-            values = [v.strip() for v in line.split(",")]
+            values = [v.strip() for v in line.split(b',')]
             for c, v in enumerate(values):
-                if "UTC" in v:
+                if b'UTC' in v:
+                    v = v.decode()
                     v = v.replace(":00 ", " ")  # Strip out milliseconds.
                     v = datetime.datetime.strptime(v, NAMEIII_DATETIME_FORMAT)
                 else:
@@ -872,6 +879,8 @@ def load_NAMEIII_trajectory(filename):
         elif name == "Z (FL)":
             name = "flight_level"
             long_name = name
+        elif values[0].dtype.kind == 'S':
+            values = [v.decode() for v in values]
 
         try:
             coord = DimCoord(values, units=units)
