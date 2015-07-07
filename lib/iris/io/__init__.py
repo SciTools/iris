@@ -192,7 +192,8 @@ def load_files(filenames, callback, constraints=None):
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the approriate filenames
-    for handling_format_spec, fnames in six.iteritems(handler_map):
+    for handling_format_spec in sorted(handler_map):
+        fnames = handler_map[handling_format_spec]
         if handling_format_spec.constraint_aware_handler:
             for cube in handling_format_spec.handler(fnames, callback,
                                                      constraints):
@@ -220,7 +221,8 @@ def load_http(urls, callback):
         handler_map[handling_format_spec].append(url)
 
     # Call each iris format handler with the appropriate filenames
-    for handling_format_spec, fnames in six.iteritems(handler_map):
+    for handling_format_spec in sorted(handler_map):
+        fnames = handler_map[handling_format_spec]
         for cube in handling_format_spec.handler(fnames, callback):
             yield cube
 
