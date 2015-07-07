@@ -229,7 +229,7 @@ class _RegularGridInterpolator(object):
                 for ci, cw in corner:
                     weights[i::n_src_values_per_result_value] *= cw
 
-            n_src_values = np.prod(map(len, self.grid))
+            n_src_values = np.prod(list(map(len, self.grid)))
             sparse_matrix = csr_matrix((weights, col_indices, row_ptrs),
                                        shape=(n_result_values, n_src_values))
 
