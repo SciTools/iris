@@ -1930,7 +1930,7 @@ class _Groupby(object):
 
         # Create new shared bounded coordinates.
         for coord in self._shared_coords:
-            if coord.points.dtype.kind == 'S':
+            if coord.points.dtype.kind in 'SU':
                 if coord.bounds is None:
                     new_points = []
                     new_bounds = None
