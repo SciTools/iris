@@ -1236,6 +1236,8 @@ class Saver(object):
 
         if np.issubdtype(coord.points.dtype, np.str):
             string_dimension_depth = coord.points.dtype.itemsize
+            if coord.points.dtype.kind == 'U':
+                string_dimension_depth //= 4
             string_dimension_name = 'string%d' % string_dimension_depth
 
             # Determine whether to create the string length dimension.
