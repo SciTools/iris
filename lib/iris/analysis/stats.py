@@ -31,7 +31,8 @@ def _get_calc_view(cube_a, cube_b, corr_coords):
     """
     This function takes two cubes and returns cubes which are
     flattened so that efficient comparisons can be performed
-    between the two.
+    between the two. If the arrays are maksed then only values
+    that are unmasked in both arrays are used.
 
     Args:
 
@@ -95,7 +96,29 @@ def _get_calc_view(cube_a, cube_b, corr_coords):
     reshaped_b = data_b.transpose(slice_ind+res_ind)\
                        .reshape(dim_i_len, dim_j_len)
 
-    return reshaped_a, reshaped_b, res_ind
+    # Remove data where one or both cubes are masked
+    # First deal with the case that either cube is unmasked
+    # Collapse masks to the dimension we are correlating over (0th)
+    if np.ma.is_masked(reshaped_a):
+        a_not_masked = np.logical_not(reshaped_a.mask).any(axis=1)
+    else:
+        a_not_masked = True
+    if np.ma.is_masked(reshaped_b):
+        b_not_masked = np.logical_not(reshaped_b.mask.any(axis=1))
+    else:
+        b_not_masked = True
+
+    both_not_masked = a_not_masked & b_not_masked
+    try:
+        # compress to good values using mask array
+        return_a = reshaped_a.compress(both_not_masked)
+        return_b = reshaped_b.compress(both_not_masked)
+    except ValueError:
+        # expect when masks are just non-array True/False
+        return_a = reshaped_a
+        return_b = reshaped_b
+
+    return return_a, return_b, res_ind
 
 
 def pearsonr(cube_a, cube_b, corr_coords=None):
