@@ -16,6 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 from datetime import datetime
 from fnmatch import fnmatch
@@ -378,6 +379,10 @@ class TestFutureImports(unittest.TestCase):
         r"print_function(,\s*unicode_literals)?\)$",
         flags=re.MULTILINE)
 
+    six_import_pattern = re.compile(
+        r"^from six.moves import \(filter, input, map, range, zip\)  # noqa$",
+        flags=re.MULTILINE)
+
     def test_future_imports(self):
         # Tests that every single Python file includes the appropriate
         # __future__ import to enforce consistent behaviour.
@@ -406,9 +411,15 @@ class TestFutureImports(unittest.TestCase):
                               'test.'.format(full_fname))
                         failed = True
 
+                    if re.search(self.six_import_pattern, content) is None:
+                        print('The file {} has no valid six import '
+                              'and has not been excluded from the imports '
+                              'test.'.format(full_fname))
+                        failed = True
+
         if failed:
-            raise ValueError('There were __future__ import check failures. '
-                             'See stdout.')
+            raise AssertionError('There were Python 3 compatibility import '
+                                 'check failures. See stdout.')
 
 
 if __name__ == '__main__':

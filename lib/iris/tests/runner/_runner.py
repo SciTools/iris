@@ -20,6 +20,7 @@ Provides testing capabilities for installed copies of Iris.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Because this file is imported by setup.py, there may be additional runtime
 # imports later in the file.

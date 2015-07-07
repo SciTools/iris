@@ -17,7 +17,7 @@
 """Test function :func:`iris.coord_categorisation.add_categorised_coord`."""
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import range
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else

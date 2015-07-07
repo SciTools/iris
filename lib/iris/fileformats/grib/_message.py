@@ -20,6 +20,7 @@ Defines a lightweight wrapper class to wrap a single GRIB message.
 """
 
 from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
 import re

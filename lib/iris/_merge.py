@@ -23,7 +23,7 @@ Typically the cube merge process is handled by
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import map, range, zip
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
