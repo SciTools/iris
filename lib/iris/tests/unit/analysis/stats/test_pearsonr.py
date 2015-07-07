@@ -121,6 +121,32 @@ class Test(tests.IrisTest):
         self.assertArrayAlmostEqual(r1.data, np.array([0.74586593]))
         self.assertMaskedArrayEqual(r2.data, ma.array([0], mask=[True]))
 
+    def test_common_mask_simple(self):
+        cube_small = self.cube_a[:, 0, 0]
+        cube_small_masked = cube_small.copy()
+        cube_small_masked.data = ma.array(
+            cube_small.data, mask=np.array([0, 0, 0, 1, 1, 1], dtype=bool))
+        r = stats.pearsonr(cube_small, cube_small_masked, common_mask=True)
+        self.assertArrayAlmostEqual(r.data, np.array([1.]))
+
+    def test_common_mask_broadcast(self):
+        cube_small = self.cube_a[:, 0, 0]
+        cube_small_2d = self.cube_a[:, 0:2, 0]
+        cube_small.data = ma.array(
+            cube_small.data,  mask=np.array([0, 0, 0, 0, 0, 1], dtype=bool))
+        cube_small_2d.data = ma.array(
+            np.tile(cube_small.data[:, np.newaxis], 2),
+            mask=np.zeros((6, 2), dtype=bool))
+        # 2d mask varies on unshared coord:
+        cube_small_2d.data.mask[0, 1] = 1
+        r = stats.pearsonr(cube_small, cube_small_2d,
+                           weights=self.weights[:, 0, 0], common_mask=True)
+        self.assertArrayAlmostEqual(r.data, np.array([1., 1.]))
+        # 2d mask does not vary on unshared coord:
+        cube_small_2d.data.mask[0, 0] = 1
+        r = stats.pearsonr(cube_small, cube_small_2d, common_mask=True)
+        self.assertArrayAlmostEqual(r.data, np.array([1., 1.]))
+
 
 if __name__ == '__main__':
     tests.main()

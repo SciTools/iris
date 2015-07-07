@@ -3,3 +3,5 @@
   other.
   * Accepts weights keyword for weighted correlations.
   * Accepts mdtol keyword for missing data tolerance level.
+  * Accepts common_mask keyword for restricting caculation to unmasked pairs of
+  cells.
