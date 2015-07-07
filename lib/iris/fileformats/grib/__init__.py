@@ -27,6 +27,7 @@ import six
 
 import datetime
 import math  #for fmod
+import os
 import warnings
 
 import biggus
@@ -862,9 +863,12 @@ def grib_generator(filename, auto_regularise=True):
     """
     with open(filename, 'rb') as grib_fh:
         while True:
+            current_location = grib_fh.tell()
             grib_message = gribapi.grib_new_from_file(grib_fh)
             if grib_message is None:
                 break
+            message_length = gribapi.grib_get_long(grib_message, 'totalLength')
+            grib_fh.seek(current_location + message_length, os.SEEK_SET)
 
             grib_wrapper = GribWrapper(grib_message, grib_fh, auto_regularise)
 

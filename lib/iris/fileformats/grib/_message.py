@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from collections import namedtuple
+import os
 import re
 
 import biggus
@@ -58,6 +59,9 @@ class _GribMessage(object):
                 grib_id = gribapi.grib_new_from_file(grib_fh)
                 if grib_id is None:
                     break
+                message_length = gribapi.grib_get_long(grib_id, 'totalLength')
+                grib_fh.seek(offset + message_length, os.SEEK_SET)
+
                 raw_message = _RawGribMessage(grib_id)
                 recreate_raw = _MessageLocation(filename, offset)
                 yield _GribMessage(raw_message, recreate_raw)
