@@ -256,11 +256,19 @@ so adjacent ones are often in the same season:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print(zip(
-    ...     cube.coord('clim_season')[:10].points, 
-    ...     cube.coord('season_year')[:10].points))
-    [('mam', 2006), ('mam', 2006), ('jja', 2006), ('jja', 2006), ('jja', 2006), ('son', 2006),
-     ('son', 2006), ('son', 2006), ('djf', 2007), ('djf', 2007)]
+    >>> for season, year in zip(cube.coord('clim_season')[:10].points,
+    ...                         cube.coord('season_year')[:10].points):
+    ...     print(season + ' ' + str(year))
+    mam 2006
+    mam 2006
+    jja 2006
+    jja 2006
+    jja 2006
+    son 2006
+    son 2006
+    son 2006
+    djf 2007
+    djf 2007
 
 Compare this with the first 10 values of the new cube's coordinates:  
 All the points now have distinct season+year values:
@@ -268,11 +276,20 @@ All the points now have distinct season+year values:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print(zip(
-    ...     annual_seasonal_mean.coord('clim_season')[:10].points, 
-    ...     annual_seasonal_mean.coord('season_year')[:10].points))
-    [('mam', 2006), ('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007),
-     ('son', 2007), ('djf', 2008), ('mam', 2008), ('jja', 2008)]
+    >>> for season, year in zip(
+    ...         annual_seasonal_mean.coord('clim_season')[:10].points,
+    ...         annual_seasonal_mean.coord('season_year')[:10].points):
+    ...     print(season + ' ' + str(year))
+    mam 2006
+    jja 2006
+    son 2006
+    djf 2007
+    mam 2007
+    jja 2007
+    son 2007
+    djf 2008
+    mam 2008
+    jja 2008
 
 Because the original data started in April 2006 we have some incomplete seasons
 (e.g. there were only two months worth of data for 'mam-2006').
@@ -293,10 +310,24 @@ from jja-2006 to jja-2010:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print(zip(
-    ...     full_season_means.coord('clim_season').points, 
-    ...     full_season_means.coord('season_year').points))
-    [('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007), ('son', 2007), ('djf', 2008),
-     ('mam', 2008), ('jja', 2008), ('son', 2008), ('djf', 2009), ('mam', 2009), ('jja', 2009), ('son', 2009),
-     ('djf', 2010), ('mam', 2010), ('jja', 2010)]
+    >>> for season, year in zip(full_season_means.coord('clim_season').points,
+    ...                         full_season_means.coord('season_year').points):
+    ...     print(season + ' ' + str(year))
+    jja 2006
+    son 2006
+    djf 2007
+    mam 2007
+    jja 2007
+    son 2007
+    djf 2008
+    mam 2008
+    jja 2008
+    son 2008
+    djf 2009
+    mam 2009
+    jja 2009
+    son 2009
+    djf 2010
+    mam 2010
+    jja 2010
 
