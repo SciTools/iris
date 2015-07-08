@@ -29,7 +29,7 @@ In order to find out what has been loaded, the result can be printed:
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cubes = iris.load(filename)
-    >>> print cubes
+    >>> print(cubes)
     0: air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
     1: surface_altitude / (m)              (grid_latitude: 204; grid_longitude: 187)
 
@@ -76,7 +76,7 @@ list indexing can be used:
     >>> cubes = iris.load(filename)
     >>> # get the first cube (list indexing is 0 based)
     >>> air_potential_temperature = cubes[0]
-    >>> print air_potential_temperature
+    >>> print(air_potential_temperature)
     air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
@@ -236,7 +236,7 @@ explicitly enabled by setting the "cell_datetime_objects" option in :class:`iris
 
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
-    >>> print 'All times :\n', cube_all.coord('time')
+    >>> print('All times :\n' + str(cube_all.coord('time')))
     All times :
     DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
     >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
@@ -244,7 +244,7 @@ explicitly enabled by setting the "cell_datetime_objects" option in :class:`iris
     >>> with iris.FUTURE.context(cell_datetime_objects=True):
     ...     cube_11 = cube_all.extract(hour_11)
     ... 
-    >>> print 'Selected times :\n', cube_11.coord('time')
+    >>> print('Selected times :\n' + str(cube_11.coord('time')))
     Selected times :
     DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
@@ -256,9 +256,9 @@ then test only those 'aspects' which the PartialDateTime instance defines:
     >>> import datetime
     >>> from iris.time import PartialDateTime
     >>> dt = datetime.datetime(2011, 3, 7)
-    >>> print dt > PartialDateTime(year=2010, month=6)
+    >>> print(dt > PartialDateTime(year=2010, month=6))
     True
-    >>> print dt > PartialDateTime(month=6)
+    >>> print(dt > PartialDateTime(month=6))
     False
     >>> 
 
@@ -269,8 +269,9 @@ The previous constraint example can now be written as:
 
    >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
    >>> with iris.FUTURE.context(cell_datetime_objects=True):
-   ...     print iris.load_cube(iris.sample_data_path('uk_hires.pp'),
-   ...                          'air_potential_temperature' & the_11th_hour).coord('time')
+   ...     print(iris.load_cube(
+   ...         iris.sample_data_path('uk_hires.pp'),
+   ...         'air_potential_temperature' & the_11th_hour).coord('time'))
    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
 A more complex example might be when there exists a time sequence representing the first day of every week
@@ -289,7 +290,7 @@ for many years:
 .. doctest:: timeseries_range
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
     
-    >>> print long_ts.coord('time')
+    >>> print(long_ts.coord('time'))
     DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
               ...
               2010-02-01 00:00:00, 2010-02-08 00:00:00, 2010-02-15 00:00:00],
@@ -306,7 +307,7 @@ functionality with PartialDateTime:
     >>> with iris.FUTURE.context(cell_datetime_objects=True):
     ...   within_st_swithuns = long_ts.extract(st_swithuns_daterange)
     ... 
-    >>> print within_st_swithuns.coord('time')
+    >>> print(within_st_swithuns.coord('time'))
     DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
            2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
@@ -334,7 +335,7 @@ A single cube is loaded in the following example::
 
     >>> filename = iris.sample_data_path('air_temp.pp')
     >>> cube = iris.load_cube(filename)
-    >>> print cube
+    >>> print(cube)
     air_temperature / (K)                 (latitude: 73; longitude: 96)
          Dimension coordinates:
               latitude                           x              -
@@ -371,7 +372,7 @@ in order to run::
     import iris
     filename = iris.sample_data_path('uk_hires.pp')
     air_pot_temp = iris.load_cube(filename, 'air_potential_temperature')
-    print air_pot_temp
+    print(air_pot_temp)
 
 Should the file not produce exactly one cube with a standard name of 
 'air_potential_temperature', an exception will be raised.
@@ -393,8 +394,8 @@ these two cubes into separate variables.
     using *multiple assignment*:
 
         >>> number_one, number_two = [1, 2]
-        >>> print number_one
+        >>> print(number_one)
         1
-        >>> print number_two
+        >>> print(number_two)
         2
 

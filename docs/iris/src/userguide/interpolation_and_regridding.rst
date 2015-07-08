@@ -53,7 +53,7 @@ e.g. ``[('time', datetime.datetime(2009, 11, 19, 10, 30))]``).
 Let's take the air temperature cube we've seen previously:
 
     >>> air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-    >>> print air_temp
+    >>> print(air_temp)
     air_temperature / (K)               (latitude: 73; longitude: 96)
          Dimension coordinates:
               latitude                           x              -
@@ -73,7 +73,7 @@ Let's take the air temperature cube we've seen previously:
 We can interpolate specific values from the coordinates of the cube:
 
     >>> sample_points = [('latitude', 51.48), ('longitude', 0)]
-    >>> print air_temp.interpolate(sample_points, iris.analysis.Linear())
+    >>> print(air_temp.interpolate(sample_points, iris.analysis.Linear()))
     air_temperature / (K)               (scalar cube)
          Scalar coordinates:
               forecast_period: 6477 hours, bound=(-28083.0, 6477.0) hours
@@ -96,9 +96,9 @@ It isn't necessary to specify sample points for every dimension, only those that
 wish to interpolate over:
 
     >>> result = air_temp.interpolate([('longitude', 0)], iris.analysis.Linear())
-    >>> print 'Original:', air_temp.summary(shorten=True)
+    >>> print('Original: ' + air_temp.summary(shorten=True))
     Original: air_temperature / (K)               (latitude: 73; longitude: 96)
-    >>> print 'Interpolated:', result.summary(shorten=True)
+    >>> print('Interpolated: ' + result.summary(shorten=True))
     Interpolated: air_temperature / (K)               (latitude: 73)
 
 The sample points for a coordinate can be an array of values. When multiple coordinates are
@@ -108,7 +108,7 @@ will be orthogonal:
     >>> sample_points = [('longitude', np.linspace(-11, 2, 14)),
     ...                  ('latitude',  np.linspace(48, 60, 13))]
     >>> result = air_temp.interpolate(sample_points, iris.analysis.Linear())
-    >>> print result.summary(shorten=True)
+    >>> print(result.summary(shorten=True))
     air_temperature / (K)               (latitude: 13; longitude: 14)
 
 
@@ -124,13 +124,13 @@ monotonic, coordinates. Supposing we have a single column cube such as
 the one defined below:
 
     >>> column = iris.load_cube(iris.sample_data_path('hybrid_height.nc'))[:, 0, 0]
-    >>> print column.summary(shorten=True)
+    >>> print(column.summary(shorten=True))
     air_potential_temperature / (K)     (model_level_number: 15)
 
 This cube has a "hybrid-height" vertical coordinate system, meaning that the vertical
 coordinate is unevenly spaced in altitude:
 
-    >>> print column.coord('altitude').points
+    >>> print(column.coord('altitude').points)
     [  418.7    434.57   456.79   485.37   520.29   561.58   609.21   663.21
        723.58   790.31   863.41   942.88  1028.74  1120.98  1219.61]
 
@@ -140,7 +140,7 @@ these sample points:
 
     >>> sample_points = [('altitude', np.linspace(400, 1250, 10))]
     >>> new_column = column.interpolate(sample_points, iris.analysis.Linear())
-    >>> print new_column.summary(shorten=True)
+    >>> print(new_column.summary(shorten=True))
     air_potential_temperature / (K)     (model_level_number: 10)
 
 Let's look at the original data, the interpolation line and
@@ -174,7 +174,7 @@ For example, to mask values that lie beyond the range of the original data:
 
     >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
     >>> new_column = column.interpolate(sample_points, scheme)
-    >>> print new_column.coord('altitude').points
+    >>> print(new_column.coord('altitude').points)
     [     nan   494.44   588.89   683.33   777.78   872.22   966.67  1061.11
       1155.56      nan]
 
@@ -308,12 +308,12 @@ Let's demonstrate this with the global air temperature cube we saw previously,
 along with a limited area cube containing total concentration of volcanic ash:
 
     >>> global_air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-    >>> print global_air_temp.summary(shorten=True)
+    >>> print(global_air_temp.summary(shorten=True))
     air_temperature / (K)               (latitude: 73; longitude: 96)
     >>>
     >>> regional_ash = iris.load_cube(iris.sample_data_path('NAME_output.txt'))
     >>> regional_ash = regional_ash.collapsed('flight_level', iris.analysis.SUM)
-    >>> print regional_ash.summary(shorten=True)
+    >>> print(regional_ash.summary(shorten=True))
     VOLCANIC_ASH_AIR_CONCENTRATION / (g/m3) (latitude: 214; longitude: 584)
 
 One of the key limitations of the :class:`~iris.analysis.AreaWeighted`
@@ -341,7 +341,7 @@ regridding scheme:
 
     >>> scheme = iris.analysis.AreaWeighted(mdtol=0.5)
     >>> global_ash = regional_ash.regrid(global_air_temp, scheme)
-    >>> print global_ash.summary(shorten=True)
+    >>> print(global_ash.summary(shorten=True))
     VOLCANIC_ASH_AIR_CONCENTRATION / (g/m3) (latitude: 73; longitude: 96)
 
 Note that the :class:`~iris.analysis.AreaWeighted` regridding scheme allows us

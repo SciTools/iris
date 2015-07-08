@@ -50,13 +50,13 @@ Iris 1.8 features
     To demonstrate this::
 
         >>> cube = iris.load(iris.sample_data_path('colpex.pp'))[0]
-        >>> print cube.summary(shorten=True)
+        >>> print(cube.summary(shorten=True))
         air_potential_temperature / (K)     (time: 6; model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
         >>> my_slice = next(cube.slices('time'))
         >>> my_slice_over = next(cube.slices_over('time'))
-        >>> print my_slice.summary(shorten=True)
+        >>> print(my_slice.summary(shorten=True))
         air_potential_temperature / (K)     (time: 6)
-        >>> print my_slice_over.summary(shorten=True)
+        >>> print(my_slice_over.summary(shorten=True))
         air_potential_temperature / (K)     (model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
     
 

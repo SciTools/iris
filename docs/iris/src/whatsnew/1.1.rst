@@ -87,7 +87,7 @@ one might do::
 
     >>> seasons = ['mamjja', 'sondjf']
     >>> iris.coord_categorisation.add_custom_season(cube, 'time', seasons)
-    >>> print cube.coord('season').points
+    >>> print(cube.coord('season').points)
     ['ondjfm' 'ondjfm' 'mamjja' 'mamjja' 'mamjja' 'mamjja' 'mamjja' 'mamjja'
      'ondjfm' 'ondjfm' 'ondjfm' 'ondjfm']
 

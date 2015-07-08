@@ -143,14 +143,15 @@ For example:
     >>> field = next(fields_iter)
     >>> 
     >>> # Show grid details and first 5 longitude values.
-    ... print field.lbcode, field.lbnpt, field.bzx, field.bdx
+    >>> print(' '.join(str(_) for _ in (field.lbcode, field.lbnpt, field.bzx,
+    ...                                 field.bdx)))
     1 96 -3.75 3.75
-    >>> print field.bzx + field.bdx * np.arange(1, 6)
+    >>> print(field.bzx + field.bdx * np.arange(1, 6))
     [  0.     3.75   7.5   11.25  15.  ]
     >>> 
     >>> # Show Iris equivalent information.
     ... cube = iris.load_cube(fname)
-    >>> print cube.coord('longitude').points[:5]
+    >>> print(cube.coord('longitude').points[:5])
     [  0.     3.75   7.5   11.25  15.  ]
 
 .. note::
@@ -192,13 +193,19 @@ identified (for example, to load only certain stashcodes with a constraint
 
 For example:
     >>> # Show PPfield phenomenon details.
-    ... print field.lbuser[3], field.lbuser[6]
-    16203 1
+    >>> print(field.lbuser[3])
+    16203
+    >>> print(field.lbuser[6])
+    1
     >>> 
     >>> 
     >>> # Show Iris equivalents.
-    ... print cube.standard_name, cube.units, cube.attributes['STASH']
-    air_temperature K m01s16i203
+    >>> print(cube.standard_name)
+    air_temperature
+    >>> print(cube.units)
+    K
+    >>> print(cube.attributes['STASH'])
+    m01s16i203
 
 .. note::
     On saving data, no attempt is made to translate a cube standard_name into a
@@ -414,11 +421,13 @@ For example:
     >>> # Show stats metadata in a test PP field.
     ... fname = iris.sample_data_path('pre-industrial.pp')
     >>> eg_field = next(iris.fileformats.pp.load(fname))
-    >>> print eg_field.lbtim, eg_field.lbproc
-    622 128
+    >>> print(eg_field.lbtim)
+    622
+    >>> print(eg_field.lbproc)
+    128
     >>> 
     >>> # Print out the Iris equivalent information.
-    ... print iris.load_cube(fname).cell_methods
+    >>> print(iris.load_cube(fname).cell_methods)
     (CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),)
 
 

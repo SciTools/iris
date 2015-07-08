@@ -30,7 +30,7 @@ Iris 1.7 features
     larger than available system memory::
 
         >>> result = extremely_large_cube.collapsed('time', iris.analyis.MEAN)
-        >>> print type(result)
+        >>> print(type(result))
         <class 'iris.cube.Cube'>
 
     Memory is still a limiting factor if ever the data is desired as a NumPy array

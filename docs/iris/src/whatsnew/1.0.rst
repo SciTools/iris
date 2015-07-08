@@ -221,7 +221,7 @@ Metadata attributes
 Iris now stores "source" and "history" metadata in Cube attributes.
 For example::
 
-    >>> print iris.tests.stock.global_pp()
+    >>> print(iris.tests.stock.global_pp())
     air_temperature                     (latitude: 73; longitude: 96)
          ...
          Attributes:

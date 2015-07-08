@@ -100,28 +100,28 @@ make a new ``z`` dimension coordinate:
 .. doctest:: merge
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (y: 4; x: 5)
     1: air_temperature / (kelvin)          (y: 4; x: 5)
     2: air_temperature / (kelvin)          (y: 4; x: 5)
 
-    >>> print cubes[0]
+    >>> print(cubes[0])
     air_temperature / (kelvin)          (y: 4; x: 5)
      ...
          Scalar coordinates:
               z: 1 meters
-    >>> print cubes[1]
+    >>> print(cubes[1])
     air_temperature / (kelvin)          (y: 4; x: 5)
      ...
          Scalar coordinates:
               z: 2 meters
-    >>> print cubes[2]
+    >>> print(cubes[2])
     air_temperature / (kelvin)          (y: 4; x: 5)
      ...
          Scalar coordinates:
               z: 3 meters
 
-    >>> print cubes.merge()
+    >>> print(cubes.merge())
     0: air_temperature / (kelvin)          (z: 3; y: 4; x: 5)
 
 The following diagram illustrates what has taken place in this example:
@@ -170,23 +170,23 @@ into a single cube:
 .. doctest:: merge_vs_merge_cube
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (y: 4; x: 5)
     1: air_temperature / (kelvin)          (y: 4; x: 5)
     2: air_temperature / (kelvin)          (y: 4; x: 5)
 
-    >>> print cubes[0].attributes
+    >>> print(cubes[0].attributes)
     {'Conventions': 'CF-1.5'}
-    >>> print cubes[1].attributes
+    >>> print(cubes[1].attributes)
     {}
-    >>> print cubes[2].attributes
+    >>> print(cubes[2].attributes)
     {}
 
-    >>> print cubes.merge()
+    >>> print(cubes.merge())
     0: air_temperature / (kelvin)          (y: 4; x: 5)
     1: air_temperature / (kelvin)          (z: 2; y: 4; x: 5)
 
-    >>> print cubes.merge_cube()
+    >>> print(cubes.merge_cube())
     Traceback (most recent call last):
         ...
         raise iris.exceptions.MergeError(msgs)
@@ -276,12 +276,12 @@ cubes to form a new cube with an extended ``t`` coordinate:
 .. doctest:: concatenate
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
     1: air_temperature / (kelvin)          (t: 28; y: 3; x: 4)
     2: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
 
-    >>> print cubes.concatenate()
+    >>> print(cubes.concatenate())
     0: air_temperature / (kelvin)          (t: 90; y: 3; x: 4)
 
 
@@ -332,20 +332,20 @@ concatenate into a single cube:
 .. doctest:: concatenate_vs_concatenate_cube
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
     1: air_temperature / (kelvin)          (t: 28; y: 3; x: 4)
     2: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
 
-    >>> print cubes[0].attributes
+    >>> print(cubes[0].attributes)
     {'History': 'Created 2010-06-30'}
-    >>> print cubes[1].attributes
+    >>> print(cubes[1].attributes)
     {}
 
-    >>> print cubes.concatenate()
+    >>> print(cubes.concatenate())
     0: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
     1: air_temperature / (kelvin)          (t: 59; y: 3; x: 4)
-    >>> print cubes.concatenate_cube()
+    >>> print(cubes.concatenate_cube())
     Traceback (most recent call last):
         ...
         raise iris.exceptions.ConcatenateError(msgs)
@@ -417,19 +417,19 @@ input cubes before merging the input cubes using :meth:`~iris.cube.CubeList.merg
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from iris.experimental.equalise_cubes import equalise_attributes
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (y: 4; x: 5)
     1: air_temperature / (kelvin)          (y: 4; x: 5)
     2: air_temperature / (kelvin)          (y: 4; x: 5)
 
-    >>> print cubes[0].attributes
+    >>> print(cubes[0].attributes)
     {'Conventions': 'CF-1.5'}
-    >>> print cubes[1].attributes
+    >>> print(cubes[1].attributes)
     {}
-    >>> print cubes[2].attributes
+    >>> print(cubes[2].attributes)
     {}
 
-    >>> print cubes.merge_cube()
+    >>> print(cubes.merge_cube())
     Traceback (most recent call last):
         ...
         raise iris.exceptions.MergeError(msgs)
@@ -438,10 +438,10 @@ input cubes before merging the input cubes using :meth:`~iris.cube.CubeList.merg
 
     >>> equalise_attributes(cubes)
 
-    >>> print cubes[0].attributes
+    >>> print(cubes[0].attributes)
     {}
 
-    >>> print cubes.merge_cube()
+    >>> print(cubes.merge_cube())
     air_temperature / (kelvin)          (z: 3; y: 4; x: 5)
          Dimension coordinates:
               z                           x     -     -
@@ -458,7 +458,7 @@ The misleading results cause the merged cube to gain an anonymous leading dimens
 All the merged coordinates appear as auxiliary coordinates on the anonymous leading dimension.
 This is shown in the example below::
 
-    >>> print cube
+    >>> print(cube)
     surface_temperature / (K)           (-- : 5494; latitude: 325; longitude: 432)
          Dimension coordinates:
               latitude                      -               x               -
@@ -504,16 +504,16 @@ is the default behaviour):
 .. doctest:: merge_duplicate
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (y: 4; x: 5)
     1: air_temperature / (kelvin)          (y: 4; x: 5)
     2: air_temperature / (kelvin)          (y: 4; x: 5)
 
-    >>> print cubes.merge(unique=False)
+    >>> print(cubes.merge(unique=False))
     0: air_temperature / (kelvin)          (z: 2; y: 4; x: 5)
     1: air_temperature / (kelvin)          (z: 2; y: 4; x: 5)
 
-    >>> print cubes.merge()  # unique=True is the default.
+    >>> print(cubes.merge())  # unique=True is the default.
     Traceback (most recent call last):
       ...
     iris.exceptions.DuplicateDataError: failed to merge into a single cube.
@@ -551,14 +551,14 @@ If your cubes are similar to those below (the single value ``z`` coordinate
 is not on a dimension) then use :meth:`~iris.cube.CubeList.merge` to
 combine your cubes::
 
-    >>> print cubes[0]
+    >>> print(cubes[0])
     air_temperature / (kelvin)          (y: 4; x: 5)
          Dimension coordinates:
               x                           x      -
               y                           -      x
          Scalar coordinates:
               z: 1
-    >>> print cubes[1]
+    >>> print(cubes[1])
     air_temperature / (kelvin)          (y: 4; x: 5)
          Dimension coordinates:
               x                           x      -
@@ -571,7 +571,7 @@ If your cubes are similar to those below (the single value ``z`` coordinate is
 associated with a dimension) then use :meth:`~iris.cube.CubeList.concatenate` to
 combine your cubes::
 
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (z: 1; y: 4; x: 5)
     1: air_temperature / (kelvin)          (z: 1; y: 4; x: 5)
 
@@ -613,17 +613,17 @@ the input cubes using :meth:`~iris.cube.CubeList.concatenate_cube`:
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
     >>> from iris.util import unify_time_units
-    >>> print cubes
+    >>> print(cubes)
     0: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
     1: air_temperature / (kelvin)          (t: 28; y: 3; x: 4)
     2: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
 
-    >>> print cubes[0].coord('t').units
+    >>> print(cubes[0].coord('t').units)
     days since 1990-02-15
-    >>> print cubes[1].coord('t').units
+    >>> print(cubes[1].coord('t').units)
     days since 1970-01-01
 
-    >>> print cubes.concatenate_cube()
+    >>> print(cubes.concatenate_cube())
     Traceback (most recent call last):
      ...
     ConcatenateError: failed to concatenate into a single cube.
@@ -631,10 +631,10 @@ the input cubes using :meth:`~iris.cube.CubeList.concatenate_cube`:
 
     >>> unify_time_units(cubes)
 
-    >>> print cubes[1].coord('t').units
+    >>> print(cubes[1].coord('t').units)
     days since 1990-02-15
 
-    >>> print cubes.concatenate_cube()
+    >>> print(cubes.concatenate_cube())
     air_temperature / (kelvin)          (t: 90; y: 3; x: 4)
          Dimension coordinates:
               t                           x      -     -

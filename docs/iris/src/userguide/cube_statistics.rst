@@ -35,7 +35,7 @@ For instance, suppose we have a cube:
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube = iris.load_cube(filename, 'air_potential_temperature')
-    >>> print cube
+    >>> print(cube)
     air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
@@ -64,7 +64,7 @@ we can pass the coordinate name and the aggregation definition to the
 
     >>> import iris.analysis
     >>> vertical_mean = cube.collapsed('model_level_number', iris.analysis.MEAN)
-    >>> print vertical_mean
+    >>> print(vertical_mean)
     air_potential_temperature / (K)     (time: 3; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                 -                    -
@@ -123,7 +123,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
 .. doctest::
 
     >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
-    >>> print new_cube
+    >>> print(new_cube)
     air_potential_temperature / (K)     (time: 3; model_level_number: 7)
          Dimension coordinates:
               time                           x                      -
@@ -213,7 +213,7 @@ Printing this cube now shows that two extra coordinates exist on the cube:
 
 .. doctest:: aggregation
 
-    >>> print cube
+    >>> print(cube)
     surface_temperature / (K)           (time: 54; latitude: 18; longitude: 432)
          Dimension coordinates:
               time                           x             -              -
@@ -239,7 +239,7 @@ These two coordinates can now be used to aggregate by season and climate-year:
     >>> annual_seasonal_mean = cube.aggregated_by(
     ...     ['clim_season', 'season_year'], 
     ...     iris.analysis.MEAN)
-    >>> print repr(annual_seasonal_mean)
+    >>> print(repr(annual_seasonal_mean))
     <iris 'Cube' of surface_temperature / (K) (time: 19; latitude: 18; longitude: 432)>
     
 The primary change in the cube is that the cube's data has been 
@@ -256,9 +256,9 @@ so adjacent ones are often in the same season:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print zip(
+    >>> print(zip(
     ...     cube.coord('clim_season')[:10].points, 
-    ...     cube.coord('season_year')[:10].points)
+    ...     cube.coord('season_year')[:10].points))
     [('mam', 2006), ('mam', 2006), ('jja', 2006), ('jja', 2006), ('jja', 2006), ('son', 2006),
      ('son', 2006), ('son', 2006), ('djf', 2007), ('djf', 2007)]
 
@@ -268,9 +268,9 @@ All the points now have distinct season+year values:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print zip(
+    >>> print(zip(
     ...     annual_seasonal_mean.coord('clim_season')[:10].points, 
-    ...     annual_seasonal_mean.coord('season_year')[:10].points)
+    ...     annual_seasonal_mean.coord('season_year')[:10].points))
     [('mam', 2006), ('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007),
      ('son', 2007), ('djf', 2008), ('mam', 2008), ('jja', 2008)]
 
@@ -293,9 +293,9 @@ from jja-2006 to jja-2010:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print zip(
+    >>> print(zip(
     ...     full_season_means.coord('clim_season').points, 
-    ...     full_season_means.coord('season_year').points)
+    ...     full_season_means.coord('season_year').points))
     [('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007), ('son', 2007), ('djf', 2008),
      ('mam', 2008), ('jja', 2008), ('son', 2008), ('djf', 2009), ('mam', 2009), ('jja', 2009), ('son', 2009),
      ('djf', 2010), ('mam', 2010), ('jja', 2010)]
