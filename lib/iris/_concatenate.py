@@ -279,7 +279,11 @@ def concatenate(cubes, error_on_mismatch=False):
     # Construct a concatenated cube from each of the proto-cubes.
     concatenated_cubes = iris.cube.CubeList()
 
-    for name in sorted(proto_cubes_by_name):
+    # Emulate Python 2 behaviour.
+    def _none_sort(item):
+        return (item is not None, item)
+
+    for name in sorted(proto_cubes_by_name, key=_none_sort):
         for proto_cube in proto_cubes_by_name[name]:
             # Construct the concatenated cube.
             concatenated_cubes.append(proto_cube.concatenate())
