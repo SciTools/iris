@@ -320,8 +320,15 @@ class RotatedGeogCS(CoordSystem):
 
     def __str__(self):
         attrs = self._pretty_attrs()
-        result = "RotatedGeogCS(%s)" % ", ".join(
-            ["%s=%s" % (k, v) for k, v in attrs])
+        text_attrs = []
+        for k, v in attrs:
+            if isinstance(v, float):
+                text_attrs.append('{}={:.16}'.format(k, v))
+            elif isinstance(v, np.float32):
+                text_attrs.append('{}={:.8}'.format(k, v))
+            else:
+                text_attrs.append('{}={}'.format(k, v))
+        result = 'RotatedGeogCS({})'.format(', '.join(text_attrs))
         # Extra prettiness
         result = result.replace("grid_north_pole_latitude=", "")
         result = result.replace("grid_north_pole_longitude=", "")
