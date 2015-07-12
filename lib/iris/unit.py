@@ -1823,8 +1823,8 @@ class Unit(iris.util._OrderedHashable):
             >>> import numpy as np
             >>> c = unit.Unit('deg_c')
             >>> f = unit.Unit('deg_f')
-            >>> print(c.convert(0, f))
-            32.0
+            >>> c.convert(0, f)
+            31.999999999999886
             >>> c.convert(0, f, unit.FLOAT32)
             32.0
             >>> a64 = np.arange(10, dtype=np.float64)

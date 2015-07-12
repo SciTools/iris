@@ -8,6 +8,11 @@
     np.set_printoptions(precision=2)
 
 
+.. testcleanup::
+
+    np.set_printoptions(precision=8)
+
+
 ===================================
 Iris handling of PP and Fieldsfiles
 ===================================
