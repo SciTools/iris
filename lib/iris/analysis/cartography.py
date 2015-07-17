@@ -147,7 +147,7 @@ def _xy_range(cube, mode=None):
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system('CoordSystem')
 
-    if x_coord.has_bounds() != x_coord.has_bounds():
+    if x_coord.has_bounds() != y_coord.has_bounds():
         raise ValueError(
             'Cannot get the range of the x and y coordinates if they do '
             'not have the same presence of bounds.')
