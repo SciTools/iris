@@ -62,11 +62,11 @@ reference_terms = dict(atmosphere_sigma_coordinate=['ps'],
                        atmosphere_hybrid_sigma_pressure_coordinate=['ps'],
                        atmosphere_hybrid_height_coordinate=['orog'],
                        atmosphere_sleve_coordinate=['zsurf1', 'zsurf2'],
-                       ocean_sigma_coordinate=['eta'],
-                       ocean_s_coordinate=['eta'],
-                       ocean_sigma_z_coordinate=['eta'],
-                       ocean_s_coordinate_g1=['eta'],
-                       ocean_s_coordinate_g2=['eta'])
+                       ocean_sigma_coordinate=['eta', 'depth'],
+                       ocean_s_coordinate=['eta', 'depth'],
+                       ocean_sigma_z_coordinate=['eta', 'depth'],
+                       ocean_s_coordinate_g1=['eta', 'depth'],
+                       ocean_s_coordinate_g2=['eta', 'depth'])
 
 
 ################################################################################
