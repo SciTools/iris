@@ -108,7 +108,7 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname,
     band.WriteArray(data)
 
 
-def import_raster(fname):
+def import_raster(fname, header=None):
     """
     Imports raster images using gdal and constructs a cube.
 
@@ -159,8 +159,8 @@ def import_raster(fname):
         raise ValueError(msg)
 
     if num_raster > 1:
-        warnings.warn('Multiple raster band support ({}) has yet to be '
-                      'validated, use at your own risk'.format(num_raster))
+        warnings.warn('Multiple raster band support ({}) is highly '
+                      'experimental, use at your own risk'.format(num_raster))
     elif num_raster == 0:
         return None
 
@@ -181,8 +181,8 @@ def import_raster(fname):
 
     # Load data for each raster band.
     cubes = iris.cube.CubeList()
-    for iraster in range(1, num_raster + 1):
-        iband = dataset.GetRasterBand(iraster)
+    for iraster in range(num_raster):
+        iband = dataset.GetRasterBand(iraster+1)
         # ReadAsArray(xoffset, yoffset, xsize, ysize)
         data = iband.ReadAsArray(0, 0, num_xy[0], num_xy[1])[::-1, :]
         mdi = iband.GetNoDataValue() or np.nan

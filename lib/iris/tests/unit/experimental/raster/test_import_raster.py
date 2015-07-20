@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,6 +19,7 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+from __future__ import (absolute_import, division, print_function)
 
 import mock
 import numpy as np
@@ -72,8 +73,8 @@ class TestTiff(tests.IrisTest):
             self.assertEqual(len(cubes), self.dataset.RasterCount)
             self.assertCML(cubes, ('experimental',
                                    'raster_multiple_band_import.cml'))
-        warn.assert_called_once_with('Multiple raster band support ({}) has '
-                                     'yet to be validated, use at your own '
+        warn.assert_called_once_with('Multiple raster band support ({}) is '
+                                     'highly experimental, use at your own '
                                      'risk'.format(self.dataset.RasterCount))
 
     def test_no_raster_bands(self):

@@ -7,14 +7,16 @@
 		[-150000.0, -100000.0],
 		[-100000.0, -50000.0],
 		[-50000.0, 0.0],
-		[0.0, 50000.0]]" id="b928afc9" points="[-175000, -125000, -75000, -25000, 25000]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="int64"/>
+		[0.0, 50000.0]]" id="4e26f693" points="[-175000.0, -125000.0, -75000.0, -25000.0,
+		25000.0]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[50000.0, 0.0],
 		[0.0, -50000.0],
 		[-50000.0, -100000.0],
 		[-100000.0, -150000.0],
-		[-150000.0, -200000.0]]" id="513f3f68" points="[25000, -25000, -75000, -125000, -175000]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="int64"/>
+		[-150000.0, -200000.0]]" id="d1fc750d" points="[25000.0, -25000.0, -75000.0, -125000.0,
+		-175000.0]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -27,14 +29,16 @@
 		[-150000.0, -100000.0],
 		[-100000.0, -50000.0],
 		[-50000.0, 0.0],
-		[0.0, 50000.0]]" id="b928afc9" points="[-175000, -125000, -75000, -25000, 25000]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="int64"/>
+		[0.0, 50000.0]]" id="4e26f693" points="[-175000.0, -125000.0, -75000.0, -25000.0,
+		25000.0]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[50000.0, 0.0],
 		[0.0, -50000.0],
 		[-50000.0, -100000.0],
 		[-100000.0, -150000.0],
-		[-150000.0, -200000.0]]" id="513f3f68" points="[25000, -25000, -75000, -125000, -175000]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="int64"/>
+		[-150000.0, -200000.0]]" id="d1fc750d" points="[25000.0, -25000.0, -75000.0, -125000.0,
+		-175000.0]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -47,14 +51,16 @@
 		[-150000.0, -100000.0],
 		[-100000.0, -50000.0],
 		[-50000.0, 0.0],
-		[0.0, 50000.0]]" id="b928afc9" points="[-175000, -125000, -75000, -25000, 25000]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="int64"/>
+		[0.0, 50000.0]]" id="4e26f693" points="[-175000.0, -125000.0, -75000.0, -25000.0,
+		25000.0]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[50000.0, 0.0],
 		[0.0, -50000.0],
 		[-50000.0, -100000.0],
 		[-100000.0, -150000.0],
-		[-150000.0, -200000.0]]" id="513f3f68" points="[25000, -25000, -75000, -125000, -175000]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="int64"/>
+		[-150000.0, -200000.0]]" id="d1fc750d" points="[25000.0, -25000.0, -75000.0, -125000.0,
+		-175000.0]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
