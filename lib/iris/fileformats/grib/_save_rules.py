@@ -880,6 +880,40 @@ def product_definition_template_8(cube, grib):
 
     """
     gribapi.grib_set(grib, "productDefinitionTemplateNumber", 8)
+    _product_definition_template_8_and_11(cube, grib)
+
+
+def product_definition_template_11(cube, grib):
+    """
+    Set keys within the provided grib message based on Product
+    Definition Template 4.8.
+
+    Template 4.8 is used to represent an aggregation over a time
+    interval.
+
+    """
+    gribapi.grib_set(grib, "productDefinitionTemplateNumber", 11)
+    if not (cube.coords('realization') and
+            len(cube.coord('realization').points) == 1):
+        raise ValueError("A cube 'realization' coordinate with one"
+                         "point is required, but not present")
+    gribapi.grib_set(grib, "perturbationNumber",
+                     cube.coord('realization').points[0])
+    # no encoding at present in Iris, set to missing
+    gribapi.grib_set(grib, "numberOfForecastsInEnsemble", 255)
+    gribapi.grib_set(grib, "typeOfEnsembleForecast", 255)
+    _product_definition_template_8_and_11(cube, grib)
+
+
+def _product_definition_template_8_and_11(cube, grib):
+    """
+    Set keys within the provided grib message based on common aspects of
+    Product Definition Templates 4.8 and 4.11.
+
+    Templates 4.8  and 4.11 are used to represent aggregations over a time
+    interval.
+
+    """
     product_definition_template_common(cube, grib)
 
     # Check for time coordinate.
@@ -949,9 +983,14 @@ def product_definition_section(cube, grib):
         # forecast (template 4.0)
         product_definition_template_0(cube, grib)
     elif _cube_is_time_statistic(cube):
-        # time processed (template 4.8)
+        if cube.coords('realization'):
+            # time processed (template 4.11)
+            pdt = product_definition_template_11
+        else:
+            # time processed (template 4.8)
+            pdt = product_definition_template_8
         try:
-            product_definition_template_8(cube, grib)
+            pdt(cube, grib)
         except ValueError as e:
             raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
                              ' for saving as a time processed statistic GRIB'
