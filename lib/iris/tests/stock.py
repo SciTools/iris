@@ -35,6 +35,53 @@ import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
 
 
+def geodetic(shape, with_bounds=True, xlim=None, ylim=None, circular=False):
+    """
+    Return a global lat-lon cube of specified shape.
+
+    """
+    if xlim is None:
+        xlim = (-180, 180)
+    if ylim is None:
+        ylim = (-90, 90)
+    shape = np.array(shape)
+    assert shape.ndim == 1
+    assert shape.shape[0] == 2
+
+    data = np.arange(np.product(shape)).reshape(shape)
+    data = data.astype('int32')
+
+    if xlim[0] > xlim[1]:
+        data = data[:, ::-1]
+    if ylim[0] > ylim[1]:
+        data = data[::-1]
+
+    cube = iris.cube.Cube(data)
+    crs = iris.coord_systems.GeogCS(6371229)
+
+    x_bound = np.linspace(xlim[0], xlim[1], endpoint=True, num=shape[1]+1)
+    x_bounds = np.array([x_bound[:-1], x_bound[1:]]).T
+    x_points = x_bounds.mean(axis=1)
+
+    y_bound = np.linspace(ylim[0], ylim[1], endpoint=True, num=shape[0]+1)
+    y_bounds = np.array([y_bound[:-1], y_bound[1:]]).T
+    y_points = y_bounds.mean(axis=1)
+
+    if not with_bounds:
+        x_bounds = None
+        y_bounds = None
+    x_coord = iris.coords.DimCoord(x_points, standard_name='longitude',
+                                   units='degree_east',
+                                   coord_system=crs, bounds=x_bounds,
+                                   circular=circular)
+    y_coord = iris.coords.DimCoord(y_points, standard_name='latitude',
+                                   units='degree_north',
+                                   coord_system=crs, bounds=y_bounds)
+    cube.add_dim_coord(y_coord, 0)
+    cube.add_dim_coord(x_coord, 1)
+    return cube
+
+
 def lat_lon_cube():
     """
     Returns a cube with a latitude and longitude suitable for testing

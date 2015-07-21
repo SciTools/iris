@@ -41,6 +41,54 @@ import iris
 import iris.exceptions
 
 
+def _cube_cubes_arg(cubes):
+    """
+    Function for ensuring that we return a Cubelist, irrespective of whether
+    a Cube or a CubeList has been provided.
+
+    Args:
+
+    cubes (:class:`iris.cube.Cube` or :class:`iris.cube.CubeList`)
+
+    Returns:
+
+    :class:`iris.cube.CubeList`
+
+    """
+    # Function for ensuring that we always deal with a cubelists
+    if isinstance(cubes, iris.cube.Cube):
+        cubes = iris.cube.CubeList([cubes])
+    return cubes
+
+
+def invert_coordinate(cubes, coordinate):
+    """
+    In-place operation to reverse the direction of a coordinate in a cube or
+    list of cubes.
+
+    Args:
+
+    * cubes  (:class:`iris.cube.Cube` or :class:`iris.cube.CubeList`):
+        Cube(s) to have their coordinate inverted
+
+    * coordinate ('string' or :class:`iris.coord.Coord`):
+
+    """
+    cubes = _cube_cubes_arg(cubes)
+    for cube in cubes:
+        coord = cube.coord(coordinate)
+        if coord not in cube.dim_coords:
+            raise RuntimeError('Only an inversion of a dimension coordinate '
+                               'is supported ({})'.format(coord.name()))
+        dims = cube.coord_dims(coord)[0]
+
+        cube.data = reverse(cube.data, dims)
+        coord.points = reverse(coord.points, 0)
+
+        if coord.has_bounds():
+            coord.bounds = reverse(coord.bounds, [0, 1])
+
+
 def broadcast_weights(weights, array, dims):
     """
     Broadcast a weights array to the shape of another array.
