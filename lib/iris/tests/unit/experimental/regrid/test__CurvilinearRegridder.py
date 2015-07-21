@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.experimental.regrid.CurvilinearRegridder`."""
+"""Unit tests for :class:`iris.experimental.regrid._CurvilinearRegridder`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -26,14 +26,14 @@ import iris.tests as tests
 import mock
 import numpy as np
 
-from iris.experimental.regrid import CurvilinearRegridder as Regridder
+from iris.experimental.regrid import _CurvilinearRegridder as Regridder
 from iris.tests.stock import global_pp, lat_lon_cube
 
 
 RESULT_DIR = ('analysis', 'regrid')
 
 
-class Test__initialisation(tests.IrisTest):
+class Test___init__(tests.IrisTest):
     def setUp(self):
         self.ok = lat_lon_cube()
         self.bad = np.ones((3, 4))
@@ -48,7 +48,7 @@ class Test__initialisation(tests.IrisTest):
             Regridder(self.ok, self.bad, self.weights)
 
 
-class Test__operation(tests.IrisTest):
+class Test___call__(tests.IrisTest):
     def setUp(self):
         self.func = ('iris.experimental.regrid.'
                      'regrid_weighted_curvilinear_to_rectilinear')
@@ -61,23 +61,35 @@ class Test__operation(tests.IrisTest):
         self.ok.add_aux_coord(x, 1)
         self.weights = np.ones(self.ok.shape, self.ok.dtype)
 
-    def test__use_once(self):
+    def test_same_src_as_init(self):
+        # Modify the names so we can tell them apart.
+        src_grid = self.ok.copy()
+        src_grid.rename('src_grid')
+        target_grid = self.ok.copy()
+        target_grid.rename('TARGET_GRID')
+        regridder = Regridder(src_grid, target_grid, self.weights)
         with mock.patch(self.func,
                         return_value=mock.sentinel.regridded) as clr:
-            Regridder(self.ok, self.ok, self.weights)
+            result = regridder(src_grid)
 
-        clr.assertCalledOnceWith(self.ok, self.weights, self.ok)
+        clr.assert_called_once_with(src_grid, self.weights, target_grid)
+        self.assertIs(result, mock.sentinel.regridded)
 
-    def test__cache_regridder(self):
-        regridder = Regridder(self.ok, self.ok, self.weights)
-        src = self.ok
-        src.data = np.ones(src.shape, src.dtype)
+    def test_diff_src_from_init(self):
+        # Modify the names so we can tell them apart.
+        src_grid = self.ok.copy()
+        src_grid.rename('SRC_GRID')
+        target_grid = self.ok.copy()
+        target_grid.rename('TARGET_GRID')
+        regridder = Regridder(src_grid, target_grid, self.weights)
+        src = self.ok.copy()
+        src.rename('SRC')
         with mock.patch(self.func,
                         return_value=mock.sentinel.regridded) as clr:
-            res = regridder(src)
+            result = regridder(src)
 
-        clr.assertCalledOnceWith(src, self.weights, self.ok)
-        self.assertIs(res, mock.sentinel.regridded)
+        clr.assert_called_once_with(src, self.weights, target_grid)
+        self.assertIs(result, mock.sentinel.regridded)
 
 
 class Test___call____bad_src(tests.IrisTest):
@@ -100,3 +112,7 @@ class Test___call____bad_src(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError,
                                      'not defined on the same source grid'):
             self.regridder(self.ok[::2, ::2])
+
+
+if __name__ == '__main__':
+    tests.main()

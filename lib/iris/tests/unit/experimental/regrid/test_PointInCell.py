@@ -32,7 +32,7 @@ class Test_regridder(tests.IrisTest):
     def test(self):
         point_in_cell = PointInCell(mock.sentinel.weights)
 
-        with mock.patch('iris.experimental.regrid.CurvilinearRegridder',
+        with mock.patch('iris.experimental.regrid._CurvilinearRegridder',
                         return_value=mock.sentinel.regridder) as ecr:
             regridder = point_in_cell.regridder(mock.sentinel.src,
                                                 mock.sentinel.target)
