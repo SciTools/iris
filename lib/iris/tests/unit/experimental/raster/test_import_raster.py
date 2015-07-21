@@ -16,10 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.experimental.raster.import_raster` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-from __future__ import (absolute_import, division, print_function)
 
 import mock
 import numpy as np

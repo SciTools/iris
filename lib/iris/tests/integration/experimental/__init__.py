@@ -16,3 +16,4 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Integration tests for the :mod:`iris.experimental.raster` module."""
 from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
