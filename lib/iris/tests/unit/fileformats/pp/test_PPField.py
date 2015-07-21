@@ -95,8 +95,11 @@ class Test_save(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             checksum_64 = field_checksum(data_64.astype('>f8'))
 
-        self.assertEquals(checksum_32, checksum_64)
-        warn.assert_called()
+        self.assertEqual(checksum_32, checksum_64)
+        warn.assert_called_once_with(
+            'Downcasting array precision from float64 to float32 for save.'
+            'If float64 precision is required then please save in a '
+            'different format')
 
 
 class Test_calendar(tests.IrisTest):
