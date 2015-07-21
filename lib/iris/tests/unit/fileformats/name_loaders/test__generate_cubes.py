@@ -46,8 +46,8 @@ class TestCellMethods(tests.IrisTest):
         cubes = list(_generate_cubes(header, column_headings, coords,
                                      data_arrays, cell_methods))
 
-        cubes[0].assert_has_call(mock.call.add_cell_method('cell_method_1'))
-        cubes[1].assert_has_call(mock.call.add_cell_method('cell_method_2'))
+        cubes[0].assert_has_calls([mock.call.add_cell_method('cell_method_1')])
+        cubes[1].assert_has_calls([mock.call.add_cell_method('cell_method_2')])
 
 
 class TestCircularLongitudes(tests.IrisTest):
