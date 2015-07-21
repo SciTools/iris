@@ -1013,7 +1013,7 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     return cube
 
 
-class CurvilinearRegridder(object):
+class _CurvilinearRegridder(object):
     """
     This class provides support for performing point-in-cell regridding
     between a curvilinear source grid and a rectilinear target grid.
@@ -1074,10 +1074,10 @@ class CurvilinearRegridder(object):
     def __call__(self, src):
         """
         Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
-        this :class:`CurvilinearRegridder`.
+        this :class:`_CurvilinearRegridder`.
 
         The given cube must be defined with the same grid as the source
-        grid used to create this :class:`CurvilinearRegridder`.
+        grid used to create this :class:`_CurvilinearRegridder`.
 
         Args:
 
@@ -1158,4 +1158,4 @@ class PointInCell(object):
             that is to be regridded to the `target_grid`.
 
         """
-        return CurvilinearRegridder(src_grid, target_grid, self.weights)
+        return _CurvilinearRegridder(src_grid, target_grid, self.weights)

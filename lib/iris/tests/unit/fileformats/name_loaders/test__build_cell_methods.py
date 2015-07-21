@@ -28,38 +28,35 @@ import iris.tests as tests
 
 import mock
 
+import iris.coords
+
 from iris.fileformats.name_loaders import _build_cell_methods
 
 
 class Tests(tests.IrisTest):
-    def setUp(self):
-        patch = mock.patch('iris.coords.CellMethod')
-        self.mock_CellMethod = patch.start()
-        self.addCleanup(patch.stop)
-
     def test_nameII_average(self):
-        av_or_int = ['something average ob bla'] * 3
+        av_or_int = ['something average ob bla']
         coord_name = 'foo'
         res = _build_cell_methods(av_or_int, coord_name)
-        self.mock_CellMethod.assert_called('average', coord_name)
+        self.assertEqual(res, [iris.coords.CellMethod('mean', 'foo')])
 
     def test_nameIII_averaged(self):
-        av_or_int = ['something averaged ob bla'] * 3
+        av_or_int = ['something averaged ob bla']
         coord_name = 'bar'
         res = _build_cell_methods(av_or_int, coord_name)
-        self.mock_CellMethod.assert_called('average', coord_name)
+        self.assertEqual(res, [iris.coords.CellMethod('mean', 'bar')])
 
     def test_nameII_integral(self):
-        av_or_int = ['something integral ob bla'] * 3
+        av_or_int = ['something integral ob bla']
         coord_name = 'ensemble'
         res = _build_cell_methods(av_or_int, coord_name)
-        self.mock_CellMethod.assert_called('sum', coord_name)
+        self.assertEqual(res, [iris.coords.CellMethod('sum', 'ensemble')])
 
     def test_nameIII_integrated(self):
-        av_or_int = ['something integrated ob bla'] * 3
+        av_or_int = ['something integrated ob bla']
         coord_name = 'time'
         res = _build_cell_methods(av_or_int, coord_name)
-        self.mock_CellMethod.assert_called('sum', coord_name)
+        self.assertEqual(res, [iris.coords.CellMethod('sum', 'time')])
 
     def test_no_averaging(self):
         av_or_int = ['No foo averaging',
@@ -71,6 +68,26 @@ class Tests(tests.IrisTest):
         coord_name = 'time'
         res = _build_cell_methods(av_or_int, coord_name)
         self.assertEqual(res, [None] * len(av_or_int))
+
+    def test_nameII_mixed(self):
+        av_or_int = ['something integral ob bla',
+                     'no averaging',
+                     'other average']
+        coord_name = 'ensemble'
+        res = _build_cell_methods(av_or_int, coord_name)
+        self.assertEqual(res, [iris.coords.CellMethod('sum', 'ensemble'),
+                               None,
+                               iris.coords.CellMethod('mean', 'ensemble')])
+
+    def test_nameIII_mixed(self):
+        av_or_int = ['something integrated ob bla',
+                     'no averaging',
+                     'other averaged']
+        coord_name = 'ensemble'
+        res = _build_cell_methods(av_or_int, coord_name)
+        self.assertEqual(res, [iris.coords.CellMethod('sum', 'ensemble'),
+                               None,
+                               iris.coords.CellMethod('mean', 'ensemble')])
 
     def test_unrecognised(self):
         unrecognised_heading = 'bla else'
