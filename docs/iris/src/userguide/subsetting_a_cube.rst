@@ -19,7 +19,7 @@ A subset of a cube can be "extracted" from a multi-dimensional cube in order to 
     >>> filename = iris.sample_data_path('space_weather.nc')
     >>> cube = iris.load_cube(filename, 'electron density')
     >>> equator_slice = cube.extract(iris.Constraint(grid_latitude=0))
-    >>> print equator_slice
+    >>> print(equator_slice)
     electron density / (1E11 e/m^3)     (height: 29; grid_longitude: 31)
          Dimension coordinates:
               height                           x                   -
@@ -61,12 +61,12 @@ The extract method could be applied again to the *equator_slice* cube to get a f
 For example to get a ``height`` of 9000 metres at the equator the following line extends the previous example::
 
 	equator_height_9km_slice = equator_slice.extract(iris.Constraint(height=9000))
-	print equator_height_9km_slice
+	print(equator_height_9km_slice)
 
 The two steps required to get ``height`` of 9000 m at the equator can be simplified into a single constraint::
 
 	equator_height_9km_slice = cube.extract(iris.Constraint(grid_latitude=0, height=9000))
-	print equator_height_9km_slice
+	print(equator_height_9km_slice)
 
 As we saw in :doc:`loading_iris_cubes` the result of :func:`iris.load` is a :class:`CubeList <iris.cube.CubeList>`.
 The ``extract`` method also exists on a :class:`CubeList <iris.cube.CubeList>` and behaves in exactly the
@@ -77,9 +77,9 @@ same way as loading with constraints:
     >>> level_10 = iris.Constraint(model_level_number=10)
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cubes = iris.load(filename).extract(air_temp_and_fp_6 & level_10)
-    >>> print cubes
+    >>> print(cubes)
     0: air_potential_temperature / (K)     (grid_latitude: 204; grid_longitude: 187)
-    >>> print cubes[0]
+    >>> print(cubes[0])
     air_potential_temperature / (K)     (grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               grid_latitude                           x                    -
@@ -110,12 +110,12 @@ which make up the full 3d cube.::
 	import iris
 	filename = iris.sample_data_path('hybrid_height.nc')
 	cube = iris.load_cube(filename)
-	print cube
+	print(cube)
 	for yx_slice in cube.slices(['grid_latitude', 'grid_longitude']):
-	   print repr(yx_slice)
+	   print(repr(yx_slice))
 
 As the original cube had the shape (15, 100, 100) there were 15 latitude longitude slices and hence the
-line ``print repr(yx_slice)`` was run 15 times.
+line ``print(repr(yx_slice))`` was run 15 times.
 
 .. note::
 
@@ -130,9 +130,9 @@ This method can handle n-dimensional slices by providing more or fewer coordinat
 	import iris
 	filename = iris.sample_data_path('hybrid_height.nc')
 	cube = iris.load_cube(filename)
-	print cube
+	print(cube)
 	for i, x_slice in enumerate(cube.slices(['grid_longitude'])):
-	   print i, repr(x_slice)
+	   print(i, repr(x_slice))
 
 The Python function :py:func:`enumerate` is used in this example to provide an incrementing variable **i** which is
 printed with the summary of each cube slice. Note that there were 1500 1d longitude cubes as a result of
@@ -159,29 +159,29 @@ Here are some examples of array indexing in :py:mod:`numpy`::
 	import numpy as np
 	# create an array of 12 consecutive integers starting from 0
 	a = np.arange(12)
-	print a
+	print(a)
 
-	print a[0]       # first element of the array
+	print(a[0])     # first element of the array
 
-	print a[-1]       # last element of the array
+	print(a[-1])    # last element of the array
 
-	print a[0:4]       # first four elements of the array (this is the same as a[:4])
+	print(a[0:4])   # first four elements of the array (the same as a[:4])
 
-	print a[-4:]       # last four elements of the array
+	print(a[-4:])   # last four elements of the array
 
-	print a[::-1]       # gives all of the array, but backwards
+	print(a[::-1])  # gives all of the array, but backwards
 
 	# Make a 2d array by reshaping a
 	b = a.reshape(3, 4)
-	print b
+	print(b)
 
-	print b[0, 0]       # first element of the first and second dimensions
+	print(b[0, 0])  # first element of the first and second dimensions
 
-	print b[0]       # first element of the first dimension (+ every other dimension)
+	print(b[0])     # first element of the first dimension (+ every other dimension)
 
 	# get the second element of the first dimension and all of the second dimension
 	# in reverse, by steps of two.
-	print b[1, ::-2]
+	print(b[1, ::-2])
 
 
 Similarly, Iris cubes have indexing capability::
@@ -190,20 +190,20 @@ Similarly, Iris cubes have indexing capability::
         filename = iris.sample_data_path('hybrid_height.nc')
 	cube = iris.load_cube(filename)
 
-	print cube
+	print(cube)
 
 	# get the first element of the first dimension (+ every other dimension)
-	print cube[0]
+	print(cube[0])
 
 	# get the last element of the first dimension (+ every other dimension)
-	print cube[-1]
+	print(cube[-1])
 
 	# get the first 4 elements of the first dimension (+ every other dimension)
-	print cube[0:4]
+	print(cube[0:4])
 
 	# Get the first element of the first and third dimension (+ every other dimension)
-	print cube[0, :, 0]
+	print(cube[0, :, 0])
 
 	# Get the second element of the first dimension and all of the second dimension
 	# in reverse, by steps of two.
-	print cube[1, ::-2]
+	print(cube[1, ::-2])

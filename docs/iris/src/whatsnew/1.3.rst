@@ -110,7 +110,7 @@ restriction.
 For example, if one began with a collection of Cubes, each containing
 data for a different range of times::
 
-        >>> print cubes
+        >>> print(cubes)
         0: air_temperature                     (time: 30; latitude: 145; longitude: 192)
         1: air_temperature                     (time: 30; latitude: 145; longitude: 192)
         2: air_temperature                     (time: 30; latitude: 145; longitude: 192)
@@ -119,7 +119,7 @@ One could use :func:`iris.experimental.concatenate.concatenate()` to
 combine these into a single Cube as follows::
 
         >>> new_cubes = iris.experimental.concatenate.concatenate(cubes)
-        >>> print new_cubes
+        >>> print(new_cubes)
         0: air_temperature                     (time: 90; latitude: 145; longitude: 192)
 
 .. note::

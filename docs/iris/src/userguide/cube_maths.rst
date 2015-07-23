@@ -52,7 +52,7 @@ And finally we can subtract the two.
 The result is a cube of the same size as the original two time slices, 
 but with the data representing their difference:
 
-    >>> print t_last - t_first
+    >>> print(t_last - t_first)
     unknown / (K)                       (latitude: 37; longitude: 49)
          Dimension coordinates:
               latitude                           x              -
@@ -87,14 +87,14 @@ benefits of cube broadcasting.
 First, let's remind ourselves of the shape of our air temperature time-series
 cube::
 
-    >>> print air_temp.summary(True)
+    >>> print(air_temp.summary(True))
     air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
 
 Now, we'll calculate the time-series mean using the
 :meth:`Cube.collapsed <iris.cube.Cube.collapsed>` method::
 
     >>> air_temp_mean = air_temp.collapsed('time', iris.analysis.MEAN)
-    >>> print air_temp_mean.summary(True)
+    >>> print(air_temp_mean.summary(True))
     air_temperature / (K)               (latitude: 37; longitude: 49)
 
 As expected the *time* dimension has been collapsed, reducing the
@@ -103,7 +103,7 @@ now be used to calculate the time mean anomaly against the original
 time-series::
 
     >>> anomaly = air_temp - air_temp_mean
-    >>> print anomaly.summary(True)
+    >>> print(anomaly.summary(True))
     unknown / (K)                       (time: 240; latitude: 37; longitude: 49)
 
 Notice that the calculation of the *anomaly* involves subtracting a
@@ -129,13 +129,13 @@ Let's first create the transpose of the air temperature time-series::
 
     >>> air_temp_T = air_temp.copy()
     >>> air_temp_T.transpose()
-    >>> print air_temp_T.summary(True)
+    >>> print(air_temp_T.summary(True))
     air_temperature / (K)               (longitude: 49; latitude: 37; time: 240)
 
 Now add the transpose to the original time-series::
 
     >>> result = air_temp + air_temp_T
-    >>> print result.summary(True)
+    >>> print(result.summary(True))
     unknown / (K)                       (time: 240; latitude: 37; longitude: 49)
 
 Notice that the *result* is the same dimensionality and shape as *air_temp*.
@@ -149,7 +149,7 @@ Let's extend this example slightly, by taking a slice from the middle
 *latitude* dimension of the transpose cube::
 
     >>> air_temp_T_slice = air_temp_T[:, 0, :]
-    >>> print air_temp_T_slice.summary(True)
+    >>> print(air_temp_T_slice.summary(True))
     air_temperature / (K)               (longitude: 49; time: 240)
 
 Compared to our original time-series, the *air_temp_T_slice* cube has one
@@ -158,7 +158,7 @@ us from performing cube arithmetic with it, thanks to the extended cube
 broadcasting behaviour::
 
     >>> result = air_temp - air_temp_T_slice
-    >>> print result.summary(True)
+    >>> print(result.summary(True))
     unknown / (K)                       (time: 240; latitude: 37; longitude: 49)
 
 Combining multiple phenomena to form a new one

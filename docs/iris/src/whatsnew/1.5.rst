@@ -36,7 +36,7 @@ Iris 1.5 features
       # Get cube slices corresponding to the dimension associated with longitude
       # and the first dimension from a multi-dimensional cube.
       for sub_cube in cube.slices(['longitude', 0]):
-          print sub_cube
+          print(sub_cube)
 
 * :mod:`iris.experimental.animate` now provides experimental animation support.
 

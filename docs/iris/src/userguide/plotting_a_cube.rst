@@ -53,7 +53,7 @@ Subsequent changes to your figure will be automatically rendered in the window.
 The current rendering mode can be determined as follows::
 
 	import matplotlib.pyplot as plt
-	print plt.isinteractive()
+	print(plt.isinteractive())
 
 .. note::
 
@@ -64,7 +64,7 @@ The current rendering mode can be determined as follows::
         	import matplotlib.pyplot as plt
 	        plt.interactive(True)
 	        plt.plot([1, 2, 2.5])
-	        print plt.isinteractive()
+	        print(plt.isinteractive())
 
 Interactive mode does not clear out the figure buffer, so figures have to be 
 explicitly closed when they are finished with::
