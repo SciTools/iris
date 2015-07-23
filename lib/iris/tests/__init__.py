@@ -384,7 +384,7 @@ class IrisTest(unittest.TestCase):
                     np.savez(reference_file, data=data, mask=cube.data.mask)
             else:
                 with open(reference_path, 'wb') as reference_file:
-                    np.save(weference_file, cube.data)
+                    np.save(reference_file, cube.data)
 
     def assertFilesEqual(self, test_filename, reference_filename):
         reference_path = get_result_path(reference_filename)
