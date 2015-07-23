@@ -188,9 +188,30 @@ def contourf(cube, *args, **kwargs):
     return result
 
 
-def outline(cube, coords=None):
-    """Draws cell outlines on a labelled plot based on the given Cube."""
-    result = iplt.outline(cube, coords=coords)
+def outline(cube, coords=None, color='k', linewidth=None):
+    """
+    Draws cell outlines on a labelled plot based on the given Cube.
+
+    Kwargs:
+
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+        Use the given coordinates as the axes for the plot. The order of the
+        given coordinates indicates which axis to use for each, where the first
+        element is the horizontal axis of the plot and the second element is
+        the vertical axis of the plot.
+
+    * color: None or mpl color
+        The color of the cell outlines. If None, the matplotlibrc setting
+        patch.edgecolor is used by default.
+
+    * linewidth: None or number
+        The width of the lines showing the cell outlines. If None, the default
+        width in patch.linewidth in matplotlibrc is used.
+
+    """
+    result = iplt.outline(cube, color=color, linewidth=linewidth,
+                          coords=coords)
+
     _label_with_bounds(cube, coords=coords)
     return result
 

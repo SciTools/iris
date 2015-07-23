@@ -789,7 +789,7 @@ def orography_at_points(cube, facecolor='#888888', coords=None):
                            horiz_plot, style_args)
 
 
-def outline(cube, coords=None):
+def outline(cube, coords=None, color='k', linewidth=None):
     """
     Draws cell outlines based on the given Cube.
 
@@ -801,10 +801,19 @@ def outline(cube, coords=None):
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
 
+    * color: None or mpl color
+        The color of the cell outlines. If None, the matplotlibrc setting
+        patch.edgecolor is used by default.
+
+    * linewidth: None or number
+        The width of the lines showing the cell outlines. If None, the default
+        width in patch.linewidth in matplotlibrc is used.
+
     """
     result = _draw_2d_from_bounds('pcolormesh', cube, facecolors='none',
-                                  edgecolors='k', antialiased=True,
-                                  coords=coords)
+                                  edgecolors=color, linewidth=linewidth,
+                                  antialiased=True, coords=coords)
+
     # set the _is_stroked property to get a single color grid.
     # See https://github.com/matplotlib/matplotlib/issues/1302
     result._is_stroked = False
