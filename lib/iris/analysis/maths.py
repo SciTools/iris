@@ -649,38 +649,7 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
 
 class IFunc(object):
     """
-    Class for functions that can be applied to an iris cube.
-
-    Example usage 1:: Using an existing numpy ufunc, such as numpy.sin
-        for the data function and a simple lambda function for the units
-        function.
-
-        sine_ifunc = iris.analysis.maths.IFunc(
-            numpy.sin, lambda cube: iris.unit.Unit('1'))
-        sine_cube = sine_ifunc(cube)
-
-    Example usage 2:: Define a function for the data arrays of two cubes
-        and define a units function that checks the units of the cubes
-        for consistency, before giving the resulting cube the same units
-        as the first cube.
-
-        def ws_data_func(u_data, v_data):
-            return numpy.sqrt( u_data**2 + v_data**2 )
-
-        def ws_units_func(u_cube, v_cube):
-            if u_cube.units != getattr(v_cube, 'units', u_cube.units):
-                raise ValueError("units do not match")
-            return u_cube.units
-
-        ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
-        ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
-
-    Example usage 3:: Using a data function that allows a keyword argument.
-
-        cs_ifunc = iris.analysis.maths.IFunc(numpy.cumsum,
-                   lambda a: a.units
-                   )
-        cs_cube = cs_ifunc(cube, axis=1)
+    :class:`IFunc` class for functions that can be applied to an iris cube.
     """
     def __init__(self, data_func, units_func):
         """
@@ -705,6 +674,36 @@ class IFunc(object):
         Returns:
             An ifunc.
 
+        **Example usage 1** Using an existing numpy ufunc, such as numpy.sin
+        for the data function and a simple lambda function for the units
+        function::
+
+            sine_ifunc = iris.analysis.maths.IFunc(
+                numpy.sin, lambda cube: iris.unit.Unit('1'))
+            sine_cube = sine_ifunc(cube)
+
+        **Example usage 2** Define a function for the data arrays of two cubes
+        and define a units function that checks the units of the cubes
+        for consistency, before giving the resulting cube the same units
+        as the first cube::
+
+            def ws_data_func(u_data, v_data):
+                return numpy.sqrt( u_data**2 + v_data**2 )
+
+            def ws_units_func(u_cube, v_cube):
+                if u_cube.units != getattr(v_cube, 'units', u_cube.units):
+                    raise ValueError("units do not match")
+                return u_cube.units
+
+            ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
+            ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
+
+        **Example usage 3** Using a data function that allows a keyword
+        argument::
+
+            cs_ifunc = iris.analysis.maths.IFunc(numpy.cumsum,
+                lambda a: a.units)
+            cs_cube = cs_ifunc(cube, axis=1)
         """
 
         if hasattr(data_func, 'nin'):
