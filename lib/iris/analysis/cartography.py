@@ -825,29 +825,25 @@ def _crs_distance_differentials(crs, x, y):
     return ds_dx, ds_dy
 
 
-def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs,
-                                ds, dx2, dy2):
+def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
     """
     Transform distance vectors from one coordinate reference system to
     another, preserving magnitude and physical direction.
 
     Args:
 
-    * src_crs, tgt_crs (`cartopy.crs.Projection`):
-        The source and target coordinate reference systems.
-    * x, y (array):
-        Locations of each vector defined in 'src_crs'.
     * u_dist, v_dist (array):
-        Components of each vector along the x and y directions of 'src_crs'
-        at each location.
+        Components of each vector along the x and y directions of the source
+        crs at each location.
     * ds (`DistanceDifferential`):
-        Distance differentials for src_crs and tgt_crs at specified locations
+        Distance differentials for the source and the target crs at specified
+        locations.
     * dx2, dy2 (`PartialDifferential`):
-        Partial differentials from src_crs to tgt_crs.
+        Partial differentials from the source to the target crs.
 
     Returns:
         (ut_dist, vt_dist): Tuple of arrays containing the vector components
-        along the x and y directions of 'tgt_crs' at each location.
+        along the x and y directions of the target crs at each location.
 
     """
 
@@ -891,12 +887,8 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs,
                                                                 y.shape))
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
-    u_one_t, v_zero_t = _transform_distance_vectors(src_crs, x, y,
-                                                    ones, zeros, tgt_crs,
-                                                    ds, dx2, dy2)
-    u_zero_t, v_one_t = _transform_distance_vectors(src_crs, x, y,
-                                                    zeros, ones, tgt_crs,
-                                                    ds, dx2, dy2)
+    u_one_t, v_zero_t = _transform_distance_vectors(ones, zeros, ds, dx2, dy2)
+    u_zero_t, v_one_t = _transform_distance_vectors(zeros, ones, ds, dx2, dy2)
     # Squared magnitudes should be equal to one within acceptable tolerance.
     # A value of atol=2e-3 is used, which corresponds to a change in magnitude
     # of approximately 0.1%.
@@ -1078,8 +1070,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
         index = tuple(index)
         u = u_cube.data[index]
         v = v_cube.data[index]
-        ut, vt = _transform_distance_vectors(src_crs, x, y, u, v, target_crs,
-                                             ds, dx2, dy2)
+        ut, vt = _transform_distance_vectors(u, v, ds, dx2, dy2)
         if apply_mask:
             ut = ma.asanyarray(ut)
             ut[mask] = ma.masked
