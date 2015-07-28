@@ -29,6 +29,7 @@ from iris import FUTURE, load_cube
 
 from subprocess import check_output
 
+import iris
 from iris import FUTURE, load_cube, save
 from iris.coords import CellMethod
 from iris.coord_systems import RotatedGeogCS
@@ -100,6 +101,40 @@ class TestPDT8(tests.IrisTest):
                              len(cell_methods)))
         cell_method, = cell_methods
         self.assertEqual(cell_method.coord_names, ('time',))
+
+
+@tests.skip_data
+class TestPDT11(tests.IrisTest):
+    def test_perturbation(self):
+        path = tests.get_data_path(('NetCDF', 'global', 'xyt',
+                                    'SMALL_hires_wind_u_for_ipcc4.nc'))
+        cube = load_cube(path)
+        # trim to 1 time and regular lats
+        cube = cube[0, 12:144, :]
+        crs = iris.coord_systems.GeogCS(6371229)
+        cube.coord('latitude').coord_system = crs
+        cube.coord('longitude').coord_system = crs
+        # add a realization coordinate
+        cube.add_aux_coord(iris.coords.DimCoord(points=1,
+                                                standard_name='realization',
+                                                units='1'))
+        with self.temp_filename('testPDT11.GRIB2') as temp_file_path:
+            iris.save(cube, temp_file_path)
+            # Get a grib_dump of the output file.
+            dump_text = check_output(('grib_dump -O -wcount=1 ' +
+                                      temp_file_path),
+                                     shell=True)
+
+            # Check that various aspects of the saved file are as expected.
+            expect_strings = (
+                'editionNumber = 2',
+                'gridDefinitionTemplateNumber = 0',
+                'productDefinitionTemplateNumber = 11',
+                'perturbationNumber = 1',
+                'typeOfStatisticalProcessing = 0',
+                'numberOfForecastsInEnsemble = 255')
+            for expect in expect_strings:
+                self.assertIn(expect, dump_text)
 
 
 @tests.skip_data
