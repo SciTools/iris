@@ -898,7 +898,7 @@ def product_definition_template_11(cube, grib):
         raise ValueError("A cube 'realization' coordinate with one"
                          "point is required, but not present")
     gribapi.grib_set(grib, "perturbationNumber",
-                     cube.coord('realization').points[0])
+                     int(cube.coord('realization').points[0]))
     # no encoding at present in Iris, set to missing
     gribapi.grib_set(grib, "numberOfForecastsInEnsemble", 255)
     gribapi.grib_set(grib, "typeOfEnsembleForecast", 255)
