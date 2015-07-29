@@ -22,6 +22,7 @@ Various utilities and numeric transformations relevant to cartography.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from collections import namedtuple
 import copy
 import warnings
 
@@ -41,6 +42,10 @@ import iris.unit
 DEFAULT_SPHERICAL_EARTH_RADIUS = 6367470
 # TODO: This should not be necessary, as CF is always in meters
 DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('m')
+# Distance differentials for coordinate systems at specified locations
+DistanceDifferential = namedtuple('DistanceDifferential', 'dx1 dy1 dx2 dy2')
+# Partial differentials between coordinate systems
+PartialDifferential = namedtuple('PartialDifferential', 'dx1 dy1')
 
 
 def wrap_lons(lons, base, period):
@@ -820,45 +825,41 @@ def _crs_distance_differentials(crs, x, y):
     return ds_dx, ds_dy
 
 
-def _transform_distance_vectors(src_crs, x, y, u_dist, v_dist, tgt_crs):
+def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
     """
     Transform distance vectors from one coordinate reference system to
     another, preserving magnitude and physical direction.
 
     Args:
 
-    * src_crs, tgt_crs (`cartopy.crs.Projection`):
-        The source and target coordinate reference systems.
-    * x, y (array):
-        Locations of each vector defined in 'src_crs'.
     * u_dist, v_dist (array):
-        Components of each vector along the x and y directions of 'src_crs'
-        at each location.
+        Components of each vector along the x and y directions of the source
+        crs at each location.
+    * ds (`DistanceDifferential`):
+        Distance differentials for the source and the target crs at specified
+        locations.
+    * dx2, dy2 (`PartialDifferential`):
+        Partial differentials from the source to the target crs.
 
     Returns:
         (ut_dist, vt_dist): Tuple of arrays containing the vector components
-        along the x and y directions of 'tgt_crs' at each location.
+        along the x and y directions of the target crs at each location.
 
     """
-    # Get distance scalings for source crs.
-    ds_dx1, ds_dy1 = _crs_distance_differentials(src_crs, x, y)
-    # Get distance scalings for target crs.
-    x2, y2 = _transform_xy(src_crs, x, y, tgt_crs)
-    ds_dx2, ds_dy2 = _crs_distance_differentials(tgt_crs, x2, y2)
+
     # Scale input distance vectors --> source-coordinate differentials.
-    u1, v1 = u_dist / ds_dx1, v_dist / ds_dy1
+    u1, v1 = u_dist / ds.dx1, v_dist / ds.dy1
     # Transform vectors into the target system.
-    dx2_x1, dy2_x1, dx2_y1, dy2_y1 = _inter_crs_differentials(
-        src_crs, x, y, tgt_crs)
-    u2 = dx2_x1 * u1 + dx2_y1 * v1
-    v2 = dy2_x1 * u1 + dy2_y1 * v1
+    u2 = dx2.dx1 * u1 + dx2.dy1 * v1
+    v2 = dy2.dx1 * u1 + dy2.dy1 * v1
     # Rescale output coordinate vectors --> target distance vectors.
-    u2_dist, v2_dist = u2 * ds_dx2, v2 * ds_dy2
+    u2_dist, v2_dist = u2 * ds.dx2, v2 * ds.dy2
 
     return u2_dist, v2_dist
 
 
-def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
+def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs,
+                                               ds, dx2, dy2):
     """
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
@@ -871,6 +872,10 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
         Locations of each vector defined in 'src_crs'.
     * tgt_crs (`cartopy.crs.Projection`):
         The target coordinate reference systems.
+    * ds (`DistanceDifferential`):
+        Distance differentials for src_crs and tgt_crs at specified locations
+    * dx2, dy2 (`PartialDifferential`):
+        Partial differentials from src_crs to tgt_crs.
 
     Returns:
         2d boolean array that is the same shape as x and y.
@@ -882,10 +887,8 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs):
                                                                 y.shape))
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
-    u_one_t, v_zero_t = _transform_distance_vectors(src_crs, x, y,
-                                                    ones, zeros, tgt_crs)
-    u_zero_t, v_one_t = _transform_distance_vectors(src_crs, x, y,
-                                                    zeros, ones, tgt_crs)
+    u_one_t, v_zero_t = _transform_distance_vectors(ones, zeros, ds, dx2, dy2)
+    u_zero_t, v_one_t = _transform_distance_vectors(zeros, ones, ds, dx2, dy2)
     # Squared magnitudes should be equal to one within acceptable tolerance.
     # A value of atol=2e-3 is used, which corresponds to a change in magnitude
     # of approximately 0.1%.
@@ -1027,9 +1030,27 @@ def rotate_winds(u_cube, v_cube, target_cs):
     ut_cube.rename('transformed_{}'.format(u_cube.name()))
     vt_cube.rename('transformed_{}'.format(v_cube.name()))
 
+    # Get distance scalings for source crs.
+    ds_dx1, ds_dy1 = _crs_distance_differentials(src_crs, x, y)
+
+    # Get distance scalings for target crs.
+    x2, y2 = _transform_xy(src_crs, x, y, target_crs)
+    ds_dx2, ds_dy2 = _crs_distance_differentials(target_crs, x2, y2)
+
+    ds = DistanceDifferential(ds_dx1, ds_dy1, ds_dx2, ds_dy2)
+
+    # Calculate coordinate partial differentials from source crs to target crs.
+    dx2_dx1, dy2_dx1, dx2_dy1, dy2_dy1 = _inter_crs_differentials(src_crs,
+                                                                  x, y,
+                                                                  target_crs)
+
+    dx2 = PartialDifferential(dx2_dx1, dx2_dy1)
+    dy2 = PartialDifferential(dy2_dx1, dy2_dy1)
+
     # Calculate mask based on preservation of magnitude.
     mask = _transform_distance_vectors_tolerance_mask(src_crs, x, y,
-                                                      target_crs)
+                                                      target_crs,
+                                                      ds, dx2, dy2)
     apply_mask = mask.any()
     if apply_mask:
         # Make masked arrays to accept masking.
@@ -1049,7 +1070,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
         index = tuple(index)
         u = u_cube.data[index]
         v = v_cube.data[index]
-        ut, vt = _transform_distance_vectors(src_crs, x, y, u, v, target_crs)
+        ut, vt = _transform_distance_vectors(u, v, ds, dx2, dy2)
         if apply_mask:
             ut = ma.asanyarray(ut)
             ut[mask] = ma.masked
