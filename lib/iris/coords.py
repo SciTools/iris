@@ -464,13 +464,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds = self._bounds
         else:
             points = self._points
-            if isinstance(points, iris.aux_factory.LazyArray):
+            if isinstance(points, iris.aux_factory._LazyArray):
                 # This triggers the LazyArray to compute its values
                 # (if it hasn't already), which will also trigger any
                 # deferred loading of its dependencies.
                 points = points.view()
             bounds = self._bounds
-            if isinstance(bounds, iris.aux_factory.LazyArray):
+            if isinstance(bounds, iris.aux_factory._LazyArray):
                 bounds = bounds.view()
 
             # Make indexing on the cube column based by using the
@@ -1547,7 +1547,7 @@ class AuxCoord(Coord):
             if points.shape == ():
                 points = biggus.ConstantArray((1,), points.ndarray(),
                                               points.dtype)
-        elif not isinstance(points, iris.aux_factory.LazyArray):
+        elif not isinstance(points, iris.aux_factory._LazyArray):
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
         if hasattr(self, '_points') and self._points is not None:
@@ -1583,7 +1583,7 @@ class AuxCoord(Coord):
     def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is not None:
-            if not isinstance(bounds, (iris.aux_factory.LazyArray,
+            if not isinstance(bounds, (iris.aux_factory._LazyArray,
                                        biggus.Array)):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
