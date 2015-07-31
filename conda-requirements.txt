@@ -26,4 +26,4 @@ gdal
 libmo_unpack
 pandas
 pyugrid
-mo_pack
+mo_pack=0.2.0

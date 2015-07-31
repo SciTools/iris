@@ -899,23 +899,37 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         data = np.frombuffer(data_bytes, dtype=data_type)
     elif lbpack.n1 == 1:
         if mo_pack is not None:
-            data = mo_pack.unpack_wgdos(data_bytes,
-                                        data_shape[0], data_shape[1], mdi)
+            try:
+                decompress_wgdos = mo_pack.decompress_wgdos
+            except AttributeError:
+                decompress_wgdos = mo_pack.unpack_wgdos
         elif pp_packing is not None:
-            msg = 'iris.fileformats.pp_packing.wgdos_unpack has been ' \
+            msg = 'iris.fileformats.pp_packing has been ' \
                   'deprecated and will be removed in a future release. ' \
                   'Install mo_pack to make use of the new unpacking ' \
                   'functionality.'
             warnings.warn(msg)
-            data = pp_packing.wgdos_unpack(data_bytes,
-                                           data_shape[0], data_shape[1], mdi)
+            decompress_wgdos = pp_packing.wgdos_unpack
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
                   'requires mo_pack to be installed'.format(lbpack.n1)
             raise ValueError(msg)
+        data = decompress_wgdos(data_bytes, data_shape[0], data_shape[1], mdi)
     elif lbpack.n1 == 4:
-        data = pp_packing.rle_decode(data_bytes,
-                                     data_shape[0], data_shape[1], mdi)
+        if mo_pack is not None and hasattr(mo_pack, 'decompress_rle'):
+            decompress_rle = mo_pack.decompress_rle
+        elif pp_packing is not None:
+            msg = 'iris.fileformats.pp_packing has been ' \
+                  'deprecated and will be removed in a future release. ' \
+                  'Install/upgrade mo_pack to make use of the new unpacking ' \
+                  'functionality.'
+            warnings.warn(msg)
+            decompress_rle = pp_packing.rle_decode
+        else:
+            msg = 'Unpacking PP fields with LBPACK of {} ' \
+                  'requires mo_pack to be installed'.format(lbpack.n1)
+            raise ValueError(msg)
+        data = decompress_rle(data_bytes, data_shape[0], data_shape[1], mdi)
     else:
         raise iris.exceptions.NotYetImplementedError(
                 'PP fields with LBPACK of %s are not yet supported.' % lbpack)
@@ -1387,9 +1401,13 @@ class PPField(object):
             len_of_data_payload += data.size * PP_WORD_DEPTH
         elif lbpack == 1:
             if mo_pack is not None:
-                packed_data = mo_pack.pack_wgdos(data.astype(np.float32),
-                                                 b[self.HEADER_DICT['bacc'][0]-45],
-                                                 b[self.HEADER_DICT['bmdi'][0]-45])
+                try:
+                    compress_wgdos = mo_pack.compress_wgdos
+                except AttributeError:
+                    compress_wgdos = mo_pack.pack_wgdos
+                packed_data = compress_wgdos(data.astype(np.float32),
+                                             b[self.HEADER_DICT['bacc'][0]-45],
+                                             b[self.HEADER_DICT['bmdi'][0]-45])
                 len_of_data_payload += len(packed_data)
             else:
                 msg = 'Writing packed pp data with lbpack of {} ' \
