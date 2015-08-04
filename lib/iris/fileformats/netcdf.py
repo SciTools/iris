@@ -1690,7 +1690,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         `numpy.around(scale*data)/scale`, where `scale = 2**bits`, and `bits`
         is determined so that a precision of 0.1 is retained (in this case
         `bits=4`). From
-        http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml:
+        http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml:
         "least_significant_digit -- power of ten of the smallest decimal place
         in unpacked data that is a reliable value". Default is `None`, or no
         quantization, or 'lossless' compression.
