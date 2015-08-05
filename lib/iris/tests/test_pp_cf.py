@@ -24,6 +24,7 @@ import iris.coords
 
 import os
 import subprocess
+import tempfile
 import types
 import warnings
 
@@ -103,44 +104,12 @@ class TestAll(tests.IrisTest, pp.PPTest):
         nc_filenames = []
 
         for index, cube in enumerate(cubes):
-            # Write Cube to netCDF file - must be NETCDF3_CLASSIC format for the cfchecker.
-            file_nc = os.path.join(os.path.sep, 'var', 'tmp', '%s_%d.nc' % (fname_name, index))
-            #file_nc = tests.get_result_path(self._ref_dir + ('to_netcdf', '%s_%d.nc' % (fname_name, index)))
+            file_nc = tempfile.NamedTemporaryFile(suffix='.nc', delete=False).name
             iris.save(cube, file_nc, netcdf_format='NETCDF3_CLASSIC')
 
             # Check the netCDF file against CDL expected output.
             self.assertCDL(file_nc, self._ref_dir + ('to_netcdf', '%s_%d.cdl' % (fname_name, index)))
             nc_filenames.append(file_nc)
-
-            # Perform CF-netCDF conformance checking.
-            with open('/dev/null', 'w') as dev_null:
-                try:
-                    # Check for the availability of the "cfchecker" application
-                    subprocess.check_call(['which', 'cfchecker'], stderr=dev_null, stdout=dev_null)
-                except subprocess.CalledProcessError:
-                    warnings.warn('CF-netCDF "cfchecker" application not available. Skipping CF-netCDF compliance checking.')
-                else:
-                    file_checker = os.path.join(os.path.dirname(file_nc), '%s_%d.txt' % (fname_name, index))
-
-                    with open(file_checker, 'w') as report:
-                        # Generate cfchecker text report on the file.
-                        # Don't use check_call() here, as cfchecker returns a non-zero status code
-                        # for any non-compliant file, causing check_call() to raise an exception.
-                        subprocess.call(['cfchecker', file_nc], stderr=report, stdout=report)
-
-                    if not os.path.isfile(file_checker):
-                        os.remove(file_nc)
-                        self.fail('Failed to process %r with cfchecker' % file_nc)
-
-                    with open(file_checker, 'r') as report:
-                        # Get the cfchecker report and purge unwanted lines.
-                        lines = [line for line in report.readlines()
-                                 if not (line.startswith('Using') or
-                                         line.startswith('Checking against'))]
-                        checker_report = ''.join(lines)
-
-                    os.remove(file_checker)
-                    self.assertString(checker_report, self._ref_dir + ('to_netcdf', 'cf_checker', '%s_%d.txt' % (fname_name, index)))
 
         # 3) Load the netCDF and check the Cube
         for index, nc_filename in enumerate(nc_filenames):
