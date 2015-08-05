@@ -117,7 +117,7 @@ def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.,
                             dim_coords_1[i] not in common_dim_coords and
                             np.array_equal(cube_1.data.mask.any(axis=i),
                                            cube_1.data.mask.all(axis=i))]
-            cube_1_slice = cube_1.slices_over(slice_coords).next()
+            cube_1_slice = next(cube_1.slices_over(slice_coords))
             mask_cube = _ones_like(cube_1_slice) * mask_cube
         # Apply common mask to data.
         if isinstance(mask_cube, iris.cube.Cube):
