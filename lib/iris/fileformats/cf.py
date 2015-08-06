@@ -1091,6 +1091,9 @@ class CFReader(object):
                 # yet to be promoted.
                 promoted.add(cf_name)
                 not_promoted = ignored.difference(promoted)
+        else:
+            _netcdf_promote_warning()
+
 
     def _reset(self):
         """Reset the attribute touch history of each variable."""
@@ -1113,3 +1116,12 @@ def _getncattr(dataset, attr, default=None):
     except AttributeError:
         value = default
     return value
+
+
+def _netcdf_promote_warning():
+    msg = ('NetCDF default loading behaviour currently does not expose '
+           'variables which define reference surfaces for dimensionless '
+           'vertical coordinates as independent Cubes. This behaviour is '
+           'deprecated in favour of automatic promotion to Cubes. To switch '
+           'to the new behaviour, set iris.FUTURE.netcdf_promote to True.')
+    warnings.warn(msg)
