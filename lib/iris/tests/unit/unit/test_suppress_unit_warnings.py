@@ -29,6 +29,9 @@ import iris
 from iris.unit import suppress_unit_warnings
 
 
+iris.FUTURE.netcdf_promote = True
+
+
 class Test(tests.IrisTest):
 
     def test_generic_warnings(self):
