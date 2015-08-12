@@ -1941,14 +1941,20 @@ def _convert_constraints(constraints):
         if isinstance(con, iris.AttributeConstraint) and \
                 list(con._attributes.keys()) == ['STASH']:
             # Convert a STASH constraint.
+            # The attribute can be a STASH object, a stashcode string,or a 
+            # callable.
             stashobj = con._attributes['STASH']
-            if not isinstance(stashobj, STASH):
-                # The attribute can be a STASH object, or a stashcode string.
-                stashobj = STASH.from_msi(stashobj)
-            if not 'stash' in pp_constraints:
-                pp_constraints['stash'] = [stashobj]
+            if callable(stashobj):
+                call_func = stashobj
             else:
-                pp_constraints['stash'].append(stashobj)
+                    call_func = lambda stash: stash == stashobj
+            
+            # Raise an exception if stashobj was not string or STASH object??   
+            
+            if not 'stash' in pp_constraints:
+                pp_constraints['stash'] = [call_func]
+            else:
+                pp_constraints['stash'].append(call_func)
         else:
             ## only keep the pp constraints set if they are all handled as
             ## pp constraints
@@ -1961,10 +1967,14 @@ def _convert_constraints(constraints):
 
         """
         res = True
-        if pp_constraints.get('stash'):
-            if (field.stash not in _STASH_ALLOW and field.stash not in
-                    pp_constraints['stash']):
-                res = False
+        if field.stash not in _STASH_ALLOW:
+        
+            if pp_constraints.get('stash'):
+                
+                    for call_func in pp_constraints['stash']:
+                        
+                        if not call_func(field.stash):
+                            res = False
         return res
 
     if pp_constraints and not unhandled_constraints:
