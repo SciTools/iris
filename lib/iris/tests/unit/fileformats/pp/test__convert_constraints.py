@@ -70,6 +70,18 @@ class Test_convert_constraints(tests.IrisTest):
         self.assertTrue(pp_filter(stcube4))
         self.assertFalse(pp_filter(stcube7))
 
+    def test_callable_stash(self):
+        stcube236 = mock.Mock(stash=STASH.from_msi('m01s03i236'))
+        stcube4 = mock.Mock(stash=STASH.from_msi('m01s00i004'))
+        stcube7 = mock.Mock(stash=STASH.from_msi('m01s00i007'))
+        con1 = iris.AttributeConstraint(STASH=lambda s: s.endswith("004"))
+        con2 = iris.AttributeConstraint(STASH=lambda s: s == "m01s00i007")
+        constraints = [con1, con2]
+        pp_filter = _convert_constraints(constraints)
+        self.assertFalse(pp_filter(stcube236))
+        self.assertTrue(pp_filter(stcube4))
+        self.assertTrue(pp_filter(stcube7))
+
     def test_multiple_with_stash(self):
         constraints = [iris.Constraint('air_potential_temperature'),
                        iris.AttributeConstraint(STASH='m01s00i004')]

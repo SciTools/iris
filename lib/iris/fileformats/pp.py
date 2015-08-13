@@ -1955,6 +1955,10 @@ def _convert_constraints(constraints):
     constraints = iris._constraints.list_of_constraints(constraints)
     pp_constraints = {}
     unhandled_constraints = False
+
+    def make_func(stashobj):
+        return lambda stash: stash==stashobj
+
     for con in constraints:
         if isinstance(con, iris.AttributeConstraint) and \
                 list(con._attributes.keys()) == ['STASH']:
@@ -1965,10 +1969,10 @@ def _convert_constraints(constraints):
             if callable(stashobj):
                 call_func = stashobj
             else:
-                    call_func = lambda stash: stash == stashobj
-            
+                call_func = make_func(stashobj)
+
             # Raise an exception if stashobj was not string or STASH object??   
-            
+
             if not 'stash' in pp_constraints:
                 pp_constraints['stash'] = [call_func]
             else:
@@ -1977,7 +1981,7 @@ def _convert_constraints(constraints):
             ## only keep the pp constraints set if they are all handled as
             ## pp constraints
             unhandled_constraints = True
- 
+
     def pp_filter(field):
         """
         return True if field is to be kept,
@@ -1986,13 +1990,16 @@ def _convert_constraints(constraints):
         """
         res = True
         if field.stash not in _STASH_ALLOW:
-        
+
             if pp_constraints.get('stash'):
-                
+
+                    res = False
+
                     for call_func in pp_constraints['stash']:
-                        
-                        if not call_func(field.stash):
-                            res = False
+
+                        if call_func(str(field.stash)):
+                            res = True
+                            break
         return res
 
     if pp_constraints and not unhandled_constraints:
