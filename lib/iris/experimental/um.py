@@ -454,10 +454,14 @@ class _NormalDataProvider(_DataProvider):
                 if mo_pack is None:
                     msg = 'mo_pack is required to read WGDOS packed data'
                     raise ValueError(msg)
+                try:
+                    decompress_wgdos = mo_pack.decompress_wgdos
+                except AttributeError:
+                    decompress_wgdos = mo_pack.unpack_wgdos
 
                 data_bytes = self._read_raw_payload_bytes()
-                data = mo_pack.unpack_wgdos(data_bytes, field.lbrow,
-                                            field.lbnpt, field.bmdi)
+                data = decompress_wgdos(data_bytes, field.lbrow, field.lbnpt,
+                                        field.bmdi)
             else:
                 raise ValueError('Unsupported lbpack: {}'.format(field.lbpack))
         return data
