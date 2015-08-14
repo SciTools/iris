@@ -41,7 +41,8 @@ from iris.fileformats.grib import grib_phenom_translation as itranslation
 from iris.fileformats.rules import ConversionMetadata, Factory, Reference
 from iris.unit import CALENDAR_GREGORIAN, date2num, Unit
 from iris.util import _is_circular
-
+from iris.fileformats.grib.load_rules import convert as grib1_convert
+from iris.fileformats.grib._gribwrapper import GribWrapper
 
 # Restrict the names imported from this namespace.
 __all__ = ['convert']
@@ -2088,23 +2089,29 @@ def convert(field):
 
     """
     editionNumber = field.sections[0]['editionNumber']
-    if editionNumber != 2:
+    if editionNumber == 1:
+        msg_id = field._raw_message._message_id
+        conversion_md = grib1_convert(GribWrapper(msg_id))
+    elif editionNumber == 2:
+        # Initialise the cube metadata.
+        metadata = OrderedDict()
+        metadata['factories'] = []
+        metadata['references'] = []
+        metadata['standard_name'] = None
+        metadata['long_name'] = None
+        metadata['units'] = None
+        metadata['attributes'] = {}
+        metadata['cell_methods'] = []
+        metadata['dim_coords_and_dims'] = []
+        metadata['aux_coords_and_dims'] = []
+
+        # Convert GRIB2 message to cube metadata.
+        grib2_convert(field, metadata)
+
+        conversion_md = ConversionMetadata._make(metadata.values())
+
+    else:
         msg = 'GRIB edition {} is not supported'.format(editionNumber)
         raise TranslationError(msg)
 
-    # Initialise the cube metadata.
-    metadata = OrderedDict()
-    metadata['factories'] = []
-    metadata['references'] = []
-    metadata['standard_name'] = None
-    metadata['long_name'] = None
-    metadata['units'] = None
-    metadata['attributes'] = {}
-    metadata['cell_methods'] = []
-    metadata['dim_coords_and_dims'] = []
-    metadata['aux_coords_and_dims'] = []
-
-    # Convert GRIB2 message to cube metadata.
-    grib2_convert(field, metadata)
-
-    return ConversionMetadata._make(metadata.values())
+    return conversion_md

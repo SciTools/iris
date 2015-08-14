@@ -393,7 +393,8 @@ class TestGribTimecodes(tests.IrisTest):
         # Operates on lists of cases for various time-units and grib-editions.
         # Format: (edition, code, expected-exception,
         #          equivalent-seconds, description-string)
-        with mock.patch('iris.fileformats.grib.gribapi', _mock_gribapi):
+        with mock.patch('iris.fileformats.grib._gribwrapper.gribapi',
+                        _mock_gribapi):
             for test_controls in test_set:
                 (
                     grib_edition, timeunit_codenum,
@@ -602,7 +603,8 @@ class TestGribSimple(tests.IrisTest):
     def cube_from_message(self, grib):
         # Parameter translation now uses the GribWrapper, so we must convert
         # the Mock-based fake message to a FakeGribMessage.
-        with mock.patch('iris.fileformats.grib.gribapi', _mock_gribapi):
+        with mock.patch('iris.fileformats.grib._gribwrapper.gribapi',
+                        _mock_gribapi):
                 grib_message = FakeGribMessage(**grib.__dict__)
                 wrapped_msg = iris.fileformats.grib.GribWrapper(grib_message)
                 cube, _, _ = iris.fileformats.rules._make_cube(
