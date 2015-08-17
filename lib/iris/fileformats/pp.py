@@ -1955,23 +1955,33 @@ def _convert_constraints(constraints):
     constraints = iris._constraints.list_of_constraints(constraints)
     pp_constraints = {}
     unhandled_constraints = False
+
+    def make_func(stashobj):
+        return lambda stash: stash==stashobj
+
     for con in constraints:
         if isinstance(con, iris.AttributeConstraint) and \
                 list(con._attributes.keys()) == ['STASH']:
             # Convert a STASH constraint.
+            # The attribute can be a STASH object, a stashcode string,or a 
+            # callable.
             stashobj = con._attributes['STASH']
-            if not isinstance(stashobj, STASH):
-                # The attribute can be a STASH object, or a stashcode string.
-                stashobj = STASH.from_msi(stashobj)
-            if not 'stash' in pp_constraints:
-                pp_constraints['stash'] = [stashobj]
+            if callable(stashobj):
+                call_func = stashobj
             else:
-                pp_constraints['stash'].append(stashobj)
+                call_func = make_func(stashobj)
+
+            # Raise an exception if stashobj was not string or STASH object??   
+
+            if not 'stash' in pp_constraints:
+                pp_constraints['stash'] = [call_func]
+            else:
+                pp_constraints['stash'].append(call_func)
         else:
             ## only keep the pp constraints set if they are all handled as
             ## pp constraints
             unhandled_constraints = True
- 
+
     def pp_filter(field):
         """
         return True if field is to be kept,
@@ -1979,10 +1989,17 @@ def _convert_constraints(constraints):
 
         """
         res = True
-        if pp_constraints.get('stash'):
-            if (field.stash not in _STASH_ALLOW and field.stash not in
-                    pp_constraints['stash']):
-                res = False
+        if field.stash not in _STASH_ALLOW:
+
+            if pp_constraints.get('stash'):
+
+                    res = False
+
+                    for call_func in pp_constraints['stash']:
+
+                        if call_func(str(field.stash)):
+                            res = True
+                            break
         return res
 
     if pp_constraints and not unhandled_constraints:
