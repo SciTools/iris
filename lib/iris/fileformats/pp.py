@@ -1992,11 +1992,9 @@ def _convert_constraints(constraints):
         """
         res = True
         if field.stash not in _STASH_ALLOW:
-
             if pp_constraints.get('stash'):
 
                     res = False
-
                     for call_func in pp_constraints['stash']:
 
                         if call_func(str(field.stash)):
