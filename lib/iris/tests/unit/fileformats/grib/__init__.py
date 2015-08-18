@@ -24,7 +24,10 @@ import mock
 from iris.fileformats.grib._message import _GribMessage
 
 
-def _make_test_message(sections):
+def _make_test_message(sections, edition=2):
+    if isinstance(sections, dict):
+        sections[0] = {}
+        sections[0]['editionNumber'] = edition
     raw_message = mock.Mock(sections=sections)
     recreate_raw = mock.Mock(return_value=raw_message)
     return _GribMessage(raw_message, recreate_raw)

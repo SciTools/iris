@@ -44,11 +44,11 @@ class Test(tests.IrisTest):
             metadata = ([factory], [], None, None, None, {}, [], [], [])
             self.assertEqual(result, metadata)
 
-    def test_edition_1(self):
-        sections = [{'editionNumber': 1}]
+    def test_edition_3(self):
+        sections = [{'editionNumber': 3}]
         field = _make_test_message(sections)
         with self.assertRaisesRegexp(TranslationError,
-                                     'edition 1 is not supported'):
+                                     'edition 3 is not supported'):
             convert(field)
 
 

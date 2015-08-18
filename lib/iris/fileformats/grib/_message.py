@@ -79,6 +79,10 @@ class _GribMessage(object):
         return self._raw_message.sections
 
     @property
+    def edition(self):
+        return self._raw_message.sections[0]['editionNumber']
+
+    @property
     def data(self):
         """
         The data array from the GRIB message as a biggus Array.
@@ -89,38 +93,42 @@ class _GribMessage(object):
 
         """
         sections = self.sections
-        grid_section = sections[3]
-        if grid_section['sourceOfGridDefinition'] != 0:
-            raise TranslationError(
-                'Unsupported source of grid definition: {}'.format(
-                    grid_section['sourceOfGridDefinition']))
+        if self.edition == 1:
+            grid_section = sections[2]
+            shape = (grid_section['Nj'], grid_section['Ni'])
+        elif self.edition == 2:
+            grid_section = sections[3]
+            if grid_section['sourceOfGridDefinition'] != 0:
+                raise TranslationError(
+                    'Unsupported source of grid definition: {}'.format(
+                        grid_section['sourceOfGridDefinition']))
 
-        reduced = (grid_section['numberOfOctectsForNumberOfPoints'] != 0 or
-                   grid_section['interpretationOfNumberOfPoints'] != 0)
-        template = grid_section['gridDefinitionTemplateNumber']
-        if reduced and template not in (40,):
-            raise TranslationError('Grid definition Section 3 contains '
-                                   'unsupported quasi-regular grid.')
+            reduced = (grid_section['numberOfOctectsForNumberOfPoints'] != 0 or
+                       grid_section['interpretationOfNumberOfPoints'] != 0)
+            template = grid_section['gridDefinitionTemplateNumber']
+            if reduced and template not in (40,):
+                raise TranslationError('Grid definition Section 3 contains '
+                                       'unsupported quasi-regular grid.')
 
-        if template in (0, 1, 5, 12, 30, 40, 90):
-            # We can ignore the first two bits (i-neg, j-pos) because
-            # that is already captured in the coordinate values.
-            if grid_section['scanningMode'] & 0x3f:
-                msg = 'Unsupported scanning mode: {}'.format(
-                    grid_section['scanningMode'])
-                raise TranslationError(msg)
-            if template in (30, 90):
-                shape = (grid_section['Ny'], grid_section['Nx'])
-            elif template == 40 and reduced:
-                shape = (grid_section['numberOfDataPoints'],)
+            if template in (0, 1, 5, 12, 30, 40, 90):
+                # We can ignore the first two bits (i-neg, j-pos) because
+                # that is already captured in the coordinate values.
+                if grid_section['scanningMode'] & 0x3f:
+                    msg = 'Unsupported scanning mode: {}'.format(
+                        grid_section['scanningMode'])
+                    raise TranslationError(msg)
+                if template in (30, 90):
+                    shape = (grid_section['Ny'], grid_section['Nx'])
+                elif template == 40 and reduced:
+                    shape = (grid_section['numberOfDataPoints'],)
+                else:
+                    shape = (grid_section['Nj'], grid_section['Ni'])
             else:
-                shape = (grid_section['Nj'], grid_section['Ni'])
-            proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
-                               self._recreate_raw)
-            data = biggus.NumpyArrayAdapter(proxy)
-        else:
-            fmt = 'Grid definition template {} is not supported'
-            raise TranslationError(fmt.format(template))
+                fmt = 'Grid definition template {} is not supported'
+                raise TranslationError(fmt.format(template))
+        proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
+                           self._recreate_raw, self.edition)
+        data = biggus.NumpyArrayAdapter(proxy)
         return data
 
 
@@ -133,13 +141,14 @@ class _MessageLocation(namedtuple('_MessageLocation', 'filename offset')):
 class _DataProxy(object):
     """A reference to the data payload of a single GRIB message."""
 
-    __slots__ = ('shape', 'dtype', 'fill_value', 'recreate_raw')
+    __slots__ = ('shape', 'dtype', 'fill_value', 'recreate_raw', 'edition')
 
-    def __init__(self, shape, dtype, fill_value, recreate_raw):
+    def __init__(self, shape, dtype, fill_value, recreate_raw, edition):
         self.shape = shape
         self.dtype = dtype
         self.fill_value = fill_value
         self.recreate_raw = recreate_raw
+        self.edition = edition
 
     @property
     def ndim(self):
@@ -178,7 +187,7 @@ class _DataProxy(object):
         elif bitMapIndicator == 255:
             bitmap = None
         else:
-            msg = 'Bitmap Section 6 contains unsupported ' \
+            msg = 'Bitmap Section contains unsupported ' \
                   'bitmap indicator [{}]'.format(bitMapIndicator)
             raise TranslationError(msg)
         return bitmap
@@ -188,9 +197,14 @@ class _DataProxy(object):
         # is checked before this proxy is created.
         message = self.recreate_raw()
         sections = message.sections
-        bitmap_section = sections[6]
+
+        if self.edition == 1:
+            bitmap_section = sections[4]
+            data = sections[4]['values']
+        elif self.edition == 2:
+            bitmap_section = sections[6]
+            data = sections[7]['codedValues']
         bitmap = self._bitmap(bitmap_section)
-        data = sections[7]['codedValues']
 
         if bitmap is not None:
             # Note that bitmap and data are both 1D arrays at this point.
@@ -372,7 +386,8 @@ class _Section(object):
                        'satelliteNumber', 'instrumentType',
                        'scaleFactorOfCentralWaveNumber',
                        'scaledValueOfCentralWaveNumber',
-                       'longitudes', 'latitudes', 'distinctLatitudes')
+                       'longitudes', 'latitudes', 'distinctLatitudes',
+                       'values')
         if key in vector_keys:
             res = gribapi.grib_get_array(self._message_id, key)
         elif key == 'bitmap':

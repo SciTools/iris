@@ -1,0 +1,2 @@
+* Support for GRIB1 messages has been added to the new strict_grib_load approach.  This uses 
+  the legacy metadata interpretation code, enabling GRIB1 loading to continue to be supported.
