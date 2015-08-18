@@ -1953,7 +1953,11 @@ def _convert_constraints(constraints):
     pp_constraints = {}
     unhandled_constraints = False
 
-    def make_func(stashobj):
+    def _make_func(stashobj):
+	"""
+	Provides unique name-space for each lambda function's stashobj
+	variable.
+	"""
         return lambda stash: stash==stashobj
 
     for con in constraints:
@@ -1965,10 +1969,11 @@ def _convert_constraints(constraints):
             stashobj = con._attributes['STASH']
             if callable(stashobj):
                 call_func = stashobj
-            else:
-                call_func = make_func(stashobj)
-
-            # Raise an exception if stashobj was not string or STASH object??   
+            elif isinstance(stashobj, (basestring, STASH)):
+                call_func = _make_func(stashobj)
+	    else:
+		raise TypeError("STASH constraints should be either a"
+				" callable, string or STASH object")
 
             if not 'stash' in pp_constraints:
                 pp_constraints['stash'] = [call_func]
