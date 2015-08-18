@@ -45,7 +45,8 @@ class TestToggle(tests.IrisTest):
                 if mode:
                     kw_args = {}
                 else:
-                    kw_args = {'auto_regularise': mock.sentinel.REGULARISE}
+                    kw_args = {'hindcast_workaround': False,
+                               'auto_regularise': mock.sentinel.REGULARISE}
                 loader = iris.fileformats.rules.Loader(
                     generator, kw_args,
                     converter, None)
