@@ -1578,6 +1578,28 @@ class AuxCoord(Coord):
         self._bounds = bounds
 
 
+class CellMeasures(AuxCoord):
+    """
+    CF Cell Measures coordinate. Sublasses AuxCoord to provide string
+    representation for cube attributes list.
+
+    """
+
+    def __init__(self, points, cf_measures, standard_name=None, long_name=None,
+                 var_name=None, units='1', bounds=None, attributes=None,
+                 coord_system=None):
+
+        AuxCoord.__init__(self, points, standard_name=None,
+                          long_name=None, var_name=None, units='1',
+                          bounds=None, attributes=None, coord_system=None)
+
+        self.measures = cf_measures
+
+    def __repr__(self):
+
+        return(self.measures)
+
+
 class CellMethod(iris.util._OrderedHashable):
     """
     Represents a sub-cell pre-processing operation.

@@ -352,6 +352,21 @@ fc_build_auxiliary_coordinate
         python build_auxiliary_coordinate(engine, cf_coord_var)
         python engine.rule_triggered.add(rule.name)
 
+#
+# Context:
+#   This rule will trigger for each cell_measure_coordinate() case specific fact.
+#
+# Purpose:
+#   Add the cell measures coordinate to the cube.  
+#
+fc_build_cell_measure_coordinate
+    foreach
+        facts_cf.cell_measure_coordinate($coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.cell_measures[$coordinate]
+        python build_cell_measures_coordinate(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
 
 #
 # Context:
@@ -1307,6 +1322,81 @@ fc_extras
 
         # Update the coordinate to CF-netCDF variable mapping.
         engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
+        
+    ################################################################################
+    def build_cell_measures_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
+        """Create a cell measures coordinate (CellMeasures) and add it to the cube."""
+
+        cf_var = engine.cf_var
+        cube = engine.cube
+        attributes = {}
+
+        # Get units
+        attr_units = get_attr_units(cf_coord_var, attributes)
+
+        def cf_var_as_biggus(cf_var):
+            dtype = cf_var.dtype
+            fill_value = getattr(cf_var.cf_data, '_FillValue',
+                                 netCDF4.default_fillvals[dtype.str[1:]])
+            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
+                cf_var.shape, dtype, engine.filename,
+                cf_var.cf_name, fill_value)
+            return biggus.OrthoArrayAdapter(proxy)
+
+        # Get any coordinate point data.
+        if isinstance(cf_coord_var, cf.CFLabelVariable):
+            points_data = cf_coord_var.cf_label_data(cf_var)
+        else:
+            points_data = cf_var_as_biggus(cf_coord_var)
+
+        # Get any coordinate bounds.
+        cf_bounds_var = get_cf_bounds_var(cf_coord_var)
+        if cf_bounds_var is not None:
+            bounds_data = cf_var_as_biggus(cf_bounds_var)
+
+            # Handle transposed bounds where the vertex dimension is not
+            # the last one. Test based on shape to support different
+            # dimension names.
+            if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
+                # Biggus 0.7 doesn't support rollaxis, so we have to
+                # resolve the data to a numpy array.
+                # NB. This is what used to happen with LazyArray as well.
+                bounds_data = bounds_data.ndarray()
+                bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var,
+                                                  cf_coord_var)
+        else:
+            bounds_data = None
+
+        # Determine the name of the dimension/s shared between the CF-netCDF data variable
+        # and the coordinate being built.
+        common_dims = [dim for dim in cf_coord_var.dimensions
+                       if dim in cf_var.dimensions]
+        data_dims = None    
+        if common_dims:
+            # Calculate the offset of each common dimension.
+            data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
+        # Determine the standard_name, long_name and var_name
+        standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
+        
+        # Obtain the cf_measure standard name.
+        measures = cf_coord_var.cf_measure
+        
+        # Create the coordinate
+        cell_measures_coord = iris.coords.CellMeasures(points_data, measures,
+                                     standard_name=standard_name,
+                                     long_name=long_name,
+                                     var_name=var_name,
+                                     units=attr_units,
+                                     bounds=bounds_data,
+                                     attributes=attributes,
+                                     coord_system=coord_system)
+
+        # Add it to the cube
+        cube.attributes["cell_measures"] = cell_measures_coord
+
+        # Update the coordinate to CF-netCDF variable mapping.
+        engine.provides['coordinates'].append((cell_measures_coord, cf_coord_var.cf_name))
 
 
     ################################################################################

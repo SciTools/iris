@@ -298,6 +298,11 @@ def _assert_case_specific_facts(engine, cf, cf_group):
         engine.add_case_specific_fact(_PYKE_FACT_BASE, 'coordinate',
                                       (cf_name,))
 
+    # Assert facts for CF cell measures.
+    for cf_name in cf_group.cell_measures.iterkeys():
+        engine.add_case_specific_fact(_PYKE_FACT_BASE,
+                                      'cell_measure_coordinate', (cf_name,))
+
     # Assert facts for CF auxiliary coordinates.
     for cf_name in cf_group.auxiliary_coordinates.iterkeys():
         engine.add_case_specific_fact(_PYKE_FACT_BASE, 'auxiliary_coordinate',
