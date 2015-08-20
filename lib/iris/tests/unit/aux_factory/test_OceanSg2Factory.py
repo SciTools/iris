@@ -133,9 +133,8 @@ class Test_make_coord(tests.IrisTest):
         S = (depth_c * s + depth * c) / (depth_c + depth)
         result = eta + (eta + depth) * S
         if coord:
-            name = 'sea_surface_height_above_reference_ellipsoid'
             result = AuxCoord(result,
-                              standard_name=name,
+                              standard_name='altitude',
                               units='m',
                               attributes=dict(positive='up'))
         return result

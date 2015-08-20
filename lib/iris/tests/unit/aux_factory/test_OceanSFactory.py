@@ -139,9 +139,8 @@ class Test_make_coord(tests.IrisTest):
              (np.tanh(a * (s + 0.5)) / (2 * np.tanh(0.5 * a)) - 0.5))
         result = eta * (1 + s) + depth_c * s + (depth - depth_c) * c
         if coord:
-            name = 'sea_surface_height_above_reference_ellipsoid'
             result = AuxCoord(result,
-                              standard_name=name,
+                              standard_name='altitude',
                               units='m',
                               attributes=dict(positive='up'))
         return result

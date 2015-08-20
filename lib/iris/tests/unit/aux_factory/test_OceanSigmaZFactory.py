@@ -155,9 +155,8 @@ class Test_make_coord(tests.IrisTest):
         result = np.ones(shape, dtype=temp.dtype) * zlev
         result[nsigma_slice] = temp[nsigma_slice]
         if coord:
-            name = 'sea_surface_height_above_reference_ellipsoid'
             result = AuxCoord(result,
-                              standard_name=name,
+                              standard_name='altitude',
                               units='m',
                               attributes=dict(positive='up'))
         return result
