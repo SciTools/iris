@@ -1589,9 +1589,12 @@ class CellMeasures(AuxCoord):
                  var_name=None, units='1', bounds=None, attributes=None,
                  coord_system=None):
 
-        AuxCoord.__init__(self, points, standard_name=None,
-                          long_name=None, var_name=None, units='1',
-                          bounds=None, attributes=None, coord_system=None)
+        super(CellMeasures, self).__init__(points, standard_name=standard_name,
+                                           long_name=long_name,
+                                           var_name=var_name, units=units,
+                                           bounds=bounds,
+                                           attributes=attributes,
+                                           coord_system=coord_system)
 
         self.measures = cf_measures
 

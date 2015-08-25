@@ -1322,7 +1322,8 @@ fc_extras
 
         # Update the coordinate to CF-netCDF variable mapping.
         engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
-        
+
+ 
     ################################################################################
     def build_cell_measures_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
         """Create a cell measures coordinate (CellMeasures) and add it to the cube."""
