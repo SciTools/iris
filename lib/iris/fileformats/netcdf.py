@@ -301,7 +301,7 @@ def _assert_case_specific_facts(engine, cf, cf_group):
     # Assert facts for CF cell measures.
     for cf_name in cf_group.cell_measures.iterkeys():
         engine.add_case_specific_fact(_PYKE_FACT_BASE,
-                                      'cell_measure_coordinate', (cf_name,))
+                                      'cell_measure_attribute', (cf_name,))
 
     # Assert facts for CF auxiliary coordinates.
     for cf_name in cf_group.auxiliary_coordinates.iterkeys():
@@ -566,6 +566,7 @@ def load_cubes(filenames, callback=None):
 
             # Perform any user registered callback function.
             cube = iris.io.run_callback(callback, cube, cf_var, filename)
+
 
             # Callback mechanism may return None, which must not be yielded
             if cube is None:
