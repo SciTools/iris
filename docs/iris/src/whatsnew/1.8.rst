@@ -148,6 +148,12 @@ Bugs fixed
 * Saving cube collections to NetCDF, where multiple similar aux-factories exist within the cubes, 
   is now carefully handled such that extra file variables are created where required in some cases.
 
+1.8.2
+-----
+* A fix to prevent the error: *AttributeError: 'module' object has no attribute 'date2num'*.
+  This was caused by the function :func:`netcdftime.date2num` being removed from the netCDF4
+  package in recent versions.
+
 Deprecations
 ============
 * The original GRIB loader has been deprecated and replaced with a new
