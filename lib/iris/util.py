@@ -1160,7 +1160,7 @@ def as_compatible_shape(src_cube, target_cube):
                          'to restore cube dimensions.')
 
     new_shape = [1] * target_cube.ndim
-    for dim_from, dim_to in dim_mapping.iteritems():
+    for dim_from, dim_to in six.iteritems(dim_mapping):
         if dim_to is not None:
             new_shape[dim_from] = src_cube.shape[dim_to]
 

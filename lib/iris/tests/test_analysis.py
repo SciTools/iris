@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -43,7 +44,7 @@ if tests.MPL_AVAILABLE:
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
     def assertComparisonDict(self, comarison_dict, reference_filename):
         string = ''
-        for key, coord_groups in comarison_dict.iteritems():
+        for key, coord_groups in six.iteritems(comarison_dict):
             string += ('%40s  ' % key)
             names = [[coord.name() if coord is not None else 'None' for coord in coords] for coords in coord_groups]
             string += str(sorted(names))
@@ -1043,7 +1044,7 @@ class TestProject(tests.GraphicsTest):
         # Set up figure
         fig = plt.figure(figsize=(10, 10))
         gs = matplotlib.gridspec.GridSpec(nrows=3, ncols=3, hspace=1.5, wspace=0.5)
-        for subplot_spec, (name, target_proj) in zip(gs, projections.iteritems()):
+        for subplot_spec, (name, target_proj) in zip(gs, six.iteritems(projections)):
             # Set up axes and title
             ax = plt.subplot(subplot_spec, frameon=False, projection=target_proj)
             ax.set_title(name)

@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 import datetime
@@ -367,8 +368,7 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
         # Turn the dictionary of column headings with a list of header
         # information for each field into a dictionary of headings for
         # just this field.
-        field_headings = {k: v[i] for k, v in
-                          column_headings.iteritems()}
+        field_headings = {k: v[i] for k, v in six.iteritems(column_headings)}
 
         # Make a cube.
         cube = iris.cube.Cube(data_array)
@@ -446,13 +446,13 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
                     'X grid resolution', 'Y grid resolution', ]
 
         # Add the Main Headings as attributes.
-        for key, value in header.iteritems():
+        for key, value in six.iteritems(header):
             if value is not None and value != '' and \
                     key not in headings:
                 cube.attributes[key] = value
 
         # Add the Column Headings as attributes
-        for key, value in field_headings.iteritems():
+        for key, value in six.iteritems(field_headings):
             if value is not None and value != '' and \
                     key not in headings:
                 cube.attributes[key] = value

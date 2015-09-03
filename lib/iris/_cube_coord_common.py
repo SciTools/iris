@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # TODO: Is this a mixin or a base class?
 
@@ -37,15 +38,15 @@ class LimitedAttributeDict(dict):
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
-        for key in self.iterkeys():
+        for key in six.iterkeys(self):
             if key in self._forbidden_keys:
                 raise ValueError('%r is not a permitted attribute' % key)
 
     def __eq__(self, other):
         # Extend equality to allow for NumPy arrays.
-        match = self.viewkeys() == other.viewkeys()
+        match = set(self.keys()) == set(other.keys())
         if match:
-            for key, value in self.iteritems():
+            for key, value in six.iteritems(self):
                 match = value == other[key]
                 try:
                     match = bool(match)

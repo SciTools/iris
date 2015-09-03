@@ -82,7 +82,7 @@ class ConcreteReferenceTarget(object):
             else:
                 final_cube = src_cube.copy()
                 attributes = self.transform(final_cube)
-                for name, value in attributes.iteritems():
+                for name, value in six.iteritems(attributes):
                     setattr(final_cube, name, value)
                 self._final_cube = final_cube
 

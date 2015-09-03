@@ -1210,7 +1210,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
-            for name in sorted(self.attributes.iterkeys()):
+            for name in sorted(six.iterkeys(self.attributes)):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
                 attribute_element.setAttribute('value',

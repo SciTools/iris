@@ -239,7 +239,8 @@ digraph CubeGraph{
     %(associations)s
 }
     '''
-    cube_attributes = [(name, value) for name, value in sorted(cube.attributes.iteritems(), key=lambda item: item[0])]
+    cube_attributes = list(sorted(six.iteritems(cube.attributes),
+                                  key=lambda item: item[0]))
     cube_node = _dot_node(_GRAPH_INDENT, ':Cube', 'Cube', cube_attributes)
     res_string = template % {
                         'cube_node': cube_node,
@@ -275,7 +276,7 @@ def _coord_text(label, coord):
     attrs = [(name, getattr(coord, name)) for name in _dot_attrs]
 
     if coord.attributes:
-        custom_attrs = sorted(coord.attributes.iteritems(), key=lambda item: item[0])
+        custom_attrs = sorted(six.iteritems(coord.attributes), key=lambda item: item[0])
         attrs.extend(custom_attrs)
 
     node = _dot_node(_SUBGRAPH_INDENT, label, coord.__class__.__name__, attrs)
@@ -295,7 +296,7 @@ def _coord_system_text(cs, uid):
 
     """
     attrs = []
-    for k, v in cs.__dict__.iteritems():
+    for k, v in six.iteritems(cs.__dict__):
         if isinstance(v, iris.cube.Cube):
             attrs.append((k, 'defined'))
         else:

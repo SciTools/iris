@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -102,7 +103,7 @@ class TestTrajectory(tests.IrisTest):
         def traj_to_sample_points(trajectory):
             sample_points = []
             src_points = trajectory.sampled_points
-            for name in src_points[0].iterkeys():
+            for name in six.iterkeys(src_points[0]):
                 values = [point[name] for point in src_points]
                 sample_points.append((name, values))
             return sample_points

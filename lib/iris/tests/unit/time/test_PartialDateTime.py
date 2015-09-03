@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -158,7 +159,7 @@ def negate_expectations(expectations):
             expected = not expected
         return expected
 
-    return {name: negate(value) for name, value in expectations.iteritems()}
+    return {name: negate(value) for name, value in six.iteritems(expectations)}
 
 
 EQ_EXPECTATIONS = {'no_difference': True, 'item1_lo': False, 'item1_hi': False,

@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
@@ -1084,7 +1085,8 @@ def _all_other_rules(f):
 
     if unhandled_lbproc:
         attributes["ukmo__process_flags"] = tuple(sorted(
-            [name for value, name in iris.fileformats.pp.lbproc_map.iteritems()
+            [name
+             for value, name in six.iteritems(iris.fileformats.pp.lbproc_map)
              if isinstance(value, int) and f.lbproc & value]))
 
     if (f.lbsrce % 10000) == 1111:

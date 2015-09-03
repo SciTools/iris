@@ -30,6 +30,7 @@ as obtained from:
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import argparse
 import pprint
@@ -106,7 +107,7 @@ def to_dict(infile, outfile):
     for section in process_name_table(tree, 'alias', 'entry_id'):
         aliases.update(section)
 
-    for key, valued in aliases.iteritems():
+    for key, valued in six.iteritems(aliases):
         values.update({
                 key : {'canonical_units' : values.get(valued['entry_id']).get('canonical_units')}
             })

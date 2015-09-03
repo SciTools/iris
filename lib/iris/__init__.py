@@ -220,7 +220,7 @@ class Future(threading.local):
         # Save the current context
         current_state = self.__dict__.copy()
         # Update the state
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             setattr(self, name, value)
         try:
             yield

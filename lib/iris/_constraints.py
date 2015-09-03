@@ -103,7 +103,7 @@ class Constraint(object):
                             'collections.Mapping, got %r' % coord_values)
 
         coord_values = coord_values or {}
-        duplicate_keys = coord_values.viewkeys() & kwargs.viewkeys()
+        duplicate_keys = set(coord_values.keys()) & set(kwargs.keys())
         if duplicate_keys:
             raise ValueError('Duplicate coordinate conditions specified for: '
                              '%s' % list(duplicate_keys))
@@ -446,7 +446,7 @@ class AttributeConstraint(Constraint):
 
     def _cube_func(self, cube):
         match = True
-        for name, value in self._attributes.iteritems():
+        for name, value in six.iteritems(self._attributes):
             if name in cube.attributes:
                 cube_attr = cube.attributes.get(name)
                 # if we have a callable, then call it with the value,

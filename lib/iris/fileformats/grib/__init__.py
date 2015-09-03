@@ -178,7 +178,7 @@ class GribDataProxy(object):
         return {attr:getattr(self, attr) for attr in self.__slots__}
 
     def __setstate__(self, state):
-        for key, value in state.iteritems():
+        for key, value in six.iteritems(state):
             setattr(self, key, value)
 
 

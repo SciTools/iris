@@ -1356,7 +1356,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # set up a list to hold the extra data which will need to be encoded at the end of the data
         extra_items = []
         # iterate through all of the possible extra data fields
-        for ib, extra_data_attr_name in EXTRA_DATA.iteritems():
+        for ib, extra_data_attr_name in six.iteritems(EXTRA_DATA):
             # try to get the extra data field, returning None if it doesn't exist
             extra_elem = getattr(self, extra_data_attr_name, None)
             if extra_elem is not None:

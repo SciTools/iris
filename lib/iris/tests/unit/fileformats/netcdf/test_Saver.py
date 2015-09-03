@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -135,7 +136,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, unlimited_dimensions=[])
             ds = nc.Dataset(nc_path)
-            for dim in ds.dimensions.itervalues():
+            for dim in six.itervalues(ds.dimensions):
                 self.assertFalse(dim.isunlimited())
             ds.close()
 

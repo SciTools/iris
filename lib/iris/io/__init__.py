@@ -161,11 +161,11 @@ def expand_filespecs(file_specs):
     glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
 
     # If any of the specs expanded to an empty list then raise an error
-    value_lists = glob_expanded.viewvalues()
+    value_lists = glob_expanded.values()
     if not all(value_lists):
         raise IOError("One or more of the files specified did not exist %s." %
         ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
-         for pattern, expanded in glob_expanded.iteritems()])
+         for pattern, expanded in six.iteritems(glob_expanded)])
 
     return sum(value_lists, [])
 
@@ -192,7 +192,7 @@ def load_files(filenames, callback, constraints=None):
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the approriate filenames
-    for handling_format_spec, fnames in handler_map.iteritems():
+    for handling_format_spec, fnames in six.iteritems(handler_map):
         if handling_format_spec.constraint_aware_handler:
             for cube in handling_format_spec.handler(fnames, callback,
                                                      constraints):
@@ -220,7 +220,7 @@ def load_http(urls, callback):
         handler_map[handling_format_spec].append(url)
 
     # Call each iris format handler with the appropriate filenames
-    for handling_format_spec, fnames in handler_map.iteritems():
+    for handling_format_spec, fnames in six.iteritems(handler_map):
         for cube in handling_format_spec.handler(fnames, callback):
             yield cube
 
