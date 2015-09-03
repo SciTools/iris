@@ -66,6 +66,20 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         """
         return self.standard_name or self.long_name or self.var_name or default
 
+    def __lt__(self, other):
+        if not isinstance(other, CoordDefn):
+            return NotImplemented
+
+        def _sort_key(defn):
+            # Emulate Python 2 behaviour with None
+            return (defn.standard_name is not None, defn.standard_name,
+                    defn.long_name is not None, defn.long_name,
+                    defn.var_name is not None, defn.var_name,
+                    defn.units is not None, defn.units,
+                    defn.coord_system is not None, defn.coord_system)
+
+        return _sort_key(self) < _sort_key(other)
+
 
 class CoordExtent(collections.namedtuple('_CoordExtent', ['name_or_coord',
                                                           'minimum',

@@ -453,9 +453,13 @@ class CubeList(list):
                 proto_cube = iris._merge.ProtoCube(cube)
                 proto_cubes.append(proto_cube)
 
+        # Emulate Python 2 behaviour.
+        def _none_sort(item):
+            return (item is not None, item)
+
         # Extract all the merged cubes from the ProtoCubes.
         merged_cubes = CubeList()
-        for name in sorted(proto_cubes_by_name):
+        for name in sorted(proto_cubes_by_name, key=_none_sort):
             for proto_cube in proto_cubes_by_name[name]:
                 merged_cubes.extend(proto_cube.merge(unique=unique))
 

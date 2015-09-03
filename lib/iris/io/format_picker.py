@@ -212,17 +212,20 @@ class FormatSpecification(object):
         """The handler function of this FileFormat. (Read only)"""
         return self._handler
 
+    def _sort_key(self):
+        return (-self.priority, self.name, self.file_element)
+
     def __lt__(self, other):
         if not isinstance(other, FormatSpecification):
             return NotImplemented
 
-        return (-self.priority, hash(self)) < (-other.priority, hash(other))
+        return self._sort_key() < other._sort_key()
 
     def __eq__(self, other):
         if not isinstance(other, FormatSpecification):
             return NotImplemented
 
-        return self.priority == other.priority and hash(self) == hash(other)
+        return self._sort_key() == other._sort_key()
 
     def __ne__(self, other):
         return not (self == other)
