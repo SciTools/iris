@@ -21,6 +21,7 @@ A collection of routines which create standard Cubes for test purposes.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import os.path
 
@@ -474,7 +475,7 @@ def realistic_4d():
     data_path = os.path.join(os.path.dirname(__file__), 'stock_arrays.npz')
     r = np.load(data_path)
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
-    _, arrays =  zip(*sorted(r.iteritems(), key=lambda item: int(item[0][4:])))
+    _, arrays =  zip(*sorted(six.iteritems(r), key=lambda item: int(item[0][4:])))
 
     lat_pts, lat_bnds, lon_pts, lon_bnds, level_height_pts, \
     level_height_bnds, model_level_pts, sigma_pts, sigma_bnds, time_pts, \

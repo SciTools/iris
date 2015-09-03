@@ -193,7 +193,7 @@ images = new Array();
         with open(gallery_path, 'w') as fh:
             fh.write(content)
 
-    for key in app.builder.status_iterator(thumbnails.iterkeys(),
+    for key in app.builder.status_iterator(thumbnails,
                                            'generating thumbnails... ',
                                            length=len(thumbnails)):
         image.thumbnail(key, thumbnails[key], 0.3)

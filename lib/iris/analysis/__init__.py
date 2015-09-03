@@ -48,6 +48,7 @@ The gallery contains several interesting worked examples of how an
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 
@@ -343,7 +344,7 @@ def coord_comparison(*cubes):
 
     # for convenience, turn all of the sets in the dictionary into lists,
     # sorted by the name of the group
-    for key, groups in result.iteritems():
+    for key, groups in six.iteritems(result):
         result[key] = sorted(groups, key=lambda group: group.name())
 
     return result
@@ -1868,7 +1869,7 @@ class _Groupby(object):
                 # Calculate the new shared coordinates.
                 self._compute_shared_coords()
             # Generate the group-by slices/groups.
-            for groupby_slice in self._slices_by_key.itervalues():
+            for groupby_slice in six.itervalues(self._slices_by_key):
                 yield groupby_slice
 
         return
@@ -1882,7 +1883,7 @@ class _Groupby(object):
         # Iterate over the ordered dictionary in order to reduce
         # multiple slices into a single tuple and collapse
         # all items from containing list.
-        for key, groupby_slices in self._slices_by_key.iteritems():
+        for key, groupby_slices in six.iteritems(self._slices_by_key):
             if len(groupby_slices) > 1:
                 # Compress multiple slices into tuple representation.
                 groupby_indicies = []
@@ -1903,7 +1904,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a group-by slice that samples the first element from each group.
-        for key_slice in self._slices_by_key.itervalues():
+        for key_slice in six.itervalues(self._slices_by_key):
             if isinstance(key_slice, tuple):
                 groupby_slice.append(key_slice[0])
             else:
@@ -1921,7 +1922,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a list of tuple group boundary indexes.
-        for key_slice in self._slices_by_key.itervalues():
+        for key_slice in six.itervalues(self._slices_by_key):
             if isinstance(key_slice, tuple):
                 groupby_bounds.append((key_slice[0], key_slice[-1]))
             else:
@@ -1933,7 +1934,7 @@ class _Groupby(object):
                 if coord.bounds is None:
                     new_points = []
                     new_bounds = None
-                    for key_slice in self._slices_by_key.itervalues():
+                    for key_slice in six.itervalues(self._slices_by_key):
                         if isinstance(key_slice, slice):
                             indices = key_slice.indices(coord.points.shape[0])
                             key_slice = range(*indices)

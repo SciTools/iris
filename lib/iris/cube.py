@@ -22,6 +22,7 @@ Classes for representing multi-dimensional data with metadata.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from xml.dom.minidom import Document
 import collections
@@ -282,13 +283,13 @@ class CubeList(list):
         constraint_groups = dict([(constraint, CubeList()) for constraint in
                                  constraints])
         for cube in cubes:
-            for constraint, cube_list in constraint_groups.iteritems():
+            for constraint, cube_list in six.iteritems(constraint_groups):
                 sub_cube = constraint.extract(cube)
                 if sub_cube is not None:
                     cube_list.append(sub_cube)
 
         if merge_unique is not None:
-            for constraint, cubelist in constraint_groups.iteritems():
+            for constraint, cubelist in six.iteritems(constraint_groups):
                 constraint_groups[constraint] = cubelist.merge(merge_unique)
 
         result = CubeList()
@@ -325,7 +326,7 @@ class CubeList(list):
            over which to perform the extraction.
 
         """
-        if isinstance(coord_names, basestring):
+        if isinstance(coord_names, six.string_types):
             coord_names = [coord_names]
 
         def make_overlap_fn(coord_name):
@@ -666,7 +667,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Temporary error while we transition the API.
-        if isinstance(data, basestring):
+        if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         if not isinstance(data, (biggus.Array, ma.MaskedArray)):
@@ -791,7 +792,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
             if ignore is not None:
-                if isinstance(ignore, basestring):
+                if isinstance(ignore, six.string_types):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
@@ -1190,7 +1191,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         name = None
         coord = None
 
-        if isinstance(name_or_coord, basestring):
+        if isinstance(name_or_coord, six.string_types):
             name = name_or_coord
         else:
             coord = name_or_coord
@@ -1233,7 +1234,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError(msg)
             attr_filter = lambda coord_: all(k in coord_.attributes and
                                              coord_.attributes[k] == v for
-                                             k, v in attributes.iteritems())
+                                             k, v in six.iteritems(attributes))
             coords_and_factories = [coord_ for coord_ in coords_and_factories
                                     if attr_filter(coord_)]
 
@@ -1363,7 +1364,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The :class:`iris.coord_systems.CoordSystem` or None.
 
         """
-        if isinstance(spec, basestring) or spec is None:
+        if isinstance(spec, six.string_types) or spec is None:
             spec_name = spec
         else:
             msg = "type %s is not a subclass of CoordSystem" % spec
@@ -1582,7 +1583,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Find all the attribute keys
             keys = set()
             for similar_coord in similar_coords:
-                keys.update(similar_coord.attributes.iterkeys())
+                keys.update(six.iterkeys(similar_coord.attributes))
             # Look for any attributes that vary
             vary = set()
             attributes = {}
@@ -1595,7 +1596,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     if attributes.setdefault(key, value) != value:
                         vary.add(key)
                         break
-            keys = sorted(vary & coord.attributes.viewkeys())
+            keys = sorted(vary & set(coord.attributes.keys()))
             bits = ['{}={!r}'.format(key, coord.attributes[key]) for key in
                     keys]
             if bits:
@@ -1793,7 +1794,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     # has a bound
                     with iris.FUTURE.context(cell_datetime_objects=False):
                         coord_cell = coord.cell(0)
-                    if isinstance(coord_cell.point, basestring):
+                    if isinstance(coord_cell.point, six.string_types):
                         # Indent string type coordinates
                         coord_cell_split = [iris.util.clip_string(str(item))
                                             for item in
@@ -1857,7 +1858,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             if self.attributes:
                 attribute_lines = []
-                for name, value in sorted(self.attributes.iteritems()):
+                for name, value in sorted(six.iteritems(self.attributes)):
                     value = iris.util.clip_string(unicode(value))
                     line = u'{pad:{width}}{name}: {value}'.format(pad=' ',
                                                                   width=indent,
@@ -2101,7 +2102,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         ignore_bounds = kwargs.pop('ignore_bounds', False)
         for arg in args:
             result = result._intersect(*arg, ignore_bounds=ignore_bounds)
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             result = result._intersect(name, *value,
                                        ignore_bounds=ignore_bounds)
         return result
@@ -2302,13 +2303,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         coords = []
         for name_or_coord in names_or_coords:
-            if (isinstance(name_or_coord, basestring) or
+            if (isinstance(name_or_coord, six.string_types) or
                     isinstance(name_or_coord, iris.coords.Coord)):
                 coords.append(self.coord(name_or_coord))
             else:
                 # Don't know how to handle this type
                 msg = "Don't know how to handle coordinate of type %s. " \
-                      "Ensure all coordinates are of type basestring or " \
+                      "Ensure all coordinates are of type six.string_types or " \
                       "iris.coords.Coord." % type(name_or_coord)
                 raise TypeError(msg)
         return coords
@@ -2514,7 +2515,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
-            for name in sorted(self.attributes.iterkeys()):
+            for name in sorted(six.iterkeys(self.attributes)):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
                 value = str(self.attributes[name])
@@ -3490,7 +3491,7 @@ class ClassDict(collections.MutableMapping, object):
 
     def __delitem__(self, class_):
         cs = self[class_]
-        keys = [k for k, v in self._retrieval_map.iteritems() if v == cs]
+        keys = [k for k, v in six.iteritems(self._retrieval_map) if v == cs]
         for key in keys:
             del self._retrieval_map[key]
         del self._basic_map[type(cs)]

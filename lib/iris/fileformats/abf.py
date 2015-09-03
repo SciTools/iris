@@ -27,6 +27,7 @@ The documentation for this file format can be found
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import calendar
 import datetime
@@ -193,7 +194,7 @@ def load_cubes(filespecs, callback=None):
         The resultant cubes may not be in the same order as in the file.
 
     """
-    if isinstance(filespecs, basestring):
+    if isinstance(filespecs, six.string_types):
         filespecs = [filespecs]
 
     for filespec in filespecs:

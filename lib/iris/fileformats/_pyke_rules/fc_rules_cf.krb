@@ -747,6 +747,8 @@ fc_formula_terms
 
 
 fc_extras
+    import six
+
     import re
     import warnings
 
@@ -909,7 +911,7 @@ fc_extras
         cube.cell_methods = _parse_cell_methods(cf_var.cf_name, nc_att_cell_methods)
 
         # Set the cube global attributes. 
-        for attr_name, attr_value in cf_var.cf_group.global_attributes.iteritems():
+        for attr_name, attr_value in six.iteritems(cf_var.cf_group.global_attributes):
             try:
                 if isinstance(attr_value, unicode):
                     try:

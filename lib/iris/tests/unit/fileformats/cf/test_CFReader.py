@@ -136,24 +136,24 @@ class Test_translate__formula_terms(tests.IrisTest):
             group = cf_group.coordinates
             self.assertEqual(len(group), 3)
             coordinates = ['height', 'lat', 'lon']
-            self.assertEqual(group.viewkeys(), set(coordinates))
+            self.assertEqual(set(group.keys()), set(coordinates))
             for name in coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check there are three auxiliary coordinates.
             group = cf_group.auxiliary_coordinates
             self.assertEqual(len(group), 3)
             aux_coordinates = ['delta', 'sigma', 'orography']
-            self.assertEqual(group.viewkeys(), set(aux_coordinates))
+            self.assertEqual(set(group.keys()), set(aux_coordinates))
             for name in aux_coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check all the auxiliary coordinates are formula terms.
             formula_terms = cf_group.formula_terms
-            self.assertEqual(group.viewitems(), formula_terms.viewitems())
+            self.assertEqual(set(group.items()), set(formula_terms.items()))
             # Check there are three bounds.
             group = cf_group.bounds
             self.assertEqual(len(group), 3)
             bounds = ['height_bnds', 'delta_bnds', 'sigma_bnds']
-            self.assertEqual(group.viewkeys(), set(bounds))
+            self.assertEqual(set(group.keys()), set(bounds))
             for name in bounds:
                 self.assertEqual(group[name].cf_data, getattr(self, name))
 
@@ -218,7 +218,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             group = temp_cf_group.coordinates
             self.assertEqual(len(group), 3)
             coordinates = ['height', 'lat', 'lon']
-            self.assertEqual(group.viewkeys(), set(coordinates))
+            self.assertEqual(set(group.keys()), set(coordinates))
             for name in coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check the height coordinate is bounded.
@@ -230,7 +230,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             group = temp_cf_group.auxiliary_coordinates
             self.assertEqual(len(group), 5)
             aux_coordinates = ['delta', 'sigma', 'orography', 'x', 'y']
-            self.assertEqual(group.viewkeys(), set(aux_coordinates))
+            self.assertEqual(set(group.keys()), set(aux_coordinates))
             for name in aux_coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check all the auxiliary coordinates are formula terms.
@@ -265,7 +265,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             group = cf_group.promoted['orography'].cf_group.coordinates
             self.assertEqual(len(group), 2)
             coordinates = ('lat', 'lon')
-            self.assertEqual(group.viewkeys(), set(coordinates))
+            self.assertEqual(set(group.keys()), set(coordinates))
             for name in coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
 
@@ -294,7 +294,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 if state:
                     promoted = ['x', 'orography']
                     group = cf_group.promoted
-                    self.assertEqual(group.viewkeys(), set(promoted))
+                    self.assertEqual(set(group.keys()), set(promoted))
                     for name in promoted:
                         self.assertIs(group[name].cf_data, getattr(self, name))
                 else:
@@ -310,7 +310,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 mock.patch('warnings.warn') as warn:
             cf_group = CFReader('dummy').cf_group.promoted
             promoted = ['wibble', 'orography']
-            self.assertEqual(cf_group.viewkeys(), set(promoted))
+            self.assertEqual(set(cf_group.keys()), set(promoted))
             for name in promoted:
                 self.assertIs(cf_group[name].cf_data, getattr(self, name))
             self.assertEqual(warn.call_count, 2)

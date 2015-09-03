@@ -27,6 +27,7 @@ See also: `UDUNITS-2
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from contextlib import contextmanager
 import copy
@@ -312,7 +313,7 @@ if _lib_ud is None:
     _cv_convert_array = {FLOAT32: _cv_convert_floats,
                          FLOAT64: _cv_convert_doubles}
     _numpy2ctypes = {np.float32: FLOAT32, np.float64: FLOAT64}
-    _ctypes2numpy = {v: k for k, v in _numpy2ctypes.iteritems()}
+    _ctypes2numpy = {v: k for k, v in _numpy2ctypes.items()}
 #
 # load the UDUNITS-2 xml-formatted unit-database
 #
@@ -331,7 +332,7 @@ if not _ud_system:
     if _ud_system is None:
         _alt_xml_path = os.path.join(sys.prefix, 'share',
                                      'udunits', 'udunits2.xml')
-        _ud_system = _ut_read_xml(_alt_xml_path)
+        _ud_system = _ut_read_xml(_alt_xml_path.encode())
     # reinstate old error handler
     _ut_set_error_message_handler(_default_handler)
     del _func_type
@@ -760,7 +761,7 @@ def as_unit(unit):
         result = unit
     else:
         result = None
-        use_cache = isinstance(unit, basestring) or unit is None
+        use_cache = isinstance(unit, six.string_types) or unit is None
         if use_cache:
             result = _CACHE.get(unit)
         if result is None:
@@ -925,14 +926,14 @@ class Unit(iris.util._OrderedHashable):
             unit = _NO_UNIT_STRING
         else:
             category = _CATEGORY_UDUNIT
-            ut_unit = _ut_parse(_ud_system, unit, UT_ASCII)
+            ut_unit = _ut_parse(_ud_system, unit.encode('ascii'), UT_ASCII)
             # _ut_parse returns 0 on failure
             if ut_unit is None:
                 self._raise_error('Failed to parse unit "%s"' % unit)
             if _OP_SINCE in unit.lower():
                 if calendar is None:
                     calendar_ = CALENDAR_GREGORIAN
-                elif isinstance(calendar, basestring):
+                elif isinstance(calendar, six.string_types):
                     if calendar.lower() in CALENDARS:
                         calendar_ = calendar.lower()
                     else:
@@ -1019,7 +1020,7 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            day = _ut_get_unit_by_name(_ud_system, 'day')
+            day = _ut_get_unit_by_name(_ud_system, b'day')
             result = _ut_are_convertible(self.ut_unit, day) != 0
         return result
 
@@ -1045,10 +1046,10 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            bar = _ut_get_unit_by_name(_ud_system, 'bar')
+            bar = _ut_get_unit_by_name(_ud_system, b'bar')
             result = _ut_are_convertible(self.ut_unit, bar) != 0
             if not result:
-                meter = _ut_get_unit_by_name(_ud_system, 'meter')
+                meter = _ut_get_unit_by_name(_ud_system, b'meter')
                 result = _ut_are_convertible(self.ut_unit, meter) != 0
         return result
 
@@ -1277,7 +1278,7 @@ class Unit(iris.util._OrderedHashable):
                                ctypes.sizeof(string_buffer), bitmask)
             if depth < 0:
                 self._raise_error('Failed to format %r' % self)
-        return string_buffer.value
+        return str(string_buffer.value.decode('ascii'))
 
     @property
     def name(self):
@@ -1377,7 +1378,7 @@ class Unit(iris.util._OrderedHashable):
 
         """
 
-        if not isinstance(origin, (int, float, long)):
+        if not isinstance(origin, (float, six.integer_types)):
             raise TypeError('a numeric type for the origin argument is'
                             ' required')
         ut_unit = _ut_offset_by_time(self.ut_unit, ctypes.c_double(origin))
@@ -1420,7 +1421,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * root (int/long): Value by which the unit root is taken.
+        * root (int): Value by which the unit root is taken.
 
         Returns:
             None.
@@ -1440,7 +1441,7 @@ class Unit(iris.util._OrderedHashable):
         try:
             root = ctypes.c_int(root)
         except TypeError:
-            raise TypeError('An int or long type for the root argument'
+            raise TypeError('An int type for the root argument'
                             ' is required')
 
         if self.is_unknown():
@@ -1466,7 +1467,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * base (int/float/long): Value of the logorithmic base.
+        * base (int/float): Value of the logorithmic base.
 
         Returns:
             None.
@@ -1605,7 +1606,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * other (int/float/long/string/Unit): Multiplication scale
+        * other (int/float/string/Unit): Multiplication scale
           factor or unit.
 
         Returns:
@@ -1632,7 +1633,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * other (int/float/long/string/Unit): Division scale factor or unit.
+        * other (int/float/string/Unit): Division scale factor or unit.
 
         Returns:
             Unit.
@@ -1658,7 +1659,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * other (int/float/long/string/Unit): Division scale factor or unit.
+        * other (int/float/string/Unit): Division scale factor or unit.
 
         Returns:
             Unit.
@@ -1685,7 +1686,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * power (int/float/long): Value by which the unit power is raised.
+        * power (int/float): Value by which the unit power is raised.
 
         Returns:
             Unit.
@@ -1805,7 +1806,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * value (int/float/long/numpy.ndarray):
+        * value (int/float/numpy.ndarray):
             Value/s to be converted.
         * other (string/Unit):
             Target unit to convert to.
@@ -1873,7 +1874,7 @@ class Unit(iris.util._OrderedHashable):
                             value_copy = value_copy.astype(
                                 _ctypes2numpy[ctype])
                         # strict type check of numpy array
-                        if value_copy.dtype.type not in _numpy2ctypes.keys():
+                        if value_copy.dtype.type not in _numpy2ctypes:
                             raise TypeError(
                                 "Expect a numpy array of '%s' or '%s'" %
                                 tuple(sorted(_numpy2ctypes.keys())))
@@ -1886,7 +1887,7 @@ class Unit(iris.util._OrderedHashable):
                                                  value_copy.size, pointer)
                         result = value_copy
                     else:
-                        if ctype not in _cv_convert_scalar.keys():
+                        if ctype not in _cv_convert_scalar:
                             raise ValueError('Invalid target type. Can only '
                                              'convert to float or double.')
                         # Utilise global convenience dictionary

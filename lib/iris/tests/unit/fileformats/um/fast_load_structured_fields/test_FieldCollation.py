@@ -159,7 +159,7 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         result = collation.element_arrays_and_dims
         keys = set(['blev', 'brsvd1', 'brsvd2', 'brlev',
                     'bhrlev', 'lblev', 'bhlev'])
-        self.assertEqual(result.viewkeys(), keys)
+        self.assertEqual(set(result.keys()), keys)
         values, dims = result['blev']
         self.assertArrayEqual(values, [1, 2])
         self.assertEqual(dims, (0,))
@@ -170,7 +170,7 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         result = collation.element_arrays_and_dims
         keys = set(['blev', 'brsvd1', 'brsvd2', 'brlev',
                     'bhrlev', 'lblev', 'bhlev'])
-        self.assertEqual(result.viewkeys(), keys)
+        self.assertEqual(set(result.keys()), keys)
         values, dims = result['bhlev']
         self.assertArrayEqual(values, [1, 2])
         self.assertEqual(dims, (0,))

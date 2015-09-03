@@ -21,6 +21,7 @@ Contains symbol definitions for use with :func:`iris.plot.symbols`.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import itertools
 import math
@@ -222,7 +223,7 @@ See http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
 
 def _convert_paths_to_patches():
     # Convert the symbols defined as lists-of-paths into patches.
-    for code, symbol in CLOUD_COVER.iteritems():
+    for code, symbol in six.iteritems(CLOUD_COVER):
         CLOUD_COVER[code] = _make_merged_patch(symbol)
 
 

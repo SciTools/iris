@@ -21,6 +21,7 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import abc
 import collections
@@ -295,7 +296,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
     @staticmethod
     def from_msi(msi):
         """Convert a STASH code MSI string to a STASH instance."""
-        if not isinstance(msi, basestring):
+        if not isinstance(msi, six.string_types):
             raise TypeError('Expected STASH code MSI string, got %r' % (msi,))
 
         msi_match = re.match('^\s*m(.*)s(.*)i(.*)\s*$', msi, re.IGNORECASE)
@@ -344,7 +345,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         return '?' not in str(self)
 
     def __eq__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, six.string_types):
             return super(STASH, self).__eq__(STASH.from_msi(other))
         else:
             return super(STASH, self).__eq__(other)
@@ -668,11 +669,9 @@ class _FlagMetaclass(type):
         return type.__new__(cls, classname, bases, class_dict)
 
 
-class _LBProc(BitwiseInt):
+class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
     # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
     # properties.
-    __metaclass__ = _FlagMetaclass
-
     def __init__(self, value):
         """
         Args:
@@ -1046,7 +1045,7 @@ def _pp_attribute_names(header_defn):
     return normal_headers + special_headers + extra_data + special_attributes
 
 
-class PPField(object):
+class PPField(six.with_metaclass(abc.ABCMeta, object)):
     """
     A generic class for PP fields - not specific to a particular header release number.
 
@@ -1064,8 +1063,6 @@ class PPField(object):
 
     # NB. Subclasses must define the attribute HEADER_DEFN to be their
     # zero-based header definition. See PPField2 and PPField3 for examples.
-
-    __metaclass__ = abc.ABCMeta
 
     __slots__ = ()
 
@@ -1178,7 +1175,7 @@ class PPField(object):
     
     @stash.setter
     def stash(self, stash):
-        if isinstance(stash, basestring):
+        if isinstance(stash, six.string_types):
             self._stash = STASH.from_msi(stash)
         elif isinstance(stash, STASH):
             self._stash = stash
@@ -1359,12 +1356,12 @@ class PPField(object):
         # set up a list to hold the extra data which will need to be encoded at the end of the data
         extra_items = []
         # iterate through all of the possible extra data fields
-        for ib, extra_data_attr_name in EXTRA_DATA.iteritems():
+        for ib, extra_data_attr_name in six.iteritems(EXTRA_DATA):
             # try to get the extra data field, returning None if it doesn't exist
             extra_elem = getattr(self, extra_data_attr_name, None)
             if extra_elem is not None:
                 # The special case of character extra data must be caught
-                if isinstance(extra_elem, basestring):
+                if isinstance(extra_elem, six.string_types):
                     ia = len(extra_elem)
                     # pad any strings up to a multiple of PP_WORD_DEPTH (this length is # of bytes)
                     ia = (PP_WORD_DEPTH - (ia-1) % PP_WORD_DEPTH) + (ia-1)
@@ -1467,7 +1464,7 @@ class PPField(object):
         # extra data elements
         for int_code, extra_data in extra_items:
             pp_file.write(struct.pack(">L", int(int_code)))
-            if isinstance(extra_data, basestring):
+            if isinstance(extra_data, six.string_types):
                 pp_file.write(struct.pack(">%sc" % len(extra_data), *extra_data))
             else:
                 extra_data = extra_data.astype(np.dtype('>f4'))
@@ -2166,7 +2163,7 @@ def as_pairs(cube, field_coords=None, target=None):
         # Log the rules used
         if target is None:
             target = 'None'
-        elif not isinstance(target, basestring):
+        elif not isinstance(target, six.string_types):
             target = target.name
         iris.fileformats.rules.log('PP_SAVE', str(target), verify_rules_ran)
 
@@ -2244,7 +2241,7 @@ def save_fields(fields, target, append=False):
     #   LBTYP - Fields file field type code
     #   LBLEV - Fields file level code / hybrid height model level
 
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         pp_file = open(target, "ab" if append else "wb")
         filename = target
     elif hasattr(target, "write"):
@@ -2260,5 +2257,5 @@ def save_fields(fields, target, append=False):
         # Write to file
         pp_field.save(pp_file)
 
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         pp_file.close()

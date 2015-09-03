@@ -52,6 +52,7 @@ The calling sequence of handler is dependent on the function given in the origin
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 import functools
@@ -140,7 +141,7 @@ class FormatAgent(object):
                 return format_spec
 
         printable_values = {}
-        for key, value in element_cache.iteritems():
+        for key, value in six.iteritems(element_cache):
             value = str(value)
             if len(value) > 50:
                 value = value[:50] + '...'

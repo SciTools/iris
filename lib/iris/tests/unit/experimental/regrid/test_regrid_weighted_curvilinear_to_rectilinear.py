@@ -52,7 +52,7 @@ class Test(tests.IrisTest):
                                   attributes=attributes)
 
         # Source cube x-coordinates.
-        points = np.array([[010, 020, 200, 220],
+        points = np.array([[10, 20, 200, 220],
                            [110, 120, 180, 185],
                            [190, 203, 211, 220]])
         self.src_x_positive = iris.coords.AuxCoord(points,
@@ -69,8 +69,8 @@ class Test(tests.IrisTest):
                                                    units='degrees')
 
         # Source cube y-coordinates.
-        points = np.array([[00, 04, 03, 01],
-                           [05, 07, 10, 06],
+        points = np.array([[0, 4, 3, 1],
+                           [5, 7, 10, 6],
                            [12, 20, 15, 30]])
         self.src_y = iris.coords.AuxCoord(points,
                                           standard_name='latitude',

@@ -21,6 +21,7 @@ Definitions of derived coordinates.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
@@ -105,7 +106,7 @@ class LazyArray(object):
         return self._cached_array().view(*args, **kwargs)
 
 
-class AuxCoordFactory(CFVariableMixin):
+class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
     """
     Represents a "factory" which can manufacture an additional auxiliary
     coordinate on demand, by combining the values of other coordinates.
@@ -118,7 +119,6 @@ class AuxCoordFactory(CFVariableMixin):
     properties of the resulting auxiliary coordinates.
 
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         #: Descriptive name of the coordinate made by the factory
@@ -197,7 +197,7 @@ class AuxCoordFactory(CFVariableMixin):
         # Which dimensions are relevant?
         # e.g. If sigma -> [1] and orog -> [2, 3] then result = [1, 2, 3]
         derived_dims = set()
-        for coord in self.dependencies.itervalues():
+        for coord in six.itervalues(self.dependencies):
             if coord:
                 derived_dims.update(coord_dims_func(coord))
 
@@ -220,7 +220,7 @@ class AuxCoordFactory(CFVariableMixin):
 
         """
         new_dependencies = {}
-        for key, coord in self.dependencies.iteritems():
+        for key, coord in six.iteritems(self.dependencies):
             if coord:
                 coord = new_coord_mapping[id(coord)]
             new_dependencies[key] = coord
@@ -232,14 +232,14 @@ class AuxCoordFactory(CFVariableMixin):
 
         """
         element = doc.createElement('coordFactory')
-        for key, coord in self.dependencies.iteritems():
+        for key, coord in six.iteritems(self.dependencies):
             element.setAttribute(key, coord._xml_id())
         element.appendChild(self.make_coord().xml_element(doc))
         return element
 
     def _dependency_dims(self, coord_dims_func):
         dependency_dims = {}
-        for key, coord in self.dependencies.iteritems():
+        for key, coord in six.iteritems(self.dependencies):
             if coord:
                 dependency_dims[key] = coord_dims_func(coord)
         return dependency_dims
@@ -314,7 +314,7 @@ class AuxCoordFactory(CFVariableMixin):
             ndim = 1
 
         nd_points_by_key = {}
-        for key, coord in self.dependencies.iteritems():
+        for key, coord in six.iteritems(self.dependencies):
             if coord:
                 # Get the points as consistent with the Cube.
                 nd_points = self._nd_points(coord, dependency_dims[key], ndim)
@@ -342,7 +342,7 @@ class AuxCoordFactory(CFVariableMixin):
             ndim = 1
 
         nd_values_by_key = {}
-        for key, coord in self.dependencies.iteritems():
+        for key, coord in six.iteritems(self.dependencies):
             if coord:
                 # Get the bounds or points as consistent with the Cube.
                 if coord.nbounds:
@@ -400,7 +400,7 @@ class AuxCoordFactory(CFVariableMixin):
 
     def _dtype(self, arrays_by_key, **other_args):
         dummy_args = {}
-        for key, array in arrays_by_key.iteritems():
+        for key, array in six.iteritems(arrays_by_key):
             dummy_args[key] = np.zeros(1, dtype=array.dtype)
         dummy_args.update(other_args)
         dummy_data = self._derive(**dummy_args)

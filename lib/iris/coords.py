@@ -21,11 +21,13 @@ Definitions of coordinates.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from abc import ABCMeta, abstractproperty
 import collections
 import copy
-from itertools import chain, izip_longest
+from itertools import chain
+from six.moves import zip_longest
 import operator
 import warnings
 import zlib
@@ -208,8 +210,8 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                 return self.point == other
         elif isinstance(other, Cell):
             return (self.point == other.point) and (self.bound == other.bound)
-        elif (isinstance(other, basestring) and self.bound is None and
-              isinstance(self.point, basestring)):
+        elif (isinstance(other, six.string_types) and self.bound is None and
+              isinstance(self.point, six.string_types)):
             return self.point == other
         else:
             return NotImplemented
@@ -347,12 +349,11 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         return np.min(self.bound) <= point <= np.max(self.bound)
 
 
-class Coord(CFVariableMixin):
+class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     """
     Abstract superclass for coordinates.
 
     """
-    __metaclass__ = ABCMeta
 
     _MODE_ADD = 1
     _MODE_SUB = 2
@@ -838,7 +839,7 @@ class Coord(CFVariableMixin):
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
             if ignore is not None:
-                if isinstance(ignore, basestring):
+                if isinstance(ignore, six.string_types):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
@@ -1209,7 +1210,7 @@ class Coord(CFVariableMixin):
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
-            for name in sorted(self.attributes.iterkeys()):
+            for name in sorted(six.iterkeys(self.attributes)):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
                 attribute_element.setAttribute('value',
@@ -1622,7 +1623,7 @@ class CellMethod(iris.util._OrderedHashable):
             comments.
 
         """
-        if not isinstance(method, basestring):
+        if not isinstance(method, six.string_types):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
@@ -1631,7 +1632,7 @@ class CellMethod(iris.util._OrderedHashable):
             pass
         elif isinstance(coords, Coord):
             _coords.append(coords.name())
-        elif isinstance(coords, basestring):
+        elif isinstance(coords, six.string_types):
             _coords.append(coords)
         else:
             normalise = (lambda coord: coord.name() if
@@ -1641,7 +1642,7 @@ class CellMethod(iris.util._OrderedHashable):
         _intervals = []
         if intervals is None:
             pass
-        elif isinstance(intervals, basestring):
+        elif isinstance(intervals, six.string_types):
             _intervals = [intervals]
         else:
             _intervals.extend(intervals)
@@ -1649,7 +1650,7 @@ class CellMethod(iris.util._OrderedHashable):
         _comments = []
         if comments is None:
             pass
-        elif isinstance(comments, basestring):
+        elif isinstance(comments, six.string_types):
             _comments = [comments]
         else:
             _comments.extend(comments)
@@ -1659,8 +1660,8 @@ class CellMethod(iris.util._OrderedHashable):
     def __str__(self):
         """Return a custom string representation of CellMethod"""
         # Group related coord names intervals and comments together
-        cell_components = izip_longest(self.coord_names, self.intervals,
-                                       self.comments, fillvalue="")
+        cell_components = zip_longest(self.coord_names, self.intervals,
+                                      self.comments, fillvalue="")
 
         collection_summaries = []
         cm_summary = "%s: " % self.method
@@ -1688,9 +1689,9 @@ class CellMethod(iris.util._OrderedHashable):
         cellMethod_xml_element = doc.createElement('cellMethod')
         cellMethod_xml_element.setAttribute('method', self.method)
 
-        for coord_name, interval, comment in izip_longest(self.coord_names,
-                                                          self.intervals,
-                                                          self.comments):
+        for coord_name, interval, comment in zip_longest(self.coord_names,
+                                                         self.intervals,
+                                                         self.comments):
             coord_xml_element = doc.createElement('coord')
             if coord_name is not None:
                 coord_xml_element.setAttribute('name', coord_name)

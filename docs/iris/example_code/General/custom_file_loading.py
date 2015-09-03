@@ -144,7 +144,8 @@ def NAME_to_cube(filenames, callback):
         for i, data_array in enumerate(data_arrays):
             # turn the dictionary of column headers with a list of header information for each field into a dictionary of
             # headers for just this field. Ignore the first 4 columns of grid position (data was located with the data array).
-            field_headings = dict([(k, v[i + 4]) for k, v in column_headings.iteritems()])
+            field_headings = dict((k, v[i + 4])
+                                  for k, v in column_headings.items())
 
             # make an cube
             cube = iris.cube.Cube(data_array)

@@ -21,6 +21,7 @@ Miscellaneous utility functions.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import abc
 import collections
@@ -785,7 +786,8 @@ class _MetaOrderedHashable(abc.ABCMeta):
 
 
 @functools.total_ordering
-class _OrderedHashable(collections.Hashable):
+class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
+                                          collections.Hashable)):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
 
@@ -803,9 +805,6 @@ class _OrderedHashable(collections.Hashable):
         its attributes are themselves hashable.
 
     """
-
-    # The metaclass adds default __init__ methods when appropriate.
-    __metaclass__ = _MetaOrderedHashable
 
     @abc.abstractproperty
     def _names(self):
@@ -1161,7 +1160,7 @@ def as_compatible_shape(src_cube, target_cube):
                          'to restore cube dimensions.')
 
     new_shape = [1] * target_cube.ndim
-    for dim_from, dim_to in dim_mapping.iteritems():
+    for dim_from, dim_to in six.iteritems(dim_mapping):
         if dim_to is not None:
             new_shape[dim_from] = src_cube.shape[dim_to]
 
@@ -1286,7 +1285,7 @@ def file_is_newer_than(result_path, source_paths):
 
     """
     # Accept a string as a single source path
-    if isinstance(source_paths, basestring):
+    if isinstance(source_paths, six.string_types):
         source_paths = [source_paths]
     # Fix our chosen timestamp function
     file_date = os.path.getmtime
@@ -1470,14 +1469,14 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
     """
 
-    if isinstance(name_or_coord, basestring):
+    if isinstance(name_or_coord, six.string_types):
         aux_coord = cube.coord(name_or_coord)
     elif isinstance(name_or_coord, iris.coords.Coord):
         aux_coord = name_or_coord
     else:
         # Don't know how to handle this type
         msg = ("Don't know how to handle coordinate of type {}. "
-               "Ensure all coordinates are of type basestring or "
+               "Ensure all coordinates are of type six.string_types or "
                "iris.coords.Coord.")
         msg = msg.format(type(name_or_coord))
         raise TypeError(msg)
@@ -1566,14 +1565,14 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
     """
 
-    if isinstance(name_or_coord, basestring):
+    if isinstance(name_or_coord, six.string_types):
         dim_coord = cube.coord(name_or_coord)
     elif isinstance(name_or_coord, iris.coords.Coord):
         dim_coord = name_or_coord
     else:
         # Don't know how to handle this type
         msg = ("Don't know how to handle coordinate of type {}. "
-               "Ensure all coordinates are of type basestring or "
+               "Ensure all coordinates are of type six.string_types or "
                "iris.coords.Coord.")
         msg = msg.format(type(name_or_coord))
         raise TypeError(msg)

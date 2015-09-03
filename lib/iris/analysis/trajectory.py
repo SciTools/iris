@@ -21,6 +21,7 @@ Defines a Trajectory class, and a routine to extract a sub-cube along a trajecto
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import math
 
@@ -150,7 +151,7 @@ def interpolate(cube, sample_points, method=None):
     # Convert any coordinate names to coords
     points = []
     for coord, values in sample_points:
-        if isinstance(coord, basestring):
+        if isinstance(coord, six.string_types):
             coord = cube.coord(coord)
         points.append((coord, values))
     sample_points = points

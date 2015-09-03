@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import glob
 import numpy as np
@@ -223,7 +224,7 @@ def load_cubes(filenames, callback=None):
         The resultant cubes may not be in the same order as in the files.
 
     """
-    if isinstance(filenames, basestring):
+    if isinstance(filenames, six.string_types):
         filenames = [filenames]
 
     for filename in filenames:

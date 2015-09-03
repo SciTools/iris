@@ -21,6 +21,7 @@ Defines a lightweight wrapper class to wrap a single GRIB message.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from collections import namedtuple
 import re
@@ -218,7 +219,7 @@ class _DataProxy(object):
         return {attr: getattr(self, attr) for attr in self.__slots__}
 
     def __setstate__(self, state):
-        for key, value in state.iteritems():
+        for key, value in six.iteritems(state):
             setattr(self, key, value)
 
 

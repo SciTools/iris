@@ -30,6 +30,7 @@ Currently supports only these ones:
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 import warnings
@@ -110,7 +111,7 @@ def _make_grib1_cf_table():
         return (grib1_key, cf_data)
 
     # Interpret the imported Grib1-to-CF table.
-    for (grib1data, cfdata) in grcf.GRIB1_LOCAL_TO_CF.iteritems():
+    for (grib1data, cfdata) in six.iteritems(grcf.GRIB1_LOCAL_TO_CF):
         assert grib1data.edition == 1
         association_entry = _make_grib1_cf_entry(
             table2_version=grib1data.t2version,
@@ -125,7 +126,7 @@ def _make_grib1_cf_table():
 
     # Do the same for special Grib1 codes that include an implied height level.
     for (grib1data, (cfdata, extra_dimcoord)) \
-            in grcf.GRIB1_LOCAL_TO_CF_CONSTRAINED.iteritems():
+            in six.iteritems(grcf.GRIB1_LOCAL_TO_CF_CONSTRAINED):
         assert grib1data.edition == 1
         if extra_dimcoord.standard_name != 'height':
             raise ValueError('Got implied dimension coord of "{}", '
@@ -197,7 +198,7 @@ def _make_grib2_to_cf_table():
         return (grib2_key, cf_data)
 
     # Interpret the grib2 info from grib_cf_map
-    for grib2data, cfdata in grcf.GRIB2_TO_CF.iteritems():
+    for grib2data, cfdata in six.iteritems(grcf.GRIB2_TO_CF):
         assert grib2data.edition == 2
         association_entry = _make_grib2_cf_entry(
             param_discipline=grib2data.discipline,
@@ -257,7 +258,7 @@ def _make_cf_to_grib2_table():
         return (cf_key, grib2_data)
 
     # Interpret the imported CF-to-Grib2 table into a lookup table
-    for cfdata, grib2data in grcf.CF_TO_GRIB2.iteritems():
+    for cfdata, grib2data in six.iteritems(grcf.CF_TO_GRIB2):
         assert grib2data.edition == 2
         iris_units = iris.unit.Unit(cfdata.units)
         association_entry = _make_cf_grib2_entry(

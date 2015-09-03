@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -568,13 +569,13 @@ class CheckForWarningsMetaclass(type):
 
 
 @tests.skip_data
-class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
+class TestPcolorNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
+                                            tests.GraphicsTest, SliceMixin)):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
     that have no bounds.
 
     """
-    __metaclass__ = CheckForWarningsMetaclass
 
     def setUp(self):
         self.wind = _load_wind_no_bounds()
@@ -582,13 +583,14 @@ class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
 
 
 @tests.skip_data
-class TestPcolormeshNoBounds(tests.GraphicsTest, SliceMixin):
+class TestPcolormeshNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
+                                                tests.GraphicsTest,
+                                                SliceMixin)):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates
     that have no bounds.
 
     """
-    __metaclass__ = CheckForWarningsMetaclass
 
     def setUp(self):
         self.wind = _load_wind_no_bounds()

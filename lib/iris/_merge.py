@@ -24,6 +24,7 @@ Typically the cube merge process is handled by
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
@@ -336,8 +337,8 @@ class _CubeSignature(namedtuple('CubeSignature',
             msgs.append('cube.units differs: {!r} != {!r}'.format(
                 self_defn.units, other_defn.units))
         if self_defn.attributes != other_defn.attributes:
-            diff_keys = (self_defn.attributes.viewkeys() ^
-                         other_defn.attributes.viewkeys())
+            diff_keys = (set(self_defn.attributes.keys()) ^
+                         set(other_defn.attributes.keys()))
             if diff_keys:
                 msgs.append('cube.attributes keys differ: ' +
                             ', '.join(repr(key) for key in diff_keys))
@@ -526,7 +527,7 @@ def build_indexes(positions):
     scalar_index_by_name = {name: {} for name in names}
 
     for position in positions:
-        for name, value in position.iteritems():
+        for name, value in six.iteritems(position):
             name_index_by_scalar = scalar_index_by_name[name]
 
             if value in name_index_by_scalar:
@@ -566,7 +567,7 @@ def _separable_pair(name, index):
         Boolean.
 
     """
-    items = index.itervalues()
+    items = six.itervalues(index)
     reference = next(items)[name]
 
     return all([item[name] == reference for item in items])
@@ -1347,7 +1348,7 @@ class ProtoCube(object):
 
                     def name_in_independents():
                         return any(name in independents
-                                   for independents in space.itervalues()
+                                   for independents in six.itervalues(space)
                                    if independents is not None)
                     if len(cells) == 1 and not name_in_independents():
                         # A scalar coordinate not participating in a
@@ -1391,7 +1392,7 @@ class ProtoCube(object):
 
                 # Populate the points and bounds based on the appropriate
                 # function mapping.
-                temp = function_matrix[name].iteritems()
+                temp = six.iteritems(function_matrix[name])
                 for function_independents, name_value in temp:
                     # Build the index (and cache it) for the auxiliary
                     # coordinate based on the associated independent

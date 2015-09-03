@@ -21,6 +21,7 @@ Test CF-NetCDF file loading and saving.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
@@ -874,7 +875,7 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
         multiple_map = {bits: [iris.fileformats.pp.lbproc_map[bit] for
                                bit in bits] for bits in multiple_bit_values}
 
-        for bits, descriptions in multiple_map.iteritems():
+        for bits, descriptions in six.iteritems(multiple_map):
 
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = descriptions

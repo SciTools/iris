@@ -23,6 +23,7 @@ See also: `ECMWF GRIB API <http://www.ecmwf.int/publications/manuals/grib_api/in
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import datetime
 import math  #for fmod
@@ -177,7 +178,7 @@ class GribDataProxy(object):
         return {attr:getattr(self, attr) for attr in self.__slots__}
 
     def __setstate__(self, state):
-        for key, value in state.iteritems():
+        for key, value in six.iteritems(state):
             setattr(self, key, value)
 
 
@@ -1002,7 +1003,7 @@ def save_messages(messages, target, append=False):
 
     """
     # grib file (this bit is common to the pp and grib savers...)
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         grib_file = open(target, "ab" if append else "wb")
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
@@ -1016,5 +1017,5 @@ def save_messages(messages, target, append=False):
         gribapi.grib_release(message)
 
     # (this bit is common to the pp and grib savers...)
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         grib_file.close()

@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import copy
 import functools
@@ -428,7 +429,7 @@ class RectilinearRegridder(object):
         # Copy across any AuxFactory instances, and regrid their reference
         # surfaces where required.
         for factory in src.aux_factories:
-            for coord in factory.dependencies.itervalues():
+            for coord in six.itervalues(factory.dependencies):
                 if coord is None:
                     continue
                 dims = src.coord_dims(coord)

@@ -21,6 +21,7 @@ Test the hybrid vertical coordinate representations.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -70,7 +71,9 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has surface_altitude and delta dependencies.
         factory = cube.aux_factory(name='altitude')
-        t = [key for key, coord in factory.dependencies.iteritems() if coord is not None]
+        t = [key
+             for key, coord in six.iteritems(factory.dependencies)
+             if coord is not None]
         self.assertItemsEqual(t, ['orography', 'delta'])
 
     def test_removing_orography(self):
@@ -82,7 +85,9 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has sigma and delta dependencies.
         factory = cube.aux_factory(name='altitude')
-        t = [key for key, coord in factory.dependencies.iteritems() if coord is not None]
+        t = [key
+             for key, coord in six.iteritems(factory.dependencies)
+             if coord is not None]
         self.assertItemsEqual(t, ['sigma', 'delta'])
 
     def test_derived_coords(self):

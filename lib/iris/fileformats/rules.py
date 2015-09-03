@@ -21,6 +21,7 @@ Processing of simple IF-THEN rules.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import abc
 import collections
@@ -81,7 +82,7 @@ class ConcreteReferenceTarget(object):
             else:
                 final_cube = src_cube.copy()
                 attributes = self.transform(final_cube)
-                for name, value in attributes.iteritems():
+                for name, value in six.iteritems(attributes):
                     setattr(final_cube, name, value)
                 self._final_cube = final_cube
 
@@ -787,7 +788,7 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
     concrete_reference_targets = {}
     results_needing_reference = []
 
-    if isinstance(filenames, basestring):
+    if isinstance(filenames, six.string_types):
         filenames = [filenames]
 
     for filename in filenames:

@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -43,9 +44,7 @@ def example_cube():
                           units='K', attributes={'mint': 'thin'})
 
 
-class Mixin_register(object):
-    __metaclass__ = abc.ABCMeta
-
+class Mixin_register(six.with_metaclass(abc.ABCMeta, object)):
     @property
     def cube1(self):
         return example_cube()
@@ -277,7 +276,7 @@ class _MergeTest(object):
         return str(arc.exception)
 
     def check_fail(self, *substrs):
-        if isinstance(substrs, basestring):
+        if isinstance(substrs, six.string_types):
             substrs = [substrs]
         msg = self.check_merge_fails_with_message()
         for substr in substrs:
