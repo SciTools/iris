@@ -54,12 +54,6 @@ install:
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
-  # cfchecker
-  - echo '#!/usr/bin/env sh' > cfchecker
-  - echo "cfchecks -s `pwd`/etc/cf-standard-name-table.xml -a `pwd`/etc/area-type-table.xml -u $PREFIX/share/udunits/udunits2.xml -v auto \$1" >> cfchecker
-  - cp cfchecker $PREFIX/bin/cfchecker
-  - chmod a+x $PREFIX/bin/cfchecker
-
   # Output debug info
   - conda list
   - conda info -a
