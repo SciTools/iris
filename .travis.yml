@@ -9,6 +9,7 @@
 language: python
 python:
   - 2.7
+  - 3.4
 sudo: false
 
 env:
@@ -76,7 +77,7 @@ install:
   - wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip
   - unzip -q iris-sample-data.zip
   - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
-  
+
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
   - if [[ $TEST_TARGET -ne 'coding' ]]; then
