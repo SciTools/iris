@@ -118,9 +118,9 @@ class TestCellMethods(tests.IrisTest):
         self.assertEqual(res, expected)
 
     def test_multiple_unordered_lbprocs(self):
-        field = mock.MagicMock(lbproc=192,
+        field = mock.MagicMock(lbproc=192, bzx=0, bdx=1, lbnpt=3, lbrow=3,
                                lbtim=mock.Mock(ia=24, ib=5, ic=3),
-                               lbcode=SplittableInt(1),
+                               lbcode=SplittableInt(1), x_bounds=None,
                                _x_coord_name=lambda: 'longitude',
                                _y_coord_name=lambda: 'latitude')
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
@@ -129,9 +129,9 @@ class TestCellMethods(tests.IrisTest):
         self.assertEqual(res, expected)
 
     def test_multiple_unordered_rotated_lbprocs(self):
-        field = mock.MagicMock(lbproc=192,
+        field = mock.MagicMock(lbproc=192, bzx=0, bdx=1, lbnpt=3, lbrow=3,
                                lbtim=mock.Mock(ia=24, ib=5, ic=3),
-                               lbcode=SplittableInt(101),
+                               lbcode=SplittableInt(101), x_bounds=None,
                                _x_coord_name=lambda: 'grid_longitude',
                                _y_coord_name=lambda: 'grid_latitude')
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
