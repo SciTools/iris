@@ -1303,10 +1303,12 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         ::
 
             # to append the field to a file
-            a_pp_field.save(open(filename, 'ab'))
+            with open(filename, 'ab') as fh:
+                a_pp_field.save(fh)
 
             # to overwrite/create a file
-            a_pp_field.save(open(filename, 'wb'))
+            with open(filename, 'wb') as fh:
+                a_pp_field.save(fh)
 
 
         .. note::
@@ -1431,7 +1433,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # NB: lbegin, lbnrec, lbuser[1] not set up
 
         # Now that we have done the manouvering required, write to the file...
-        if not isinstance(file_handle, file):
+        if not hasattr(file_handle, 'write'):
             raise TypeError('The file_handle argument must be an instance of a Python file object, but got %r. \n'
                              'e.g. open(filename, "wb") to open a binary file with write permission.' % type(file_handle))
 
@@ -1803,74 +1805,82 @@ def _field_gen(filename, read_data_bytes):
     two-dimensional shape of the data.
 
     """
-    pp_file = open(filename, 'rb')
+    with open(filename, 'rb') as pp_file:
+        # Get a reference to the seek method on the file
+        # (this is accessed 3* #number of headers so can provide a small
+        # performance boost)
+        pp_file_seek = pp_file.seek
+        pp_file_read = pp_file.read
 
-    # Get a reference to the seek method on the file
-    # (this is accessed 3* #number of headers so can provide a small performance boost)
-    pp_file_seek = pp_file.seek
-    pp_file_read = pp_file.read
+        field_count = 0
+        # Keep reading until we reach the end of file
+        while True:
+            # Move past the leading header length word
+            pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
+            # Get the LONG header entries
+            header_longs = np.fromfile(pp_file, dtype='>i%d' % PP_WORD_DEPTH,
+                                       count=NUM_LONG_HEADERS)
+            # Nothing returned => EOF
+            if len(header_longs) == 0:
+                break
+            # Get the FLOAT header entries
+            header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH,
+                                        count=NUM_FLOAT_HEADERS)
+            header = tuple(header_longs) + tuple(header_floats)
 
-    field_count = 0
-    # Keep reading until we reach the end of file
-    while True:
-        # Move past the leading header length word
-        pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
-        # Get the LONG header entries
-        header_longs = np.fromfile(pp_file, dtype='>i%d' % PP_WORD_DEPTH, count=NUM_LONG_HEADERS)
-        # Nothing returned => EOF
-        if len(header_longs) == 0:
-            break
-        # Get the FLOAT header entries
-        header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH, count=NUM_FLOAT_HEADERS)
-        header = tuple(header_longs) + tuple(header_floats)
+            # Make a PPField of the appropriate sub-class (depends on header
+            # release number)
+            try:
+                pp_field = make_pp_field(header)
+            except ValueError as e:
+                msg = 'Unable to interpret field {}. {}. Skipping ' \
+                      'the remainder of the file.'.format(field_count,
+                                                          e.message)
+                warnings.warn(msg)
+                break
 
-        # Make a PPField of the appropriate sub-class (depends on header release number)
-        try:
-            pp_field = make_pp_field(header)
-        except ValueError as e:
-            msg = 'Unable to interpret field {}. {}. Skipping ' \
-                  'the remainder of the file.'.format(field_count, e.message)
-            warnings.warn(msg)
-            break
+            # Skip the trailing 4-byte word containing the header length
+            pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
 
-        # Skip the trailing 4-byte word containing the header length
-        pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
+            # Read the word telling me how long the data + extra data is
+            # This value is # of bytes
+            len_of_data_plus_extra = struct.unpack_from(
+                '>L',
+                pp_file_read(PP_WORD_DEPTH))[0]
+            if len_of_data_plus_extra != pp_field.lblrec * PP_WORD_DEPTH:
+                raise ValueError('LBLREC has a different value to the integer '
+                                 'recorded after the header in the file (%s '
+                                 'and %s).' % (pp_field.lblrec * PP_WORD_DEPTH,
+                                               len_of_data_plus_extra))
 
-        # Read the word telling me how long the data + extra data is
-        # This value is # of bytes
-        len_of_data_plus_extra = struct.unpack_from('>L', pp_file_read(PP_WORD_DEPTH))[0]
-        if len_of_data_plus_extra != pp_field.lblrec * PP_WORD_DEPTH:
-            raise ValueError('LBLREC has a different value to the integer recorded after the '
-                             'header in the file (%s and %s).' % (pp_field.lblrec * PP_WORD_DEPTH,
-                                                                  len_of_data_plus_extra))
+            # calculate the extra length in bytes
+            extra_len = pp_field.lbext * PP_WORD_DEPTH
 
-        # calculate the extra length in bytes
-        extra_len = pp_field.lbext * PP_WORD_DEPTH
+            # Derive size and datatype of payload
+            data_len = len_of_data_plus_extra - extra_len
+            dtype = LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0],
+                                            LBUSER_DTYPE_LOOKUP['default'])
 
-        # Derive size and datatype of payload
-        data_len = len_of_data_plus_extra - extra_len
-        dtype = LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0],
-                                        LBUSER_DTYPE_LOOKUP['default'])
+            if read_data_bytes:
+                # Read the actual bytes. This can then be converted to a numpy
+                # array at a higher level.
+                pp_field._data = LoadedArrayBytes(pp_file.read(data_len),
+                                                  dtype)
+            else:
+                # Provide enough context to read the data bytes later on.
+                pp_field._data = (filename, pp_file.tell(), data_len, dtype)
+                # Seek over the actual data payload.
+                pp_file_seek(data_len, os.SEEK_CUR)
 
-        if read_data_bytes:
-            # Read the actual bytes. This can then be converted to a numpy array
-            # at a higher level.
-            pp_field._data = LoadedArrayBytes(pp_file.read(data_len), dtype)
-        else:
-            # Provide enough context to read the data bytes later on.
-            pp_field._data = (filename, pp_file.tell(), data_len, dtype)
-            # Seek over the actual data payload.
-            pp_file_seek(data_len, os.SEEK_CUR)
+            # Do we have any extra data to deal with?
+            if extra_len:
+                pp_field._read_extra_data(pp_file, pp_file_read, extra_len)
 
-        # Do we have any extra data to deal with?
-        if extra_len:
-            pp_field._read_extra_data(pp_file, pp_file_read, extra_len)
-
-        # Skip that last 4 byte record telling me the length of the field I have already read
-        pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
-        field_count += 1
-        yield pp_field
-    pp_file.close()
+            # Skip that last 4 byte record telling me the length of the field I
+            # have already read
+            pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
+            field_count += 1
+            yield pp_field
 
 
 def _ensure_load_rules_loaded():
@@ -2272,10 +2282,11 @@ def save_fields(fields, target, append=False):
     else:
         raise ValueError("Can only save pp to filename or writable")
 
-    # Save each field
-    for pp_field in fields:
-        # Write to file
-        pp_field.save(pp_file)
-
-    if isinstance(target, six.string_types):
-        pp_file.close()
+    try:
+        # Save each field
+        for pp_field in fields:
+            # Write to file
+            pp_field.save(pp_file)
+    finally:
+        if isinstance(target, six.string_types):
+            pp_file.close()

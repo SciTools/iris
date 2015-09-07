@@ -435,15 +435,18 @@ class IrisTest(unittest.TestCase):
 
     def _check_same(self, item, reference_path, type_comparison_name='CML'):
         if self._check_reference_file(reference_path):
-            reference = ''.join(open(reference_path, 'r').readlines())
+            with open(reference_path, 'r') as reference_fh:
+                reference = ''.join(reference_fh.readlines())
             self._assert_str_same(reference, item, reference_path,
                                   type_comparison_name)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            open(reference_path, 'w').writelines(
-                part.encode('utf-8') if isinstance(part, unicode) else part
-                for part in item)
+            with open(reference_path, 'w') as reference_fh:
+                reference_fh.writelines(
+                    part.encode('utf-8')
+                    if isinstance(part, unicode) else part
+                    for part in item)
 
     def assertXMLElement(self, obj, reference_filename):
         """
@@ -571,8 +574,8 @@ class IrisTest(unittest.TestCase):
         """
         Generate checksum from file.
         """
-        in_file = open(file_path, "rb")
-        return zlib.crc32(in_file.read())
+        with open(file_path, "rb") as in_file:
+            return zlib.crc32(in_file.read())
 
     def _unique_id(self):
         """

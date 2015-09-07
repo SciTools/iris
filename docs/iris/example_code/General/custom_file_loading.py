@@ -56,6 +56,13 @@ import iris.plot as iplt
 
 UTC_format = '%H%M%Z %d/%m/%Y'
 
+FLOAT_HEADERS = ['X grid origin', 'Y grid origin',
+                 'X grid resolution', 'Y grid resolution']
+INT_HEADERS = ['X grid size', 'Y grid size', 'Number of fields']
+DATE_HEADERS = ['Run time', 'Start of release', 'End of release']
+COLUMN_NAMES = ['species_category', 'species', 'cell_measure', 'quantity',
+                'unit', 'z_level', 'time']
+
 
 def load_NAME_III(filename):
     """
@@ -63,74 +70,84 @@ def load_NAME_III(filename):
 
     """
 
-    # loading a file gives a generator of lines which can be progressed using the next() method.
-    # This will come in handy as we wish to progress through the file line by line.
-    file_handle = open(filename)
+    # Loading a file gives a generator of lines which can be progressed using
+    # the next() method. This will come in handy as we wish to progress through
+    # the file line by line.
+    with open(filename) as file_handle:
+        # Define a dictionary which can hold the header metadata for this file.
+        headers = {}
 
-    # define a dictionary which can hold the header metadata about this file
-    headers = {}
+        # Skip the NAME header of the file which looks something like
+        # 'NAME III (version X.X.X)'.
+        next(file_handle)
 
-    # skip the NAME header of the file which looks something like 'NAME III (version X.X.X)'
-    next(file_handle)
+        # Read the next 16 lines of header information, putting the form
+        # "header name:    header value" into a dictionary.
+        for _ in range(16):
+            header_name, header_value = file_handle.next().split(':')
 
-    # read the next 16 lines of header information, putting the form "header name:    header value" into a dictionary
-    for _ in range(16):
-        header_name, header_value = file_handle.next().split(':')
+            # Strip off any spurious space characters in the header name and
+            # value.
+            header_name = header_name.strip()
+            header_value = header_value.strip()
 
-        # strip off any spurious space characters in the header name and value
-        header_name = header_name.strip()
-        header_value = header_value.strip()
+            # Cast some headers into floats or integers if they match a given
+            # header name.
+            if header_name in FLOAT_HEADERS:
+                header_value = float(header_value)
+            elif header_name in INT_HEADERS:
+                header_value = int(header_value)
+            elif header_name in DATE_HEADERS:
+                # convert the time to python datetimes
+                header_value = datetime.datetime.strptime(header_value,
+                                                          UTC_format)
 
-        # cast some headers into floats or integers if they match a given header name
-        if header_name in ['X grid origin', 'Y grid origin', 'X grid resolution', 'Y grid resolution']:
-            header_value = float(header_value)
-        elif header_name in ['X grid size', 'Y grid size', 'Number of fields']:
-            header_value = int(header_value)
-        elif header_name in ['Run time', 'Start of release', 'End of release']:
-            # convert the time to python datetimes
-            header_value = datetime.datetime.strptime(header_value, UTC_format)
+            headers[header_name] = header_value
 
-        headers[header_name] = header_value
+        # Skip the next blank line in the file.
+        next(file_handle)
 
-    # skip the next blank line in the file.
-    next(file_handle)
+        # Read the next 7 lines of column definitions.
+        column_headings = {}
+        for column_header_name in COLUMN_NAMES:
+            column_headings[column_header_name] = [
+                col.strip() for col in file_handle.next().split(',')
+            ][:-1]
 
-    # Read the next 7 lines of column definitions
-    column_headings = {}
-    for column_header_name in ['species_category', 'species', 'cell_measure', 'quantity', 'unit', 'z_level', 'time']:
-        column_headings[column_header_name] = [col.strip() for col in file_handle.next().split(',')][:-1]
-
-    # convert the time to python datetimes
-    new_time_column_header = []
-    for i, t in enumerate(column_headings['time']):
-        # the first 4 columns aren't time at all, so don't convert them to datetimes
-        if i >= 4:
-            new_time_column_header.append(datetime.datetime.strptime(t, UTC_format))
-        else:
+        # Convert the time to python datetimes.
+        new_time_column_header = []
+        for i, t in enumerate(column_headings['time']):
+            # The first 4 columns aren't time at all, so don't convert them to
+            # datetimes.
+            if i >= 4:
+                t = datetime.datetime.strptime(t, UTC_format)
             new_time_column_header.append(t)
-    column_headings['time'] = new_time_column_header
+        column_headings['time'] = new_time_column_header
 
-    # skip the blank line after the column headers
-    next(file_handle)
+        # Skip the blank line after the column headers.
+        next(file_handle)
 
-    # make a list of data arrays to hold the data for each column
-    data_shape = (headers['Y grid size'], headers['X grid size'])
-    data_arrays = [np.zeros(data_shape, dtype=np.float32) for i in range(headers['Number of fields'])]
+        # Make a list of data arrays to hold the data for each column.
+        data_shape = (headers['Y grid size'], headers['X grid size'])
+        data_arrays = [np.zeros(data_shape, dtype=np.float32)
+                       for i in range(headers['Number of fields'])]
 
-    # iterate over the remaining lines which represent the data in a column form
-    for line in file_handle:
+        # Iterate over the remaining lines which represent the data in a column
+        # form.
+        for line in file_handle:
+            # Split the line by comma, removing the last empty column caused by
+            # the trailing comma.
+            vals = line.split(',')[:-1]
 
-        # split the line by comma, removing the last empty column caused by the trailing comma
-        vals = line.split(',')[:-1]
+            # Cast the x and y grid positions to floats and convert them to
+            # zero based indices (the numbers are 1 based grid positions where
+            # 0.5 represents half a grid point.)
+            x = float(vals[0]) - 1.5
+            y = float(vals[1]) - 1.5
 
-        # cast the x and y grid positions to floats and convert them to zero based indices
-        # (the numbers are 1 based grid positions where 0.5 represents half a grid point.)
-        x = float(vals[0]) - 1.5
-        y = float(vals[1]) - 1.5
-
-        # populate the data arrays (i.e. all columns but the leading 4)
-        for i, data_array in enumerate(data_arrays):
-            data_array[y, x] = float(vals[i + 4])
+            # Populate the data arrays (i.e. all columns but the leading 4).
+            for i, data_array in enumerate(data_arrays):
+                data_array[y, x] = float(vals[i + 4])
 
     return headers, column_headings, data_arrays
 

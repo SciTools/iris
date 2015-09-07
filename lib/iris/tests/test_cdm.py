@@ -48,11 +48,13 @@ class IrisDotTest(tests.IrisTest):
         test_string = iris.fileformats.dot.cube_text(cube)
         reference_path = tests.get_result_path(reference_filename)
         if os.path.isfile(reference_path):
-            reference = ''.join(open(reference_path, 'r').readlines())
+            with open(reference_path, 'r') as reference_fh:
+                reference = ''.join(reference_fh.readlines())
             self._assert_str_same(reference, test_string, reference_filename, type_comparison_name='DOT files')
         else:
             tests.logger.warning('Creating result file: %s', reference_path)
-            open(reference_path, 'w').writelines(test_string)
+            with open(reference_path, 'w') as reference_fh:
+                reference_fh.writelines(test_string)
 
 
 class TestBasicCubeConstruction(tests.IrisTest):

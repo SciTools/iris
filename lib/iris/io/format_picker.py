@@ -33,7 +33,8 @@ To manage a collection of FormatSpecifications for loading::
 
 To identify a specific format from a file::
 
-    handling_spec = fagent.get_spec(png_filename, open(png_filename, 'rb'))
+    with open(png_filename, 'rb') as png_fh:
+        handling_spec = fagent.get_spec(png_filename, png_fh)
 
 In the example, handling_spec will now be the png_spec previously added to the agent.
 
