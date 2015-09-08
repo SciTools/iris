@@ -1270,9 +1270,13 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
             data_len = ia * PP_WORD_DEPTH
 
             if ib == 10:
-                self.field_title = ''.join(struct.unpack_from('>%dc' % data_len, file_reader(data_len))).rstrip('\00')
+                field_title = struct.unpack_from('>%ds' % data_len,
+                                                 file_reader(data_len))
+                self.field_title = field_title[0].rstrip(b'\00').decode()
             elif ib == 11:
-                self.domain_title = ''.join(struct.unpack_from('>%dc' % data_len, file_reader(data_len))).rstrip('\00')
+                domain_title = struct.unpack_from('>%ds' % data_len,
+                                                  file_reader(data_len))
+                self.domain_title = domain_title[0].rstrip(b'\00').decode()
             elif ib in EXTRA_DATA:
                 attr_name = EXTRA_DATA[ib]
                 values = np.fromfile(pp_file, dtype=np.dtype('>f%d' % PP_WORD_DEPTH), count=ia)
@@ -1467,7 +1471,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         for int_code, extra_data in extra_items:
             pp_file.write(struct.pack(">L", int(int_code)))
             if isinstance(extra_data, six.string_types):
-                pp_file.write(struct.pack(">%sc" % len(extra_data), *extra_data))
+                pp_file.write(struct.pack(">%ss" % len(extra_data),
+                              extra_data.encode()))
             else:
                 extra_data = extra_data.astype(np.dtype('>f4'))
                 extra_data.tofile(pp_file)

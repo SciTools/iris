@@ -21,6 +21,7 @@ Test the file saving mechanism.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -135,19 +136,19 @@ class TestSaveDot(TestSaveMethods):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, binary_mode = True)
 
     def test_bytesio(self):
-        bio = io.BytesIO()
+        sio = six.StringIO()
 
         # Save from dot direct
         dot.save(self.cube1, self.temp_filename1)
 
         # Call save on iris
-        iris.save(self.cube1, bio, iris.io.find_saver(self.ext))
+        iris.save(self.cube1, sio, iris.io.find_saver(self.ext))
 
         with open(self.temp_filename1) as infile:
             data = infile.read()
 
         # Compare files
-        self.assertEqual(data, bio.getvalue(),
+        self.assertEquals(data, sio.getvalue(),
                          'Mismatch in data when comparing iris bytesio save '
                          'and dot.save.')
 

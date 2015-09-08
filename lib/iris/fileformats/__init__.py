@@ -76,7 +76,7 @@ FORMAT_AGENT.add_spec(
 # priority to avoid collateral damage from false positives.
 FORMAT_AGENT.add_spec(
     FormatSpecification('GRIB', MagicNumber(100),
-                        lambda header_bytes: 'GRIB' in header_bytes,
+                        lambda header_bytes: b'GRIB' in header_bytes,
                         grib.load_cubes, priority=1))
 
 
@@ -173,7 +173,7 @@ FORMAT_AGENT.add_spec(FormatSpecification('NIMROD',
 FORMAT_AGENT.add_spec(
     FormatSpecification('NAME III',
                         LeadingLine(),
-                        lambda line: line.lstrip().startswith("NAME III"),
+                        lambda line: line.lstrip().startswith(b"NAME III"),
                         name.load_cubes,
                         priority=5))
 

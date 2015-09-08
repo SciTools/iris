@@ -97,7 +97,7 @@ class TestFileFormatPicker(tests.IrisTest):
         # test that each filespec is identified as the expected format
         for (expected_format_name, file_spec) in test_specs:
             test_path = tests.get_data_path(file_spec)
-            with open(test_path, 'r') as test_file:
+            with open(test_path, 'rb') as test_file:
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
                 self.assertEqual(a.name, expected_format_name)
 
@@ -110,8 +110,8 @@ class TestFileFormatPicker(tests.IrisTest):
         # specific to WMO bulletin headers
         header_lengths = [21, 80, 41, 42]
         for header_length in header_lengths:
-            binary_string = header_length * '\x00' + 'GRIB' + '\x00' * 100
-            with BytesIO('rw') as bh:
+            binary_string = header_length * b'\x00' + b'GRIB' + b'\x00' * 100
+            with BytesIO(b'rw') as bh:
                 bh.write(binary_string)
                 bh.name = 'fake_file_handle'
                 a = iff.FORMAT_AGENT.get_spec(bh.name, bh)

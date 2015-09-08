@@ -48,7 +48,7 @@ class TestGeoTiffExport(tests.IrisTest):
             iris.experimental.raster.export_geotiff(cube, temp_filename)
 
             # Check the metadata is correct.
-            with open(temp_filename) as fh:
+            with open(temp_filename, 'rb') as fh:
                 self.check_tiff_header(fh, ('experimental', 'raster',
                                             tif_header))
 
