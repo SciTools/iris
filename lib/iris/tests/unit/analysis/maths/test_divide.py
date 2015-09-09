@@ -35,7 +35,10 @@ from iris.tests.unit.analysis.maths import \
 class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
-        return operator.div
+        try:
+            return operator.div
+        except AttributeError:
+            return operator.truediv
 
     @property
     def cube_func(self):
@@ -45,7 +48,10 @@ class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
 class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
-        return operator.div
+        try:
+            return operator.div
+        except AttributeError:
+            return operator.truediv
 
     @property
     def cube_func(self):

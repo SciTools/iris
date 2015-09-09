@@ -5,7 +5,7 @@
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="STASH" value="m??s44i101"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-      <attribute name="ukmo__process_flags" value="(u'Mean over an ensemble of parallel runs', u'Time mean field')"/>
+      <attribute name="ukmo__process_flags" value="('Mean over an ensemble of parallel runs', 'Time mean field')"/>
     </attributes>
     <coords>
       <coord datadims="[0]">

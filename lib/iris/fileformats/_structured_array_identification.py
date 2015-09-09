@@ -102,11 +102,13 @@ class ArrayStructure(namedtuple('ArrayStructure',
     2
 
     """
-    def __init__(self, *args, **kwargs):
+    def __new__(cls, stride, unique_ordered_values):
+        self = super(ArrayStructure, cls).__new__(cls, stride,
+                                                  unique_ordered_values)
         #: The ``size`` attribute is the number of the unique values in
         #: the original array. It is **not** the length of the original array.
-        self.size = len(self.unique_ordered_values)
-        super(ArrayStructure, self).__init__(self, *args, **kwargs)
+        self.size = len(unique_ordered_values)
+        return self
 
     def __eq__(self, other):
         stride = getattr(other, 'stride', None)

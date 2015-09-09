@@ -25,10 +25,10 @@ import iris.tests as tests
 
 import collections
 
-import mock
 import numpy as np
 
 from iris.coords import DimCoord, AuxCoord, Coord
+from iris.tests import mock
 
 
 Pair = collections.namedtuple('Pair', 'points bounds')

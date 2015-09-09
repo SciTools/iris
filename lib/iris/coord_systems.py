@@ -26,6 +26,7 @@ import six
 from abc import ABCMeta, abstractmethod
 import warnings
 
+import numpy as np
 import cartopy
 import cartopy.crs as ccrs
 
@@ -65,7 +66,13 @@ class CoordSystem(six.with_metaclass(ABCMeta, object)):
         attrs = sorted(attrs, key=lambda attr: attr[0])
 
         for name, value in attrs:
-            coord_system_xml_element.setAttribute(name, str(value))
+            if isinstance(value, float):
+                value_str = '{:.16}'.format(value)
+            elif isinstance(value, np.float32):
+                value_str = '{:.8}'.format(value)
+            else:
+                value_str = '{}'.format(value)
+            coord_system_xml_element.setAttribute(name, value_str)
 
         return coord_system_xml_element
 
@@ -211,10 +218,17 @@ class GeogCS(CoordSystem):
         attrs = self._pretty_attrs()
         # Special case for 1 pretty attr
         if len(attrs) == 1 and attrs[0][0] == "semi_major_axis":
-            return "GeogCS(%s)" % self.semi_major_axis
+            return 'GeogCS({:.16})'.format(self.semi_major_axis)
         else:
-            return "GeogCS(%s)" % ", ".join(
-                ["%s=%s" % (k, v) for k, v in attrs])
+            text_attrs = []
+            for k, v in attrs:
+                if isinstance(v, float):
+                    text_attrs.append('{}={:.16}'.format(k, v))
+                elif isinstance(v, np.float32):
+                    text_attrs.append('{}={:.8}'.format(k, v))
+                else:
+                    text_attrs.append('{}={}'.format(k, v))
+            return 'GeogCS({})'.format(', '.join(text_attrs))
 
     def xml_element(self, doc):
         # Special output for spheres
@@ -306,8 +320,15 @@ class RotatedGeogCS(CoordSystem):
 
     def __str__(self):
         attrs = self._pretty_attrs()
-        result = "RotatedGeogCS(%s)" % ", ".join(
-            ["%s=%s" % (k, v) for k, v in attrs])
+        text_attrs = []
+        for k, v in attrs:
+            if isinstance(v, float):
+                text_attrs.append('{}={:.16}'.format(k, v))
+            elif isinstance(v, np.float32):
+                text_attrs.append('{}={:.8}'.format(k, v))
+            else:
+                text_attrs.append('{}={}'.format(k, v))
+        result = 'RotatedGeogCS({})'.format(', '.join(text_attrs))
         # Extra prettiness
         result = result.replace("grid_north_pole_latitude=", "")
         result = result.replace("grid_north_pole_longitude=", "")

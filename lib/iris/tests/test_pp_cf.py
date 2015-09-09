@@ -177,8 +177,7 @@ def attach_tests():
     for file_name in TestAll.files_to_check:
         func_name = 'test_{}'.format(file_name.replace('.', '_'))
         test_func = make_test_function(func_name, file_name)
-        test_method = types.MethodType(test_func, None, TestAll)
-        setattr(TestAll, func_name, test_method)
+        setattr(TestAll, func_name, test_func)
 
 
 attach_tests()

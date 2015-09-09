@@ -23,12 +23,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from mock import patch, sentinel, Mock
 import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import Aggregator
 from iris.exceptions import LazyAggregatorError
+from iris.tests import mock
 
 
 class Test_aggregate(tests.IrisTest):
@@ -50,16 +50,16 @@ class Test_aggregate(tests.IrisTest):
         # Providing masked array with no tolerance keyword (mdtol) provided.
         axis = 0
         mock_return = self.expected_result_axis0.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis)
             self.assertMaskedArrayEqual(result, self.expected_result_axis0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis)
             self.assertMaskedArrayEqual(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
@@ -68,16 +68,16 @@ class Test_aggregate(tests.IrisTest):
         # Providing masked array with a high tolerance (mdtol) provided.
         axis = 0
         mock_return = self.expected_result_axis0.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis, mdtol=.55)
             self.assertMaskedArrayEqual(result, self.expected_result_axis0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis, mdtol=.55)
             self.assertMaskedArrayEqual(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
@@ -89,16 +89,16 @@ class Test_aggregate(tests.IrisTest):
         result_axis_0 = self.expected_result_axis0.copy()
         result_axis_0.mask = np.array([True, True, False])
         mock_return = ma.array([1, 2, 3], mask=None)
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis, mdtol=.45)
             self.assertMaskedArrayAlmostEqual(result, result_axis_0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis, mdtol=.45)
             self.assertMaskedArrayEqual(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
@@ -110,8 +110,8 @@ class Test_aggregate(tests.IrisTest):
         result_axis_1 = self.expected_result_axis1.copy()
         result_axis_1.mask = np.array([True, True])
         mock_return = self.expected_result_axis1.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis, mdtol=.1)
             self.assertMaskedArrayAlmostEqual(result, result_axis_1)
         mock_method.assert_called_once_with(self.array, axis=axis)
@@ -123,16 +123,16 @@ class Test_aggregate(tests.IrisTest):
 
         axis = 0
         mock_return = self.expected_result_axis0.data.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis, mdtol=0.5)
             self.assertArrayAlmostEqual(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.data.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis, mdtol=0.5)
             self.assertArrayAlmostEqual(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
@@ -144,16 +144,16 @@ class Test_aggregate(tests.IrisTest):
 
         axis = 0
         mock_return = self.expected_result_axis0.data.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis)
             self.assertArrayAlmostEqual(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.data.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis)
             self.assertArrayAlmostEqual(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
@@ -164,8 +164,8 @@ class Test_aggregate(tests.IrisTest):
         axis = -1
         data = self.array.flatten()
         mock_return = 2
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis, mdtol=1)
             self.assertMaskedArrayEqual(result, ma.array(2, mask=False))
         mock_method.assert_called_once_with(data, axis=axis)
@@ -177,8 +177,8 @@ class Test_aggregate(tests.IrisTest):
         axis = -1
         data = self.array.flatten()
         mock_return = 2
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis, mdtol=0)
             self.assertMaskedArrayEqual(result, ma.array(2, mask=True))
         mock_method.assert_called_once_with(data, axis=axis)
@@ -189,50 +189,50 @@ class Test_aggregate(tests.IrisTest):
         axis = 0
         mock_return = self.expected_result_axis0.data.copy()
         result_axis_0 = ma.array(mock_return, mask=[True, True, False])
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis, mdtol=.45)
             self.assertMaskedArrayAlmostEqual(result, result_axis_0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.data.copy()
-        with patch.object(self.TEST, 'call_func',
-                          return_value=mock_return) as mock_method:
+        with mock.patch.object(self.TEST, 'call_func',
+                               return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(self.array, axis, mdtol=.45)
             self.assertMaskedArrayEqual(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
     def test_kwarg_pass_through_no_kwargs(self):
-        call_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        call_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         aggregator = Aggregator('', call_func)
         aggregator.aggregate(data, axis)
         call_func.assert_called_once_with(data, axis=axis)
 
     def test_kwarg_pass_through_call_kwargs(self):
-        call_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        call_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         kwargs = dict(wibble='wobble', foo='bar')
         aggregator = Aggregator('', call_func)
         aggregator.aggregate(data, axis, **kwargs)
         call_func.assert_called_once_with(data, axis=axis, **kwargs)
 
     def test_kwarg_pass_through_init_kwargs(self):
-        call_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        call_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         kwargs = dict(wibble='wobble', foo='bar')
         aggregator = Aggregator('', call_func, **kwargs)
         aggregator.aggregate(data, axis)
         call_func.assert_called_once_with(data, axis=axis, **kwargs)
 
     def test_kwarg_pass_through_combined_kwargs(self):
-        call_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        call_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         init_kwargs = dict(wibble='wobble', var=1.0)
         call_kwargs = dict(foo='foo', var=0.5)
         aggregator = Aggregator('', call_func, **init_kwargs)
@@ -242,9 +242,9 @@ class Test_aggregate(tests.IrisTest):
         call_func.assert_called_once_with(data, axis=axis, **expected_kwargs)
 
     def test_mdtol_intercept(self):
-        call_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        call_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         aggregator = Aggregator('', call_func)
         aggregator.aggregate(data, axis, wibble='wobble', mdtol=0.8)
         call_func.assert_called_once_with(data, axis=axis, wibble='wobble')
@@ -261,52 +261,52 @@ class Test_update_metadata(tests.IrisTest):
         # If the Aggregator has no units_func then the units should be
         # left unchanged.
         aggregator = Aggregator('', None)
-        cube = Mock(units=sentinel.units)
+        cube = mock.Mock(units=mock.sentinel.units)
         aggregator.update_metadata(cube, [])
-        self.assertIs(cube.units, sentinel.units)
+        self.assertIs(cube.units, mock.sentinel.units)
 
     def test_units_change(self):
         # If the Aggregator has a units_func then the new units should
         # be defined by its return value.
-        units_func = Mock(return_value=sentinel.new_units)
+        units_func = mock.Mock(return_value=mock.sentinel.new_units)
         aggregator = Aggregator('', None, units_func)
-        cube = Mock(units=sentinel.units)
+        cube = mock.Mock(units=mock.sentinel.units)
         aggregator.update_metadata(cube, [])
-        units_func.assert_called_once_with(sentinel.units)
-        self.assertEqual(cube.units, sentinel.new_units)
+        units_func.assert_called_once_with(mock.sentinel.units)
+        self.assertEqual(cube.units, mock.sentinel.new_units)
 
 
 class Test_lazy_aggregate(tests.IrisTest):
     def test_kwarg_pass_through_no_kwargs(self):
-        lazy_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        lazy_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         aggregator = Aggregator('', None, lazy_func=lazy_func)
         aggregator.lazy_aggregate(data, axis)
         lazy_func.assert_called_once_with(data, axis)
 
     def test_kwarg_pass_through_call_kwargs(self):
-        lazy_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        lazy_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         kwargs = dict(wibble='wobble', foo='bar')
         aggregator = Aggregator('', None, lazy_func=lazy_func)
         aggregator.lazy_aggregate(data, axis, **kwargs)
         lazy_func.assert_called_once_with(data, axis, **kwargs)
 
     def test_kwarg_pass_through_init_kwargs(self):
-        lazy_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        lazy_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         kwargs = dict(wibble='wobble', foo='bar')
         aggregator = Aggregator('', None, lazy_func=lazy_func, **kwargs)
         aggregator.lazy_aggregate(data, axis)
         lazy_func.assert_called_once_with(data, axis, **kwargs)
 
     def test_kwarg_pass_through_combined_kwargs(self):
-        lazy_func = Mock()
-        data = sentinel.data
-        axis = sentinel.axis
+        lazy_func = mock.Mock()
+        data = mock.sentinel.data
+        axis = mock.sentinel.axis
         init_kwargs = dict(wibble='wobble', var=1.0)
         call_kwargs = dict(foo='foo', var=0.5)
         aggregator = Aggregator('', None, lazy_func=lazy_func, **init_kwargs)

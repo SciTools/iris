@@ -332,7 +332,10 @@ def divide(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
-    op = operator.idiv if in_place else operator.div
+    try:
+        op = operator.idiv if in_place else operator.div
+    except AttributeError:
+        op = operator.itruediv if in_place else operator.truediv
     return _binary_op_common(op, 'divison', cube, other, new_unit, dim,
                              in_place=in_place)
 

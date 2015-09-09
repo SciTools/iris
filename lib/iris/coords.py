@@ -1726,10 +1726,12 @@ class _CellIterator(collections.Iterator):
             raise iris.exceptions.CoordinateMultiDimError(coord)
         self._indices = iter(range(coord.shape[0]))
 
-    def next(self):
+    def __next__(self):
         # NB. When self._indices runs out it will raise StopIteration for us.
         i = next(self._indices)
         return self._coord.cell(i)
+
+    next = __next__
 
 
 # See ExplicitCoord._group() for the description/context.
@@ -1738,7 +1740,7 @@ class _GroupIterator(collections.Iterator):
         self._points = points
         self._start = 0
 
-    def next(self):
+    def __next__(self):
         num_points = len(self._points)
         if self._start >= num_points:
             raise StopIteration
@@ -1751,3 +1753,5 @@ class _GroupIterator(collections.Iterator):
         group = _GroupbyItem(m, slice(self._start, stop))
         self._start = stop
         return group
+
+    next = __next__

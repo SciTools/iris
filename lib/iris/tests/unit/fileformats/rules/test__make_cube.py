@@ -23,10 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.fileformats.rules import _make_cube
 import iris.fileformats.rules
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

@@ -23,7 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import netcdftime
 
 from iris.experimental.fieldsfile \
@@ -33,6 +32,7 @@ import iris.coord_systems
 import iris.coords
 import iris.fileformats.pp
 import iris.fileformats.rules
+from iris.tests import mock
 import iris.unit
 
 

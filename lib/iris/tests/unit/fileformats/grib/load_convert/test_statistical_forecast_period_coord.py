@@ -28,10 +28,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import datetime
-import mock
 
 from iris.fileformats.grib._load_convert import \
     statistical_forecast_period_coord
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

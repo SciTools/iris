@@ -140,9 +140,10 @@ slicing the 3 dimensional cube (15, 100, 100) by longitude (i starts at 0 and 15
 
 .. hint::
     It is often useful to get a single 2d slice from a multidimensional cube in order to develop a 2d plot function, for example.
-    This can be achieved by using the ``next()`` method on the result of slices::
+    This can be achieved by using the ``next()`` function on the result of
+    slices::
 
-         first_slice = cube.slices(['grid_latitude', 'grid_longitude']).next()
+         first_slice = next(cube.slices(['grid_latitude', 'grid_longitude']))
 
     Once the your code can handle a 2d slice, it is then an easy step to loop over **all** 2d slices within the bigger
     cube using the slices method.

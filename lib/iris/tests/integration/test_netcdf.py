@@ -24,13 +24,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from contextlib import contextmanager
-import mock
 import numpy as np
 
 import iris
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 from iris.fileformats.netcdf import Saver
+from iris.tests import mock
 import iris.tests.stock as stock
 
 

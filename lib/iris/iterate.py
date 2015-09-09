@@ -242,7 +242,7 @@ class _ZipSlicesIterator(collections.Iterator):
         # (1, 0, 1), (1, 0, 2)]
         self._ndindex = np.ndindex(*master_dims_index)
 
-    def next(self):
+    def __next__(self):
         # When self._ndindex runs out it will raise StopIteration for us.
         master_index_tuple = next(self._ndindex)
 
@@ -270,6 +270,8 @@ class _ZipSlicesIterator(collections.Iterator):
             subcubes.append(subcube)
 
         return tuple(subcubes)
+
+    next = __next__
 
 
 class _CoordWrapper(object):

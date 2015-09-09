@@ -21,14 +21,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import iris.tests as tests
 
-import mock
-
 import iris
 import iris.fileformats.grib
 import iris.fileformats.grib.load_rules
 import iris.fileformats.rules
 
 from iris.fileformats.grib import load_cubes
+from iris.tests import mock
 
 
 class TestToggle(tests.IrisTest):

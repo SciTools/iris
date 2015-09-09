@@ -27,12 +27,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import numpy as np
 
 from iris.aux_factory import OceanSigmaZFactory
 from iris.coords import AuxCoord, DimCoord
+from iris.tests import mock
 from iris.unit import Unit
 
 

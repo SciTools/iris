@@ -28,11 +28,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
-import mock
 
 from iris.cube import Cube
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_cube_metadata
+from iris.tests import mock
 
 
 class TestInvalidGlobalAttributes(tests.IrisTest):

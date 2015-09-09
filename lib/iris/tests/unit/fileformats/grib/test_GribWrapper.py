@@ -27,10 +27,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from biggus import NumpyArrayAdapter
-import mock
 import numpy as np
 
 from iris.fileformats.grib import GribWrapper, GribDataProxy
+from iris.tests import mock
 
 _message_length = 1000
 

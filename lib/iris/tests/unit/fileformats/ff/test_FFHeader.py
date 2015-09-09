@@ -25,9 +25,9 @@ import iris.tests as tests
 
 import collections
 import numpy as np
-import mock
 
 from iris.fileformats.ff import FFHeader
+from iris.tests import mock
 
 
 MyGrid = collections.namedtuple('MyGrid', 'column row real horiz_grid_type')

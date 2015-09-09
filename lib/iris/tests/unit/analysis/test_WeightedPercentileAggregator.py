@@ -26,20 +26,20 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from mock import sentinel
 import numpy as np
 
 from iris.analysis import WeightedPercentileAggregator, _weighted_percentile
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
     def test_init(self):
         name = 'weighted_percentile'
         call_func = _weighted_percentile
-        units_func = sentinel.units_func
-        lazy_func = sentinel.lazy_func
+        units_func = mock.sentinel.units_func
+        lazy_func = mock.sentinel.lazy_func
         aggregator = WeightedPercentileAggregator(units_func=units_func,
                                                   lazy_func=lazy_func)
         self.assertEqual(aggregator.name(), name)

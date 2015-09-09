@@ -18,7 +18,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
-import mock
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -27,6 +26,7 @@ import iris.tests as tests
 import cartopy
 import cartopy.crs as ccrs
 from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.tests import mock
 
 
 class Test_init(tests.IrisTest):

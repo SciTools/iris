@@ -30,10 +30,9 @@ import iris.tests as tests
 from copy import deepcopy
 import warnings
 
-import mock
-
 from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import product_definition_template_1
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

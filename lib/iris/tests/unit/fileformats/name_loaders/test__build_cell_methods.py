@@ -26,11 +26,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 
 import iris.coords
-
 from iris.fileformats.name_loaders import _build_cell_methods
+from iris.tests import mock
 
 
 class Tests(tests.IrisTest):

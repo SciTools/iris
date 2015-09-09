@@ -76,7 +76,7 @@ def read_header(file_handle):
 
     """
     header = {}
-    header['NAME Version'] = file_handle.next().strip()
+    header['NAME Version'] = next(file_handle).strip()
     for line in file_handle:
         words = line.split(':', 1)
         if len(words) != 2:
@@ -516,7 +516,7 @@ def load_NAMEIII_field(filename):
 
     """
     # Loading a file gives a generator of lines which can be progressed using
-    # the next() method. This will come in handy as we wish to progress
+    # the next() function. This will come in handy as we wish to progress
     # through the file line by line.
     with open(filename, 'r') as file_handle:
         # Create a dictionary which can hold the header metadata about this
@@ -536,7 +536,7 @@ def load_NAMEIII_field(filename):
                                    'Vertical Av or Int', 'Prob Perc',
                                    'Prob Perc Ens', 'Prob Perc Time',
                                    'Time', 'Z', 'D']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[4:-1]
 
         # Convert the time to python datetimes.
@@ -607,7 +607,7 @@ def load_NAMEII_field(filename):
         for column_header_name in ['Species Category', 'Species',
                                    'Time Av or Int', 'Quantity',
                                    'Unit', 'Z', 'Time']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[4:-1]
 
         # Convert the time to python datetimes
@@ -683,7 +683,7 @@ def load_NAMEIII_timeseries(filename):
                                    'Vertical Av or Int', 'Prob Perc',
                                    'Prob Perc Ens', 'Prob Perc Time',
                                    'Location', 'X', 'Y', 'Z', 'D']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[1:-1]
 
         # Determine the coordinates of the data and store in namedtuples.
@@ -751,7 +751,7 @@ def load_NAMEII_timeseries(filename):
         for column_header_name in ['Y', 'X', 'Location',
                                    'Species Category', 'Species',
                                    'Quantity', 'Z', 'Unit']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[1:-1]
 
         # Determine the coordinates of the data and store in namedtuples.

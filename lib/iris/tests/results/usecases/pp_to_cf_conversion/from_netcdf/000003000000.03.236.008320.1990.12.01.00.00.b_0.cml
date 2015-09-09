@@ -5,7 +5,7 @@
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-      <attribute name="ukmo__process_flags" value="(u'Maximum value of field during time period', u'Time mean field')"/>
+      <attribute name="ukmo__process_flags" value="('Maximum value of field during time period', 'Time mean field')"/>
     </attributes>
     <coords>
       <coord>

@@ -23,7 +23,7 @@ import iris.tests as tests
 
 import iris
 from iris.fileformats.pp import EARTH_RADIUS as PP_DEFAULT_EARTH_RADIUS
-import mock
+from iris.tests import mock
 import numpy as np
 
 

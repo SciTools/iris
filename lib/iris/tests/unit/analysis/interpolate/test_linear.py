@@ -23,12 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import numpy as np
-import iris
 
+import iris
 from iris.analysis.interpolate import linear
+from iris.tests import mock
 import iris.tests.stock as stock
 
 

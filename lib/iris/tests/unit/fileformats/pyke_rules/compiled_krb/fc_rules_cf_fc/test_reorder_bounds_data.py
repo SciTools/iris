@@ -28,11 +28,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
-import mock
 
 from iris.aux_factory import LazyArray
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     reorder_bounds_data
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

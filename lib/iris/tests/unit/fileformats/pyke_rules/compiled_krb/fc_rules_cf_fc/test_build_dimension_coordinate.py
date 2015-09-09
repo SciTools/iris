@@ -30,11 +30,11 @@ import iris.tests as tests
 import warnings
 
 import numpy as np
-import mock
 
 from iris.coords import AuxCoord, DimCoord
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_dimension_coordinate
+from iris.tests import mock
 
 
 class RulesTestMixin(object):

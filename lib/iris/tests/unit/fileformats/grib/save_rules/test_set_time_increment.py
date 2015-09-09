@@ -28,10 +28,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
-import mock
 
 from iris.coords import CellMethod
 from iris.fileformats.grib._save_rules import set_time_increment
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

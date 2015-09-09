@@ -315,12 +315,13 @@ class Rule(object):
         if not conditions:
             conditions = 'None'
         # Create a method to evaluate the conditions.
-        # NB. This creates the name '_exec_conditions' in the local
-        # namespace, which is then used below.
-        code = 'def _exec_conditions(self, field, f, pp, grib, cm): return %s'
-        exec(compile(code % conditions, '<string>', 'exec'))
+        # NB. This creates the name '_f' in the 'ns' namespace, which is then
+        # used below.
+        code = 'def _f(self, field, f, pp, grib, cm): return %s' % conditions
+        ns = locals().copy()
+        exec(compile(code, '<string>', 'exec'), globals(), ns)
         # Make it a method of ours.
-        self._exec_conditions = types.MethodType(_exec_conditions, self, type(self))
+        self._exec_conditions = six.create_bound_method(ns['_f'], self)
 
     @abc.abstractmethod
     def _create_action_method(self, i, action):
@@ -404,11 +405,19 @@ class FunctionRule(Rule):
     """A Rule with values returned by its actions."""
     def _create_action_method(self, i, action):
         # CM loading style action. Returns an object, such as a coord.
-        exec(compile('def _exec_action_%d(self, field, f, pp, grib, cm): return %s' % (i, action), '<string>', 'exec'))
+        ns = locals().copy()
+        exec(
+            compile(
+                'def _f(self, field, f, pp, grib, cm): return %s' % (action, ),
+                '<string>',
+                'exec'),
+            globals(),
+            ns)
         # Make it a method of ours.
-        exec('self._exec_action_%d = types.MethodType(_exec_action_%d, self, type(self))' % (i, i))
+        method = six.create_bound_method(ns['_f'], self)
+        setattr(self, '_exec_action_%d' % (i, ), method)
         # Add to our list of actions.
-        exec('self._exec_actions.append(self._exec_action_%d)' % i)
+        self._exec_actions.append(method)
 
     def _process_action_result(self, obj, cube):
         """Process the result of an action."""
@@ -464,11 +473,17 @@ class ProcedureRule(Rule):
     """A Rule with nothing returned by its actions."""
     def _create_action_method(self, i, action):
         # PP saving style action. No return value, e.g. "pp.lbft = 3".
-        exec(compile('def _exec_action_%d(self, field, f, pp, grib, cm): %s' % (i, action), '<string>', 'exec'))
+        ns = locals().copy()
+        exec(compile('def _f(self, field, f, pp, grib, cm): %s' % (action, ),
+                     '<string>',
+                     'exec'),
+             globals(),
+             ns)
         # Make it a method of ours.
-        exec('self._exec_action_%d = types.MethodType(_exec_action_%d, self, type(self))' % (i, i))
+        method = six.create_bound_method(ns['_f'], self)
+        setattr(self, '_exec_action_%d' % (i, ), method)
         # Add to our list of actions.
-        exec('self._exec_actions.append(self._exec_action_%d)' % i)
+        self._exec_actions.append(method)
 
     def _process_action_result(self, obj, cube):
         # This should always be None, as our rules won't create anything.

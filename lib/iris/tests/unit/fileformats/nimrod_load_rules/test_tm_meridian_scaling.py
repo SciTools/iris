@@ -27,12 +27,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.fileformats.nimrod_load_rules import (tm_meridian_scaling,
                                                 NIMROD_DEFAULT,
                                                 MERIDIAN_SCALING_BNG)
 from iris.fileformats.nimrod import NimrodField
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

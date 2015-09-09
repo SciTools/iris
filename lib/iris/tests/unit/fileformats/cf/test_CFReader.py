@@ -26,12 +26,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import numpy as np
 
 import iris
 from iris.fileformats.cf import CFReader
+from iris.tests import mock
 
 
 def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,

@@ -74,7 +74,7 @@ class TestRealistic4d(tests.GraphicsTest):
         t = [key
              for key, coord in six.iteritems(factory.dependencies)
              if coord is not None]
-        self.assertItemsEqual(t, ['orography', 'delta'])
+        six.assertCountEqual(self, t, ['orography', 'delta'])
 
     def test_removing_orography(self):
         # Check the cube remains OK when the orography is removed.
@@ -88,7 +88,7 @@ class TestRealistic4d(tests.GraphicsTest):
         t = [key
              for key, coord in six.iteritems(factory.dependencies)
              if coord is not None]
-        self.assertItemsEqual(t, ['sigma', 'delta'])
+        six.assertCountEqual(self, t, ['sigma', 'delta'])
 
     def test_derived_coords(self):
         derived_coords = self.cube.derived_coords

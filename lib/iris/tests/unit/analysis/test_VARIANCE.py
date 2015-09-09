@@ -23,8 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import biggus
 import numpy as np
 import numpy.ma as ma
@@ -32,6 +30,7 @@ import numpy.ma as ma
 from iris.analysis import VARIANCE
 import iris.cube
 from iris.coords import DimCoord
+from iris.tests import mock
 
 
 class Test_units_func(tests.IrisTest):

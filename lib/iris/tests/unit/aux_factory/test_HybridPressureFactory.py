@@ -27,12 +27,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import numpy as np
 
 import iris
 from iris.aux_factory import HybridPressureFactory
+from iris.tests import mock
 
 
 class Test___init__(tests.IrisTest):

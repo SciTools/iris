@@ -23,11 +23,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import iris
 from iris.fileformats.pp import _convert_constraints
 from iris.fileformats.pp import STASH
+from iris.tests import mock
 
 
 class Test_convert_constraints(tests.IrisTest):

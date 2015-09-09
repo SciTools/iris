@@ -23,9 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.fileformats.pp import PPDataProxy, SplittableInt
+from iris.tests import mock
 
 
 class Test_lbpack(tests.IrisTest):

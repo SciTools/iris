@@ -24,9 +24,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import biggus
-import mock
 
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 class Test__create_field_data(tests.IrisTest):

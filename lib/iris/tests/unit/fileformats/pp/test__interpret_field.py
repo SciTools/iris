@@ -25,9 +25,8 @@ import iris.tests as tests
 
 from copy import deepcopy
 
-import mock
-
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 class Test__interpret_fields__land_packed_fields(tests.IrisTest):

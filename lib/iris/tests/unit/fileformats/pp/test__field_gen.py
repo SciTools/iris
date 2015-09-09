@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -26,10 +27,10 @@ import iris.tests as tests
 import contextlib
 import io
 
-import mock
 import numpy as np
 
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
@@ -47,8 +48,12 @@ class Test(tests.IrisTest):
                 np.fromfile.return_value = []
             return result
 
+        if six.PY3:
+            open_func = 'builtins.open'
+        else:
+            open_func = '__builtin__.open'
         with mock.patch('numpy.fromfile', return_value=[0]), \
-                mock.patch('__builtin__.open'), \
+                mock.patch(open_func), \
                 mock.patch('struct.unpack_from', return_value=[4]), \
                 mock.patch('iris.fileformats.pp.make_pp_field',
                            side_effect=make_pp_field_override):

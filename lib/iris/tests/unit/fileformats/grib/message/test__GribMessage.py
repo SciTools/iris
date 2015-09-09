@@ -30,11 +30,11 @@ import iris.tests as tests
 from abc import ABCMeta, abstractmethod
 
 import biggus
-import mock
 import numpy as np
 
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
+from iris.tests import mock
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 
