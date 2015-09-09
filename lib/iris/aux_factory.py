@@ -762,7 +762,7 @@ class HybridPressureFactory(AuxCoordFactory):
                 try:
                     self._check_dependencies(**new_dependencies)
                 except ValueError as e:
-                    msg = 'Failed to update dependencies. ' + e.message
+                    msg = 'Failed to update dependencies. ' + str(e)
                     raise ValueError(msg)
                 else:
                     setattr(self, name, new_coord)
@@ -1006,7 +1006,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                 try:
                     self._check_dependencies(**new_dependencies)
                 except ValueError as e:
-                    msg = 'Failed to update dependencies. ' + e.message
+                    msg = 'Failed to update dependencies. ' + str(e)
                     raise ValueError(msg)
                 else:
                     setattr(self, name, new_coord)
@@ -1181,7 +1181,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                 try:
                     self._check_dependencies(**new_dependencies)
                 except ValueError as e:
-                    msg = 'Failed to update dependencies. ' + e.message
+                    msg = 'Failed to update dependencies. ' + str(e)
                     raise ValueError(msg)
                 else:
                     setattr(self, name, new_coord)
@@ -1380,7 +1380,7 @@ class OceanSg1Factory(AuxCoordFactory):
                 try:
                     self._check_dependencies(**new_dependencies)
                 except ValueError as e:
-                    msg = 'Failed to update dependencies. ' + e.message
+                    msg = 'Failed to update dependencies. ' + str(e)
                     raise ValueError(msg)
                 else:
                     setattr(self, name, new_coord)
@@ -1579,7 +1579,7 @@ class OceanSFactory(AuxCoordFactory):
                 try:
                     self._check_dependencies(**new_dependencies)
                 except ValueError as e:
-                    msg = 'Failed to update dependencies. ' + e.message
+                    msg = 'Failed to update dependencies. ' + str(e)
                     raise ValueError(msg)
                 else:
                     setattr(self, name, new_coord)
@@ -1779,7 +1779,7 @@ class OceanSg2Factory(AuxCoordFactory):
                 try:
                     self._check_dependencies(**new_dependencies)
                 except ValueError as e:
-                    msg = 'Failed to update dependencies. ' + e.message
+                    msg = 'Failed to update dependencies. ' + str(e)
                     raise ValueError(msg)
                 else:
                     setattr(self, name, new_coord)

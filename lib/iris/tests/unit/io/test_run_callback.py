@@ -71,7 +71,9 @@ class Test_run_callback(tests.IrisTest):
         def callback(cube):
             pass
         with self.assertRaisesRegexp(TypeError,
-                                     'takes exactly 1 argument '):
+                                     # exactly == Py2, positional == Py3
+                                     'takes (exactly )?1 (positional )?'
+                                     'argument '):
             iris.io.run_callback(callback, None, None, None)
 
     def test_callback_args(self):

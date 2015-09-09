@@ -922,7 +922,7 @@ fc_extras
                     cube.attributes[str(attr_name)] = attr_value
             except ValueError as e:
                 msg = 'Skipping global attribute {!r}: {}'
-                warnings.warn(msg.format(attr_name, e.message))
+                warnings.warn(msg.format(attr_name, str(e)))
 
 
 
@@ -1034,7 +1034,10 @@ fc_extras
         # Using converted unicode message. Can be reverted with Python 3.
             msg = u'Ignoring netCDF variable {!r} invalid units {!r}'.format(
                 cf_var.cf_name, attr_units)
-            warnings.warn(msg.encode('ascii', errors='backslashreplace'))
+            if six.PY3:
+                warnings.warn(msg)
+            else:
+                warnings.warn(msg.encode('ascii', errors='backslashreplace'))
             attributes['invalid_units'] = attr_units
             attr_units = iris.unit._UNKNOWN_UNIT_STRING
 

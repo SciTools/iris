@@ -107,7 +107,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
             self.assertEqual(len(warn), 1)
             msg = 'Ignoring atmosphere hybrid sigma pressure scalar ' \
                 'coordinate {!r} bounds.'.format(coord_p0.name())
-            self.assertEqual(msg, warn[0].message.message)
+            self.assertEqual(msg, str(warn[0].message))
 
     def test_formula_terms_ap_missing_coords(self):
         coordinates = [(mock.sentinel.b, 'b'), (mock.sentinel.ps, 'ps')]

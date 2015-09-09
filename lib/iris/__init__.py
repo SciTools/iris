@@ -275,7 +275,7 @@ def _load_collection(uris, constraints=None, callback=None):
         result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(
-            "The file appears empty or incomplete: {!r}".format(e.message))
+            "The file appears empty or incomplete: {!r}".format(str(e)))
     return result
 
 

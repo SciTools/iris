@@ -40,7 +40,7 @@ class Test(tests.IrisTest):
                 warnings.warn(unit_warning)
                 warnings.warn(example_warning)
         # Get to the actual warning strings for testing purposes.
-        filtered_warnings_list = [w.message.message for w in filtered_warnings]
+        filtered_warnings_list = [str(w.message) for w in filtered_warnings]
         self.assertNotIn(unit_warning, filtered_warnings_list)
         self.assertIn(example_warning, filtered_warnings_list)
 
@@ -50,7 +50,7 @@ class Test(tests.IrisTest):
         with warnings.catch_warnings(record=True) as filtered_warnings:
             with suppress_unit_warnings():
                 iris.load(test_filename)
-        filtered_warnings_list = [w.message.message for w in filtered_warnings]
+        filtered_warnings_list = [str(w.message) for w in filtered_warnings]
         self.assertEqual(len(filtered_warnings_list), 0)
 
 

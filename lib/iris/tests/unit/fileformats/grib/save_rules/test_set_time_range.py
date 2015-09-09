@@ -22,10 +22,13 @@ Unit tests for
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+
+import warnings
 
 import gribapi
 
@@ -88,11 +91,13 @@ class Test(tests.IrisTest):
         lower = 10.0
         upper = 20.9
         self.coord.bounds = [lower, upper]
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter("always")
             set_time_range(self.coord, mock.sentinel.grib)
-        msg = 'Truncating floating point lengthOfTimeRange 10.9 ' \
+        self.assertEqual(len(warn), 1)
+        msg = 'Truncating floating point lengthOfTimeRange 10\.8?9+ ' \
               'to integer value 10'
-        warn.assert_called_once_with(msg)
+        six.assertRegex(self, str(warn[0].message), msg)
         mock_set_long.assert_any_call(mock.sentinel.grib,
                                       'indicatorOfUnitForTimeRange', 1)
         mock_set_long.assert_any_call(mock.sentinel.grib,
