@@ -141,7 +141,7 @@ def _assert_compatible(cube, other):
                              data_view.shape))
 
 
-def _assert_matching_units(cube, other, operation_noun):
+def _assert_matching_units(cube, other, operation_name):
     """
     Check that the units of the cube and the other item are the same, or if
     the other does not have a unit, skip this test
@@ -149,7 +149,7 @@ def _assert_matching_units(cube, other, operation_noun):
     if cube.units != getattr(other, 'units', cube.units):
         raise iris.exceptions.NotYetImplementedError(
             'Differing units (%s & %s) %s not implemented' %
-            (cube.units, other.units, operation_noun))
+            (cube.units, other.units, operation_name))
 
 
 def add(cube, other, dim=None, ignore=True, in_place=False):
@@ -184,7 +184,7 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
 
     """
     op = operator.iadd if in_place else operator.add
-    return _add_subtract_common(op, 'addition', 'added', cube, other, dim=dim,
+    return _add_subtract_common(op, 'add', cube, other, dim=dim,
                                 ignore=ignore, in_place=in_place)
 
 
@@ -220,26 +220,32 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
 
     """
     op = operator.isub if in_place else operator.sub
-    return _add_subtract_common(op, 'subtraction', 'subtracted', cube, other,
+    return _add_subtract_common(op, 'subtract', cube, other,
                                 dim=dim, ignore=ignore, in_place=in_place)
 
 
-def _add_subtract_common(operation_function, operation_noun,
-                         operation_past_tense, cube, other, dim=None,
-                         ignore=True, in_place=False):
+def _add_subtract_common(operation_function, operation_name, cube, other,
+                         dim=None, ignore=True, in_place=False):
     """
     Function which shares common code between addition and subtraction
     of cubes.
 
     operation_function   - function which does the operation
                            (e.g. numpy.subtract)
-    operation_symbol     - the textual symbol of the operation (e.g. '-')
-    operation_noun       - the noun of the operation (e.g. 'subtraction')
-    operation_past_tense - the past tense of the operation (e.g. 'subtracted')
+    operation_name       - the public name of the operation (e.g. 'divide')
+    cube                 - the cube whose data is used as the first argument
+                           to `operation_function`
+    other                - the cube, coord, ndarray or number whose data is
+                           used as the second argument
+    dim                  - dimension along which to apply `other` if it's a
+                           coordinate that is not found in `cube`
+    ignore               - ignored! ;-)
+    in_place             - whether or not to apply the operation in place to
+                           `cube` and `cube.data`
 
     """
     _assert_is_cube(cube)
-    _assert_matching_units(cube, other, operation_noun)
+    _assert_matching_units(cube, other, operation_name)
 
     if isinstance(other, iris.cube.Cube):
         # get a coordinate comparison of this cube and the cube to do the
@@ -264,7 +270,7 @@ def _add_subtract_common(operation_function, operation_noun,
     else:
         coord_comp = None
 
-    new_cube = _binary_op_common(operation_function, operation_noun, cube,
+    new_cube = _binary_op_common(operation_function, operation_name, cube,
                                  other, cube.units, dim, in_place)
 
     if coord_comp:
@@ -303,7 +309,7 @@ def multiply(cube, other, dim=None, in_place=False):
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
     op = operator.imul if in_place else operator.mul
-    return _binary_op_common(op, 'multiplication', cube, other, new_unit, dim,
+    return _binary_op_common(op, 'multiply', cube, other, new_unit, dim,
                              in_place=in_place)
 
 
@@ -336,7 +342,7 @@ def divide(cube, other, dim=None, in_place=False):
         op = operator.idiv if in_place else operator.div
     except AttributeError:
         op = operator.itruediv if in_place else operator.truediv
-    return _binary_op_common(op, 'divison', cube, other, new_unit, dim,
+    return _binary_op_common(op, 'divide', cube, other, new_unit, dim,
                              in_place=in_place)
 
 
@@ -548,14 +554,14 @@ def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
     return new_cube
 
 
-def _binary_op_common(operation_function, operation_noun, cube, other,
+def _binary_op_common(operation_function, operation_name, cube, other,
                       new_unit, dim=None, in_place=False):
     """
     Function which shares common code between binary operations.
 
     operation_function   - function which does the operation
                            (e.g. numpy.divide)
-    operation_noun       - the noun of the operation (e.g. 'division')
+    operation_name       - the public name of the operation (e.g. 'divide')
     cube                 - the cube whose data is used as the first argument
                            to `operation_function`
     other                - the cube, coord, ndarray or number whose data is
@@ -569,7 +575,7 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
     _assert_is_cube(cube)
 
     if isinstance(other, iris.coords.Coord):
-        other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
+        other = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
         try:
             np.broadcast_arrays(cube.data, other.data)
@@ -596,7 +602,7 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
     return _math_op_common(cube, unary_func, new_unit, in_place)
 
 
-def _broadcast_cube_coord_data(cube, other, operation_noun, dim=None):
+def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
     # What dimension are we processing?
     data_dimension = None
     if dim is not None:
@@ -613,14 +619,14 @@ def _broadcast_cube_coord_data(cube, other, operation_noun, dim=None):
             except iris.exceptions.CoordinateNotFoundError:
                 raise ValueError("Could not determine dimension for %s. "
                                  "Use %s(cube, coord, dim=dim)"
-                                 % (operation_noun, operation_noun))
+                                 % (operation_name, operation_name))
 
     if other.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(other)
 
     if other.has_bounds():
-        warnings.warn('%s by a bounded coordinate not well defined, ignoring '
-                      'bounds.' % operation_noun)
+        warnings.warn('Using {!r} with a bounded coordinate is not well '
+                      'defined: ignoring bounds.'.format(operation_name))
 
     points = other.points
 
