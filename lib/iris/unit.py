@@ -1741,6 +1741,8 @@ class Unit(iris.util._OrderedHashable):
         # iris.util._OrderedHashable.
         return (self.name, self.calendar)
 
+    __hash__ = iris.util._OrderedHashable.__hash__
+
     def __eq__(self, other):
         """
         Compare the two units for equality and return the boolean result.

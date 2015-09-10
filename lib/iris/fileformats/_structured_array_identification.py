@@ -110,6 +110,9 @@ class ArrayStructure(namedtuple('ArrayStructure',
         self.size = len(unique_ordered_values)
         return self
 
+    def __hash__(self):
+        return super(ArrayStructure, self).__hash__()
+
     def __eq__(self, other):
         stride = getattr(other, 'stride', None)
         arr = getattr(other, 'unique_ordered_values', None)

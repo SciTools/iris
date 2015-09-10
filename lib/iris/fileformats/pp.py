@@ -344,6 +344,9 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
     def is_valid(self):
         return '?' not in str(self)
 
+    def __hash__(self):
+        return super(STASH, self).__hash__()
+
     def __eq__(self, other):
         if isinstance(other, six.string_types):
             return super(STASH, self).__eq__(STASH.from_msi(other))
