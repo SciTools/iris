@@ -1987,7 +1987,7 @@ def _convert_constraints(constraints):
             stashobj = con._attributes['STASH']
             if callable(stashobj):
                 call_func = stashobj
-            elif isinstance(stashobj, (basestring, STASH)):
+            elif isinstance(stashobj, (six.string_types, STASH)):
                 call_func = _make_func(stashobj)
             else:
                 raise TypeError("STASH constraints should be either a"
