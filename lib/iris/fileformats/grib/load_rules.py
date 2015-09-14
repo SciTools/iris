@@ -348,10 +348,13 @@ def convert(grib):
 
     if \
             (grib.edition == 1) and \
-            (grib.levelType == 'sfc') and \
-            (grib._cf_data is not None) and \
+            (grib.levelType == 'sfc'):
+
+            if (grib._cf_data is not None) and \
             (grib._cf_data.set_height is not None):
-        aux_coords_and_dims.append((DimCoord(points=grib._cf_data.set_height,  long_name="height", units="m", attributes={'positive':'up'}), None))
+                aux_coords_and_dims.append((DimCoord(points=grib._cf_data.set_height,  long_name="height", units="m", attributes={'positive':'up'}), None))
+            elif grib.typeOfLevel == 'heightAboveGround': # required for NCAR
+                aux_coords_and_dims.append((DimCoord(points=grib.level,  long_name="height", units="m", attributes={'positive':'up'}), None))
 
     if \
             (grib.edition == 1) and \
