@@ -46,11 +46,11 @@ class TestLazy(unittest.TestCase):
         shape = (3, 4)
         dtype = np.int64
         point_func = lambda: np.arange(12, dtype=dtype).reshape(shape)
-        points = iris.aux_factory.LazyArray(shape, point_func, dtype)
+        points = iris.aux_factory._LazyArray(shape, point_func, dtype)
         self.coord = iris.coords.AuxCoord(points=points)
 
     def _check_lazy(self, coord):
-        self.assertIsInstance(self.coord._points, iris.aux_factory.LazyArray)
+        self.assertIsInstance(self.coord._points, iris.aux_factory._LazyArray)
         self.assertIsNone(self.coord._points._array)
 
     def test_nop(self):
@@ -74,7 +74,7 @@ class TestLazy(unittest.TestCase):
         # Taking a genuine subset slice should trigger the evaluation
         # of the original LazyArray, and result in a normal ndarray for
         # the new coord.
-        self.assertIsInstance(self.coord._points, iris.aux_factory.LazyArray)
+        self.assertIsInstance(self.coord._points, iris.aux_factory._LazyArray)
         self.assertIsInstance(self.coord._points._array, np.ndarray)
         self.assertIsInstance(new_coord._points, np.ndarray)
 

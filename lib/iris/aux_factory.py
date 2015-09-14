@@ -35,7 +35,7 @@ import iris.unit
 import iris.util
 
 
-class LazyArray(object):
+class _LazyArray(object):
     """
     Represents a simplified NumPy array which is only computed on demand.
 
@@ -104,6 +104,41 @@ class LazyArray(object):
 
         """
         return self._cached_array().view(*args, **kwargs)
+
+
+class LazyArray(_LazyArray):
+    """
+    Represents a simplified NumPy array which is only computed on demand.
+
+    It provides the :meth:`view()` and :meth:`reshape()` methods so it
+    can be used in place of a standard NumPy array under some
+    circumstances.
+
+    The first use of either of these methods causes the array to be
+    computed and cached for any subsequent access.
+
+    .. deprecated:: 1.9
+
+    """
+    def __init__(self, shape, func, dtype=None):
+        """
+        Args:
+
+        * shape (tuple):
+            The shape of the array which will be created.
+        * func:
+            The function which will be called to supply the real array.
+
+        Kwargs:
+
+        * dtype (np.dtype):
+            The numpy dtype of the array which will be created.
+            Defaults to None to signify the dtype is unknown.
+
+        """
+        warnings.warn('LazyArray is deprecated and will be removed '
+                      'in a future release.', stacklevel=2)
+        super(LazyArray, self).__init__(shape, func, dtype)
 
 
 class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
@@ -502,7 +537,7 @@ class HybridHeightFactory(AuxCoordFactory):
                                 nd_points_by_key['orography'])
         shape = self._shape(nd_points_by_key)
         dtype = self._dtype(nd_points_by_key)
-        points = LazyArray(shape, calc_points, dtype)
+        points = _LazyArray(shape, calc_points, dtype)
 
         bounds = None
         if ((self.delta and self.delta.nbounds) or
@@ -532,7 +567,7 @@ class HybridHeightFactory(AuxCoordFactory):
                 return self._derive(delta, sigma, orography)
             b_shape = self._shape(nd_values_by_key)
             b_dtype = self._dtype(nd_values_by_key)
-            bounds = LazyArray(b_shape, calc_bounds, b_dtype)
+            bounds = _LazyArray(b_shape, calc_bounds, b_dtype)
 
         hybrid_height = iris.coords.AuxCoord(points,
                                              standard_name=self.standard_name,
@@ -702,7 +737,7 @@ class HybridPressureFactory(AuxCoordFactory):
                                 nd_points_by_key['surface_air_pressure'])
         shape = self._shape(nd_points_by_key)
         dtype = self._dtype(nd_points_by_key)
-        points = LazyArray(shape, calc_points, dtype)
+        points = _LazyArray(shape, calc_points, dtype)
 
         bounds = None
         if ((self.delta and self.delta.nbounds) or
@@ -733,7 +768,7 @@ class HybridPressureFactory(AuxCoordFactory):
                 return self._derive(delta, sigma, surface_air_pressure)
             b_shape = self._shape(nd_values_by_key)
             b_dtype = self._dtype(nd_values_by_key)
-            bounds = LazyArray(b_shape, calc_bounds, b_dtype)
+            bounds = _LazyArray(b_shape, calc_bounds, b_dtype)
 
         hybrid_pressure = iris.coords.AuxCoord(
             points, standard_name=self.standard_name, long_name=self.long_name,
@@ -932,7 +967,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                                 points_shape,
                                 nsigma_slice)
 
-        points = LazyArray(points_shape, calc_points, points_dtype)
+        points = _LazyArray(points_shape, calc_points, points_dtype)
 
         bounds = None
         if self.zlev.nbounds or (self.sigma and self.sigma.nbounds):
@@ -973,7 +1008,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                                     bounds_shape,
                                     nsigma_slice_bounds)
 
-            bounds = LazyArray(bounds_shape, calc_bounds, bounds_dtype)
+            bounds = _LazyArray(bounds_shape, calc_bounds, bounds_dtype)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1114,7 +1149,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                                 nd_points_by_key['eta'],
                                 nd_points_by_key['depth'])
 
-        points = LazyArray(points_shape, calc_points)
+        points = _LazyArray(points_shape, calc_points)
 
         bounds = None
         if self.sigma and self.sigma.nbounds:
@@ -1148,7 +1183,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                                     nd_values_by_key['depth'],
                                     bounds_shape)
 
-            bounds = LazyArray(bounds_shape, calc_bounds)
+            bounds = _LazyArray(bounds_shape, calc_bounds)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1311,7 +1346,7 @@ class OceanSg1Factory(AuxCoordFactory):
                                 nd_points_by_key['depth'],
                                 nd_points_by_key['depth_c'])
 
-        points = LazyArray(points_shape, calc_points)
+        points = _LazyArray(points_shape, calc_points)
 
         bounds = None
         if self.s.nbounds or (self.c and self.c.nbounds):
@@ -1347,7 +1382,7 @@ class OceanSg1Factory(AuxCoordFactory):
                                     nd_values_by_key['depth_c'],
                                     bounds_shape)
 
-            bounds = LazyArray(bounds_shape, calc_bounds)
+            bounds = _LazyArray(bounds_shape, calc_bounds)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1509,7 +1544,7 @@ class OceanSFactory(AuxCoordFactory):
                                 nd_points_by_key['b'],
                                 nd_points_by_key['depth_c'])
 
-        points = LazyArray(points_shape, calc_points)
+        points = _LazyArray(points_shape, calc_points)
 
         bounds = None
         if self.s.nbounds:
@@ -1546,7 +1581,7 @@ class OceanSFactory(AuxCoordFactory):
                                     nd_values_by_key['depth_c'],
                                     bounds_shape)
 
-            bounds = LazyArray(bounds_shape, calc_bounds)
+            bounds = _LazyArray(bounds_shape, calc_bounds)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1710,7 +1745,7 @@ class OceanSg2Factory(AuxCoordFactory):
                                 nd_points_by_key['depth'],
                                 nd_points_by_key['depth_c'])
 
-        points = LazyArray(points_shape, calc_points)
+        points = _LazyArray(points_shape, calc_points)
 
         bounds = None
         if self.s.nbounds or (self.c and self.c.nbounds):
@@ -1746,7 +1781,7 @@ class OceanSg2Factory(AuxCoordFactory):
                                     nd_values_by_key['depth_c'],
                                     bounds_shape)
 
-            bounds = LazyArray(bounds_shape, calc_bounds)
+            bounds = _LazyArray(bounds_shape, calc_bounds)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,

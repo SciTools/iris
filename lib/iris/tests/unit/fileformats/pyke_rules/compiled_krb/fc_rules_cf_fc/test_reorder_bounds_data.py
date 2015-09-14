@@ -29,7 +29,7 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.aux_factory import LazyArray
+from iris.aux_factory import _LazyArray
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     reorder_bounds_data
 from iris.tests import mock
@@ -59,8 +59,8 @@ class Test(tests.IrisTest):
     def test_slowest_varying_lazy(self):
         bounds_data = np.arange(24).reshape(4, 2, 3)
         func = lambda: bounds_data
-        lazy_bounds_data = LazyArray(bounds_data.shape, func,
-                                     bounds_data.dtype)
+        lazy_bounds_data = _LazyArray(bounds_data.shape, func,
+                                      bounds_data.dtype)
         cf_bounds_var = mock.Mock(dimensions=('nv', 'foo', 'bar'))
         cf_coord_var = mock.Mock(dimensions=('foo', 'bar'))
 
