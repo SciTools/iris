@@ -613,15 +613,11 @@ def column_slices_generator(full_slice, ndims):
 
         list_of_slices.append(first_slice)
 
-    data_ndims = max(dimension_mapping.values())
-    if data_ndims is not None:
-        data_ndims += 1
-
     # stg2 iterate over each of the tuples
     for tuple_index in tuple_indices:
         # Create a list with the indices to span the whole data array that we
         # currently have
-        spanning_slice_with_tuple = [slice(None, None)] * data_ndims
+        spanning_slice_with_tuple = [slice(None, None)] * _count_current_dim
         # Replace the slice(None, None) with our current tuple
         spanning_slice_with_tuple[dimension_mapping[tuple_index]] = \
             full_slice[tuple_index]

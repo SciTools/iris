@@ -23,6 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from collections import OrderedDict
+
 import numpy as np
 
 import iris
@@ -50,8 +52,8 @@ class Test(tests.IrisTest):
 
     def test_sample_point_dict(self):
         # Passing sample_points in the form of a dictionary.
-        sample_points = {'foo': 0.5, 'bar': 0.5}
         sample_points_call = [('foo', 0.5), ('bar', 0.5)]
+        sample_points = OrderedDict(sample_points_call)
         self._assert_expected_call(sample_points, sample_points_call)
 
     def test_sample_point_iterable(self):

@@ -54,6 +54,7 @@ class TestNetCDFLoad(tests.IrisTest):
     def test_monotonic(self):
         cubes = iris.load(tests.get_data_path(
             ('NetCDF', 'testing', 'test_monotonic_coordinate.nc')))
+        cubes = sorted(cubes, key=lambda cube: cube.var_name)
         self.assertCML(cubes, ('netcdf', 'netcdf_monotonic.cml'))
 
     def test_load_global_xyt_total(self):
@@ -86,6 +87,7 @@ class TestNetCDFLoad(tests.IrisTest):
         # Test loading single xyzt CF-netCDF file (multi-cube).
         cubes = iris.load(tests.get_data_path(('NetCDF', 'global', 'xyz_t',
                                                'GEMS_CO2_Apr2006.nc')))
+        cubes = sorted(cubes, key=lambda cube: cube.name())
         self.assertCML(cubes, ('netcdf', 'netcdf_global_xyzt_gems.cml'))
 
         # Check the masked array fill value is propogated through the data
@@ -96,9 +98,11 @@ class TestNetCDFLoad(tests.IrisTest):
 
     def test_load_global_xyzt_gems_iter(self):
         # Test loading stepped single xyzt CF-netCDF file (multi-cube).
-        for i, cube in enumerate(iris.load(
-            tests.get_data_path(('NetCDF', 'global', 'xyz_t',
-                                 'GEMS_CO2_Apr2006.nc')))):
+        for i, cube in enumerate(sorted(
+                iris.load(
+                    tests.get_data_path(('NetCDF', 'global', 'xyz_t',
+                                         'GEMS_CO2_Apr2006.nc'))),
+                key=lambda cube: cube.name())):
             self.assertCML(cube, ('netcdf',
                                   'netcdf_global_xyzt_gems_iter_%d.cml' % i))
 
@@ -218,8 +222,10 @@ class TestNetCDFLoad(tests.IrisTest):
 
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
-        cube0, cube1 = iris.load(tests.get_data_path(('NetCDF', 'testing',
-                                                      'units.nc')))
+        cube0, cube1 = sorted(iris.load(tests.get_data_path(('NetCDF',
+                                                             'testing',
+                                                             'units.nc'))),
+                              key=lambda cube: cube.var_name)
 
         self.assertCML(cube0, ('netcdf', 'netcdf_units_0.cml'))
         self.assertCML(cube1, ('netcdf', 'netcdf_units_1.cml'))

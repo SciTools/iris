@@ -42,11 +42,14 @@ if tests.MPL_AVAILABLE:
 
 
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
-    def assertComparisonDict(self, comarison_dict, reference_filename):
+    def assertComparisonDict(self, comparison_dict, reference_filename):
         string = ''
-        for key, coord_groups in six.iteritems(comarison_dict):
+        for key in sorted(comparison_dict):
+            coord_groups = comparison_dict[key]
             string += ('%40s  ' % key)
-            names = [[coord.name() if coord is not None else 'None' for coord in coords] for coords in coord_groups]
+            names = [[coord.name() if coord is not None else 'None'
+                      for coord in coords]
+                     for coords in coord_groups]
             string += str(sorted(names))
             string += '\n'
         self.assertString(string, reference_filename)
@@ -1044,7 +1047,8 @@ class TestProject(tests.GraphicsTest):
         # Set up figure
         fig = plt.figure(figsize=(10, 10))
         gs = matplotlib.gridspec.GridSpec(nrows=3, ncols=3, hspace=1.5, wspace=0.5)
-        for subplot_spec, (name, target_proj) in zip(gs, six.iteritems(projections)):
+        for subplot_spec, name in zip(gs, sorted(projections)):
+            target_proj = projections[name]
             # Set up axes and title
             ax = plt.subplot(subplot_spec, frameon=False, projection=target_proj)
             ax.set_title(name)
