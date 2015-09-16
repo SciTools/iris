@@ -67,6 +67,8 @@ class _Template(namedtuple('Template',
 
     """
 
+    __slots__ = ()
+
 
 class _CoordMetaData(namedtuple('CoordMetaData',
                                 ['points_dtype', 'bounds_dtype', 'kwargs'])):
@@ -88,6 +90,8 @@ class _CoordMetaData(namedtuple('CoordMetaData',
 
     """
 
+    __slots__ = ()
+
 
 class _CoordAndDims(namedtuple('CoordAndDims',
                                ['coord', 'dims'])):
@@ -105,6 +109,8 @@ class _CoordAndDims(namedtuple('CoordAndDims',
         A tuple of the data dimension/s spanned by the coordinate.
 
     """
+
+    __slots__ = ()
 
 
 class _ScalarCoordPayload(namedtuple('ScalarCoordPayload',
@@ -133,6 +139,8 @@ class _ScalarCoordPayload(namedtuple('ScalarCoordPayload',
 
     """
 
+    __slots__ = ()
+
 
 class _VectorCoordPayload(namedtuple('VectorCoordPayload',
                                      ['dim_coords_and_dims',
@@ -157,6 +165,8 @@ class _VectorCoordPayload(namedtuple('VectorCoordPayload',
 
     """
 
+    __slots__ = ()
+
 
 class _CoordPayload(namedtuple('CoordPayload',
                                ['scalar', 'vector', 'factory_defns'])):
@@ -180,6 +190,9 @@ class _CoordPayload(namedtuple('CoordPayload',
         A list of :class:`_FactoryDefn` instances.
 
     """
+
+    __slots__ = ()
+
     def as_signature(self):
         """Construct and return a :class:`_CoordSignature` from the payload."""
 
@@ -297,6 +310,8 @@ class _CoordSignature(namedtuple('CoordSignature',
 
     """
 
+    __slots__ = ()
+
 
 class _CubeSignature(namedtuple('CubeSignature',
                                 ['defn', 'data_shape', 'data_type',
@@ -321,6 +336,9 @@ class _CubeSignature(namedtuple('CubeSignature',
         or None if no such value exists.
 
     """
+
+    __slots__ = ()
+
     def _defn_msgs(self, other_defn):
         msgs = []
         self_defn = self.defn
@@ -423,6 +441,8 @@ class _Skeleton(namedtuple('Skeleton',
 
     """
 
+    __slots__ = ()
+
 
 class _FactoryDefn(namedtuple('_FactoryDefn',
                               ['class_', 'dependency_defns'])):
@@ -439,6 +459,8 @@ class _FactoryDefn(namedtuple('_FactoryDefn',
         corresponding coordinate definition. Sorted on dependency key.
 
     """
+
+    __slots__ = ()
 
 
 class _Relation(namedtuple('Relation',
@@ -457,6 +479,8 @@ class _Relation(namedtuple('Relation',
         A set of dependent candidate dimension names.
 
     """
+
+    __slots__ = ()
 
 
 _COMBINATION_JOIN = '-'

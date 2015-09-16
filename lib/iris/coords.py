@@ -55,6 +55,9 @@ class CoordDefn(collections.namedtuple('CoordDefn',
     :class:`AuxCoord` based on its metadata.
 
     """
+
+    __slots__ = ()
+
     def name(self, default='unknown'):
         """
         Returns a human-readable name.
@@ -120,6 +123,8 @@ class CoordExtent(collections.namedtuple('_CoordExtent', ['name_or_coord',
         return super(CoordExtent, cls).__new__(cls, name_or_coord, minimum,
                                                maximum, min_inclusive,
                                                max_inclusive)
+
+    __slots__ = ()
 
 
 # Coordinate cell styles. Used in plot and cartography.

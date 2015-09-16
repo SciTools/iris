@@ -78,6 +78,8 @@ class _CoordAndDims(namedtuple('CoordAndDims',
 
     """
 
+    __slots__ = ()
+
 
 class _CoordMetaData(namedtuple('CoordMetaData',
                                 ['defn', 'dims', 'points_dtype',
@@ -146,6 +148,8 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                                                       kwargs)
         return metadata
 
+    __slots__ = ()
+
     def __hash__(self):
         return super(_CoordMetaData, self).__hash__()
 
@@ -197,6 +201,8 @@ class _SkeletonCube(namedtuple('SkeletonCube',
 
     """
 
+    __slots__ = ()
+
 
 class _Extent(namedtuple('Extent',
                          ['min', 'max'])):
@@ -212,6 +218,8 @@ class _Extent(namedtuple('Extent',
         The maximum value of the extent.
 
     """
+
+    __slots__ = ()
 
 
 class _CoordExtent(namedtuple('CoordExtent',
@@ -231,6 +239,8 @@ class _CoordExtent(namedtuple('CoordExtent',
         bounds exist for the coordinate.
 
     """
+
+    __slots__ = ()
 
 
 def concatenate(cubes, error_on_mismatch=False):

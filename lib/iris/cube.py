@@ -67,6 +67,9 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
     Represents the phenomenon metadata for a single :class:`Cube`.
 
     """
+
+    __slots__ = ()
+
     def name(self, default='unknown'):
         """
         Returns a human-readable name.
