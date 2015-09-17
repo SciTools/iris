@@ -129,11 +129,11 @@ def _assert_compatible(cube, other):
 
     try:
         if not isinstance(other, biggus.Array):
-            data_view, other_view = BA.broadcast_arrays(cube.lazy_data(),
+            data_view, other_view = BA.broadcast_arrays(cube._my_data,
                                                         np.asarray(other))
 
         else:
-            data_view, other_view = BA.broadcast_arrays(cube.lazy_data(), other)
+            data_view, other_view = BA.broadcast_arrays(cube._my_data, other)
     except ValueError as err:
         # re-raise
         raise ValueError("The array was not broadcastable to the cube's data "
@@ -577,11 +577,11 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
         other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
     elif isinstance(other, iris.cube.Cube):
         try:
-            BA.broadcast_arrays(cube.lazy_data(), other.lazy_data())
+            BA.broadcast_arrays(cube._my_data, other._my_data)
         except ValueError:
-            other = iris.util.as_compatible_shape(other, cube).lazy_data()
+            other = iris.util.as_compatible_shape(other, cube)._my_data
         else:
-            other = other.lazy_data()
+            other = other._my_data
 
     # don't worry about checking for other data types (such as scalars or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
@@ -644,12 +644,12 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
     if in_place:
         new_cube = cube
         try:
-            operation_function(new_cube.lazy_data(), out=new_cube.lazy_data())
+            operation_function(new_cube._my_data, out=new_cube._my_data)
         except TypeError:
             # Non ufunc function
             operation_function(new_cube.data)
     else:
-        new_cube = cube.copy(data=operation_function(cube.lazy_data()))
+        new_cube = cube.copy(data=operation_function(cube._my_data))
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
