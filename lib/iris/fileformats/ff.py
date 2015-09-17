@@ -526,8 +526,8 @@ class FF2PP(object):
             return lower, upper
 
         # Ensure that the resolution is the same on both edges.
-        res_low = np.array([field_dim[1] - field_dim[0]])
-        res_high = np.array([field_dim[-1] - field_dim[-2]])
+        res_low = field_dim[1] - field_dim[0]
+        res_high = field_dim[-1] - field_dim[-2]
         if not np.allclose(res_low, res_high):
             msg = ('The x or y coordinates of your boundary condition field '
                    'may be incorrect, not having taken into account the '
