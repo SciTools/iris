@@ -1611,6 +1611,91 @@ class AuxCoord(Coord):
         return hash(id(self))
 
 
+class CellMeasures(object):
+    """
+    CF Cell Measures attribute.
+
+    """
+
+    def __init__(self, data, cf_measures, standard_name=None, long_name=None,
+                 var_name=None, units='1', attributes=None):
+
+        #: CF standard name of the quantity that the coordinate represents.
+        self.standard_name = standard_name
+
+        #: Descriptive name of the coordinate.
+        self.long_name = long_name
+
+        #: The CF variable name for the coordinate.
+        self.var_name = var_name
+
+        #: Unit of the quantity that the coordinate represents.
+        self.units = units
+
+        #: Other attributes, including user specified attributes that
+        #: have no meaning to Iris.
+        self.attributes = attributes
+
+        self.measures = cf_measures
+        
+        self.data = data
+
+    def __repr__(self):
+
+        return("{}: {}".format(self.standard_name,self.measures))
+        
+    @property
+    def shape(self):
+        """The fundamental shape of the Coord, expressed as a tuple."""
+        # Access the underlying _points attribute to avoid triggering
+        # a deferred load unnecessarily.
+        return self.data.shape
+        
+    @property
+    def data(self):
+        if not isinstance(self._data, np.ndarray):
+            self._data = self._data.ndarray()
+            return self._data
+        
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
+
+    @property
+    def dtype(self):
+        """
+        Abstract property which returns the Numpy data type of the Coordinate.
+
+        """
+        return self.points.dtype
+        
+    def convert_units(self, unit):
+        """
+        Change the coordinate's units, converting the values in its points
+        and bounds arrays.
+
+        For example, if a coordinate's :attr:`~iris.coords.Coord.units`
+        attribute is set to radians then::
+
+            coord.convert_units('degrees')
+
+        will change the coordinate's
+        :attr:`~iris.coords.Coord.units` attribute to degrees and
+        multiply each value in :attr:`~iris.coords.Coord.points` and
+        :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
+
+        """
+        # If the coord has units convert the values in points (and bounds if
+        # present).
+        if not self.units.is_unknown():
+            self.points = self.units.convert(self.points, unit)
+            if self.bounds is not None:
+                self.bounds = self.units.convert(self.bounds, unit)
+        self.units = unit
+
+
 class CellMethod(iris.util._OrderedHashable):
     """
     Represents a sub-cell pre-processing operation.

@@ -62,6 +62,7 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'var_name',
                                            'units',
                                            'attributes',
+                                           'cell_measures',
                                            'cell_methods'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
@@ -612,8 +613,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def __init__(self, data, standard_name=None, long_name=None,
                  var_name=None, units=None, attributes=None,
-                 cell_methods=None, dim_coords_and_dims=None,
-                 aux_coords_and_dims=None, aux_factories=None):
+                 cell_measures=None, cell_methods=None,
+                 dim_coords_and_dims=None, aux_coords_and_dims=None,
+                 aux_factories=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -728,6 +730,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if aux_factories:
             for factory in aux_factories:
                 self.add_aux_factory(factory)
+                
+        self.cell_measures = cell_measures
 
     @property
     def metadata(self):
@@ -742,7 +746,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
-                            self.units, self.attributes, self.cell_methods)
+                            self.units, self.attributes, self.cell_measures,
+                            self.cell_methods)
 
     @metadata.setter
     def metadata(self, value):
@@ -1408,6 +1413,31 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
     @property
+    def cell_measures(self):
+
+        return self._cell_measures
+
+    @cell_measures.setter
+    def cell_measures(self, cell_measures):
+        
+        if cell_measures:
+            if not isinstance(cell_measures, iris.coords.CellMeasures):
+
+                raise TypeError("cell_measures must be an instance of iris."
+                                "coords.CellMeasures or None")
+            
+
+            # this is not quite right, I've not been able to find an easy way
+            # to get the spatial shape of the cube (i.e. the cell structures
+            # shape)
+            if not set(cell_measures.shape).issubset(set(self.shape)):
+                
+               raise TypeError("Cell Measures shape %r must match Cube shape %r"
+                               % (cell_measures.shape, self.shape))
+
+        self._cell_measures = cell_measures
+
+    @property
     def shape(self):
         """The shape of the data of this cube."""
         shape = self.lazy_data().shape
@@ -1783,6 +1813,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     vector_derived_coords, cube_header, max_line_offset)
                 summary += '\n     Derived coordinates:\n' + \
                     '\n'.join(derived_coord_summary)
+                            
+            #
+            # Generate summary of cube cell measures attribute
+            #
+
+            if self.cell_measures:
+                summary += '\n     Cell Measures:\n'
+                
+                summary += '%*s%s' % (indent, ' ', str(self.cell_measures))
 
             #
             # Generate textual summary of cube scalar coordinates.
@@ -1860,6 +1899,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 summary += '\n     Invalid coordinates:\n' + \
                     '\n'.join(invalid_summary)
 
+
             #
             # Generate summary of cube attributes.
             #
@@ -1874,6 +1914,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     attribute_lines.append(line)
                 summary += '\n     Attributes:\n' + '\n'.join(attribute_lines)
 
+
             #
             # Generate summary of cube cell methods
             #
@@ -1884,6 +1925,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 for cm in self.cell_methods:
                     cm_lines.append('%*s%s' % (indent, ' ', str(cm)))
                 summary += '\n'.join(cm_lines)
+
 
         # Construct the final cube summary.
         summary = cube_header + summary
