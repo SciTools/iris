@@ -30,7 +30,11 @@ static PyObject *rle_decode_py(PyObject *self, PyObject *args);
 
 
 
-void initpp_packing(void)
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_pp_packing(void)
+#else
+PyMODINIT_FUNC initpp_packing(void)
+#endif
 {
 
 	/* The module doc string */
@@ -90,9 +94,27 @@ void initpp_packing(void)
 	    {NULL, NULL, 0, NULL}     /* marks the end of this structure */
 	};
 
+#if PY_MAJOR_VERSION >= 3
+	static struct PyModuleDef moduledef = {
+		PyModuleDef_HEAD_INIT,
+		"pp_packing",
+		pp_packing__doc__,
+		-1,
+		pp_packingMethods,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	};
 
-       Py_InitModule3("pp_packing", pp_packingMethods, pp_packing__doc__);
-       import_array();  // Must be present for NumPy.
+	PyObject *m = PyModule_Create(&moduledef);
+	import_array();  // Must be present for NumPy.
+
+	return m;
+#else
+	Py_InitModule3("pp_packing", pp_packingMethods, pp_packing__doc__);
+	import_array();  // Must be present for NumPy.
+#endif
 }
 
 
