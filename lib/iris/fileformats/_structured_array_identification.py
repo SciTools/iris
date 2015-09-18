@@ -105,10 +105,18 @@ class ArrayStructure(namedtuple('ArrayStructure',
     def __new__(cls, stride, unique_ordered_values):
         self = super(ArrayStructure, cls).__new__(cls, stride,
                                                   unique_ordered_values)
-        #: The ``size`` attribute is the number of the unique values in
-        #: the original array. It is **not** the length of the original array.
-        self.size = len(unique_ordered_values)
         return self
+
+    __slots__ = ()
+
+    @property
+    def size(self):
+        """
+        The ``size`` attribute is the number of the unique values in the
+        original array. It is **not** the length of the original array.
+
+        """
+        return len(self.unique_ordered_values)
 
     def __hash__(self):
         return super(ArrayStructure, self).__hash__()

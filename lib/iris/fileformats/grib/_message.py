@@ -127,6 +127,9 @@ class _GribMessage(object):
 
 class _MessageLocation(namedtuple('_MessageLocation', 'filename offset')):
     """A reference to a specific GRIB message within a file."""
+
+    __slots__ = ()
+
     def __call__(self):
         return _RawGribMessage.from_file_offset(self.filename, self.offset)
 
