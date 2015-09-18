@@ -28,6 +28,9 @@ import numpy as np
 import iris
 import iris.unit
 
+if tests.GRIB_AVAILABLE:
+    import gribapi
+
 
 def name_cb(cube, field, filename):
     # NAME files give the time point at the end of the range but Iris'
@@ -47,6 +50,7 @@ def name_cb(cube, field, filename):
         z_coord[0].long_name = 'altitude above sea level'
 
 
+@tests.skip_grib
 class TestNameToGRIB(tests.IrisTest):
 
     def check_common(self, name_cube, grib_cube):

@@ -27,7 +27,10 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
                                    UriProtocol, LeadingLine)
 from . import abf
 from . import ff
-from . import grib
+try:
+    from . import grib
+except ImportError:
+    grib = None
 from . import name
 from . import netcdf
 from . import nimrod
@@ -74,10 +77,11 @@ FORMAT_AGENT.add_spec(
 #
 # NB. Because this is such a "fuzzy" check, we give this a very low
 # priority to avoid collateral damage from false positives.
-FORMAT_AGENT.add_spec(
-    FormatSpecification('GRIB', MagicNumber(100),
-                        lambda header_bytes: b'GRIB' in header_bytes,
-                        grib.load_cubes, priority=1))
+if grib is not None:
+    FORMAT_AGENT.add_spec(
+        FormatSpecification('GRIB', MagicNumber(100),
+                            lambda header_bytes: b'GRIB' in header_bytes,
+                            grib.load_cubes, priority=1))
 
 
 #

@@ -83,6 +83,13 @@ except ImportError:
 else:
     GDAL_AVAILABLE = True
 
+try:
+    import gribapi
+except ImportError:
+    GRIB_AVAILABLE = False
+else:
+    GRIB_AVAILABLE = True
+
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
@@ -801,6 +808,10 @@ def skip_plot(fn):
         reason='Graphics tests require the matplotlib library.')
 
     return skip(fn)
+
+
+skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
+                                                'which is not available.')
 
 
 def no_warnings(func):

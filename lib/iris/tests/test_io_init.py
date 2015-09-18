@@ -56,6 +56,7 @@ class TestDecodeUri(unittest.TestCase):
 
 
 class TestFileFormatPicker(tests.IrisTest):
+    @tests.skip_grib
     def test_known_formats(self):
         self.assertString(str(iff.FORMAT_AGENT),
                           tests.get_result_path(('file_load',
@@ -75,10 +76,6 @@ class TestFileFormatPicker(tests.IrisTest):
                 ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k4']),
             ('UM Fieldsfile (FF) post v5.2',
                 ['FF', 'n48_multi_field']),
-            ('GRIB',
-                ['GRIB', 'grib1_second_order_packing', 'GRIB_00008_FRANX01']),
-            ('GRIB',
-                ['GRIB', 'jpeg2000', 'file.grib2']),
             ('UM Post Processing file (PP)',
                 ['PP', 'simple_pp', 'global.pp']),
             ('UM Fieldsfile (FF) ancillary',
@@ -93,7 +90,13 @@ class TestFileFormatPicker(tests.IrisTest):
 #                ['NAME', '20100509_18Z_variablesource_12Z_VAAC',
 #                 'Fields_grid1_201005110000.txt']),
         ]
-
+        if tests.GRIB_AVAILABLE:
+            test_specs.extend([
+                ('GRIB',
+                    ['GRIB', 'grib1_second_order_packing',
+                     'GRIB_00008_FRANX01']),
+                ('GRIB',
+                    ['GRIB', 'jpeg2000', 'file.grib2'])])
         # test that each filespec is identified as the expected format
         for (expected_format_name, file_spec) in test_specs:
             test_path = tests.get_data_path(file_spec)
@@ -101,6 +104,7 @@ class TestFileFormatPicker(tests.IrisTest):
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
                 self.assertEqual(a.name, expected_format_name)
 
+    @tests.skip_grib
     def test_format_picker_nodata(self):
         # The following is to replace the above at some point as no real files
         # are required.

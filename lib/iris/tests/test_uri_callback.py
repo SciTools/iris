@@ -28,6 +28,7 @@ import iris.coords
 
 @tests.skip_data
 class TestCallbacks(tests.IrisTest):
+    @tests.skip_grib
     def test_grib_callback(self):
         def grib_thing_getter(cube, field, filename):
             cube.add_aux_coord(iris.coords.AuxCoord(field.extra_keys['_periodStartDateTime'], long_name='random element', units='no_unit'))

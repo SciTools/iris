@@ -234,8 +234,13 @@ def _check_init_savers():
         _savers.update({"pp": iris.fileformats.pp.save,
                         "nc": iris.fileformats.netcdf.save,
                         "dot": iris.fileformats.dot.save,
-                        "dotpng": iris.fileformats.dot.save_png,
-                        "grib2": iris.fileformats.grib.save_grib2})
+                        "dotpng": iris.fileformats.dot.save_png})
+        try:
+            import gribapi
+        except ImportError:
+            pass
+        else:
+            _savers['grib2'] = iris.fileformats.grib.save_grib2
 
 
 def add_saver(file_extension, new_saver):

@@ -23,11 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import numpy.ma as ma
-
-from iris import FUTURE, load_cube
-
 from subprocess import check_output
+
+import numpy.ma as ma
 
 import iris
 from iris import FUTURE, load_cube, save
@@ -36,8 +34,12 @@ from iris.coord_systems import RotatedGeogCS
 from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
 from iris.util import is_regular
 
+if tests.GRIB_AVAILABLE:
+    import gribapi
+
 
 @tests.skip_data
+@tests.skip_grib
 class TestImport(tests.IrisTest):
     def test_gdt1(self):
         with FUTURE.context(strict_grib_load=True):
@@ -64,6 +66,7 @@ class TestImport(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestPDT8(tests.IrisTest):
     def setUp(self):
         # Load from the test file.
@@ -104,6 +107,7 @@ class TestPDT8(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestPDT11(tests.IrisTest):
     def test_perturbation(self):
         path = tests.get_data_path(('NetCDF', 'global', 'xyt',
@@ -138,6 +142,7 @@ class TestPDT11(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestGDT5(tests.IrisTest):
     def test_save_load(self):
         # Load sample UKV data (variable-resolution rotated grid).
@@ -250,6 +255,7 @@ class TestGDT5(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestGDT30(tests.IrisTest):
 
     def test_lambert(self):
@@ -260,6 +266,7 @@ class TestGDT30(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestGDT40(tests.IrisTest):
 
     def test_regular(self):
@@ -276,6 +283,7 @@ class TestGDT40(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestDRT3(tests.IrisTest):
 
     def test_grid_complex_spatial_differencing(self):

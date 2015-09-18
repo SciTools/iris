@@ -25,12 +25,10 @@ import iris.tests as tests
 import datetime
 from distutils.version import StrictVersion
 
-import gribapi
 import numpy as np
 
 import iris
 import iris.exceptions
-import iris.fileformats.grib
 from iris.tests import mock
 import iris.tests.stock
 import iris.util
@@ -42,10 +40,9 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
     import iris.quickplot as qplt
 
-
-# Construct a mock object to mimic the gribapi for GribWrapper testing.
-_mock_gribapi = mock.Mock(spec=gribapi)
-_mock_gribapi.GribInternalError = Exception
+if tests.GRIB_AVAILABLE:
+    import gribapi
+    import iris.fileformats.grib
 
 
 def _mock_gribapi_fetch(message, key):
@@ -84,15 +81,21 @@ def _mock_gribapi__grib_get_native_type(grib_message, keyname):
         return type(grib_message[keyname])
     raise _mock_gribapi.GribInternalError(keyname)
 
-_mock_gribapi.grib_get_long = mock.Mock(side_effect=_mock_gribapi_fetch)
-_mock_gribapi.grib_get_string = mock.Mock(side_effect=_mock_gribapi_fetch)
-_mock_gribapi.grib_get_double = mock.Mock(side_effect=_mock_gribapi_fetch)
-_mock_gribapi.grib_get_double_array = mock.Mock(
-    side_effect=_mock_gribapi_fetch)
-_mock_gribapi.grib_is_missing = mock.Mock(
-    side_effect=_mock_gribapi__grib_is_missing)
-_mock_gribapi.grib_get_native_type = mock.Mock(
-    side_effect=_mock_gribapi__grib_get_native_type)
+
+if tests.GRIB_AVAILABLE:
+    # Construct a mock object to mimic the gribapi for GribWrapper testing.
+    _mock_gribapi = mock.Mock(spec=gribapi)
+    _mock_gribapi.GribInternalError = Exception
+
+    _mock_gribapi.grib_get_long = mock.Mock(side_effect=_mock_gribapi_fetch)
+    _mock_gribapi.grib_get_string = mock.Mock(side_effect=_mock_gribapi_fetch)
+    _mock_gribapi.grib_get_double = mock.Mock(side_effect=_mock_gribapi_fetch)
+    _mock_gribapi.grib_get_double_array = mock.Mock(
+        side_effect=_mock_gribapi_fetch)
+    _mock_gribapi.grib_is_missing = mock.Mock(
+        side_effect=_mock_gribapi__grib_is_missing)
+    _mock_gribapi.grib_get_native_type = mock.Mock(
+        side_effect=_mock_gribapi__grib_get_native_type)
 
 # define seconds in an hour, for general test usage
 _hour_secs = 3600.0
@@ -189,6 +192,7 @@ class FakeGribMessage(dict):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestGribLoad(tests.GraphicsTest):
 
     def setUp(self):
@@ -386,6 +390,7 @@ class TestGribLoad(tests.GraphicsTest):
         self.assertCML(cube, ("grib_load", "reduced_ll_missing_grib1.cml"))
 
 
+@tests.skip_grib
 class TestGribTimecodes(tests.IrisTest):
     def _run_timetests(self, test_set):
         # Check the unit-handling for given units-codes and editions.
@@ -584,6 +589,7 @@ class TestGribTimecodes(tests.IrisTest):
             )
 
 
+@tests.skip_grib
 class TestGribSimple(tests.IrisTest):
     # A testing class that does not need the test data.
     def mock_grib(self):
@@ -610,6 +616,7 @@ class TestGribSimple(tests.IrisTest):
         return cube
 
 
+@tests.skip_grib
 class TestGrib1LoadPhenomenon(TestGribSimple):
     # Test recognition of grib phenomenon types.
     def mock_grib(self):
@@ -660,6 +667,7 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.known_grib1(34, 'y_wind', 'm s-1')
 
 
+@tests.skip_grib
 class TestGrib2LoadPhenomenon(TestGribSimple):
     # Test recognition of grib phenomenon types.
     def mock_grib(self):
