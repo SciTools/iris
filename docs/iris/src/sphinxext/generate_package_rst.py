@@ -210,6 +210,10 @@ def do_package(package_name):
                     not (ext in ['.py', '.so'])):
                 continue
 
+            # Handle new shared library naming conventions
+            if ext == '.so':
+                name = name.split('.', 1)[0]
+
             rel_path = root_package + \
                 os.path.join(root, fname).split(rootdir)[-1]
             mod_folder = root_package + \
@@ -251,7 +255,7 @@ def do_package(package_name):
             paths.append(os.path.join(*split_path) + '.rst')
 
         paths.extend(os.path.join(os.path.basename(os.path.dirname(path)),
-                                  os.path.splitext(os.path.basename(path))[0])
+                                  os.path.basename(path).split('.', 1)[0])
                      for imp_name, path in module_folders.get(package, []))
 
         paths.sort()
