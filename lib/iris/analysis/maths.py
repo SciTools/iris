@@ -147,9 +147,9 @@ def _assert_matching_units(cube, other, operation_name):
     the other does not have a unit, skip this test
     """
     if cube.units != getattr(other, 'units', cube.units):
-        raise iris.exceptions.NotYetImplementedError(
-            'Differing units (%s & %s) %s not implemented' %
-            (cube.units, other.units, operation_name))
+        msg = 'Cannot use {!r} with differing units ({} & {})'.format(
+            operation_name, cube.units, other.units)
+        raise iris.exceptions.NotYetImplementedError(msg)
 
 
 def add(cube, other, dim=None, ignore=True, in_place=False):
@@ -239,7 +239,8 @@ def _add_subtract_common(operation_function, operation_name, cube, other,
                            used as the second argument
     dim                  - dimension along which to apply `other` if it's a
                            coordinate that is not found in `cube`
-    ignore               - ignored! ;-)
+    ignore               - The value of this argument is ignored.
+        .. deprecated:: 0.8
     in_place             - whether or not to apply the operation in place to
                            `cube` and `cube.data`
 
@@ -626,7 +627,7 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
     if other.has_bounds():
         warnings.warn('Using {!r} with a bounded coordinate is not well '
-                      'defined: ignoring bounds.'.format(operation_name))
+                      'defined; ignoring bounds.'.format(operation_name))
 
     points = other.points
 
