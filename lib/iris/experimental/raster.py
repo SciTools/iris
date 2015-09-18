@@ -24,10 +24,12 @@ TODO: If this module graduates from experimental the (optional) GDAL
       dependency should be added to INSTALL
 
 """
-
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import warnings
+
+from gdalconst import GA_ReadOnly
 import numpy as np
 from osgeo import gdal, osr
 
@@ -104,6 +106,96 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname,
     if byte_order == '>':
         data = data.astype(data.dtype.newbyteorder('<'))
     band.WriteArray(data)
+
+
+def import_raster(fname, header=None):
+    """
+    Imports raster images using gdal and constructs a cube.
+
+    Parameters
+    ----------
+    fname : str
+        Input file name.
+
+    Returns
+    -------
+    cube : iris.cube.Cube
+        A 2D regularly gridded cube.  The resulting cube has regular,
+        contiguous bounds.
+
+    .. note::
+
+        Coordinate system information it not yet interpreted.
+        Constrained raster import not yet supported.
+
+    .. warning::
+
+        Deferred loading not yet supported.
+
+    """
+    dataset = gdal.Open(fname, GA_ReadOnly)
+    if dataset is None:
+        raise IOError('gdal failed to open raster image')
+
+    projection = dataset.GetProjection()
+    if projection:
+        warnings.warn('Currently the following projection information is '
+                      'not interpreted: {}'.format(projection))
+
+    # Get metadata applies to all raster bands
+    transform = dataset.GetGeoTransform()
+    origin_xy = (transform[0], transform[3])
+    num_xy = (dataset.RasterXSize, dataset.RasterYSize)
+
+    # This effectively indicates the bounds of the cells.
+    pixel_width = (transform[1], transform[5])
+    num_raster = dataset.RasterCount
+
+    # Position of North 0, 0 is north-up
+    rotation = (transform[2], transform[4])
+    if rotation[0] != 0 or rotation[1] != 0:
+        msg = ('Rotation not supported: ({}, {})'.format(rotation[0],
+                                                         rotation[1]))
+        raise ValueError(msg)
+
+    if num_raster > 1:
+        warnings.warn('Multiple raster band support ({}) is highly '
+                      'experimental, use at your own risk'.format(num_raster))
+    elif num_raster == 0:
+        return None
+
+    # Calculate coordinate points
+    if transform is not None:
+        points_origin = (origin_xy[0] + pixel_width[0]/2,
+                         origin_xy[1] + pixel_width[1]/2)
+        points_x = np.arange(points_origin[0], points_origin[0] +
+                             pixel_width[0] * num_xy[0], pixel_width[0])
+        points_y = np.arange(points_origin[1], points_origin[1] +
+                             pixel_width[1] * num_xy[1], pixel_width[1])[::-1]
+        x = iris.coords.DimCoord(points_x,
+                                 standard_name='projection_x_coordinate')
+        x.guess_bounds()
+        y = iris.coords.DimCoord(points_y,
+                                 standard_name='projection_y_coordinate')
+        y.guess_bounds()
+
+    # Load data for each raster band.
+    cubes = iris.cube.CubeList()
+    for iraster in range(num_raster):
+        iband = dataset.GetRasterBand(iraster+1)
+        # ReadAsArray(xoffset, yoffset, xsize, ysize)
+        data = iband.ReadAsArray(0, 0, num_xy[0], num_xy[1])[::-1, :]
+        mdi = iband.GetNoDataValue() or np.nan
+        mask = data == mdi
+        if mask.any():
+            data = np.ma.masked_equal(data, mdi)
+        cube = iris.cube.Cube(data)
+        if transform is not None:
+            cube.add_dim_coord(x, 1)
+            cube.add_dim_coord(y, 0)
+        cubes.append(cube)
+
+    return cubes
 
 
 def export_geotiff(cube, fname):
