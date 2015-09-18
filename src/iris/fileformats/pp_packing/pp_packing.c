@@ -1,4 +1,4 @@
-// (C) British Crown Copyright 2010 - 2012, Met Office
+// (C) British Crown Copyright 2010 - 2015, Met Office
 //
 // This file is part of Iris.
 //
@@ -30,7 +30,11 @@ static PyObject *rle_decode_py(PyObject *self, PyObject *args);
 
 
 
-void initpp_packing(void)
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_pp_packing(void)
+#else
+PyMODINIT_FUNC initpp_packing(void)
+#endif
 {
 
 	/* The module doc string */
@@ -55,7 +59,7 @@ void initpp_packing(void)
         "    The value used in the field to indicate missing data points.\n"
         "\n"
         "Returns:\n"
-        "    numpy.ndarray, 2d array containing normal unpacked field data.\n" 
+        "    numpy.ndarray, 2d array containing normal unpacked field data.\n"
 	""
 	);
 
@@ -90,9 +94,27 @@ void initpp_packing(void)
 	    {NULL, NULL, 0, NULL}     /* marks the end of this structure */
 	};
 
+#if PY_MAJOR_VERSION >= 3
+	static struct PyModuleDef moduledef = {
+		PyModuleDef_HEAD_INIT,
+		"pp_packing",
+		pp_packing__doc__,
+		-1,
+		pp_packingMethods,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	};
 
-       Py_InitModule3("pp_packing", pp_packingMethods, pp_packing__doc__);
-       import_array();  // Must be present for NumPy.
+	PyObject *m = PyModule_Create(&moduledef);
+	import_array();  // Must be present for NumPy.
+
+	return m;
+#else
+	Py_InitModule3("pp_packing", pp_packingMethods, pp_packing__doc__);
+	import_array();  // Must be present for NumPy.
+#endif
 }
 
 
@@ -108,7 +130,7 @@ static PyObject *wgdos_unpack_py(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "s#iif", &bytes_in, &bytes_in_len, &lbrow, &lbnpt, &mdi)) return NULL;
 
-    // Unpacking algorithm accepts an int - so assert that lbrow*lbnpt does not overflow 
+    // Unpacking algorithm accepts an int - so assert that lbrow*lbnpt does not overflow
     if (lbrow > 0 && lbnpt >= INT_MAX / (lbrow+1)) {
         PyErr_SetString(PyExc_ValueError, "Resulting unpacked PP field is larger than PP supports.");
         return NULL;
@@ -138,7 +160,7 @@ static PyObject *wgdos_unpack_py(PyObject *self, PyObject *args)
     if (status != 0) {
       free(dataout);
       PyEval_RestoreThread(_save);
-      PyErr_SetString(PyExc_ValueError, "WGDOS unpack encountered an error."); 
+      PyErr_SetString(PyExc_ValueError, "WGDOS unpack encountered an error.");
       return NULL;
     }
     else {
@@ -165,7 +187,7 @@ static PyObject *wgdos_unpack_py(PyObject *self, PyObject *args)
 void MO_syslog(int value, char* message, const function* const caller)
 {
 	/* printf("MESSAGE %d %s: %s\n", value, caller, message); */
-	return; 
+	return;
 }
 
 
@@ -205,12 +227,12 @@ static PyObject *rle_decode_py(PyObject *self, PyObject *args)
     function func;  // function is defined by wgdosstuff.
     set_function_name(__func__, &func, 0);
     int status = unpack_ppfield(mdi, (bytes_in_len/BYTES_PER_INT_UNPACK_PPFIELD), bytes_in, LBPACK_RLE_PACKED, npts, dataout, &func);
-    
+
     /* Raise an exception if there was a problem with the REL algorithm */
     if (status != 0) {
       free(dataout);
       PyEval_RestoreThread(_save);
-      PyErr_SetString(PyExc_ValueError, "RLE decode encountered an error."); 
+      PyErr_SetString(PyExc_ValueError, "RLE decode encountered an error.");
       return NULL;
     }
     else {
@@ -219,7 +241,7 @@ static PyObject *rle_decode_py(PyObject *self, PyObject *args)
         dims[1]=lbnpt;
         PyEval_RestoreThread(_save);
         npy_array_out=(PyArrayObject *) PyArray_SimpleNewFromData(2, dims, NPY_FLOAT, dataout);
-        
+
         if (npy_array_out == NULL) {
           PyErr_SetString(PyExc_ValueError, "Failed to make the numpy array for the packed data.");
           return NULL;
