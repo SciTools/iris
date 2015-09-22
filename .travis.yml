@@ -13,6 +13,7 @@ sudo: false
 
 env:
   - TEST_TARGET=default
+  - TEST_TARGET=default TEST_MINIMAL=true
   - TEST_TARGET=coding
   - TEST_TARGET=example
   - TEST_TARGET=doctest
@@ -50,9 +51,11 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  # Explicitly add missing libgfortran dependency for numpy.
-  # See SciTools/iris#1777 and ContinuumIO/anaconda-issues#445.
-  - conda install --quiet --file conda-requirements.txt libgfortran
+  - if [[ "$TEST_MINIMAL" == true ]]; then
+      conda install --quiet --file minimal-conda-requirements.txt;
+    else
+      conda install --quiet --file conda-requirements.txt;
+    fi
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 

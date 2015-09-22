@@ -25,10 +25,13 @@ import iris.tests as tests
 
 import six.moves.cPickle as pickle
 
-from iris.fileformats.grib import _GribMessage
+if tests.GRIB_AVAILABLE:
+    import gribapi
+    from iris.fileformats.grib import _GribMessage
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestGribMessage(tests.IrisTest):
     def test(self):
         # Check that a _GribMessage pickles without errors.

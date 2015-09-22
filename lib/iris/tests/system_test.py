@@ -31,11 +31,15 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import numpy as np
 
 import iris
-import iris.fileformats.grib as grib
 import iris.fileformats.netcdf as netcdf
 import iris.fileformats.pp as pp
 import iris.tests as tests
 import iris.unit
+
+if tests.GRIB_AVAILABLE:
+    import gribapi
+    import iris.fileformats.grib as grib
+
 
 class SystemInitialTest(tests.IrisTest):
 
@@ -68,7 +72,10 @@ class SystemInitialTest(tests.IrisTest):
 
         cm.assert_valid()
 
-        for filetype in ('.nc', '.pp', '.grib2'):
+        filetypes = ('.nc', '.pp')
+        if tests.GRIB_AVAILABLE:
+            filetypes += ('.grib2',)
+        for filetype in filetypes:
             saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
             iris.save(cm, saved_tmpfile)
 
@@ -76,6 +83,7 @@ class SystemInitialTest(tests.IrisTest):
 
             self.assertCML(new_cube, ('system', 'supported_filetype_%s.cml' % filetype))
 
+    @tests.skip_grib
     def system_test_grib_patch(self):
         import gribapi
         gm = gribapi.grib_new_from_samples("GRIB2")

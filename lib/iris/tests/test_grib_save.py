@@ -26,7 +26,6 @@ import warnings
 import datetime
 from distutils.version import StrictVersion
 
-import gribapi
 import numpy as np
 
 import iris
@@ -34,8 +33,12 @@ import iris.cube
 import iris.coord_systems
 import iris.coords
 
+if tests.GRIB_AVAILABLE:
+    import gribapi
+
 
 @tests.skip_data
+@tests.skip_grib
 class TestLoadSave(tests.IrisTest):
     # load and save grib
 
@@ -117,6 +120,7 @@ class TestLoadSave(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_grib
 class TestCubeSave(tests.IrisTest):
     # save fabricated cubes
 
@@ -203,6 +207,7 @@ class TestCubeSave(tests.IrisTest):
                     1949.0)
 
 
+@tests.skip_grib
 class TestHandmade(tests.IrisTest):
 
     def _lat_lon_cube_no_time(self):

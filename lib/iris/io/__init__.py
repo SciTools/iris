@@ -227,6 +227,18 @@ def load_http(urls, callback):
             yield cube
 
 
+def _grib_save(cube, target, append=False, **kwargs):
+    # A simple wrapper for `iris.fileformats.grib.save_grib2` which
+    # allows the saver to be registered without having `gribapi`
+    # installed.
+    try:
+        import gribapi
+    except ImportError:
+        raise RuntimeError('Unable to save GRIB file - the ECMWF '
+                           '`gribapi` package is not installed.')
+    return iris.fileformats.grib.save_grib2(cube, target, append, **kwargs)
+
+
 def _check_init_savers():
     # TODO: Raise a ticket to resolve the cyclic import error that requires
     # us to initialise this on first use. Probably merge io and fileformats.
@@ -235,7 +247,7 @@ def _check_init_savers():
                         "nc": iris.fileformats.netcdf.save,
                         "dot": iris.fileformats.dot.save,
                         "dotpng": iris.fileformats.dot.save_png,
-                        "grib2": iris.fileformats.grib.save_grib2})
+                        "grib2": _grib_save})
 
 
 def add_saver(file_extension, new_saver):

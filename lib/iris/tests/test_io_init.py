@@ -56,6 +56,7 @@ class TestDecodeUri(unittest.TestCase):
 
 
 class TestFileFormatPicker(tests.IrisTest):
+    @tests.skip_grib
     def test_known_formats(self):
         self.assertString(str(iff.FORMAT_AGENT),
                           tests.get_result_path(('file_load',

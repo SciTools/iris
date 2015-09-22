@@ -31,12 +31,10 @@ import warnings
 
 import biggus
 import cartopy.crs as ccrs
+import gribapi
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
-
-import iris.proxy
-iris.proxy.apply_proxy('gribapi', globals())
 
 from iris.analysis.interpolate import Linear1dExtrapolator
 import iris.coord_systems as coord_systems

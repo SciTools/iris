@@ -25,13 +25,17 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as itests
+import iris.tests as tests
 
-import iris.fileformats.grib.grib_phenom_translation as gptx
 import iris.unit
 
+if tests.GRIB_AVAILABLE:
+    import gribapi
+    import iris.fileformats.grib.grib_phenom_translation as gptx
 
-class TestGribLookupTableType(itests.IrisTest):
+
+@tests.skip_grib
+class TestGribLookupTableType(tests.IrisTest):
     def test_lookuptable_type(self):
         ll = gptx.LookupTable([('a', 1), ('b', 2)])
         assert ll['a'] == 1
@@ -47,7 +51,8 @@ class TestGribLookupTableType(itests.IrisTest):
         assert ll['q'] == 7
 
 
-class TestGribPhenomenonLookup(itests.IrisTest):
+@tests.skip_grib
+class TestGribPhenomenonLookup(tests.IrisTest):
     def test_grib1_cf_lookup(self):
         def check_grib1_cf(param,
                            standard_name, long_name, units,
@@ -163,4 +168,4 @@ class TestGribPhenomenonLookup(itests.IrisTest):
 
 
 if __name__ == '__main__':
-    itests.main()
+    tests.main()

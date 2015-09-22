@@ -25,7 +25,11 @@ import iris.tests as tests
 
 import iris
 
+if tests.GRIB_AVAILABLE:
+    import gribapi
 
+
+@tests.skip_grib
 class TestBoundedTime(tests.IrisTest):
     @tests.skip_data
     def test_time_and_forecast_period_round_trip(self):
