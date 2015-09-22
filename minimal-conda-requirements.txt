@@ -1,5 +1,5 @@
 # Use this file to create a conda environment using:
-# conda create -n <name> --file conda-requirements.txt
+# conda create -n <name> --file minimal-conda-requirements.txt
 
 # Mandatory dependencies
 biggus>=0.12.0

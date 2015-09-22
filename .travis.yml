@@ -51,12 +51,10 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  # Explicitly add missing libgfortran dependency for numpy.
-  # See SciTools/iris#1777 and ContinuumIO/anaconda-issues#445.
   - if [[ "$TEST_MINIMAL" == true ]]; then
-      conda install --quiet --file minimal-conda-requirements.txt libgfortran;
+      conda install --quiet --file minimal-conda-requirements.txt;
     else
-      conda install --quiet --file conda-requirements.txt libgfortran;
+      conda install --quiet --file conda-requirements.txt;
     fi
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
