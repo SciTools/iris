@@ -1891,8 +1891,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return summary
 
     def assert_valid(self):
-        """Raise an exception if the cube is invalid; otherwise return None."""
+        """
+        Does nothing and returns None.
 
+        .. deprecated:: 0.8
+
+        """
         warnings.warn('Cube.assert_valid() has been deprecated.')
 
     def __str__(self):

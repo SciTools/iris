@@ -455,6 +455,10 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
     * k_cube
         The k cube of the vector to operate on
+    * ignore
+        This argument is not used.
+        .. deprecated:: 0.8
+            The coordinates to ignore are determined automatically.
 
     Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)
 
