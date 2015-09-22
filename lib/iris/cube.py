@@ -1042,18 +1042,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             matches = [factory.derived_dims(self.coord_dims) for factory in
                        factories]
 
-        # Deprecate name based searching
-        # -- Search by coord name, if have no match
-        # XXX Where did this come from? And why isn't it reflected in the
-        # docstring?
-        if not matches:
-            warnings.warn('name based coord matching is deprecated and will '
-                          'be removed in a future release.',
-                          stacklevel=2)
-            matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
-                       coord_.name() == coord.name()]
-        # Finish deprecate name based searching
-
         if not matches:
             raise iris.exceptions.CoordinateNotFoundError(coord.name())
 
@@ -1891,8 +1879,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return summary
 
     def assert_valid(self):
-        """Raise an exception if the cube is invalid; otherwise return None."""
+        """
+        Does nothing and returns None.
 
+        .. deprecated:: 0.8
+
+        """
         warnings.warn('Cube.assert_valid() has been deprecated.')
 
     def __str__(self):
