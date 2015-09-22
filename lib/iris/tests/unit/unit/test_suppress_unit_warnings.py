@@ -30,7 +30,6 @@ from iris.unit import suppress_unit_warnings
 
 
 class Test(tests.IrisTest):
-
     def test_generic_warnings(self):
         unit_warning = ("Ignoring netCDF variable 'AL' invalid "
                         "units '(0 - 1)'")
@@ -49,7 +48,8 @@ class Test(tests.IrisTest):
         test_filename = tests.get_data_path(('NetCDF', 'testing', 'units.nc'))
         with warnings.catch_warnings(record=True) as filtered_warnings:
             with suppress_unit_warnings():
-                iris.load(test_filename)
+                with iris.FUTURE.context(netcdf_promote=True):
+                    iris.load(test_filename)
         filtered_warnings_list = [str(w.message) for w in filtered_warnings]
         self.assertEqual(len(filtered_warnings_list), 0)
 

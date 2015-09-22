@@ -279,9 +279,10 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                     group = cf_group.promoted
                     self.assertEqual(list(group.keys()), ['orography'])
                     self.assertIs(group['orography'].cf_data, self.orography)
+                    self.assertEqual(warn.call_count, 1)
                 else:
                     self.assertEqual(len(cf_group.promoted), 0)
-            self.assertEqual(warn.call_count, 1)
+                    self.assertEqual(warn.call_count, 2)
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ['lat', 'wibble']
@@ -296,9 +297,10 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                     self.assertEqual(set(group.keys()), set(promoted))
                     for name in promoted:
                         self.assertIs(group[name].cf_data, getattr(self, name))
+                    self.assertEqual(warn.call_count, 1)
                 else:
                     self.assertEqual(len(cf_group.promoted), 0)
-            self.assertEqual(warn.call_count, 1)
+                    self.assertEqual(warn.call_count, 2)
 
     def test_promoted_auxiliary_ignore(self):
         self.wibble = netcdf_variable('wibble', 'lat wibble', np.float)
