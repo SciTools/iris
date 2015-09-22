@@ -2201,6 +2201,90 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 result.add_aux_factory(factory.updated(coord_mapping))
         return result
 
+    def _intersect_derive_subset(self, coord, points, bounds, inside_indices):
+        # Return the subsets, i.e. the means to allow the slicing of
+        # coordinates to ensure that they remain contiguous.
+        modulus = coord.units.modulus
+        delta = coord.points[inside_indices] - points[inside_indices]
+        step = np.rint(np.diff(delta) / modulus)
+        non_zero_step_indices = np.nonzero(step)[0]
+
+        def dim_coord_subset():
+            """
+            Derive the subset for dimension coordinates.
+
+            Ensure that we do not wrap if blocks are at the very edge.  That
+            is, if the very edge is wrapped and corresponds to base + period,
+            stop this unnecessary wraparound.
+
+            """
+            # A contiguous block at the start and another at the end.
+            # (NB. We can't have more than two blocks because we've already
+            # restricted the coordinate's range to its modulus).
+            end_of_first_chunk = non_zero_step_indices[0]
+            index_of_second_chunk = inside_indices[end_of_first_chunk + 1]
+            final_index = points.size - 1
+
+            # Condition1: The two blocks don't themselves wrap
+            #             (inside_indices is contiguous).
+            # Condition2: Are we chunked at either extreme edge.
+            edge_wrap = ((index_of_second_chunk ==
+                          inside_indices[end_of_first_chunk] + 1) and
+                         index_of_second_chunk in (final_index, 1))
+            subsets = None
+            if edge_wrap:
+                # Increasing coord
+                if coord.points[-1] > coord.points[0]:
+                    index_end = -1
+                    index_start = 0
+                # Decreasing coord
+                else:
+                    index_end = 0
+                    index_start = -1
+
+                # Unwrap points and bounds (if present and equal base + period)
+                if bounds is not None:
+                    edge_equal_base_period = (
+                        np.isclose(coord.bounds[index_end, index_end],
+                                   coord.bounds[index_start, index_start] +
+                                   modulus))
+                    if edge_equal_base_period:
+                        bounds[index_end, :] = coord.bounds[index_end, :]
+                else:
+                    edge_equal_base_period = (
+                        np.isclose(coord.points[index_end],
+                                   coord.points[index_start] +
+                                   modulus))
+                if edge_equal_base_period:
+                    points[index_end] = coord.points[index_end]
+                    subsets = [slice(inside_indices[0],
+                                     inside_indices[-1] + 1)]
+
+            # Either no edge wrap or edge wrap != base + period
+            # i.e. derive subset without alteration
+            if subsets is None:
+                subsets = [
+                    slice(index_of_second_chunk, None),
+                    slice(None, inside_indices[end_of_first_chunk] + 1)
+                    ]
+
+            return subsets
+
+        if isinstance(coord, iris.coords.DimCoord):
+            if non_zero_step_indices.size:
+                subsets = dim_coord_subset()
+            else:
+                # A single, contiguous block.
+                subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
+        else:
+            # An AuxCoord could have its values in an arbitrary
+            # order, and hence a range of values can select an
+            # arbitrary subset. Also, we want to preserve the order
+            # from the original AuxCoord. So we just use the indices
+            # directly.
+            subsets = [inside_indices]
+        return subsets
+
     def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
                            max_inclusive, ignore_bounds):
         modulus = coord.units.modulus
@@ -2272,88 +2356,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             inside_indices, = np.where(
                 np.logical_and(min_comp(minimum, points),
                                max_comp(points, maximum)))
-        if isinstance(coord, iris.coords.DimCoord):
-            delta = coord.points[inside_indices] - points[inside_indices]
-            step = np.rint(np.diff(delta) / modulus)
-            non_zero_step_indices = np.nonzero(step)[0]
-            if non_zero_step_indices.size:
-                # A contiguous block at the start and another at the
-                # end. (NB. We can't have more than two blocks
-                # because we've already restricted the coordinate's
-                # range to its modulus).
-                end_of_first_chunk = non_zero_step_indices[0]
 
-                # Ensure that we do not wrap if blocks are at the very edge.
-                # That is, if the very edge is wrapped and corresponds to
-                # base + period, stop this unnecessary wraparound.
-                # NOTE: The relationship between final index wrapping and
-                # being an increasing coordinate; and first index and being
-                # a decreasing coordinate, is based on the behaviour of
-                # wrap_lons.  wrap_lons wraps points at base + period.  How
-                # they are wrapped always identifies the direction of the
-                # coordinate.
-
-                # The following condition holds for increasing or decreasing
-                # coordinates with wraparound.
-                # Condition1: The two blocks don't themselves wrap
-                #             (inside_indices is contiguous).
-                # Condition2: Are we chunked at either extreme edge.
-                index_of_second_chunk = inside_indices[end_of_first_chunk + 1]
-                final_index = points.size - 1
-                if ((index_of_second_chunk ==
-                        inside_indices[end_of_first_chunk] + 1) and
-                        index_of_second_chunk in (final_index, 1)):
-
-                    # Check if final index is wrapped (increasing coordinate).
-                    # i.e. start of the second chunk is at the final index.
-                    if index_of_second_chunk == final_index:
-                        # Unwrap points and bounds
-                        if (bounds is not None and
-                                np.isclose(coord.bounds[-1, -1],
-                                           coord.bounds[0, 0] + modulus)):
-                            bounds[-1, :] = coord.bounds[-1, :]
-                            points[-1] = coord.points[-1]
-                            subsets = [slice(inside_indices[0],
-                                             inside_indices[-1] + 1)]
-                        # Unwrap points
-                        elif np.isclose(coord.points[-1],
-                                        coord.points[0] + modulus):
-                            points[-1] = coord.points[-1]
-                            subsets = [slice(inside_indices[0],
-                                       inside_indices[-1] + 1)]
-
-                    # Check if first index is wrapped (decreasing coordinate).
-                    # i.e. start of the second chunk is at the second index.
-                    elif index_of_second_chunk == 1:
-                        # Unwrap points and bounds
-                        if (bounds is not None and
-                                np.isclose(coord.bounds[0, 0],
-                                           coord.bounds[-1, -1] + modulus)):
-                            bounds[0, :] = coord.bounds[0, :]
-                            points[0] = coord.points[0]
-                            subsets = [slice(inside_indices[0],
-                                             inside_indices[-1] + 1)]
-                        # Unwrap points
-                        elif np.isclose(coord.points[0],
-                                        coord.points[-1] + modulus):
-                            points[0] = coord.points[0]
-                            subsets = [slice(inside_indices[0],
-                                             inside_indices[-1] + 1)]
-                else:
-                    subsets = [
-                        slice(index_of_second_chunk, None),
-                        slice(None, inside_indices[end_of_first_chunk] + 1)
-                        ]
-            else:
-                # A single, contiguous block.
-                subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
-        else:
-            # An AuxCoord could have its values in an arbitrary
-            # order, and hence a range of values can select an
-            # arbitrary subset. Also, we want to preserve the order
-            # from the original AuxCoord. So we just use the indices
-            # directly.
-            subsets = [inside_indices]
+        # Determine the subsets
+        subsets = self._intersect_derive_subset(coord, points, bounds,
+                                                inside_indices)
         return subsets, points, bounds
 
     def _as_list_of_coords(self, names_or_coords):

@@ -768,10 +768,22 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
 # Check what happens with a global, points-only circular intersection
 # coordinate.
 class Test_intersection__GlobalSrcModulus(tests.IrisTest):
-    def test_global_wrapped_extreme(self):
+    def test_global_wrapped_extreme_increasing_base_period(self):
         # Ensure that we can correctly handle points defined at (base + period)
         cube = create_cube(-180., 180.)
         lons = cube.coord('longitude')
+        # Redefine longitude so that points at (base + period)
+        lons.points = np.linspace(-180., 180, lons.points.size)
+        result = cube.intersection(longitude=(lons.points.min(),
+                                              lons.points.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
+    def test_global_wrapped_extreme_decreasing_base_period(self):
+        # Ensure that we can correctly handle points defined at (base + period)
+        cube = create_cube(180., -180.)
+        lons = cube.coord('longitude')
+        # Redefine longitude so that points at (base + period)
+        lons.points = np.linspace(180., -180., lons.points.size)
         result = cube.intersection(longitude=(lons.points.min(),
                                               lons.points.max()))
         self.assertArrayEqual(result.data, cube.data)
@@ -941,7 +953,7 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
 class Test_intersection__ModulusBounds(tests.IrisTest):
-    def test_global_wrapped_extreme_increasing(self):
+    def test_global_wrapped_extreme_increasing_base_period(self):
         # Ensure that we can correctly handle bounds defined at (base + period)
         cube = create_cube(-180., 180., bounds=True)
         lons = cube.coord('longitude')
@@ -949,7 +961,7 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
                                               lons.bounds.max()))
         self.assertArrayEqual(result.data, cube.data)
 
-    def test_global_wrapped_extreme_decreasing(self):
+    def test_global_wrapped_extreme_decreasing_base_period(self):
         # Ensure that we can correctly handle bounds defined at (base + period)
         cube = create_cube(180., -180., bounds=True)
         lons = cube.coord('longitude')
