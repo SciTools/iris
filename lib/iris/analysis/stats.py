@@ -23,11 +23,24 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 import numpy as np
+import numpy.ma as ma
 import iris
 from iris.util import broadcast_to_shape
 
 
-def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.):
+def _ones_like(cube):
+    """
+    Return a copy of cube with the same mask, but all data values set to 1.
+    """
+    ones_cube = cube.copy()
+    ones_cube.data = np.ones_like(cube.data)
+    ones_cube.rename('unknown')
+    ones_cube.units = 1
+    return ones_cube
+
+
+def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.,
+             common_mask=False):
     """
     Calculate the Pearson's r correlation coefficient over specified
     dimensions.
@@ -53,6 +66,11 @@ def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.):
         cell is masked. mdtol=0 means no missing data is tolerated while
         mdtol=1 means the resulting element will be masked if and only if all
         contributing elements are masked in cube_a or cube_b. Defaults to 1.
+    * common_mask (bool):
+        If True, applies a common mask to cube_a and cube_b so only cells which
+        are unmasked in both cubes contribute to the calculation. If False, the
+        variance for each cube is calculated from all available cells. Defaults
+        to False.
 
     Returns:
         A cube of the correlation between the two input cubes along the
@@ -84,18 +102,48 @@ def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.):
     if corr_coords is None:
         corr_coords = common_dim_coords
 
-    # Broadcast weights to shape of cube_1 if necessary.
-    if weights is None or cube_1.shape == cube_2.shape:
+    smaller_shape = cube_2.shape
+
+    # Match up data masks if required.
+    if common_mask:
+        # Create a cube of 1's with a common mask.
+        if ma.is_masked(cube_2.data):
+            mask_cube = _ones_like(cube_2)
+        else:
+            mask_cube = 1.
+        if ma.is_masked(cube_1.data):
+            # Take a slice to avoid unnecessary broadcasting of cube_2.
+            slice_coords = [dim_coords_1[i] for i in range(cube_1.ndim) if
+                            dim_coords_1[i] not in common_dim_coords and
+                            np.array_equal(cube_1.data.mask.any(axis=i),
+                                           cube_1.data.mask.all(axis=i))]
+            cube_1_slice = next(cube_1.slices_over(slice_coords))
+            mask_cube = _ones_like(cube_1_slice) * mask_cube
+        # Apply common mask to data.
+        if isinstance(mask_cube, iris.cube.Cube):
+            cube_1 = cube_1 * mask_cube
+            cube_2 = mask_cube * cube_2
+            dim_coords_2 = [coord.name() for coord in cube_2.dim_coords]
+
+    # Broadcast weights to shape of cubes if necessary.
+    if weights is None or cube_1.shape == smaller_shape:
         weights_1 = weights
         weights_2 = weights
     else:
-        if weights.shape != cube_2.shape:
+        if weights.shape != smaller_shape:
             raise ValueError("weights array should have dimensions {}".
-                             format(cube_2.shape))
+                             format(smaller_shape))
+
         dims_1_common = [i for i in range(cube_1.ndim) if
                          dim_coords_1[i] in common_dim_coords]
         weights_1 = broadcast_to_shape(weights, cube_1.shape, dims_1_common)
-        weights_2 = weights
+        if cube_2.shape != smaller_shape:
+            dims_2_common = [i for i in range(cube_2.ndim) if
+                             dim_coords_2[i] in common_dim_coords]
+            weights_2 = broadcast_to_shape(weights, cube_2.shape,
+                                           dims_2_common)
+        else:
+            weights_2 = weights
 
     # Calculate correlations.
     s1 = cube_1 - cube_1.collapsed(corr_coords, iris.analysis.MEAN,
