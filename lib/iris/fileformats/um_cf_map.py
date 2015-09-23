@@ -565,7 +565,7 @@ STASH_TO_CF = {
     'm01s12i184': CFName('tendency_of_mass_fraction_of_cloud_ice_in_air_due_to_advection', None, 's-1'),
     'm01s12i185': CFName('tendency_of_eastward_wind_due_to_advection', None, 'm s-1'),
     'm01s12i186': CFName('tendency_of_northward_wind_due_to_advection', None, 'm s-1'),
-    'm01s12i187': CFName('tendency_of_upward_air_velocity_due_to_advection', None, 'm s-1'),
+    'm01s12i187': CFName(None, 'change_over_time_in_upward_air_velocity_due_to_advection', 'm s-1'),
     'm01s12i201': CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'),
     'm01s12i202': CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'),
     'm01s13i002': CFName('eastward_wind', None, 'm s-1'),
