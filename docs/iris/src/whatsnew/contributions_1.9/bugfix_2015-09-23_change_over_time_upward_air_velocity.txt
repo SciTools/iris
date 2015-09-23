@@ -1,0 +1,5 @@
+* fixed a bug in :mod:`iris.fileformats.um_cf_map` where the standard name
+  for the stash code m01s12i187 was incorrectly set, such that it is inconsistent 
+  with the stated unit of measure, 'm s-1'.  The different name, a long_name
+  of 'change_over_time_in_upward_air_velocity_due_to_advection' with
+  units of 'm s-1' is now used instead.
