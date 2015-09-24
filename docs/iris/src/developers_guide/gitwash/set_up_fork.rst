@@ -56,6 +56,12 @@ Note that we've used ``git://`` for the URL rather than ``git@``.  The
 (or deliberately) write to the upstream repo, and we are only going to
 use it to merge into our own code.
 
+.. note::
+
+   If you are working on a tightly managed network, the port for the 
+   ``git://`` connection may be blocked.  In this case use 
+   ``git@github.com:SciTools/iris.git`` for the upstream URL.
+
 Just for your own satisfaction, show yourself that you now have a new
 'remote', with ``git remote -v show``, giving you something like::
 
