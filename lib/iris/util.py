@@ -1520,8 +1520,12 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
 def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     """
-    Demotes a DimCoord on the cube to an AuxCoord, leaving that
-    dimension anonymous.
+    Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
+
+    The DimCoord is demoted to an auxiliary coordinate on the cube.
+    The dimension of the cube that was associated with the DimCoord becomes
+    anonymous.  The class of the coordinate is left as DimCoord, it is not
+    recast as an AuxCoord instance.
 
     Args:
 
