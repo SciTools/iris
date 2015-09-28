@@ -54,7 +54,7 @@ def gen_gallery(app, doctree):
         return
 
     outdir = app.builder.outdir
-    rootdir = 'example_code'
+    rootdir = 'examples'
 
     # Images we want to skip for the gallery because they are an unusual
     # size that doesn't layout well in a table, or because they may be

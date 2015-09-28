@@ -30,7 +30,7 @@ def limit_colorbar_ticks(contour_object):
     # Matplotlib v1.3.x it is simply the colorbar.
     try:
         colorbar = contour_object.colorbar[0]
-    except AttributeError:
+    except (AttributeError, TypeError):
         colorbar = contour_object.colorbar
 
     colorbar.locator = matplotlib.ticker.MaxNLocator(4)
