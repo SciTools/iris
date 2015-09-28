@@ -1,0 +1,1 @@
+* Add the UM pseudo level type to the information made available through the STASH_TRANS table in :mod:`iris.fileformats.um._ff_cross_references`

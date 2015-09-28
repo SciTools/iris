@@ -37,9 +37,26 @@ Relates grid code and field code to the stash code.
 
 
 CODE_PREAMBLE = ("\nfrom __future__ import "
-                 "(absolute_import, division, print_function)\n\n"
+                 "(absolute_import, division, print_function)\n"
+                 "from six.moves import "
+                 "(filter, input, map, range, zip)  # noqa\n\n"
                  "from collections import namedtuple\n\n\n"
-                 "Stash = namedtuple('Stash', 'grid_code field_code')\n\n\n")
+                 "Stash = namedtuple('Stash', "
+                 "'grid_code field_code pseudo_level_type')\n\n\n")
+
+
+def _value_from_xref(xref, name):
+    """Return the value for the key name from xref.
+
+    Will return 0 if the key does not look like an integer.
+    """
+
+    result = xref.get(name)
+    try:
+        int(result)
+    except (ValueError, TypeError):
+        result = 0
+    return result
 
 
 def write_cross_reference_module(module_path, xrefs):
@@ -62,17 +79,19 @@ def write_cross_reference_module(module_path, xrefs):
                     int(grid)
                 except ValueError:
                     msg = ('grid code retrieved from STASH lookup'
-                           'is not an interger: {}'.format(grid))
+                           'is not an integer: {}'.format(grid))
                     print(msg)
             else:
                 grid = 0
-            lbfc = xref.get('lbfcn')
-            try:
-                int(lbfc)
-            except (ValueError, TypeError):
-                lbfc = 0
+
+            lbfc = _value_from_xref(xref, 'lbfcn')
+            pseudT = _value_from_xref(xref, 'pseudT')
+
             module_file.write(
-                '    "{}": Stash({}, {}),\n'.format(stash, grid, lbfc))
+                '    "{}": Stash({}, {}, {}),\n'.format(stash,
+                                                        grid,
+                                                        lbfc,
+                                                        pseudT))
         module_file.write('}\n')
 
 
@@ -85,7 +104,7 @@ def stash_grid_retrieve():
 prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 prefix skos: <http://www.w3.org/2004/02/skos/core#>
 
-SELECT ?stash ?grid ?lbfcn
+SELECT ?stash ?grid ?lbfcn ?pseudT
 WHERE {
   ?stashcode rdf:type <http://reference.metoffice.gov.uk/um/c4/stash/Stash> ;
   skos:notation ?stash ;
@@ -93,9 +112,11 @@ WHERE {
 OPTIONAL { ?gridcode skos:notation ?grid .}
 OPTIONAL {?stashcode <http://reference.metoffice.gov.uk/um/c4/stash/ppfc> ?lbfc .
          ?lbfc skos:notation ?lbfcn .}
+OPTIONAL {?stashcode <http://reference.metoffice.gov.uk/um/c4/stash/pseudT> ?pseudT_id .
+          ?pseudT_id skos:notation ?pseudT . }
 }
 order by ?stash'''
-    
+
     encquery = urllib.quote_plus(query)
     out_format = '&output=json'
     url = baseurl + encquery + out_format
@@ -103,7 +124,7 @@ order by ?stash'''
     response = urllib2.urlopen(url)
     stash = json.loads(response.read())
 
-    ## heads will be of the form [u'stash', u'grid', u'lbfcn']
+    ## heads will be of the form [u'stash', u'grid', u'lbfcn', u'pseudT']
     ## as defined in the query string
     heads = stash['head']['vars']
 
