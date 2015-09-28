@@ -24,6 +24,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import os
 import re
+import shutil
 import sys
 
 
@@ -139,6 +140,11 @@ Iris examples
             if not out_of_date(fullpath, outrstfile):
                 continue
 
+            # Copy the example code to be in the src examples directory. This
+            # means we can define a simple relative path in the plot directive,
+            # which can also copy the file into the resulting build directory.
+            shutil.copy(fullpath, rstdir)
+
             fh = open(outrstfile, 'w')
             fh.write('.. _{}-{}:\n\n'.format(subdir, basename))
 
@@ -151,11 +157,13 @@ Iris examples
                 fh.write('=' * len(title) + '\n\n')
 
             if not noplot_regex.search(contents):
-                fh.write('\n\n.. plot:: {}\n'.format(fullpath))
+                rel_example = os.path.relpath(outputfile, app.builder.outdir)
+                fh.write('\n\n.. plot:: {}\n'.format(rel_example))
                 fh.write('    :include-source:\n\n')
             else:
                 fh.write('[`source code <{}>`_]\n\n'.format(fname))
                 fh.write('.. literalinclude:: {}\n\n'.format(fname))
+
                 # Write the .py file contents (we didn't need to do this for
                 # plots as the plot directive does this for us.)
                 with open(outputfile, 'w') as fhstatic:
