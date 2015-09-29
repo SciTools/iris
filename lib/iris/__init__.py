@@ -57,9 +57,10 @@ All the load functions share very similar arguments:
 
     * constraints:
         Either a single constraint, or an iterable of constraints.
-        Each constraint can be either a CF standard name, an instance of
+        Each constraint can be either a string, an instance of
         :class:`iris.Constraint`, or an instance of
-        :class:`iris.AttributeConstraint`.
+        :class:`iris.AttributeConstraint`.  If the constraint is a string
+        it will be used to match against cube.name().
 
         .. _constraint_egs:
 
