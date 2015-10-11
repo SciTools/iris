@@ -225,7 +225,7 @@ class Test__payload(tests.IrisTest):
         field = self.mock_field
         field.raw_lbpack = 1
         data_depth, data_type = ff2pp._payload(field)
-        self.assertEqual(data_depth, 396)
+        self.assertEqual(data_depth, 400)
         self.assertEqual(data_type, np.dtype('>f4'))
 
     def test__lbpack_2(self):

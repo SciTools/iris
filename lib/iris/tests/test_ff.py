@@ -272,25 +272,25 @@ class TestFFPayload(tests.IrisTest):
         mock_field = _MockField(lbext=0, lblrec=-1, lbnrec=100,
                                 raw_lbpack=_WGDOS,
                                 lbuser=[_REAL], boundary_packing=None)
-        self._test_payload(mock_field, 796, pp.LBUSER_DTYPE_LOOKUP[_REAL])
+        self._test_payload(mock_field, 800, pp.LBUSER_DTYPE_LOOKUP[_REAL])
 
     def test_payload_wgdos_real_ext(self):
         mock_field = _MockField(lbext=50, lblrec=-1, lbnrec=100,
                                 raw_lbpack=_WGDOS,
                                 lbuser=[_REAL], boundary_packing=None)
-        self._test_payload(mock_field, 796, pp.LBUSER_DTYPE_LOOKUP[_REAL])
+        self._test_payload(mock_field, 800, pp.LBUSER_DTYPE_LOOKUP[_REAL])
 
     def test_payload_wgdos_integer(self):
         mock_field = _MockField(lbext=0, lblrec=-1, lbnrec=200,
                                 raw_lbpack=_WGDOS,
                                 lbuser=[_INTEGER], boundary_packing=None)
-        self._test_payload(mock_field, 1596, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
+        self._test_payload(mock_field, 1600, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
 
     def test_payload_wgdos_integer_ext(self):
         mock_field = _MockField(lbext=100, lblrec=-1, lbnrec=200,
                                 raw_lbpack=_WGDOS,
                                 lbuser=[_INTEGER], boundary_packing=None)
-        self._test_payload(mock_field, 1596, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
+        self._test_payload(mock_field, 1600, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
 
     def test_payload_cray_real(self):
         mock_field = _MockField(lbext=0, lblrec=100, lbnrec=-1,
