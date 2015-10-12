@@ -40,7 +40,7 @@ import iris.unit
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))
 _NP_VERSION = _Version(*(int(val) for val in
-                         np.version.version.split('.')))
+                         np.version.version.split('.') if val.isdigit()))
 
 
 def _get_xy_coords(cube):
