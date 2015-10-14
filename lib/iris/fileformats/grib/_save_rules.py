@@ -303,10 +303,10 @@ def latlon_points_irregular(cube, grib):
     # So, this only works at present if the x and y dimensions are **equal**.
     lon_values = x_coord.points / _DEFAULT_DEGREES_UNITS
     lat_values = y_coord.points / _DEFAULT_DEGREES_UNITS
-    gribapi.grib_set_array(grib, 'longitudes',
-                           np.array(np.round(lon_values), dtype=np.int64))
-    gribapi.grib_set_array(grib, 'latitudes',
-                           np.array(np.round(lat_values), dtype=np.int64))
+    gribapi.grib_set_long_array(grib, 'longitudes',
+                                np.array(np.round(lon_values), dtype=np.int64))
+    gribapi.grib_set_long_array(grib, 'latitudes',
+                                np.array(np.round(lat_values), dtype=np.int64))
 
 
 def rotated_pole(cube, grib):
