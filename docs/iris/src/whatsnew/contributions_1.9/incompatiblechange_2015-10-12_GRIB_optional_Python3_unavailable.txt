@@ -1,0 +1,1 @@
+* GRIB message/file reading and writing may not be available for Python 3 due to GRIB API limitations. 
