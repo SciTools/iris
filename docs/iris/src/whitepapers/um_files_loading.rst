@@ -444,7 +444,7 @@ LBRSVD4
 If non-zero, this is interpreted as an ensemble number.  This produces a cube
 scalar coordinate named 'realization' (as defined in the CF conventions).
 
-LBRSVD5
+LBUSER5
 ^^^^^^^
 If non-zero, this is interpreted as a 'pseudo_level' number.  This produces a
-cube scalar coordinate named 'pseudo_level'.
+cube scalar coordinate named 'pseudo_level'.  In the UM documentation LBUSER5 is also sometimes referred to as LBPLEV.
