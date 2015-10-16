@@ -312,9 +312,14 @@ def build_cube(data, spherical=False):
     dimz = data.ndim - 3  if data.ndim > 2 else None
 
     if spherical:
-        hcs = iris.coord_systems.GeogCS(6321)
-        cube.add_dim_coord(DimCoord(np.arange(-180, 180, 360./nx, dtype=np.float32), 'longitude', units='degrees', coord_system=hcs, circular=True), dimx)
-        cube.add_dim_coord(DimCoord(np.arange(-90, 90, 180./ny, dtype=np.float32), 'latitude', units='degrees', coord_system=hcs), dimy)
+        if spherical == 'rotated':
+            hcs = iris.coord_systems.RotatedGeogCS(10, 20)
+            lon_name, lat_name = 'grid_longitude', 'grid_latitude'
+        else:
+            hcs = iris.coord_systems.GeogCS(6321)
+            lon_name, lat_name = 'longitude', 'latitude'
+        cube.add_dim_coord(DimCoord(np.arange(-180, 180, 360./nx, dtype=np.float32), lon_name, units='degrees', coord_system=hcs, circular=True), dimx)
+        cube.add_dim_coord(DimCoord(np.arange(-90, 90, 180./ny, dtype=np.float32), lat_name, units='degrees', coord_system=hcs), dimy)
 
     else:
         cube.add_dim_coord(DimCoord(np.arange(nx, dtype=np.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters'), dimx)
@@ -510,7 +515,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         np.testing.assert_array_almost_equal(result.data[5:-5], r.data[5:-5]/1000.0, decimal=1)
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived1.cml'), checksum=False)
 
-    def test_contrived_sphrical_curl2(self):
+    def test_contrived_spherical_curl2(self):
         # testing:
         # F(lon, lat, r) = (r sin(lat) cos(lon), -r sin(lon), 0)
         # curl( F(x, y, z) ) = (0, 0, -2 cos(lon) cos(lat) )
@@ -611,6 +616,15 @@ class TestCurlInterface(tests.IrisTest):
         # Change it to have an inconsistent phenomenon
         v.rename('northward_foobar2')
         self.assertRaises(ValueError, iris.analysis.calculus.spatial_vectors_with_phenom_name, u, v)
+
+    def test_rotated_pole(self):
+        u = build_cube(np.empty((30, 20)), spherical='rotated')
+        v = u.copy()
+        u.rename('u_wind')       
+        v.rename('v_wind')
+        
+        x, y, z = iris.analysis.calculus.curl(u, v)
+        self.assertEqual(z.coord_system(), u.coord_system())
 
 
 if __name__ == "__main__":
