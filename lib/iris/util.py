@@ -585,42 +585,60 @@ def column_slices_generator(full_slice, ndims):
     """
     list_of_slices = []
 
-    # Map current dimensions to new dimensions, or None
-    dimension_mapping = {None: None}
-    _count_current_dim = 0
-    for i, i_key in enumerate(full_slice):
-        if isinstance(i_key, (int, np.integer)):
-            dimension_mapping[i] = None
-        else:
-            dimension_mapping[i] = _count_current_dim
-            _count_current_dim += 1
+    is_tuple_style_index = lambda key: isinstance(key, tuple) or \
+        (isinstance(key, np.ndarray) and key.ndim == 1)
 
     # Get all of the dimensions for which a tuple of indices were provided
     # (numpy.ndarrays are treated in the same way tuples in this case)
-    is_tuple_style_index = lambda key: isinstance(key, tuple) or \
-        (isinstance(key, np.ndarray) and key.ndim == 1)
-    tuple_indices = [i for i, key in enumerate(full_slice)
-                     if is_tuple_style_index(key)]
+    tuple_indices = []
+
+    # Map current dimensions to new dimensions, or None
+    dimension_mapping = {None: None}
+
+    _count_current_dim = 0
+    existing_dimension_offset = 0
+    existing_dimension = 0
+
+    for slice_index, key in enumerate(full_slice):
+        if isinstance(key, (int, np.integer)):
+            dimension_mapping[existing_dimension] = None
+            existing_dimension_offset -= 1
+            existing_dimension += 1
+        elif isinstance(key, (type(np.newaxis), )):
+            _count_current_dim -= 1
+            existing_dimension_offset += 1
+        else:
+            new_dim = existing_dimension + existing_dimension_offset
+            dimension_mapping[existing_dimension] = new_dim
+            if is_tuple_style_index(key):
+                tuple_indices.append([slice_index, new_dim])
+            _count_current_dim += 1
+            existing_dimension += 1
+
+    result_ndims = existing_dimension_offset + ndims
 
     # stg1: Take a copy of the full_slice specification, turning all tuples
     # into a full slice
-    if tuple_indices != list(range(len(full_slice))):
+    if len(tuple_indices) != len(full_slice):
         first_slice = list(full_slice)
-        for tuple_index in tuple_indices:
+        for tuple_index, _ in tuple_indices:
             first_slice[tuple_index] = slice(None, None)
         # turn first_slice back into a tuple ready for indexing
         first_slice = tuple(first_slice)
 
         list_of_slices.append(first_slice)
 
+    # Now that we've dealt with them, replace any newaxis with slice(None).
+    full_slice = [slice(None) if key is np.newaxis else key
+                  for key in full_slice]
+
     # stg2 iterate over each of the tuples
-    for tuple_index in tuple_indices:
+    for tuple_index, new_dim in tuple_indices:
         # Create a list with the indices to span the whole data array that we
         # currently have
-        spanning_slice_with_tuple = [slice(None, None)] * _count_current_dim
+        spanning_slice_with_tuple = [slice(None, None)] * result_ndims
         # Replace the slice(None, None) with our current tuple
-        spanning_slice_with_tuple[dimension_mapping[tuple_index]] = \
-            full_slice[tuple_index]
+        spanning_slice_with_tuple[new_dim] = full_slice[tuple_index]
 
         # if we just have [(0, 1)] turn it into [(0, 1), ...] as this is
         # Numpy's syntax.
@@ -654,11 +672,6 @@ def _build_full_slice_given_keys(keys, ndim):
         is_ellipsis = [key is Ellipsis for key in keys]
         keys.pop(is_ellipsis.index(True))
         keys = tuple(keys)
-
-    # for ndim >= 1 appending a ":" to the slice specification is allowable,
-    # remove this now
-    if len(keys) > ndim and ndim != 0 and keys[-1] == slice(None, None):
-        keys = keys[:-1]
 
     if len(keys) > ndim:
         raise IndexError('More slices requested than dimensions. Requested '

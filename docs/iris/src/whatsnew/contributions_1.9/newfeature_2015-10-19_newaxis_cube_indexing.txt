@@ -1,0 +1,1 @@
+Cube indexing now support newaxis.

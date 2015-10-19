@@ -111,33 +111,42 @@ class TestCoordSlicing(unittest.TestCase):
         cube = iris.tests.stock.realistic_4d()
         self.lat = cube.coord('grid_latitude')
         self.surface_altitude = cube.coord('surface_altitude')
-        
+
     def test_slice_copy(self):
         a = self.lat
         b = a.copy()
         self.assertEqual(a, b)
         self.assertFalse(a is b)
-        
+
         a = self.lat
         b = a[:]
         self.assertEqual(a, b)
         self.assertFalse(a is b)
-        
+
     def test_slice_multiple_indices(self):
         aux_lat = iris.coords.AuxCoord.from_coord(self.lat)
-        aux_sliced = aux_lat[(3, 4), :]
-        dim_sliced   = self.lat[(3, 4), :]
-        
+        aux_sliced = aux_lat[(3, 4), Ellipsis]
+        dim_sliced = self.lat[(3, 4), Ellipsis]
+
         self.assertEqual(dim_sliced, aux_sliced)
+
+    def test_slice_newaxis(self):
+        aux_lat = iris.coords.AuxCoord.from_coord(self.lat)
+        aux_sliced = aux_lat[(3, 4), np.newaxis]
+
+        with self.assertRaises(ValueError):
+            self.lat[np.newaxis, (3, 4)]
+
+        self.assertEqual(aux_sliced.shape, (2, 1))
 
     def test_slice_reverse(self):
         b = self.lat[::-1]
         np.testing.assert_array_equal(b.points, self.lat.points[::-1])
         np.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, :])
-        
+
         c = b[::-1]
         self.assertEqual(self.lat, c)
-        
+
     def test_multidim(self):
         a = self.surface_altitude
         # make some arbitrary bounds

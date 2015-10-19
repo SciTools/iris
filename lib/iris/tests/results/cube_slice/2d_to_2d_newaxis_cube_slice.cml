@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="test 2d dimensional cube" units="meters">
+    <coords>
+      <coord>
+        <auxCoord id="da892976" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="98bd3c83" long_name="dim1" points="[8.1]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0, 1],
+		[2, 3],
+		[4, 5],
+		[6, 7],
+		[8, 9],
+		[10, 11],
+		[12, 13],
+		[14, 15],
+		[16, 17],
+		[18, 19]]" id="e4dc1958" long_name="dim2" points="[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" shape="(10,)" units="Unit('meters')" value_type="int32"/>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord bounds="[[40, 41, 42, 43],
+		[44, 45, 46, 47],
+		[48, 49, 50, 51],
+		[52, 53, 54, 55],
+		[56, 57, 58, 59],
+		[60, 61, 62, 63],
+		[64, 65, 66, 67],
+		[68, 69, 70, 71],
+		[72, 73, 74, 75],
+		[76, 77, 78, 79]]" id="b5af630a" long_name="my_multi_dim_coord" points="[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]" shape="(10,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x8973d44b" dtype="int32" shape="(1, 10)"/>
+  </cube>
+</cubes>

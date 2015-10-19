@@ -143,8 +143,7 @@ def main():
             lines.insert(11, '                       NOTE: To compare results of failing tests, ')
             lines.insert(12, '                             use idiff.py instead')
             lines.insert(13, '  --data-files-used    Save a list of files used to a temporary file')
-            lines.insert(
-                14, '  -m                   Create missing test results')
+            lines.insert(14, '  --create-missing                   Create missing test results')
             print('\n'.join(lines))
     else:
         unittest.main()

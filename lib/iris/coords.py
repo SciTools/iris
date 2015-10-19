@@ -460,7 +460,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         # Turn the key(s) into a full slice spec - i.e. one entry for
         # each dimension of the coord.
-        full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
+        full_slice = biggus._full_keys(key, self.ndim)
 
         # If it's a "null" indexing operation (e.g. coord[:, :]) then
         # we can preserve deferred loading by avoiding promoting _points

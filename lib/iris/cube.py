@@ -1909,9 +1909,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         metadata will be subsequently indexed appropriately.
 
         """
-        # turn the keys into a full slice spec (all dims)
-        full_slice = iris.util._build_full_slice_given_keys(keys,
-                                                            len(self.shape))
+        full_slice = biggus._full_keys(keys, self.ndim)
+        full_slice_no_newaxis = [key for key in full_slice
+                                 if not isinstance(key, type(np.newaxis))]
 
         # make indexing on the cube column based by using the
         # column_slices_generator (potentially requires slicing the data
@@ -1955,7 +1955,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Slice the coords
         for coord in self.aux_coords:
-            coord_keys = tuple([full_slice[dim] for dim in
+            coord_keys = tuple([full_slice_no_newaxis[dim] for dim in
                                 self.coord_dims(coord)])
             try:
                 new_coord = coord[coord_keys]
@@ -1967,7 +1967,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             coord_mapping[id(coord)] = new_coord
 
         for coord in self.dim_coords:
-            coord_keys = tuple([full_slice[dim] for dim in
+            coord_keys = tuple([full_slice_no_newaxis[dim] for dim in
                                 self.coord_dims(coord)])
             new_dims = new_coord_dims(coord)
             # Try/Catch to handle slicing that makes the points/bounds

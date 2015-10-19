@@ -522,14 +522,18 @@ class TestCube2d(tests.IrisTest):
 class Test2dIndexing(TestCube2d):
     def test_indexing_of_0d_cube(self):
         c = self.t[0, 0]
-        self.assertRaises(IndexError, c.__getitem__, (slice(None, None), ) )
-        
+        self.assertRaises(IndexError, c.__getitem__, (slice(None, None),))
+
     def test_cube_indexing_0d(self):
         self.assertCML([self.t[0, 0]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
-        
+
+    def test_cube_indexing_2d_newaxis(self):
+        self.assertCML([self.t[1, np.newaxis, :]],
+                       ('cube_slice', '2d_to_2d_newaxis_cube_slice.cml'))
+
     def test_cube_indexing_1d(self):
         self.assertCML([self.t[0, 0:]], ('cube_slice', '2d_to_1d_cube_slice.cml'))
-    
+
     def test_cube_indexing_1d_multi_slice(self):
         self.assertCML([self.t[0, (0, 1)]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
         self.assertCML([self.t[0, np.array([0, 1])]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
@@ -552,25 +556,24 @@ class Test2dIndexing(TestCube2d):
     def test_cube_indexing_no_residual_change(self):
         self.t[0:3]
         self.assertCML([self.t], ('cube_slice', '2d_orig.cml'))
-        
+
     def test_overspecified(self):
         self.assertRaises(IndexError, self.t.__getitem__, (0, 0, Ellipsis, 0))
         self.assertRaises(IndexError, self.t.__getitem__, (0, 0, 0))
-    
+
     def test_ellipsis(self):
         self.assertCML([self.t[Ellipsis]], ('cube_slice', '2d_orig.cml'))
-        self.assertCML([self.t[:, :, :]], ('cube_slice', '2d_orig.cml'))
         self.assertCML([self.t[Ellipsis, Ellipsis]], ('cube_slice', '2d_orig.cml'))
         self.assertCML([self.t[Ellipsis, Ellipsis, Ellipsis]], ('cube_slice', '2d_orig.cml'))
-       
+
         self.assertCML([self.t[Ellipsis, 0, 0]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
         self.assertCML([self.t[0, Ellipsis, 0]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
         self.assertCML([self.t[0, 0, Ellipsis]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
-        
+
         self.assertCML([self.t[Ellipsis, (0, 2), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[(0, 2), Ellipsis, :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[(0, 2), :, Ellipsis]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
-        
+
 
 class TestIteration(TestCube2d):
     def test_cube_iteration(self):
@@ -949,7 +952,7 @@ class TestDataManagerIndexing(TestCube2d):
         lat_cube = next(self.cube.slices(['grid_latitude', ]))
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
- 
+
     def test_cube_empty_indexing(self):
         test_filename = ('cube_slice', 'real_empty_data_indexing.cml')
         r = self.cube[:5, ::-1][3]
@@ -962,26 +965,26 @@ class TestDataManagerIndexing(TestCube2d):
         # The CML was checked, meaning the data must have been loaded.
         # Check that the cube no longer has deferred data.
         self.assert_is_not_lazy(r)
-        
+
         r_data = r.data
-        
+
         #finally, load the data before indexing and check that it generates the same result
         c = self.cube
         c.data
         c = c[:5, ::-1][3]
         self.assertCML(c, test_filename)
-        
+
         self.assertEqual(rshape, c.shape)
-        
+
         np.testing.assert_array_equal(r_data, c.data)
-        
+
     def test_real_data_cube_indexing(self):
         cube = self.cube[(0, 4, 5, 2), 0, 0]
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing1.cml'))
 
         cube = self.cube[0, (0, 4, 5, 2), (3, 5, 5)]
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing2.cml'))
-        
+
         cube = self.cube[(0, 4, 5, 2), 0, (3, 5, 5)]
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing3.cml'))
 
