@@ -24,8 +24,8 @@ import six
 # importing anything else.
 import iris.tests as tests
 
+import collections
 import contextlib
-import copy
 import numpy as np
 import warnings
 
@@ -34,6 +34,27 @@ import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
 from iris.fileformats.ff import FF2PP
 from iris.tests import mock
+
+
+# PP-field: LBPACK N1 values.
+_UNPACKED = 0
+_WGDOS = 1
+_CRAY = 2
+
+# PP-field: LBUSER(1) values.
+_REAL = 1
+_INTEGER = 2
+
+
+_DummyField = collections.namedtuple('_DummyField',
+                                     'lbext lblrec lbnrec raw_lbpack '
+                                     'lbuser boundary_packing')
+_DummyFieldWithSize = collections.namedtuple('_DummyFieldWithSize',
+                                             'lbext lblrec lbnrec raw_lbpack '
+                                             'lbuser boundary_packing '
+                                             'lbnpt lbrow')
+_DummyBoundaryPacking = collections.namedtuple('_DummyBoundaryPacking',
+                                               'x_halo y_halo rim_width')
 
 
 class Test____iter__(tests.IrisTest):
@@ -188,72 +209,143 @@ class Test__extract_field__LBC_format(tests.IrisTest):
 
 class Test__payload(tests.IrisTest):
     def setUp(self):
-        # Patch FFHeader to produce a mock header instead of opening a file.
-        self.mock_ff_header = mock.Mock()
-        self.mock_ff = self.patch('iris.fileformats.ff.FFHeader',
-                                  return_value=self.mock_ff_header)
-        # Make it look like a 32-bit LBC file.
-        self.mock_ff_header.word_depth = 8
-        self.mock_ff_header.dataset_type = 5
-
         # Create a mock LBC type PPField.
         self.mock_field = mock.Mock()
         field = self.mock_field
-        field.raw_lbpack = 0
-        field.lbuser = [0]
+        field.raw_lbpack = _UNPACKED
+        field.lbuser = [_REAL]
         field.lblrec = 777
         field.lbext = 222
         field.lbnrec = 50
         field.boundary_packing = None
 
-    def test__basic(self):
-        ff2pp = FF2PP('dummy_filename')
-        field = self.mock_field
-        data_depth, data_type = ff2pp._payload(field)
-        self.assertEqual(data_depth, 4440)
-        self.assertEqual(data_type, np.dtype('>f8'))
+    def _test(self, mock_field, expected_depth, expected_dtype,
+              word_depth=None):
+        with mock.patch('iris.fileformats.ff.FFHeader', return_value=None):
+            kwargs = {}
+            if word_depth is not None:
+                kwargs['word_depth'] = word_depth
+            ff2pp = FF2PP('dummy_filename', **kwargs)
+            data_depth, data_dtype = ff2pp._payload(mock_field)
+            self.assertEqual(data_depth, expected_depth)
+            self.assertEqual(data_dtype, expected_dtype)
 
-    def test__word_depth(self):
-        ff2pp = FF2PP('dummy_filename', word_depth=4)
-        field = self.mock_field
-        data_depth, data_type = ff2pp._payload(field)
-        self.assertEqual(data_depth, 2220)
-        self.assertEqual(data_type, np.dtype('>f4'))
+    def test_unpacked_real(self):
+        mock_field = _DummyField(lbext=0, lblrec=100, lbnrec=-1,
+                                 raw_lbpack=_UNPACKED,
+                                 lbuser=[_REAL], boundary_packing=None)
+        self._test(mock_field, 800, '>f8')
 
-    def test__lbpack_1(self):
-        ff2pp = FF2PP('dummy_filename')
-        field = self.mock_field
-        field.raw_lbpack = 1
-        data_depth, data_type = ff2pp._payload(field)
-        self.assertEqual(data_depth, 400)
-        self.assertEqual(data_type, np.dtype('>f4'))
+    def test_unpacked_real_ext(self):
+        mock_field = _DummyField(lbext=5, lblrec=100, lbnrec=-1,
+                                 raw_lbpack=_UNPACKED,
+                                 lbuser=[_REAL], boundary_packing=None)
+        self._test(mock_field, 760, '>f8')
 
-    def test__lbpack_2(self):
-        ff2pp = FF2PP('dummy_filename')
-        field = self.mock_field
-        field.raw_lbpack = 2
-        data_depth, data_type = ff2pp._payload(field)
-        self.assertEqual(data_depth, 2220)
-        self.assertEqual(data_type, np.dtype('>f4'))
+    def test_unpacked_integer(self):
+        mock_field = _DummyField(lbext=0, lblrec=200, lbnrec=-1,
+                                 raw_lbpack=_UNPACKED,
+                                 lbuser=[_INTEGER], boundary_packing=None)
+        self._test(mock_field, 1600, '>i8')
 
-    def test__lbpack_unsupported(self):
-        ff2pp = FF2PP('dummy_filename')
-        field = self.mock_field
-        field.raw_lbpack = 1239
+    def test_unpacked_integer_ext(self):
+        mock_field = _DummyField(lbext=10, lblrec=200, lbnrec=-1,
+                                 raw_lbpack=_UNPACKED,
+                                 lbuser=[_INTEGER], boundary_packing=None)
+        self._test(mock_field, 1520, '>i8')
+
+    def test_unpacked_real_ext_different_word_depth(self):
+        mock_field = _DummyField(lbext=5, lblrec=100, lbnrec=-1,
+                                 raw_lbpack=_UNPACKED,
+                                 lbuser=[_REAL], boundary_packing=None)
+        self._test(mock_field, 380, '>f4', word_depth=4)
+
+    def test_wgdos_real(self):
+        mock_field = _DummyField(lbext=0, lblrec=-1, lbnrec=100,
+                                 raw_lbpack=_WGDOS,
+                                 lbuser=[_REAL], boundary_packing=None)
+        self._test(mock_field, 800, '>f4')
+
+    def test_wgdos_real_ext(self):
+        mock_field = _DummyField(lbext=5, lblrec=-1, lbnrec=100,
+                                 raw_lbpack=_WGDOS,
+                                 lbuser=[_REAL], boundary_packing=None)
+        self._test(mock_field, 800, '>f4')
+
+    def test_wgdos_integer(self):
+        mock_field = _DummyField(lbext=0, lblrec=-1, lbnrec=200,
+                                 raw_lbpack=_WGDOS,
+                                 lbuser=[_INTEGER], boundary_packing=None)
+        self._test(mock_field, 1600, '>i4')
+
+    def test_wgdos_integer_ext(self):
+        mock_field = _DummyField(lbext=10, lblrec=-1, lbnrec=200,
+                                 raw_lbpack=_WGDOS,
+                                 lbuser=[_INTEGER], boundary_packing=None)
+        self._test(mock_field, 1600, '>i4')
+
+    def test_cray_real(self):
+        mock_field = _DummyField(lbext=0, lblrec=100, lbnrec=-1,
+                                 raw_lbpack=_CRAY,
+                                 lbuser=[_REAL], boundary_packing=None)
+        self._test(mock_field, 400, '>f4')
+
+    def test_cray_real_ext(self):
+        mock_field = _DummyField(lbext=5, lblrec=100, lbnrec=-1,
+                                 raw_lbpack=_CRAY,
+                                 lbuser=[_REAL], boundary_packing=None)
+        self._test(mock_field, 380, '>f4')
+
+    def test_cray_integer(self):
+        mock_field = _DummyField(lbext=0, lblrec=200, lbnrec=-1,
+                                 raw_lbpack=_CRAY,
+                                 lbuser=[_INTEGER], boundary_packing=None)
+        self._test(mock_field, 800, '>i4')
+
+    def test_cray_integer_ext(self):
+        mock_field = _DummyField(lbext=10, lblrec=200, lbnrec=-1,
+                                 raw_lbpack=_CRAY,
+                                 lbuser=[_INTEGER], boundary_packing=None)
+        self._test(mock_field, 760, '>i4')
+
+    def test_lbpack_unsupported(self):
+        mock_field = _DummyField(lbext=10, lblrec=200, lbnrec=-1,
+                                 raw_lbpack=1239,
+                                 lbuser=[_INTEGER], boundary_packing=None)
         with self.assertRaisesRegexp(
                 NotYetImplementedError,
                 'PP fields with LBPACK of 1239 are not supported.'):
-            ff2pp._payload(field)
+            self._test(mock_field, None, None)
 
-    def test__lbpack_lbc_error(self):
-        ff2pp = FF2PP('dummy_filename')
-        field = self.mock_field
-        field.raw_lbpack = 1
-        field.boundary_packing = 0  # Anything not None will do here.
-        with self.assertRaisesRegexp(
-                ValueError,
-                'packed LBC data is not supported'):
-            ff2pp._payload(field)
+    def test_lbc_unpacked(self):
+        boundary_packing = _DummyBoundaryPacking(x_halo=11, y_halo=7,
+                                                 rim_width=3)
+        mock_field = _DummyFieldWithSize(lbext=10, lblrec=200, lbnrec=-1,
+                                         raw_lbpack=_UNPACKED,
+                                         lbuser=[_REAL],
+                                         boundary_packing=boundary_packing,
+                                         lbnpt=47, lbrow=34)
+        self._test(mock_field, ((47 * 34) - (19 * 14)) * 8, '>f8')
+
+    def test_lbc_wgdos_unsupported(self):
+        mock_field = _DummyField(lbext=5, lblrec=-1, lbnrec=100,
+                                 raw_lbpack=_WGDOS,
+                                 lbuser=[_REAL],
+                                 # Anything not None will do here.
+                                 boundary_packing=0)
+        with self.assertRaisesRegexp(ValueError,
+                                     'packed LBC data is not supported'):
+            self._test(mock_field, None, None)
+
+    def test_lbc_cray(self):
+        boundary_packing = _DummyBoundaryPacking(x_halo=11, y_halo=7,
+                                                 rim_width=3)
+        mock_field = _DummyFieldWithSize(lbext=10, lblrec=200, lbnrec=-1,
+                                         raw_lbpack=_CRAY,
+                                         lbuser=[_REAL],
+                                         boundary_packing=boundary_packing,
+                                         lbnpt=47, lbrow=34)
+        self._test(mock_field, ((47 * 34) - (19 * 14)) * 4, '>f4')
 
 
 class Test__det_border(tests.IrisTest):
@@ -387,7 +479,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         with self.assertRaisesRegexp(
                 ValueError,
                 'hence >= 101'):
-            results = list(ff2pp._fields_over_all_levels(field))
+            _ = list(ff2pp._fields_over_all_levels(field))
 
     def test__lbhem_too_large(self):
         ff2pp = FF2PP('dummy_filename')
@@ -396,7 +488,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         with self.assertRaisesRegexp(
                 ValueError,
                 'more than the total number of levels in the file = 3'):
-            results = list(ff2pp._fields_over_all_levels(field))
+            _ = list(ff2pp._fields_over_all_levels(field))
 
 
 if __name__ == "__main__":
