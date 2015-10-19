@@ -1702,6 +1702,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._my_data = data
 
     def has_lazy_data(self):
+        """
+        Return whether the underlying data of this cube is a biggus array
+        (and therefore potentially unloaded from disk).
+
+        """
         return isinstance(self._my_data, biggus.Array)
 
     @property
@@ -2793,14 +2798,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if new_order is None:
-            new_order = np.arange(self.data.ndim)[::-1]
-        elif len(new_order) != self.data.ndim:
+            new_order = np.arange(self.ndim)[::-1]
+        elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        # The data needs to be copied, otherwise this view of the transposed
-        # data will not be contiguous. Ensure not to assign via the cube.data
-        # setter property since we are reshaping the cube payload in-place.
-        self._my_data = np.transpose(self.data, new_order).copy()
+        self._my_data = self._my_data.transpose(new_order)
+        if not self.has_lazy_data():
+            # The data needs to be copied, otherwise this view of the transposed
+            # data will not be contiguous. Ensure not to assign via the cube.data
+            # setter property since we are reshaping the cube payload in-place.
+            self._my_data = self._my_data.copy()
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 

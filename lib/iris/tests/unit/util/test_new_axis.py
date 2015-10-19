@@ -134,6 +134,20 @@ class Test(tests.IrisTest):
         self.assertEqual(res, com)
         self._assert_cube_notis(res, cube)
 
+    def test_scalar_dimcoord_lazy(self):
+        # Providing a scalar coordinate to promote.
+        self.cube.lazy_data(self.cube.lazy_data())
+        res = new_axis(self.cube, 'time')
+
+        self.assertTrue(self.cube.has_lazy_data())
+        self.assertTrue(res.has_lazy_data())
+        self.assertEqual(res.shape, (1, 2, 2))
+
+        # Make the cube concrete again.
+        self.cube.data
+        res_non_lazy = new_axis(self.cube, 'time')
+        self.assertEqual(res, res_non_lazy)
+
 
 if __name__ == '__main__':
     unittest.main()

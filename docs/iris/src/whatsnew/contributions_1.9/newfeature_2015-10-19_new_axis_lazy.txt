@@ -1,0 +1,1 @@
+iris.util.new_axis can now operate on lazy data
