@@ -410,9 +410,7 @@ class _DataProvider(object):
         field = self.lookup_entry
         with self._with_source():
             self.source.seek(self.offset)
-            data_size = ((field.lbnrec * 2) - 1) * _WGDOS_SIZE
-            # This size calculation seems rather questionable, but derives from
-            # a very long code legacy, so appeal to a "sleeping dogs" policy.
+            data_size = (field.lbnrec * 2) * _WGDOS_SIZE
             data_bytes = self.source.read(data_size)
         return data_bytes
 

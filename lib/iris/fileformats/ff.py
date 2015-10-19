@@ -480,7 +480,7 @@ class FF2PP(object):
             # Data payload is packed.
             if lbpack_n1 == 1:
                 # Data packed using WGDOS archive method.
-                data_words = (field.lbnrec * 2) - 1
+                data_words = field.lbnrec * 2
             elif lbpack_n1 == 2:
                 # Data packed using CRAY 32-bit method.
                 data_words = field.lblrec - field.lbext
