@@ -41,6 +41,8 @@ import numpy.ma as ma
 import iris
 import iris.exceptions
 
+import biggus
+
 
 def broadcast_weights(weights, array, dims):
     """
@@ -595,7 +597,6 @@ def column_slices_generator(full_slice, ndims):
     # Map current dimensions to new dimensions, or None
     dimension_mapping = {None: None}
 
-    _count_current_dim = 0
     existing_dimension_offset = 0
     existing_dimension = 0
 
@@ -605,14 +606,12 @@ def column_slices_generator(full_slice, ndims):
             existing_dimension_offset -= 1
             existing_dimension += 1
         elif isinstance(key, (type(np.newaxis), )):
-            _count_current_dim -= 1
             existing_dimension_offset += 1
         else:
             new_dim = existing_dimension + existing_dimension_offset
             dimension_mapping[existing_dimension] = new_dim
             if is_tuple_style_index(key):
                 tuple_indices.append([slice_index, new_dim])
-            _count_current_dim += 1
             existing_dimension += 1
 
     result_ndims = existing_dimension_offset + ndims
@@ -659,52 +658,11 @@ def _build_full_slice_given_keys(keys, ndim):
     tuple of keys which span ndims.
 
     """
-    # Ensure that we always have a tuple of keys
-    if not isinstance(keys, tuple):
-        keys = tuple([keys])
-
-    # catch the case where an extra Ellipsis has been provided which can be
-    # discarded iff len(keys)-1 == ndim
-    if len(keys)-1 == ndim and \
-            Ellipsis in filter(lambda obj:
-                               not isinstance(obj, np.ndarray), keys):
-        keys = list(keys)
-        is_ellipsis = [key is Ellipsis for key in keys]
-        keys.pop(is_ellipsis.index(True))
-        keys = tuple(keys)
-
-    if len(keys) > ndim:
-        raise IndexError('More slices requested than dimensions. Requested '
-                         '%r, but there were only %s dimensions.' %
-                         (keys, ndim))
-
-    # For each dimension get the slice which has been requested.
-    # If no slice provided, then default to the whole dimension
-    full_slice = [slice(None, None)] * ndim
-
-    for i, key in enumerate(keys):
-        if key is Ellipsis:
-
-            # replace any subsequent Ellipsis objects in keys with
-            # slice(None, None) as per Numpy
-            keys = keys[:i] + tuple([slice(None, None) if key is Ellipsis
-                                    else key for key in keys[i:]])
-
-            # iterate over the remaining keys in reverse to fill in
-            # the gaps from the right hand side
-            for j, key in enumerate(keys[:i:-1]):
-                full_slice[-j-1] = key
-
-            # we've finished with i now so stop the iteration
-            break
-        else:
-            full_slice[i] = key
-
-    # remove any tuples on dimensions, turning them into numpy array's for
-    # consistent behaviour
-    full_slice = tuple([np.array(key, ndmin=1) if isinstance(key, tuple)
-                        else key for key in full_slice])
-    return full_slice
+    full_slice = biggus._full_keys(keys, ndim)
+    # In numpy <=1.8 we need to cast tuples to numpy arrays, else we end up
+    # with index errors.
+    return [np.array(key) if isinstance(key, tuple) else key
+            for key in full_slice]
 
 
 def _wrap_function_for_method(function, docstring=None):

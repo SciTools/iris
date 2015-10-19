@@ -69,5 +69,6 @@ class Test(tests.IrisTest):
                                 ((0, 1), slice(None)),
                                 (slice(None), (2, 3))])
 
+
 if __name__ == '__main__':
     tests.main()

@@ -1909,7 +1909,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         metadata will be subsequently indexed appropriately.
 
         """
-        full_slice = biggus._full_keys(keys, self.ndim)
+        full_slice = iris.util._build_full_slice_given_keys(keys, self.ndim)
         full_slice_no_newaxis = [key for key in full_slice
                                  if not isinstance(key, type(np.newaxis))]
 
