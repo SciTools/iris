@@ -2804,9 +2804,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         self._my_data = self._my_data.transpose(new_order)
         if not self.has_lazy_data():
-            # The data needs to be copied, otherwise this view of the transposed
-            # data will not be contiguous. Ensure not to assign via the cube.data
-            # setter property since we are reshaping the cube payload in-place.
+            # The data needs to be copied, otherwise this view of the
+            # transposed data will not be contiguous. Ensure not to assign
+            # via the cube.data setter property since we are reshaping the
+            # cube payload in-place.
             self._my_data = self._my_data.copy()
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
