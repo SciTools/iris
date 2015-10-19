@@ -1,5 +1,5 @@
 [System]
-udunits2_path = /path/to/libudunits2.so
+udunits2_path = /home/vagrant/miniconda/envs/iris/lib/libudunits2.so
 dot_path = /path/to/dot # see iris.fileformats.dot
 
 [Resources]

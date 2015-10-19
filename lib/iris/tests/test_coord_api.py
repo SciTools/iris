@@ -137,7 +137,30 @@ class TestCoordSlicing(unittest.TestCase):
         
         c = b[::-1]
         self.assertEqual(self.lat, c)
-        
+
+    # These next two tests demonstrate some funny behaviour with -1
+    # indexing when you have bounds.  I think the order of the bounds
+    # should be reversed too - but it isn't.
+    def test_rev_slice_commutes_with_guess_bounds(self):
+
+        points = np.arange(2)
+        coord = iris.coords.DimCoord(points)
+        coord.guess_bounds()
+        slice_after_bounds = coord[::-1]
+
+        coord = iris.coords.DimCoord(points)
+        slice_before_bounds = coord[::-1]
+        slice_before_bounds.guess_bounds()
+        self.assertEquals(slice_after_bounds, slice_before_bounds)
+    
+    def test_rev_slice_preserves_is_contiguous(self):
+        points = np.arange(2)
+        coord = iris.coords.DimCoord(points)
+        coord.guess_bounds()
+        slice_after_bounds = coord[::-1]
+        self.assertTrue(coord.is_contiguous())
+        self.assertTrue(slice_after_bounds.is_contiguous())
+
     def test_multidim(self):
         a = self.surface_altitude
         # make some arbitrary bounds
