@@ -48,6 +48,7 @@ class Test___init__(tests.IrisTest):
             Regridder(self.ok, self.bad, self.weights)
 
 
+@tests.skip_data
 class Test___call__(tests.IrisTest):
     def setUp(self):
         self.func = ('iris.experimental.regrid.'
@@ -92,6 +93,7 @@ class Test___call__(tests.IrisTest):
         self.assertIs(result, mock.sentinel.regridded)
 
 
+@tests.skip_data
 class Test___call____bad_src(tests.IrisTest):
     def setUp(self):
         self.ok = global_pp()
