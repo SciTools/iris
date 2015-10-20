@@ -44,6 +44,7 @@ class Test(tests.IrisTest):
         result_non_circ = _xy_range(cube)
         self.assertEqual(result_non_circ, ((-5.0, 5.0), (-4.0, 4.0)))
 
+    @tests.skip_data
     def test_geog_cs_circular(self):
         cube = stock.global_pp()
         assert cube.coord('longitude').circular
@@ -52,6 +53,7 @@ class Test(tests.IrisTest):
         np.testing.assert_array_almost_equal(
             result, ((0, 360), (-90, 90)), decimal=0)
 
+    @tests.skip_data
     def test_geog_cs_regional(self):
         cube = stock.global_pp()
         cube = cube[10:20, 20:30]
