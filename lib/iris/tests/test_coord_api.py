@@ -140,7 +140,7 @@ class TestCoordSlicing(unittest.TestCase):
 
     # These next two tests demonstrate some funny behaviour with -1
     # indexing when you have bounds.  I think the order of the bounds
-    # should be reversed too - but it isn't.
+    # for each cell should be reversed too - but it isn't.
     def test_rev_slice_commutes_with_guess_bounds(self):
 
         points = np.arange(2)
@@ -157,9 +157,12 @@ class TestCoordSlicing(unittest.TestCase):
         points = np.arange(2)
         coord = iris.coords.DimCoord(points)
         coord.guess_bounds()
-        slice_after_bounds = coord[::-1]
-        self.assertTrue(coord.is_contiguous())
-        self.assertTrue(slice_after_bounds.is_contiguous())
+
+        self.assertTrue(coord.is_contiguous())   # just a sanity check
+        
+        # Test: slicing with step -1 should not change is_contiguous
+        self.assertEquals(coord.is_contiguous(),
+                          coord[::-1].is_contiguous())
 
     def test_multidim(self):
         a = self.surface_altitude
