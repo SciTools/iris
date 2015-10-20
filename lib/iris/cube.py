@@ -1704,7 +1704,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def has_lazy_data(self):
         """
         Return whether the underlying data of this cube is a biggus array
-        (and therefore potentially unloaded from disk).
+        (and therefore potentially has not been loaded from disk).
 
         """
         return isinstance(self._my_data, biggus.Array)

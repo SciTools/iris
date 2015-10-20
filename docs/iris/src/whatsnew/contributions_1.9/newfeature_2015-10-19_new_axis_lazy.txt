@@ -1,1 +1,0 @@
-iris.util.new_axis and cube.transpose can now operate on lazy data
