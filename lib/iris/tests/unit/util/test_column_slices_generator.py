@@ -54,17 +54,17 @@ class Test(tests.IrisTest):
         self.assertEqual(keys, [(None, slice(None, None, None))])
 
     def test_newaxis_chained(self):
-        mapping, keys = column_slices_generator((np.newaxis, (0, 1), (2, 3)), 2)
+        dims, keys = column_slices_generator((np.newaxis, (0, 1), (2, 3)), 2)
         keys = list(keys)
-        self.assertEqual(mapping, {0: 1, 1: 2, None: None})
+        self.assertEqual(dims, {0: 1, 1: 2, None: None})
         self.assertEqual(keys, [(np.newaxis, slice(None), slice(None)),
                                 (slice(None), (0, 1), slice(None)),
                                 (slice(None), slice(None), (2, 3))])
 
     def test_multiple_tuple(self):
-        mapping, keys = column_slices_generator((0, (0, 1), (2, 3)), 3)
+        dims, keys = column_slices_generator((0, (0, 1), (2, 3)), 3)
         keys = list(keys)
-        self.assertEqual(mapping, {0: None, 1: 0, 2: 1, None: None})
+        self.assertEqual(dims, {0: None, 1: 0, 2: 1, None: None})
         self.assertEqual(keys, [(0, slice(None), slice(None)),
                                 ((0, 1), slice(None)),
                                 (slice(None), (2, 3))])

@@ -1,1 +1,1 @@
-Cube indexing now support newaxis.
+* Cube indexing now supports the use of np.newaxis to create new dimensions of length 1. 
