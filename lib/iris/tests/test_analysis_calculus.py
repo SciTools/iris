@@ -376,9 +376,11 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         cube.data = cos_y_pts * cos_x_pts
 
         lon_coord = x.copy()
-        lon_coord.convert_units('radians')
+        lon_ctype = iris.unit._numpy2ctypes[lon_coord.dtype.type]
+        lon_coord.convert_units('radians', ctype=lon_ctype)
         lat_coord = y.copy()
-        lat_coord.convert_units('radians')
+        lat_ctype = iris.unit._numpy2ctypes[lat_coord.dtype.type]
+        lat_coord.convert_units('radians', ctype=lat_ctype)
         cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
         cos_lat_coord.points = np.cos(lat_coord.points)
         cos_lat_coord.units = '1'

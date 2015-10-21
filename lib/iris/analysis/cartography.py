@@ -357,7 +357,9 @@ def area_weights(cube, normalize=False):
     for coord in (lat, lon):
         if coord.units in (iris.unit.Unit('degrees'),
                            iris.unit.Unit('radians')):
-            coord.convert_units('radians')
+            ctype = iris.unit._numpy2ctypes.get(coord.dtype.type,
+                                                iris.unit.FLOAT64)
+            coord.convert_units('radians', ctype=ctype)
         else:
             msg = ("Units of degrees or radians required, coordinate "
                    "{!r} has units: {!r}".format(coord.name(),
