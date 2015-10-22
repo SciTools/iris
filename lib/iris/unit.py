@@ -1812,13 +1812,11 @@ class Unit(iris.util._OrderedHashable):
             Value/s to be converted.
         * other (string/Unit):
             Target unit to convert to.
-
-        Kwargs:
-
         * ctype (ctypes.c_float/ctypes.c_double):
             Floating point 32-bit single-precision (iris.unit.FLOAT32) or
-            64-bit double-precision (iris.unit.FLOAT64) of conversion. The
-            default is 64-bit double-precision conversion.
+            64-bit double-precision (iris.unit.FLOAT64) used for conversion
+            when `value` is not a NumPy array or is a NumPy array composed of
+            NumPy integers. The default is 64-bit double-precision conversion.
 
         Returns:
             float or numpy.ndarray of appropriate float type.
@@ -1872,15 +1870,24 @@ class Unit(iris.util._OrderedHashable):
                 ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
                 if ut_converter:
                     if isinstance(value_copy, np.ndarray):
-                        # Can only handle dtypes of np.float32 or np.float64 so
-                        # cast `value_copy` to floats of requested
+                        # Can only handle array of np.float32 or np.float64 so
+                        # cast array of ints to array of floats of requested
                         # precision.
-                        value_copy = value_copy.astype(_ctypes2numpy[ctype])
+                        if issubclass(value_copy.dtype.type, np.integer):
+                            value_copy = value_copy.astype(
+                                _ctypes2numpy[ctype])
+                        # Convert arrays with explicit endianness to native
+                        # endianness: udunits seems to be tripped up by arrays
+                        # with endianness other than native.
+                        if value_copy.dtype.byteorder != '=':
+                            value_copy = value_copy.astype(
+                                value_copy.dtype.type)
                         # strict type check of numpy array
                         if value_copy.dtype.type not in _numpy2ctypes:
                             raise TypeError(
                                 "Expect a numpy array of '%s' or '%s'" %
                                 tuple(sorted(_numpy2ctypes.keys())))
+                        ctype = _numpy2ctypes[value_copy.dtype.type]
                         pointer = value_copy.ctypes.data_as(
                             ctypes.POINTER(ctype))
                         # Utilise global convenience dictionary

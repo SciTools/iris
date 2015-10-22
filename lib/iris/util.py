@@ -1348,9 +1348,7 @@ def unify_time_units(cubes):
                 epoch = epochs.setdefault(time_coord.units.calendar,
                                           time_coord.units.origin)
                 new_unit = iris.unit.Unit(epoch, time_coord.units.calendar)
-                ctype = iris.unit._numpy2ctypes.get(time_coord.dtype.type,
-                                                    iris.unit.FLOAT64)
-                time_coord.convert_units(new_unit, ctype=ctype)
+                time_coord.convert_units(new_unit)
 
 
 def _is_circular(points, modulus, bounds=None):

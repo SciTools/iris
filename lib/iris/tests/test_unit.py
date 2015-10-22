@@ -609,7 +609,8 @@ class TestConvert(TestUnit):
         a = (np.arange(2, dtype=np.float32) + 1) * 1609.344
         res = u.convert(a, v)
         e = np.arange(2, dtype=np.float32) + 1
-        self.assertArrayAlmostEqual(res, e)
+        self.assertEqual(res[0], e[0])
+        self.assertEqual(res[1], e[1])
 
     def test_convert_np_float(self):
         u = Unit("mile")

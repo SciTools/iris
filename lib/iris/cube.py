@@ -805,7 +805,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return compatible
 
-    def convert_units(self, unit, **kwargs):
+    def convert_units(self, unit):
         """
         Change the cube's units, converting the values in the data array.
 
@@ -822,14 +822,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             Calling this method will trigger any deferred loading, causing
             the cube's data array to be loaded into memory.
 
-        Kwargs are passed to :meth:`iris.unit.Unit.convert`. See the
-        documentation for :meth:`~iris.unit.Unit.convert` for a list of
-        valid kwargs.
-
         """
         # If the cube has units convert the data.
         if not self.units.is_unknown():
-            self.data = self.units.convert(self.data, unit, **kwargs)
+            self.data = self.units.convert(self.data, unit)
         self.units = unit
 
     def add_cell_method(self, cell_method):

@@ -717,7 +717,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return self.copy(-self.points, -self.bounds if self.bounds is not
                          None else None)
 
-    def convert_units(self, unit, **kwargs):
+    def convert_units(self, unit):
         """
         Change the coordinate's units, converting the values in its points
         and bounds arrays.
@@ -732,17 +732,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         multiply each value in :attr:`~iris.coords.Coord.points` and
         :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
 
-        Kwargs are passed to :meth:`iris.unit.Unit.convert`. See the
-        documentation for :meth:`~iris.unit.Unit.convert` for a list of
-        valid kwargs.
-
         """
         # If the coord has units convert the values in points (and bounds if
         # present).
         if not self.units.is_unknown():
-            self.points = self.units.convert(self.points, unit, **kwargs)
+            self.points = self.units.convert(self.points, unit)
             if self.bounds is not None:
-                self.bounds = self.units.convert(self.bounds, unit, **kwargs)
+                self.bounds = self.units.convert(self.bounds, unit)
         self.units = unit
 
     def cells(self):
