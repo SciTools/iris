@@ -3,7 +3,7 @@ Iris
 
 [![Build Status](https://secure.travis-ci.org/SciTools/iris.png)](http://travis-ci.org/SciTools/iris)
 
-(C) British Crown Copyright 2010 - 2014, Met Office
+(C) British Crown Copyright 2010 - 2015, Met Office
 
 Iris is a powerful, easy to use, community-driven Python library for
 analysing and visualising meteorological and oceanographic data sets.
