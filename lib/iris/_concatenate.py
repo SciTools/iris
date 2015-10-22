@@ -36,15 +36,7 @@ from iris.util import guess_coord_axis, array_equal, unify_time_units
 #
 # TODO:
 #
-#   * Deal with scalar coordinate promotion to a new dimension
-#     e.g. promote scalar z coordinate in 2D cube (y:m, x:n) to
-#     give the similar 3D cube (z:1, y:m, x:n). These two types
-#     of cubes are one and the same, and as such should concatenate
-#     together.
-#
 #   * Cope with auxiliary coordinate factories.
-#
-#   * Don't load the cube data payload.
 #
 #   * Deal with anonymous dimensions.
 #
@@ -262,10 +254,6 @@ def concatenate(cubes, error_on_mismatch=False):
     Returns:
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube`
         instances.
-
-    .. warning::
-
-        This routine will load your data payload!
 
     """
     proto_cubes_by_name = defaultdict(list)
