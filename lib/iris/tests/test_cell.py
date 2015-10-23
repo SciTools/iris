@@ -52,11 +52,13 @@ class TestCells(unittest.TestCase):
         self.assertEqual(Cell(point=4.5, bound=(3.75, 5.25)), coord.cell(slice(-1, None)))
 
     def test_cell_from_multidim_coord(self):
-        Cell = iris.coords.Cell
-        coord = iris.coords.AuxCoord(points=np.arange(12).reshape(3, 4), long_name='test', units='1',
+        coord = iris.coords.AuxCoord(points=np.arange(12).reshape(3, 4),
+                                     long_name='test', units='1',
                                      bounds=np.arange(48).reshape(3, 4, 4))
-        self.assertRaises(IndexError, coord.cell, 0)
-        self.assertEqual(Cell(point=3, bound=(12, 13, 14, 15)), coord.cell((0, 3)))
+        with self.assertRaises(IndexError):
+            coord.cell(0)
+        self.assertEqual(Cell(point=3, bound=(12, 13, 14, 15)),
+                         coord.cell((0, 3)))
 
     def test_mod(self):
         # Check that applying the mod function is not modifying the original

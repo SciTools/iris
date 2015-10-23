@@ -661,8 +661,8 @@ def _build_full_slice_given_keys(keys, ndim):
     full_slice = biggus._full_keys(keys, ndim)
     # In numpy <=1.8 we need to cast tuples to numpy arrays, else we end up
     # with index errors.
-    return [np.array(key) if isinstance(key, tuple) else key
-            for key in full_slice]
+    return tuple(np.array(key) if isinstance(key, tuple) else key
+                 for key in full_slice)
 
 
 def _wrap_function_for_method(function, docstring=None):
