@@ -1814,8 +1814,9 @@ class Unit(iris.util._OrderedHashable):
             Target unit to convert to.
         * ctype (ctypes.c_float/ctypes.c_double):
             Floating point 32-bit single-precision (iris.unit.FLOAT32) or
-            64-bit double-precision (iris.unit.FLOAT64) of conversion. The
-            default is 64-bit double-precision conversion.
+            64-bit double-precision (iris.unit.FLOAT64) used for conversion
+            when `value` is not a NumPy array or is a NumPy array composed of
+            NumPy integers. The default is 64-bit double-precision conversion.
 
         Returns:
             float or numpy.ndarray of appropriate float type.
@@ -1875,6 +1876,12 @@ class Unit(iris.util._OrderedHashable):
                         if issubclass(value_copy.dtype.type, np.integer):
                             value_copy = value_copy.astype(
                                 _ctypes2numpy[ctype])
+                        # Convert arrays with explicit endianness to native
+                        # endianness: udunits seems to be tripped up by arrays
+                        # with endianness other than native.
+                        if value_copy.dtype.byteorder != '=':
+                            value_copy = value_copy.astype(
+                                value_copy.dtype.type)
                         # strict type check of numpy array
                         if value_copy.dtype.type not in _numpy2ctypes:
                             raise TypeError(

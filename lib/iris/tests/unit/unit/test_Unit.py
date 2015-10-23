@@ -42,7 +42,7 @@ class Test___init__(tests.IrisTest):
             u = Unit('hours since 1970-01-01 00:00:00', calendar=5)
 
 
-class Test_convert(tests.IrisTest):
+class Test_convert__calendar(tests.IrisTest):
 
     class MyStr(str):
         pass
@@ -79,6 +79,144 @@ class Test_convert(tests.IrisTest):
         u2 = Unit('hours since 2000-01-02 00:00:00', calendar='360_day')
         result = u1.convert(data, u2)
         self.assertEqual(result.dtype, np.float32)
+
+
+class Test_convert__endianness_time(tests.IrisTest):
+    # Test the behaviour of converting time units of differing
+    # dtype endianness.
+
+    def setUp(self):
+        self.time1_array = np.array([31.5, 32.5, 33.5])
+        self.time2_array = np.array([0.5, 1.5, 2.5])
+        self.time1_unit = iris.unit.Unit('days since 1970-01-01 00:00:00',
+                                         calendar=iris.unit.CALENDAR_STANDARD)
+        self.time2_unit = iris.unit.Unit('days since 1970-02-01 00:00:00',
+                                         calendar=iris.unit.CALENDAR_STANDARD)
+
+    def test_no_endian(self):
+        dtype = 'f8'
+        result = self.time1_unit.convert(self.time1_array.astype(dtype),
+                                         self.time2_unit)
+        self.assertArrayAlmostEqual(result, self.time2_array)
+
+    def test_little_endian(self):
+        dtype = '<f8'
+        result = self.time1_unit.convert(self.time1_array.astype(dtype),
+                                         self.time2_unit)
+        self.assertArrayAlmostEqual(result, self.time2_array)
+
+    def test_big_endian(self):
+        dtype = '>f8'
+        result = self.time1_unit.convert(self.time1_array.astype(dtype),
+                                         self.time2_unit)
+        self.assertArrayAlmostEqual(result, self.time2_array)
+
+
+class Test_convert__endianness_deg_to_rad(tests.IrisTest):
+    # Test the behaviour of converting radial units of differing
+    # dtype endianness.
+
+    def setUp(self):
+        self.degs_array = np.array([356.7, 356.8, 356.9])
+        self.rads_array = np.array([6.22558944, 6.22733477, 6.2290801])
+        self.deg = iris.unit.Unit('degrees')
+        self.rad = iris.unit.Unit('radians')
+
+    def test_no_endian(self):
+        dtype = 'f8'
+        result = self.deg.convert(self.degs_array.astype(dtype), self.rad)
+        self.assertArrayAlmostEqual(result, self.rads_array)
+
+    def test_little_endian(self):
+        dtype = '<f8'
+        result = self.deg.convert(self.degs_array.astype(dtype), self.rad)
+        self.assertArrayAlmostEqual(result, self.rads_array)
+
+    def test_big_endian(self):
+        dtype = '>f8'
+        result = self.deg.convert(self.degs_array.astype(dtype), self.rad)
+        self.assertArrayAlmostEqual(result, self.rads_array)
+
+
+class Test_convert__endianness_degC_to_kelvin(tests.IrisTest):
+    # Test the behaviour of converting temperature units of differing
+    # dtype endianness.
+
+    def setUp(self):
+        self.k_array = np.array([356.7, 356.8, 356.9])
+        self.degc_array = np.array([83.55, 83.65, 83.75])
+        self.degc = iris.unit.Unit('degC')
+        self.k = iris.unit.Unit('K')
+
+    def test_no_endian(self):
+        dtype = 'f8'
+        result = self.degc.convert(self.degc_array.astype(dtype), self.k)
+        self.assertArrayAlmostEqual(result, self.k_array)
+
+    def test_little_endian(self):
+        dtype = '<f8'
+        result = self.degc.convert(self.degc_array.astype(dtype), self.k)
+        self.assertArrayAlmostEqual(result, self.k_array)
+
+    def test_big_endian(self):
+        dtype = '>f8'
+        result = self.degc.convert(self.degc_array.astype(dtype), self.k)
+        self.assertArrayAlmostEqual(result, self.k_array)
+
+
+class Test_convert__result_ctype(tests.IrisTest):
+    # Test the output ctype of converting an Iris unit.
+
+    def setUp(self):
+        self.initial_dtype = np.float32
+        self.degs_array = np.array([356.7, 356.8, 356.9],
+                                   dtype=self.initial_dtype)
+        self.deg = iris.unit.Unit('degrees')
+        self.rad = iris.unit.Unit('radians')
+
+    def test_default(self):
+        # The dtype of a float array should be unchanged.
+        result = self.deg.convert(self.degs_array, self.rad)
+        self.assertEqual(result.dtype, self.initial_dtype)
+
+    def test_integer_ctype_default(self):
+        # The ctype of an int array should be cast to the default ctype.
+        result = self.deg.convert(self.degs_array.astype(np.int32), self.rad)
+        self.assertEqual(result.dtype, iris.unit.FLOAT64)
+
+    def test_integer_ctype_specified(self):
+        # The ctype of an int array should be cast to the specified ctype if
+        # supplied.
+        expected_dtype = iris.unit.FLOAT32
+        result = self.deg.convert(self.degs_array.astype(np.int32), self.rad,
+                                  ctype=expected_dtype)
+        self.assertEqual(result.dtype, expected_dtype)
+
+
+class Test_convert__masked_array(tests.IrisTest):
+    # Test converting an Iris unit with masked data.
+
+    def setUp(self):
+        self.deg = iris.unit.Unit('degrees')
+        self.rad = iris.unit.Unit('radians')
+        self.degs_array = np.ma.array(np.array([356.7, 356.8, 356.9],
+                                               dtype=np.float32),
+                                      mask=np.array([0, 1, 0], dtype=bool))
+        self.rads_array = np.ma.array(np.array([6.22558944,
+                                                6.22733477,
+                                                6.2290801],
+                                               dtype=np.float32),
+                                      mask=np.array([0, 1, 0], dtype=bool))
+
+    def test_no_type_conversion(self):
+        result = self.deg.convert(self.degs_array, self.rad,
+                                  ctype=iris.unit.FLOAT32)
+        self.assertArrayAlmostEqual(self.rads_array, result)
+
+    def test_type_conversion(self):
+        result = self.deg.convert(self.degs_array, self.rad,
+                                  ctype=iris.unit.FLOAT64)
+        self.assertArrayAlmostEqual(self.rads_array, result)
 
 
 if __name__ == '__main__':
