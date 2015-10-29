@@ -382,7 +382,7 @@ class _Aggregator(object):
             | *Call signature*: (units)
 
             If provided, called to convert a cube's units.
-            Returns an :class:`cf_unitss.Unit`, or a
+            Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
 
         * lazy_func (callable or None):
@@ -606,7 +606,7 @@ class PercentileAggregator(_Aggregator):
             | *Call signature*: (units)
 
             If provided, called to convert a cube's units.
-            Returns an :class:`cf_unitss.Unit`, or a
+            Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
 
         * lazy_func (callable or None):
@@ -795,7 +795,7 @@ class WeightedPercentileAggregator(PercentileAggregator):
             | *Call signature*: (units)
 
             If provided, called to convert a cube's units.
-            Returns an :class:`cf_unitss.Unit`, or a
+            Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
 
         * lazy_func (callable or None):

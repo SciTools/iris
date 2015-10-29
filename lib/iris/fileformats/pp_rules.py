@@ -393,7 +393,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         Scalar field value.
     * lbtim (:class:`iris.fileformats.pp.SplittableInt`):
         Scalar field value.
-    * epoch_hours_unit (:class:`cf_unitss.Unit`):
+    * epoch_hours_unit (:class:`cf_units.Unit`):
         Epoch time reference unit.
     * t1 (array-like or scalar):
         Scalar field value or an array of values.
