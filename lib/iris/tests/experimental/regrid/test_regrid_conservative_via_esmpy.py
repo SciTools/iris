@@ -30,6 +30,7 @@ import contextlib
 import os
 import unittest
 
+import cf_units
 import numpy as np
 
 # Import ESMF if installed, else fail quietly + disable all the tests.
@@ -80,13 +81,13 @@ def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
 
     co_x = iris.coords.DimCoord(xvals,
                                 standard_name=coordname_prefix + 'longitude',
-                                units=iris.unit.Unit('degrees'),
+                                units=cf_units.Unit('degrees'),
                                 coord_system=cs)
     co_x.guess_bounds()
     cube.add_dim_coord(co_x, 1)
     co_y = iris.coords.DimCoord(yvals,
                                 standard_name=coordname_prefix + 'latitude',
-                                units=iris.unit.Unit('degrees'),
+                                units=cf_units.Unit('degrees'),
                                 coord_system=cs)
     co_y.guess_bounds()
     cube.add_dim_coord(co_y, 0)
@@ -423,11 +424,11 @@ class TestConservativeRegrid(tests.IrisTest):
         ylims2 = _minmax(c2.coord(axis='y').bounds)
         x_c2x1 = iris.coords.DimCoord(xlims2[0], bounds=xlims2,
                                       standard_name='longitude',
-                                      units=iris.unit.Unit('degrees'),
+                                      units=cf_units.Unit('degrees'),
                                       coord_system=_PLAIN_GEODETIC_CS)
         y_c2x1 = iris.coords.DimCoord(ylims2[0], bounds=ylims2,
                                       standard_name='latitude',
-                                      units=iris.unit.Unit('degrees'),
+                                      units=cf_units.Unit('degrees'),
                                       coord_system=_PLAIN_GEODETIC_CS)
         c2x1_gridcube = iris.cube.Cube([[0.0]])
         c2x1_gridcube.add_dim_coord(y_c2x1, 0)

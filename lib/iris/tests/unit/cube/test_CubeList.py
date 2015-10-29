@@ -27,7 +27,7 @@ import numpy as np
 
 from iris.cube import Cube, CubeList
 from iris.coords import AuxCoord, DimCoord
-from iris.unit import Unit
+from cf_units import Unit
 import iris.coord_systems
 import iris.exceptions
 

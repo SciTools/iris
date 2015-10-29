@@ -27,6 +27,7 @@ from functools import wraps
 import types
 import warnings
 
+import cf_units
 import numpy as np
 
 import iris
@@ -200,8 +201,8 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
         cube2 = self.cube1d.copy()
         cube1.rename('some phenomenon')
         cube2.rename('some other phenomenon')
-        cube1.units = iris.unit.Unit('no_unit')
-        cube2.units = iris.unit.Unit('no_unit')
+        cube1.units = cf_units.Unit('no_unit')
+        cube2.units = cf_units.Unit('no_unit')
         cube1.data[:] = np.linspace(0, 1, 7)
         cube2.data[:] = np.exp(cube1.data)
         self.draw_method(cube1, cube2)
@@ -381,7 +382,7 @@ def _load_4d_testcube():
         points=point_values,
         bounds=bound_values,
         standard_name='forecast_period',
-        units=iris.unit.Unit('hours')
+        units=cf_units.Unit('hours')
     )
     test_cube.add_aux_coord(new_forecast_coord, forecast_dims)
     # Heavily reduce dimensions for faster testing.

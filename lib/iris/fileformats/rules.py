@@ -42,7 +42,7 @@ import iris.config as config
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
-import iris.unit
+import cf_units
 from iris.util import is_regular, regular_step
 
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
@@ -261,7 +261,7 @@ def calculate_forecast_period(time, forecast_reference_time):
                                           forecast_reference_time.points.size))
 
     origin = time.units.origin.replace(time.units.origin.split()[0], 'hours')
-    units = iris.unit.Unit(origin, calendar=time.units.calendar)
+    units = cf_units.Unit(origin, calendar=time.units.calendar)
 
     # Determine start and eof of period in hours since a common epoch.
     end = time.units.convert(time.bounds[0, 1], units)
@@ -373,7 +373,7 @@ class Rule(object):
             globals().update(iris.coords.__dict__)
             globals().update(iris.coord_systems.__dict__)
             globals().update(iris.fileformats.um_cf_map.__dict__)
-            globals().update(iris.unit.__dict__)
+            globals().update(cf_units.__dict__)
             _import_pending = False
 
         # Define the variables which the eval command should be able to see
@@ -448,7 +448,7 @@ class FunctionRule(Rule):
                     msg = 'Ignoring PP invalid units {!r}'.format(obj.value)
                     warnings.warn(msg)
                     cube.attributes['invalid_units'] = obj.value
-                    cube.units = iris.unit._UNKNOWN_UNIT_STRING
+                    cube.units = cf_units._UNKNOWN_UNIT_STRING
             else:
                 setattr(cube, obj.name, obj.value)
 
@@ -796,7 +796,7 @@ def _make_cube(field, converter):
             msg = 'Ignoring PP invalid units {!r}'.format(metadata.units)
             warnings.warn(msg)
             cube.attributes['invalid_units'] = metadata.units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
+            cube.units = cf_units._UNKNOWN_UNIT_STRING
 
     return cube, metadata.factories, metadata.references
 

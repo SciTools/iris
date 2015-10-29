@@ -30,6 +30,7 @@ import iris.tests as tests
 import inspect
 import unittest
 
+import cf_units
 import numpy as np
 
 import iris.analysis
@@ -224,7 +225,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
         
-        test_cube_a.units = iris.unit.Unit('m')
+        test_cube_a.units = cf_units.Unit('m')
 
         return_sio = six.StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
@@ -250,7 +251,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.attributes['Conventions'] = 'CF-1.5'
         test_cube_b.attributes['Conventions'] = 'CF-1.6'
         test_cube_a.standard_name = "relative_humidity"
-        test_cube_a.units = iris.unit.Unit('m')
+        test_cube_a.units = cf_units.Unit('m')
 
         with self.temp_filename() as filename:
             with open(filename, 'w') as f:

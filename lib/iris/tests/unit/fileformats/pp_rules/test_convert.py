@@ -35,7 +35,7 @@ from iris.fileformats.pp import STASH
 from iris.fileformats.pp import PPField3
 from iris.tests import mock
 import iris.tests.unit.fileformats
-import iris.unit
+import cf_units
 
 
 class TestLBCODE(iris.tests.unit.fileformats.TestField):
@@ -156,7 +156,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
                            lbsec=0,
                            spec=PPField3)
         f.time_unit = six.create_bound_method(PPField3.time_unit, f)
-        f.calendar = iris.unit.CALENDAR_365_DAY
+        f.calendar = cf_units.CALENDAR_365_DAY
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
          aux_coords_and_dims) = convert(f)

@@ -33,7 +33,7 @@ import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-import iris.unit
+import cf_units
 import iris.tests.stock
 
 

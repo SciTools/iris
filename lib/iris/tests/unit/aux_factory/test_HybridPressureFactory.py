@@ -27,6 +27,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import cf_units
 import numpy as np
 
 import iris
@@ -36,9 +37,9 @@ from iris.tests import mock
 
 class Test___init__(tests.IrisTest):
     def setUp(self):
-        self.delta = mock.Mock(units=iris.unit.Unit('Pa'), nbounds=0)
-        self.sigma = mock.Mock(units=iris.unit.Unit('1'), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=iris.unit.Unit('Pa'),
+        self.delta = mock.Mock(units=cf_units.Unit('Pa'), nbounds=0)
+        self.sigma = mock.Mock(units=cf_units.Unit('1'), nbounds=0)
+        self.surface_air_pressure = mock.Mock(units=cf_units.Unit('Pa'),
                                               nbounds=0)
 
     def test_insufficient_coords(self):
@@ -54,29 +55,29 @@ class Test___init__(tests.IrisTest):
                 surface_air_pressure=self.surface_air_pressure)
 
     def test_incompatible_delta_units(self):
-        self.delta.units = iris.unit.Unit('m')
+        self.delta.units = cf_units.Unit('m')
         with self.assertRaises(ValueError):
             HybridPressureFactory(
                 delta=self.delta, sigma=self.sigma,
                 surface_air_pressure=self.surface_air_pressure)
 
     def test_incompatible_sigma_units(self):
-        self.sigma.units = iris.unit.Unit('Pa')
+        self.sigma.units = cf_units.Unit('Pa')
         with self.assertRaises(ValueError):
             HybridPressureFactory(
                 delta=self.delta, sigma=self.sigma,
                 surface_air_pressure=self.surface_air_pressure)
 
     def test_incompatible_surface_air_pressure_units(self):
-        self.surface_air_pressure.units = iris.unit.Unit('unknown')
+        self.surface_air_pressure.units = cf_units.Unit('unknown')
         with self.assertRaises(ValueError):
             HybridPressureFactory(
                 delta=self.delta, sigma=self.sigma,
                 surface_air_pressure=self.surface_air_pressure)
 
     def test_different_pressure_units(self):
-        self.delta.units = iris.unit.Unit('hPa')
-        self.surface_air_pressure.units = iris.unit.Unit('Pa')
+        self.delta.units = cf_units.Unit('hPa')
+        self.surface_air_pressure.units = cf_units.Unit('Pa')
         with self.assertRaises(ValueError):
             HybridPressureFactory(
                 delta=self.delta, sigma=self.sigma,
@@ -111,9 +112,9 @@ class Test___init__(tests.IrisTest):
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
-        self.delta = mock.Mock(units=iris.unit.Unit('Pa'), nbounds=0)
-        self.sigma = mock.Mock(units=iris.unit.Unit('1'), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=iris.unit.Unit('Pa'),
+        self.delta = mock.Mock(units=cf_units.Unit('Pa'), nbounds=0)
+        self.sigma = mock.Mock(units=cf_units.Unit('1'), nbounds=0)
+        self.surface_air_pressure = mock.Mock(units=cf_units.Unit('Pa'),
                                               nbounds=0)
 
     def test_value(self):
@@ -219,9 +220,9 @@ class Test_make_coord(tests.IrisTest):
 
 class Test_update(tests.IrisTest):
     def setUp(self):
-        self.delta = mock.Mock(units=iris.unit.Unit('Pa'), nbounds=0)
-        self.sigma = mock.Mock(units=iris.unit.Unit('1'), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=iris.unit.Unit('Pa'),
+        self.delta = mock.Mock(units=cf_units.Unit('Pa'), nbounds=0)
+        self.sigma = mock.Mock(units=cf_units.Unit('1'), nbounds=0)
+        self.surface_air_pressure = mock.Mock(units=cf_units.Unit('Pa'),
                                               nbounds=0)
 
         self.factory = HybridPressureFactory(
@@ -229,27 +230,27 @@ class Test_update(tests.IrisTest):
             surface_air_pressure=self.surface_air_pressure)
 
     def test_good_delta(self):
-        new_delta_coord = mock.Mock(units=iris.unit.Unit('Pa'), nbounds=0)
+        new_delta_coord = mock.Mock(units=cf_units.Unit('Pa'), nbounds=0)
         self.factory.update(self.delta, new_delta_coord)
         self.assertIs(self.factory.delta, new_delta_coord)
 
     def test_bad_delta(self):
-        new_delta_coord = mock.Mock(units=iris.unit.Unit('1'), nbounds=0)
+        new_delta_coord = mock.Mock(units=cf_units.Unit('1'), nbounds=0)
         with self.assertRaises(ValueError):
             self.factory.update(self.delta, new_delta_coord)
 
     def test_alternative_bad_delta(self):
-        new_delta_coord = mock.Mock(units=iris.unit.Unit('Pa'), nbounds=4)
+        new_delta_coord = mock.Mock(units=cf_units.Unit('Pa'), nbounds=4)
         with self.assertRaises(ValueError):
             self.factory.update(self.delta, new_delta_coord)
 
     def test_good_surface_air_pressure(self):
-        new_surface_p_coord = mock.Mock(units=iris.unit.Unit('Pa'), nbounds=0)
+        new_surface_p_coord = mock.Mock(units=cf_units.Unit('Pa'), nbounds=0)
         self.factory.update(self.surface_air_pressure, new_surface_p_coord)
         self.assertIs(self.factory.surface_air_pressure, new_surface_p_coord)
 
     def test_bad_surface_air_pressure(self):
-        new_surface_p_coord = mock.Mock(units=iris.unit.Unit('km'), nbounds=0)
+        new_surface_p_coord = mock.Mock(units=cf_units.Unit('km'), nbounds=0)
         with self.assertRaises(ValueError):
             self.factory.update(self.surface_air_pressure, new_surface_p_coord)
 

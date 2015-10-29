@@ -27,7 +27,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-import iris.unit
+import cf_units
 
 if tests.GRIB_AVAILABLE:
     import gribapi
@@ -58,7 +58,7 @@ class TestGribPhenomenonLookup(tests.IrisTest):
                            standard_name, long_name, units,
                            height=None,
                            t2version=128, centre=98, expect_none=False):
-            iris_units = iris.unit.Unit(units)
+            cf_unitss = cf_units.Unit(units)
             cfdata = gptx.grib1_phenom_to_cf_info(param_number=param,
                                                   table2_version=t2version,
                                                   centre_number=centre)
@@ -67,7 +67,7 @@ class TestGribPhenomenonLookup(tests.IrisTest):
             else:
                 self.assertEqual(cfdata.standard_name, standard_name)
                 self.assertEqual(cfdata.long_name, long_name)
-                self.assertEqual(cfdata.units, iris_units)
+                self.assertEqual(cfdata.units, cf_unitss)
                 if height is None:
                     self.assertIsNone(cfdata.set_height)
                 else:
@@ -88,7 +88,7 @@ class TestGribPhenomenonLookup(tests.IrisTest):
         def check_grib2_cf(discipline, category, number,
                            standard_name, long_name, units,
                            expect_none=False):
-            iris_units = iris.unit.Unit(units)
+            cf_unitss = cf_units.Unit(units)
             cfdata = gptx.grib2_phenom_to_cf_info(param_discipline=discipline,
                                                   param_category=category,
                                                   param_number=number)
@@ -97,7 +97,7 @@ class TestGribPhenomenonLookup(tests.IrisTest):
             else:
                 self.assertEqual(cfdata.standard_name, standard_name)
                 self.assertEqual(cfdata.long_name, long_name)
-                self.assertEqual(cfdata.units, iris_units)
+                self.assertEqual(cfdata.units, cf_unitss)
 
         # These should work
         check_grib2_cf(0, 0, 2, "air_potential_temperature", None, "K")
@@ -123,7 +123,7 @@ class TestGribPhenomenonLookup(tests.IrisTest):
         def check_cf_grib2(standard_name, long_name,
                            discipline, category, number, units,
                            expect_none=False):
-            iris_units = iris.unit.Unit(units)
+            cf_unitss = cf_units.Unit(units)
             gribdata = gptx.cf_phenom_to_grib2_info(standard_name, long_name)
             if expect_none:
                 self.assertIsNone(gribdata)
@@ -131,7 +131,7 @@ class TestGribPhenomenonLookup(tests.IrisTest):
                 self.assertEqual(gribdata.discipline, discipline)
                 self.assertEqual(gribdata.category, category)
                 self.assertEqual(gribdata.number, number)
-                self.assertEqual(gribdata.units, iris_units)
+                self.assertEqual(gribdata.units, cf_unitss)
 
         # These should work
         check_cf_grib2("sea_surface_temperature", None,

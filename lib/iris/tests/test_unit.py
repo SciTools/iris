@@ -35,18 +35,14 @@ except ImportError:
 
 import numpy as np
 
-import iris.unit as unit
+import cf_units as unit
 
 
 Unit = unit.Unit
 
 
 class TestUnit(tests.IrisTest):
-    def setUp(self):
-        unit._handler(unit._ut_ignore)
-
-    def tearDown(self):
-        unit._handler(unit._default_handler)
+    pass
 
 
 class TestCreation(TestUnit):

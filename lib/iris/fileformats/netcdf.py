@@ -52,7 +52,7 @@ import iris.exceptions
 import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
-import iris.unit
+import cf_units
 import iris.util
 
 

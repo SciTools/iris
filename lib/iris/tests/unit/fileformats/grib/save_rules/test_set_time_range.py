@@ -33,7 +33,7 @@ import warnings
 import gribapi
 
 from iris.coords import DimCoord
-from iris.unit import Unit
+from cf_units import Unit
 from iris.fileformats.grib._save_rules import set_time_range
 from iris.tests import mock
 

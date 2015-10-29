@@ -29,7 +29,7 @@ from iris.aux_factory import HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
-from iris.unit import CALENDAR_GREGORIAN, Unit
+from cf_units import CALENDAR_GREGORIAN, Unit
 
 
 def convert(grib):

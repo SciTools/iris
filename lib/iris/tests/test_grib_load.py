@@ -25,6 +25,7 @@ import iris.tests as tests
 import datetime
 from distutils.version import StrictVersion
 
+import cf_units
 import numpy as np
 
 import iris
@@ -631,7 +632,7 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(cube.standard_name, None)
         self.assertEqual(cube.long_name, None)
-        self.assertEqual(cube.units, iris.unit.Unit("???"))
+        self.assertEqual(cube.units, cf_units.Unit("???"))
 
     def test_grib1_unknown_local_param(self):
         grib = self.mock_grib()
@@ -640,7 +641,7 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(cube.standard_name, None)
         self.assertEqual(cube.long_name, 'UNKNOWN LOCAL PARAM 999.128')
-        self.assertEqual(cube.units, iris.unit.Unit("???"))
+        self.assertEqual(cube.units, cf_units.Unit("???"))
 
     def test_grib1_unknown_standard_param(self):
         grib = self.mock_grib()
@@ -649,7 +650,7 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(cube.standard_name, None)
         self.assertEqual(cube.long_name, 'UNKNOWN LOCAL PARAM 975.1')
-        self.assertEqual(cube.units, iris.unit.Unit("???"))
+        self.assertEqual(cube.units, cf_units.Unit("???"))
 
     def known_grib1(self, param, standard_str, units_str):
         grib = self.mock_grib()
@@ -658,7 +659,7 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(cube.standard_name, standard_str)
         self.assertEqual(cube.long_name, None)
-        self.assertEqual(cube.units, iris.unit.Unit(units_str))
+        self.assertEqual(cube.units, cf_units.Unit(units_str))
 
     def test_grib1_known_standard_params(self):
         # at present, there are just a very few of these
@@ -686,12 +687,12 @@ class TestGrib2LoadPhenomenon(TestGribSimple):
         grib.parameterNumber = param
         cube = self.cube_from_message(grib)
         try:
-            iris_unit = iris.unit.Unit(units_str)
+            _cf_units = cf_units.Unit(units_str)
         except ValueError:
-            iris_unit = iris.unit.Unit('???')
+            _cf_units = cf_units.Unit('???')
         self.assertEqual(cube.standard_name, standard_name)
         self.assertEqual(cube.long_name, long_name)
-        self.assertEqual(cube.units, iris_unit)
+        self.assertEqual(cube.units, _cf_units)
 
     def test_grib2_unknownparam(self):
         grib = self.mock_grib()
@@ -701,7 +702,7 @@ class TestGrib2LoadPhenomenon(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(cube.standard_name, None)
         self.assertEqual(cube.long_name, None)
-        self.assertEqual(cube.units, iris.unit.Unit("???"))
+        self.assertEqual(cube.units, cf_units.Unit("???"))
 
     def test_grib2_known_standard_params(self):
         # check we know how to translate at least these params

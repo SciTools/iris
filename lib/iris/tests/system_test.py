@@ -34,7 +34,7 @@ import iris
 import iris.fileformats.netcdf as netcdf
 import iris.fileformats.pp as pp
 import iris.tests as tests
-import iris.unit
+import cf_units
 
 if tests.GRIB_AVAILABLE:
     import gribapi
@@ -63,8 +63,8 @@ class SystemInitialTest(tests.IrisTest):
             1)
         cm.add_aux_coord(iris.coords.AuxCoord(np.array([9], 'i8'),
                                               'forecast_period', units='hours'))
-        hours_since_epoch = iris.unit.Unit('hours since epoch',
-                                           iris.unit.CALENDAR_GREGORIAN)
+        hours_since_epoch = cf_units.Unit('hours since epoch',
+                                           cf_units.CALENDAR_GREGORIAN)
         cm.add_aux_coord(iris.coords.AuxCoord(np.array([3], 'i8'),
                                               'time', units=hours_since_epoch))
         cm.add_aux_coord(iris.coords.AuxCoord(np.array([99], 'i8'),

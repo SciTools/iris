@@ -26,6 +26,7 @@ import iris.tests as tests
 
 import warnings
 
+import cf_units
 import numpy as np
 
 import iris
@@ -64,7 +65,7 @@ class TestCategorisations(tests.IrisTest):
 
         time_coord = iris.coords.DimCoord(
             day_numbers, standard_name='time',
-            units=iris.unit.Unit('days since epoch', 'gregorian'))
+            units=cf_units.Unit('days since epoch', 'gregorian'))
         cube.add_dim_coord(time_coord, 0)
 
         self.cube = cube

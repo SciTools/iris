@@ -32,7 +32,7 @@ import iris.coord_systems
 import iris.cube
 from iris.exceptions import TranslationError
 import iris.util
-import iris.unit
+import cf_units
 
 
 EARTH_RADIUS = 6371229.0
@@ -52,7 +52,7 @@ def _split_name_and_units(name):
         split = name.rsplit("(", 1)
         try_units = split[1].replace(")", "").strip()
         try:
-            try_units = iris.unit.Unit(try_units)
+            try_units = cf_units.Unit(try_units)
         except ValueError:
             pass
         else:
@@ -213,7 +213,7 @@ def _calc_integration_period(time_avgs):
 
 def _parse_units(units):
     """
-    Return a known :class:`iris.unit.Unit` given a NAME unit
+    Return a known :class:`cf_units.Unit` given a NAME unit
 
     .. note::
 
@@ -229,7 +229,7 @@ def _parse_units(units):
         NAME units.
 
     Returns:
-        An instance of :class:`iris.unit.Unit`.
+        An instance of :class:`cf_units.Unit`.
 
     """
 
@@ -253,10 +253,10 @@ def _parse_units(units):
     units = units.replace('mcBq', 'uBq')
     units = units.replace('mcg', 'ug')
     try:
-        units = iris.unit.Unit(units)
+        units = cf_units.Unit(units)
     except ValueError:
         warnings.warn('Unknown units: {!r}'.format(units))
-        units = iris.unit.Unit(None)
+        units = cf_units.Unit(None)
 
     return units
 
@@ -391,8 +391,8 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
 
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
-        time_unit = iris.unit.Unit(
-            'hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
+        time_unit = cf_units.Unit(
+            'hours since epoch', calendar=cf_units.CALENDAR_GREGORIAN)
 
         # Build time, latitude and longitude coordinates.
         for coord in coords:
@@ -806,8 +806,8 @@ def load_NAMEIII_trajectory(filename):
         A generator :class:`iris.cube.Cube` instances.
 
     """
-    time_unit = iris.unit.Unit('hours since epoch',
-                               calendar=iris.unit.CALENDAR_GREGORIAN)
+    time_unit = cf_units.Unit('hours since epoch',
+                              calendar=cf_units.CALENDAR_GREGORIAN)
 
     with open(filename, 'r') as infile:
         header = read_header(infile)

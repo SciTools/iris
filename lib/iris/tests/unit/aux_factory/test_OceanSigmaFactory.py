@@ -32,7 +32,7 @@ import numpy as np
 from iris.aux_factory import OceanSigmaFactory
 from iris.coords import AuxCoord, DimCoord
 from iris.tests import mock
-from iris.unit import Unit
+from cf_units import Unit
 
 
 class Test___init__(tests.IrisTest):

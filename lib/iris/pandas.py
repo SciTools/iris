@@ -26,6 +26,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import datetime
 
+import cf_units
+from cf_units import Unit
 import netcdftime
 import numpy as np
 import pandas
@@ -33,7 +35,6 @@ import pandas
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.unit import Unit
 
 
 def _add_iris_coord(cube, name, points, dim, calendar=None):
@@ -45,7 +46,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
     """
     units = Unit("unknown")
     if calendar is None:
-        calendar = iris.unit.CALENDAR_GREGORIAN
+        calendar = cf_units.CALENDAR_GREGORIAN
 
     # Convert pandas datetime objects to python datetime obejcts.
     if isinstance(points, pandas.tseries.index.DatetimeIndex):
@@ -88,8 +89,8 @@ def as_cube(pandas_array, copy=True, calendars=None):
 
     Example usage::
 
-        as_cube(series, calendars={0: iris.unit.CALENDAR_360_DAY})
-        as_cube(data_frame, calendars={1: iris.unit.CALENDAR_GREGORIAN})
+        as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
+        as_cube(data_frame, calendars={1: cf_units.CALENDAR_GREGORIAN})
 
     .. note:: This function will copy your data by default.
 

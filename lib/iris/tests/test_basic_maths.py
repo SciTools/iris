@@ -24,6 +24,7 @@ import iris.tests as tests
 import operator
 import math
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -293,21 +294,21 @@ class TestBasicMaths(tests.IrisTest):
 
         # should fail because 'blah' is a string not a python function
         self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah',
-                          lambda cube: iris.unit.Unit('1'))
+                          lambda cube: cf_units.Unit('1'))
 
         # should fail because math.sqrt is built-in function, which can not be
         # used in inspect.getargspec
         self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
-                          lambda cube: iris.unit.Unit('1'))
+                          lambda cube: cf_units.Unit('1'))
 
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
-                          lambda cube: iris.unit.Unit('1'))
+                          lambda cube: cf_units.Unit('1'))
 
         # should fail because data function has 3 arguments
         self.assertRaises(ValueError, iris.analysis.maths.IFunc,
                    lambda a, b, c: a + b + c,
-                   lambda cube: iris.unit.Unit('1')
+                   lambda cube: cf_units.Unit('1')
                    )
 
     def test_ifunc_call_fail(self):
@@ -323,7 +324,7 @@ class TestBasicMaths(tests.IrisTest):
             my_ifunc(a, a)
 
         my_ifunc = iris.analysis.maths.IFunc(np.multiply,
-                   lambda a: iris.unit.Unit('1')
+                   lambda a: cf_units.Unit('1')
                    )
 
         # should fail because giving 1 arguments to an ifunc that expects
@@ -333,7 +334,7 @@ class TestBasicMaths(tests.IrisTest):
 
         my_ifunc = iris.analysis.maths.IFunc(
                    lambda a: (a, a**2.0),
-                   lambda cube: iris.unit.Unit('1')
+                   lambda cube: cf_units.Unit('1')
                    )
 
         # should fail because data function returns a tuple
@@ -342,7 +343,7 @@ class TestBasicMaths(tests.IrisTest):
 
         my_ifunc = iris.analysis.maths.IFunc(
                    lambda a: math.sqrt(a),
-                   lambda cube: iris.unit.Unit('1')
+                   lambda cube: cf_units.Unit('1')
                    )
 
         # should fail because data function does not work when its argument
@@ -542,7 +543,7 @@ class TestApplyUfunc(tests.IrisTest):
 
     def test_apply_ufunc(self):
         a = self.cube
-        a.units = iris.unit.Unit('meters')
+        a.units = cf_units.Unit('meters')
 
         b = iris.analysis.maths.apply_ufunc(np.square, a,
                 new_name='more_thingness', new_unit=a.units**2, in_place=False)
@@ -551,7 +552,7 @@ class TestApplyUfunc(tests.IrisTest):
 
         self.assertArrayEqual(b.data, ans)
         self.assertEqual(b.name(), 'more_thingness')
-        self.assertEqual(b.units, iris.unit.Unit('m^2'))
+        self.assertEqual(b.units, cf_units.Unit('m^2'))
 
         def vec_mag(u, v):
             return math.sqrt(u**2 + v**2)
@@ -572,7 +573,7 @@ class TestIFunc(tests.IrisTest):
 
     def test_ifunc(self):
         a = self.cube
-        a.units = iris.unit.Unit('meters')
+        a.units = cf_units.Unit('meters')
 
         my_ifunc = iris.analysis.maths.IFunc(np.square,
                 lambda x: x.units**2)
@@ -582,7 +583,7 @@ class TestIFunc(tests.IrisTest):
 
         self.assertArrayEqual(b.data, ans)
         self.assertEqual(b.name(), 'more_thingness')
-        self.assertEqual(b.units, iris.unit.Unit('m^2'))
+        self.assertEqual(b.units, cf_units.Unit('m^2'))
 
         def vec_mag(u, v):
             return math.sqrt(u**2 + v**2)

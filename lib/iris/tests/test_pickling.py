@@ -28,6 +28,7 @@ import iris.tests as tests
 import six.moves.cPickle as pickle
 import io
 
+import cf_units
 import numpy as np
 
 import iris
@@ -93,11 +94,11 @@ class TestPickle(tests.IrisTest):
 
     def test_picking_equality_misc(self):
         items_to_test = [
-                        iris.unit.Unit("hours since 2007-01-15 12:06:00", calendar=iris.unit.CALENDAR_STANDARD),
-                        iris.unit.as_unit('1'),
-                        iris.unit.as_unit('meters'),
-                        iris.unit.as_unit('no-unit'),
-                        iris.unit.as_unit('unknown')
+                        cf_units.Unit("hours since 2007-01-15 12:06:00", calendar=cf_units.CALENDAR_STANDARD),
+                        cf_units.as_unit('1'),
+                        cf_units.as_unit('meters'),
+                        cf_units.as_unit('no-unit'),
+                        cf_units.as_unit('unknown')
                         ]
 
         for orig_item in items_to_test:

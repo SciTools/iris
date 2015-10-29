@@ -24,6 +24,7 @@ import iris.tests as tests
 
 import warnings
 
+import cf_units
 import numpy as np
 
 import iris.cube
@@ -132,7 +133,7 @@ class Test_type_of_statistical_processing(tests.IrisTest):
     def test_stats_type_min(self, mock_set):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]))
-        time_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00')
+        time_unit = cf_units.Unit('hours since 1970-01-01 00:00:00')
         time_coord = iris.coords.DimCoord([0.0],
                                           bounds=[0.0, 1],
                                           standard_name='time',
@@ -146,7 +147,7 @@ class Test_type_of_statistical_processing(tests.IrisTest):
     def test_stats_type_max(self, mock_set):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]))
-        time_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00')
+        time_unit = cf_units.Unit('hours since 1970-01-01 00:00:00')
         time_coord = iris.coords.DimCoord([0.0],
                                           bounds=[0.0, 1],
                                           standard_name='time',

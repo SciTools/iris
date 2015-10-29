@@ -45,7 +45,7 @@ from iris.fileformats.grib import _save_rules
 import iris.fileformats.grib._load_convert
 from iris.fileformats.grib._message import _GribMessage
 import iris.fileformats.grib.load_rules
-import iris.unit
+import cf_units
 
 
 __all__ = ['grib_generator', 'load_cubes',
@@ -705,8 +705,8 @@ class GribWrapper(object):
 
         """
         time_reference = '%s since epoch' % time_unit
-        return iris.unit.date2num(self._phenomenonDateTime, time_reference,
-                                  iris.unit.CALENDAR_GREGORIAN)
+        return cf_units.date2num(self._phenomenonDateTime, time_reference,
+                                  cf_units.CALENDAR_GREGORIAN)
 
     def phenomenon_bounds(self, time_unit):
         """
@@ -716,7 +716,7 @@ class GribWrapper(object):
         """
         # TODO #576 Investigate when it's valid to get phenomenon_bounds
         time_reference = '%s since epoch' % time_unit
-        unit = iris.unit.Unit(time_reference, iris.unit.CALENDAR_GREGORIAN)
+        unit = cf_units.Unit(time_reference, cf_units.CALENDAR_GREGORIAN)
         return [unit.date2num(self._periodStartDateTime),
                 unit.date2num(self._periodEndDateTime)]
 

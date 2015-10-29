@@ -24,7 +24,7 @@ import six
 import string
 
 import iris.std_names
-import iris.unit
+import cf_units
 
 
 class LimitedAttributeDict(dict):
@@ -127,12 +127,12 @@ class CFVariableMixin(object):
 
     @property
     def units(self):
-        """The :mod:`~iris.unit.Unit` instance of the object."""
+        """The :mod:`~cf_units.Unit` instance of the object."""
         return self._units
 
     @units.setter
     def units(self, unit):
-        self._units = iris.unit.as_unit(unit)
+        self._units = cf_units.as_unit(unit)
 
     @property
     def var_name(self):

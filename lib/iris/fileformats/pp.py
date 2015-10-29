@@ -40,7 +40,7 @@ import netcdftime
 
 import iris.config
 import iris.fileformats.rules
-import iris.unit
+import cf_units
 import iris.fileformats.pp_rules
 import iris.coord_systems
 
@@ -1252,11 +1252,11 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
     def calendar(self):
         """Return the calendar of the field."""
         # TODO #577 What calendar to return when ibtim.ic in [0, 3]
-        calendar = iris.unit.CALENDAR_GREGORIAN
+        calendar = cf_units.CALENDAR_GREGORIAN
         if self.lbtim.ic == 2:
-            calendar = iris.unit.CALENDAR_360_DAY
+            calendar = cf_units.CALENDAR_360_DAY
         elif self.lbtim.ic == 4:
-            calendar = iris.unit.CALENDAR_365_DAY
+            calendar = cf_units.CALENDAR_365_DAY
         return calendar
 
     def _read_extra_data(self, pp_file, file_reader, extra_len):
@@ -1489,7 +1489,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
     #
 
     def time_unit(self, time_unit, epoch='epoch'):
-        return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
+        return cf_units.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
 
     def coord_system(self):
         """Return a CoordSystem for this PPField.

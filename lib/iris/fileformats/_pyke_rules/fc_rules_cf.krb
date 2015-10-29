@@ -764,7 +764,7 @@ fc_extras
     import iris.fileformats.pp as pp
     import iris.exceptions
     import iris.std_names
-    import iris.unit
+    import cf_units
     import iris.util
     
     
@@ -1019,7 +1019,7 @@ fc_extras
 
     ################################################################################
     def get_attr_units(cf_var, attributes):
-        attr_units = getattr(cf_var, CF_ATTR_UNITS, iris.unit._UNIT_DIMENSIONLESS)
+        attr_units = getattr(cf_var, CF_ATTR_UNITS, cf_units._UNIT_DIMENSIONLESS)
         if not attr_units:
             attr_units = '1'
 
@@ -1029,7 +1029,7 @@ fc_extras
 
         # Graceful loading of invalid units.
         try:
-            iris.unit.as_unit(attr_units)
+            cf_units.as_unit(attr_units)
         except ValueError:
         # Using converted unicode message. Can be reverted with Python 3.
             msg = u'Ignoring netCDF variable {!r} invalid units {!r}'.format(
@@ -1039,17 +1039,17 @@ fc_extras
             else:
                 warnings.warn(msg.encode('ascii', errors='backslashreplace'))
             attributes['invalid_units'] = attr_units
-            attr_units = iris.unit._UNKNOWN_UNIT_STRING
+            attr_units = cf_units._UNKNOWN_UNIT_STRING
 
         if np.issubdtype(cf_var.dtype, np.str):
-            attr_units = iris.unit._NO_UNIT_STRING
+            attr_units = cf_units._NO_UNIT_STRING
 
         # Get any assoicated calendar for a time reference coordinate.
-        if iris.unit.as_unit(attr_units).is_time_reference():
+        if cf_units.as_unit(attr_units).is_time_reference():
             attr_calendar = getattr(cf_var, CF_ATTR_CALENDAR, None)
 
             if attr_calendar:
-                attr_units = iris.unit.Unit(attr_units, calendar=attr_calendar)
+                attr_units = cf_units.Unit(attr_units, calendar=attr_calendar)
 
         return attr_units
 
@@ -1187,8 +1187,8 @@ fc_extras
         # Determine whether the coordinate is circular.
         circular = False
         if points_data.ndim == 1 and coord_name in [CF_VALUE_STD_NAME_LON, CF_VALUE_STD_NAME_GRID_LON] \
-            and iris.unit.Unit(attr_units) in [iris.unit.Unit('radians'), iris.unit.Unit('degrees')]:
-                modulus_value = iris.unit.Unit(attr_units).modulus
+            and cf_units.Unit(attr_units) in [cf_units.Unit('radians'), cf_units.Unit('degrees')]:
+                modulus_value = cf_units.Unit(attr_units).modulus
                 circular = iris.util._is_circular(points_data, modulus_value, bounds=bounds_data)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
@@ -1416,7 +1416,7 @@ fc_extras
         attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
         attr_axis = getattr(cf_var, CF_ATTR_AXIS, '')
         try:
-            is_time_reference = iris.unit.Unit(attr_units or 1).is_time_reference()
+            is_time_reference = cf_units.Unit(attr_units or 1).is_time_reference()
         except ValueError:
             is_time_reference = False
         
@@ -1432,7 +1432,7 @@ fc_extras
 
         if attr_units is not None:
             try:
-                is_valid = iris.unit.is_time(attr_units)
+                is_valid = cf_units.is_time(attr_units)
             except ValueError:
                 is_valid = False
 

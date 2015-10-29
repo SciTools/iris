@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Test function :func:`iris.unit.suppress_unit_warnings`."""
+"""Test function :func:`cf_units.suppress_unit_warnings`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -26,7 +26,7 @@ import iris.tests as tests
 import warnings
 
 import iris
-from iris.unit import suppress_unit_warnings
+from cf_units import suppress_unit_warnings
 
 
 class Test(tests.IrisTest):

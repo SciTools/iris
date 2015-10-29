@@ -30,9 +30,9 @@ from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
 from iris.fileformats.um_cf_map import (LBFC_TO_CF, STASH_TO_CF,
                                         STASHCODE_IMPLIED_HEIGHTS)
-from iris.unit import Unit
+from cf_units import Unit
 import iris.fileformats.pp
-import iris.unit
+import cf_units
 
 
 ###############################################################################
@@ -393,7 +393,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         Scalar field value.
     * lbtim (:class:`iris.fileformats.pp.SplittableInt`):
         Scalar field value.
-    * epoch_hours_unit (:class:`iris.units.Unit`):
+    * epoch_hours_unit (:class:`cf_unitss.Unit`):
         Epoch time reference unit.
     * t1 (array-like or scalar):
         Scalar field value or an array of values.
@@ -972,7 +972,7 @@ def _all_other_rules(f):
                 f.y,
                 standard_name='time',
                 units=Unit('days since 0000-01-01 00:00:00',
-                           calendar=iris.unit.CALENDAR_360_DAY),
+                           calendar=cf_units.CALENDAR_360_DAY),
                 bounds=f.y_bounds),
              0))
 
@@ -982,7 +982,7 @@ def _all_other_rules(f):
                 f.x,
                 standard_name='time',
                 units=Unit('days since 0000-01-01 00:00:00',
-                           calendar=iris.unit.CALENDAR_360_DAY),
+                           calendar=cf_units.CALENDAR_360_DAY),
                 bounds=f.x_bounds),
              1))
 

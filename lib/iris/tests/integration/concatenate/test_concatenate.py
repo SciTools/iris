@@ -32,7 +32,7 @@ import numpy as np
 import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
-import iris.unit
+import cf_units
 from iris.util import unify_time_units
 
 
@@ -44,7 +44,7 @@ class Test_concatenate__epoch(tests.IrisTest):
             cube = iris.cube.Cube(np.array(data_points, dtype=np.float32),
                                   standard_name='air_temperature',
                                   units='K')
-            unit = iris.unit.Unit(reftime, calendar='gregorian')
+            unit = cf_units.Unit(reftime, calendar='gregorian')
             coord = iris.coords.DimCoord(points=np.array(coord_points,
                                                          dtype=np.float32),
                                          standard_name='time',
