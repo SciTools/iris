@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
+.. deprecated:: 1.9
+    This module has been deprecated. Please use `cf_units
+    <https://github.com/SciTools/cf_units>`_ instead.
+
 Units of measure.
 
 Provision of a wrapper class to support Unidata/UCAR UDUNITS-2, and the
@@ -42,6 +46,10 @@ import numpy as np
 
 import iris.config
 import iris.util
+
+
+warnings.warn('iris.unit is deprecated in Iris v1.9. Please use cf_units '
+              '(https://github.com/SciTools/cf_units) instead.')
 
 
 __all__ = ['Unit', 'date2num', 'decode_time', 'encode_clock', 'encode_date',
