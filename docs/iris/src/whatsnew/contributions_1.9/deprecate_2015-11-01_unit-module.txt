@@ -1,1 +1,1 @@
-* deprecated :mod:`iris.unit`
+* deprecated :mod:`iris.unit`, with unit functionality provided instead by `cf_units <https://github.com/SciTools/cf_units>`_ instead.
