@@ -93,6 +93,13 @@ class TestMessages(tests.IrisTest):
                            data_dims=(1,))
         self.cube = cube
 
+    def test_cubes_identical(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        exc_regexp = 'identical'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            result = concatenate([cube_1, cube_2], True)
+
     def test_anonymous_coord_message(self):
         cube_1 = self.cube
         cube_2 = cube_1.copy()
@@ -173,7 +180,7 @@ class TestMessages(tests.IrisTest):
     def test_datatype_difference_message(self):
         cube_1 = self.cube
         cube_2 = cube_1.copy()
-        cube_2.data.dtype = np.float64
+        cube_2.data = cube_2.data.astype(np.float64)
         exc_regexp = 'Datatypes differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
             result = concatenate([cube_1, cube_2], True)
