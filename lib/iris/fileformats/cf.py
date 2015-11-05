@@ -690,7 +690,9 @@ class CFLabelVariable(CFVariable):
 
             # Calculate new label data shape (without string dimension) and create payload array.
             new_shape = tuple(dim_len for i, dim_len in enumerate(self.shape) if i != str_dim)
-            data = np.empty(new_shape, dtype='|U%d' % self.shape[str_dim])
+            string_basetype = '|S%d' if six.PY2 else '|U%d'
+            string_dtype = string_basetype % self.shape[str_dim]
+            data = np.empty(new_shape, dtype=string_dtype)
 
             for index in np.ndindex(new_shape):
                 # Create the slice for the label data.
@@ -699,8 +701,10 @@ class CFLabelVariable(CFVariable):
                 else:
                     label_index = index + (slice(None, None),)
 
-                data[index] = b''.join(label_data[label_index]).strip().decode(
-                    'utf8')
+                label_string = b''.join(label_data[label_index]).strip()
+                if six.PY3:
+                    label_string = label_string.decode('utf8')
+                data[index] = label_string
 
         return data
 
