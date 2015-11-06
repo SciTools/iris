@@ -1385,7 +1385,7 @@ class ProtoCube(object):
                         # string like).
                         dim_by_name[name] = dim = len(self._shape)
                         self._nd_names.append(name)
-                        if metadata[name].points_dtype.kind == 'S':
+                        if metadata[name].points_dtype.kind in 'SU':
                             self._aux_templates.append(
                                 _Template(dim, points, bounds, kwargs))
                         else:

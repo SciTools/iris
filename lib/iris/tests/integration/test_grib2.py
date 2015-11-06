@@ -127,7 +127,7 @@ class TestPDT11(tests.IrisTest):
             # Get a grib_dump of the output file.
             dump_text = check_output(('grib_dump -O -wcount=1 ' +
                                       temp_file_path),
-                                     shell=True)
+                                     shell=True).decode()
 
             # Check that various aspects of the saved file are as expected.
             expect_strings = (
@@ -173,7 +173,7 @@ class TestGDT5(tests.IrisTest):
             # Get a grib_dump of the output file.
             dump_text = check_output(('grib_dump -O -wcount=1 ' +
                                       temp_file_path),
-                                     shell=True)
+                                     shell=True).decode()
 
             # Check that various aspects of the saved file are as expected.
             expect_strings = (

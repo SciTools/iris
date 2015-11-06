@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import iris.tests as tests
 import iris
@@ -36,7 +37,7 @@ class TestGeoTiffExport(tests.IrisTest):
         """
         im = PIL.Image.open(geotiff_fh)
         tiff_header = '\n'.join(str((tag, val))
-                                if not isinstance(val, unicode)
+                                if not isinstance(val, six.text_type)
                                 else "(%s, '%s')" % (tag, val)
                                 for tag, val in sorted(im.tag.items()))
         reference_path = tests.get_result_path(reference_filename)

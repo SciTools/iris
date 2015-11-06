@@ -108,7 +108,7 @@ class CFVariableMixin(object):
             self.long_name = None
         except ValueError:
             self.standard_name = None
-            self.long_name = unicode(name)
+            self.long_name = six.text_type(name)
 
         # Always clear var_name when renaming.
         self.var_name = None
