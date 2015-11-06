@@ -36,22 +36,15 @@ class TestVerboseLogging(tests.IrisTest):
         # load some data, enable logging, and save a cube to PP.
         data_path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
         cube = iris.load_cube(data_path)
-        OLD_RULE_LOG_DIR = config.RULE_LOG_DIR
-        config.RULE_LOG_DIR = '/var/tmp'
         old_log = rules.log
-        rules.log = rules._prepare_rule_logger(verbose=True)
+        rules.log = rules._prepare_rule_logger(verbose=True,
+                                               log_dir='/var/tmp')
 
         temp_filename1 = iris.util.create_temp_filename(suffix='.pp')
 
         # Test writing to a file handle to test that the logger uses the handle name
         with open(temp_filename1, "wb") as mysavefile:
-            try:
-                iris.save(cube, mysavefile)
-            finally:
-                # Restore old logging config
-                config.RULE_LOG_DIR = OLD_RULE_LOG_DIR
-                rules.log = old_log
-                os.unlink(temp_filename1)
+            iris.save(cube, mysavefile)
 
 if __name__ == "__main__":
     tests.main()

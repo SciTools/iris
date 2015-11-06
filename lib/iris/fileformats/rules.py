@@ -114,12 +114,13 @@ def _verbose_log(format, filename, rules):
 
 
 # Prepares a logger for file-based logging of rule usage
-def _prepare_rule_logger(verbose=False):
+def _prepare_rule_logger(verbose=False, log_dir=None):
     # Default to the dummy logger that does nothing
     logger = _dummy_log
 
     # Only do real logging if we've been told the directory to use ...
-    log_dir = config.RULE_LOG_DIR
+    if log_dir is None:
+        log_dir = config.RULE_LOG_DIR
     if log_dir is not None:
         user = getpass.getuser()
 
