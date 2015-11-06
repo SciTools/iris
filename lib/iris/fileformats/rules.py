@@ -118,9 +118,10 @@ def _prepare_rule_logger(verbose=False, log_dir=None):
     # Default to the dummy logger that does nothing
     logger = _dummy_log
 
-    # Only do real logging if we've been told the directory to use ...
+    # read the log_dir from the config file unless the log_dir argument is set
     if log_dir is None:
         log_dir = config.RULE_LOG_DIR
+    # Only do real logging if we've been told the directory to use ...
     if log_dir is not None:
         user = getpass.getuser()
 

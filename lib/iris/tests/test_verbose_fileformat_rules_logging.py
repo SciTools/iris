@@ -15,10 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test of the verbose logging functionality for rules processing from
+:mod:`iris.fileformats.rules`
+"""
+
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 import os
@@ -36,14 +42,12 @@ class TestVerboseLogging(tests.IrisTest):
         # load some data, enable logging, and save a cube to PP.
         data_path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
         cube = iris.load_cube(data_path)
-        old_log = rules.log
         rules.log = rules._prepare_rule_logger(verbose=True,
                                                log_dir='/var/tmp')
 
-        temp_filename1 = iris.util.create_temp_filename(suffix='.pp')
-
-        # Test writing to a file handle to test that the logger uses the handle name
-        with open(temp_filename1, "wb") as mysavefile:
+        # Test writing to a file handle to test that the logger uses the
+        # handle name
+        with self.temp_filename(suffix='.pp') as mysavefile:
             iris.save(cube, mysavefile)
 
 if __name__ == "__main__":
