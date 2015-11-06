@@ -39,7 +39,6 @@ import numpy as np
 import iris.aux_factory
 import iris.exceptions
 import iris.time
-import cf_units
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin

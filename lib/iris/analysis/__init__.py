@@ -53,7 +53,6 @@ import six
 import collections
 
 import biggus
-import cf_units
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate

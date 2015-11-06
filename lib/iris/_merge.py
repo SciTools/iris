@@ -36,7 +36,6 @@ import numpy.ma as ma
 import iris.cube
 import iris.coords
 import iris.exceptions
-import cf_units
 import iris.util
 
 
