@@ -968,10 +968,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 for index in np.ndindex(shape):
                     index_slice = (slice(None),) + tuple(index)
                     bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype('U{}'.format(max(map(len, bounds))))
+                string_type_fmt = 'S{}' if six.PY2 else 'U{}'
+                dtype = np.dtype(string_type_fmt.format(max(map(len, bounds))))
                 bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
             points = serialize(self.points)
-            dtype = np.dtype('U{}'.format(len(points)))
+            dtype = np.dtype(string_type_fmt.format(len(points)))
             # Create the new collapsed coordinate.
             coord = self.copy(points=np.array(points, dtype=dtype),
                               bounds=bounds)
