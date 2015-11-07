@@ -810,8 +810,14 @@ def skip_plot(fn):
     return skip(fn)
 
 
-skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
-                                                'which is not available.')
+if six.PY3:
+    skip_grib = unittest.skipIf(
+        True,
+        'Test(s) use "grib", which is not currently supported under Python 3.')
+else:
+    skip_grib = unittest.skipIf(
+        not GRIB_AVAILABLE,
+        'Test(s) require "gribapi", which is not available.')
 
 
 def no_warnings(func):
