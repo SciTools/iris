@@ -205,6 +205,8 @@ class Test_collapsed(tests.IrisTest):
                                 ['three', 'five'],
                                 ['five', 'seven'],
                                 ['seven', 'nine']]))
+        string_nobounds = Pair(np.array(['ecks', 'why', 'zed']),
+                               None)
         string_multi = Pair(np.array(['three', 'six', 'nine']),
                             np.array([['one', 'two', 'four', 'five'],
                                       ['four', 'five', 'seven', 'eight'],
@@ -214,15 +216,17 @@ class Test_collapsed(tests.IrisTest):
             return '|'.join(str(item) for item in data.flatten())
 
         for units in ['unknown', 'no_unit']:
-            for points, bounds in [string, string_multi]:
+            for points, bounds in [string, string_nobounds, string_multi]:
                 coord = AuxCoord(points=points, bounds=bounds, units=units)
                 collapsed_coord = coord.collapsed()
                 self.assertArrayEqual(collapsed_coord.points,
                                       _serialize(points))
-                for index in np.ndindex(bounds.shape[1:]):
-                    index_slice = (slice(None),) + tuple(index)
-                    self.assertArrayEqual(collapsed_coord.bounds[index_slice],
-                                          _serialize(bounds[index_slice]))
+                if bounds is not None:
+                    for index in np.ndindex(bounds.shape[1:]):
+                        index_slice = (slice(None),) + tuple(index)
+                        self.assertArrayEqual(
+                            collapsed_coord.bounds[index_slice],
+                            _serialize(bounds[index_slice]))
 
     def test_dim_1d(self):
         # Numeric coords should not be serialised.

@@ -962,13 +962,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             # bounds as strings.
             serialize = lambda x: '|'.join([str(i) for i in x.flatten()])
             bounds = None
+            string_type_fmt = 'S{}' if six.PY2 else 'U{}'
             if self.bounds is not None:
                 shape = self.bounds.shape[1:]
                 bounds = []
                 for index in np.ndindex(shape):
                     index_slice = (slice(None),) + tuple(index)
                     bounds.append(serialize(self.bounds[index_slice]))
-                string_type_fmt = 'S{}' if six.PY2 else 'U{}'
                 dtype = np.dtype(string_type_fmt.format(max(map(len, bounds))))
                 bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
             points = serialize(self.points)
