@@ -35,11 +35,11 @@ import numpy as np
 
 import iris.cube
 import iris.config
-import iris.unit
+import cf_units
 
 
 # Symmetric normalization function pivot points by SI unit.
-PIVOT_BY_UNIT = {iris.unit.Unit('K'): 273.15}
+PIVOT_BY_UNIT = {cf_units.Unit('K'): 273.15}
 
 # Color map names by palette file metadata field value.
 CMAP_BREWER = set()

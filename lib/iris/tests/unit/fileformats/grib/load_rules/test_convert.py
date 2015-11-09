@@ -30,7 +30,7 @@ from iris.fileformats.rules import Reference
 from iris.tests import mock
 from iris.tests.test_grib_load import TestGribSimple
 from iris.tests.unit.fileformats import TestField
-import iris.unit
+import cf_units
 
 from iris.fileformats.grib import GribWrapper
 from iris.fileformats.grib.load_rules import convert
@@ -173,13 +173,13 @@ class Test_GribLevels(tests.IrisTest):
         self.assertEqual(ref, Reference(name='surface_pressure'))
 
         ml_ref = iris.coords.CoordDefn('model_level_number', None, None,
-                                       iris.unit.Unit('1'),
+                                       cf_units.Unit('1'),
                                        {'positive': 'up'}, None)
         lp_ref = iris.coords.CoordDefn(None, 'level_pressure', None,
-                                       iris.unit.Unit('Pa'),
+                                       cf_units.Unit('Pa'),
                                        {}, None)
         s_ref = iris.coords.CoordDefn(None, 'sigma', None,
-                                      iris.unit.Unit('1'),
+                                      cf_units.Unit('1'),
                                       {}, None)
 
         aux_coord_defns = [coord._as_defn() for coord, dim in results[8]]

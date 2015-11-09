@@ -30,7 +30,7 @@ import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
 from iris.exceptions import ConcatenateError
-import iris.unit
+import cf_units
 
 
 class TestEpoch(tests.IrisTest):
@@ -41,7 +41,7 @@ class TestEpoch(tests.IrisTest):
             cube = iris.cube.Cube(np.array(data_points, dtype=np.float32),
                                   standard_name='air_temperature',
                                   units='K')
-            unit = iris.unit.Unit(reftime, calendar='gregorian')
+            unit = cf_units.Unit(reftime, calendar='gregorian')
             coord = iris.coords.DimCoord(points=np.array(coord_points,
                                                          dtype=np.float32),
                                          standard_name='time',
@@ -65,8 +65,8 @@ class TestMessages(tests.IrisTest):
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         # Time coord
-        t_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00',
-                                calendar='gregorian')
+        t_unit = cf_units.Unit('hours since 1970-01-01 00:00:00',
+                               calendar='gregorian')
         t_coord = iris.coords.DimCoord(points=np.arange(2, dtype=np.float32),
                                        standard_name='time',
                                        units=t_unit)

@@ -35,7 +35,7 @@ import numpy.ma as ma
 
 import iris
 import iris.exceptions
-import iris.unit
+import cf_units
 from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
@@ -540,8 +540,8 @@ def _non_missing_forecast_period(cube):
     # Convert fp and t to hours so we can subtract to calculate R.
     cf_fp_hrs = fp_coord.units.convert(fp_coord.points[0], 'hours')
     t_coord = cube.coord("time").copy()
-    hours_since = iris.unit.Unit("hours since epoch",
-                                 calendar=t_coord.units.calendar)
+    hours_since = cf_units.Unit("hours since epoch",
+                                calendar=t_coord.units.calendar)
     t_coord.convert_units(hours_since)
 
     rt_num = t_coord.points[0] - cf_fp_hrs
@@ -549,11 +549,11 @@ def _non_missing_forecast_period(cube):
     rt_meaning = 1  # "start of forecast"
 
     # Forecast period
-    if fp_coord.units == iris.unit.Unit("hours"):
+    if fp_coord.units == cf_units.Unit("hours"):
         grib_time_code = 1
-    elif fp_coord.units == iris.unit.Unit("minutes"):
+    elif fp_coord.units == cf_units.Unit("minutes"):
         grib_time_code = 0
-    elif fp_coord.units == iris.unit.Unit("seconds"):
+    elif fp_coord.units == cf_units.Unit("seconds"):
         grib_time_code = 13
     else:
         raise iris.exceptions.TranslationError(
@@ -594,8 +594,8 @@ def _missing_forecast_period(cube):
 
     if cube.coords('forecast_reference_time'):
         # Make copies and convert them to common "hours since" units.
-        hours_since = iris.unit.Unit('hours since epoch',
-                                     calendar=t_coord.units.calendar)
+        hours_since = cf_units.Unit('hours since epoch',
+                                    calendar=t_coord.units.calendar)
         frt_coord = cube.coord('forecast_reference_time').copy()
         frt_coord.convert_units(hours_since)
         t_coord = t_coord.copy()
@@ -656,24 +656,24 @@ def set_fixed_surfaces(cube, grib):
     # pressure
     if cube.coords("air_pressure") or cube.coords("pressure"):
         grib_v_code = 100
-        output_unit = iris.unit.Unit("Pa")
+        output_unit = cf_units.Unit("Pa")
         v_coord = (cube.coords("air_pressure") or cube.coords("pressure"))[0]
 
     # altitude
     elif cube.coords("altitude"):
         grib_v_code = 102
-        output_unit = iris.unit.Unit("m")
+        output_unit = cf_units.Unit("m")
         v_coord = cube.coord("altitude")
 
     # height
     elif cube.coords("height"):
         grib_v_code = 103
-        output_unit = iris.unit.Unit("m")
+        output_unit = cf_units.Unit("m")
         v_coord = cube.coord("height")
 
     elif cube.coords("air_potential_temperature"):
         grib_v_code = 107
-        output_unit = iris.unit.Unit('K')
+        output_unit = cf_units.Unit('K')
         v_coord = cube.coord("air_potential_temperature")
 
     # unknown / absent
@@ -746,8 +746,8 @@ def set_time_range(time_coord, grib):
     # Set type to hours and convert period to this unit.
     gribapi.grib_set(grib, "indicatorOfUnitForTimeRange",
                      _TIME_RANGE_UNITS['hours'])
-    hours_since_units = iris.unit.Unit('hours since epoch',
-                                       calendar=time_coord.units.calendar)
+    hours_since_units = cf_units.Unit('hours since epoch',
+                                      calendar=time_coord.units.calendar)
     start_hours, end_hours = time_coord.units.convert(time_coord.bounds[0],
                                                       hours_since_units)
     # Cast from np.float to Python int. The lengthOfTimeRange key is a

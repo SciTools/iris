@@ -26,6 +26,7 @@ import warnings
 import datetime
 from distutils.version import StrictVersion
 
+import cf_units
 import numpy as np
 
 import iris
@@ -158,7 +159,7 @@ class TestCubeSave(tests.IrisTest):
     def test_forecast_period(self):
         # unhandled unit
         cube = self._load_basic()
-        cube.coord("forecast_period").units = iris.unit.Unit("years")
+        cube.coord("forecast_period").units = cf_units.Unit("years")
         saved_grib = iris.util.create_temp_filename(suffix='.grib2')
         self.assertRaises(iris.exceptions.TranslationError, iris.save, cube, saved_grib)
         os.remove(saved_grib)
@@ -221,7 +222,7 @@ class TestHandmade(tests.IrisTest):
 
     def _cube_time_no_forecast(self):
         cube = self._lat_lon_cube_no_time()
-        unit = iris.unit.Unit('hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
+        unit = cf_units.Unit('hours since epoch', calendar=cf_units.CALENDAR_GREGORIAN)
         dt = datetime.datetime(2010, 12, 31, 12, 0)
         cube.add_aux_coord(iris.coords.AuxCoord(np.array([unit.date2num(dt)], dtype=np.float64), 'time', units=unit))
         return cube

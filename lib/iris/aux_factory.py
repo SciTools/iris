@@ -31,7 +31,7 @@ import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin
 import iris.coords
-import iris.unit
+import cf_units
 import iris.util
 
 

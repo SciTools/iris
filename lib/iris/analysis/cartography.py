@@ -35,13 +35,13 @@ import iris.analysis
 import iris.coords
 import iris.coord_systems
 import iris.exceptions
-import iris.unit
+import cf_units
 
 
 # This value is used as a fall-back if the cube does not define the earth
 DEFAULT_SPHERICAL_EARTH_RADIUS = 6367470
 # TODO: This should not be necessary, as CF is always in meters
-DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('m')
+DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = cf_units.Unit('m')
 # Distance differentials for coordinate systems at specified locations
 DistanceDifferential = namedtuple('DistanceDifferential', 'dx1 dy1 dx2 dy2')
 # Partial differentials between coordinate systems
@@ -355,8 +355,8 @@ def area_weights(cube, normalize=False):
     lon = lon.copy()
 
     for coord in (lat, lon):
-        if coord.units in (iris.unit.Unit('degrees'),
-                           iris.unit.Unit('radians')):
+        if coord.units in (cf_units.Unit('degrees'),
+                           cf_units.Unit('radians')):
             coord.convert_units('radians')
         else:
             msg = ("Units of degrees or radians required, coordinate "

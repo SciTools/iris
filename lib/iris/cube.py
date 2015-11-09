@@ -680,7 +680,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
 
-        #: An instance of :class:`iris.unit.Unit` describing the Cube's data.
+        #: An instance of :class:`cf_units.Unit` describing the Cube's data.
         self.units = units
 
         #: The "long name" for the Cube's phenomenon.

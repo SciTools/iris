@@ -28,7 +28,7 @@ import iris.tests as tests
 
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import time_range_unit
-from iris.unit import Unit
+from cf_units import Unit
 
 
 class Test(tests.IrisTest):

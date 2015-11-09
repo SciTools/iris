@@ -28,6 +28,7 @@ import six
 import re
 import warnings
 
+import cf_units
 import numpy as np
 
 import iris.cube
@@ -611,7 +612,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
         if ellipsoid:
             # TODO: Add a test for this
             r = ellipsoid.semi_major_axis
-            r_unit = iris.unit.Unit("m")
+            r_unit = cf_units.Unit("m")
             spherical = (ellipsoid.inverse_flattening == 0.0)
         else:
             r = DEFAULT_SPHERICAL_EARTH_RADIUS

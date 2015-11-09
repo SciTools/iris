@@ -33,7 +33,7 @@ import iris.coords
 import iris.fileformats.pp
 import iris.fileformats.rules
 from iris.tests import mock
-import iris.unit
+import cf_units
 
 
 COORD_SYSTEM = iris.coord_systems.GeogCS(6371229.0)
@@ -70,7 +70,7 @@ class Test(tests.IrisTest):
         self.assertEqual(metadata.references, [])
         self.assertEqual(metadata.standard_name, 'x_wind')
         self.assertIsNone(metadata.long_name)
-        self.assertEqual(metadata.units, iris.unit.Unit('m s-1'))
+        self.assertEqual(metadata.units, cf_units.Unit('m s-1'))
         self.assertEqual(metadata.attributes, {'STASH': (1, 0, 2)})
         self.assertEqual(metadata.cell_methods, [])
 

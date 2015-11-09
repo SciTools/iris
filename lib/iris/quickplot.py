@@ -27,6 +27,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import cf_units
 import matplotlib.pyplot as plt
 
 import iris.config
@@ -51,7 +52,7 @@ def _title(cube_or_coord, with_units):
         units = cube_or_coord.units
         if with_units and not (units.is_unknown() or
                                units.is_no_unit() or
-                               units == iris.unit.Unit('1')):
+                               units == cf_units.Unit('1')):
 
             if _use_symbol(units):
                 units = units.symbol
@@ -71,7 +72,7 @@ def _label(cube, mode, result=None, ndims=2, coords=None):
                            drawedges=draw_edges)
         has_known_units = not (cube.units.is_unknown() or
                                cube.units.is_no_unit())
-        if has_known_units and cube.units != iris.unit.Unit('1'):
+        if has_known_units and cube.units != cf_units.Unit('1'):
             # Use shortest unit representation for anything other than time
             if _use_symbol(cube.units):
                 bar.set_label(cube.units.symbol)

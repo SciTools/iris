@@ -29,7 +29,7 @@ import cartopy.crs as ccrs
 import iris.cube
 import iris.coords
 import iris.tests.stock
-import iris.unit
+import cf_units
 
 from iris.coord_systems import *
 

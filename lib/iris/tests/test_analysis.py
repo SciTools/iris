@@ -24,6 +24,7 @@ import six
 import iris.tests as tests
 
 import cartopy.crs as ccrs
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -766,7 +767,7 @@ class TestLatitudeWeightGeneration(tests.IrisTest):
         # latitude range
         lat_coord = iris.coords.DimCoord(np.linspace(-90, 90, 73),
                                          standard_name='latitude',
-                                         units=iris.unit.Unit('degrees_north'))
+                                         units=cf_units.Unit('degrees_north'))
         cube = iris.cube.Cube(np.ones([73], dtype=np.float64),
                               long_name='test_cube', units='1')
         cube.add_dim_coord(lat_coord, 0)

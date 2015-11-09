@@ -40,7 +40,7 @@ import iris.analysis
 import iris.coords
 import iris.cube
 import iris.fileformats
-import iris.unit
+import cf_units
 import iris.tests.pp as pp
 import iris.tests.stock
 
@@ -752,12 +752,12 @@ class TestCubeAPI(TestCube2d):
             self.t.var_name = ''
 
     def test_getting_units(self):
-        self.assertEqual(self.t.units, iris.unit.Unit('meters'))
+        self.assertEqual(self.t.units, cf_units.Unit('meters'))
 
     def test_setting_units(self):
-        self.assertEqual(self.t.units, iris.unit.Unit('meters'))
+        self.assertEqual(self.t.units, cf_units.Unit('meters'))
         self.t.units = 'kelvin'
-        self.assertEqual(self.t.units, iris.unit.Unit('kelvin'))
+        self.assertEqual(self.t.units, cf_units.Unit('kelvin'))
 
     def test_clearing_units(self):
         self.t.units = None
@@ -765,7 +765,7 @@ class TestCubeAPI(TestCube2d):
 
     def test_convert_units(self):
         # Set to 'volt'
-        self.t.units = iris.unit.Unit('volt')
+        self.t.units = cf_units.Unit('volt')
         data = self.t.data.copy()
         # Change to 'kV' - data should be scaled automatically.
         self.t.convert_units('kV')

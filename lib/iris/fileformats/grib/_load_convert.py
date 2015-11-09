@@ -39,7 +39,7 @@ from iris.coords import AuxCoord, DimCoord, CellMethod
 from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as itranslation
 from iris.fileformats.rules import ConversionMetadata, Factory, Reference
-from iris.unit import CALENDAR_GREGORIAN, date2num, Unit
+from cf_units import CALENDAR_GREGORIAN, date2num, Unit
 from iris.util import _is_circular
 
 
@@ -1217,7 +1217,7 @@ def translate_phenomenon(metadata, discipline, parameterCategory,
 def time_range_unit(indicatorOfUnitOfTimeRange):
     """
     Translate the time range indicator to an equivalent
-    :class:`iris.unit.Unit`.
+    :class:`cf_units.Unit`.
 
     Args:
 
@@ -1225,7 +1225,7 @@ def time_range_unit(indicatorOfUnitOfTimeRange):
         Message section 4, octet 18.
 
     Returns:
-        :class:`iris.unit.Unit`.
+        :class:`cf_units.Unit`.
 
     """
     try:

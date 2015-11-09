@@ -30,8 +30,8 @@ from iris.coord_categorisation import add_day_of_year
 from iris.cube import Cube
 from iris.coords import DimCoord
 from iris.tests import mock
-from iris.unit import CALENDARS as calendars
-from iris.unit import Unit
+from cf_units import CALENDARS as calendars
+from cf_units import Unit
 
 
 class Test_add_categorised_coord(tests.IrisTest):

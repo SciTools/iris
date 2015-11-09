@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import iris.tests as tests
 
+import cf_units
 import numpy as np
 
 import iris
@@ -37,8 +38,8 @@ class TestExampleCases(tests.IrisTest):
     def _radian_bounds(self, coord_list, offset=0):
         bound_deg = np.array(coord_list) + offset
         bound_deg = np.atleast_2d(bound_deg)
-        degrees = iris.unit.Unit("degrees")
-        radians = iris.unit.Unit("radians")
+        degrees = cf_units.Unit("degrees")
+        radians = cf_units.Unit("radians")
         return degrees.convert(bound_deg, radians)
 
     def _as_bounded_coords(self, lats, lons):

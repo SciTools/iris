@@ -26,7 +26,7 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-import iris.unit
+import cf_units
 
 if tests.GRIB_AVAILABLE:
     import gribapi

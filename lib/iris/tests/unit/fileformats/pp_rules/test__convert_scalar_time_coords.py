@@ -33,7 +33,7 @@ from iris.coords import DimCoord
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp_rules import _convert_scalar_time_coords
 from iris.tests.unit.fileformats import TestField
-from iris.unit import Unit, CALENDAR_GREGORIAN
+from cf_units import Unit, CALENDAR_GREGORIAN
 
 
 def _lbtim(ia=0, ib=0, ic=0):

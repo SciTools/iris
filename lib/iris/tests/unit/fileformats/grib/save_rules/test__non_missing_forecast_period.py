@@ -23,8 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import iris
 from iris.fileformats.grib._save_rules import _non_missing_forecast_period
-import iris.unit
+import cf_units
 
 
 class Test(tests.IrisTest):

@@ -27,6 +27,7 @@ import math
 import operator
 import inspect
 
+import cf_units
 import numpy as np
 
 import iris.analysis
@@ -412,7 +413,7 @@ def exp(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.exp, iris.unit.Unit('1'),
+    return _math_op_common(cube, np.exp, cf_units.Unit('1'),
                            in_place=in_place)
 
 
@@ -687,7 +688,7 @@ class IFunc(object):
 
             Function to calculate the unit of the resulting cube.
             Should take the cube(s) as input and return
-            an instance of :class:`iris.unit.Unit`.
+            an instance of :class:`cf_units.Unit`.
 
         Returns:
             An ifunc.
@@ -697,7 +698,7 @@ class IFunc(object):
         function::
 
             sine_ifunc = iris.analysis.maths.IFunc(
-                numpy.sin, lambda cube: iris.unit.Unit('1'))
+                numpy.sin, lambda cube: cf_units.Unit('1'))
             sine_cube = sine_ifunc(cube)
 
         **Example usage 2** Define a function for the data arrays of two cubes

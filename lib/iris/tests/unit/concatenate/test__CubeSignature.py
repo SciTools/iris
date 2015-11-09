@@ -29,7 +29,7 @@ import iris
 from iris._concatenate import _CubeSignature as CubeSignature
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.unit import Unit
+from cf_units import Unit
 from iris.util import new_axis
 
 

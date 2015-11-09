@@ -39,7 +39,6 @@ import numpy as np
 import iris.aux_factory
 import iris.exceptions
 import iris.time
-import iris.unit
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
@@ -408,7 +407,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         * var_name:
             CF variable name of coordinate
         * units
-            The :class:`~iris.unit.Unit` of the coordinate's values.
+            The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
         * bounds
             An array of values describing the bounds of each cell. Given n

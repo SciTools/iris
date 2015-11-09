@@ -35,6 +35,7 @@ import tempfile
 import time
 import warnings
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -1347,7 +1348,7 @@ def unify_time_units(cubes):
             if time_coord.units.is_time_reference():
                 epoch = epochs.setdefault(time_coord.units.calendar,
                                           time_coord.units.origin)
-                new_unit = iris.unit.Unit(epoch, time_coord.units.calendar)
+                new_unit = cf_units.Unit(epoch, time_coord.units.calendar)
                 time_coord.convert_units(new_unit)
 
 

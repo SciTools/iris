@@ -35,7 +35,7 @@ from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
-import iris.unit
+import cf_units
 
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))
@@ -699,8 +699,8 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
                  src_x.units == 'degrees' or src_x.units == 'radians')
 
     # Get src and grid bounds in the same units.
-    x_units = iris.unit.Unit('radians') if spherical else src_x.units
-    y_units = iris.unit.Unit('radians') if spherical else src_y.units
+    x_units = cf_units.Unit('radians') if spherical else src_x.units
+    y_units = cf_units.Unit('radians') if spherical else src_y.units
 
     # Operate in highest precision.
     src_dtype = np.promote_types(src_x.bounds.dtype, src_y.bounds.dtype)
@@ -794,7 +794,7 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         * Only 2D cubes are supported.
         * All coordinates that span the :data:`src_cube` that don't define
           the horizontal curvilinear grid will be ignored.
-        * The :class:`iris.unit.Unit` of the horizontal grid coordinates
+        * The :class:`cf_units.Unit` of the horizontal grid coordinates
           must be either :data:`degrees` or :data:`radians`.
 
     Args:

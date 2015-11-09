@@ -26,6 +26,7 @@ import copy
 import datetime
 import unittest
 
+import cf_units
 import matplotlib.units
 import netcdftime
 import numpy as np
@@ -49,7 +50,7 @@ if pandas is not None:
     from iris.coords import DimCoord
     from iris.cube import Cube
     import iris.pandas
-    import iris.unit
+    import cf_units
 
 
 @skip_pandas
@@ -99,8 +100,8 @@ class TestAsSeries(tests.IrisTest):
 
     def test_time_360(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="ts")
-        time_unit = iris.unit.Unit("days since 2000-01-01 00:00",
-                                   calendar=iris.unit.CALENDAR_360_DAY)
+        time_unit = cf_units.Unit("days since 2000-01-01 00:00",
+                                  calendar=cf_units.CALENDAR_360_DAY)
         time_coord = DimCoord([0, 100.1, 200.2, 300.3, 400.4],
                               long_name="time", units=time_unit)
         cube.add_dim_coord(time_coord, 0)
@@ -233,8 +234,8 @@ class TestAsDataFrame(tests.IrisTest):
     def test_time_360(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
                     long_name="ts")
-        time_unit = iris.unit.Unit("days since 2000-01-01 00:00",
-                                   calendar=iris.unit.CALENDAR_360_DAY)
+        time_unit = cf_units.Unit("days since 2000-01-01 00:00",
+                                  calendar=cf_units.CALENDAR_360_DAY)
         time_coord = DimCoord([100.1, 200.2], long_name="time",
                               units=time_unit)
         cube.add_dim_coord(time_coord, 0)
@@ -339,7 +340,7 @@ class TestSeriesAsCube(tests.IrisTest):
                    netcdftime.datetime(2005, 5, 5, 5, 5, 5)])
         self.assertCML(
             iris.pandas.as_cube(series,
-                                calendars={0: iris.unit.CALENDAR_360_DAY}),
+                                calendars={0: cf_units.CALENDAR_360_DAY}),
             tests.get_result_path(('pandas', 'as_cube',
                                    'series_netcdfimte_360.cml')))
 
@@ -399,7 +400,7 @@ class TestDataFrameAsCube(tests.IrisTest):
         self.assertCML(
             iris.pandas.as_cube(
                 data_frame,
-                calendars={0: iris.unit.CALENDAR_360_DAY}),
+                calendars={0: cf_units.CALENDAR_360_DAY}),
             tests.get_result_path(('pandas', 'as_cube',
                                    'data_frame_netcdftime_360.cml')))
 

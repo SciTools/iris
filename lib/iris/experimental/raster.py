@@ -33,7 +33,7 @@ from osgeo import gdal, osr
 
 import iris
 import iris.coord_systems
-import iris.unit
+import cf_units
 
 
 _GDAL_DATATYPES = {
@@ -142,7 +142,7 @@ def export_geotiff(cube, fname):
             msg = 'Coordinate {!r} must have two bounds ' \
                 'per point.'.format(name)
             raise ValueError(msg)
-        if not (coord.units == iris.unit.Unit('degrees') or
+        if not (coord.units == cf_units.Unit('degrees') or
                 coord.units.is_convertible('meters')):
             raise ValueError('Coordinate {!r} units must be either degrees or '
                              'convertible to meters.'.format(name))

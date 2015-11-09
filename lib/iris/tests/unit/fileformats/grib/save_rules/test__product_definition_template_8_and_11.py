@@ -30,7 +30,7 @@ import iris.tests as tests
 import gribapi
 
 from iris.coords import CellMethod, DimCoord
-from iris.unit import Unit
+from cf_units import Unit
 from iris.tests import mock
 import iris.tests.stock as stock
 from iris.fileformats.grib._save_rules import \
