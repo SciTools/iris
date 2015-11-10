@@ -2367,7 +2367,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Convert a name, coord, or list of names/coords to a list of coords.
         """
         # If not iterable, convert to list of a single item
-        if not hasattr(names_or_coords, '__iter__'):
+        if (not hasattr(names_or_coords, '__iter__') or
+                isinstance(names_or_coords, str)):
             names_or_coords = [names_or_coords]
 
         coords = []
@@ -2413,7 +2414,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Required to handle a mix between types.
-        if not hasattr(ref_to_slice, '__iter__'):
+        if (not hasattr(ref_to_slice, '__iter__') or
+                isinstance(ref_to_slice, str)):
             ref_to_slice = [ref_to_slice]
 
         slice_dims = set()
@@ -2473,7 +2475,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError("'ordered' argument to slices must be boolean.")
 
         # Required to handle a mix between types
-        if not hasattr(ref_to_slice, '__iter__'):
+        if (not hasattr(ref_to_slice, '__iter__') or
+                isinstance(ref_to_slice, str)):
             ref_to_slice = [ref_to_slice]
 
         dim_to_slice = []

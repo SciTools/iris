@@ -34,7 +34,7 @@ def _get_NAME_loader(filename):
     import iris.fileformats.name_loaders as name_loaders
 
     load = None
-    with open(filename, 'r') as file_handle:
+    with open(filename, 'rb') as file_handle:
         header = name_loaders.read_header(file_handle)
 
     # Infer file type based on contents of header.

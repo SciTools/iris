@@ -62,11 +62,13 @@ hindcast_workaround = False
 _load_rules = None
 
 
-CENTRE_TITLES = {'egrr': 'U.K. Met Office - Exeter',
-                 'ecmf': 'European Centre for Medium Range Weather Forecasts',
-                 'rjtd': 'Tokyo, Japan Meteorological Agency',
-                 '55'  : 'San Francisco',
-                 'kwbc': 'US National Weather Service, National Centres for Environmental Prediction'}
+CENTRE_TITLES = {
+    'egrr': u'U.K. Met Office - Exeter',
+    'ecmf': u'European Centre for Medium Range Weather Forecasts',
+    'rjtd': u'Tokyo, Japan Meteorological Agency',
+    '55': u'San Francisco',
+    'kwbc': u'US National Weather Service, National Centres for Environmental '
+            u'Prediction'}
 
 TIME_RANGE_INDICATORS = {0:'none', 1:'none', 3:'time mean', 4:'time sum',
                          5:'time _difference', 10:'none',
@@ -447,7 +449,7 @@ class GribWrapper(object):
         #originating centre
         #TODO #574 Expand to include sub-centre
         self.extra_keys['_originatingCentre'] = CENTRE_TITLES.get(
-                                        centre, "unknown centre %s" % centre)
+            centre, u'unknown centre %s' % centre)
 
         #forecast time unit as a cm string
         #TODO #575 Do we want PP or GRIB style forecast delta?

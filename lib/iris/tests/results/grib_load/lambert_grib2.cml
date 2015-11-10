@@ -9,7 +9,7 @@
         <dimCoord id="a62739f9" points="[2.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="61bde96d" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="61bde96d" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="0f43c07d" points="[-2396487.0124, -2392487.0124, -2388487.0124,

@@ -27,7 +27,7 @@
         </auxCoord>
       </coord>
       <coord>
-        <auxCoord id="61bde96d" long_name="originating_centre" points="[	European Centre for Medium Range Weather Forecasts]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="61bde96d" long_name="originating_centre" points="[	European Centre for Medium Range Weather Forecasts]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord>
         <auxCoord id="a5c170db" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>

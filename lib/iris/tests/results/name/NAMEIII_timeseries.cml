@@ -63,7 +63,7 @@
 		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -132,7 +132,7 @@
 		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -200,7 +200,7 @@
 		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -268,7 +268,7 @@
 		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -336,7 +336,7 @@
 		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -5,7 +5,7 @@
       <coord datadims="[0]">
         <auxCoord id="78c32bc2" long_name="a" points="[2005, 2005, 2005, 2026, 2026, 2026, 2002, 2002,
 		2002, 2002, 2002, 2002, 2502, 2502, 2502, 2502,
-		2502, 2502, 2502, 2502, 2502]" shape="(21,)" units="Unit('1')" value_type="string"/>
+		2502, 2502, 2502, 2502, 2502]" shape="(21,)" units="Unit('1')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="414e1707" long_name="b" points="[ECMWF, ECMWF, ECMWF, UK Met Office,
@@ -13,7 +13,7 @@
 		CERFACS, IFM-GEOMAR, IFM-GEOMAR, IFM-GEOMAR,
 		UK Met Office, UK Met Office, UK Met Office,
 		UK Met Office, UK Met Office, UK Met Office,
-		UK Met Office, UK Met Office, UK Met Office]" shape="(21,)" units="Unit('1')" value_type="string"/>
+		UK Met Office, UK Met Office, UK Met Office]" shape="(21,)" units="Unit('1')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="56350344" long_name="c" points="[HOPE-E, Sys 1, Met 1, ENSEMBLES,
@@ -36,7 +36,7 @@
 		HadCM3, Sys 51, Met 15, ENSEMBLES,
 		HadCM3, Sys 51, Met 16, ENSEMBLES,
 		HadCM3, Sys 51, Met 17, ENSEMBLES,
-		HadCM3, Sys 51, Met 18, ENSEMBLES]" shape="(21,)" units="Unit('1')" value_type="string"/>
+		HadCM3, Sys 51, Met 18, ENSEMBLES]" shape="(21,)" units="Unit('1')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="32546e8d" long_name="d" points="[0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0,

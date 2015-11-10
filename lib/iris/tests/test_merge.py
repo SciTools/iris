@@ -194,7 +194,8 @@ class TestCombination(tests.IrisTest):
                                     long_name='y', units='1'), 0)
 
         for name, value in zip(['a', 'b', 'c', 'd'], [a, b, c, d]):
-            dtype = np.str if isinstance(value, six.string_types) else np.float32
+            dtype = (np.dtype(six.text_type)
+                     if isinstance(value, six.string_types) else np.float32)
             cube.add_aux_coord(AuxCoord(np.array([value], dtype=dtype),
                                         long_name=name, units='1'))
 
@@ -260,7 +261,7 @@ class TestDimSelection(tests.IrisTest):
                                     long_name='y', units='1'), 0)
 
         for name, value, dim in zip(['a', 'b'], [a, b], [a_dim, b_dim]):
-            dtype = np.str if isinstance(value, six.string_types) else np.float32
+            dtype = 'U' if isinstance(value, six.string_types) else np.float32
             ctype = DimCoord if dim else AuxCoord
             coord = ctype(np.array([value], dtype=dtype),
                           long_name=name, units='1')

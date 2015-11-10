@@ -79,7 +79,7 @@ def add_categorised_coord(cube, name, from_coord, category_function,
     result = category_function(from_coord, from_coord.points.ravel()[0])
     if isinstance(result, six.string_types):
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
-        vectorised_fn = lambda *args: str_vectorised_fn(*args).astype('|S64')
+        vectorised_fn = lambda *args: str_vectorised_fn(*args).astype('|U64')
     else:
         vectorised_fn = np.vectorize(category_function)
     new_coord = iris.coords.AuxCoord(vectorised_fn(from_coord,

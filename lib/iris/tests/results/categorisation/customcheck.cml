@@ -14,7 +14,7 @@
       <coord datadims="[0]">
         <auxCoord id="13e3ba2a" long_name="seasons" points="[djfm, djfm, djfm, djfm, amjj, amjj, amjj, amjj,
 		ason, ason, ason, ason, ason, djfm, djfm, djfm,
-		djfm, amjj, amjj, amjj, amjj, amjj, ason]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+		djfm, amjj, amjj, amjj, amjj, amjj, ason]" shape="(23,)" units="Unit('no_unit')" value_type="unicode"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="c2d27f9e" points="[0, 27, 54, 81, 108, 135, 162, 189, 216, 243,
