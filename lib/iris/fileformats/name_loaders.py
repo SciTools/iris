@@ -25,6 +25,7 @@ import datetime
 import re
 import warnings
 
+import cf_units
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord, CellMethod
@@ -32,7 +33,6 @@ import iris.coord_systems
 import iris.cube
 from iris.exceptions import TranslationError
 import iris.util
-import cf_units
 
 
 EARTH_RADIUS = 6371229.0

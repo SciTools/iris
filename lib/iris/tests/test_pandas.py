@@ -50,7 +50,6 @@ if pandas is not None:
     from iris.coords import DimCoord
     from iris.cube import Cube
     import iris.pandas
-    import cf_units
 
 
 @skip_pandas

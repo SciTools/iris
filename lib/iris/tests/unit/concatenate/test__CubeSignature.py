@@ -23,13 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
+from cf_units import Unit
 import numpy as np
 
 import iris
 from iris._concatenate import _CubeSignature as CubeSignature
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from cf_units import Unit
 from iris.util import new_axis
 
 

@@ -29,8 +29,9 @@ import iris.tests as tests
 
 from copy import deepcopy
 
-from iris.coords import DimCoord
 from cf_units import Unit
+
+from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import Probability
 from iris.fileformats.grib.grib_phenom_translation import _GribToCfDataClass
 

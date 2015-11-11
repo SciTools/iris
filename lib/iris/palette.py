@@ -29,13 +29,13 @@ import os
 import os.path
 import re
 
+import cf_units
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
 import numpy as np
 
 import iris.cube
 import iris.config
-import cf_units
 
 
 # Symmetric normalization function pivot points by SI unit.

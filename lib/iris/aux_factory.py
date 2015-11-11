@@ -27,11 +27,11 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
 import zlib
 
+import cf_units
 import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin
 import iris.coords
-import cf_units
 import iris.util
 
 
