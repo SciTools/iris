@@ -31,10 +31,11 @@ import iris.tests as tests
 from copy import deepcopy
 from datetime import datetime
 
+from cf_units import CALENDAR_GREGORIAN, Unit
+
 from iris.coords import DimCoord
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import reference_time_coord
-from cf_units import CALENDAR_GREGORIAN, Unit
 
 
 class Test(tests.IrisTest):

@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+import cf_units
 import gribapi
 
 import iris
@@ -30,7 +31,6 @@ from iris.fileformats.rules import Reference
 from iris.tests import mock
 from iris.tests.test_grib_load import TestGribSimple
 from iris.tests.unit.fileformats import TestField
-import cf_units
 
 from iris.fileformats.grib import GribWrapper
 from iris.fileformats.grib.load_rules import convert

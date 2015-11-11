@@ -35,6 +35,7 @@ import sys
 import types
 import warnings
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -42,7 +43,6 @@ import iris.config as config
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
-import cf_units
 from iris.util import is_regular, regular_step
 
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
@@ -112,7 +112,6 @@ def _rules_execution_environment():
         import iris.coords
         import iris.coord_systems
         import iris.fileformats.um_cf_map
-        import cf_units
         # Take a copy of all this module's globals.
         _rules_globals = globals().copy()
         # Add various other stuff.

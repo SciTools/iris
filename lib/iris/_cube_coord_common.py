@@ -23,8 +23,9 @@ import six
 
 import string
 
-import iris.std_names
 import cf_units
+
+import iris.std_names
 
 
 class LimitedAttributeDict(dict):

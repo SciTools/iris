@@ -24,13 +24,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import biggus
+import cf_units
 import numpy as np
 
 import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
 from iris.exceptions import ConcatenateError
-import cf_units
 
 
 class TestEpoch(tests.IrisTest):

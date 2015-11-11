@@ -29,13 +29,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import warnings
 
+import cf_units
 import gribapi
 import numpy as np
 import numpy.ma as ma
 
 import iris
 import iris.exceptions
-import cf_units
 from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,

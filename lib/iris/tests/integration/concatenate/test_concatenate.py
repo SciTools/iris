@@ -27,12 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
+import cf_units
 import numpy as np
 
 import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
-import cf_units
 from iris.util import unify_time_units
 
 

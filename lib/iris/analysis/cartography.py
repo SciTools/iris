@@ -26,6 +26,7 @@ from collections import namedtuple
 import copy
 import warnings
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -35,7 +36,6 @@ import iris.analysis
 import iris.coords
 import iris.coord_systems
 import iris.exceptions
-import cf_units
 
 
 # This value is used as a fall-back if the cube does not define the earth

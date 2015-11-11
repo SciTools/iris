@@ -26,6 +26,7 @@ import unittest
 from xml.dom.minidom import Document
 import logging
 
+import cf_units
 import numpy as np
 
 import iris
@@ -33,7 +34,6 @@ import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-import cf_units
 import iris.tests.stock
 
 

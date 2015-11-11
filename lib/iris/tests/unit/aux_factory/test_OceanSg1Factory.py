@@ -27,12 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from cf_units import Unit
 import numpy as np
 
 from iris.aux_factory import OceanSg1Factory
 from iris.coords import AuxCoord, DimCoord
 from iris.tests import mock
-from cf_units import Unit
 
 
 class Test___init__(tests.IrisTest):

@@ -26,9 +26,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
+from cf_units import Unit
+
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import time_range_unit
-from cf_units import Unit
 
 
 class Test(tests.IrisTest):

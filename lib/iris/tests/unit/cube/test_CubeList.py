@@ -23,11 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from cf_units import Unit
 import numpy as np
 
 from iris.cube import Cube, CubeList
 from iris.coords import AuxCoord, DimCoord
-from cf_units import Unit
 import iris.coord_systems
 import iris.exceptions
 
