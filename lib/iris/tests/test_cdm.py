@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -820,6 +820,7 @@ class TestCubeAPI(TestCube2d):
         metadata.units = ''
         metadata.attributes = {'random': '12'}
         metadata.cell_methods = ()
+        metadata.cell_measures_and_dims = []
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -828,12 +829,13 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.attributes, metadata.attributes)
         self.assertIsNot(self.t.attributes, metadata.attributes)
         self.assertEqual(self.t.cell_methods, ())
+        self.assertEqual(self.t._cell_measures_and_dims, [])
 
     def test_metadata_fail(self):
         with self.assertRaises(TypeError):
             self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'})
         with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), ())
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), [], ())
         with self.assertRaises(TypeError):
             self.t.metadata = {'standard_name': 'air_pressure',
                                'long_name': 'foo',

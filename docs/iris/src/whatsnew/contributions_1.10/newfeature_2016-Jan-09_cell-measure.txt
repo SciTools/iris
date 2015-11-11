@@ -1,0 +1,2 @@
+* The loading from and saving to netCDF of CF cell_measure variables is supported,
+  along with their representation within a Cube's as cell_measures.

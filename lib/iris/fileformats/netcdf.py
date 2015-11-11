@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -301,6 +301,11 @@ def _assert_case_specific_facts(engine, cf, cf_group):
     for cf_name in six.iterkeys(cf_group.auxiliary_coordinates):
         engine.add_case_specific_fact(_PYKE_FACT_BASE, 'auxiliary_coordinate',
                                       (cf_name,))
+
+    # Assert facts for CF cell measures.
+    for cf_name in six.iterkeys(cf_group.cell_measures):
+        engine.add_case_specific_fact(_PYKE_FACT_BASE,
+                                      'cell_measure', (cf_name,))
 
     # Assert facts for CF grid_mappings.
     for cf_name in six.iterkeys(cf_group.grid_mappings):
@@ -767,6 +772,10 @@ class Saver(object):
         # variable to them
         self._add_aux_coords(cube, cf_var_cube, dimension_names)
 
+        # Add the cell_measures variable names and associate the data
+        # variable to them
+        self._add_cell_measures(cube, cf_var_cube, dimension_names)
+
         # Add the formula terms to the appropriate cf variables for each
         # aux factory in the cube.
         self._add_aux_factories(cube, cf_var_cube, dimension_names)
@@ -895,6 +904,41 @@ class Saver(object):
         if auxiliary_coordinate_names:
             cf_var_cube.coordinates = ' '.join(
                 sorted(auxiliary_coordinate_names))
+
+    def _add_cell_measures(self, cube, cf_var_cube, dim_names):
+        """
+        Add cell measures to the dataset and associate with the data variable
+
+        Args:
+
+        * cube (:class:`iris.cube.Cube`):
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.
+        * cf_var_cube (:class:`netcdf.netcdf_variable`):
+            cf variable cube representation.
+        * dimension_names (list):
+            Names associated with the dimensions of the cube.
+
+        """
+        cell_measure_names = []
+        # Add CF-netCDF variables for the associated cell measures.
+        for cm in sorted(cube.cell_measures(), key=lambda cm: cm.name()):
+            # Create the associated cell measure CF-netCDF variable.
+            if cm not in self._name_coord_map.coords:
+                cf_name = self._create_cf_cell_measure_variable(cube,
+                                                                dim_names,
+                                                                cm)
+                self._name_coord_map.append(cf_name, cm)
+            else:
+                cf_name = self._name_coord_map.name(cm)
+
+            if cf_name is not None:
+                cell_measure_names.append('{}: {}'.format(cm.measure, cf_name))
+
+        # Add CF-netCDF cell measure variable references to the
+        # CF-netCDF data variable.
+        if cell_measure_names:
+            cf_var_cube.cell_measures = ' '.join(
+                sorted(cell_measure_names))
 
     def _add_dim_coords(self, cube, dimension_names):
         """
@@ -1201,6 +1245,63 @@ class Saver(object):
                     name = 'unknown_scalar'
             # Convert to lower case and replace whitespace by underscores.
             cf_name = '_'.join(name.lower().split())
+
+        return cf_name
+
+    def _create_cf_cell_measure_variable(self, cube, dimension_names,
+                                         cell_measure):
+        """
+        Create the associated CF-netCDF variable in the netCDF dataset for the
+        given cell_measure.
+
+        Args:
+
+        * cube (:class:`iris.cube.Cube`):
+            The associated cube being saved to CF-netCDF file.
+        * dimension_names (list):
+            Names for each dimension of the cube.
+        * cell_measure (:class:`iris.coords.CellMeasure`):
+            The cell measure to be saved to CF-netCDF file.
+
+        Returns:
+            The string name of the associated CF-netCDF variable saved.
+
+        """
+        cf_name = self._get_coord_variable_name(cube, cell_measure)
+        while cf_name in self._dataset.variables:
+            cf_name = self._increment_name(cf_name)
+
+        # Derive the data dimension names for the coordinate.
+        cf_dimensions = [dimension_names[dim] for dim in
+                         cube.cell_measure_dims(cell_measure)]
+
+        # Get the values in a form which is valid for the file format.
+        data = self._ensure_valid_dtype(cell_measure.data, 'coordinate',
+                                        cell_measure)
+
+        # Create the CF-netCDF variable.
+        cf_var = self._dataset.createVariable(
+            cf_name, data.dtype.newbyteorder('='), cf_dimensions)
+
+        # Add the data to the CF-netCDF variable.
+        cf_var[:] = data
+
+        if cell_measure.units != 'unknown':
+            cf_var.units = str(cell_measure.units)
+
+        if cell_measure.standard_name is not None:
+            cf_var.standard_name = cell_measure.standard_name
+
+        if cell_measure.long_name is not None:
+            cf_var.long_name = cell_measure.long_name
+
+        # Add any other custom coordinate attributes.
+        for name in sorted(cell_measure.attributes):
+            value = cell_measure.attributes[name]
+
+            # Don't clobber existing attributes.
+            if not hasattr(cf_var, name):
+                setattr(cf_var, name, value)
 
         return cf_name
 

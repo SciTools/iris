@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -208,6 +208,59 @@ class TestLazySave(tests.IrisTest):
             # Lazy save of the masked cube
             iris.save(ncube, other_filename, unlimited_dimensions=[])
             self.assertCDL(other_filename)
+
+
+class TestCellMeasures(tests.IrisTest):
+    def setUp(self):
+        self.fname = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
+
+    def test_load_raw(self):
+        cube, = iris.load_raw(self.fname)
+        self.assertEqual(len(cube.cell_measures()), 1)
+        self.assertEqual(cube.cell_measures()[0].measure, 'area')
+
+    def test_load(self):
+        cube = iris.load_cube(self.fname)
+        self.assertEqual(len(cube.cell_measures()), 1)
+        self.assertEqual(cube.cell_measures()[0].measure, 'area')
+
+    def test_merge_cell_measure_aware(self):
+        cube1, = iris.load_raw(self.fname)
+        cube2, = iris.load_raw(self.fname)
+        cube2._cell_measures_and_dims[0][0].var_name = 'not_areat'
+        cubes = CubeList([cube1, cube2]).merge()
+        self.assertEqual(len(cubes), 2)
+
+    def test_concatenate_cell_measure_aware(self):
+        cube1, = iris.load_raw(self.fname)
+        cube1 = cube1[:, :, 0, 0]
+        cm_and_dims = cube1._cell_measures_and_dims
+        cube2, = iris.load_raw(self.fname)
+        cube2 = cube2[:, :, 0, 0]
+        cube2._cell_measures_and_dims[0][0].var_name = 'not_areat'
+        cube2.coord('time').points = cube2.coord('time').points + 1
+        cubes = CubeList([cube1, cube2]).concatenate()
+        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
+        self.assertEqual(len(cubes), 2)
+
+    def test_concatenate_cell_measure_match(self):
+        cube1, = iris.load_raw(self.fname)
+        cube1 = cube1[:, :, 0, 0]
+        cm_and_dims = cube1._cell_measures_and_dims
+        cube2, = iris.load_raw(self.fname)
+        cube2 = cube2[:, :, 0, 0]
+        cube2.coord('time').points = cube2.coord('time').points + 1
+        cubes = CubeList([cube1, cube2]).concatenate()
+        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
+        self.assertEqual(len(cubes), 1)
+
+    def test_round_trip(self):
+        cube, = iris.load(self.fname)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(cube, filename, unlimited_dimensions=[])
+            round_cube, = iris.load_raw(filename)
+            self.assertEqual(len(round_cube.cell_measures()), 1)
+            self.assertEqual(round_cube.cell_measures()[0].measure, 'area')
 
 
 if __name__ == "__main__":
