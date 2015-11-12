@@ -20,6 +20,8 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+from numpy.lib.function_base import cov
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
@@ -30,7 +32,7 @@ import numpy as np
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal, unify_time_units
+from iris.util import guess_coord_axis, array_equal, monotonic
 
 
 #
@@ -324,7 +326,7 @@ class _CubeSignature(object):
 
         # Determine whether there are any anonymous cube dimensions.
         covered = set(cube.coord_dims(coord)[0] for coord in self.dim_coords)
-        self.anonymous = covered != set(range(self.ndim))
+        self.anonymous_dims = list(set(range(self.ndim)) - covered)
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
@@ -430,10 +432,10 @@ class _CubeSignature(object):
         msgs = []
 
         # Check if either cube is anonymous.
-        if self.anonymous or other.anonymous:
-            msg = ('Dimensions differ: one or both cubes have anonymous '
-                   'dimensions')
-            msgs.append(msg)
+        # if len(self.anonymous_dims) or len(other.anonymous_dims):
+        #     msg = ('Dimensions differ: one or both cubes have anonymous '
+        #            'dimensions')
+        #     msgs.append(msg)
         # Check cube definitions.
         if self.defn != other.defn:
             # Note that the case of different phenomenon names is dealt with
@@ -470,7 +472,7 @@ class _CubeSignature(object):
         return match
 
 
-class _CoordSignature(object):
+class _CoordsSignature(object):
     """
     Template for identifying a specific type of :class:`iris.cube.Cube` based
     on its coordinates.
@@ -490,6 +492,7 @@ class _CoordSignature(object):
         """
         self.aux_coords_and_dims = cube_signature.aux_coords_and_dims
         self.dim_coords = cube_signature.dim_coords
+        self.anonymous_dims = cube_signature.anonymous_dims
         self.dim_extents = []
         self.dim_order = [metadata.kwargs['order']
                           for metadata in cube_signature.dim_metadata]
@@ -536,7 +539,7 @@ class _CoordSignature(object):
         * other:
             The :class:`_CoordSignature`
 
-        Returns:
+        Returns:candidate axis
             None if no single candidate axis exists, otherwise
             the candidate axis of concatenation.
 
@@ -587,6 +590,117 @@ class _CoordSignature(object):
 
             self.dim_extents.append(_CoordExtent(points, bounds))
 
+    @staticmethod
+    def _candidate_axis_overlap(coord, other):
+        """
+        Determine if the coordinates on the candidate axis overlap.
+
+        Args:
+
+        * coord:
+            The candidate axis coordinate from this `_CoordsSignature`.
+        * other:
+            The candidate axis coordinate from the other `_CoordsSignature`.
+
+        Returns:
+            Tuple of boolean True if the coordinates overlap; False otherwise,
+            maximum value of smaller array and minimum value of larger array.
+
+        """
+        # TODO: use _CoordExtent objects instead?
+        smaller, larger = sorted([coord, other], key=lambda a: a.min())
+        smaller_max, larger_min = np.max(smaller), np.min(larger)
+        return smaller_max >= larger_min, smaller_max, larger_min
+
+    def match(self, other, error_on_mismatch):
+        """
+        Return whether this _CoordsSignature matches another.
+
+        This is a further step to determining if two "cubes" (either a
+        real Cube or a ProtoCube) can be concatenated, by comparing the
+        coordinates of the two cubes, specifically considering:
+            - anonymous dimensions
+            - overlap of candidate axes coordinates points
+            - equivalence of non-candidate axes coordinates points
+            - coords extents?
+            - ???
+
+        Args:
+
+        * other (_CoordsSignature):
+            The _CoordsSignature to compare against.
+
+        * error_on_mismatch: (bool):
+            If True, raise a :class:`~iris.exceptions.ConcatenateException`
+            with a detailed explanation if the two do not match.
+
+        Returns:
+            Boolean. True if and only if this _CoordsSignature matches the
+            other.
+
+        """
+        msg_template = '{}{} differ: {} != {}'
+        msgs = []
+        bad_anom_dims = []
+
+        for axis, coord in enumerate(self.dim_coords):
+            other_coord = other.dim_coords[axis]
+
+            # Check for mismatched anonymous dimensions.
+            coord_anonymous = axis in self.anonymous_dims
+            other_anonymous = axis in other.anonymous_dims
+            if np.logical_xor(coord_anonymous, other_anonymous):
+                bad_anom_dims.append(axis)
+
+            # Deal with candidate axis.
+            if axis == self.candidate_axis:
+                # Check if coordinates on candidate axis are identical.
+                # Note this implicitly tests if the cubes are identical too.
+                if np.all(coord == other_coord):
+                    msg = 'Identical coordinates on candidate axis: {} == {}'
+                    msgs.append(msg.format(coord.name, other_coord.name))
+                # Check for coordinate overlap on candidate axis.
+                result, sml, lrg = self._candidate_axis_overlap(coord,
+                                                                other_coord)
+                if result:
+                    msg = 'Coordinates overlap on concatenation axis: {} >= {}'
+                    msgs.append(msg.format(sml, lrg))
+                # Check resultant coordinate will be monotonic.
+                if not monotonic(np.concatenate((coord, other_coord))):
+                    msg = ('Coordinates on candidate axis ({}, {}) do not '
+                           'form a monotonic coordinate')
+                    msgs.append(msg.format(coord.name, other_coord.name))
+
+            # Now deal with all other axes.
+            else:
+                # Check if coordinates on current axis are not identical.
+                if not np.all(coord == other_coord):
+                    msg = msg_template.format('Coordinates', '',
+                                              coord.name, other_coord.name)
+                    msgs.append(msg)
+                # Check points and bounds extents are equal.
+                dim_extents = self.dim_extents[axis]
+                other_dim_extents = other.dim_extents[axis]
+                if not dim_extents.points == dim_extents.points:
+                    msg = msg_template.format('Coordinate', 'points',
+                                              coord.name, other_coord.name)
+                    msgs.append(msg)
+                if not dim_extents.bounds == dim_extents.bounds:
+                    msg = msg_template.format('Coordinate', 'bounds',
+                                              coord.name, other_coord.name)
+                    msgs.append(msg)
+                pass
+
+        # Add a single mismatched anonymous dimensions message as necessary.
+        if len(bad_anom_dims):
+            msg = 'Mismatched anonymous dimensions on cube axes {}'
+            msgs.append(msg.format(', '.join(str(d for d in bad_anom_dims))))
+
+        match = not bool(msgs)
+        if error_on_mismatch and not match:
+            raise iris.exceptions.ConcatenateError(msgs)
+        return match
+
 
 class _ProtoCube(object):
     """
@@ -614,7 +728,7 @@ class _ProtoCube(object):
 
         # The coordinate signature allows suitable non-overlapping
         # source-cubes to be identified.
-        self._coord_signature = _CoordSignature(self._cube_signature)
+        self._coord_signature = _CoordsSignature(self._cube_signature)
 
         # The list of source-cubes relevant to this proto-cube.
         self._skeletons = []
@@ -703,11 +817,15 @@ class _ProtoCube(object):
 
         # Check for compatible cube signatures.
         cube_signature = _CubeSignature(cube)
-        match = self._cube_signature.match(cube_signature, error_on_mismatch)
+        cube_match = self._cube_signature.match(cube_signature,
+                                                error_on_mismatch)
+        coord_signature = _CoordsSignature(cube_signature)
+        coords_match = self._coord_signature.match(coord_signature,
+                                                   error_on_mismatch)
+        match = cube_match and coords_match
 
         # Check for compatible coordinate signatures.
         if match:
-            coord_signature = _CoordSignature(cube_signature)
             candidate_axis = self._coord_signature.candidate_axis(
                 coord_signature)
             match = candidate_axis is not None and \
