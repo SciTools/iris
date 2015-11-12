@@ -2035,7 +2035,7 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
         pp_filter = _convert_constraints(constraints)
     pp_loader = iris.fileformats.rules.Loader(
         loading_function, loading_function_kwargs or {},
-        iris.fileformats.pp_rules.convert, None)
+        iris.fileformats.pp_rules.convert)
     return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader,
                                              pp_filter)
 

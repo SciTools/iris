@@ -894,7 +894,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         grib_loader = iris.fileformats.rules.Loader(
             _GribMessage.messages_from_filename,
             {},
-            iris.fileformats.grib._load_convert.convert, None)
+            iris.fileformats.grib._load_convert.convert)
     else:
         if auto_regularise is not None:
             # The old loader supports the auto_regularise keyword, but in
@@ -907,7 +907,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
 
         grib_loader = iris.fileformats.rules.Loader(
             grib_generator, {'auto_regularise': auto_regularise},
-            iris.fileformats.grib.load_rules.convert, None)
+            iris.fileformats.grib.load_rules.convert)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 
 

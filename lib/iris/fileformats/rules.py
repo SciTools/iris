@@ -779,9 +779,41 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     return result_cube
 
 
-Loader = collections.namedtuple('Loader',
-                                ('field_generator', 'field_generator_kwargs',
-                                 'converter', 'legacy_custom_rules'))
+_loader_attrs = ('field_generator', 'field_generator_kwargs',
+                 'converter', 'legacy_custom_rules')
+class Loader(collections.namedtuple('Loader', _loader_attrs)):
+    def __new__(cls, field_generator, field_generator_kwargs, converter,
+                legacy_custom_rules=None):
+        """
+        Create a definition of a field-based Cube loader.
+
+        Args:
+
+        * field_generator
+            A callable that accepts a filename as its first argument and
+            returns an iterable of field objects.
+
+        * field_generator_kwargs
+            Additional arguments to be passed to the field_generator.
+
+        * converter
+            A callable that converts a field object into a Cube.
+
+        Kwargs:
+
+        * legacy_custom_rules
+            An object with a callable `verify` attribute with two
+            parameters: (cube, field). Legacy method for modifying
+            Cubes during the load process. Default is None.
+
+            .. deprecated:: 1.9
+
+        """
+        if legacy_custom_rules is not None:
+            warnings.warn('The `legacy_custom_rules` attribute is '
+                          'deprecated.')
+        return tuple.__new__(cls, (field_generator, field_generator_kwargs,
+                                   converter, legacy_custom_rules))
 
 
 ConversionMetadata = collections.namedtuple('ConversionMetadata',
@@ -846,6 +878,8 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
 
             # Run any custom user-provided rules.
             if loader.legacy_custom_rules:
+                warnings.warn('The `legacy_custom_rules` attribute of '
+                              'the `loader` is deprecated.')
                 loader.legacy_custom_rules.verify(cube, field)
 
             cube = iris.io.run_callback(user_callback, cube, field, filename)
