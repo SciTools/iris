@@ -643,9 +643,9 @@ class CFLabelVariable(CFVariable):
                                 message = 'Missing CF-netCDF label variable %r, referenced by netCDF variable %r'
                                 warnings.warn(message % (name, nc_var_name))
                         else:
-                            # Restrict to only string type.
-                            if _is_str_dtype(variables[name]):
-                                var = variables[name]
+                            # Register variable, but only allow string type.
+                            var = variables[name]
+                            if _is_str_dtype(var):
                                 result[name] = CFLabelVariable(name, var)
 
         return result
