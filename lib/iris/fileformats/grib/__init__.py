@@ -58,10 +58,6 @@ __all__ = ['grib_generator', 'load_cubes',
 hindcast_workaround = False
 
 
-# rules for converting a grib message to a cm cube
-_load_rules = None
-
-
 CENTRE_TITLES = {'egrr': 'U.K. Met Office - Exeter',
                  'ecmf': 'European Centre for Medium Range Weather Forecasts',
                  'rjtd': 'Tokyo, Japan Meteorological Agency',
@@ -127,12 +123,7 @@ def reset_load_rules():
     .. deprecated:: 1.7
 
     """
-    # Uses this module-level variable
-    global _load_rules
-
     warnings.warn('reset_load_rules was deprecated in v1.7.')
-
-    _load_rules = None
 
 
 class GribDataProxy(object):
@@ -916,8 +907,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
 
         grib_loader = iris.fileformats.rules.Loader(
             grib_generator, {'auto_regularise': auto_regularise},
-            iris.fileformats.grib.load_rules.convert,
-            _load_rules)
+            iris.fileformats.grib.load_rules.convert, None)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 
 
