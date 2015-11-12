@@ -90,8 +90,41 @@ class ConcreteReferenceTarget(object):
 
 
 # Controls the deferred import of all the symbols from iris.coords.
-# This import all is used as the rules file does not use fully qualified class names.
+# This "import all" is used as the rules file does not use fully qualified class names.
+_rules_globals = None
 _import_pending = True
+def _rules_execution_environment():
+    """
+    Return a environment with the globals needed for rules code execution.
+
+    This is needed as the rules file does not use fully qualified class names.
+    If something is needed for rules execution, it can be added here.
+
+    A master environment is built only when needed (the first call).
+    This allows the import of various modules to be deferred, so we don't load
+    all of those when we merely import this module.
+
+    """
+    global _import_pending, _rules_globals
+    if _import_pending:
+        # Get all module globals, and add other deferred imports.
+        import iris.aux_factory
+        import iris.coords
+        import iris.coord_systems
+        import iris.fileformats.um_cf_map
+        import cf_units
+        # Take a copy of all this module's globals.
+        _rules_globals = globals().copy()
+        # Add various other stuff.
+        # NOTE: these are equivalent to "from xx import *": not tidy !
+        _rules_globals.update(iris.aux_factory.__dict__)
+        _rules_globals.update(iris.coords.__dict__)
+        _rules_globals.update(iris.coord_systems.__dict__)
+        _rules_globals.update(iris.fileformats.um_cf_map.__dict__)
+        _rules_globals.update(cf_units.__dict__)
+        _import_pending = False
+
+    return _rules_globals.copy()
 
 
 # Dummy logging routine for when we don't want to do any logging.
@@ -317,13 +350,15 @@ class Rule(object):
         if not conditions:
             conditions = 'None'
         # Create a method to evaluate the conditions.
-        # NB. This creates the name '_f' in the 'ns' namespace, which is then
-        # used below.
+        # NB. This creates the name '_f' in the 'compile_locals' namespace,
+        # which is then used below.
         code = 'def _f(self, field, f, pp, grib, cm): return %s' % conditions
-        ns = locals().copy()
-        exec(compile(code, '<string>', 'exec'), globals(), ns)
+        rules_globals = _rules_execution_environment()
+        compile_locals = {}
+        exec(compile(code, '<string>', 'exec'), rules_globals, compile_locals)
         # Make it a method of ours.
-        self._exec_conditions = six.create_bound_method(ns['_f'], self)
+        _f = compile_locals['_f']
+        self._exec_conditions = six.create_bound_method(_f, self)
 
     @abc.abstractmethod
     def _create_action_method(self, i, action):
@@ -365,17 +400,6 @@ class Rule(object):
         Adds to the given cube based on the return values of all the actions.
 
         """
-        # Deferred import of all the symbols from iris.coords.
-        # This import all is used as the rules file does not use fully qualified class names.
-        global _import_pending
-        if _import_pending:
-            globals().update(iris.aux_factory.__dict__)
-            globals().update(iris.coords.__dict__)
-            globals().update(iris.coord_systems.__dict__)
-            globals().update(iris.fileformats.um_cf_map.__dict__)
-            globals().update(cf_units.__dict__)
-            _import_pending = False
-
         # Define the variables which the eval command should be able to see
         f = field
         pp = field
@@ -407,16 +431,18 @@ class FunctionRule(Rule):
     """A Rule with values returned by its actions."""
     def _create_action_method(self, i, action):
         # CM loading style action. Returns an object, such as a coord.
-        ns = locals().copy()
+        # Compile a new method for the operation.
+        rules_globals = _rules_execution_environment()
+        compile_locals = {}
         exec(
             compile(
                 'def _f(self, field, f, pp, grib, cm): return %s' % (action, ),
                 '<string>',
                 'exec'),
-            globals(),
-            ns)
+            rules_globals, compile_locals)
         # Make it a method of ours.
-        method = six.create_bound_method(ns['_f'], self)
+        _f = compile_locals['_f']
+        method = six.create_bound_method(_f, self)
         setattr(self, '_exec_action_%d' % (i, ), method)
         # Add to our list of actions.
         self._exec_actions.append(method)
@@ -475,14 +501,15 @@ class ProcedureRule(Rule):
     """A Rule with nothing returned by its actions."""
     def _create_action_method(self, i, action):
         # PP saving style action. No return value, e.g. "pp.lbft = 3".
-        ns = locals().copy()
+        rules_globals = _rules_execution_environment()
+        compile_locals = {}
         exec(compile('def _f(self, field, f, pp, grib, cm): %s' % (action, ),
                      '<string>',
                      'exec'),
-             globals(),
-             ns)
+             rules_globals, compile_locals)
         # Make it a method of ours.
-        method = six.create_bound_method(ns['_f'], self)
+        _f = compile_locals['_f']
+        method = six.create_bound_method(_f, self)
         setattr(self, '_exec_action_%d' % (i, ), method)
         # Add to our list of actions.
         self._exec_actions.append(method)
