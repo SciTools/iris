@@ -591,15 +591,15 @@ class _CoordsSignature(object):
             self.dim_extents.append(_CoordExtent(points, bounds))
 
     @staticmethod
-    def _candidate_axis_overlap(coord, other):
+    def _candidate_axis_overlap(coord_extent, other_extent):
         """
         Determine if the coordinates on the candidate axis overlap.
 
         Args:
 
-        * coord:
+        * coord_extent (`CoordExtent` object):
             The candidate axis coordinate from this `_CoordsSignature`.
-        * other:
+        * other (`CoordExtent` object):
             The candidate axis coordinate from the other `_CoordsSignature`.
 
         Returns:
@@ -608,8 +608,10 @@ class _CoordsSignature(object):
 
         """
         # TODO: use _CoordExtent objects instead?
-        smaller, larger = sorted([coord, other], key=lambda a: a.min())
-        smaller_max, larger_min = np.max(smaller), np.min(larger)
+        smaller, larger = sorted([coord_extent, other_extent],
+                                 key=lambda ext: ext.points.min)
+        smaller_max = smaller.points.max
+        larger_min = larger.points.min
         return smaller_max >= larger_min, smaller_max, larger_min
 
     def match(self, other, error_on_mismatch):
@@ -658,7 +660,7 @@ class _CoordsSignature(object):
                 # Note this implicitly tests if the cubes are identical too.
                 if np.all(coord == other_coord):
                     msg = 'Identical coordinates on candidate axis: {} == {}'
-                    msgs.append(msg.format(coord.name, other_coord.name))
+                    msgs.append(msg.format(coord.name(), other_coord.name()))
                 # Check for coordinate overlap on candidate axis.
                 result, sml, lrg = self._candidate_axis_overlap(coord,
                                                                 other_coord)
@@ -669,25 +671,25 @@ class _CoordsSignature(object):
                 if not monotonic(np.concatenate((coord, other_coord))):
                     msg = ('Coordinates on candidate axis ({}, {}) do not '
                            'form a monotonic coordinate')
-                    msgs.append(msg.format(coord.name, other_coord.name))
+                    msgs.append(msg.format(coord.name(), other_coord.name()))
 
             # Now deal with all other axes.
             else:
                 # Check if coordinates on current axis are not identical.
                 if not np.all(coord == other_coord):
                     msg = msg_template.format('Coordinates', '',
-                                              coord.name, other_coord.name)
+                                              coord.name(), other_coord.name())
                     msgs.append(msg)
                 # Check points and bounds extents are equal.
                 dim_extents = self.dim_extents[axis]
                 other_dim_extents = other.dim_extents[axis]
                 if not dim_extents.points == dim_extents.points:
                     msg = msg_template.format('Coordinate', 'points',
-                                              coord.name, other_coord.name)
+                                              coord.name(), other_coord.name())
                     msgs.append(msg)
                 if not dim_extents.bounds == dim_extents.bounds:
                     msg = msg_template.format('Coordinate', 'bounds',
-                                              coord.name, other_coord.name)
+                                              coord.name(), other_coord.name())
                     msgs.append(msg)
                 pass
 
