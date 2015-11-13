@@ -95,7 +95,7 @@ _rules_globals = None
 _import_pending = True
 def _rules_execution_environment():
     """
-    Return a environment with the globals needed for rules code execution.
+    Return an environment with the globals needed for rules code execution.
 
     This is needed as the rules file does not use fully qualified class names.
     If something is needed for rules execution, it can be added here.
