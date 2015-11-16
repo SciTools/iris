@@ -1285,11 +1285,23 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         values = self.points
-        value_type_name = values.dtype.name
-        if self.points.dtype.kind == 'S':
+        dtype = values.dtype
+        kind = dtype.kind
+        if kind in 'SU':
+            # Establish the basic type name for 'string' type data.
+            # N.B. this means "unicode" in Python3, and "str" in Python2.
             value_type_name = 'string'
-        elif self.points.dtype.kind == 'U':
-            value_type_name = 'unicode'
+
+            # Override this if not the 'native' string type.
+            if six.PY3:
+                if kind == 'S':
+                    value_type_name = 'bytes'
+            else:
+                if kind == 'U':
+                    value_type_name = 'unicode'
+        else:
+            value_type_name = dtype.name
+
         return value_type_name
 
 
