@@ -81,7 +81,11 @@ data_header_int16s = ("radar_num", "radars_bitmask", "more_radars_bitmask",
 def _read_chars(infile, num):
     """Read characters from the (big-endian) file."""
     instr = infile.read(num)
-    return struct.unpack(">%ds" % num, instr)[0]
+    result = struct.unpack(">%ds" % num, instr)[0]
+    if six.PY3:
+        # For Python 3, convert raw bytes into a string.
+        result = result.decode()
+    return result
 
 
 class NimrodField(object):
