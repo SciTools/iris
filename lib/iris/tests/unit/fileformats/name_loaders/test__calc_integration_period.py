@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,9 +31,15 @@ import datetime
 from iris.fileformats.name_loaders import _calc_integration_period
 
 
-class Tests(tests.IrisTest):
+class Test(tests.IrisTest):
     def test_30_min_av(self):
         time_avgs = ['             30min average']
+        result = _calc_integration_period(time_avgs)
+        expected = [datetime.timedelta(0, (30*60))]
+        self.assertEqual(result, expected)
+
+    def test_30_min_av_lstrip(self):
+        time_avgs = ['             30min average'.lstrip()]
         result = _calc_integration_period(time_avgs)
         expected = [datetime.timedelta(0, (30*60))]
         self.assertEqual(result, expected)
@@ -47,7 +53,7 @@ class Tests(tests.IrisTest):
     def test_3_hour_int(self):
         time_avgs = ['         3hr 0min integral']
         result = _calc_integration_period(time_avgs)
-        expected = [datetime.timedelta(0, (30*60*60))]
+        expected = [datetime.timedelta(0, (3*60*60))]
         self.assertEqual(result, expected)
 
     def test_12_hour_av(self):

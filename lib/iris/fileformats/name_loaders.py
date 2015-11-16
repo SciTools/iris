@@ -193,19 +193,22 @@ def _calc_integration_period(time_avgs):
     """
     integration_periods = []
     pattern = re.compile(
-        r'(\d{0,2})(day)?\s*(\d{1,2})(hr)?\s*(\d{1,2})(min)?\s*(\w*)')
+        r'\s*(\d{1,2}day)?\s*(\d{1,2}hr)?\s*(\d{1,2}min)?\s*(\w*)\s*')
     for time_str in time_avgs:
         days = 0
         hours = 0
         minutes = 0
         matches = pattern.search(time_str)
         if matches:
-            if len(matches.group(1)) > 0:
-                days = float(matches.group(1))
-            if len(matches.group(3)) > 0:
-                hours = float(matches.group(3))
-            if len(matches.group(1)) > 0:
-                minutes = float(matches.group(5))
+            _days = matches.group(1)
+            if _days is not None and len(_days) > 0:
+                days = float(_days.rstrip('day'))
+            _hours = matches.group(2)
+            if _hours is not None and len(_hours) > 0:
+                hours = float(_hours.rstrip('hr'))
+            _minutes = matches.group(3)
+            if _minutes is not None and len(_minutes) > 0:
+                minutes = float(_minutes.rstrip('min'))
         total_hours = days * 24.0 + hours + minutes / 60.0
         integration_periods.append(datetime.timedelta(hours=total_hours))
     return integration_periods
