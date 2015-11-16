@@ -386,8 +386,8 @@ def exponentiate(cube, exponent, in_place=False):
     """
     _assert_is_cube(cube)
 
-    def power(data, out=None):
-        return np.power(data, exponent, out)
+    def power(data):
+        return np.power(data, exponent)
 
     return _math_op_common(cube, power, cube.units ** exponent,
                            in_place=in_place)
@@ -660,7 +660,7 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
             operation_function(new_cube._my_data, out=new_cube._my_data)
         except TypeError:
             # Non ufunc function
-            operation_function(new_cube.data)
+            operation_function(new_cube._my_data)
     else:
         new_cube = cube.copy(data=operation_function(cube._my_data))
     iris.analysis.clear_phenomenon_identity(new_cube)
