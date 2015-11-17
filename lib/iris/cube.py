@@ -567,6 +567,17 @@ class CubeList(list):
         return iris._concatenate.concatenate(self)
 
 
+def _is_single_item(testee):
+    """
+    Return whether this is a single item, rather than an iterable.
+
+    We count string types as 'single', also.
+
+    """
+    return (isinstance(testee, six.string_types)
+            or not isinstance(testee, collections.Iterable))
+
+
 class Cube(CFVariableMixin):
     """
     A single Iris cube of data and metadata.
@@ -2367,7 +2378,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Convert a name, coord, or list of names/coords to a list of coords.
         """
         # If not iterable, convert to list of a single item
-        if not hasattr(names_or_coords, '__iter__'):
+        if _is_single_item(names_or_coords):
             names_or_coords = [names_or_coords]
 
         coords = []
@@ -2413,7 +2424,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Required to handle a mix between types.
-        if not hasattr(ref_to_slice, '__iter__'):
+        if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
 
         slice_dims = set()
@@ -2473,7 +2484,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError("'ordered' argument to slices must be boolean.")
 
         # Required to handle a mix between types
-        if not hasattr(ref_to_slice, '__iter__'):
+        if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
 
         dim_to_slice = []
