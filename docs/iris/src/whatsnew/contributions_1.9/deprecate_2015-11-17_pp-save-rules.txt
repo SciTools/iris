@@ -1,0 +1,1 @@
+* deprecated :meth:`iris.fileformats.pp.add_save_rules` and :meth:`iris.fileformats.pp.reset_save_rules`.
