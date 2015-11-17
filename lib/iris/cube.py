@@ -574,11 +574,8 @@ def _is_single_item(testee):
     We count string types as 'single', also.
 
     """
-    if isinstance(testee, six.string_types):
-        result = True
-    else:
-        result = not isinstance(testee, collections.Iterable)
-    return result
+    return (isinstance(testee, six.string_types)
+            or not isinstance(testee, collections.Iterable))
 
 
 class Cube(CFVariableMixin):
