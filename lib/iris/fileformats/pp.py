@@ -63,8 +63,7 @@ __all__ = ['load', 'save', 'load_cubes', 'PPField',
 EARTH_RADIUS = 6371229.0
 
 
-# PP->Cube and Cube->PP rules are loaded on first use
-_load_rules = None
+# Cube->PP rules are loaded on first use
 _save_rules = None
 
 
@@ -1891,24 +1890,6 @@ def _field_gen(filename, read_data_bytes):
             yield pp_field
 
 
-def _ensure_load_rules_loaded():
-    """Makes sure the standard conversion and verification rules are loaded."""
-
-    # Uses these module-level variables
-    global _load_rules, _cross_reference_rules
-
-    rules = iris.fileformats.rules
-
-    if _load_rules is None:
-        basepath = iris.config.CONFIG_PATH
-        _load_rules = rules.RulesContainer(os.path.join(basepath, 'pp_rules.txt'))
-
-    if _cross_reference_rules is None:
-        basepath = iris.config.CONFIG_PATH
-        _cross_reference_rules = rules.RulesContainer(os.path.join(basepath, 'pp_cross_reference_rules.txt'),
-                                                           rule_type=rules.ObjectReturningRule)
-
-
 def reset_load_rules():
     """
     Resets the PP load process to use only the standard conversion rules.
@@ -1916,12 +1897,7 @@ def reset_load_rules():
     .. deprecated:: 1.7
 
     """
-    # Uses this module-level variable
-    global _load_rules
-
     warnings.warn('reset_load_rules was deprecated in v1.7.')
-
-    _load_rules = None
 
 
 def _ensure_save_rules_loaded():
@@ -2059,7 +2035,7 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
         pp_filter = _convert_constraints(constraints)
     pp_loader = iris.fileformats.rules.Loader(
         loading_function, loading_function_kwargs or {},
-        iris.fileformats.pp_rules.convert, _load_rules)
+        iris.fileformats.pp_rules.convert)
     return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader,
                                              pp_filter)
 

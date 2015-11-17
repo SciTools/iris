@@ -35,8 +35,7 @@ class Test(tests.IrisTest):
         filenames = [tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))]
         stcon = iris.AttributeConstraint(STASH='m01s00i004')
         pp_constraints = pp._convert_constraints(stcon)
-        pp_loader = iris.fileformats.rules.Loader(pp.load, {},
-                                                  convert, pp._load_rules)
+        pp_loader = iris.fileformats.rules.Loader(pp.load, {}, convert)
         cubes = list(load_cubes(filenames, None, pp_loader, pp_constraints))
         self.assertEqual(len(cubes), 38)
 
@@ -46,8 +45,7 @@ class Test(tests.IrisTest):
         stcon1 = iris.AttributeConstraint(STASH='m01s00i004')
         stcon2 = iris.AttributeConstraint(STASH='m01s00i010')
         pp_constraints = pp._convert_constraints([stcon1, stcon2])
-        pp_loader = iris.fileformats.rules.Loader(pp.load, {},
-                                                  convert, pp._load_rules)
+        pp_loader = iris.fileformats.rules.Loader(pp.load, {}, convert)
         cubes = list(load_cubes(filenames, None, pp_loader, pp_constraints))
         self.assertEqual(len(cubes), 76)
 
@@ -55,8 +53,7 @@ class Test(tests.IrisTest):
     def test_pp_no_constraint(self):
         filenames = [tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))]
         pp_constraints = pp._convert_constraints(None)
-        pp_loader = iris.fileformats.rules.Loader(pp.load, {},
-                                                  convert, pp._load_rules)
+        pp_loader = iris.fileformats.rules.Loader(pp.load, {}, convert)
         cubes = list(load_cubes(filenames, None, pp_loader, pp_constraints))
         self.assertEqual(len(cubes), 152)
 
