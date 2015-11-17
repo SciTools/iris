@@ -70,6 +70,12 @@ reference_terms = dict(atmosphere_sigma_coordinate=['ps'],
                        ocean_s_coordinate_g2=['eta', 'depth'])
 
 
+# NetCDF returns a different type for strings depending on Python version.
+def _is_str_dtype(var):
+    return ((six.PY2 and np.issubdtype(var.dtype, np.str)) or
+            (six.PY3 and np.issubdtype(var.dtype, np.bytes_)))
+
+
 ################################################################################
 class CFVariable(six.with_metaclass(ABCMeta, object)):
     """Abstract base class wrapper for a CF-netCDF variable."""
@@ -313,7 +319,7 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
                                 warnings.warn(message % (name, nc_var_name))
                         else:
                             # Restrict to non-string type i.e. not a CFLabelVariable.
-                            if not np.issubdtype(variables[name].dtype, np.str):
+                            if not _is_str_dtype(variables[name]):
                                 result[name] = CFAuxiliaryCoordinateVariable(name, variables[name])
 
         return result
@@ -478,7 +484,7 @@ class CFCoordinateVariable(CFVariable):
             if nc_var_name in ignore:
                 continue
             # String variables can't be coordinates
-            if np.issubdtype(nc_var.dtype, np.str):
+            if _is_str_dtype(nc_var):
                 continue
             # Restrict to one-dimensional with name as dimension OR zero-dimensional scalar
             if not ((nc_var.ndim == 1 and nc_var_name in nc_var.dimensions) or (nc_var.ndim == 0)):
@@ -637,9 +643,10 @@ class CFLabelVariable(CFVariable):
                                 message = 'Missing CF-netCDF label variable %r, referenced by netCDF variable %r'
                                 warnings.warn(message % (name, nc_var_name))
                         else:
-                            # Restrict to only string type.
-                            if np.issubdtype(variables[name].dtype, np.str):
-                                result[name] = CFLabelVariable(name, variables[name])
+                            # Register variable, but only allow string type.
+                            var = variables[name]
+                            if _is_str_dtype(var):
+                                result[name] = CFLabelVariable(name, var)
 
         return result
 
@@ -683,7 +690,9 @@ class CFLabelVariable(CFVariable):
 
             # Calculate new label data shape (without string dimension) and create payload array.
             new_shape = tuple(dim_len for i, dim_len in enumerate(self.shape) if i != str_dim)
-            data = np.empty(new_shape, dtype='|S%d' % self.shape[str_dim])
+            string_basetype = '|S%d' if six.PY2 else '|U%d'
+            string_dtype = string_basetype % self.shape[str_dim]
+            data = np.empty(new_shape, dtype=string_dtype)
 
             for index in np.ndindex(new_shape):
                 # Create the slice for the label data.
@@ -692,7 +701,10 @@ class CFLabelVariable(CFVariable):
                 else:
                     label_index = index + (slice(None, None),)
 
-                data[index] = ''.join(label_data[label_index]).strip()
+                label_string = b''.join(label_data[label_index]).strip()
+                if six.PY3:
+                    label_string = label_string.decode('utf8')
+                data[index] = label_string
 
         return data
 
