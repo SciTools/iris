@@ -28,6 +28,7 @@ with extest_util.add_examples_to_path():
     import polar_stereo
 
 
+@tests.skip_grib
 class TestPolarStereo(tests.GraphicsTest):
     """Test the polar_stereo example code."""
     def test_polar_stereo(self):
