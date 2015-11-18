@@ -38,6 +38,12 @@ class Test(tests.IrisTest):
         expected = [datetime.timedelta(0, (30*60))]
         self.assertEqual(result, expected)
 
+    def test_30_min_av_rspace(self):
+        time_avgs = ['             30min average  ']
+        result = _calc_integration_period(time_avgs)
+        expected = [datetime.timedelta(0, (30*60))]
+        self.assertEqual(result, expected)
+
     def test_30_min_av_lstrip(self):
         time_avgs = ['             30min average'.lstrip()]
         result = _calc_integration_period(time_avgs)
