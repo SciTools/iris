@@ -35,8 +35,7 @@ import string
 import warnings
 
 import biggus
-import iris.proxy
-iris.proxy.apply_proxy('netCDF4', globals())
+import netCDF4
 import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
@@ -365,7 +364,6 @@ def _set_attributes(attributes, key, value):
 
 def _load_cube(engine, cf, cf_var, filename):
     """Create the cube associated with the CF-netCDF data variable."""
-
     # Figure out what the eventual data type will be after any scale/offset
     # transforms.
     dummy_data = np.zeros(1, dtype=cf_var.dtype)
