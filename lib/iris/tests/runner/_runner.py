@@ -27,6 +27,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import glob
 import multiprocessing
 import os
+import six
 import sys
 
 
@@ -181,9 +182,13 @@ class TestRunner():
         args = ['', None, '--processes=%s' % n_processors,
                 '--verbosity=2', regexp_pat,
                 '--process-timeout=250']
-        try:
-            import gribapi
-        except ImportError:
+        gribapi = None
+        if six.PY2:
+            try:
+                import gribapi
+            except ImportError:
+                pass
+        if not gribapi:
             args.append('--exclude=^grib$')
         if self.stop:
             args.append('--stop')
