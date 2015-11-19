@@ -1,0 +1,3 @@
+* Support for running on Python 3.4 has been added to the whole code base. Some features which
+  depend on external libraries will not be available until they also support Python 3, namely:
+   * gribapi does not yet provide a Python 3 interface
