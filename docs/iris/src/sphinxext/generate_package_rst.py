@@ -75,7 +75,47 @@ def lookup_object_type(obj):
 
 def auto_doc_module(file_path, import_name, root_package,
                     package_toc=None, title=None):
-    mod = __import__(import_name)
+    doc = r'''.. _{import_name}:
+
+{title_underline}
+{title}
+{title_underline}
+
+{sidebar}
+
+.. currentmodule:: {root_package}
+
+.. automodule:: {import_name}
+
+In this module:
+
+{module_elements}
+
+
+'''
+    if package_toc:
+        sidebar = '''
+.. sidebar:: Modules in this package
+
+{package_toc_tree}
+
+    '''.format(package_toc_tree=package_toc)
+    else:
+        sidebar = ''
+
+    try:
+        mod = __import__(import_name)
+    except ImportError as e:
+        message = r'''.. error::
+
+    This module could not be imported. Some dependencies are missing::
+
+        ''' + str(e)
+        return doc.format(title=title or import_name,
+                          title_underline='=' * len(title or import_name),
+                          import_name=import_name, root_package=root_package,
+                          sidebar=sidebar, module_elements=message)
+
     mod = sys.modules[import_name]
     elems = dir(mod)
 
@@ -119,34 +159,7 @@ def auto_doc_module(file_path, import_name, root_package,
     module_elements = '\n'.join(' * :py:obj:`{}`'.format(element)
                                 for element, obj in document_these)
 
-    lines = r'''.. _{import_name}:
-
-{title_underline}
-{title}
-{title_underline}
-
-{sidebar}
-
-.. currentmodule:: {root_package}
-
-.. automodule:: {import_name}
-
-In this module:
-
-{module_elements}
-
-
-''' + lines
-    if package_toc:
-        sidebar = '''
-.. sidebar:: Modules in this package
-
-{package_toc_tree}
-
-    '''.format(package_toc_tree=package_toc)
-    else:
-        sidebar = ''
-
+    lines = doc + lines
     return lines.format(title=title or import_name,
                         title_underline='=' * len(title or import_name),
                         import_name=import_name, root_package=root_package,
