@@ -14,6 +14,14 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Build a release file from files in a contributions directory.
+
+Looks for directories "<...whatsnew>/contributions_<xx.xx>".
+Takes specified "xx.xx" as version, or latest found (alphabetic).
+Writes a file "<...whatsnew>/<xx.xx>.rst".
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -33,7 +41,9 @@ CONTRIBUTION_REGEX_STRING = r'(?P<category>.*)'
 CONTRIBUTION_REGEX_STRING += r'_(?P<isodate>\d{4}-\d{2}-\d{2})'
 CONTRIBUTION_REGEX_STRING += r'_(?P<summary>.*)\.txt$'
 CONTRIBUTION_REGEX = re.compile(CONTRIBUTION_REGEX_STRING)
-RELEASE_REGEX = re.compile(r'contributions_(?P<release>.*)$')
+RELEASEDIR_PREFIX = r'contributions_'
+_RELEASEDIR_REGEX_STRING = RELEASEDIR_PREFIX + r'(?P<release>.*)$'
+RELEASE_REGEX = re.compile(_RELEASEDIR_REGEX_STRING)
 SOFTWARE_NAME = 'Iris'
 EXTENSION = '.rst'
 VALID_CATEGORIES = [
@@ -43,6 +53,21 @@ VALID_CATEGORIES = [
     {'Prefix': 'deprecate', 'Title': 'Deprecations'},
     {'Prefix': 'docchange', 'Title': 'Documentation Changes'}
 ]
+VALID_CATEGORY_PREFIXES = [cat['Prefix'] for cat in VALID_CATEGORIES]
+
+def _self_root_directory():
+    return os.path.abspath(os.path.dirname(__file__))
+
+
+def _decode_contribution_filename(file_name):
+    file_name_elements = CONTRIBUTION_REGEX.match(file_name)
+    category = file_name_elements.group('category')
+    if category not in VALID_CATEGORY_PREFIXES:
+        # This is an error
+        raise ValueError('Unknown category in contribution filename.')
+    isodate = file_name_elements.group('isodate')
+    date_of_item = datetime.datetime.strptime(isodate, '%Y-%m-%d').date()
+    return category, isodate, date_of_item
 
 
 def is_release_directory(directory_name, release):
@@ -70,21 +95,63 @@ def is_compiled_release(root_directory, release):
     return result
 
 
-def find_release_directory(root_directory, release):
-    '''Returns the matching contribution directory or rasises an exception.'''
-    result = None
+def get_latest_release(root_directory=None):
+    """
+    Implement default=latest release identification.
+
+    Returns a valid release code.
+
+    """
+    if root_directory is None:
+        root_directory = _self_root_directory()
     directory_contents = os.listdir(root_directory)
-    compiled_release = is_compiled_release(root_directory, release)
-    if compiled_release:
-        raise OSError("Specified release is already compiled.")
+    # Default release to latest visible dir.
+    possible_release_dirs = [releasedir_name
+                             for releasedir_name in directory_contents
+                             if RELEASE_REGEX.match(releasedir_name)]
+    if len(possible_release_dirs) == 0:
+        raise ValueError('No valid release directories found, '
+                         'i.e. "{}/{}*"'.format(root_directory))
+    release_dirname = sorted(possible_release_dirs)[-1]
+    release = RELEASE_REGEX.match(release_dirname).group('release')
+    return release
+
+
+def find_release_directory(root_directory, release=None,
+                           fail_on_existing=True):
+    '''
+    Returns the matching contribution directory or raises an exception.
+
+    Defaults to latest-found release (from release directory names).
+    Optionally, fail if the matching release file already exists.
+    *Always* fail if no release directory exists.
+
+    '''
+    if release is None:
+        # Default to latest release.
+        release = get_latest_release(root_directory)
+
+    if fail_on_existing:
+        compiled_release = is_compiled_release(root_directory, release)
+        if compiled_release:
+            msg = 'Specified release {} is already compiled : "{}" exists.'
+            compiled_filename = '{!s}{}'.format(release, EXTENSION)
+            raise ValueError(msg.format(release, compiled_filename))
+
+    directory_contents = os.listdir(root_directory)
+    result = None
     for inode in directory_contents:
-        if os.path.isdir(inode):
+        node_path = os.path.join(root_directory, inode)
+        if os.path.isdir(node_path):
             release_directory = is_release_directory(inode, release)
             if release_directory:
                 result = os.path.join(root_directory, inode)
                 break
     if not result:
-        raise OSError("Contribution folder for this release does not exist.")
+        msg = 'Contribution folder for release {} does not exist : no "{}".'
+        release_dirname = '{}{!s}/'.format(RELEASEDIR_PREFIX, release)
+        release_dirpath = os.path.join(root_directory, release_dirname)
+        raise ValueError(msg.format(release, release_dirpath))
     return result
 
 
@@ -115,16 +182,12 @@ def read_directory(directory_path):
     compilable_files_unsorted = []
     misnamed_files = []
     for file_name in directory_contents:
-        file_name_elements = CONTRIBUTION_REGEX.match(file_name)
         try:
-            category = file_name_elements.group('category')
-            isodate = file_name_elements.group('isodate')
+            category, isodate, date_of_item = \
+                _decode_contribution_filename(file_name)
         except (AttributeError, ValueError):
             misnamed_files.append(file_name)
             continue
-        else:
-            date_of_item = datetime.datetime.strptime(isodate,
-                                                      '%Y-%m-%d').date()
         compilable_files_unsorted.append({'Category': category,
                                           'Date': date_of_item,
                                           'FileName': file_name})
@@ -132,8 +195,12 @@ def read_directory(directory_path):
                               key=itemgetter('Date'),
                               reverse=True)
     if misnamed_files:
-        warning_text = 'Skipped files: {!s}'.format(misnamed_files)
-        warnings.warn(warning_text, UserWarning)
+        msg = 'Found contribution file(s) with unexpected names :'
+        for filename in misnamed_files:
+            full_path = os.path.join(directory_path, filename)
+            msg += '\n  {}'.format(full_path)
+        warnings.warn(msg, UserWarning)
+
     return compilable_files
 
 
@@ -165,9 +232,20 @@ def compile_directory(directory, release):
     return compiled_text
 
 
-def run_compilation(release):
+def check_all_contributions_valid(release=None):
+    """"Scan the contributions directory for badly-named files."""
+    root_directory = _self_root_directory()
+    release_directory = find_release_directory(root_directory, release,
+                                               fail_on_existing=False)
+    # Run the directory scan, but convert any warning into an error.
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        compile_directory(release_directory, release)
+
+
+def run_compilation(release=None):
     '''Write a draft release.rst file given a specified uncompiled release.'''
-    root_directory = os.getcwd()
+    root_directory = _self_root_directory()
     release_directory = find_release_directory(root_directory, release)
     compiled_text = compile_directory(release_directory, release)
     compiled_filename = '{!s}{}'.format(release, EXTENSION)
@@ -176,9 +254,16 @@ def run_compilation(release):
         for string_line in compiled_text:
             output_object.write(string_line)
 
+
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
+    _DUMMY_VERSION = '9999.9999'
     PARSER.add_argument("release", help="Release number to be compiled",
+                        nargs='?', default=_DUMMY_VERSION,
                         type=version.StrictVersion)
     ARGUMENTS = PARSER.parse_args()
-    run_compilation(ARGUMENTS.release)
+    release = ARGUMENTS.release
+    if release == _DUMMY_VERSION:
+        release = get_latest_release()
+    print('Building release document for release "{!s}"'.format(release))
+    run_compilation(release)
