@@ -13,32 +13,33 @@ python:
 sudo: false
 
 env:
-  - TEST_TARGET=default
-  - TEST_TARGET=default TEST_MINIMAL=true
-  - TEST_TARGET=coding
-  - TEST_TARGET=example
-  - TEST_TARGET=doctest
+  global:
+    - IRIS_TEST_DATA_REF="037fee7d26de00897d1694ec040b6ed895d24a38"
+    - IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
+    - CONDA_INSTALL_LOCN=${HOME}/miniconda
+  matrix:
+    - TEST_TARGET=default
+    - TEST_TARGET=default TEST_MINIMAL=true
+    - TEST_TARGET=coding
+    - TEST_TARGET=example
+    - TEST_TARGET=doctest
 
 git:
+  # We need the depth so that we can test each of the licence dates by
+  # inspecting the last change date.
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="037fee7d26de00897d1694ec040b6ed895d24a38"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
-
-  - export IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
   # -----------------
-  - export CONDA_BASE=http://repo.continuum.io/miniconda/Miniconda
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
-      wget ${CONDA_BASE}-3.7.0-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget ${CONDA_BASE}3-3.7.0-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
+  - mkdir -p ${HOME}/cache/pkgs
+  - "[ ! -f ${HOME}/cache/miniconda.sh ] && wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${HOME}/cache/miniconda.sh || :"
+  - bash ${HOME}/cache/miniconda.sh -b -p ${CONDA_INSTALL_LOCN} && export PATH=${CONDA_INSTALL_LOCN}/bin:$PATH
+  # Re-use the pacakges in the cache, and download any new ones into that location.
+  - rm -rf ${CONDA_INSTALL_LOCN}/pkgs && ln -s ${HOME}/cache/pkgs ${CONDA_INSTALL_LOCN}/pkgs
 
   # Create the basic testing environment
   # ------------------------------------
@@ -130,3 +131,12 @@ script:
   - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py test --coding-tests;
     fi
+
+
+# We store the files that are downloaded from continuum.io, but not the environments that are created.
+cache:
+    directories:
+      - $HOME/cache
+before_cache:
+  # Remove all untarred directories (i.e. keep the conda .tar.bz2 files only).
+  - find $HOME/pkgs/ -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
