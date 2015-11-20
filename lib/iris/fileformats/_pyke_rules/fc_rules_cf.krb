@@ -870,8 +870,8 @@ fc_extras
     CM_NAME = 'name'
 
     CM_PARSE = re.compile(  r'''
-                                (?P<name>([\w_]+\s*:\s+)+)
-                                (?P<method>[\w_\s]+(?![\w_]*\s*:))\s*
+                                (?P<name>([\w_]+\s*?:\s+)+)
+                                (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
                                 (?:
                                     \(\s*
                                     (?P<extra>[^\)]+)
