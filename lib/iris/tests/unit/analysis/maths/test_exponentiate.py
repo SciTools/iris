@@ -32,12 +32,12 @@ import numpy as np
 class Test_exponentiate(tests.IrisTest):
     def setUp(self):
         self.cube = simple_2d(with_bounds=False)
-        self.exponent = 2
-        self.expected = self.cube.data ** self.exponent
+        self.exponent = np.float32(2)
 
     def test_basic(self):
+        expected = self.cube.data ** self.exponent
         result = exponentiate(self.cube, self.exponent)
-        self.assertArrayEqual(result.data, self.expected)
+        self.assertArrayEqual(result.data, expected)
 
     def test_masked(self):
         cube = self.cube.copy()
@@ -49,12 +49,44 @@ class Test_exponentiate(tests.IrisTest):
         self.assertMaskedArrayEqual(result.data, expected)
 
     @tests.skip_data
-    def test_lazy_data(self):
-        # Confirm that the cube's lazy data is preserved through the operation.
+    def test_lazy_data__inplace(self):
+        # Confirm that the cube's lazy data is preserved through an operation
+        # that is not in-place.
         test_data = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
         cube = iris.load_cube(test_data)
+        expected = cube.copy().data ** self.exponent
         exponentiate(cube, self.exponent, in_place=True)
         self.assertTrue(cube.has_lazy_data())
+        self.assertArrayAlmostEqual(cube.data, expected)
+
+    @tests.skip_data
+    def test_lazy_data__not_inplace(self):
+        # Confirm that the cube's lazy data is preserved through an
+        # in-place operation.
+        test_data = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
+        cube = iris.load_cube(test_data)
+        expected = cube.copy().data ** self.exponent
+        result = exponentiate(cube, self.exponent, in_place=False)
+        self.assertTrue(result.has_lazy_data())
+        self.assertArrayEqual(result.data, expected)
+
+    @tests.skip_data
+    def test_exponentiate__preloaded_data__inplace(self):
+        test_data = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
+        cube = iris.load_cube(test_data)
+        expected = cube.data ** self.exponent
+        exponentiate(cube, self.exponent, in_place=True)
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayAlmostEqual(cube.data, expected)
+
+    @tests.skip_data
+    def test_exponentiate__preloaded_data__not_inplace(self):
+        test_data = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
+        cube = iris.load_cube(test_data)
+        expected = cube.data ** self.exponent
+        result = exponentiate(cube, self.exponent, in_place=False)
+        self.assertTrue(result.has_lazy_data())
+        self.assertArrayAlmostEqual(result.data, expected)
 
 
 if __name__ == "__main__":
