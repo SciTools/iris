@@ -26,6 +26,7 @@ Writes a file "<...whatsnew>/<xx.xx>.rst".
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import datetime
+from glob import glob
 import os
 import re
 import argparse
@@ -38,7 +39,7 @@ from distutils import version
 # 0. String for the category. 1. ISO8601 date. 2. String for the feature name.
 # RELEASE_REGEX matches the directory names, returning the release.
 CONTRIBUTION_REGEX_STRING = r'(?P<category>.*)'
-CONTRIBUTION_REGEX_STRING += r'_(?P<isodate>\d{4}-\d{2}-\d{2})'
+CONTRIBUTION_REGEX_STRING += r'_(?P<isodate>\d{4}-\w{3}-\d{2})'
 CONTRIBUTION_REGEX_STRING += r'_(?P<summary>.*)\.txt$'
 CONTRIBUTION_REGEX = re.compile(CONTRIBUTION_REGEX_STRING)
 RELEASEDIR_PREFIX = r'contributions_'
@@ -55,6 +56,7 @@ VALID_CATEGORIES = [
 ]
 VALID_CATEGORY_PREFIXES = [cat['Prefix'] for cat in VALID_CATEGORIES]
 
+
 def _self_root_directory():
     return os.path.abspath(os.path.dirname(__file__))
 
@@ -66,7 +68,7 @@ def _decode_contribution_filename(file_name):
         # This is an error
         raise ValueError('Unknown category in contribution filename.')
     isodate = file_name_elements.group('isodate')
-    date_of_item = datetime.datetime.strptime(isodate, '%Y-%m-%d').date()
+    date_of_item = datetime.datetime.strptime(isodate, '%Y-%b-%d').date()
     return category, isodate, date_of_item
 
 
@@ -110,8 +112,9 @@ def get_latest_release(root_directory=None):
                              for releasedir_name in directory_contents
                              if RELEASE_REGEX.match(releasedir_name)]
     if len(possible_release_dirs) == 0:
-        raise ValueError('No valid release directories found, '
-                         'i.e. "{}/{}*"'.format(root_directory))
+        dirspec = os.path.join(root_directory, RELEASEDIR_PREFIX + '*')
+        msg = 'No valid release directories found, i.e. {!r}.'
+        raise ValueError(msg.format(dirspec))
     release_dirname = sorted(possible_release_dirs)[-1]
     release = RELEASE_REGEX.match(release_dirname).group('release')
     return release
@@ -134,8 +137,9 @@ def find_release_directory(root_directory, release=None,
     if fail_on_existing:
         compiled_release = is_compiled_release(root_directory, release)
         if compiled_release:
-            msg = 'Specified release {} is already compiled : "{}" exists.'
-            compiled_filename = '{!s}{}'.format(release, EXTENSION)
+            msg = ('Specified release {!r} is already compiled : '
+                   '{!r} already exists.')
+            compiled_filename = str(release) + EXTENSION
             raise ValueError(msg.format(release, compiled_filename))
 
     directory_contents = os.listdir(root_directory)
@@ -148,8 +152,8 @@ def find_release_directory(root_directory, release=None,
                 result = os.path.join(root_directory, inode)
                 break
     if not result:
-        msg = 'Contribution folder for release {} does not exist : no "{}".'
-        release_dirname = '{}{!s}/'.format(RELEASEDIR_PREFIX, release)
+        msg = 'Contribution folder for release {!s} does not exist : no {!r}.'
+        release_dirname = RELEASEDIR_PREFIX + str(release) + '/'
         release_dirpath = os.path.join(root_directory, release_dirname)
         raise ValueError(msg.format(release, release_dirpath))
     return result
@@ -232,38 +236,62 @@ def compile_directory(directory, release):
     return compiled_text
 
 
-def check_all_contributions_valid(release=None):
+def check_all_contributions_valid(release=None, quiet=False):
     """"Scan the contributions directory for badly-named files."""
     root_directory = _self_root_directory()
-    release_directory = find_release_directory(root_directory, release,
-                                               fail_on_existing=False)
-    # Run the directory scan, but convert any warning into an error.
-    with warnings.catch_warnings():
-        warnings.simplefilter('error')
-        compile_directory(release_directory, release)
+    # Check there are *some* contributions directory(s), else silently pass.
+    contribs_spec = os.path.join(root_directory, RELEASEDIR_PREFIX + '*')
+    if len(glob(contribs_spec)) > 0:
+        # There are some contributions directories: check latest / specified.
+        if release is None:
+            release = get_latest_release()
+        if not quiet:
+            msg = 'Checking whatsnew contributions for release "{!s}".'
+            print(msg.format(release))
+        release_directory = find_release_directory(root_directory, release,
+                                                   fail_on_existing=False)
+        # Run the directory scan, but convert any warning into an error.
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            compile_directory(release_directory, release)
+    if not quiet:
+        print('done.')
 
 
-def run_compilation(release=None):
+def run_compilation(release=None, quiet=False):
     '''Write a draft release.rst file given a specified uncompiled release.'''
+    if release is None:
+        # This must exist !
+        release = get_latest_release()
+    if not quiet:
+        msg = 'Building release document for release "{!s}".'
+        print(msg.format(release))
     root_directory = _self_root_directory()
     release_directory = find_release_directory(root_directory, release)
     compiled_text = compile_directory(release_directory, release)
-    compiled_filename = '{!s}{}'.format(release, EXTENSION)
+    compiled_filename = str(release) + EXTENSION
     compiled_filepath = os.path.join(root_directory, compiled_filename)
     with open(compiled_filepath, 'w') as output_object:
         for string_line in compiled_text:
             output_object.write(string_line)
+    if not quiet:
+        print('done.')
 
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
-    _DUMMY_VERSION = '9999.9999'
     PARSER.add_argument("release", help="Release number to be compiled",
-                        nargs='?', default=_DUMMY_VERSION,
-                        type=version.StrictVersion)
+                        nargs='?', type=version.StrictVersion)
+    PARSER.add_argument(
+        '-c', '--checkonly', action='store_true',
+        help="Check contribution file names, do not build.")
+    PARSER.add_argument(
+        '-q', '--quiet', action='store_true',
+        help="Do not print progress messages.")
     ARGUMENTS = PARSER.parse_args()
     release = ARGUMENTS.release
-    if release == _DUMMY_VERSION:
-        release = get_latest_release()
-    print('Building release document for release "{!s}"'.format(release))
-    run_compilation(release)
+    quiet = ARGUMENTS.quiet
+    if ARGUMENTS.checkonly:
+        check_all_contributions_valid(release, quiet=quiet)
+    else:
+        run_compilation(release, quiet=quiet)
