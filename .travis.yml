@@ -74,13 +74,19 @@ install:
   - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
 
 # iris test data
-  - wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip
-  - unzip -q iris-test-data.zip
+  - TEST_DATA_ZIPFILE=${HOME}/cache/iris-test-data-${IRIS_TEST_DATA_REF}.zip
+  - if [[ ! -f ${TEST_DATA_ZIPFILE} ]]; then
+      wget -O ${TEST_DATA_ZIPFILE} https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
+    fi
+  - unzip -q ${TEST_DATA_ZIPFILE}
   - ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data
 
 # iris sample data
-  - wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip
-  - unzip -q iris-sample-data.zip
+  - SAMPLE_DATA_ZIPFILE=${HOME}/cache/iris-sample-data-${IRIS_SAMPLE_DATA_REF}.zip
+  - if [[ ! -f ${SAMPLE_DATA_ZIPFILE} ]]; then
+      wget -O ${SAMPLE_DATA_ZIPFILE} https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip;
+    fi
+  - unzip -q ${SAMPLE_DATA_ZIPFILE}
   - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
 
 # prepare iris build directory
@@ -139,4 +145,4 @@ cache:
       - $HOME/cache
 before_cache:
   # Remove all untarred directories (i.e. keep the conda .tar.bz2 files only).
-  - find $HOME/pkgs/ -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
+  - find $HOME/cache/pkgs/ -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
