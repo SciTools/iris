@@ -22,10 +22,6 @@ Support for conservative regridding via ESMPy.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# Import ESMF via iris.proxy, just so we can build the docs with no ESMF.
-import iris.proxy
-iris.proxy.apply_proxy('ESMF', globals())
-
 import cartopy.crs as ccrs
 import numpy as np
 
@@ -76,6 +72,9 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
         Add a mask item to the grid, assigning it 0/1 where mask=False/True.
 
     """
+    # Lazy import so we can build the docs with no ESMF.
+    import ESMF
+
     # Create a Grid object describing the coordinate cells.
     dims = [len(coord.points) for coord in (x_coord, y_coord)]
     dims = np.array(dims, dtype=np.int32)  # specific type required by ESMF.
@@ -183,6 +182,9 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         To alter this, make a prior call to ESMF.Manager().
 
     """
+    # Lazy import so we can build the docs with no ESMF.
+    import ESMF
+
     # Get source + target XY coordinate pairs and check they are suitable.
     src_coords = get_xy_dim_coords(source_cube)
     dst_coords = get_xy_dim_coords(grid_cube)
