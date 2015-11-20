@@ -127,6 +127,12 @@ script:
       echo `make clean html`;
       make doctest;
     fi
+  # An extra call to check "whatsnew" contributions are valid, because the
+  # Iris test for it needs a *developer* install to be able to find the docs.
+  - if [[ $TEST_TARGET == 'doctest' ]]; then
+      cd ./src/whatsnew;
+      python aggregate_directory.py --checkonly;
+    fi
   - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py test --coding-tests;
     fi
