@@ -21,6 +21,13 @@ Looks for directories "<...whatsnew>/contributions_<xx.xx>".
 Takes specified "xx.xx" as version, or latest found (alphabetic).
 Writes a file "<...whatsnew>/<xx.xx>.rst".
 
+Valid contributions filenames are of the form:
+    <category>_<date>_summary.txt
+Where <summary> can be any valid chars, and
+<category> is one of :
+   "newfeature" "bugfix" "incompatiblechange" "deprecate" "docchange", and
+<date> is in the style "2001-Jan-23".
+
 """
 
 from __future__ import (absolute_import, division, print_function)
