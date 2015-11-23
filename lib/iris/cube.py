@@ -495,9 +495,9 @@ class CubeList(list):
                             'found {}.'.format(n_res_cubes))
                 raise iris.exceptions.ConcatenateError(msgs)
         else:
-            msgs = []
-            msgs.append('Cube names differ: {} != {}'.format(names[0],
-                                                             names[1]))
+            msgs = ['An unexpected problem prevented concatenation.',
+                    'Expected only a single cube, '
+                    'found {}.'.format(n_res_cubes)]
             raise iris.exceptions.ConcatenateError(msgs)
 
     def concatenate(self):

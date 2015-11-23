@@ -321,6 +321,7 @@ class _CubeSignature(object):
         self.dim_metadata = []
         self.ndim = cube.ndim
         self.scalar_coords = []
+        self._cube = cube
 
         # Determine whether there are any anonymous cube dimensions.
         covered = set(cube.coord_dims(coord)[0] for coord in self.dim_coords)
@@ -356,6 +357,31 @@ class _CubeSignature(object):
                 self.aux_coords_and_dims.append(coord_and_dims)
             else:
                 self.scalar_coords.append(coord)
+
+    def _cubes_equal(self, other):
+        """
+        Determine whether the two *cubes* are identical by comparing their
+        metadata and coordinates. Identical cubes cannot be concatenated.
+
+        Args:
+
+         * other (_CubeSignature):
+            The _CubeSignature to compare against.
+
+        Returns:
+            Boolean. True if cubes are equal, False if cubes are not equal.
+
+        """
+        cube_1 = self._cube
+        cube_2 = other._cube
+
+        result = cube_1.metadata == cube_2.metadata
+        if result:
+            coord_comparison = iris.analysis.coord_comparison(cube_1, cube_2)
+            result = not (coord_comparison['not_equal'] or
+                          coord_comparison['non_equal_data_dimension'])
+
+        return result
 
     def _coordinate_differences(self, other, attr):
         """
@@ -429,6 +455,10 @@ class _CubeSignature(object):
         msg_template = '{}{} differ: {} != {}'
         msgs = []
 
+        # Check if the two cubes are identical.
+        if self._cubes_equal(other):
+            msg = 'Cubes are identical'
+            msgs.append(msg)
         # Check if either cube is anonymous.
         if self.anonymous or other.anonymous:
             msg = ('Dimensions differ: one or both cubes have anonymous '
