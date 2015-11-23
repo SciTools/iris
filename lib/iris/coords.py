@@ -942,10 +942,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def collapsed(self, dims_to_collapse=None):
         """
-        Returns a copy of this coordinate which has been collapsed along
+        Returns a copy of this coordinate, which has been collapsed along
         the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
+
+        .. note::
+            You cannot partially collapse a multi-dimensional coordinate. See
+            :ref:`cube.collapsed <partially_collapse_multi-dim_coord>` for more
+            information.
 
         """
         if isinstance(dims_to_collapse, (int, np.integer)):
