@@ -25,6 +25,7 @@ import six
 import iris.tests as tests
 
 import types
+import warnings
 
 import numpy as np
 
@@ -66,6 +67,15 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
                              TestLBCODE._is_cross_section_height_coord,
                              expected_points=points,
                              expected_bounds=bounds)
+
+    def test_cross_section_warning(self):
+        lbcode = SplittableInt(31323)
+        field = mock.MagicMock(lbcode=lbcode)
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            msg = 'PP field has LBCODE=31323'
+            with self.assertRaisesRegexp(UserWarning, msg):
+                convert(field)
 
 
 class TestLBVC(iris.tests.unit.fileformats.TestField):

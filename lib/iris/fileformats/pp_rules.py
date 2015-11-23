@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
+import warnings
 
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
@@ -763,6 +764,14 @@ def convert(f):
     """
     factories = []
     aux_coords_and_dims = []
+
+    # Raise a warning for `f.lbcode` == 31323, which is currently not being
+    # translated properly by the rules.
+    if f.lbcode._value == 31323:
+        msg = ('Loaded PP field has LBCODE=31323, whose meaning is not clearly'
+               ' defined by the PP spec. Interpretation is subject to change '
+               'based upon clarification to the PP spec.')
+        warnings.warn(msg)
 
     # "Normal" (non-cross-sectional) Time values (--> scalar coordinates)
     time_coords_and_dims = _convert_scalar_time_coords(
