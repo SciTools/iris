@@ -949,14 +949,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Replaces the points & bounds with a simple bounded region.
 
         .. note::
-            You cannot partially collapse a multi-dimensional coordinate. To
-            successfully collapse a multi-dimensional coordinate (i.e. a
-            coordinate that describes more than one of a cube's axes) you
-            must collapse all cube axes that the multi-dimensional coordinate
-            spans in a single collapse operation.
-
-            Multi-dimensional derived coordinates will not prevent a successful
-            collapse operation.
+            You cannot partially collapse a multi-dimensional coordinate. See
+            :ref:`cube.collapsed <partially_collapse_multi-dim_coord>` for more
+            information.
 
         """
         if isinstance(dims_to_collapse, (int, np.integer)):

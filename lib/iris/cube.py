@@ -2945,12 +2945,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
 
+        .. _partially_collapse_multi-dim_coord:
+
         .. note::
-            You cannot partially collapse a multi-dimensional coordinate. To
-            successfully collapse a multi-dimensional coordinate (i.e. a
-            coordinate that describes more than one of a cube's axes) you
-            must collapse all cube axes that the multi-dimensional coordinate
-            spans in a single collapse operation.
+            You cannot partially collapse a multi-dimensional coordinate. Doing
+            so would result in a partial collapse of the multi-dimensional
+            coordinate. Instead you must either:
+                 * collapse in a single operation all cube axes that the
+                   multi-dimensional coordinate spans,
+                 * remove the multi-dimensional coordinate from the cube before
+                   performing the collapse operation, or
+                 * not collapse the coordinate at all.
 
             Multi-dimensional derived coordinates will not prevent a successful
             collapse operation.

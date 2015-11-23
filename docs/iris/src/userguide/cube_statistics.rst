@@ -97,22 +97,9 @@ For an example of using this functionality, the
 in the gallery takes a zonal mean of an ``XYT`` cube by using the
 ``collapsed`` method with ``latitude`` and ``iris.analysis.MEAN`` as arguments.
 
-
-.. note::
-    You cannot partially collapse a multi-dimensional coordinate. Thus in the
-    above example you would not be able to collapse the cube along either of
-    the axes described by the ``grid_latitude`` or ``grid_longitude``
-    coordinates individually. Doing so would result in a partial collapse of
-    the 2D ``surface_altitude`` coordinate.
-
-    Instead you must either fully collapse the coordinate (in this case
-    requiring that both ``grid_latitude`` or ``grid_longitude`` coordinates be
-    collapsed together in a single collapse operation) or not collapse the
-    coordinate at all.
-
-    Multi-dimensional derived coordinates (such as ``altitude`` in the above
-    example) will not prevent a successful collapse operation across a
-    cube dimension that the multi-dimensional derived coordinate spans.
+You cannot partially collapse a multi-dimensional coordinate. See
+:ref:`cube.collapsed <partially_collapse_multi-dim_coord>` for more
+information.
 
 .. _cube-statistics-collapsing-average:
 
