@@ -74,7 +74,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         with warnings.catch_warnings():
             warnings.simplefilter('error')
             msg = 'PP field has LBCODE=31323'
-            with self.assertRaisesRegexp(UserWarning, msg):
+            with six.assertRaisesRegex(UserWarning, msg):
                 convert(field)
 
 
