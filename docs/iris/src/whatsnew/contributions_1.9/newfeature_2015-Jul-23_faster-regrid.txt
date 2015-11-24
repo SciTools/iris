@@ -1,0 +1,2 @@
+* Linear regridding of a multi-layer (i.e. > 2-dimensional) cube is now much faster,
+  as it calculates transform coefficients just once and reuses them for additional layers.

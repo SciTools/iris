@@ -1,0 +1,2 @@
+* Fixed a bug with loading WGDOS packed data in :mod:`iris.experimental.um`,
+  which would occasionally crash, with some data.
