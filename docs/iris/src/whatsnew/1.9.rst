@@ -1,0 +1,59 @@
+What's New in Iris 1.9
+======================
+
+:Release: 1.9
+:Date: 2015-11-24
+
+This document explains the new/changed features of Iris in version 1.9
+(:doc:`View all changes <index>`.)
+
+Iris 1.9 Features
+=================
+* Support for running on Python 3.4 has been added to the whole code base. Some features which
+  depend on external libraries will not be available until they also support Python 3, namely:
+   * gribapi does not yet provide a Python 3 interface
+* Add the UM pseudo level type to the information made available through the STASH_TRANS table in :mod:`iris.fileformats.um._ff_cross_references`
+* :func:`iris.analysis.stats.pearsonr` updates:
+  * Cubes can now be different shapes, provided one is broadcastable to the
+  other.
+  * Accepts weights keyword for weighted correlations.
+  * Accepts mdtol keyword for missing data tolerance level.
+  * Accepts common_mask keyword for restricting caculation to unmasked pairs of
+  cells.
+* `iris.analysis.WPERCENTILE` - a new weighted aggregator for calculating
+  percentiles.
+* Support for loading GRIB2 messages defined on a Lambert conformal grid has been added to
+  the new GRIB2 loader.
+* When a Fieldsfile is opened for update as a :class:`iris.experimental.um.FieldsFileVariant`,
+  unmodified packed data in the file can now be retained in the original form
+  (whereas previously it could only be stored in an unpacked form).
+* `mo_pack <https://github.com/SciTools/mo_pack>`_ was added as an optional dependency.
+   It is used to encode and decode data in WGDOS packed form.
+* The :meth:`iris.experimental.um.Field.get_data` method can now be used to read Fieldsfile data
+  after the original :class:`iris.experimental.um.FieldsFileVariant` has been closed.
+
+Bugs Fixed
+==========
+* fixed a bug in :mod:`iris.fileformats.um_cf_map` where the standard name
+  for the stash code m01s12i187 was incorrectly set, such that it is inconsistent 
+  with the stated unit of measure, 'm s-1'.  The different name, a long_name
+  of 'change_over_time_in_upward_air_velocity_due_to_advection' with
+  units of 'm s-1' is now used instead.
+* fixed a bug in :meth:`iris.cube.Cube.intersection`.
+  When edge points were at (base + period), intersection would unnecessarily wrap the data.
+* Fixed a bug in :meth:`iris.fileformats.pp._convert_constraints`.
+  A previous release removed the ability to pass a partial constraint on STASH attribute.
+* fixed a bug in :meth:`iris.experimental.um.FieldsFileVariant.close`.
+  When larger files open for update were closed, they could be rewritten with the data overlapping the lookup table.
+
+Incompatible Changes
+====================
+* GRIB message/file reading and writing may not be available for Python 3 due to GRIB API limitations. 
+
+Deprecations
+============
+* deprecated :mod:`iris.unit`, with unit functionality provided by `cf_units <https://github.com/SciTools/cf_units>`_ instead.* deprecated :class:`iris.aux_factory.LazyArray`
+
+Documentation Changes
+=====================
+* Added script and documentation for building a what's new page from developer-submitted contributions.
