@@ -1,0 +1,2 @@
+* fixed a bug in :mod:`iris.cube.subset` where an exception would be thrown
+  while trying to subset over a non-dimensional scalar coordinate.

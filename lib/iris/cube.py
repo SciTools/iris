@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -2005,7 +2005,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def subset(self, coord):
         """
-        Get a subset of the cube by providing the desired resultant coordinate.
+        Get a subset of the cube by providing the desired resultant
+        coordinate. If the coordinate provided applies to the whole cube; the
+        whole cube is returned. As such, the operation is not strict.
 
         """
         if not isinstance(coord, iris.coords.Coord):
@@ -2013,24 +2015,42 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Get the coord to extract from the cube
         coord_to_extract = self.coord(coord)
-        if len(self.coord_dims(coord_to_extract)) > 1:
-            msg = "Currently, only 1D coords can be used to subset a cube"
-            raise iris.exceptions.CoordinateMultiDimError(msg)
-        # Identify the dimension of the cube which this coordinate references
-        coord_to_extract_dim = self.coord_dims(coord_to_extract)[0]
 
-        # Identify the indices which intersect the requested coord and
-        # coord_to_extract
-        coordinate_indices = coord_to_extract.intersect(coord,
-                                                        return_indices=True)
+        # If scalar, return the whole cube. Not possible to subset 1 point.
+        if coord_to_extract in self.aux_coords and\
+                len(coord_to_extract.points) == 1:
 
-        # Build up a slice which spans the whole of the cube
-        full_slice = [slice(None, None)] * len(self.shape)
-        # Update the full slice to only extract specific indices which were
-        # identified above
-        full_slice[coord_to_extract_dim] = coordinate_indices
-        full_slice = tuple(full_slice)
-        return self[full_slice]
+            # Default to returning None
+            result = None
+
+            indices = coord_to_extract.intersect(coord, return_indices=True)
+
+            # If there is an intersect between the two scalar coordinates;
+            # return the whole cube. Else, return None.
+            if len(indices):
+                result = self
+
+        else:
+            if len(self.coord_dims(coord_to_extract)) > 1:
+                msg = "Currently, only 1D coords can be used to subset a cube"
+                raise iris.exceptions.CoordinateMultiDimError(msg)
+            # Identify the dimension of the cube which this coordinate
+            # references
+            coord_to_extract_dim = self.coord_dims(coord_to_extract)[0]
+
+            # Identify the indices which intersect the requested coord and
+            # coord_to_extract
+            coord_indices = coord_to_extract.intersect(coord,
+                                                       return_indices=True)
+
+            # Build up a slice which spans the whole of the cube
+            full_slice = [slice(None, None)] * len(self.shape)
+            # Update the full slice to only extract specific indices which
+            # were identified above
+            full_slice[coord_to_extract_dim] = coord_indices
+            full_slice = tuple(full_slice)
+            result = self[full_slice]
+        return result
 
     def extract(self, constraint):
         """

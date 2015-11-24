@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -1238,6 +1238,41 @@ class Test_dtype(tests.IrisTest):
         self.assertEqual(cube.dtype, np.float32)
         # Check that accessing the dtype does not trigger loading of the data.
         self.assertTrue(cube.has_lazy_data())
+
+
+class TestSubset(tests.IrisTest):
+    def test_scalar_coordinate(self):
+        cube = Cube(0, long_name='apricot', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='banana', units='1'))
+        result = cube.subset(cube.coord('banana'))
+        self.assertEqual(cube, result)
+
+    def test_dimensional_coordinate(self):
+        cube = Cube(np.zeros((4)), long_name='tinned_peach', units='1')
+        cube.add_dim_coord(DimCoord([0, 1, 2, 3],
+                                    long_name='sixteen_ton_weight',
+                                    units='1'),
+                           0)
+        result = cube.subset(cube.coord('sixteen_ton_weight'))
+        self.assertEqual(cube, result)
+
+    def test_missing_coordinate(self):
+        cube = Cube(0, long_name='raspberry', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='loganberry', units='1'))
+        bad_coord = DimCoord([0], long_name='tiger', units='1')
+        self.assertRaises(CoordinateNotFoundError, cube.subset, bad_coord)
+
+    def test_different_coordinate(self):
+        cube = Cube(0, long_name='raspberry', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='loganberry', units='1'))
+        different_coord = DimCoord([2], long_name='loganberry', units='1')
+        result = cube.subset(different_coord)
+        self.assertEqual(result, None)
+
+    def test_not_coordinate(self):
+        cube = Cube(0, long_name='peach', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='crocodile', units='1'))
+        self.assertRaises(ValueError, cube.subset, 'Pointed Stick')
 
 
 if __name__ == '__main__':
