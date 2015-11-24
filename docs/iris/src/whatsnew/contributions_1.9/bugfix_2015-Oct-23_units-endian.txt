@@ -1,0 +1,2 @@
+* fixed a bug in :meth:`iris.unit.convert` so that it now converts data to the
+  native endianness, without which udunits could not read it correctly.

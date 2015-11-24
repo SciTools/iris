@@ -1,0 +1,2 @@
+* :meth:`iris.plot.default_projection_extent` now correctly raises an exception if a cube has X bounds but no Y bounds, or vice versa.
+  Previously it never failed this, as the test was wrong.

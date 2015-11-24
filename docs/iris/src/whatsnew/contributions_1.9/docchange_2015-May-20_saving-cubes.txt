@@ -1,0 +1,2 @@
+* A chapter on :doc:`saving iris cubes </userguide/saving_iris_cubes>` has been
+  added to the :doc:`user guide </userguide/index>`.

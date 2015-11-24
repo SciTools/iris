@@ -1,0 +1,2 @@
+* When saving to NetCDF, factory-derived auxiliary coordinates are now correctly distinguished when they are not identical.
+  Previously, such coordinates could be saved with the same name, leading to errors.

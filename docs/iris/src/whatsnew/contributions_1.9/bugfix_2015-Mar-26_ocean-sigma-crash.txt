@@ -1,0 +1,2 @@
+* Fixed a bug in :class:`iris.aux_factory.OceanSigmaZFactory`
+  which sometimes caused crashes when fetching the points of an "ocean sigma z" coordinate.

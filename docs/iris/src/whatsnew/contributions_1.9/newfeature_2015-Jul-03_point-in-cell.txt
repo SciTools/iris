@@ -1,0 +1,1 @@
+* Added a new point-in-cell regridding scheme, :class:`iris.experimental.regrid.PointInCell`.
