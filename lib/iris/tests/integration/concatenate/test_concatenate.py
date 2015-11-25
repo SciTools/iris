@@ -90,14 +90,6 @@ class TestMessages__cube_signature(tests.IrisTest):
                            data_dims=(1,))
         self.cube = cube
 
-    # def test_anonymous_coord_message(self):
-    #     cube_1 = self.cube
-    #     cube_2 = cube_1.copy()
-    #     cube_2.remove_coord('latitude')
-    #     exc_regexp = 'one or both cubes have anonymous dimensions'
-    #     with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-    #         concatenate([cube_1, cube_2], True)
-
     def test_definition_difference_message(self):
         cube_1 = self.cube
         cube_2 = cube_1.copy()
@@ -216,7 +208,7 @@ class TestMessages__coords_signature(tests.IrisTest):
     def test_identical_cubes_message(self):
         cube_1 = self.cube_1
         cube_2 = self.cube_1.copy()
-        exc_regexp = 'Cubes are identical .* time'
+        exc_regexp = 'Cubes are identical'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
             concatenate([cube_1, cube_2], True)
 
@@ -276,7 +268,7 @@ class TestMessages__coords_signature(tests.IrisTest):
         cube_2.remove_coord('foo')
         new_points = np.arange(12).reshape(3, 4)
         cube_2.add_aux_coord(AuxCoord(new_points, long_name='foo', units='1'),
-                            data_dims=(0, 1))
+                             data_dims=(0, 1))
         exc_regexp = 'Covered dimensions .* foo .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
             concatenate([cube_1, cube_2], True)

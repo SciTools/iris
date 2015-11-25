@@ -317,15 +317,17 @@ class _CubeSignature(object):
             The :class:`iris.cube.Cube` source-cube.
 
         """
-        self.aux_coords_and_dims = []
+        self.aux_coords_and_dims = {}
         self.aux_metadata = []
-        self.dim_coords = cube.dim_coords
+        self.dim_coords = {c.name(): c for c in cube.dim_coords}
+        self.dim_lookup = {c.name(): i for i, c in enumerate(cube.dim_coords)}
         self.dim_metadata = []
         self.ndim = cube.ndim
         self.scalar_coords = []
 
         # Determine whether there are any anonymous cube dimensions.
-        covered = set(cube.coord_dims(coord)[0] for coord in self.dim_coords)
+        covered = set(cube.coord_dims(coord)[0]
+                      for coord in self.dim_coords.values())
         self.anonymous_dims = list(set(range(self.ndim)) - covered)
 
         self.defn = cube.metadata
@@ -334,7 +336,7 @@ class _CubeSignature(object):
         #
         # Collate the dimension coordinate metadata.
         #
-        for coord in self.dim_coords:
+        for coord in self.dim_coords.values():
             metadata = _CoordMetaData(coord, cube.coord_dims(coord))
             self.dim_metadata.append(metadata)
 
@@ -355,7 +357,7 @@ class _CubeSignature(object):
                 metadata = _CoordMetaData(coord, dims)
                 self.aux_metadata.append(metadata)
                 coord_and_dims = _CoordAndDims(coord, tuple(dims))
-                self.aux_coords_and_dims.append(coord_and_dims)
+                self.aux_coords_and_dims[coord.name()] = coord_and_dims
             else:
                 self.scalar_coords.append(coord)
 
@@ -486,28 +488,14 @@ class _CoordsSignature(object):
         """
         self.aux_coords_and_dims = cube_signature.aux_coords_and_dims
         self.dim_coords = cube_signature.dim_coords
+        self.dim_lookup = cube_signature.dim_lookup
         self.anonymous_dims = cube_signature.anonymous_dims
-        self.dim_extents = []
+        self.dim_extents = {}
         self.dim_order = [metadata.kwargs['order']
                           for metadata in cube_signature.dim_metadata]
 
         # Calculate the extents for each dimensional coordinate.
         self._set_dim_extents()
-
-    def _common_dim_coords(self, other):
-        """
-        Return a zipped list of the common dimension coordinates from two
-        `_CoordsSignature.dim_coords` attributes.
-
-        """
-        a, b = self.dim_coords, other.dim_coords
-
-        a_names = set([c.name() for c in a])
-        b_names = set([c.name() for c in b])
-        common_names = list(a_names & b_names)
-        common_a = [c for c in a if c.name() in common_names]
-        common_b = [c for c in b if c.name() in common_names]
-        return zip(tuple(common_a), tuple(common_b))
 
     @staticmethod
     def _cmp(coord, other):
@@ -558,19 +546,20 @@ class _CoordsSignature(object):
         candidate_axes = []
 
         # Check for inconsistent numbers of dim coords.
-        if len(self.dim_coords) != len(other.dim_coords):
-            # Only dim coords in both 'cubes' can be candidate axis.
-            dim_coords = self._common_dim_coords(other)
+        if self.dim_coords.keys() != other.dim_coords.keys():
+            keys, other_keys = self.dim_coords.keys(), other.dim_coords.keys()
+            common_dim_coords = list(set(keys) & set(other_keys))
         else:
-            dim_coords = zip(self.dim_coords, other.dim_coords)
+            common_dim_coords = self.dim_coords.keys()
 
         # Compare dimension coordinates.
-        for dim, (coord, other_coord) in enumerate(dim_coords):
+        for key in common_dim_coords:
+            coord, other_coord = self.dim_coords[key], other.dim_coords[key]
             result, candidate_axis = self._cmp(coord, other_coord)
             if not result:
                 break
             if candidate_axis:
-                candidate_axes.append(dim)
+                candidate_axes.append(key)
 
         # Only permit one degree of dimensional freedom when
         # determining the candidate axis of concatenation.
@@ -584,7 +573,8 @@ class _CoordsSignature(object):
     def _set_dim_extents(self):
         """Set points and bounds extents for all dim coords."""
 
-        for coord, order in zip(self.dim_coords, self.dim_order):
+        for (name, coord), order in zip(self.dim_coords.iteritems(),
+                                        self.dim_order):
             if order == _CONSTANT or order == _INCREASING:
                 points = _Extent(coord.points[0], coord.points[-1])
                 if coord.bounds is not None:
@@ -601,7 +591,7 @@ class _CoordsSignature(object):
                 else:
                     bounds = None
 
-            self.dim_extents.append(_CoordExtent(points, bounds))
+            self.dim_extents[name] = (_CoordExtent(points, bounds))
 
     @staticmethod
     def _candidate_axis_overlap(coord_extent, other_extent):
@@ -655,21 +645,26 @@ class _CoordsSignature(object):
         candidate_axis = self.candidate_axis(other)
 
         # Dim Coords.
-        for dim, coord in enumerate(self.dim_coords):
+        for dim in self.dim_coords.keys():
+            coord = self.dim_coords[dim]
             # Avoid mismatched dim coords.
             try:
                 other_coord = other.dim_coords[dim]
-            except IndexError:
+            except KeyError:
                 break
 
+            # Deal with identical cubes.
+            if candidate_axis is None:
+                # Check if coordinates on all axes are identical, i.e. if the
+                # cubes are identical.
+                checks = [array_equal(self.dim_coords[d], other.dim_coords[d])
+                          for d in self.dim_coords.keys()]
+                if all(checks):
+                    msgs.append('Cubes are identical')
+                    break
+
             # Deal with candidate axis.
-            if dim == candidate_axis:
-                # Check if coordinates on candidate axis are identical.
-                # Note this implicitly tests if the cubes are identical too.
-                if array_equal(coord.points, other_coord.points):
-                    msg = ('Cubes are identical:\n  Identical coordinates on'
-                           ' concatenation axis: {} == {}')
-                    msgs.append(msg.format(coord.name(), other_coord.name()))
+            elif dim == candidate_axis:
                 # Check for coordinate overlap on candidate axis.
                 coord_extents = self.dim_extents[dim]
                 other_extents = other.dim_extents[dim]
@@ -703,8 +698,14 @@ class _CoordsSignature(object):
                 pass
 
         # Aux Coords.
-        for i, coord_and_dims in enumerate(self.aux_coords_and_dims):
-            other_coord_and_dims = other.aux_coords_and_dims[i]
+        for name in self.aux_coords_and_dims.keys():
+            # Check for mismatched aux coords.
+            coord_and_dims = self.aux_coords_and_dims[name]
+            try:
+                other_coord_and_dims = other.aux_coords_and_dims[name]
+            except KeyError:
+                break
+
             coord, dims = coord_and_dims.coord, coord_and_dims.dims
             other_coord = other_coord_and_dims.coord
             other_dims = other_coord_and_dims.dims
@@ -794,7 +795,8 @@ class _ProtoCube(object):
         """
         if len(self._skeletons) > 1:
             skeletons = self._skeletons
-            order = self._coord_signature.dim_order[self.axis]
+            axis_index = self._coord_signature.dim_lookup[self.axis]
+            order = self._coord_signature.dim_order[axis_index]
             cube_signature = self._cube_signature
 
             # Sequence the skeleton segments into the correct order
@@ -955,7 +957,8 @@ class _ProtoCube(object):
         aux_coords_and_dims = []
 
         # Generate all the auxiliary coordinates for the new concatenated cube.
-        for i, (coord, dims) in enumerate(cube_signature.aux_coords_and_dims):
+        c_and_d_values = cube_signature.aux_coords_and_dims.values()
+        for i, (coord, dims) in enumerate(c_and_d_values):
             # Check whether the coordinate spans the nominated
             # dimension of concatenation.
             if self.axis in dims:
@@ -1007,7 +1010,8 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        data = biggus.LinearMosaic(tuple(data), axis=self.axis)
+        axis_index = self._coord_signature.dim_lookup[self.axis]
+        data = biggus.LinearMosaic(tuple(data), axis=axis_index)
 
         return data
 
@@ -1023,8 +1027,10 @@ class _ProtoCube(object):
         # Setup convenience hooks.
         skeletons = self._skeletons
         axis = self.axis
-        defn = self._cube_signature.dim_metadata[axis].defn
-        circular = self._cube_signature.dim_metadata[axis].kwargs['circular']
+        axis_lookup = self._coord_signature.dim_lookup[axis]
+        defn = self._cube_signature.dim_metadata[axis_lookup].defn
+        circular = \
+            self._cube_signature.dim_metadata[axis_lookup].kwargs['circular']
 
         # Concatenate the points together for the nominated dimension.
         points = [skeleton.signature.dim_coords[axis].points
@@ -1046,7 +1052,7 @@ class _ProtoCube(object):
 
         # Generate all the dimension coordinates for the new concatenated cube.
         dim_coords_and_dims = []
-        for dim, coord in enumerate(self._cube_signature.dim_coords):
+        for dim, coord in enumerate(self._cube_signature.dim_coords.values()):
             if dim == axis:
                 dim_coords_and_dims.append((dim_coord, dim))
             else:
@@ -1081,7 +1087,8 @@ class _ProtoCube(object):
         dim_extents.append(extent)
 
         # Sort into the appropriate dimension order.
-        order = self._coord_signature.dim_order[axis]
+        axis_index = self._coord_signature.dim_lookup[axis]
+        order = self._coord_signature.dim_order[axis_index]
         dim_extents.sort(reverse=(order == _DECREASING))
 
         # Ensure that the extents don't overlap.
