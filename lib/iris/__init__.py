@@ -334,7 +334,6 @@ def load_cube(uris, constraint=None, callback=None):
         raise ValueError('only a single constraint is allowed')
 
     cubes = _load_collection(uris, constraints, callback).merged().cubes()
-
     try:
         cube = cubes.merge_cube()
     except iris.exceptions.MergeError as e:
