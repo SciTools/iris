@@ -56,7 +56,8 @@ except ImportError:
 
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
-           'reset_load_rules', 'add_save_rules', 'reset_save_rules',
+           'reset_load_rules', 'add_save_rules',
+           'as_fields', 'as_pairs', 'reset_save_rules', 'save_fields',
            'STASH', 'EARTH_RADIUS']
 
 

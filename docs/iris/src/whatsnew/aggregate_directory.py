@@ -171,7 +171,7 @@ def generate_header(release):
     header_text = []
     title_template = 'What\'s New in {} {!s}\n'
     title_line = title_template.format(SOFTWARE_NAME, release)
-    title_underline = ('=' * (len(title_line) - 1)) + '\n'
+    title_underline = ('*' * (len(title_line) - 1)) + '\n'
     isodatestamp = datetime.date.today().strftime('%Y-%m-%d')
     header_text.append(title_line)
     header_text.append(title_underline)
