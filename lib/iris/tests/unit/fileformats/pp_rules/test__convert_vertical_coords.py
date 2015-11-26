@@ -252,7 +252,7 @@ class TestLBVC006_SoilLevel(TestField):
 
 
 class TestLBVC006_SoilDepth(TestField):
-    def _check_soil_level(self, lbcode, blev=0.05, brsvd1=0, brlev=0.1,
+    def _check_soil_depth(self, lbcode, blev=0.05, brsvd1=0, brlev=0.1,
                           expect_match=True, dim=None):
         lbvc = 6
         stash = STASH(1, 1, 1)
@@ -271,19 +271,27 @@ class TestLBVC006_SoilDepth(TestField):
         self.assertEqual(factories, [])
 
     def test_normal(self):
-        self._check_soil_level(_lbcode(0))
+        self._check_soil_depth(_lbcode(0))
 
     def test_normal__vector(self):
         points = np.arange(10)
-        self._check_soil_level(_lbcode(0), blev=points,
+        self._check_soil_depth(_lbcode(0), blev=points,
                                brsvd1=points - 1, brlev=points + 1, dim=0)
 
+    def test_bad_bounds(self):
+        points = [-0.5, 0.5]
+        lower = [-1, 1]
+        upper = [-1, 1]
+        self._check_soil_depth(_lbcode(0), blev=points,
+                               brsvd1=lower, brlev=upper, dim=0,
+                               expect_match=False)
+
     def test_cross_section(self):
-        self._check_soil_level(_lbcode(ix=1, iy=2), expect_match=False)
+        self._check_soil_depth(_lbcode(ix=1, iy=2), expect_match=False)
 
     def test_cross_section__vector(self):
         points = np.arange(10)
-        self._check_soil_level(_lbcode(ix=1, iy=2), blev=points,
+        self._check_soil_depth(_lbcode(ix=1, iy=2), blev=points,
                                brsvd1=points - 1, brlev=points + 1,
                                expect_match=False, dim=0)
 

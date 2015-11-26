@@ -613,7 +613,7 @@ THEN
     pp.brsvd[0] = 0
     pp.brlev = 0
 
-# single depth level (deep soil depth)
+# single depth level (soil depth)
 IF
     scalar_coord(cm, 'depth') is not None
     scalar_coord(cm, 'depth').has_bounds()
