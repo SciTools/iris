@@ -60,6 +60,30 @@ class TestVertical(tests.IrisTest):
         lbuser5_produced = _pp_save_ppfield_values(self.cube).lbuser[4]
         self.assertEqual(pseudo_level, lbuser5_produced)
 
+    def test_soil_level(self):
+        soil_level = 314
+        coord = DimCoord(soil_level, long_name='soil_model_level_number')
+        self.cube.add_aux_coord(coord)
+        self.cube.standard_name = 'moisture_content_of_soil_layer'
+        field = _pp_save_ppfield_values(self.cube)
+        self.assertEqual(field.lbvc, 6)
+        self.assertEqual(field.lblev, soil_level)
+        self.assertEqual(field.blev, soil_level)
+        self.assertEqual(field.brsvd[0], 0)
+        self.assertEqual(field.brlev, 0)
+
+    def test_soil_depth(self):
+        lower, point, upper = 1, 2, 3
+        coord = DimCoord(point, standard_name='depth', bounds=[[lower, upper]])
+        self.cube.add_aux_coord(coord)
+        self.cube.standard_name = 'moisture_content_of_soil_layer'
+        field = _pp_save_ppfield_values(self.cube)
+        self.assertEqual(field.lbvc, 6)
+        self.assertEqual(field.lblev, 0)
+        self.assertEqual(field.blev, point)
+        self.assertEqual(field.brsvd[0], lower)
+        self.assertEqual(field.brlev, upper)
+
 
 class TestLbfcProduction(tests.IrisTest):
     def setUp(self):

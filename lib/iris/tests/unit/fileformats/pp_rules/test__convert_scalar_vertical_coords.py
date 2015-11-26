@@ -138,9 +138,9 @@ class TestLBVC006_SoilLevel(TestField):
     def _check_soil_level(self, lbcode, expect_match=True):
         lbvc = 6
         lblev = 12.3
+        brsvd1, brlev = 0, 0
         stash = STASH(1, 1, 1)
-        blev, bhlev, bhrlev, brsvd1, brsvd2, brlev = \
-            None, None, None, None, None, None
+        blev, bhlev, bhrlev, brsvd2 = None, None, None, None
         coords_and_dims, factories = _convert_scalar_vertical_coords(
             lbcode=lbcode, lbvc=lbvc, blev=blev, lblev=lblev, stash=stash,
             bhlev=bhlev, bhrlev=bhrlev, brsvd1=brsvd1, brsvd2=brsvd2,
@@ -148,6 +148,34 @@ class TestLBVC006_SoilLevel(TestField):
         if expect_match:
             expect_result = [
                 (DimCoord([lblev], long_name='soil_model_level_number',
+                          attributes={'positive': 'down'}), None)]
+        else:
+            expect_result = []
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        self.assertEqual(factories, [])
+
+    def test_normal(self):
+        self._check_soil_level(_lbcode(0))
+
+    def test_cross_section(self):
+        self._check_soil_level(_lbcode(ix=1, iy=2), expect_match=False)
+
+
+class TestLBVC006_SoilDepth(TestField):
+    def _check_soil_level(self, lbcode, expect_match=True):
+        lbvc = 6
+        blev = 0.05
+        brsvd1, brlev = 0, 0.1
+        stash = STASH(1, 1, 1)
+        lblev, bhlev, bhrlev, brsvd2 = None, None, None, None
+        coords_and_dims, factories = _convert_scalar_vertical_coords(
+            lbcode=lbcode, lbvc=lbvc, blev=blev, lblev=lblev, stash=stash,
+            bhlev=bhlev, bhrlev=bhrlev, brsvd1=brsvd1, brsvd2=brsvd2,
+            brlev=brlev)
+        if expect_match:
+            expect_result = [
+                (DimCoord([blev], standard_name='depth', units='m',
+                          bounds=[[brsvd1, brlev]],
                           attributes={'positive': 'down'}), None)]
         else:
             expect_result = []

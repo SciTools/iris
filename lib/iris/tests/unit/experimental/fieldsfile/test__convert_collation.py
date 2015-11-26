@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import netcdftime
+import numpy as np
 
 from iris.experimental.fieldsfile \
     import _convert_collation as convert_collation
@@ -219,6 +220,57 @@ class Test(tests.IrisTest):
                                                  long_name='pressure',
                                                  units='hPa'),
                             (0,))]
+        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        coords_and_dims = []
+        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+
+    def test_soil_level(self):
+        field = self._field()
+        field.lbvc = 6
+        points = [10, 20, 30]
+        lower = [0] * 3
+        upper = [0] * 3
+        lblev = (points, (0,))
+        brsvd1 = (lower, (0,))
+        brlev = (upper, (0,))
+        collation = mock.Mock(fields=[field], vector_dims_shape=(3,),
+                              element_arrays_and_dims={'lblev': lblev,
+                                                       'brsvd1': brsvd1,
+                                                       'brlev': brlev})
+        metadata = convert_collation(collation)
+        self._check_phenomenon(metadata)
+        level = iris.coords.DimCoord(points,
+                                     long_name='soil_model_level_number',
+                                     attributes={'positive': 'down'})
+        coords_and_dims = [(LONGITUDE, 2),
+                           (LATITUDE, 1),
+                           (level, (0,))]
+        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        coords_and_dims = []
+        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+
+    def test_soil_depth(self):
+        field = self._field()
+        field.lbvc = 6
+        points = [10, 20, 30]
+        lower = [0, 15, 25]
+        upper = [15, 25, 35]
+        blev = (points, (0,))
+        brsvd1 = (lower, (0,))
+        brlev = (upper, (0,))
+        collation = mock.Mock(fields=[field], vector_dims_shape=(3,),
+                              element_arrays_and_dims={'blev': blev,
+                                                       'brsvd1': brsvd1,
+                                                       'brlev': brlev})
+        metadata = convert_collation(collation)
+        self._check_phenomenon(metadata)
+        depth = iris.coords.DimCoord(points, standard_name='depth',
+                                     bounds=np.vstack((lower, upper)).T,
+                                     units='m',
+                                     attributes={'positive': 'down'})
+        coords_and_dims = [(LONGITUDE, 2),
+                           (LATITUDE, 1),
+                           (depth, (0,))]
         self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
         coords_and_dims = []
         self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
