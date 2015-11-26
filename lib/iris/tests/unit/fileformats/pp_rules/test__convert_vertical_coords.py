@@ -218,18 +218,20 @@ class TestLBVC006_SoilLevel(TestField):
                           dim=None):
         lbvc = 6
         stash = STASH(1, 1, 1)
-        blev, bhlev, bhrlev, brsvd1, brsvd2, brlev = \
-            None, None, None, None, None, None
+        brsvd1, brlev = 0, 0
+        if hasattr(lblev, '__iter__'):
+            brsvd1 = [0] * len(lblev)
+            brlev = [0] * len(lblev)
+        blev, bhlev, bhrlev, brsvd2 = None, None, None, None
         coords_and_dims, factories = _convert_vertical_coords(
             lbcode=lbcode, lbvc=lbvc, blev=blev, lblev=lblev, stash=stash,
             bhlev=bhlev, bhrlev=bhrlev, brsvd1=brsvd1, brsvd2=brsvd2,
             brlev=brlev, dim=dim)
+        expect_result = []
         if expect_match:
-            expect_result = [
-                (DimCoord(lblev, long_name='soil_model_level_number',
-                          attributes={'positive': 'down'}), dim)]
-        else:
-            expect_result = []
+            coord = DimCoord(lblev, long_name='soil_model_level_number',
+                             attributes={'positive': 'down'})
+            expect_result = [(coord, dim)]
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
         self.assertEqual(factories, [])
 
@@ -246,6 +248,51 @@ class TestLBVC006_SoilLevel(TestField):
     def test_cross_section__vector(self):
         lblev = np.arange(10)
         self._check_soil_level(_lbcode(ix=1, iy=2), lblev=lblev,
+                               expect_match=False, dim=0)
+
+
+class TestLBVC006_SoilDepth(TestField):
+    def _check_soil_depth(self, lbcode, blev=0.05, brsvd1=0, brlev=0.1,
+                          expect_match=True, dim=None):
+        lbvc = 6
+        stash = STASH(1, 1, 1)
+        lblev, bhlev, bhrlev, brsvd2 = None, None, None, None
+        coords_and_dims, factories = _convert_vertical_coords(
+            lbcode=lbcode, lbvc=lbvc, blev=blev, lblev=lblev, stash=stash,
+            bhlev=bhlev, bhrlev=bhrlev, brsvd1=brsvd1, brsvd2=brsvd2,
+            brlev=brlev, dim=dim)
+        expect_result = []
+        if expect_match:
+            coord = DimCoord(blev, standard_name='depth',
+                             bounds=np.vstack((brsvd1, brlev)).T,
+                             units='m', attributes={'positive': 'down'})
+            expect_result = [(coord, dim)]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        self.assertEqual(factories, [])
+
+    def test_normal(self):
+        self._check_soil_depth(_lbcode(0))
+
+    def test_normal__vector(self):
+        points = np.arange(10)
+        self._check_soil_depth(_lbcode(0), blev=points,
+                               brsvd1=points - 1, brlev=points + 1, dim=0)
+
+    def test_bad_bounds(self):
+        points = [-0.5, 0.5]
+        lower = [-1, 1]
+        upper = [-1, 1]
+        self._check_soil_depth(_lbcode(0), blev=points,
+                               brsvd1=lower, brlev=upper, dim=0,
+                               expect_match=False)
+
+    def test_cross_section(self):
+        self._check_soil_depth(_lbcode(ix=1, iy=2), expect_match=False)
+
+    def test_cross_section__vector(self):
+        points = np.arange(10)
+        self._check_soil_depth(_lbcode(ix=1, iy=2), blev=points,
+                               brsvd1=points - 1, brlev=points + 1,
                                expect_match=False, dim=0)
 
 

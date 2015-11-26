@@ -96,13 +96,28 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
                 coord.units.is_dimensionless() and
                 coord.attributes['positive'] == 'down')
 
+    @staticmethod
+    def _is_soil_depth_coord(coord):
+        return (coord.standard_name == 'depth' and
+                coord.units == 'm' and
+                coord.attributes['positive'] == 'down')
+
     def test_soil_levels(self):
         level = 1234
-        field = mock.MagicMock(lbvc=6, lblev=level)
+        field = mock.MagicMock(lbvc=6, lblev=level, brsvd=[0, 0], brlev=0)
         self._test_for_coord(field, convert,
-                             TestLBVC._is_soil_model_level_number_coord,
+                             self._is_soil_model_level_number_coord,
                              expected_points=[level],
                              expected_bounds=None)
+
+    def test_soil_depth(self):
+        lower, point, upper = 1.2, 3.4, 5.6
+        field = mock.MagicMock(lbvc=6, blev=point, brsvd=[lower, 0],
+                               brlev=upper)
+        self._test_for_coord(field, convert,
+                             self._is_soil_depth_coord,
+                             expected_points=[point],
+                             expected_bounds=[[lower, upper]])
 
     def test_hybrid_pressure_model_level_number(self):
         level = 5678

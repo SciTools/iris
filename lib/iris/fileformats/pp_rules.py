@@ -162,12 +162,22 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
                             attributes={'positive': 'down'})
         coords_and_dims.append((coord, dim))
 
-    # Soil level.
-    if len(lbcode) != 5 and \
-            lbvc == 6:
-        coord = _dim_or_aux(model_level_number, long_name='soil_model_level_number',
-                            attributes={'positive': 'down'})
-        coords_and_dims.append((coord, dim))
+    # Soil level/depth.
+    if len(lbcode) != 5 and lbvc == 6:
+        if not (np.any(brsvd1) or np.any(brlev)):
+            # UM populates lblev, brsvd1 and brlev metadata INCORRECTLY,
+            # so continue to treat as a soil level.
+            coord = _dim_or_aux(model_level_number,
+                                long_name='soil_model_level_number',
+                                attributes={'positive': 'down'})
+            coords_and_dims.append((coord, dim))
+        elif np.all(brsvd1 != brlev):
+            # UM populates metadata CORRECTLY,
+            # so treat it as the expected (bounded) soil depth.
+            coord = _dim_or_aux(blev, standard_name='depth', units='m',
+                                bounds=np.vstack((brsvd1, brlev)).T,
+                                attributes={'positive': 'down'})
+            coords_and_dims.append((coord, dim))
 
     # Pressure.
     if (lbvc == 8) and \
@@ -666,9 +676,22 @@ def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
             (brsvd1 != brlev):
         coords_and_dims.append((DimCoord(blev, standard_name='depth', units='m', bounds=[brsvd1, brlev], attributes={'positive': 'down'}), None))
 
-    # soil level
+    # Soil level/depth.
     if len(lbcode) != 5 and lbvc == 6:
-        coords_and_dims.append((DimCoord(model_level_number, long_name='soil_model_level_number', attributes={'positive': 'down'}), None))
+        if brsvd1 == 0 and brlev == 0:
+            # UM populates lblev, brsvd1 and brlev metadata INCORRECTLY,
+            # so continue to treat lblev as a soil level.
+            coord = DimCoord(model_level_number,
+                             long_name='soil_model_level_number',
+                             attributes={'positive': 'down'})
+            coords_and_dims.append((coord, None))
+        elif brsvd1 != brlev:
+            # UM populates metadata CORRECTLY,
+            # so treat it as the expected (bounded) soil depth.
+            coord = DimCoord(blev, standard_name='depth', units='m',
+                             bounds=[brsvd1, brlev],
+                             attributes={'positive': 'down'})
+            coords_and_dims.append((coord, None))
 
     if \
             (lbvc == 8) and \

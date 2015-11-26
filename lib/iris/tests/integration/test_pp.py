@@ -49,7 +49,8 @@ class TestVertical(tests.IrisTest):
         soil_level = 1234
         field = mock.MagicMock(lbvc=6, lblev=soil_level,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
-                               lbuser=[0] * 7, lbrsvd=[0] * 4)
+                               lbuser=[0] * 7, lbrsvd=[0] * 4,
+                               brsvd=[0] * 4, brlev=0)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -61,12 +62,50 @@ class TestVertical(tests.IrisTest):
         field = iris.fileformats.pp.PPField3()
         field.lbfc = 0
         field.lbvc = 0
+        field.brsvd = [None] * 4
+        field.brlev = None
         iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
 
         # Check the vertical coordinate is as originally specified.
         self.assertEqual(field.lbvc, 6)
         self.assertEqual(field.lblev, soil_level)
+        self.assertEqual(field.blev, soil_level)
+        self.assertEqual(field.brsvd[0], 0)
+        self.assertEqual(field.brlev, 0)
+
+    def test_soil_depth_round_trip(self):
+        # Use pp.load_cubes() to convert a fake PPField into a Cube.
+        # NB. Use MagicMock so that SplittableInt header items, such as
+        # LBCODE, support len().
+        lower, point, upper = 1.2, 3.4, 5.6
+        brsvd = [lower, 0, 0, 0]
+        field = mock.MagicMock(lbvc=6, blev=point,
+                               stash=iris.fileformats.pp.STASH(1, 0, 9),
+                               lbuser=[0] * 7, lbrsvd=[0] * 4,
+                               brsvd=brsvd, brlev=upper)
+        load = mock.Mock(return_value=iter([field]))
+        with mock.patch('iris.fileformats.pp.load', new=load) as load:
+            cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
+
+        self.assertIn('soil', cube.standard_name)
+        self._test_coord(cube, point, bounds=[lower, upper],
+                         standard_name='depth')
+
+        # Now use the save rules to convert the Cube back into a PPField.
+        field = iris.fileformats.pp.PPField3()
+        field.lbfc = 0
+        field.lbvc = 0
+        field.brlev = None
+        field.brsvd = [None] * 4
+        iris.fileformats.pp._ensure_save_rules_loaded()
+        iris.fileformats.pp._save_rules.verify(cube, field)
+
+        # Check the vertical coordinate is as originally specified.
+        self.assertEqual(field.lbvc, 6)
+        self.assertEqual(field.blev, point)
+        self.assertEqual(field.brsvd[0], lower)
+        self.assertEqual(field.brlev, upper)
 
     def test_potential_temperature_level_round_trip(self):
         # Check save+load for data on 'potential temperature' levels.
