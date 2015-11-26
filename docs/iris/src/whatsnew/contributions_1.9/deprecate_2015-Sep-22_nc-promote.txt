@@ -1,3 +1,0 @@
-* When loading from NetCDF, a deprecation warning is emitted if there is vertical coordinate information
-  that *would* produce extra result cubes if :data:`iris.FUTURE.netcdf_promote` were set,
-  but it is *not* set.

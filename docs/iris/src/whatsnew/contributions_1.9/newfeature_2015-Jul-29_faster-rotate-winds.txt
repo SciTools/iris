@@ -1,3 +1,0 @@
-* :meth:`iris.analysis.cartography.rotate_winds` can now operate much faster on multi-layer (i.e. > 2-dimensional) cubes,
-  as it calculates rotation coefficients only once and reuses them for additional layers.
-

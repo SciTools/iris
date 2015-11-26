@@ -1,2 +1,0 @@
-* Fixed a bug in :meth:`iris.fileformats.pp._convert_constraints`.
-  A previous release removed the ability to pass a partial constraint on STASH attribute.

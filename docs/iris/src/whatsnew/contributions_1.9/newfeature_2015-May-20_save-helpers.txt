@@ -1,9 +1,0 @@
-* added several new helper functions for file-save customisation,
-  (see also : :doc:`Saving Iris Cubes </userguide/saving_iris_cubes>`):
-
-  * :meth:`iris.fileformats.grib.as_pairs`
-  * :meth:`iris.fileformats.grib.as_messages`
-  * :meth:`iris.fileformats.grib.save_messages`
-  * :meth:`iris.fileformats.grib.as_pairs`
-  * :meth:`iris.fileformats.grib.as_fields`
-  * :meth:`iris.fileformats.grib.save_fields`
