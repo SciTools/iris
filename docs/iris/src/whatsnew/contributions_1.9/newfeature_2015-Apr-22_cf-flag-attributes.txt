@@ -1,2 +1,0 @@
-* When reading and writing NetCDF data, the CF 'flag' attributes,
-  "flag_masks", "flag_meanings" and "flag_values" are now preserved through Iris load and save.

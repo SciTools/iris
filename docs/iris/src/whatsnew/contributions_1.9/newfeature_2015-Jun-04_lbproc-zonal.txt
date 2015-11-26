@@ -1,2 +1,0 @@
-* Added cell-method translations for LBPROC=64 and 192 in UM files, encoding 'zonal mean' and 'zonal+time mean'.
-

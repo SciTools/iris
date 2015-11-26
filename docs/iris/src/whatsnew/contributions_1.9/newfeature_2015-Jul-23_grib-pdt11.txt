@@ -1,2 +1,0 @@
-* Ensemble statistics can now be saved to GRIB2, using Product Definition Template 4.11.
-

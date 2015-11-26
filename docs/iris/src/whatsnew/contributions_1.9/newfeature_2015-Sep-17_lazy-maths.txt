@@ -1,1 +1,0 @@
-* basic cube arithemetic (plus, minus, times, divide) now supports lazy evaluation.

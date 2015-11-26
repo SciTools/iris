@@ -1,1 +1,0 @@
-* Ignore non-numeric suffices in the numpy version string, which would otherwise crash some regridding routines.

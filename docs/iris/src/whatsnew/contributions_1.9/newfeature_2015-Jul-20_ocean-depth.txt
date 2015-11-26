@@ -1,3 +1,0 @@
-* Loading of NetCDF data with ocean vertical coordinates now returns a 'depth' in addition to an 'eta' cube.
-  This operates on specific defined dimensionless coordinates : see CF spec version 1.6, Appendix D.
-

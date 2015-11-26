@@ -1,2 +1,0 @@
-* When loading NetCDF data, a "units" attribute containing unicode characters is now transformed by backslash-replacement.
-  Previously this caused a crash.  (Note: unicode units are **not supported in the CF conventions**).

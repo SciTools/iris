@@ -1,2 +1,0 @@
-* When reading "cell_methods" attributes from NetCDF files, allow optional whitespace before the colon.
-  This is not strictly in the CF spec, but is a common occurrence.
