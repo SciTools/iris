@@ -1,3 +1,0 @@
-* Fixed a bug in :meth:`iris.experimental.um.FieldsFileVariant.close`,
-  which now correctly allocates extra blocks for larger lookups when saving.
-  Previously, a sufficiently large file could write data overlapping the lookup section.

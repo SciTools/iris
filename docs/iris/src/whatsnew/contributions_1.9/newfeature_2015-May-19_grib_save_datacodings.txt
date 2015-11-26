@@ -1,2 +1,0 @@
-* Loading data from GRIB2 now supports most of the currently defined 'data representation templates' : 
-  code numbers 0, 1, 2, 3, 4, 40, 41, 50, 51 and 61.

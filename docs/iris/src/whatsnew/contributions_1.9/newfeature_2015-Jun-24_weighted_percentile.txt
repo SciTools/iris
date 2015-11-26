@@ -1,2 +1,0 @@
-* `iris.analysis.WPERCENTILE` - a new weighted aggregator for calculating
-  percentiles.
