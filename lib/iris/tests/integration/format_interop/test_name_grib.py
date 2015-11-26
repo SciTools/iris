@@ -23,10 +23,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import cf_units
 import numpy as np
 
 import iris
-import cf_units
 
 if tests.GRIB_AVAILABLE:
     import gribapi

@@ -26,6 +26,7 @@ from collections import namedtuple
 import copy
 import warnings
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 from scipy.sparse import csc_matrix
@@ -35,7 +36,6 @@ from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
-import cf_units
 
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))

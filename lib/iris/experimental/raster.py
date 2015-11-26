@@ -31,9 +31,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import numpy as np
 from osgeo import gdal, osr
 
+import cf_units
+
 import iris
 import iris.coord_systems
-import cf_units
 
 
 _GDAL_DATATYPES = {

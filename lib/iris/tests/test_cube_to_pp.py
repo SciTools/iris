@@ -25,6 +25,7 @@ import iris.tests as tests
 import os
 import tempfile
 
+import cf_units
 import numpy as np
 
 import iris
@@ -33,7 +34,6 @@ import iris.coord_systems
 import iris.fileformats.pp as ff_pp
 from iris.fileformats.pp import PPField3
 import iris.io
-import cf_units
 from iris.tests import mock
 import iris.tests.pp as pp
 import iris.util

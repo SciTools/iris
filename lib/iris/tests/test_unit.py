@@ -33,9 +33,8 @@ try:
 except ImportError:
     from operator import div as truediv
 
-import numpy as np
-
 import cf_units as unit
+import numpy as np
 
 
 Unit = unit.Unit

@@ -34,13 +34,13 @@ import struct
 import warnings
 
 import biggus
+import cf_units
 import numpy as np
 import numpy.ma as ma
 import netcdftime
 
 import iris.config
 import iris.fileformats.rules
-import cf_units
 import iris.fileformats.pp_rules
 import iris.coord_systems
 
