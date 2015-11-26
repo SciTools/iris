@@ -162,7 +162,7 @@ class TestLBVC006_SoilLevel(TestField):
 
 
 class TestLBVC006_SoilDepth(TestField):
-    def _check_soil_level(self, lbcode, expect_match=True):
+    def _check_soil_depth(self, lbcode, expect_match=True):
         lbvc = 6
         blev = 0.05
         brsvd1, brlev = 0, 0.1
@@ -183,10 +183,10 @@ class TestLBVC006_SoilDepth(TestField):
         self.assertEqual(factories, [])
 
     def test_normal(self):
-        self._check_soil_level(_lbcode(0))
+        self._check_soil_depth(_lbcode(0))
 
     def test_cross_section(self):
-        self._check_soil_level(_lbcode(ix=1, iy=2), expect_match=False)
+        self._check_soil_depth(_lbcode(ix=1, iy=2), expect_match=False)
 
 
 class TestLBVC008_Pressure(TestField):
