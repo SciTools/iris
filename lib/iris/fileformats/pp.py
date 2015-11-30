@@ -1701,27 +1701,33 @@ def make_pp_field(header):
 LoadedArrayBytes = collections.namedtuple('LoadedArrayBytes', 'bytes, dtype')
 
 
-def load(filename, read_data=False):
+def load(filenames, read_data=False):
     """
     Return an iterator of PPFields given a filename.
 
     Args:
 
-    * filename - string of the filename to load.
+    * filename (string/list):
+        One of more filenames to load from.
 
     Kwargs:
 
-    * read_data - boolean
-        Flag whether or not the data should be read, if False an empty data manager
-        will be provided which can subsequently load the data on demand. Default False.
+    * read_data (bool)
+        Flag whether or not the data should be read, if False an empty data
+        manager will be provided which can subsequently load the data on
+        demand. Default False.
 
-    To iterate through all of the fields in a pp file::
+    To iterate through all of the fields in one or more pp files::
 
         for field in iris.fileformats.pp.load(filename):
             print(field)
 
     """
-    return _interpret_fields(_field_gen(filename, read_data_bytes=read_data))
+    if isinstance(filenames, six.string_types):
+        filenames = [filenames]
+    return itertools.chain(
+        *[_interpret_fields(_field_gen(fnme, read_data_bytes=read_data)) for
+            fnme in filenames])
 
 
 def _interpret_fields(fields):

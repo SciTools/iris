@@ -28,20 +28,49 @@ from iris.tests import mock
 
 
 class Test_load(tests.IrisTest):
+    def setUp(self):
+        side_effect = [iter([mock.sentinel.ppfields1]),
+                       iter([mock.sentinel.ppfields2,
+                             mock.sentinel.ppfields3])]
+        patch = mock.patch('iris.fileformats.pp._interpret_fields',
+                           autospec=True, side_effect=side_effect)
+        self.interpret_patch = patch.start()
+        self.addCleanup(patch.stop)
+
+        self.extract_result = mock.Mock()
+
+        side_effect = [[mock.sentinel.hf_ppfields1],
+                       [mock.sentinel.hf_ppfields2,
+                        mock.sentinel.hf_ppfields3]]
+        patch = mock.patch('iris.fileformats.pp._field_gen', autospec=True,
+                           side_effect=side_effect)
+        self.field_gen_patch = patch.start()
+        self.addCleanup(patch.stop)
+
     def test_call_structure(self):
         # Check that the load function calls the two necessary utility
         # functions.
-        extract_result = mock.Mock()
-        interpret_patch = mock.patch('iris.fileformats.pp._interpret_fields',
-                                     autospec=True, return_value=iter([]))
-        field_gen_patch = mock.patch('iris.fileformats.pp._field_gen',
-                                     autospec=True,
-                                     return_value=extract_result)
-        with interpret_patch as interpret, field_gen_patch as field_gen:
-            pp.load('mock', read_data=True)
+        pp.load('mock', read_data=True)
 
-        interpret.assert_called_once_with(extract_result)
-        field_gen.assert_called_once_with('mock', read_data_bytes=True)
+        self.interpret_patch.assert_called_once_with(
+            [mock.sentinel.hf_ppfields1])
+        self.field_gen_patch.assert_called_once_with('mock',
+                                                     read_data_bytes=True)
+
+    def test_multi_filename(self):
+        # Ensure multi filename support.
+        fields = pp.load(['fnme1', 'fnme2'], read_data=True)
+
+        self.assertEqual(self.interpret_patch.call_args_list,
+                         [mock.call([mock.sentinel.hf_ppfields1]),
+                          mock.call([mock.sentinel.hf_ppfields2,
+                                    mock.sentinel.hf_ppfields3])])
+        self.assertEqual(self.field_gen_patch.call_args_list,
+                         [mock.call('fnme1', read_data_bytes=True),
+                          mock.call('fnme2', read_data_bytes=True)])
+        self.assertEqual(list(fields),
+                         [mock.sentinel.ppfields1, mock.sentinel.ppfields2,
+                          mock.sentinel.ppfields3])
 
 
 if __name__ == "__main__":
