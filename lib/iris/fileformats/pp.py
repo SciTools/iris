@@ -1920,14 +1920,40 @@ def add_save_rules(filename):
     Registered files are processed after the standard conversion rules, and in
     the order they were registered.
 
+    .. deprecated:: 1.9
+
+        If you need to customise pp field saving, please refer to the methods
+        :meth:`as_fields`, :meth:`as_pairs` and :meth:`save_fields` for an
+        alternative solution.
+
     """
+    warnings.warn(
+        'custom pp save rules are deprecated from v1.9.\n'
+        'If you need to customise pp field saving, please refer to '
+        'the methods iris.fileformats.pp.as_fields, '
+        'iris.fileformats.pp.as_pairs and iris.fileformats.pp.save_fields '
+        'for an alternative solution.')
     _ensure_save_rules_loaded()
     _save_rules.import_rules(filename)
 
 
 def reset_save_rules():
-    """Resets the PP save process to use only the standard conversion rules."""
+    """
+    Resets the PP save process to use only the standard conversion rules.
 
+    .. deprecated:: 1.9
+
+        If you need to customise pp field saving, please refer to the methods
+        :meth:`as_fields`, :meth:`as_pairs` and :meth:`save_fields` for an
+        alternative solution.
+
+    """
+    warnings.warn(
+        'custom pp save rules are deprecated from v1.9.\n'
+        'If you need to customise pp field saving, please refer to '
+        'the methods iris.fileformats.pp.as_fields, '
+        'iris.fileformats.pp.as_pairs and iris.fileformats.pp.save_fields '
+        'for an alternative solution.')
     # Uses this module-level variable
     global _save_rules
 
