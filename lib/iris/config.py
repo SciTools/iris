@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -41,19 +41,23 @@ defined by :mod:`ConfigParser`.
 
     The full path to the Iris palette configuration directory
 
+.. py:data:: iris.config.IMPORT_LOGGER
+
+    The [optional] name of the logger to notify when first imported.
+
 .. py:data:: iris.config.RULE_LOG_DIR
 
     The [optional] full path to the rule logging directory used by
     :func:`iris.fileformats.pp.load()` and
     :func:`iris.fileformats.pp.save()`.
 
+    .. deprecated:: 1.10
+
 .. py:data:: iris.config.RULE_LOG_IGNORE
 
     The [optional] list of users to ignore when logging rules.
 
-.. py:data:: iris.config.IMPORT_LOGGER
-
-    The [optional] name of the logger to notify when first imported.
+    .. deprecated:: 1.10
 
 ----------
 """

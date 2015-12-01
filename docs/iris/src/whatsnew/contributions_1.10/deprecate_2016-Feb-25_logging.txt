@@ -1,0 +1,4 @@
+* deprecated logging functions (currently used only for rules logging):  
+ :data:`iris.config.iris.config.RULE_LOG_DIR`,
+ :data:`iris.config.iris.config.RULE_LOG_IGNORE` and
+ :data:`iris.fileformats.rules.log`.

@@ -1,0 +1,7 @@
+ * deprecated the custom pp save rules mechanism implemented by the functions
+   :func:`iris.fileformats.pp.add_save_rules' and
+   :func:`iris.fileformats.pp.reset_save_rules'.
+   The functions :func:`iris.fileformats.pp.as_fields',
+   :func:`iris.fileformats.pp.as_pairs'
+   and :func:`iris.fileformats.pp.save_fields' provide alternative means of
+   achieving the same ends.
