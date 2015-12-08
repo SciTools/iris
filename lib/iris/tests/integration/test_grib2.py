@@ -31,14 +31,14 @@ import iris
 from iris import FUTURE, load_cube, save
 from iris.coords import CellMethod
 from iris.coord_systems import RotatedGeogCS
-from iris.fileformats.grib._message import _GribMessage
 from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
 from iris.util import is_regular
 
 if tests.GRIB_AVAILABLE:
     import gribapi
+    from iris.fileformats.grib._message import _GribMessage
 
-@tests.skip_grib
+
 def _evaluate_grib_message(test, filename, contents):
     """
     Evaluate whether all messages in a GRIB2 file contains contents:
