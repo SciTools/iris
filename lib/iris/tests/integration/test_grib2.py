@@ -38,7 +38,7 @@ from iris.util import is_regular
 if tests.GRIB_AVAILABLE:
     import gribapi
 
-
+@tests.skip_grib
 def _evaluate_grib_message(test, filename, contents):
     """
     Evaluate whether all messages in a GRIB2 file contains contents:
