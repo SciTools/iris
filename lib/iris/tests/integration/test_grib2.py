@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,9 +33,6 @@ from iris.coords import CellMethod
 from iris.coord_systems import RotatedGeogCS
 from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
 from iris.util import is_regular
-
-if tests.GRIB_AVAILABLE:
-    import gribapi
 
 
 @tests.skip_data
@@ -108,7 +105,7 @@ class TestPDT8(tests.IrisTest):
 
 @tests.skip_data
 @tests.skip_grib
-class TestPDT11(tests.IrisTest):
+class TestPDT11(tests.TestGribMessage):
     def test_perturbation(self):
         path = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                     'SMALL_hires_wind_u_for_ipcc4.nc'))
@@ -124,26 +121,21 @@ class TestPDT11(tests.IrisTest):
                                                 units='1'))
         with self.temp_filename('testPDT11.GRIB2') as temp_file_path:
             iris.save(cube, temp_file_path)
-            # Get a grib_dump of the output file.
-            dump_text = check_output(('grib_dump -O -wcount=1 ' +
-                                      temp_file_path),
-                                     shell=True).decode()
 
             # Check that various aspects of the saved file are as expected.
-            expect_strings = (
-                'editionNumber = 2',
-                'gridDefinitionTemplateNumber = 0',
-                'productDefinitionTemplateNumber = 11',
-                'perturbationNumber = 1',
-                'typeOfStatisticalProcessing = 0',
-                'numberOfForecastsInEnsemble = 255')
-            for expect in expect_strings:
-                self.assertIn(expect, dump_text)
+            expect_values = (
+                (0, 'editionNumber',  2),
+                (3, 'gridDefinitionTemplateNumber', 0),
+                (4, 'productDefinitionTemplateNumber', 11),
+                (4, 'perturbationNumber', 1),
+                (4, 'typeOfStatisticalProcessing', 0),
+                (4, 'numberOfForecastsInEnsemble', 255))
+            self.assertGribMessageContents(temp_file_path, expect_values)
 
 
 @tests.skip_data
 @tests.skip_grib
-class TestGDT5(tests.IrisTest):
+class TestGDT5(tests.TestGribMessage):
     def test_save_load(self):
         # Load sample UKV data (variable-resolution rotated grid).
         path = tests.get_data_path(('PP', 'ukV1', 'ukVpmslont.pp'))
@@ -166,30 +158,25 @@ class TestGDT5(tests.IrisTest):
         self.assertIsInstance(x_coord.coord_system, RotatedGeogCS)
         self.assertFalse(is_regular(x_coord))
 
-        # Write to temporary file, check grib_dump output, and load back in.
+        # Write to temporary file, check that key contents are in the file,
+        # then load back in.
         with self.temp_filename('ukv_sample.grib2') as temp_file_path:
             save(cube, temp_file_path)
 
-            # Get a grib_dump of the output file.
-            dump_text = check_output(('grib_dump -O -wcount=1 ' +
-                                      temp_file_path),
-                                     shell=True).decode()
-
             # Check that various aspects of the saved file are as expected.
-            expect_strings = (
-                'editionNumber = 2',
-                'gridDefinitionTemplateNumber = 5',
-                'Ni = {:d}'.format(cube.shape[-1]),
-                'Nj = {:d}'.format(cube.shape[-2]),
-                'shapeOfTheEarth = 1',
-                'scaledValueOfRadiusOfSphericalEarth = {:d}'.format(
-                    int(UM_DEFAULT_EARTH_RADIUS)),
-                'resolutionAndComponentFlags = 0',
-                'latitudeOfSouthernPole = -37500000',
-                'longitudeOfSouthernPole = 357500000',
-                'angleOfRotation = 0')
-            for expect in expect_strings:
-                self.assertIn(expect, dump_text)
+            expect_values = (
+                (0, 'editionNumber', 2),
+                (3, 'gridDefinitionTemplateNumber', 5),
+                (3, 'Ni', cube.shape[-1]),
+                (3, 'Nj', cube.shape[-2]),
+                (3, 'shapeOfTheEarth', 1),
+                (3, 'scaledValueOfRadiusOfSphericalEarth',
+                 int(UM_DEFAULT_EARTH_RADIUS)),
+                (3, 'resolutionAndComponentFlags', 0),
+                (3, 'latitudeOfSouthernPole', -37500000),
+                (3, 'longitudeOfSouthernPole', 357500000),
+                (3, 'angleOfRotation', 0))
+            self.assertGribMessageContents(temp_file_path, expect_values)
 
             # Load the Grib file back into a new cube.
             with FUTURE.context(strict_grib_load=True):
