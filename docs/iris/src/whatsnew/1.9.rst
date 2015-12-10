@@ -2,7 +2,7 @@ What's New in Iris 1.9
 **********************
 
 :Release: 1.9
-:Date: (unreleased)
+:Date: 10th December 2015
 
 This document explains the new/changed features of Iris in version 1.9
 (:doc:`View all changes <index>`.)
