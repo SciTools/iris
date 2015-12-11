@@ -36,6 +36,10 @@ import argparse
 import pprint
 import xml.etree.ElementTree as ET
 
+if six.PY2:
+    # We want the "open" function to have the encoding keyword.
+    from io import open
+
 
 STD_VALUES_FILE_TEMPLATE = '''
 # (C) British Crown Copyright 2010 - 2015, Met Office
@@ -118,11 +122,11 @@ def to_dict(infile, outfile):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Create Python code from CF standard name XML.')
-    parser.add_argument('input', type=argparse.FileType(),
-                        metavar='INPUT',
+    parser.add_argument('input', metavar='INPUT',
                         help='Path to CF standard name XML')
-    parser.add_argument('output', type=argparse.FileType('w'),
-                        metavar='OUTPUT',
+    parser.add_argument('output', metavar='OUTPUT',
                         help='Path to resulting Python code')
     args = parser.parse_args()
-    to_dict(args.input, args.output)
+    with open(args.input, 'r', encoding='utf-8') as in_fh:
+        with open(args.output, 'w', encoding='utf-8') as out_fh:
+            to_dict(in_fh, out_fh)
