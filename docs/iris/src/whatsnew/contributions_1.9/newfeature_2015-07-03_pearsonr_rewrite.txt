@@ -1,7 +1,0 @@
-* :func:`iris.analysis.stats.pearsonr` updates:
-  * Cubes can now be different shapes, provided one is broadcastable to the
-  other.
-  * Accepts weights keyword for weighted correlations.
-  * Accepts mdtol keyword for missing data tolerance level.
-  * Accepts common_mask keyword for restricting caculation to unmasked pairs of
-  cells.

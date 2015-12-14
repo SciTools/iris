@@ -31,6 +31,7 @@ import warnings
 
 import biggus
 import cartopy.crs as ccrs
+import cf_units
 import gribapi
 import numpy as np
 import numpy.ma as ma
@@ -45,11 +46,10 @@ from iris.fileformats.grib import _save_rules
 import iris.fileformats.grib._load_convert
 from iris.fileformats.grib._message import _GribMessage
 import iris.fileformats.grib.load_rules
-import cf_units
 
 
-__all__ = ['grib_generator', 'load_cubes',
-           'reset_load_rules', 'save_grib2', 'GribWrapper',
+__all__ = ['as_messages', 'as_pairs', 'grib_generator', 'load_cubes',
+           'reset_load_rules', 'save_grib2', 'save_messages', 'GribWrapper',
            'hindcast_workaround']
 
 

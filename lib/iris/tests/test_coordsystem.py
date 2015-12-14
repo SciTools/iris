@@ -25,11 +25,11 @@ import iris.tests as tests
 import logging
 
 import cartopy.crs as ccrs
+import cf_units
 
 import iris.cube
 import iris.coords
 import iris.tests.stock
-import cf_units
 
 from iris.coord_systems import *
 

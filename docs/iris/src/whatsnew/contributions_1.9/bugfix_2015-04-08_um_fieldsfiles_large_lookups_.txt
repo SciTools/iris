@@ -1,2 +1,0 @@
-* fixed a bug in :meth:`iris.experimental.um.FieldsFileVariant.close`.
-  When larger files open for update were closed, they could be rewritten with the data overlapping the lookup table.
