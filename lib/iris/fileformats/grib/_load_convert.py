@@ -30,6 +30,7 @@ import threading
 import warnings
 
 import cartopy.crs as ccrs
+from cf_units import CALENDAR_GREGORIAN, date2num, Unit
 import numpy as np
 import numpy.ma as ma
 
@@ -39,7 +40,6 @@ from iris.coords import AuxCoord, DimCoord, CellMethod
 from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as itranslation
 from iris.fileformats.rules import ConversionMetadata, Factory, Reference
-from cf_units import CALENDAR_GREGORIAN, date2num, Unit
 from iris.util import _is_circular
 
 

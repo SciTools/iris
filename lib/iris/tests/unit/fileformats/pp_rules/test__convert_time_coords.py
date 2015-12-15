@@ -27,6 +27,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from cf_units import Unit, CALENDAR_GREGORIAN
 from netcdftime import datetime as nc_datetime
 import numpy as np
 
@@ -35,7 +36,6 @@ from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp_rules import _convert_time_coords
 from iris.tests import mock
 from iris.tests.unit.fileformats import TestField
-from cf_units import Unit, CALENDAR_GREGORIAN
 
 
 def _lbtim(ia=0, ib=0, ic=0):

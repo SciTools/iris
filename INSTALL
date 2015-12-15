@@ -90,6 +90,9 @@ PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
 netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
     Python interface to the netCDF version 4 C library.
 
+cf_units 1.0 or later (https://github.com/SciTools/cf_units)
+    CF data units handling, using udunits (q.v.).
+
 udunits2 2.1.24 or later
     (http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
     C library for units of physical quantities.

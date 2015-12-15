@@ -32,6 +32,7 @@ import re
 import sys
 import unittest
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -40,7 +41,6 @@ import iris.analysis
 import iris.coords
 import iris.cube
 import iris.fileformats
-import cf_units
 import iris.tests.pp as pp
 import iris.tests.stock
 

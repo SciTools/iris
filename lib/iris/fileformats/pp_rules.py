@@ -22,6 +22,7 @@ import six
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
+import cf_units
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -30,9 +31,7 @@ from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
 from iris.fileformats.um_cf_map import (LBFC_TO_CF, STASH_TO_CF,
                                         STASHCODE_IMPLIED_HEIGHTS)
-from cf_units import Unit
 import iris.fileformats.pp
-import cf_units
 
 
 ###############################################################################
@@ -994,8 +993,8 @@ def _all_other_rules(f):
             (DimCoord(
                 f.y,
                 standard_name='time',
-                units=Unit('days since 0000-01-01 00:00:00',
-                           calendar=cf_units.CALENDAR_360_DAY),
+                units=cf_units.Unit('days since 0000-01-01 00:00:00',
+                                    calendar=cf_units.CALENDAR_360_DAY),
                 bounds=f.y_bounds),
              0))
 
@@ -1004,8 +1003,8 @@ def _all_other_rules(f):
             (DimCoord(
                 f.x,
                 standard_name='time',
-                units=Unit('days since 0000-01-01 00:00:00',
-                           calendar=cf_units.CALENDAR_360_DAY),
+                units=cf_units.Unit('days since 0000-01-01 00:00:00',
+                                    calendar=cf_units.CALENDAR_360_DAY),
                 bounds=f.x_bounds),
              1))
 

@@ -753,6 +753,7 @@ fc_extras
     import warnings
 
     import biggus
+    import cf_units
     import netCDF4
     import numpy as np
     import numpy.ma as ma
@@ -764,7 +765,6 @@ fc_extras
     import iris.fileformats.pp as pp
     import iris.exceptions
     import iris.std_names
-    import cf_units
     import iris.util
     
     

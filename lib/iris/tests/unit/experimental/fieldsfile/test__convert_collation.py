@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import cf_units
 import netcdftime
 import numpy as np
 
@@ -34,7 +35,6 @@ import iris.coords
 import iris.fileformats.pp
 import iris.fileformats.rules
 from iris.tests import mock
-import cf_units
 
 
 COORD_SYSTEM = iris.coord_systems.GeogCS(6371229.0)

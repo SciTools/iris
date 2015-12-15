@@ -23,13 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import warnings
 
+from cf_units import CALENDAR_GREGORIAN, Unit
 import numpy as np
 
 from iris.aux_factory import HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
-from cf_units import CALENDAR_GREGORIAN, Unit
 
 
 def convert(grib):

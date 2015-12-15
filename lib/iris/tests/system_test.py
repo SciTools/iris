@@ -28,13 +28,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 
+import cf_units
 import numpy as np
 
 import iris
 import iris.fileformats.netcdf as netcdf
 import iris.fileformats.pp as pp
 import iris.tests as tests
-import cf_units
+
 
 if tests.GRIB_AVAILABLE:
     import gribapi

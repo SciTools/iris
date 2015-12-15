@@ -26,6 +26,7 @@ import iris.tests as tests
 
 import types
 
+import cf_units
 import numpy as np
 
 from iris.fileformats.pp_rules import convert
@@ -35,7 +36,6 @@ from iris.fileformats.pp import STASH
 from iris.fileformats.pp import PPField3
 from iris.tests import mock
 import iris.tests.unit.fileformats
-import cf_units
 
 
 class TestLBCODE(iris.tests.unit.fileformats.TestField):

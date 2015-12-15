@@ -1,2 +1,0 @@
-* fixed a bug in :meth:`iris.cube.Cube.intersection`.
-  When edge points were at (base + period), intersection would unnecessarily wrap the data.
