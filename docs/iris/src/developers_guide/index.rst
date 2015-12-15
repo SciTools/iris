@@ -37,3 +37,4 @@
    pulls.rst
    tests.rst
    deprecations.rst
+   release.rst
