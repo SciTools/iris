@@ -1641,7 +1641,9 @@ Additional kwargs associated with the use of this aggregator:
 
 * weights (float ndarray):
     Weights matching the shape of the cube, or the length of
-    the window for rolling window operations.
+    the window for rolling window operations. Weights should be
+    normalized before using them with this aggregator if scaling
+    is not intended.
 * returned (boolean):
     Set this to True to indicate the collapsed weights are to be returned
     along with the collapsed data. Defaults to False.
