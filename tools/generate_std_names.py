@@ -118,11 +118,17 @@ def to_dict(infile, outfile):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Create Python code from CF standard name XML.')
-    parser.add_argument('input', type=argparse.FileType(),
-                        metavar='INPUT',
+    parser.add_argument('input', metavar='INPUT',
                         help='Path to CF standard name XML')
-    parser.add_argument('output', type=argparse.FileType('w'),
-                        metavar='OUTPUT',
+    parser.add_argument('output', metavar='OUTPUT',
                         help='Path to resulting Python code')
     args = parser.parse_args()
-    to_dict(args.input, args.output)
+
+    if six.PY2:
+        encoding = {}
+    else:
+        encoding  = {'encoding': 'utf-8'}
+
+    with open(args.input, 'r', **encoding) as in_fh:
+        with open(args.output, 'w', **encoding) as out_fh:
+            to_dict(in_fh, out_fh)
