@@ -1498,6 +1498,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return coords[0]
 
+    def coord_as_cube(self, coord_spec):
+        coord = self.coord(coord_spec)
+        cube_dimensions = self.coord_dims(coord)
+        return iris.util.cubelike_array_as_cube(coord, self, cube_dimensions)
+
     def coord_system(self, spec=None):
         """
         Find the coordinate system of the given type.
