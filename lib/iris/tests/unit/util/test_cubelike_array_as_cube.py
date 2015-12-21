@@ -38,9 +38,6 @@ import iris.tests.stock as istk
 from iris.util import cubelike_array_as_cube
 
 
-class Test_cubelike_array_as_cube(iris.tests.IrisTest):
-    pass
-
 class Test_coord_as_cube(iris.tests.IrisTest):
     def setUp(self):
         self.cube_multidim = istk.simple_2d_w_multidim_coords()
@@ -60,6 +57,12 @@ class Test_coord_as_cube(iris.tests.IrisTest):
                     print('Extract {}:'.format(coord_name))
                     coord_cube = cube.coord_as_cube(coord_name)
                     print(coord_cube)
+
+
+class Test_cubelike_array_as_cube(iris.tests.IrisTest):
+    def setUp(self):
+        self.cube_multidim = istk.simple_2d_w_multidim_coords()
+        self.cube_3d = istk.realistic_3d()
 
     def test1(self):
         print()
