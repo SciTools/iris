@@ -46,14 +46,14 @@ class SystemInitialTest(tests.IrisTest):
 
     def system_test_supported_filetypes(self):
         nx, ny = 60, 60
-        dataarray = np.arange(nx * ny, dtype='>f4').reshape(nx, ny)
+        data = np.arange(nx * ny, dtype='>f4').reshape(nx, ny)
 
         laty = np.linspace(0, 59, ny).astype('f8')
         lonx = np.linspace(30, 89, nx).astype('f8')
 
         horiz_cs = lambda : iris.coord_systems.GeogCS(6371229)
 
-        cm = iris.cube.Cube(data=dataarray, long_name="System test data", units='m s-1')
+        cm = iris.cube.Cube(data, 'wind_speed', units='m s-1')
         cm.add_dim_coord(
             iris.coords.DimCoord(laty, 'latitude', units='degrees',
                                  coord_system=horiz_cs()),
@@ -71,18 +71,19 @@ class SystemInitialTest(tests.IrisTest):
         cm.add_aux_coord(iris.coords.AuxCoord(np.array([99], 'i8'),
                                               long_name='pressure', units='Pa'))
 
-        cm.assert_valid()
-
         filetypes = ('.nc', '.pp')
         if tests.GRIB_AVAILABLE:
             filetypes += ('.grib2',)
-        for filetype in filetypes:
-            saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
-            iris.save(cm, saved_tmpfile)
+        with iris.FUTURE.context(netcdf_no_unlimited=True,
+                                 netcdf_promote=True, strict_grib_load=True):
+            for filetype in filetypes:
+                saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
+                iris.save(cm, saved_tmpfile)
 
-            new_cube = iris.load_cube(saved_tmpfile)
-
-            self.assertCML(new_cube, ('system', 'supported_filetype_%s.cml' % filetype))
+                new_cube = iris.load_cube(saved_tmpfile)
+                self.assertCML(new_cube,
+                               ('system',
+                                'supported_filetype_%s.cml' % filetype))
 
     @tests.skip_grib
     def system_test_grib_patch(self):
