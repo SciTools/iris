@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -89,6 +89,7 @@ except ImportError:
     GRIB_AVAILABLE = False
 else:
     GRIB_AVAILABLE = True
+    from iris.fileformats.grib._message import _GribMessage
 
 
 #: Basepath for test results.
@@ -751,6 +752,27 @@ class GraphicsTest(IrisTest):
         # in an odd state, so we make sure it's been disposed of.
         if MPL_AVAILABLE:
             plt.close('all')
+
+
+class TestGribMessage(IrisTest):
+
+    def assertGribMessageContents(self, filename, contents):
+        """
+        Evaluate whether all messages in a GRIB2 file contain the provided
+        contents.
+
+        * filename (string)
+            The path on disk of an existing GRIB file
+
+        * contents
+            An iterable of GRIB message keys and expected values.
+
+        """
+        messages = _GribMessage.messages_from_filename(filename)
+        for message in messages:
+            for element in contents:
+                section, key, val = element
+                self.assertEqual(message.sections[section][key], val)
 
 
 def skip_data(fn):
