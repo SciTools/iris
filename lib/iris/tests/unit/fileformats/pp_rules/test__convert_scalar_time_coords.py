@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -224,6 +224,23 @@ class TestLBTIMxxx_Unhandled(TestField):
             lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_TIME_UNIT,
             t1=t1, t2=t2, lbft=lbft)
         self.assertEqual(coords_and_dims, [])
+
+
+class TestLBCODE3xx(TestField):
+    def test(self):
+        lbcode = _lbcode(value=31323)
+        lbtim = _lbtim(ib=2, ic=2)
+        t1 = nc_datetime(1970, 1, 3, hour=0, minute=0, second=0)
+        t2 = nc_datetime(1970, 1, 4, hour=0, minute=0, second=0)
+        lbft = 24 * 4
+        coords_and_dims = _convert_scalar_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_TIME_UNIT,
+            t1=t1, t2=t2, lbft=lbft)
+        t2_hours = 24 * 3
+        expected_result = [(DimCoord([t2_hours-lbft],
+                                     standard_name='forecast_reference_time',
+                                     units=_EPOCH_TIME_UNIT), None)]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected_result)
 
 
 if __name__ == "__main__":

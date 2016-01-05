@@ -13,7 +13,7 @@ variables:
 		pressure:long_name = "pressure" ;
 	float time(time) ;
 		time:axis = "T" ;
-		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:units = "days since 0000-01-01 00:00:00" ;
 		time:standard_name = "time" ;
 		time:calendar = "360_day" ;
 
