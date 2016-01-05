@@ -23,7 +23,9 @@ Prior to a release, a release candidate tag may be created, marked as a pre-rele
 
     :literal:`v1.9.0rc1`
 
-The pre-release shall be available for at least one week prior to the release being cut.  User groups should be notified of the existence of the pre-release and encouraged to test the functionality.
+If created, the pre-release shall be available for at least one week prior to the release being cut.  User groups should be notified of the existence of the pre-release and encouraged to test the functionality.
+
+A pre-release is expected for a minor release, but not normally provided for a point release.
 
 If new features are required for a release after a release candidate has been cut, a new pre-release shall be issued first.
 
@@ -49,7 +51,7 @@ Once all checks are complete, the release is cut by the creation of a new tag in
 Conda Recipe
 ============
 
-Once a release is cut, the SciTools conda-recipes-scitools recipe for iris shall be updated to build the latest release of irisand push this artefact to anaconda.org.  The build and push is all automated as part of the merge process.
+Once a release is cut, the SciTools conda-recipes-scitools recipe for iris shall be updated to build the latest release of iris and push this artefact to anaconda.org.  The build and push is all automated as part of the merge process.
 
 Merge Back
 ==========
