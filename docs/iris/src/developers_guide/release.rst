@@ -1,15 +1,14 @@
 Releases
 ********
 
-A release of Iris is a tag on github in the SciTools organisation master.
-
+A release of Iris is a tag on the SciTools/iris Github repository.
 
 Release Branch
 ==============
 
 Once the features intended for the release are on master, a release branch should be created, in the SciTools/iris repository.  This will have the name:
 
-    :literal:`{major release number}.x`
+    :literal:`{major release number}.{minor release number}.x`
 
 for example:
 
@@ -20,7 +19,7 @@ This branch shall be used to finalise the release details in preparation for the
 Release Candidate
 =================
 
-Prior to a release, a release candidate tag shall be created, marked as a pre-release in github, with a tag ending with :literal:`rc` followed by a number, e.g.:
+Prior to a release, a release candidate tag may be created, marked as a pre-release in github, with a tag ending with :literal:`rc` followed by a number, e.g.:
 
     :literal:`v1.9.0rc1`
 
