@@ -149,16 +149,12 @@ Iris examples
                 out.append(title + '\n')
                 out.append('=' * len(title) + '\n\n')
 
-            if not noplot_regex.search(contents):
-                out.append('\n\n.. plot:: {}\n'.format(fullpath))
-                out.append('    :include-source:\n\n')
-            else:
-                out.append('[`source code <{}>`_]\n\n'.format(fname))
-                out.append('.. literalinclude:: {}\n\n'.format(fname))
-                # Write the .py file contents (we didn't need to do this for
-                # plots as the plot directive does this for us.)
-                with open(outputfile, 'w') as fhstatic:
-                    fhstatic.write(contents)
+	    out.append('[`source code <{}>`_]\n\n'.format(fname))
+	    out.append('.. literalinclude:: {}\n\n'.format(fname))
+	    with open(outputfile, 'w') as fhstatic:
+		fhstatic.write(contents)
+	    out.append('\n\n.. plot:: {}\n'.format(outputfile))
+	    out.append('    :include-source:\n\n')
 
             with open(outrstfile, 'w') as fh:
                 fh.writelines(out)
