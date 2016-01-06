@@ -81,8 +81,7 @@ def main():
                 label='pre-industrial', lw=1.5)
 
     # Establish where r and t have the same data, i.e. the observations
-    common = np.where(a1b_mean.data == e1_mean.data)[0]
-    observed = a1b_mean[common]
+    observed = a1b_mean[:np.argmin(np.isclose(a1b_mean.data, e1_mean.data))]
 
     # Plot the observed data
     qplt.plot(observed, label='observed', color='black', lw=1.5)

@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import os
 import re
+import shutil
 import sys
 
 
@@ -141,6 +142,11 @@ Iris examples
             out = []
             out.append('.. _{}-{}:\n\n'.format(subdir, basename))
 
+            # Copy the example code to be in the src examples directory. This
+            # means we can define a simple relative path in the plot directive,
+            # which can also copy the file into the resulting build directory.
+            shutil.copy(fullpath, rstdir)
+
             docstring_results = docstring_regex.search(contents)
             if docstring_results is not None:
                 out.append(docstring_results.group(1))
@@ -150,7 +156,8 @@ Iris examples
                 out.append('=' * len(title) + '\n\n')
 
             if not noplot_regex.search(contents):
-                out.append('\n\n.. plot:: {}\n'.format(fullpath))
+                rel_example = os.path.relpath(outputfile, app.builder.outdir)
+                out.append('\n\n.. plot:: {}\n'.format(rel_example))
                 out.append('    :include-source:\n\n')
             else:
                 out.append('[`source code <{}>`_]\n\n'.format(fname))

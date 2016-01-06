@@ -1,8 +1,8 @@
 What's New in Iris 1.9
 **********************
 
-:Release: 1.9
-:Date: 10th December 2015
+:Release: 1.9.1
+:Date: 5th January 2016
 
 This document explains the new/changed features of Iris in version 1.9
 (:doc:`View all changes <index>`.)
@@ -94,6 +94,10 @@ Bugs Fixed
   Previously, when larger files open for update were closed, they could be written out with data overlapping the lookup table.
 * Fixed a bug in :class:`iris.aux_factory.OceanSigmaZFactory`
   which sometimes caused crashes when fetching the points of an "ocean sigma z" coordinate.
+
+Version 1.9.1
+-------------
+* Fixed a unicode bug preventing standard names from being built cleanly when installing in Python3
 
 Incompatible Changes
 ====================
