@@ -22,8 +22,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from copy import deepcopy
-import itertools
 import os
+from types import GeneratorType
 import unittest
 
 import biggus
@@ -213,9 +213,9 @@ class TestPackedPP(IrisPPTest):
                                         'nae.20100104-06_0001.pp'))
         r = pp.load(filepath)
 
-        # Check that the result is an itertools.chain and convert to a list so
+        # Check that the result is a Generator and convert to a list so
         # that we can index and get the first one.
-        self.assertIsInstance(r, type(itertools.chain()))
+        self.assertEqual(type(r), GeneratorType)
         r = list(r)
 
         self.check_pp(r, ('PP', 'nae_unpacked.pp.txt'))
@@ -245,9 +245,9 @@ class TestPackedPP(IrisPPTest):
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))
 
-        # Check that the result is an itertools.chain and convert to a list so
+        # Check that the result is a Generator and convert to a list so
         # that we can index and get the first one.
-        self.assertIsInstance(r, type(itertools.chain()))
+        self.assertEqual(type(r), GeneratorType)
         r = list(r)
 
         self.check_pp(r, ('PP', 'rle_unpacked.pp.txt'))
@@ -305,12 +305,12 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         self.r = pp.load(self.original_pp_filepath)
         self.r_loaded_data = pp.load(self.original_pp_filepath, read_data=True)
         
-        # Check that the result is an itertools.chain and convert to a list so
+        # Check that the result is a Generator and convert to a list so
         # that we can index and get the first one.
-        self.assertIsInstance(self.r, type(itertools.chain()))
+        self.assertEqual(type(self.r), GeneratorType)
         self.r = list(self.r)
         
-        self.assertIsInstance(self.r_loaded_data, type(itertools.chain()))
+        self.assertEqual(type(self.r_loaded_data), GeneratorType)
         self.r_loaded_data = list(self.r_loaded_data)
         
             
