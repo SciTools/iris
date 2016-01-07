@@ -36,9 +36,6 @@ from iris.tests import mock
 import iris.util
 
 
-ITERTOOLS_CHAIN_TYPE = type(itertools.chain())
-
-
 @tests.skip_data
 class TestPPCopy(tests.IrisTest):
     def setUp(self):
@@ -218,7 +215,7 @@ class TestPackedPP(IrisPPTest):
 
         # Check that the result is an itertools.chain and convert to a list so
         # that we can index and get the first one.
-        self.assertEqual(type(r), ITERTOOLS_CHAIN_TYPE)
+        self.assertIsInstance(r, type(itertools.chain()))
         r = list(r)
 
         self.check_pp(r, ('PP', 'nae_unpacked.pp.txt'))
@@ -250,7 +247,7 @@ class TestPackedPP(IrisPPTest):
 
         # Check that the result is an itertools.chain and convert to a list so
         # that we can index and get the first one.
-        self.assertEqual(type(r), ITERTOOLS_CHAIN_TYPE)
+        self.assertIsInstance(r, type(itertools.chain()))
         r = list(r)
 
         self.check_pp(r, ('PP', 'rle_unpacked.pp.txt'))
@@ -310,10 +307,10 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         
         # Check that the result is an itertools.chain and convert to a list so
         # that we can index and get the first one.
-        self.assertEqual( type(self.r), ITERTOOLS_CHAIN_TYPE)
+        self.assertIsInstance(self.r, type(itertools.chain()))
         self.r = list(self.r)
         
-        self.assertEqual( type(self.r_loaded_data), ITERTOOLS_CHAIN_TYPE)
+        self.assertIsInstance(self.r_loaded_data, type(itertools.chain()))
         self.r_loaded_data = list(self.r_loaded_data)
         
             

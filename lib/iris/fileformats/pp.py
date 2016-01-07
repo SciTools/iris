@@ -1708,7 +1708,7 @@ def load(filenames, read_data=False):
     Args:
 
     * filename (string/list):
-        One of more filenames to load from.
+        One or more filenames to load from.
 
     Kwargs:
 
@@ -1725,9 +1725,10 @@ def load(filenames, read_data=False):
     """
     if isinstance(filenames, six.string_types):
         filenames = [filenames]
-    return itertools.chain(
-        *[_interpret_fields(_field_gen(fnme, read_data_bytes=read_data)) for
-            fnme in filenames])
+    fnme_iterator = [
+        _interpret_fields(_field_gen(fnme, read_data_bytes=read_data)) for
+        fnme in filenames]
+    return itertools.chain.from_iterable(fnme_iterator)
 
 
 def _interpret_fields(fields):
