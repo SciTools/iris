@@ -34,9 +34,12 @@ from iris.experimental.um import (Field, Field2, Field3, FieldsFileVariant,
 
 try:
     import mo_pack
-except ImportError:
-    # Disable all these tests if mo_pack is not installed.
-    mo_pack = None
+except ImportError as err: 
+    if err.message.startswith('No module named'):
+        # Disable all these tests if mo_pack is not installed.
+        mo_pack = None
+    else:
+        raise
 
 skip_mo_pack = unittest.skipIf(mo_pack is None,
                                'Test(s) require "mo_pack", '

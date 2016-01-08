@@ -38,8 +38,11 @@ try:
     import ESMF
     # Check it *is* the real module, and not an iris.proxy FakeModule.
     ESMF.Manager
-except ImportError as AttributeError:
-    ESMF = None
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        ESMF = None
+    else:
+        raise
 skip_esmf = unittest.skipIf(
     condition=ESMF is None,
     reason='Requires ESMF, which is not available.')

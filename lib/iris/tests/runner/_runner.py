@@ -183,8 +183,11 @@ class TestRunner():
                 '--process-timeout=250']
         try:
             import gribapi
-        except ImportError:
-            args.append('--exclude=^grib$')
+        except ImportError as err:
+            if err.message.startswith('No module named'):
+                args.append('--exclude=^grib$')
+            else:
+                raise
         if self.stop:
             args.append('--stop')
 

@@ -27,8 +27,11 @@ import numpy as np
 try:
     from osgeo import gdal
     from iris.experimental.raster import export_geotiff
-except ImportError:
-    gdal = None
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        gdal = None
+    else:
+        raise
 
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord

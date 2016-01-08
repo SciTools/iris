@@ -46,13 +46,19 @@ import iris.coord_systems
 
 try:
     import mo_pack
-except ImportError:
-    mo_pack = None
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        mo_pack = None
+    else:
+        raise
 
 try:
     from iris.fileformats import pp_packing
-except ImportError:
-    pp_packing = None
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        pp_packing = None
+    else:
+        raise
 
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
