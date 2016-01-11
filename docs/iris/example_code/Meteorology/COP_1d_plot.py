@@ -80,8 +80,15 @@ def main():
     plt.axhline(y=pre_industrial_mean.data, color='gray', linestyle='dashed',
                 label='pre-industrial', lw=1.5)
 
-    # Establish where r and t have the same data, i.e. the observations
-    observed = a1b_mean[:np.argmin(np.isclose(a1b_mean.data, e1_mean.data))]
+    # Constrain the period 1860-1999 and extract the observed data from a1b
+    constraint = iris.Constraint(time=lambda
+                                 cell: 1860 <= cell.point.year <= 1999)
+    with iris.FUTURE.context(cell_datetime_objects=True):
+        observed = a1b_mean.extract(constraint)
+        # Assert that this data set is the same as the e1 scenario:
+        # they share data up to the 1999 cut off.
+        assert np.all(np.isclose(observed.data,
+                                 e1_mean.extract(constraint).data))
 
     # Plot the observed data
     qplt.plot(observed, label='observed', color='black', lw=1.5)
