@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -1381,7 +1381,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         result = None
         if spec_name is None:
-            for key in sorted(coord_systems.keys()):
+            for key in sorted(coord_systems.keys(),
+                              key=lambda class_: class_.__name__):
                 result = coord_systems[key]
                 break
         else:
