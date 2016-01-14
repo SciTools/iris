@@ -67,9 +67,8 @@ If you are installing dependencies with a package manager on Linux,
 you may need to install the development packages (look for a "-dev" 
 postfix) in addition to the core packages.  
 
-python 2.7 or later (http://www.python.org/)
-    Iris requires Python 2.7 or later, but is not currently compatible with
-    Python 3.
+python 2.7 or 3.4 (http://www.python.org/)
+    Iris requires Python 2.7 or Python 3.4.
 
 numpy 1.6 or later (http://numpy.scipy.org/)
     Python package for scientific computing including a powerful N-dimensional

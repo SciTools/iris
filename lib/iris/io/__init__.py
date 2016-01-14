@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -227,6 +227,22 @@ def load_http(urls, callback):
             yield cube
 
 
+def _dot_save(cube, target):
+    # A simple wrapper for `iris.fileformats.dot.save` which allows the
+    # saver to be registered without triggering the import of
+    # `iris.fileformats.dot`.
+    import iris.fileformats.dot
+    return iris.fileformats.dot.save(cube, target)
+
+
+def _dot_save_png(cube, target, **kwargs):
+    # A simple wrapper for `iris.fileformats.dot.save_png` which allows the
+    # saver to be registered without triggering the import of
+    # `iris.fileformats.dot`.
+    import iris.fileformats.dot
+    return iris.fileformats.dot.save_png(cube, target, **kwargs)
+
+
 def _grib_save(cube, target, append=False, **kwargs):
     # A simple wrapper for `iris.fileformats.grib.save_grib2` which
     # allows the saver to be registered without having `gribapi`
@@ -245,8 +261,8 @@ def _check_init_savers():
     if "pp" not in _savers:
         _savers.update({"pp": iris.fileformats.pp.save,
                         "nc": iris.fileformats.netcdf.save,
-                        "dot": iris.fileformats.dot.save,
-                        "dotpng": iris.fileformats.dot.save_png,
+                        "dot": _dot_save,
+                        "dotpng": _dot_save_png,
                         "grib2": _grib_save})
 
 
