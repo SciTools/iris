@@ -468,7 +468,7 @@ class CubeList(list):
 
         return merged_cubes
 
-    def concatenate_cube(self):
+    def concatenate_cube(self, check_aux_coords=True):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
         :class:`Cube`.
@@ -477,6 +477,13 @@ class CubeList(list):
         `Cube`, a :class:`~iris.exceptions.ConcatenateError` will be raised
         describing the reason for the failure.
 
+        Kwargs:
+
+        * check_aux_coords
+            Checks the auxilliary coordinates of the cubes match. This check
+            is not applied to auxilliary coordinates that span the dimension
+            the concatenation is occuring along. Defaults to True.
+
         """
         if not self:
             raise ValueError("can't concatenate an empty CubeList")
@@ -484,7 +491,9 @@ class CubeList(list):
         names = [cube.metadata.name() for cube in self]
         unique_names = list(collections.OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
-            res = iris._concatenate.concatenate(self, error_on_mismatch=True)
+            res = iris._concatenate.concatenate(
+                self, error_on_mismatch=True,
+                check_aux_coords=check_aux_coords)
             n_res_cubes = len(res)
             if n_res_cubes == 1:
                 return res[0]
@@ -500,9 +509,16 @@ class CubeList(list):
                                                              names[1]))
             raise iris.exceptions.ConcatenateError(msgs)
 
-    def concatenate(self):
+    def concatenate(self, check_aux_coords=True):
         """
         Concatenate the cubes over their common dimensions.
+
+        Kwargs:
+
+        * check_aux_coords
+            Checks the auxilliary coordinates of the cubes match. This check
+            is not applied to auxilliary coordinates that span the dimension
+            the concatenation is occuring along. Defaults to True.
 
         Returns:
             A new :class:`iris.cube.CubeList` of concatenated
@@ -564,7 +580,8 @@ class CubeList(list):
             time coordinates so that the cubes can be concatenated.
 
         """
-        return iris._concatenate.concatenate(self)
+        return iris._concatenate.concatenate(self,
+                                             check_aux_coords=check_aux_coords)
 
 
 def _is_single_item(testee):
