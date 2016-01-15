@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -161,17 +161,11 @@ def _assert_matching_units(cube, other, operation_name):
         raise iris.exceptions.NotYetImplementedError(msg)
 
 
-def add(cube, other, dim=None, ignore=True, in_place=False):
+def add(cube, other, dim=None, in_place=False):
     """
     Calculate the sum of two cubes, or the sum of a cube and a
     coordinate or scalar value.
 
-    When summing two cubes, they must both have the same coordinate
-    systems & data resolution.
-
-    When adding a coordinate to a cube, they must both share the same
-    number of elements along a shared axis.
-
     Args:
 
     * cube:
@@ -192,22 +186,18 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
+    _assert_is_cube(cube)
+    _assert_matching_units(cube, other, 'add')
     op = operator.iadd if in_place else operator.add
-    return _add_subtract_common(op, 'add', cube, other, dim=dim,
-                                ignore=ignore, in_place=in_place)
+    return _binary_op_common(op, 'add', cube, other, cube.units, dim=dim,
+                             in_place=in_place)
 
 
-def subtract(cube, other, dim=None, ignore=True, in_place=False):
+def subtract(cube, other, dim=None, in_place=False):
     """
     Calculate the difference between two cubes, or the difference between
     a cube and a coordinate or scalar value.
 
-    When subtracting two cubes, they must both have the same coordinate
-    systems & data resolution.
-
-    When subtracting a coordinate to a cube, they must both share the
-    same number of elements along a shared axis.
-
     Args:
 
     * cube:
@@ -228,69 +218,11 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    op = operator.isub if in_place else operator.sub
-    return _add_subtract_common(op, 'subtract', cube, other,
-                                dim=dim, ignore=ignore, in_place=in_place)
-
-
-def _add_subtract_common(operation_function, operation_name, cube, other,
-                         dim=None, ignore=True, in_place=False):
-    """
-    Function which shares common code between addition and subtraction
-    of cubes.
-
-    operation_function   - function which does the operation
-                           (e.g. numpy.subtract)
-    operation_name       - the public name of the operation (e.g. 'divide')
-    cube                 - the cube whose data is used as the first argument
-                           to `operation_function`
-    other                - the cube, coord, ndarray or number whose data is
-                           used as the second argument
-    dim                  - dimension along which to apply `other` if it's a
-                           coordinate that is not found in `cube`
-    ignore               - The value of this argument is ignored.
-        .. deprecated:: 0.8
-    in_place             - whether or not to apply the operation in place to
-                           `cube` and `cube.data`
-
-    """
     _assert_is_cube(cube)
-    _assert_matching_units(cube, other, operation_name)
-
-    if isinstance(other, iris.cube.Cube):
-        # get a coordinate comparison of this cube and the cube to do the
-        # operation with
-        coord_comp = iris.analysis.coord_comparison(cube, other)
-
-        # provide a deprecation warning if the ignore keyword has been set
-        if ignore is not True:
-            warnings.warn('The "ignore" keyword has been deprecated in '
-                          'add/subtract. This functionality is now automatic. '
-                          'The provided value to "ignore" has been ignored, '
-                          'and has been automatically calculated.')
-
-        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
-                          coord_comp['resamplable'])
-        if bad_coord_grps:
-            raise ValueError('This operation cannot be performed as there are '
-                             'differing coordinates (%s) remaining '
-                             'which cannot be ignored.'
-                             % ', '.join({coord_grp.name() for coord_grp
-                                          in bad_coord_grps}))
-    else:
-        coord_comp = None
-
-    new_cube = _binary_op_common(operation_function, operation_name, cube,
-                                 other, cube.units, dim, in_place)
-
-    if coord_comp:
-        # If a coordinate is to be ignored - remove it
-        ignore = filter(None, [coord_grp[0] for coord_grp
-                               in coord_comp['ignorable']])
-        for coord in ignore:
-            new_cube.remove_coord(coord)
-
-    return new_cube
+    _assert_matching_units(cube, other, 'subtract')
+    op = operator.isub if in_place else operator.sub
+    return _binary_op_common(op, 'subtract', cube, other, cube.units, dim=dim,
+                             in_place=in_place)
 
 
 def multiply(cube, other, dim=None, in_place=False):
@@ -310,6 +242,8 @@ def multiply(cube, other, dim=None, in_place=False):
     * dim:
         If supplying a coord with no match on the cube, you must supply
         the dimension to process.
+    * in_place:
+        Whether to create a new Cube, or alter the given "cube".
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
@@ -340,6 +274,8 @@ def divide(cube, other, dim=None, in_place=False):
     * dim:
         If supplying a coord with no match on the cube, you must supply
         the dimension to process.
+    * in_place:
+        Whether to create a new Cube, or alter the given "cube".
 
     Returns:
         An instance of :class:`iris.cube.Cube`.

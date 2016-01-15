@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -70,15 +70,6 @@ class TestBasicMaths(tests.IrisTest):
 
         # Check that the subtraction has had no effect on the original
         self.assertCML(e, ('analysis', 'maths_original.cml'))
-
-    def test_minus_with_data_describing_coordinate(self):
-        a = self.cube
-        e = self.cube.copy()
-        lat = e.coord('latitude')
-        lat.points = lat.points+100
-
-        # Cannot ignore a axis describing coordinate
-        self.assertRaises(ValueError, iris.analysis.maths.subtract, a, e)
 
     def test_minus_scalar(self):
         a = self.cube
@@ -591,7 +582,7 @@ class TestIFunc(tests.IrisTest):
         c = a.copy() + 2
 
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
-        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, 
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc,
                    lambda x,y: (x + y).units)
         b = my_ifunc(a, c)
 
@@ -613,7 +604,7 @@ class TestIFunc(tests.IrisTest):
 
         b = cs_ifunc(a, axis=1)
         ans = a.data.copy()
-        ans = np.cumsum(ans, axis=1) 
+        ans = np.cumsum(ans, axis=1)
 
         self.assertArrayAlmostEqual(b.data, ans)
 
