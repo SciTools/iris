@@ -29,8 +29,8 @@ from . import abf
 from . import ff
 try:
     from . import grib
-except ValueError as err:
-    if err.message.startswith('Attempted relative import in non-package'):
+except ImportError as err:
+    if err.message.startswith('No module named'):
         grib = None
     else:
         raise
