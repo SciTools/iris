@@ -873,7 +873,7 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
     if isinstance(filenames, six.string_types):
         filenames = [filenames]
 
-    skipped_fields = 0
+    skipped_fields = []
 
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
@@ -887,7 +887,7 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
                                                          loader.converter)
             except iris.exceptions.TranslationError as e:
                 if loader.fault_tolerant:
-                    skipped_fields += 1
+                    skipped_fields.append(str(e))
                     continue
                 raise e
 
@@ -917,9 +917,12 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
             else:
                 yield cube
 
-    if skipped_fields != 0:
+    if skipped_fields:
+        for sf in skipped_fields:
+            warnings.warn(sf, iris.exceptions.FieldLoadFault)
         msg = '{} fields could not be converted during load and were skipped'
-        warnings.warn(msg.format(skipped_fields))
+        warnings.warn(msg.format(len(skipped_fields)),
+                      iris.exceptions.FieldLoadFault)
 
     regrid_cache = {}
     for cube, factories in results_needing_reference:

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -146,4 +146,13 @@ class DuplicateDataError(MergeError):
 
 
 class LazyAggregatorError(Exception):
+    pass
+
+
+class FieldLoadFault(Warning):
+    """
+    Warning raised when a fault-tolerant loader encounters a fault with
+    a field it is attempting to load.
+
+    """
     pass
