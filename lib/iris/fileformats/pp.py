@@ -54,8 +54,8 @@ except ImportError as err:
 
 try:
     from iris.fileformats import pp_packing
-except ImportError as err:
-    if err.message.startswith('No module named'):
+except ValueError as err:
+    if err.message.startswith('Attempted relative import in non-package'):
         pp_packing = None
     else:
         raise
