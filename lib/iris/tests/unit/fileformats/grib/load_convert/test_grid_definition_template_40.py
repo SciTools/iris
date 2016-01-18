@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,10 +38,15 @@ from iris.fileformats.grib._load_convert import grid_definition_template_40
 MDI = 2 ** 32 - 1
 
 
+class _Section(dict):
+    def get_computed_key(self, key):
+        return self.get(key)
+
+
 class Test_regular(tests.IrisTest):
 
     def section_3(self):
-        section = {
+        section = _Section({
             'shapeOfTheEarth': 0,
             'scaleFactorOfRadiusOfSphericalEarth': 0,
             'scaledValueOfRadiusOfSphericalEarth': 6367470,
@@ -59,7 +64,7 @@ class Test_regular(tests.IrisTest):
                                            52.81294319,  73.79921363]),
             'numberOfOctectsForNumberOfPoints': 0,
             'interpretationOfNumberOfPoints': 0,
-        }
+        })
         return section
 
     def expected(self, y_dim, x_dim, y_neg=True):
@@ -115,7 +120,7 @@ class Test_regular(tests.IrisTest):
 class Test_reduced(tests.IrisTest):
 
     def section_3(self):
-        section = {
+        section = _Section({
             'shapeOfTheEarth': 0,
             'scaleFactorOfRadiusOfSphericalEarth': 0,
             'scaledValueOfRadiusOfSphericalEarth': 6367470,
@@ -133,7 +138,7 @@ class Test_reduced(tests.IrisTest):
                                    59.44440829, 59.44440829]),
             'numberOfOctectsForNumberOfPoints': 1,
             'interpretationOfNumberOfPoints': 1,
-        }
+        })
         return section
 
     def expected(self):

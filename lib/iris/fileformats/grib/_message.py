@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -376,7 +376,7 @@ class _Section(object):
                        'satelliteNumber', 'instrumentType',
                        'scaleFactorOfCentralWaveNumber',
                        'scaledValueOfCentralWaveNumber',
-                       'longitudes', 'latitudes', 'distinctLatitudes')
+                       'longitudes', 'latitudes')
         if key in vector_keys:
             res = gribapi.grib_get_array(self._message_id, key)
         elif key == 'bitmap':
@@ -388,6 +388,27 @@ class _Section(object):
             # By default these values are returned as unhelpful strings but
             # we can use int representation to compare against instead.
             res = gribapi.grib_get(self._message_id, key, int)
+        else:
+            res = gribapi.grib_get(self._message_id, key)
+        return res
+
+    def get_computed_key(self, key):
+        """
+        Get the computed value associated with the given key in the GRIB
+        message.
+
+        Args:
+
+        * key:
+            The GRIB key to retrieve the value of.
+
+        Returns the value associated with the requested key in the GRIB
+        message.
+
+        """
+        vector_keys = ('longitudes', 'latitudes', 'distinctLatitudes')
+        if key in vector_keys:
+            res = gribapi.grib_get_array(self._message_id, key)
         else:
             res = gribapi.grib_get(self._message_id, key)
         return res

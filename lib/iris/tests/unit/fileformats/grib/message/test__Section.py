@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -81,6 +81,17 @@ class Test__getitem___pdt_31(tests.IrisTest):
             value = section[key]
             self.assertIsInstance(value, np.ndarray)
             self.assertEqual(value.shape, (1,))
+
+
+@tests.skip_data
+class Test_get_computed_key(tests.IrisTest):
+    def test_gdt40_computed(self):
+        fname = tests.get_data_path(('GRIB', 'gaussian', 'regular_gg.grib2'))
+        with open(fname, 'rb') as grib_fh:
+            self.grib_id = gribapi.grib_new_from_file(grib_fh)
+            section = _Section(self.grib_id, None, [])
+        latitudes = section.get_computed_key('latitudes')
+        self.assertTrue(88.55 < latitudes[0] < 88.59)
 
 
 if __name__ == '__main__':
