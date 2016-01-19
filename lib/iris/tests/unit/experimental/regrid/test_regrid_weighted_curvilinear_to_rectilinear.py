@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -121,7 +121,7 @@ class Test(tests.IrisTest):
 
     def _expected_cube(self, data):
         cube = iris.cube.Cube(data)
-        cube.metadata = copy.deepcopy(self.src)
+        cube.metadata = copy.deepcopy(self.src.metadata)
         grid_x = self.grid.coord('longitude')
         grid_y = self.grid.coord('latitude')
         cube.add_dim_coord(grid_x.copy(), self.grid.coord_dims(grid_x))

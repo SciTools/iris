@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -42,16 +42,16 @@ class Test_match__fill_value(tests.IrisTest):
         self.data_type = mock.sentinel.data_type
 
     def test_non_nan_fill_value_equal(self):
-        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, 10)
-        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, 10)
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, 10, [])
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, 10, [])
         self.assertTrue(sig1.match(sig2, True))
         self.assertTrue(sig1.match(sig2, False))
         self.assertTrue(sig2.match(sig1, True))
         self.assertTrue(sig2.match(sig1, False))
 
     def test_non_nan_fill_value_unequal(self):
-        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, 10)
-        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, 20)
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, 10, [])
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, 20, [])
         with self.assertRaises(iris.exceptions.MergeError):
             sig1.match(sig2, True)
         self.assertFalse(sig1.match(sig2, False))
@@ -60,16 +60,16 @@ class Test_match__fill_value(tests.IrisTest):
         self.assertFalse(sig2.match(sig1, False))
 
     def test_nan_fill_value_equal(self):
-        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, np.nan)
-        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, np.nan)
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, np.nan, [])
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, np.nan, [])
         self.assertTrue(sig1.match(sig2, True))
         self.assertTrue(sig1.match(sig2, False))
         self.assertTrue(sig2.match(sig1, True))
         self.assertTrue(sig2.match(sig1, False))
 
     def test_nan_fill_value_unequal(self):
-        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, np.nan)
-        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, 10)
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, np.nan, [])
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, 10, [])
         with self.assertRaises(iris.exceptions.MergeError):
             sig1.match(sig2, True)
         self.assertFalse(sig1.match(sig2, False))
@@ -78,16 +78,16 @@ class Test_match__fill_value(tests.IrisTest):
         self.assertFalse(sig2.match(sig1, False))
 
     def test_str_fill_value_equal(self):
-        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
-        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ', [])
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, ' ', [])
         self.assertTrue(sig1.match(sig2, True))
         self.assertTrue(sig1.match(sig2, False))
         self.assertTrue(sig2.match(sig1, True))
         self.assertTrue(sig2.match(sig1, False))
 
     def test_str_fill_value_unequal(self):
-        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
-        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, '_')
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ', [])
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, '_', [])
         with self.assertRaises(iris.exceptions.MergeError):
             sig1.match(sig2, True)
         self.assertFalse(sig1.match(sig2, False))

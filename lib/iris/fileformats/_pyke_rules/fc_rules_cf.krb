@@ -352,6 +352,21 @@ fc_build_auxiliary_coordinate
         python build_auxiliary_coordinate(engine, cf_coord_var)
         python engine.rule_triggered.add(rule.name)
 
+#
+# Context:
+#   This rule will trigger for each cell_measure case specific fact.
+#
+# Purpose:
+#   Add the cell measures attribute to the cube.  
+#
+fc_build_cell_measure
+    foreach
+        facts_cf.cell_measure($coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.cell_measures[$coordinate]
+        python build_cell_measures(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
 
 #
 # Context:
@@ -1312,6 +1327,56 @@ fc_extras
 
         # Update the coordinate to CF-netCDF variable mapping.
         engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
+
+ 
+    ################################################################################
+    def build_cell_measures(engine, cf_cm_attr, coord_name=None):
+        """Create a CellMeasure instance and add it to the cube."""
+        cf_var = engine.cf_var
+        cube = engine.cube
+        attributes = {}
+
+        # Get units
+        attr_units = get_attr_units(cf_cm_attr, attributes)
+
+        def cf_var_as_biggus(cf_var):
+            dtype = cf_var.dtype
+            fill_value = getattr(cf_var.cf_data, '_FillValue',
+                                 netCDF4.default_fillvals[dtype.str[1:]])
+            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
+                cf_var.shape, dtype, engine.filename,
+                cf_var.cf_name, fill_value)
+            return biggus.OrthoArrayAdapter(proxy)
+
+        data = cf_var_as_biggus(cf_cm_attr)
+
+        # Determine the name of the dimension/s shared between the CF-netCDF data variable
+        # and the coordinate being built.
+        common_dims = [dim for dim in cf_cm_attr.dimensions
+                       if dim in cf_var.dimensions]
+        data_dims = None    
+        if common_dims:
+            # Calculate the offset of each common dimension.
+            data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
+        # Determine the standard_name, long_name and var_name
+        standard_name, long_name, var_name = get_names(cf_cm_attr, coord_name, attributes)
+        
+        # Obtain the cf_measure.
+        measure = cf_cm_attr.cf_measure
+        
+        # Create the CellMeasure
+        cell_measure = iris.coords.CellMeasure(data, 
+                                               standard_name=standard_name,
+                                               long_name=long_name,
+                                               var_name=var_name,
+                                               units=attr_units,
+                                               attributes=attributes,
+                                               measure=measure)
+
+        # Add it to the cube
+        cube.add_cell_measure(cell_measure, data_dims)
+	
 
 
     ################################################################################

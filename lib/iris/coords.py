@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -1626,6 +1626,213 @@ class AuxCoord(Coord):
     # See #962 and #1772.
     def __hash__(self):
         return hash(id(self))
+
+
+class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
+    """
+    A CF Cell Measure, providing area or volume properties of a cell
+    where these cannot be inferred from the Coordinates and
+    Coordinate Reference System.
+
+    """
+
+    def __init__(self, data, standard_name=None, long_name=None,
+                 var_name=None, units='1', attributes=None, measure=None):
+
+        """
+        Constructs a single cell measure.
+
+        Args:
+
+        * data:
+            The values of the measure for each cell.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of coordinate
+        * long_name:
+            Descriptive name of coordinate
+        * var_name:
+            CF variable name of coordinate
+        * units
+            The :class:`~cf_units.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
+        * attributes
+            A dictionary containing other CF and user-defined attributes.
+        * measure
+            A string describing the type of measure.  'area' and 'volume'
+            are the only valid entries.
+
+        """
+        #: CF standard name of the quantity that the coordinate represents.
+        self.standard_name = standard_name
+
+        #: Descriptive name of the coordinate.
+        self.long_name = long_name
+
+        #: The CF variable name for the coordinate.
+        self.var_name = var_name
+
+        #: Unit of the quantity that the coordinate represents.
+        self.units = units
+
+        #: Other attributes, including user specified attributes that
+        #: have no meaning to Iris.
+        self.attributes = attributes
+
+        self.data = data
+
+        self.measure = measure
+
+    @property
+    def measure(self):
+        return self._measure
+
+    @property
+    def data(self):
+        """Property containing the data values as a numpy array"""
+        data = self._data
+        if isinstance(data, biggus.Array):
+            data = data.ndarray()
+            self._data = data
+        return data.view()
+
+    @data.setter
+    def data(self, data):
+        # Set the data to a new array - as long as it's the same shape.
+        # If data are already defined for this CellMeasure,
+        if data is None:
+            raise ValueError('The data payload of a CellMeasure may not be '
+                             'None; it must be a numpy array or equivalent.')
+        if data.shape == ():
+            data = np.array(data, ndmin=1)
+        if hasattr(self, '_data') and self._data is not None:
+            # Check that setting these data wouldn't change self.shape
+            if data.shape != self.shape:
+                raise ValueError("New data shape must match existing data "
+                                 "shape.")
+
+        self._data = data
+
+    @property
+    def shape(self):
+        """The fundamental shape of the Cell Measure, expressed as a tuple."""
+        # Access the underlying _data attribute to avoid triggering
+        # a deferred load unnecessarily.
+        return self._data.shape
+
+    @property
+    def ndim(self):
+        """
+        Return the number of dimensions of the cell measure.
+
+        """
+        return self._data.ndim
+
+    @measure.setter
+    def measure(self, measure):
+        if measure not in ['area', 'volume']:
+            raise ValueError("measure must be 'area' or 'volume', "
+                             "not {}".format(measure))
+        self._measure = measure
+
+    def __getitem__(self, key):
+        """
+        Returns a new CellMeasure whose values are obtained by
+        conventional array indexing.
+
+        """
+        # Turn the key(s) into a full slice spec - i.e. one entry for
+        # each dimension of the cell_measure.
+        full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
+
+        # If it's a "null" indexing operation (e.g. cell_measure[:, :]) then
+        # we can preserve deferred loading by avoiding promoting _data
+        # and _bounds to full ndarray instances.
+        def is_full_slice(s):
+            return isinstance(s, slice) and s == slice(None, None)
+        data = self._data
+        if not all(is_full_slice(s) for s in full_slice):
+            data = self._data
+
+            # Make indexing on the cube column based by using the
+            # column_slices_generator (potentially requires slicing the
+            # data multiple times).
+            _, slice_gen = iris.util.column_slices_generator(full_slice,
+                                                             self.ndim)
+            for keys in slice_gen:
+                if data is not None:
+                    data = data[keys]
+                    if data.shape and min(data.shape) == 0:
+                        raise IndexError('Cannot index with zero length '
+                                         'slice.')
+
+        new_cell_measure = self.copy(data=data)
+        return new_cell_measure
+
+    def copy(self, data=None):
+        """
+        Returns a copy of this CellMeasure.
+
+        Kwargs:
+
+        * data: A data array for the new cell_measure.
+                This may be a different shape to the data of the
+                cell_measure being copied.
+
+        """
+        new_cell_measure = copy.deepcopy(self)
+        if data is not None:
+            # Explicitly not using the data property as we don't want the
+            # shape the new data to be constrained by the shape of
+            # self.data
+            new_cell_measure._data = None
+            new_cell_measure.data = data
+
+        return new_cell_measure
+
+    def _repr_other_metadata(self):
+        fmt = ''
+        if self.long_name:
+            fmt = ', long_name={self.long_name!r}'
+        if self.var_name:
+            fmt += ', var_name={self.var_name!r}'
+        if len(self.attributes) > 0:
+            fmt += ', attributes={self.attributes}'
+        result = fmt.format(self=self)
+        return result
+
+    def __str__(self):
+        result = repr(self)
+        return result
+
+    def __repr__(self):
+        fmt = ('{cls}({self.data!r}'
+               ', measure={self.measure}, standard_name={self.standard_name!r}'
+               ', units={self.units!r}{other_metadata})')
+        result = fmt.format(self=self, cls=type(self).__name__,
+                            other_metadata=self._repr_other_metadata())
+        return result
+
+    def _as_defn(self):
+        defn = (self.standard_name, self.long_name, self.var_name,
+                self.units, self.attributes, self.measure)
+        return defn
+
+    def __eq__(self, other):
+        eq = NotImplemented
+        if isinstance(other, CellMeasure):
+            eq = self._as_defn() == other._as_defn()
+            if eq:
+                eq = (self.data == other.data).all()
+        return eq
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
 
 class CellMethod(iris.util._OrderedHashable):
