@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,8 +35,8 @@ from iris.exceptions import TranslationError
 
 class _GribMessage(object):
     """
-    Lightweight GRIB message wrapper, containing **only** the coded keys and
-    data attribute of the input GRIB message.
+    Lightweight GRIB message wrapper, containing the coded keys, computed keys
+    and the data attribute of the input GRIB message.
 
     """
 
@@ -228,8 +228,8 @@ class _DataProxy(object):
 
 class _RawGribMessage(object):
     """
-    Lightweight GRIB message wrapper, containing **only** the coded keys
-    of the input GRIB message.
+    Lightweight GRIB message wrapper, containing the coded keys and
+    computed keys of the input GRIB message.
 
     """
     _NEW_SECTION_KEY_MATCHER = re.compile(r'section([0-9]{1})Length')
@@ -246,8 +246,9 @@ class _RawGribMessage(object):
 
     def __init__(self, message_id):
         """
-        A _RawGribMessage object contains the **coded** keys from a
-        GRIB message that is identified by the input message id.
+        A _RawGribMessage object contains the **coded** keys and
+        **computed** keys from a GRIB message that is identified by the
+        input message id.
 
         Args:
 
@@ -278,11 +279,6 @@ class _RawGribMessage(object):
         object's key in the containing dictionary. Each object contains
         key-value pairs for all of the message keys in the given section.
 
-        .. warning::
-            This currently does **not** return only the coded keys from a
-            message. This is because the gribapi functionality needed to
-            achieve this is broken, with a fix available from gribapi v1.13.0.
-
         """
         if self._sections is None:
             self._sections = self._get_message_sections()
@@ -292,7 +288,6 @@ class _RawGribMessage(object):
         """Creates a generator of all the keys in the message."""
 
         keys_itr = gribapi.grib_keys_iterator_new(self._message_id)
-        gribapi.grib_skip_computed(keys_itr)
         while gribapi.grib_keys_iterator_next(keys_itr):
             yield gribapi.grib_keys_iterator_get_name(keys_itr)
         gribapi.grib_keys_iterator_delete(keys_itr)
