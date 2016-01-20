@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -946,7 +946,7 @@ def grid_definition_template_40_regular(section, metadata, cs):
     # GRIB2 message. This computed key provides a rapid calculation of the
     # monotonic latitude points that form the Gaussian grid, accounting for
     # the coverage of the grid.
-    y_points = section['distinctLatitudes']
+    y_points = section.get_computed_key('distinctLatitudes')
     y_points.sort()
     if not scan.j_positive:
         y_points = y_points[::-1]
@@ -983,8 +983,8 @@ def grid_definition_template_40_reduced(section, metadata, cs):
     # from coded keys, it would be complex and time-consuming compared to
     # loading the latitude and longitude arrays directly using the computed
     # keys 'latitudes' and 'longitudes'.
-    x_points = section['longitudes']
-    y_points = section['latitudes']
+    x_points = section.get_computed_key('longitudes')
+    y_points = section.get_computed_key('latitudes')
 
     # Create lat/lon coordinates.
     x_coord = AuxCoord(x_points, standard_name='longitude',
