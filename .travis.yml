@@ -13,32 +13,33 @@ python:
 sudo: false
 
 env:
-  - TEST_TARGET=default
-  - TEST_TARGET=default TEST_MINIMAL=true
-  - TEST_TARGET=coding
-  - TEST_TARGET=example
-  - TEST_TARGET=doctest
+  global:
+    - IRIS_TEST_DATA_REF="037fee7d26de00897d1694ec040b6ed895d24a38"
+    - IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
+    - CONDA_INSTALL_LOCN=${HOME}/miniconda
+  matrix:
+    - TEST_TARGET=default
+    - TEST_TARGET=default TEST_MINIMAL=true
+    - TEST_TARGET=coding
+    - TEST_TARGET=example
+    - TEST_TARGET=doctest
 
 git:
+  # We need the depth so that we can test each of the licence dates by
+  # inspecting the last change date.
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="037fee7d26de00897d1694ec040b6ed895d24a38"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
-
-  - export IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
   # -----------------
-  - export CONDA_BASE=http://repo.continuum.io/miniconda/Miniconda
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
-      wget ${CONDA_BASE}-3.7.0-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget ${CONDA_BASE}3-3.7.0-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
+  - mkdir -p ${HOME}/cache/pkgs
+  - "[ ! -f ${HOME}/cache/miniconda.sh ] && wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${HOME}/cache/miniconda.sh || :"
+  - bash ${HOME}/cache/miniconda.sh -b -p ${CONDA_INSTALL_LOCN} && export PATH=${CONDA_INSTALL_LOCN}/bin:$PATH
+  # Re-use the pacakges in the cache, and download any new ones into that location.
+  - rm -rf ${CONDA_INSTALL_LOCN}/pkgs && ln -s ${HOME}/cache/pkgs ${CONDA_INSTALL_LOCN}/pkgs
 
   # Create the basic testing environment
   # ------------------------------------
@@ -73,13 +74,19 @@ install:
   - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
 
 # iris test data
-  - wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip
-  - unzip -q iris-test-data.zip
+  - TEST_DATA_ZIPFILE=${HOME}/cache/iris-test-data-${IRIS_TEST_DATA_REF}.zip
+  - if [[ ! -f ${TEST_DATA_ZIPFILE} ]]; then
+      wget -O ${TEST_DATA_ZIPFILE} https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
+    fi
+  - unzip -q ${TEST_DATA_ZIPFILE}
   - ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data
 
 # iris sample data
-  - wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip
-  - unzip -q iris-sample-data.zip
+  - SAMPLE_DATA_ZIPFILE=${HOME}/cache/iris-sample-data-${IRIS_SAMPLE_DATA_REF}.zip
+  - if [[ ! -f ${SAMPLE_DATA_ZIPFILE} ]]; then
+      wget -O ${SAMPLE_DATA_ZIPFILE} https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip;
+    fi
+  - unzip -q ${SAMPLE_DATA_ZIPFILE}
   - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
 
 # prepare iris build directory
@@ -136,3 +143,12 @@ script:
   - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py test --coding-tests;
     fi
+
+
+# We store the files that are downloaded from continuum.io, but not the environments that are created.
+cache:
+    directories:
+      - $HOME/cache
+before_cache:
+  # Remove all untarred directories (i.e. keep the conda .tar.bz2 files only).
+  - find $HOME/cache/pkgs/ -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
