@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.fileformats.pp._all_other_rules` function."""
+"""Unit tests for the `iris.fileformats.pp_rules._all_other_rules` function."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -23,17 +23,24 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import numpy as np
+from cf_units import Unit, CALENDAR_GREGORIAN, CALENDAR_360_DAY
+from netcdftime import datetime as nc_datetime
+
+import cartopy.crs as ccrs
 import iris
 from iris.fileformats.pp_rules import _all_other_rules
 from iris.fileformats.pp import SplittableInt
-from iris.coords import CellMethod
+from iris.coords import CellMethod, DimCoord
 from iris.tests import mock
+from iris.tests.unit.fileformats import TestField
 
 
-# iris.fileformats.pp._all_other_rules() returns a tuple of
+# iris.fileformats.pp_rules._all_other_rules() returns a tuple of
 # of various metadata. This constant is the index into this
 # tuple to obtain the cell methods.
 CELL_METHODS_INDEX = 5
+DIM_COORDS_INDEX = 6
 
 
 class TestCellMethods(tests.IrisTest):
@@ -137,6 +144,36 @@ class TestCellMethods(tests.IrisTest):
         expected = [CellMethod('mean', 'time'),
                     CellMethod('mean', 'grid_longitude')]
         self.assertEqual(res, expected)
+
+
+class TestCrossSectionalTime(TestField):
+    def test_lbcode3x23(self):
+        time_bounds = np.array([[0.875, 1.125], [1.125, 1.375],
+                                [1.375, 1.625], [1.625, 1.875]])
+        field = mock.MagicMock(
+            lbproc=0, bzx=0, bdx=0, lbnpt=3, lbrow=4,
+            t1=nc_datetime(2000, 1, 2, hour=0, minute=0, second=0),
+            t2=nc_datetime(2000, 1, 3, hour=0, minute=0, second=0),
+            lbtim=mock.Mock(ia=1, ib=2, ic=2),
+            lbcode=SplittableInt(31323, {'iy': slice(0, 2),
+                                         'ix': slice(2, 4)}),
+            x_bounds=None,
+            y_bounds=time_bounds,
+            _x_coord_name=lambda: 'longitude',
+            _y_coord_name=lambda: 'latitude')
+
+        spec = ['lbtim', 'lbcode', 'lbrow', 'lbnpt', 'lbproc', 'lbsrce',
+                'lbuser', 'bzx', 'bdx', 'bdy', 'bmdi', 't1', 't2', 'stash',
+                'x_bounds', 'y_bounds', '_x_coord_name', '_y_coord_name']
+        field.mock_add_spec(spec)
+        res = _all_other_rules(field)[DIM_COORDS_INDEX]
+
+        expected_time_points = np.array([1, 1.25, 1.5, 1.75]) + (2000 * 360)
+        expected_unit = Unit('days since 0000-01-01 00:00:00',
+                             calendar=CALENDAR_360_DAY)
+        expected = [(DimCoord(expected_time_points, standard_name='time',
+                              units=expected_unit, bounds=time_bounds), 0)]
+        self.assertCoordsAndDimsListsMatch(res, expected)
 
 
 if __name__ == "__main__":

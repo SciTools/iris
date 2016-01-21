@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -627,6 +627,16 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
             None))
         coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
 
+    if \
+            (len(lbcode) == 5) and \
+            (lbcode[-1] == 3) and \
+            (lbtim.ib == 2) and (lbtim.ic == 2):
+        coords_and_dims.append((
+            DimCoord(standard_name='forecast_reference_time',
+                     units=epoch_hours_unit,
+                     points=t2_epoch_hours - lbft),
+            None))
+
     return coords_and_dims
 
 
@@ -1007,6 +1017,22 @@ def _all_other_rules(f):
                                     calendar=cf_units.CALENDAR_360_DAY),
                 bounds=f.x_bounds),
              1))
+
+    if (len(f.lbcode) == 5 and f.lbcode[-1] == 3 and f.lbcode.iy == 23 and
+            f.lbtim.ib == 2 and f.lbtim.ic == 2):
+        epoch_days_unit = cf_units.Unit('days since 0000-01-01 00:00:00',
+                                        calendar=cf_units.CALENDAR_360_DAY)
+        t1_epoch_days = epoch_days_unit.date2num(f.t1)
+        t2_epoch_days = epoch_days_unit.date2num(f.t2)
+        # The end time is exclusive, not inclusive.
+        dim_coords_and_dims.append(
+            (DimCoord(
+                np.linspace(t1_epoch_days, t2_epoch_days, f.lbrow,
+                            endpoint=False),
+                standard_name='time',
+                units=epoch_days_unit,
+                bounds=f.y_bounds),
+             0))
 
     # Site number (--> scalar coordinate)
     if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.ix == 13 and
