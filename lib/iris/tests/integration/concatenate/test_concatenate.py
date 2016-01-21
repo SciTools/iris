@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -62,6 +62,46 @@ class Test_concatenate__epoch(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (10,))
+
+
+class Test_cubes_with_aux_coord(tests.IrisTest):
+    def create_cube(self):
+        data = np.arange(4).reshape(2, 2)
+
+        lat = iris.coords.DimCoord([0, 30], standard_name='latitude',
+                                   units='degrees')
+        lon = iris.coords.DimCoord([0, 15], standard_name='longitude',
+                                   units='degrees')
+        height = iris.coords.AuxCoord([1.5], standard_name='height', units='m')
+        t_unit = cf_units.Unit('hours since 1970-01-01 00:00:00',
+                               calendar='gregorian')
+        time = iris.coords.DimCoord([0, 6], standard_name='time', units=t_unit)
+
+        cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
+        cube.add_dim_coord(time, 0)
+        cube.add_dim_coord(lat, 1)
+        cube.add_aux_coord(lon, 1)
+        cube.add_aux_coord(height)
+        return cube
+
+    def test_diff_aux_coord(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord('time').points = [12, 18]
+        cube_b.coord('longitude').points = [120, 150]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 2)
+
+    def test_ignore_diff_aux_coord(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord('time').points = [12, 18]
+        cube_b.coord('longitude').points = [120, 150]
+
+        result = concatenate([cube_a, cube_b], check_aux_coords=False)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
 
 
 if __name__ == '__main__':

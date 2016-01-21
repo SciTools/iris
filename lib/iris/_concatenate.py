@@ -236,7 +236,7 @@ class _CoordExtent(namedtuple('CoordExtent',
     __slots__ = ()
 
 
-def concatenate(cubes, error_on_mismatch=False):
+def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
     """
     Concatenate the provided cubes over common existing dimensions.
 
@@ -270,7 +270,8 @@ def concatenate(cubes, error_on_mismatch=False):
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
-            registered = proto_cube.register(cube, axis, error_on_mismatch)
+            registered = proto_cube.register(cube, axis, error_on_mismatch,
+                                             check_aux_coords)
             if registered:
                 axis = proto_cube.axis
                 break
@@ -682,7 +683,8 @@ class _ProtoCube(object):
 
         return cube
 
-    def register(self, cube, axis=None, error_on_mismatch=False):
+    def register(self, cube, axis=None, error_on_mismatch=False,
+                 check_aux_coords=False):
         """
         Determine whether the given source-cube is suitable for concatenation
         with this :class:`_ProtoCube`.
@@ -728,6 +730,18 @@ class _ProtoCube(object):
         if match:
             match = self._sequence(coord_signature.dim_extents[candidate_axis],
                                    candidate_axis)
+
+        # Check for compatible AuxCoords.
+        if match:
+            if check_aux_coords:
+                for coord_a, coord_b in zip(
+                        self._cube_signature.aux_coords_and_dims,
+                        cube_signature.aux_coords_and_dims):
+                    # AuxCoords that span the candidate axis can difffer
+                    if (candidate_axis not in coord_a.dims or
+                            candidate_axis not in coord_b.dims):
+                        if not coord_a == coord_b:
+                            match = False
 
         if match:
             # Register the cube as a source-cube for this proto-cube.

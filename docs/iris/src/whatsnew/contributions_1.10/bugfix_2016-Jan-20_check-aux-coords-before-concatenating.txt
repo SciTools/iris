@@ -1,0 +1,5 @@
+* Concatenation no longer occurs when the auxilliary coordinates of the cubes
+ do not match. This check is not applied to AuxCoords that span the dimension
+ the concatenation is occuring along. This behaviour can be switched off by
+ setting the check_aux_coords kwarg in the
+ :method:`iris.cube.CubeList.concatenate` to False.
