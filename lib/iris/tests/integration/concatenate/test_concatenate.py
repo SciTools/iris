@@ -104,5 +104,89 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
 
 
+class Test_anonymous_dims(tests.IrisTest):
+    def setUp(self):
+        data = np.arange(12).reshape(2, 3, 2)
+        self.cube = iris.cube.Cube(data, standard_name='air_temperature',
+                                   units='K')
+
+        # Time coord
+        t_unit = cf_units.Unit('hours since 1970-01-01 00:00:00',
+                               calendar='gregorian')
+        t_coord = iris.coords.DimCoord([0, 6],
+                                       standard_name='time',
+                                       units=t_unit)
+        self.cube.add_dim_coord(t_coord, 0)
+
+        # Lats and lons
+        self.x_coord = iris.coords.DimCoord([15, 30],
+                                            standard_name='longitude',
+                                            units='degrees')
+        self.y_coord = iris.coords.DimCoord([0, 30, 60],
+                                            standard_name='latitude',
+                                            units='degrees')
+        self.x_coord_2D = iris.coords.AuxCoord([[0, 15], [30, 45], [60, 75]],
+                                               standard_name='longitude',
+                                               units='degrees')
+        self.y_coord_non_monotonic = iris.coords.AuxCoord(
+            [0, 30, 15], standard_name='latitude', units='degrees')
+
+    def test_matching_2d_longitudes(self):
+        cube1 = self.cube
+        cube1.add_dim_coord(self.y_coord, 1)
+        cube1.add_aux_coord(self.x_coord_2D, (1, 2))
+
+        cube2 = cube1.copy()
+        cube2.coord('time').points = [12, 18]
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 1)
+
+    def test_differing_2d_longitudes(self):
+        cube1 = self.cube
+        cube1.add_aux_coord(self.y_coord, 1)
+        cube1.add_aux_coord(self.x_coord_2D, (1, 2))
+
+        cube2 = cube1.copy()
+        cube2.coord('time').points = [12, 18]
+        cube2.coord('longitude').points = [[-30, -15], [0, 15], [30, 45]]
+
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 2)
+
+    def test_matching_non_monotonic_latitudes(self):
+        cube1 = self.cube
+        cube1.add_aux_coord(self.y_coord_non_monotonic, 1)
+        cube1.add_aux_coord(self.x_coord, 2)
+
+        cube2 = cube1.copy()
+        cube2.coord('time').points = [12, 18]
+
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 1)
+
+    def test_differing_non_monotonic_latitudes(self):
+        cube1 = self.cube
+        cube1.add_aux_coord(self.y_coord_non_monotonic, 1)
+        cube1.add_aux_coord(self.x_coord, 2)
+
+        cube2 = cube1.copy()
+        cube2.coord('time').points = [12, 18]
+        cube2.coord('latitude').points = [30, 0, 15]
+
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 2)
+
+    def test_concatenate_anonymous_dim(self):
+        cube1 = self.cube
+        cube1.add_aux_coord(self.y_coord_non_monotonic, 1)
+        cube1.add_aux_coord(self.x_coord, 2)
+
+        cube2 = cube1.copy()
+        cube2.coord('latitude').points = [30, 0, 15]
+
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 2)
+
+
 if __name__ == '__main__':
     tests.main()

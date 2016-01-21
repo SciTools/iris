@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -244,7 +244,7 @@ class TestSimple(tests.IrisTest):
 
 
 class TestNoConcat(tests.IrisTest):
-    def test_anonymous(self):
+    def test_one_cube_has_anon_dim(self):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
