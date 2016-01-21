@@ -562,10 +562,10 @@ class TestApplyUfunc(tests.IrisTest):
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
         b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
 
-        ans = a.data**2 + c.data**2
-        b2 = b**2
+        ans = np.sqrt(a.data**2 + c.data**2)
+        # b2 = b**2
 
-        self.assertArrayAlmostEqual(b2.data, ans)
+        self.assertArrayAlmostEqual(b.data, ans)
 
 class TestIFunc(tests.IrisTest):
     def setUp(self):
