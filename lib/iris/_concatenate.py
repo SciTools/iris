@@ -28,6 +28,7 @@ from copy import deepcopy
 
 import biggus
 import numpy as np
+import warnings
 
 import iris.coords
 import iris.cube
@@ -38,8 +39,6 @@ from iris.util import guess_coord_axis, array_equal, unify_time_units
 # TODO:
 #
 #   * Cope with auxiliary coordinate factories.
-#
-#   * Deal with anonymous dimensions.
 #
 #   * Allow concatentation over a user specified dimension.
 #
@@ -434,9 +433,8 @@ class _CubeSignature(object):
 
         # Check if either cube is anonymous.
         if self.anonymous or other.anonymous:
-            msg = ('Dimensions differ: one or both cubes have anonymous '
-                   'dimensions')
-            msgs.append(msg)
+            msg = ('One or both cubes have anonymous dimensions')
+            warnings.warn(msg, UserWarning)
         # Check cube definitions.
         if self.defn != other.defn:
             # Note that the case of different phenomenon names is dealt with

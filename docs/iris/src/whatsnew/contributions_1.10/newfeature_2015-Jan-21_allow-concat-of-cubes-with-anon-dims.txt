@@ -1,0 +1,1 @@
+* Cubes with anonymous dimensions can now be concatenated.

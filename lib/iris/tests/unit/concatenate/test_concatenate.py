@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -26,6 +27,7 @@ import iris.tests as tests
 import biggus
 import cf_units
 import numpy as np
+import warnings
 
 import iris.coords
 from iris._concatenate import concatenate
@@ -95,11 +97,14 @@ class TestMessages(tests.IrisTest):
 
     def test_anonymous_coord_message(self):
         cube_1 = self.cube
+        cube_1.remove_coord('latitude')
         cube_2 = cube_1.copy()
-        cube_2.remove_coord('latitude')
-        exc_regexp = 'one or both cubes have anonymous dimensions'
-        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter("always")
             result = concatenate([cube_1, cube_2], True)
+        self.assertEqual(len(warn), 1)
+        msg = 'One or both cubes have anonymous dimensions'
+        six.assertRegex(self, str(warn[0].message), msg)
 
     def test_definition_difference_message(self):
         cube_1 = self.cube
