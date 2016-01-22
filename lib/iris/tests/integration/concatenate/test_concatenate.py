@@ -176,7 +176,7 @@ class Test_anonymous_dims(tests.IrisTest):
         result = concatenate([cube1, cube2])
         self.assertEqual(len(result), 2)
 
-    def test_concatenate_anonymous_dim(self):
+    def test_concatenate_along_anon_dim(self):
         cube1 = self.cube
         cube1.add_aux_coord(self.y_coord_non_monotonic, 1)
         cube1.add_aux_coord(self.x_coord, 2)
