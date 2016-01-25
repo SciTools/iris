@@ -262,6 +262,12 @@ class TestCellMeasures(tests.IrisTest):
             self.assertEqual(len(round_cube.cell_measures()), 1)
             self.assertEqual(round_cube.cell_measures()[0].measure, 'area')
 
+    def test_print(self):
+        cube = iris.load_cube(self.fname)
+        printed = cube.__str__()
+        self.assertTrue(('\n     Cell Measures:\n          cell_area'
+                         '                           -         -    '
+                         '    x         x') in printed)
 
 if __name__ == "__main__":
     tests.main()
