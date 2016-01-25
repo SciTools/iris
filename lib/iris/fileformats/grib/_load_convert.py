@@ -272,7 +272,8 @@ def reference_time_coord(section):
 
     """
     # Look-up standard name by significanceOfReferenceTime.
-    _lookup = {1: 'forecast_reference_time',
+    _lookup = {0: 'time',
+               1: 'forecast_reference_time',
                2: 'time',
                3: 'time'}
 
@@ -1662,6 +1663,19 @@ def statistical_cell_method(section):
     return cell_method
 
 
+def ensemble_identifier(section):
+    if options.warn_on_unsupported:
+        # Reference Code Table 4.6.
+        warnings.warn('Unable to translate type of ensemble forecast.')
+        warnings.warn('Unable to translate number of forecasts in ensemble.')
+
+    # Create the realization coordinates.
+    realization = DimCoord(section['perturbationNumber'],
+                           standard_name='realization',
+                           units='no_unit')
+    return realization
+
+
 def product_definition_template_0(section, metadata, rt_coord):
     """
     Translate template representing an analysis or forecast at a horizontal
@@ -1731,15 +1745,8 @@ def product_definition_template_1(section, metadata, frt_coord):
     # Perform identical message processing.
     product_definition_template_0(section, metadata, frt_coord)
 
-    if options.warn_on_unsupported:
-        # Reference Code Table 4.6.
-        warnings.warn('Unable to translate type of ensemble forecast.')
-        warnings.warn('Unable to translate number of forecasts in ensemble.')
+    realization = ensemble_identifier(section)
 
-    # Create the realization coordinates.
-    realization = DimCoord(section['perturbationNumber'],
-                           standard_name='realization',
-                           units='no_unit')
     # Add the realization coordinate to the metadata aux coords.
     metadata['aux_coords_and_dims'].append((realization, None))
 
@@ -1852,6 +1859,35 @@ def product_definition_template_9(section, metadata, frt_coord):
     return probability_type
 
 
+def product_definition_template_11(section, metadata, frt_coord):
+    """
+    Translate template representing individual ensemble forecast, control
+    or perturbed; average, accumulation and/or extreme values
+    or other statistically processed values at a horizontal level or in a
+    horizontal layer in a continuous or non-continuous time interval.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    """
+    product_definition_template_8(section, metadata, frt_coord)
+
+    realization = ensemble_identifier(section)
+
+    # Add the realization coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((realization, None))
+
+
 def product_definition_template_31(section, metadata, rt_coord):
     """
     Translate template representing a satellite product.
@@ -1956,6 +1992,8 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     elif template == 9:
         probability = \
             product_definition_template_9(section, metadata, rt_coord)
+    elif template == 11:
+        product_definition_template_11(section, metadata, rt_coord)
     elif template == 31:
         # Process satellite product.
         product_definition_template_31(section, metadata, rt_coord)

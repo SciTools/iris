@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -71,7 +71,7 @@ class Test(tests.IrisTest):
 
     def test_unknown_significance(self):
         section = deepcopy(self.section)
-        section['significanceOfReferenceTime'] = 0
+        section['significanceOfReferenceTime'] = 5
         emsg = 'unsupported significance'
         with self.assertRaisesRegexp(TranslationError, emsg):
             self._check(section)
