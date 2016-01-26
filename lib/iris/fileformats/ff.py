@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,7 +32,8 @@ from iris.fileformats._ff_cross_references import STASH_TRANS
 from . import pp
 
 
-IMDI = -32768
+IMDI = pp.IMDI
+
 
 FF_HEADER_DEPTH = 256      # In words (64-bit).
 DEFAULT_FF_WORD_DEPTH = 8  # In bytes.
