@@ -1880,7 +1880,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             # Generate textual summary of cube vector coordinates.
             #
-            def vector_summary(vector_coords, cube_header, max_line_offset):
+            def vector_summary(vector_coords, cube_header, max_line_offset,
+                               cell_measures=None):
                 """
                 Generates a list of suitably aligned strings containing coord
                 names and dimensions indicated by one or more 'x' symbols.
@@ -1891,33 +1892,38 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     returned with the list of strings.
 
                 """
+                if cell_measures is None:
+                    cell_measures = []
                 vector_summary = []
+                vectors = []
+
+                # Identify offsets for each dimension text marker.
+                alignment = np.array([index for index, value in
+                                      enumerate(cube_header) if
+                                      value == ':'])
+
+                # Generate basic textual summary for each vector coordinate
+                # - WITHOUT dimension markers.
+                for coord in vector_coords + cell_measures:
+                    vector_summary.append('%*s%s' % (
+                        indent, ' ', iris.util.clip_string(coord.name())))
+                min_alignment = min(alignment)
+
+                # Determine whether the cube header requires realignment
+                # due to one or more longer vector coordinate summaries.
+                if max_line_offset >= min_alignment:
+                    delta = max_line_offset - min_alignment + 5
+                    cube_header = '%-*s (%s)' % (int(name_padding + delta),
+                                                 self.name() or 'unknown',
+                                                 dimension_header)
+                    alignment += delta
+
                 if vector_coords:
-                    # Identify offsets for each dimension text marker.
-                    alignment = np.array([index for index, value in
-                                          enumerate(cube_header) if
-                                          value == ':'])
-
-                    # Generate basic textual summary for each vector coordinate
-                    # - WITHOUT dimension markers.
-                    for coord in vector_coords:
-                        vector_summary.append('%*s%s' % (
-                            indent, ' ', iris.util.clip_string(coord.name())))
-                    min_alignment = min(alignment)
-
-                    # Determine whether the cube header requires realignment
-                    # due to one or more longer vector coordinate summaries.
-                    if max_line_offset >= min_alignment:
-                        delta = max_line_offset - min_alignment + 5
-                        cube_header = '%-*s (%s)' % (int(name_padding + delta),
-                                                     self.name() or 'unknown',
-                                                     dimension_header)
-                        alignment += delta
-
                     # Generate full textual summary for each vector coordinate
                     # - WITH dimension markers.
                     for index, coord in enumerate(vector_coords):
                         dims = self.coord_dims(coord)
+
                         for dim in range(len(self.shape)):
                             width = alignment[dim] - len(vector_summary[index])
                             char = 'x' if dim in dims else '-'
@@ -1925,11 +1931,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                                 width=width,
                                                                 char=char)
                             vector_summary[index] += line
-                    # Interleave any extra lines that are needed to distinguish
-                    # the coordinates.
-                    vector_summary = self._summary_extra(vector_coords,
-                                                         vector_summary,
-                                                         extra_indent)
+                    vectors = vectors + vector_coords
+                if cell_measures:
+                    # Generate full textual summary for each vector coordinate
+                    # - WITH dimension markers.
+                    for index, coord in enumerate(cell_measures):
+                        dims = self.cell_measure_dims(coord)
+
+                        for dim in range(len(self.shape)):
+                            width = alignment[dim] - len(vector_summary[index])
+                            char = 'x' if dim in dims else '-'
+                            line = '{pad:{width}}{char}'.format(pad=' ',
+                                                                width=width,
+                                                                char=char)
+                            vector_summary[index] += line
+                    vectors = vectors + cell_measures
+                # Interleave any extra lines that are needed to distinguish
+                # the coordinates.
+                vector_summary = self._summary_extra(vectors,
+                                                     vector_summary,
+                                                     extra_indent)
 
                 return vector_summary, cube_header
 
@@ -1962,7 +1983,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             if vector_cell_measures:
                 cell_measure_summary, cube_header = vector_summary(
-                    vector_cell_measures, cube_header, max_line_offset)
+                    [], cube_header, max_line_offset,
+                    cell_measures=vector_cell_measures)
                 summary += '\n     Cell Measures:\n'
                 summary += '\n'.join(cell_measure_summary)
 
