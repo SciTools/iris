@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -1335,6 +1335,8 @@ def unify_time_units(cubes):
     Each epoch is defined from the first suitable time coordinate found in the
     input cubes.
 
+    Dtype is preserved for each time coord individually.
+
     Arg:
 
     * cubes:
@@ -1346,10 +1348,18 @@ def unify_time_units(cubes):
     for cube in cubes:
         for time_coord in cube.coords():
             if time_coord.units.is_time_reference():
+                # check the time_coord's points dtype, bounds dtype consistency
+                # is enforced by the Coord
+                pdtype = time_coord.points.dtype
                 epoch = epochs.setdefault(time_coord.units.calendar,
                                           time_coord.units.origin)
                 new_unit = cf_units.Unit(epoch, time_coord.units.calendar)
                 time_coord.convert_units(new_unit)
+                # check dtype and cast if required
+                if time_coord.points.dtype != pdtype:
+                    time_coord.points = time_coord.points.astype(pdtype)
+                    if time_coord.bounds:
+                        time_coord.bounds = time_coord.bounds.astype(pdtype)
 
 
 def _is_circular(points, modulus, bounds=None):

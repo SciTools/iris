@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -118,6 +118,14 @@ class Test(tests.IrisTest):
         expected = 'hours since 1970-01-01 00:00:00'
         unify_time_units(cubelist)
         self._common(expected, cubelist)
+
+    def test_time_dtype(self):
+        cubelist = self.simple_1d_time_cubes()
+        for cube in cubelist:
+            cube.coord('time').points = cube.coord('time').points.astype(int)
+        unify_time_units(cubelist)
+        for cube in cubelist:
+            self.assertEqual(cube.coord('time').points.dtype, int)
 
 
 if __name__ == '__main__':
