@@ -1357,9 +1357,21 @@ def unify_time_units(cubes):
                 time_coord.convert_units(new_unit)
                 # check dtype and cast if required
                 if time_coord.points.dtype != pdtype:
-                    time_coord.points = time_coord.points.astype(pdtype)
-                    if time_coord.bounds:
-                        time_coord.bounds = time_coord.bounds.astype(pdtype)
+                    new_points = time_coord.points.astype(pdtype)
+                    if not np.all(np.isclose(new_points, time_coord.points)):
+                        raise ValueError('Unifying units would have altered'
+                                         ' the points array of the time coord:'
+                                         '\n{}'.format(str(time_coord)))
+                    time_coord.points = new_points
+                    if time_coord.has_bounds():
+                        new_bounds = time_coord.bounds.astype(pdtype)
+                        if not np.all(np.isclose(new_bounds,
+                                                 time_coord.bounds)):
+                            raise ValueError('Unifying units would have'
+                                             ' altered the bounds array of the'
+                                             ' time coord:'
+                                             '\n{}'.format(str(time_coord)))
+                        time_coord.bounds = new_bounds
 
 
 def _is_circular(points, modulus, bounds=None):
