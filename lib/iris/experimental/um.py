@@ -36,8 +36,11 @@ from iris.fileformats.pp import _header_defn
 
 try:
     import mo_pack
-except ImportError:
-    mo_pack = None
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        mo_pack = None
+    else:
+        raise
 
 DEFAULT_WORD_SIZE = 8  # In bytes.
 

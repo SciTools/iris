@@ -71,22 +71,31 @@ try:
     import matplotlib
     import matplotlib.testing.compare as mcompare
     import matplotlib.pyplot as plt
-except ImportError:
-    MPL_AVAILABLE = False
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        MPL_AVAILABLE = False
+    else:
+        raise
 else:
     MPL_AVAILABLE = True
 
 try:
     from osgeo import gdal
-except ImportError:
-    GDAL_AVAILABLE = False
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        GDAL_AVAILABLE = False
+    else:
+        raise
 else:
     GDAL_AVAILABLE = True
 
 try:
     import gribapi
-except ImportError:
-    GRIB_AVAILABLE = False
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        GRIB_AVAILABLE = False
+    else:
+        raise
 else:
     GRIB_AVAILABLE = True
 

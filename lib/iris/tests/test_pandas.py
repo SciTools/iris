@@ -35,11 +35,17 @@ import numpy as np
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
 default_units_registry = copy.copy(matplotlib.units.registry)
+
+
 try:
     import pandas
-except ImportError:
-    # Disable all these tests if pandas is not installed.
-    pandas = None
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        pandas = None
+    else:
+        raise
+
+
 matplotlib.units.registry = default_units_registry
 
 skip_pandas = unittest.skipIf(pandas is None,

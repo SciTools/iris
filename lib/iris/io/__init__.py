@@ -249,9 +249,12 @@ def _grib_save(cube, target, append=False, **kwargs):
     # installed.
     try:
         import gribapi
-    except ImportError:
-        raise RuntimeError('Unable to save GRIB file - the ECMWF '
-                           '`gribapi` package is not installed.')
+    except ImportError as err:
+        if err.message.startswith('No module named'):
+            raise RuntimeError('Unable to save GRIB file - the ECMWF '
+                               '`gribapi` package is not installed.')
+        else:
+            raise
     return iris.fileformats.grib.save_grib2(cube, target, append, **kwargs)
 
 

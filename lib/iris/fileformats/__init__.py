@@ -29,8 +29,11 @@ from . import abf
 from . import ff
 try:
     from . import grib
-except ImportError:
-    grib = None
+except ImportError as err:
+    if err.message.startswith('No module named'):
+        grib = None
+    else:
+        raise
 from . import name
 from . import netcdf
 from . import nimrod
