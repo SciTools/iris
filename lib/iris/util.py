@@ -1356,7 +1356,7 @@ def unify_time_units(cubes):
                 new_unit = cf_units.Unit(epoch, time_coord.units.calendar)
                 time_coord.convert_units(new_unit)
                 # check dtype and cast if required
-                if time_coord.points.dtype != pdtype:
+                if True:#time_coord.points.dtype != pdtype:
                     new_points = time_coord.points.astype(pdtype)
                     if not np.all(np.isclose(new_points, time_coord.points)):
                         raise ValueError('Unifying units would have altered'
