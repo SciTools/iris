@@ -26,7 +26,7 @@ install:
   - export IRIS_TEST_DATA_REF="037fee7d26de00897d1694ec040b6ed895d24a38"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
-  - export IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
+  - export IRIS_SAMPLE_DATA_REF="bdebbb6d6aeaeb311a99d8f9f18c6779828c982f"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
