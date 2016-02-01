@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -909,6 +909,7 @@ STASHCODE_IMPLIED_HEIGHTS = {
     'm01s03i210': (10.0,),
     'm01s03i225': (10.0,),
     'm01s03i226': (10.0,),
+    'm01s03i227': (10.0,),
     'm01s03i236': (1.5,),
     'm01s03i237': (1.5,),
     'm01s03i245': (1.5,),
