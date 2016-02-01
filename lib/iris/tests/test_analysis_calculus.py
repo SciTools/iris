@@ -553,7 +553,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
         cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
 
-        result = r.copy(data=2*cos_x_pts*cos_y_pts)
+        # Expected r-component value: -2 cos(lon) cos(lat)
+        result = r.copy(data=-2*cos_x_pts*cos_y_pts)
 
         # Note: This numerical comparison was created when the radius was 1000 times smaller
         np.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :]/1000.0, decimal=1)

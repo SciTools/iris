@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -635,7 +635,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
         dicos_dtheta = _curl_differentiate(temp, lat_coord)
         prototype_diff = dicos_dtheta
 
-        # r curl component: 1 / (r * cos(lat)) * (dicos_dtheta - d_j_cube_dphi)
+        # r curl component: 1 / (r * cos(lat)) * (d_j_cube_dphi - dicos_dtheta)
         # Since prototype_diff == dicos_dtheta we don't need to
         # recalculate dicos_dtheta.
         d_j_cube_dphi = _curl_differentiate(j_cube, lon_coord)
@@ -643,8 +643,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
         new_lat_coord = d_j_cube_dphi.coord(axis='Y')
         new_lat_cos_coord = _coord_cos(new_lat_coord)
         lat_dim = d_j_cube_dphi.coord_dims(new_lat_coord)[0]
-        r_cmpt = iris.analysis.maths.divide(_curl_subtract(dicos_dtheta,
-                                                           d_j_cube_dphi),
+        r_cmpt = iris.analysis.maths.divide(_curl_subtract(d_j_cube_dphi,
+                                                           dicos_dtheta),
                                             r * new_lat_cos_coord, dim=lat_dim)
         r_cmpt.units = r_cmpt.units / r_unit
         d_j_cube_dphi = dicos_dtheta = None
