@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -43,6 +43,10 @@ import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
+
+
+IMDI = -32768
+
 
 try:
     import mo_pack
@@ -684,6 +688,8 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
 
         """
         value = int(value)
+        if value == IMDI:
+            value = 0
         if value < 0:
             raise ValueError('Negative numbers not supported with '
                              'splittable integers object')

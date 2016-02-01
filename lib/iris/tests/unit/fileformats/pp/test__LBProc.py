@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,6 +40,11 @@ class Test___init__(tests.IrisTest):
             _LBProc(-1)
         with self.assertRaisesRegexp(ValueError, msg):
             _LBProc('-1')
+
+    def test_imdi(self):
+        # Ensure that we don't discriminate between an lbproc of IMDI and as 0.
+        proc = _LBProc(-32768)
+        self.assertEqual(proc._value, 0)
 
     def test_invalid_str(self):
         with self.assertRaisesRegexp(ValueError, 'invalid literal for int'):
