@@ -774,6 +774,84 @@ class TestGribMessage(IrisTest):
                 section, key, val = element
                 self.assertEqual(message.sections[section][key], val)
 
+    def assertGribMessageDifference(self, filename1, filename2, diffs,
+                                    skip_keys=(), skip_sections=()):
+        """
+        Evaluate that the two messages only differ in the ways specified.
+
+        * filename[0|1] (string)
+            The path on disk of existing GRIB files
+
+        * diffs
+            An dictionary of GRIB message keys and expected diff values:
+            {key: (m1val, m2val),...} .
+
+        * skip_keys
+            An iterable of key names to ignore during comparison.
+
+        * skip_sections
+            An iterable of section numbers to ignore during comparison.
+
+        """
+        messages1 = list(_GribMessage.messages_from_filename(filename1))
+        messages2 = list(_GribMessage.messages_from_filename(filename2))
+        self.assertEqual(len(messages1), len(messages2))
+        for m1, m2 in zip(messages1, messages2):
+            m1_sect = set(m1.sections.keys())
+            m2_sect = set(m2.sections.keys())
+
+            for missing_section in (m1_sect ^ m2_sect):
+                what = ('introduced'
+                        if missing_section in m1_sect else 'removed')
+                # Assert that an introduced section is in the diffs.
+                self.assertIn(missing_section, skip_sections,
+                              msg='Section {} {}'.format(missing_section,
+                                                         what))
+
+            for section in (m1_sect & m2_sect):
+                # For each section, check that the differences are
+                # known diffs.
+                m1_keys = set(m1.sections[section]._keys)
+                m2_keys = set(m2.sections[section]._keys)
+
+                difference = m1_keys ^ m2_keys
+                unexpected_differences = difference - set(skip_keys)
+                if unexpected_differences:
+                    self.fail("There were keys in section {} which \n"
+                              "weren't in both messages and which weren't "
+                              "skipped.\n{}"
+                              "".format(section,
+                                        ', '.join(unexpected_differences)))
+
+                keys_to_compare = m1_keys & m2_keys - set(skip_keys)
+
+                for key in keys_to_compare:
+                    m1_value = m1.sections[section][key]
+                    m2_value = m2.sections[section][key]
+                    msg = '{} {} != {}'
+                    if key not in diffs:
+                        # We have a key which we expect to be the same for
+                        # both messages.
+                        if isinstance(m1_value, np.ndarray):
+                            # A large tolerance appears to be required for
+                            # gribapi 1.12, but not for 1.14.
+                            self.assertArrayAlmostEqual(m1_value, m2_value,
+                                                        decimal=2)
+                        else:
+                            self.assertEqual(m1_value, m2_value,
+                                             msg=msg.format(key, m1_value,
+                                                            m2_value))
+                    else:
+                        # We have a key which we expect to be different
+                        # for each message.
+                        self.assertEqual(m1_value, diffs[key][0],
+                                         msg=msg.format(key, m1_value,
+                                                         diffs[key][0]))
+
+                        self.assertEqual(m2_value, diffs[key][1],
+                                         msg=msg.format(key, m2_value,
+                                                        diffs[key][1]))
+
 
 def skip_data(fn):
     """
