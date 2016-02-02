@@ -213,6 +213,19 @@ class TestLBTIMx3x_YearlyAggregation(TestField):
         self._check_yearly(_lbcode(ix=1, iy=20), expect_match=False)
 
 
+class TestLBTIMx2x_ZeroYear(TestField):
+    def test_(self):
+        lbtim = _lbtim(ib=2, ic=1)
+        t1 = nc_datetime(0, 1, 1)
+        t2 = nc_datetime(0, 1, 31, 23, 59, 00)
+        lbft = 0
+        lbcode = _lbcode(1)
+        coords_and_dims = _convert_scalar_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_TIME_UNIT,
+            t1=t1, t2=t2, lbft=lbft)
+        self.assertEqual(coords_and_dims, [])
+
+
 class TestLBTIMxxx_Unhandled(TestField):
     def test_unrecognised(self):
         lbtim = _lbtim(ib=4, ic=1)
