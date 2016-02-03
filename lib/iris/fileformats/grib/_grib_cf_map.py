@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -79,6 +79,7 @@ GRIB2_TO_CF = {
     G2Param(2, 0, 1, 11): CFName('thickness_of_snowfall_amount', None, 'm'),
     G2Param(2, 0, 1, 13): CFName('liquid_water_content_of_surface_snow', None, 'kg m-2'),
     G2Param(2, 0, 1, 22): CFName(None, 'cloud_mixing_ratio', 'kg kg-1'),
+    G2Param(2, 0, 1, 49): CFName('precipitation_amount', None, 'kg m-2'),
     G2Param(2, 0, 1, 51): CFName('atmosphere_mass_content_of_water', None, 'kg m-2'),
     G2Param(2, 0, 1, 53): CFName('snowfall_flux', None, 'kg m-2 s-1'),
     G2Param(2, 0, 1, 64): CFName('atmosphere_mass_content_of_water_vapor', None, 'kg m-2'),
@@ -187,6 +188,7 @@ CF_TO_GRIB2 = {
     CFName('low_type_cloud_area_fraction', None, '%'): G2Param(2, 0, 6, 3),
     CFName('medium_type_cloud_area_fraction', None, '%'): G2Param(2, 0, 6, 4),
     CFName('moisture_content_of_soil_layer', None, 'kg m-2'): G2Param(2, 2, 0, 22),
+    CFName('precipitation_amount', None, 'kg m-2'): G2Param(2, 0, 1, 49),
     CFName('precipitation_flux', None, 'kg m-2 s-1'): G2Param(2, 0, 1, 7),
     CFName('relative_humidity', None, '%'): G2Param(2, 0, 1, 1),
     CFName('sea_ice_area_fraction', None, '1'): G2Param(2, 10, 2, 0),
