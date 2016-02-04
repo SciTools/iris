@@ -28,7 +28,6 @@ from copy import deepcopy
 
 import biggus
 import numpy as np
-import warnings
 
 import iris.coords
 import iris.cube
@@ -431,10 +430,6 @@ class _CubeSignature(object):
         msg_template = '{}{} differ: {} != {}'
         msgs = []
 
-        # Check if either cube is anonymous.
-        if self.anonymous or other.anonymous:
-            msg = ('One or both cubes have anonymous dimensions')
-            warnings.warn(msg, UserWarning)
         # Check cube definitions.
         if self.defn != other.defn:
             # Note that the case of different phenomenon names is dealt with
