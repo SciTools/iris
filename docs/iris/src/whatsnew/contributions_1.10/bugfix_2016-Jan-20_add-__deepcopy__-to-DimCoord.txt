@@ -1,0 +1,1 @@
+* fixed a bug where a deepcopy of a :class:`~iris.coords.DimCoord` would have writable `points` and `bounds` arrays. These arrays can now no longer be modified in-place.
