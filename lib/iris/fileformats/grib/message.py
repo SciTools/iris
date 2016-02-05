@@ -383,11 +383,6 @@ class Section(object):
     # Within GribMessage instances all keys will have been fetched
 
     def __init__(self, message_id, number, keys):
-        """
-        It is recommended to obtain Sections from a GribMessage,
-        not to create them directly
-
-        """
         self._message_id = message_id
         self._number = number
         self._keys = keys

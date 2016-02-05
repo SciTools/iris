@@ -1,0 +1,1 @@
+* The :func:`iris.fileformats.pp.as_pairs` and :func:`iris.fileformats.grib.as_pairs` are deprecated.  These are replaced with :func:`iris.fileformats.pp.save_pairs_from_cube` and :func:`iris.fileformats.grib.save_pairs_from_cube`.
