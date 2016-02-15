@@ -24,6 +24,7 @@ import six
 
 import cf_units
 import numpy as np
+import calendar
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
@@ -597,9 +598,12 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
         coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
         coords_and_dims.append((DimCoord(t2_epoch_hours, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
 
+    # Don't add time coordinates when years are zero and
+    # lbtim.ib == 2. These are handled elsewhere.
     if \
             (lbtim.ib == 2) and \
             (lbtim.ic in [1, 2, 4]) and \
+            (t1.year != 0 and t2.year != 0) and \
             ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
         coords_and_dims.append((
             DimCoord(standard_name='forecast_period', units='hours',
@@ -900,6 +904,26 @@ def _all_other_rules(f):
             f.lbmind == 0):
         aux_coords_and_dims.append(
             (AuxCoord('son', long_name='season', units='no_unit'),
+             None))
+
+    # Special case where year is zero and months match.
+    # Month coordinates (--> scalar coordinates)
+    if (f.lbtim.ib == 2 and f.lbtim.ic in [1, 2, 4] and
+            ((len(f.lbcode) != 5) or
+             (len(f.lbcode) == 5 and
+              f.lbcode.ix not in [20, 21, 22, 23] and
+              f.lbcode.iy not in [20, 21, 22, 23])) and
+            f.lbyr == 0 and f.lbyrd == 0 and
+            f.lbmon == f.lbmond):
+        aux_coords_and_dims.append(
+            (AuxCoord(f.lbmon, long_name='month_number'),
+             None))
+        aux_coords_and_dims.append(
+            (AuxCoord(calendar.month_abbr[f.lbmon], long_name='month',
+                      units='no_unit'),
+             None))
+        aux_coords_and_dims.append(
+            (DimCoord(points=f.lbft, standard_name='forecast_period', units='hours'),
              None))
 
     # "Normal" (i.e. not cross-sectional) lats+lons (--> vector coordinates)

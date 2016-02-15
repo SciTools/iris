@@ -31,7 +31,7 @@ import cartopy.crs as ccrs
 import iris
 from iris.fileformats.pp_rules import _all_other_rules
 from iris.fileformats.pp import SplittableInt
-from iris.coords import CellMethod, DimCoord
+from iris.coords import CellMethod, DimCoord, AuxCoord
 from iris.tests import mock
 from iris.tests.unit.fileformats import TestField
 
@@ -41,6 +41,7 @@ from iris.tests.unit.fileformats import TestField
 # tuple to obtain the cell methods.
 CELL_METHODS_INDEX = 5
 DIM_COORDS_INDEX = 6
+AUX_COORDS_INDEX = 7
 
 
 class TestCellMethods(tests.IrisTest):
@@ -174,6 +175,58 @@ class TestCrossSectionalTime(TestField):
         expected = [(DimCoord(expected_time_points, standard_name='time',
                               units=expected_unit, bounds=time_bounds), 0)]
         self.assertCoordsAndDimsListsMatch(res, expected)
+
+
+class TestLBTIMx2x_ZeroYears(TestField):
+
+    _spec = ['lbtim', 'lbcode', 'lbrow', 'lbnpt', 'lbproc', 'lbsrce',
+             'lbhem', 'lbuser', 'bzx', 'bdx', 'bdy', 'bmdi', 't1', 't2',
+             'stash', 'x_bounds', 'y_bounds', '_x_coord_name',
+             '_y_coord_name']
+
+    def _make_field(self,
+                    lbyr=0, lbyrd=0, lbmon=3, lbmond=3, lbft=0,
+                    bdx=1, bdy=1, bmdi=0,
+                    ia=0, ib=2, ic=1,
+                    lbcode=SplittableInt(3)):
+        return mock.MagicMock(
+            lbyr=lbyr, lbyrd=lbyrd, lbmon=lbmon, lbmond=lbmond, lbft=lbft,
+            bdx=bdx, bdy=bdy, bmdi=bmdi,
+            lbtim=mock.Mock(ia=ia, ib=ib, ic=ic),
+            lbcode=lbcode)
+
+    def test_month_coord(self):
+        field = self._make_field()
+        field.mock_add_spec(self._spec)
+        res = _all_other_rules(field)[AUX_COORDS_INDEX]
+
+        expected = [(AuxCoord(3, long_name='month_number'), None),
+                    (AuxCoord('Mar', long_name='month',
+                     units=Unit('no unit')), None),
+                    (DimCoord(points=0, standard_name='forecast_period',
+                     units=Unit('hours')), None)]
+        self.assertCoordsAndDimsListsMatch(res, expected)
+
+    def test_diff_month(self):
+        field = self._make_field(lbmon=3, lbmond=4)
+        field.mock_add_spec(self._spec)
+        res = _all_other_rules(field)[AUX_COORDS_INDEX]
+
+        self.assertCoordsAndDimsListsMatch(res, [])
+
+    def test_nonzero_year(self):
+        field = self._make_field(lbyr=1)
+        field.mock_add_spec(self._spec)
+        res = _all_other_rules(field)[AUX_COORDS_INDEX]
+
+        self.assertCoordsAndDimsListsMatch(res, [])
+
+    def test_nonzero_yeard(self):
+        field = self._make_field(lbyrd=1)
+        field.mock_add_spec(self._spec)
+        res = _all_other_rules(field)[AUX_COORDS_INDEX]
+
+        self.assertCoordsAndDimsListsMatch(res, [])
 
 
 if __name__ == "__main__":

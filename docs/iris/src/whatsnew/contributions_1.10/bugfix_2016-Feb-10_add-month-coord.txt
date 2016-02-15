@@ -1,0 +1,4 @@
+Fixed a bug with a class of pp files with lbyr == 0, where the date would cause errors when converting to a datetime object (e.g. when printing a cube).
+
+When processing a pp field with lbtim = 2x, lbyr == lbyrd == 0 and lbmon == lbmond, 'month' and 'month_number' coordinates are created instead of 'time'.
+
