@@ -484,6 +484,10 @@ class CubeList(list):
             is not applied to auxilliary coordinates that span the dimension
             the concatenation is occuring along. Defaults to True.
 
+        .. note::
+
+            Concatenation cannot occur along an anonymous dimension.
+
         """
         if not self:
             raise ValueError("can't concatenate an empty CubeList")
@@ -578,6 +582,10 @@ class CubeList(list):
             the cubes will not be able to be concatenated. If this occurs, use
             :func:`iris.util.unify_time_units` to normalise the epochs of the
             time coordinates so that the cubes can be concatenated.
+
+        .. note::
+
+            Concatenation cannot occur along an anonymous dimension.
 
         """
         return iris._concatenate.concatenate(self,
