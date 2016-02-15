@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 from datetime import datetime
 import os.path
+import requests
 
 from metarelate.fuseki import FusekiServer
 
@@ -54,6 +55,10 @@ HEADER = """# (C) British Crown Copyright 2013 - {year}, Met Office
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
+# Created on {datestamp} from 
+# http://www.metarelate.net/metOcean
+# at commit {git_sha}
+# https://github.com/metarelate/metOcean/commit/{git_sha}
 {doc_string}
 
 from __future__ import (absolute_import, division, print_function)
@@ -88,7 +93,6 @@ FILE_UM_CF = os.path.join(DIR_BASE, 'um_cf_map.py')
 FILE_GRIB_CF = os.path.join(DIR_BASE, 'grib', '_grib_cf_map.py')
 YEAR = datetime.utcnow().year
 
-
 def _retrieve_mappings(fuseki, source, target):
     """
     Interrogate the metarelate triple store for all
@@ -108,12 +112,13 @@ def _retrieve_mappings(fuseki, source, target):
         instances.
 
     """
+    suri = 'http://www.metarelate.net/sparql/metOcean'
     msg = 'Retrieving {!r} to {!r} mappings ...'
     print(msg.format(source, target))
-    return fuseki.retrieve_mappings(source, target)
+    return fuseki.retrieve_mappings(source, target, service=suri)
 
 
-def build_um_cf_map(fuseki, filename):
+def build_um_cf_map(fuseki, filename, now, git_sha):
     """
     Encode the UM/CF phenomenon translation mappings
     within the specified file.
@@ -131,7 +136,8 @@ def build_um_cf_map(fuseki, filename):
 
     # Create the file to contain UM/CF translations.
     with open(filename, 'w') as fh:
-        fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_UM))
+        fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_UM,
+                               datestamp=now, git_sha=git_sha))
         fh.write('\n')
 
         # Encode the relevant UM to CF translations.
@@ -155,7 +161,7 @@ def build_um_cf_map(fuseki, filename):
         fh.writelines(cffc.lines(fuseki))
 
 
-def build_grib_cf_map(fuseki, filename):
+def build_grib_cf_map(fuseki, filename, now, git_sha):
     """
     Encode the GRIB/CF phenomenon translation mappings
     within the specified file.
@@ -173,7 +179,8 @@ def build_grib_cf_map(fuseki, filename):
 
     # Create the file to contain GRIB/CF translations.
     with open(FILE_GRIB_CF, 'w') as fh:
-        fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_GRIB))
+        fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_GRIB,
+                               datestamp=now, git_sha=git_sha))
         fh.write(HEADER_GRIB)
         fh.write('\n')
 
@@ -203,11 +210,16 @@ def build_grib_cf_map(fuseki, filename):
 
 
 def main():
+    now = datetime.utcnow().strftime('%d %B %Y %H:%m')
+    git_sha = requests.get('http://www.metarelate.net/metOcean/latest_sha').text
     with FusekiServer() as fuseki:
-        fuseki.load()
-        build_um_cf_map(fuseki, FILE_UM_CF)
-        build_grib_cf_map(fuseki, FILE_GRIB_CF)
-
+        build_um_cf_map(fuseki, FILE_UM_CF, now, git_sha)
+        build_grib_cf_map(fuseki, FILE_GRIB_CF, now, git_sha)
+    if (git_sha !=
+        requests.get('http://www.metarelate.net/metOcean/latest_sha').text):
+        raise ValueError('The metarelate translation store has altered during'
+                         'your retrieval, the results may not be stable.\n'
+                         'Please rerun your retrieval.')
 
 if __name__ == '__main__':
     main()
