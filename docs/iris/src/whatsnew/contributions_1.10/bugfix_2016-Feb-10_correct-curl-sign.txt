@@ -1,0 +1,1 @@
+Fixed a bug in :meth:`~iris.analysis.calculus.curl` where the sign of the r-component for spherical coordinates was opposite to what was expected.  
