@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris.tests.stock import simple_2d
+from iris.tests.stock import simple_2d, lat_lon_cube
 from iris.coords import AuxCoord
 
 
@@ -34,26 +34,32 @@ class TestGraphicStringCoord(tests.GraphicsTest):
         self.cube = simple_2d(with_bounds=True)
         self.cube.add_aux_coord(AuxCoord(list('abcd'),
                                          long_name='str_coord'), 1)
+        self.lat_lon_cube = lat_lon_cube()
 
-    def tick_loc_and_label(self, axis_name):
+    def tick_loc_and_label(self, axis_name, axes=None):
         # Intentional lazy import so that subclasses can have an opportunity
         # to change the backend.
         import matplotlib.pyplot as plt
 
         # Draw the plot to 'fix' the ticks.
-        plt.draw()
-        axis = getattr(plt.gca(), axis_name)
+        if axes:
+            axes.figure.canvas.draw()
+        else:
+            axes = plt.gca()
+            plt.draw()
+        axis = getattr(axes, axis_name)
+
         locations = axis.get_majorticklocs()
         labels = [tick.get_text() for tick in axis.get_ticklabels()]
         return list(zip(locations, labels))
 
-    def assertBoundsTickLabels(self, axis):
-        actual = self.tick_loc_and_label(axis)
+    def assertBoundsTickLabels(self, axis, axes=None):
+        actual = self.tick_loc_and_label(axis, axes)
         expected = [(-1.0, ''), (0.0, 'a'), (1.0, 'b'),
                     (2.0, 'c'), (3.0, 'd'), (4.0, '')]
         self.assertEqual(expected, actual)
 
-    def assertPointsTickLabels(self, axis):
-        actual = self.tick_loc_and_label(axis)
+    def assertPointsTickLabels(self, axis, axes=None):
+        actual = self.tick_loc_and_label(axis, axes)
         expected = [(0.0, 'a'), (1.0, 'b'), (2.0, 'c'), (3.0, 'd')]
         self.assertEqual(expected, actual)

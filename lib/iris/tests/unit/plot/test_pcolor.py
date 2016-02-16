@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,6 +38,31 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         iplt.pcolor(self.cube, coords=('str_coord', 'bar'))
         self.assertBoundsTickLabels('xaxis')
 
+    def test_xaxis_labels_with_axes(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_xlim(0, 3)
+        iplt.pcolor(self.cube, coords=('str_coord', 'bar'), axes=ax)
+        plt.close(fig)
+        self.assertPointsTickLabels('xaxis', ax)
+
+    def test_yaxis_labels_with_axes(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_ylim(0, 3)
+        iplt.pcolor(self.cube, axes=ax, coords=('bar', 'str_coord'))
+        plt.close(fig)
+        self.assertPointsTickLabels('yaxis', ax)
+
+    def test_geoaxes_exception(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        self.assertRaises(TypeError, iplt.pcolor,
+                          self.lat_lon_cube, axes=ax)
+        plt.close(fig)
 
 if __name__ == "__main__":
     tests.main()
