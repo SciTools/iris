@@ -1118,20 +1118,16 @@ class Saver(object):
         """
 
         units = str(coord.units)
-
-        # TODO: Use #61 to get the units.
-        if isinstance(coord.coord_system, iris.coord_systems.GeogCS):
-            if "latitude" in coord.standard_name:
+        # Set the 'units' of 'latitude' and 'longitude' coordinates specified
+        # in 'degrees' to 'degrees_north' and 'degrees_east' respectively,
+        # as defined in the CF conventions for netCDF files: sections 4.1 and
+        # 4.2.
+        if ((isinstance(coord.coord_system, iris.coord_systems.GeogCS) or
+                coord.coord_system is None) and coord.units == 'degrees'):
+            if coord.standard_name == "latitude":
                 units = 'degrees_north'
-            elif "longitude" in coord.standard_name:
+            elif coord.standard_name == "longitude":
                 units = 'degrees_east'
-
-        elif isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
-            units = 'degrees'
-
-        elif isinstance(coord.coord_system,
-                        iris.coord_systems.TransverseMercator):
-            units = 'm'
 
         return coord.standard_name, coord.long_name, units
 

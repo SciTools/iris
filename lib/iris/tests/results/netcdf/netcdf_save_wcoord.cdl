@@ -8,7 +8,7 @@ variables:
 		temp:units = "K" ;
 	int64 lon(lon) ;
 		lon:axis = "X" ;
-		lon:units = "degree_east" ;
+		lon:units = "degrees_east" ;
 		lon:standard_name = "longitude" ;
 	int64 lat(lat) ;
 		lat:units = "degree_north" ;

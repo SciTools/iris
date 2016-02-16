@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -608,24 +608,24 @@ class TestNetCDFSave(tests.IrisTest):
         coord_system3 = icoord_systems.RotatedGeogCS(30, 30)
 
         c1.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'latitude', long_name='1',
+            np.arange(1, 3), 'latitude', long_name='1', units='degrees',
             coord_system=coord_system), 1)
         c1.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'longitude', long_name='1',
+            np.arange(1, 3), 'longitude', long_name='1', units='degrees',
             coord_system=coord_system), 0)
 
         c2.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'latitude', long_name='2',
+            np.arange(1, 3), 'latitude', long_name='2', units='degrees',
             coord_system=coord_system2), 1)
         c2.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'longitude', long_name='2',
+            np.arange(1, 3), 'longitude', long_name='2', units='degrees',
             coord_system=coord_system2), 0)
 
         c3.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'grid_latitude', long_name='3',
+            np.arange(1, 3), 'grid_latitude', long_name='3', units='degrees',
             coord_system=coord_system3), 1)
         c3.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'grid_longitude', long_name='3',
+            np.arange(1, 3), 'grid_longitude', long_name='3', units='degrees',
             coord_system=coord_system3), 0)
 
         cubes = iris.cube.CubeList([c1, c2, c3])
