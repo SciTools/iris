@@ -1690,10 +1690,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
             # Unmask the array only if it is filled.
-            if ma.count_masked(data) == 0:
+            if isinstance(data, np.ndarray) and ma.count_masked(data) == 0:
                 data = data.data
-            self._my_data = data
-        return data
+            # data may be a numeric type, so ensure an np.ndarray is returned
+            self._my_data = np.asanyarray(data)
+        return self._my_data
 
     @data.setter
     def data(self, value):

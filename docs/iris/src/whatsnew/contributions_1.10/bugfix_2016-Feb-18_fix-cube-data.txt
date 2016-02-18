@@ -1,0 +1,2 @@
+* Fixed a bug with :meth:`iris.cube.Cube.data` where an :class:`numpy.ndarray`
+ was not being returned for scalar cubes with lazy data
