@@ -1683,7 +1683,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise MemoryError(msg)
             # Unmask the array only if it is filled.
             if isinstance(data, np.ndarray) and ma.count_masked(data) == 0:
-                data = data.data 
+                data = data.data
             # data may be a numeric type, so ensure an np.ndarray is returned
             self._my_data = np.asanyarray(data)
         return self._my_data

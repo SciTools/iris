@@ -102,5 +102,63 @@ class Test_Lazy_Maths(tests.IrisTest):
         self.assert_elementwise(c1, None, result, np.divide)
 
 
+class Test_Scalar_Cube_Lazy_Maths(tests.IrisTest):
+    def build_lazy_cube(self, value):
+        data = np.array(value)
+        data = biggus.NumpyArrayAdapter(data)
+        return iris.cube.Cube(data, standard_name='air_temperature', units='K')
+
+    def setUp(self):
+        self.c1 = self.build_lazy_cube(3)
+        self.c2 = self.build_lazy_cube(4)
+
+    def test_add_scalar(self):
+        cube = self.c1 + 5
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
+    def test_add_cubes(self):
+        cube = self.c1 + self.c2
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
+    def test_mul_scalar(self):
+        cube = self.c1 * 5
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
+    def test_mul_cubes(self):
+        cube = self.c1 * self.c2
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
+    def test_sub_scalar(self):
+        cube = self.c1 - 5
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
+    def test_sub_cubes(self):
+        cube = self.c1 - self.c2
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
+    def test_div_scalar(self):
+        cube = self.c1 / 5
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
+    def test_div_cubes(self):
+        cube = self.c1 / self.c2
+        data = cube.data
+        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertEqual(data.shape, ())
+
 if __name__ == "__main__":
     tests.main()
