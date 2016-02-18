@@ -235,23 +235,20 @@ def interpolate(cube, sample_points, method=None):
     # Use a cache with _nearest_neighbour_indices_ndcoords()
     cache = {}
 
+    # Cache the linear interpolator
+    scheme = iris.analysis.Linear()
+    coords, points = zip(*sample_points)
+    interpolator = scheme.interpolator(cube, coords)
+
     for i in range(trajectory_size):
         point = [(coord, values[i]) for coord, values in sample_points]
 
         if method in ["linear", None]:
-            column = iris.analysis.interpolate.linear(cube, point)
-            new_cube.data[..., i] = column.data
+            column = interpolator._points([val[i] for val in points], cube.data)
+            new_cube.data[..., i] = column
         elif method == "nearest":
             column_index = iris.analysis.interpolate._nearest_neighbour_indices_ndcoords(cube, point, cache=cache)
             column = cube[column_index]
             new_cube.data[..., i] = column.data
-
-        # Fill in the empty squashed (non derived) coords.
-        for column_coord in column.dim_coords + column.aux_coords:
-            src_dims = cube.coord_dims(column_coord)
-            if not squish_my_dims.isdisjoint(src_dims):
-                if len(column_coord.points) != 1:
-                    raise Exception("Expected to find exactly one point. Found %d" % len(column_coord.points))
-                new_cube.coord(column_coord.name()).points[i] = column_coord.points[0]
 
     return new_cube
