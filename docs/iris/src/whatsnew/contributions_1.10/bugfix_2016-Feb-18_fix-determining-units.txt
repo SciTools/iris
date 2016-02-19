@@ -1,0 +1,4 @@
+* When saving in netcdf format, the 'units' of 'latitude' and 'longitude'
+ coordinates specified in 'degrees' are saved as 'degrees_north' and
+ 'degrees_east' respectively, as defined in the CF conventions for netCDF
+ files: sections 4.1 and 4.2.

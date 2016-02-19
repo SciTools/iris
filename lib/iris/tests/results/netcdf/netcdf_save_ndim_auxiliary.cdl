@@ -36,11 +36,11 @@ variables:
 		rlon:standard_name = "grid_longitude" ;
 		rlon:long_name = "rotated longitude" ;
 	float lat(rlat, rlon) ;
-		lat:units = "degrees" ;
+		lat:units = "degrees_north" ;
 		lat:standard_name = "latitude" ;
 		lat:long_name = "latitude" ;
 	float lon(rlat, rlon) ;
-		lon:units = "degrees" ;
+		lon:units = "degrees_east" ;
 		lon:standard_name = "longitude" ;
 		lon:long_name = "longitude" ;
 
