@@ -251,4 +251,13 @@ def interpolate(cube, sample_points, method=None):
             column = cube[column_index]
             new_cube.data[..., i] = column.data
 
+         # Fill in the empty squashed (non derived) coords.
+        for column_coord in column.dim_coords + column.aux_coords:
+            src_dims = cube.coord_dims(column_coord)
+            if not squish_my_dims.isdisjoint(src_dims):
+                if len(column_coord.points) != 1:
+                    raise Exception("Expected to find exactly one point. Found %d" % len(column_coord.points))
+                new_cube.coord(column_coord.name()).points[i] = column_coord.points[0]
+
+
     return new_cube
