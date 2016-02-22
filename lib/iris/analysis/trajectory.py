@@ -256,7 +256,12 @@ def interpolate(cube, sample_points, method=None):
             if not squish_my_dims.isdisjoint(src_dims):
                 if len(column_coord.points) != 1:
                     raise Exception("Expected to find exactly one point. Found %d" % len(column_coord.points))
-                new_cube.coord(column_coord.name()).points[i] = column_coord.points[0]
+                # point is a tuple containing the coordinate name and value of one sample point.
+                # This line uses the coordinate values from the sample points list to fill the new
+                # cube instead of the value derived from the interpolation scheme, which becomes
+                # incorrect when using the nearest neighbour scheme (you get the nearest neighbour
+                # coordinate value instead of the sample coordinate value).
+                new_cube.coord(column_coord.name()).points[i] = point[0][1]
 
 
     return new_cube
