@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -261,7 +261,7 @@ def interpolate(cube, sample_points, method=None):
                 # cube instead of the value derived from the interpolation scheme, which becomes
                 # incorrect when using the nearest neighbour scheme (you get the nearest neighbour
                 # coordinate value instead of the sample coordinate value).
+                import pdb;pdb.set_trace()
                 new_cube.coord(column_coord.name()).points[i] = point[0][1]
-
 
     return new_cube
