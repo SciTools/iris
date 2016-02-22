@@ -247,8 +247,7 @@ def interpolate(cube, sample_points, method=None):
             column = interpolator([val[i] for _, val in sample_points])
             new_cube.data[..., i] = column.data
         elif method == "nearest":
-            column_index = iris.analysis.interpolate._nearest_neighbour_indices_ndcoords(cube, point, cache=cache)
-            column = cube[column_index]
+            column = iris.analysis.interpolate.extract_nearest_neighbour(cube, point)
             new_cube.data[..., i] = column.data
 
          # Fill in the empty squashed (non derived) coords.
