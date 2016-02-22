@@ -38,7 +38,7 @@ def low_pass_weights(window, cutoff):
         The cutoff frequency in inverse time steps.
 
     """
-    order = ((window - 1) // 2 ) + 1
+    order = ((window - 1) // 2) + 1
     nwts = 2 * order + 1
     w = np.zeros([nwts])
     n = nwts // 2
@@ -62,7 +62,7 @@ def main():
 
     # Construct 2-year (24-month) and 7-year (84-month) low pass filters
     # for the SOI data which is monthly.
-    wgts24 = low_pass_weights(window, 1. / 24.) 
+    wgts24 = low_pass_weights(window, 1. / 24.)
     wgts84 = low_pass_weights(window, 1. / 84.)
 
     # Apply each filter using the rolling_window method used with the weights
@@ -72,10 +72,10 @@ def main():
                                iris.analysis.SUM,
                                len(wgts24),
                                weights=wgts24)
-    soi84 =  soi.rolling_window('time',
-                                iris.analysis.SUM,
-                                len(wgts84),
-                                weights=wgts84)
+    soi84 = soi.rolling_window('time',
+                               iris.analysis.SUM,
+                               len(wgts84),
+                               weights=wgts84)
 
     # Plot the SOI time series and both filtered versions.
     plt.figure(figsize=(9, 4))
