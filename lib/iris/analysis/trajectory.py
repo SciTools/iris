@@ -250,19 +250,19 @@ def interpolate(cube, sample_points, method=None):
     cache = {}
 
     # Cache the linear interpolator
-    scheme = iris.analysis.Linear()
     coords, points = zip(*sample_points)
-    interpolator = scheme.interpolator(cube, coords)
+    lin_scheme = iris.analysis.Linear()
+    interpolator_lin = lin_scheme.interpolator(cube, coords)
+    nn_scheme = iris.analysis.Nearest()
+    interpolator_nn = nn_scheme.interpolator(cube, coords)
+
 
     for i in range(trajectory_size):
-        point = [(coord, values[i]) for coord, values in sample_points]
-
         if method in ["linear", None]:
-            column = interpolator([val[i] for _, val in sample_points])
+            column = interpolator_lin([val[i] for _, val in sample_points])
             new_cube.data[..., i] = column.data
         elif method == "nearest":
-            column = iris.analysis.interpolate.extract_nearest_neighbour(cube,
-                                                                         point)
+            column = interpolator_nn([val[i] for _, val in sample_points])
             new_cube.data[..., i] = column.data
 
         # Fill in the empty squashed (non derived) coords.
@@ -272,13 +272,7 @@ def interpolate(cube, sample_points, method=None):
                 if len(column_coord.points) != 1:
                     raise Exception("Expected to find exactly one point. "
                                     "Found %d" % len(column_coord.points))
-                # point is a tuple containing the coordinate name and value
-                # of one sample point.
-                # This line uses the coordinate values from the sample points
-                # list to fill the new cube instead of the value derived from
-                # the interpolation scheme, which becomes incorrect when using
-                # the nearest neighbour scheme (you get the nearest neighbour
-                # coordinate value instead of the sample coordinate value).
-                new_cube.coord(column_coord.name()).points[i] = point[0][1]
+                new_cube.coord(column_coord.name()).points[i] = \
+                    column_coord.points[0]
 
     return new_cube
