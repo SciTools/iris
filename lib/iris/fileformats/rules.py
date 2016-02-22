@@ -859,6 +859,53 @@ def _make_cube(field, converter):
     return cube, metadata.factories, metadata.references
 
 
+def _resolve_references(results_needing_reference, concrete_reference_targets):
+    regrid_cache = {}
+    for cube, factories in results_needing_reference:
+        for factory in factories:
+            try:
+                args = _dereference_args(factory, concrete_reference_targets,
+                                         regrid_cache, cube)
+            except _ReferenceError as e:
+                msg = 'Unable to create instance of {factory}. ' + str(e)
+                factory_name = factory.factory_class.__name__
+                warnings.warn(msg.format(filenames=filenames,
+                                         factory=factory_name))
+            else:
+                aux_factory = factory.factory_class(*args)
+                cube.add_aux_factory(aux_factory)
+        yield cube
+
+
+def as_cubes(fields, converter):
+    concrete_reference_targets = {}
+    results_needing_reference = []
+
+    for field in fields:
+        # Convert the field to a Cube.
+        cube, factories, references = _make_cube(field, converter)
+
+        # Cross referencing
+        for reference in references:
+            name = reference.name
+            # Register this cube as a source cube for the named
+            # reference.
+            target = concrete_reference_targets.get(name)
+            if target is None:
+                target = ConcreteReferenceTarget(name, reference.transform)
+                concrete_reference_targets[name] = target
+            target.add_cube(cube)
+
+        if factories:
+            results_needing_reference.append((cube, factories))
+        else:
+            yield cube
+
+    for cube in _resolve_references(results_needing_reference,
+                                    concrete_reference_targets):
+        yield cube
+
+
 def load_cubes(filenames, user_callback, loader, filter_function=None):
     concrete_reference_targets = {}
     results_needing_reference = []
@@ -901,18 +948,6 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
             else:
                 yield cube
 
-    regrid_cache = {}
-    for cube, factories in results_needing_reference:
-        for factory in factories:
-            try:
-                args = _dereference_args(factory, concrete_reference_targets,
-                                         regrid_cache, cube)
-            except _ReferenceError as e:
-                msg = 'Unable to create instance of {factory}. ' + str(e)
-                factory_name = factory.factory_class.__name__
-                warnings.warn(msg.format(filenames=filenames,
-                                         factory=factory_name))
-            else:
-                aux_factory = factory.factory_class(*args)
-                cube.add_aux_factory(aux_factory)
+    for cube in _resolve_references(results_needing_reference,
+                                    concrete_reference_targets):
         yield cube
