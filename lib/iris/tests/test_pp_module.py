@@ -213,8 +213,8 @@ class TestPackedPP(IrisPPTest):
                                         'nae.20100104-06_0001.pp'))
         r = pp.load(filepath)
 
-        # Check that the result is a generator and convert to a list so that we
-        # can index and get the first one
+        # Check that the result is a Generator and convert to a list so
+        # that we can index and get the first one.
         self.assertEqual(type(r), GeneratorType)
         r = list(r)
 
@@ -245,8 +245,8 @@ class TestPackedPP(IrisPPTest):
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))
 
-        # Check that the result is a generator and convert to a list so that we
-        # can index and get the first one
+        # Check that the result is a Generator and convert to a list so
+        # that we can index and get the first one.
         self.assertEqual(type(r), GeneratorType)
         r = list(r)
 
@@ -305,11 +305,12 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         self.r = pp.load(self.original_pp_filepath)
         self.r_loaded_data = pp.load(self.original_pp_filepath, read_data=True)
         
-        # Check that the result is a generator and convert to a list so that we can index and get the first one
-        self.assertEqual( type(self.r), GeneratorType)
+        # Check that the result is a Generator and convert to a list so
+        # that we can index and get the first one.
+        self.assertEqual(type(self.r), GeneratorType)
         self.r = list(self.r)
         
-        self.assertEqual( type(self.r_loaded_data), GeneratorType)
+        self.assertEqual(type(self.r_loaded_data), GeneratorType)
         self.r_loaded_data = list(self.r_loaded_data)
         
             
