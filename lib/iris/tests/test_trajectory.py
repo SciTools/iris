@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -193,9 +193,6 @@ class TestTrajectory(tests.IrisTest):
                 ('grid_longitude', [31, 32, 33, 34]))
         xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')
 
-        # Check that creating the trajectory hasn't led to the original
-        # data being loaded.
-        self.assertTrue(cube.has_lazy_data())
         self.assertCML([cube, xsec], ('trajectory', 'hybrid_height.cml'))
 
 

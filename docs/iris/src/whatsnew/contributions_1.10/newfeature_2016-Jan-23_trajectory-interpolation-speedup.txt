@@ -1,0 +1,5 @@
+* Trajectory interpolation routines are now much faster, in both the linear and
+  nearest neighbour schemes.  A consequence of this is that the cube being
+  interpolated no longer remains lazy.
+
+
