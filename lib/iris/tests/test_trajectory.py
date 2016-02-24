@@ -191,8 +191,8 @@ class TestTrajectory(tests.IrisTest):
 
         traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude', [31, 32, 33, 34]))
-        xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')
 
+        xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')
         self.assertCML([cube, xsec], ('trajectory', 'hybrid_height.cml'))
 
 
