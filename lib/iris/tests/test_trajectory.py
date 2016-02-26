@@ -189,7 +189,7 @@ class TestTrajectory(tests.IrisTest):
         # Put a biggus array on the cube so we can test deferred loading.
         cube.lazy_data(biggus.NumpyArrayAdapter(cube.data))
 
-        traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
+        traj = (('grid_latitude', [20.499, 21.501, 22.501, 23.501]),
                 ('grid_longitude', [31, 32, 33, 34]))
 
         xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')
