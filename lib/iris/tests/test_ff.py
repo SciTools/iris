@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,9 +31,8 @@ import collections
 import numpy as np
 
 import iris
-import iris.fileformats.ff as ff
+import iris.fileformats._ff as ff
 import iris.fileformats.pp as pp
-from iris.tests import mock
 
 
 class TestFF_HEADER(tests.IrisTest):

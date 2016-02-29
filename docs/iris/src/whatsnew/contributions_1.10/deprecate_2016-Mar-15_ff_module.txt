@@ -1,0 +1,8 @@
+* deprecated the module :mod:`iris.fileformats.ff`.  Please use the replacement
+  facilities in module :mod:`iris.fileformats.um` :
+
+  * :func:`iris.fileformats.um.um_to_pp` replaces :class:`iris.fileformats.ff.FF2PP`.
+  * :func:`iris.fileformats.um.load_cubes` replaces :func:`iris.fileformats.ff.load_cubes`.
+  * :func:`iris.fileformats.um.load_cubes_32bit_ieee` replaces :func:`iris.fileformats.ff.load_cubes_32bit_ieee`.
+
+  All other public components are generally deprecated and will be removed in a future release.
