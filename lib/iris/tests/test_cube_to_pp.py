@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -98,7 +98,8 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         try:
             with open(user_rules_filename, "wt") as user_rules_file:
                 user_rules_file.write("IF\ncm.standard_name == 'air_temperature'\nTHEN\npp.lbuser[3] = 9222")
-            iris.fileformats.pp.add_save_rules(user_rules_filename)
+            with iris.fileformats.rules._disable_deprecation_warnings():
+                iris.fileformats.pp.add_save_rules(user_rules_filename)
             try:
                 #read pp
                 in_filename = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -1910,7 +1910,9 @@ def _ensure_save_rules_loaded():
     if _save_rules is None:
         # Load the pp save rules
         rules_filename = os.path.join(iris.config.CONFIG_PATH, 'pp_save_rules.txt')
-        _save_rules = iris.fileformats.rules.RulesContainer(rules_filename, iris.fileformats.rules.ProcedureRule)
+        with iris.fileformats.rules._disable_deprecation_warnings():
+            _save_rules = iris.fileformats.rules.RulesContainer(
+                rules_filename, iris.fileformats.rules.ProcedureRule)
 
 
 def add_save_rules(filename):
@@ -1920,14 +1922,40 @@ def add_save_rules(filename):
     Registered files are processed after the standard conversion rules, and in
     the order they were registered.
 
+    .. deprecated:: 1.10
+
+        If you need to customise pp field saving, please refer to the functions
+        :func:`as_fields`, :func:`as_pairs` and :func:`save_fields` for an
+        alternative solution.
+
     """
+    warnings.warn(
+        'custom pp save rules are deprecated from v1.10.\n'
+        'If you need to customise pp field saving, please refer to the '
+        'functions iris.fileformats.pp.as_fields, '
+        'iris.fileformats.pp.as_pairs and iris.fileformats.pp.save_fields '
+        'for an alternative solution.')
     _ensure_save_rules_loaded()
     _save_rules.import_rules(filename)
 
 
 def reset_save_rules():
-    """Resets the PP save process to use only the standard conversion rules."""
+    """
+    Resets the PP save process to use only the standard conversion rules.
 
+    .. deprecated:: 1.10
+
+        If you need to customise pp field saving, please refer to the functions
+        :func:`as_fields`, :func:`as_pairs` and :func:`save_fields` for an
+        alternative solution.
+
+    """
+    warnings.warn(
+        'custom pp save rules are deprecated from v1.10.\n'
+        'If you need to customise pp field saving, please refer to the '
+        'functions iris.fileformats.pp.as_fields, '
+        'iris.fileformats.pp.as_pairs and iris.fileformats.pp.save_fields '
+        'for an alternative solution.')
     # Uses this module-level variable
     global _save_rules
 
@@ -2180,7 +2208,9 @@ def as_pairs(cube, field_coords=None, target=None):
             target = 'None'
         elif not isinstance(target, six.string_types):
             target = target.name
-        iris.fileformats.rules.log('PP_SAVE', str(target), verify_rules_ran)
+
+        with iris.fileformats.rules._disable_deprecation_warnings():
+            iris.fileformats.rules.log('PP_SAVE', str(target), verify_rules_ran)
 
         yield (slice2D, pp_field)
 

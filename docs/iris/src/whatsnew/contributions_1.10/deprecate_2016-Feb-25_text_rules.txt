@@ -1,0 +1,10 @@
+* deprecated all the remaining text rules mechanisms:  
+ :class:`iris.fileformats.rules.DebugString`,
+ :class:`iris.fileformats.rules.CmAttribute`,
+ :class:`iris.fileformats.rules.CmCustomAttribute`,
+ :class:`iris.fileformats.rules.CoordAndDims`,
+ :class:`iris.fileformats.rules.Rule`,
+ :class:`iris.fileformats.rules.FunctionRule`,
+ :class:`iris.fileformats.rules.ProcedureRule`,
+ :class:`iris.fileformats.rules.RulesContainer` and
+ :func:'iris.fileformats.rules.calculate_forecast_period`.

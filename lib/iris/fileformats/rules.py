@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Processing of simple IF-THEN rules.
+Generalised mechanisms for metadata translation and cube construction.
 
 """
 
@@ -25,6 +25,7 @@ import six
 
 import abc
 import collections
+from contextlib import contextmanager
 import getpass
 import logging
 import logging.handlers as handlers
@@ -191,24 +192,64 @@ def _prepare_rule_logger(verbose=False, log_dir=None):
     return logger
 
 
+# A flag to control all the text-rules and rules-logging deprecation warnings.
+_enable_rules_deprecations = True
+
+# A local reference to warnings.warn.
+_warn_call = warnings.warn
+
+def _warn_deprecated_logging_and_rules(msg):
+    raise AssertionError(msg)
+
+# A context manager to avoid the deprecation warnings for internal calls.
+@contextmanager
+def _disable_deprecation_warnings():
+    global _enable_rules_deprecations
+    old_flag_value = _enable_rules_deprecations
+    try:
+        _enable_rules_deprecations = False
+        yield
+    finally:
+        _enable_rules_deprecations = old_flag_value
+
+
 # Defines the "log" function for this module
-log = _prepare_rule_logger()
+# This is a 'private' version:  The public one is now deprecated (see on).
+_log_rules = _prepare_rule_logger()
+
+
+# Provide a public 'log' function, which issues a deprecation warning.
+def log(*args, **kwargs):
+    if _enable_rules_deprecations:
+        _warn_deprecated_logging_and_rules(
+            "The `iris.fileformats.rules.log()` method is deprecated.")
+    return _log_rules(*args, **kwargs)
 
 
 class DebugString(str):
     """
     Used by the rules for debug purposes
 
+    .. deprecated:: 1.10
+
     """
+    def __init__(self, *args, **kwargs):
+        _warn_deprecated_logging_and_rules(
+            "the `iris.fileformats.rules.DebugString class is deprecated.")
+        super(DebugString, self).__init__(*args, **kwargs)
 
 
 class CMAttribute(object):
     """
     Used by the rules for defining attributes on the Cube in a consistent manner.
 
+    .. deprecated:: 1.10
+
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
+        _warn_deprecated_logging_and_rules(
+            "the `iris.fileformats.rules.CmAttribute class is deprecated.")
         self.name = name
         self.value = value
 
@@ -217,9 +258,14 @@ class CMCustomAttribute(object):
     """
     Used by the rules for defining custom attributes on the Cube in a consistent manner.
 
+    .. deprecated:: 1.10
+
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
+        _warn_deprecated_logging_and_rules(
+            "the `iris.fileformats.rules.CmCustomAttribute class is "
+            "deprecated.")
         self.name = name
         self.value = value
 
@@ -228,8 +274,12 @@ class CoordAndDims(object):
     """
     Used within rules to represent a mapping of coordinate to data dimensions.
 
+    .. deprecated:: 1.10
+
     """
     def __init__(self, coord, dims=None):
+        _warn_deprecated_logging_and_rules(
+            "the `iris.fileformats.rules.CoordAndDims class is deprecated.")
         self.coord = coord
         if dims is None:
             dims = []
@@ -277,7 +327,12 @@ def calculate_forecast_period(time, forecast_reference_time):
     Return the forecast period in hours derived from time and
     forecast_reference_time scalar coordinates.
 
+    .. deprecated:: 1.10
+
     """
+    warnings.warn("the `iris.fileformats.rules.calculate_forecast_period "
+                  "method is deprecated.")
+
     if time.points.size != 1:
         raise ValueError('Expected a time coordinate with a single '
                          'point. {!r} has {} points.'.format(time.name(),
@@ -317,9 +372,14 @@ class Rule(object):
             CMAttribute('standard_name', 'sea_water_potential_temperature')
             CMAttribute('units', 'Celsius')
 
+    .. deprecated:: 1.10
+
     """
     def __init__(self, conditions, actions):
         """Create instance methods from our conditions and actions."""
+        if _enable_rules_deprecations:
+            _warn_deprecated_logging_and_rules(
+                "the `iris.fileformats.rules.Rule class is deprecated.")
         if not hasattr(conditions, '__iter__'):
             raise TypeError('Variable conditions should be iterable, got: '+ type(conditions))
         if not hasattr(actions, '__iter__'):
@@ -427,7 +487,12 @@ class Rule(object):
 
 
 class FunctionRule(Rule):
-    """A Rule with values returned by its actions."""
+    """
+    A Rule with values returned by its actions.
+
+    .. deprecated:: 1.10
+
+    """
     def _create_action_method(self, i, action):
         # CM loading style action. Returns an object, such as a coord.
         # Compile a new method for the operation.
@@ -497,7 +562,12 @@ class FunctionRule(Rule):
 
 
 class ProcedureRule(Rule):
-    """A Rule with nothing returned by its actions."""
+    """
+    A Rule with nothing returned by its actions.
+
+    .. deprecated:: 1.10
+
+    """
     def _create_action_method(self, i, action):
         # PP saving style action. No return value, e.g. "pp.lbft = 3".
         rules_globals = _rules_execution_environment()
@@ -528,6 +598,8 @@ class RulesContainer(object):
     A collection of :class:`Rule` instances, with the ability to read rule
     definitions from files and run the rules against given fields.
 
+    .. deprecated:: 1.10
+
     """
     def __init__(self, filepath=None, rule_type=FunctionRule):
         """Create a new rule set, optionally adding rules from the specified file.
@@ -538,6 +610,9 @@ class RulesContainer(object):
         rule_type can also be set to :class:`ProcedureRule`
         e.g for PP saving actions that do not return anything, such as *pp.lbuser[3] = 16203*
         """
+        if _enable_rules_deprecations:
+            _warn_deprecated_logging_and_rules(
+                "the `iris.fileformats.rules.RulesContainer class is deprecated.")
         self._rules = []
         self.rule_type = rule_type
         if filepath is not None:
