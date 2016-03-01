@@ -520,9 +520,11 @@ def _binary_op_common(operation_function, operation_name, cube, other,
     """
     _assert_is_cube(cube)
 
+    coord_comp = None
     if isinstance(other, iris.coords.Coord):
         other = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
+        coord_comp = iris.analysis.coord_comparison(cube, other)
         try:
             BA.broadcast_arrays(cube._my_data, other._my_data)
         except ValueError:
@@ -545,7 +547,17 @@ def _binary_op_common(operation_function, operation_name, cube, other,
                             (operation_function.__name__, type(x).__name__,
                              type(other).__name__))
         return ret
-    return _math_op_common(cube, unary_func, new_unit, in_place)
+
+    new_cube = _math_op_common(cube, unary_func, new_unit, in_place)
+
+    if coord_comp:
+        # Remove scalar coord mis-matches
+        mismatch = [coord_grp[0] for coord_grp in coord_comp['ignorable']
+                    if all(coord_grp)]
+        for coord in mismatch:
+            new_cube.remove_coord(coord)
+
+    return new_cube
 
 
 def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
