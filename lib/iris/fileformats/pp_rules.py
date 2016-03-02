@@ -593,17 +593,17 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
             (lbtim.ia == 0) and \
             (lbtim.ib == 1) and \
             (lbtim.ic in [1, 2, 3, 4]) and \
+            (t1.year != 0 and t2.year != 0) and \
             (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
         coords_and_dims.append((DimCoord(hours_from_t2_to_t1, standard_name='forecast_period', units='hours'), None))
         coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
         coords_and_dims.append((DimCoord(t2_epoch_hours, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
 
     # Don't add time coordinates when years are zero and
-    # lbtim.ib == 2. These are handled elsewhere.
+    # lbtim.ic == 2. These are handled elsewhere.
     if \
             (lbtim.ib == 2) and \
-            (lbtim.ic in [1, 2, 4]) and \
-            (t1.year != 0 and t2.year != 0) and \
+            ((lbtim.ic in [1]) and (t1.year != 0 and t2.year != 0) or (lbtim.ic in [2, 4])) and \
             ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
         coords_and_dims.append((
             DimCoord(standard_name='forecast_period', units='hours',
