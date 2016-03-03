@@ -79,7 +79,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/fileformats/grib/__init__.py',
         '*/iris/fileformats/grib/_grib_cf_map.py',
         '*/iris/fileformats/grib/load_rules.py',
-        '*/iris/fileformats/pp.py',
         '*/iris/fileformats/pp_rules.py',
         '*/iris/fileformats/rules.py',
         '*/iris/fileformats/um_cf_map.py',

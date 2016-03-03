@@ -77,116 +77,116 @@ NUM_FLOAT_HEADERS = 19
 #: A list of (header_name, position_in_header(tuple of)) pairs for
 #: header release 2 - using the one-based UM/FORTRAN indexing convention.
 UM_HEADER_2 = [
-        ('lbyr',   (1, )),
-        ('lbmon',  (2, )),
-        ('lbdat',  (3, )),
-        ('lbhr',   (4, )),
-        ('lbmin',  (5, )),
-        ('lbday',  (6, )),
-        ('lbyrd',  (7, )),
-        ('lbmond', (8, )),
-        ('lbdatd', (9, )),
-        ('lbhrd',  (10, )),
-        ('lbmind', (11, )),
-        ('lbdayd', (12, )),
-        ('lbtim',  (13, )),
-        ('lbft',   (14, )),
-        ('lblrec', (15, )),
-        ('lbcode', (16, )),
-        ('lbhem',  (17, )),
-        ('lbrow',  (18, )),
-        ('lbnpt',  (19, )),
-        ('lbext',  (20, )),
-        ('lbpack', (21, )),
-        ('lbrel',  (22, )),
-        ('lbfc',   (23, )),
-        ('lbcfc',  (24, )),
-        ('lbproc', (25, )),
-        ('lbvc',   (26, )),
-        ('lbrvc',  (27, )),
-        ('lbexp',  (28, )),
-        ('lbegin', (29, )),
-        ('lbnrec', (30, )),
-        ('lbproj', (31, )),
-        ('lbtyp',  (32, )),
-        ('lblev',  (33, )),
-        ('lbrsvd', (34, 35, 36, 37, )),
-        ('lbsrce', (38, )),
-        ('lbuser', (39, 40, 41, 42, 43, 44, 45, )),
-        ('brsvd',  (46, 47, 48, 49, )),
-        ('bdatum', (50, )),
-        ('bacc',   (51, )),
-        ('blev',   (52, )),
-        ('brlev',  (53, )),
-        ('bhlev',  (54, )),
-        ('bhrlev', (55, )),
-        ('bplat',  (56, )),
-        ('bplon',  (57, )),
-        ('bgor',   (58, )),
-        ('bzy',    (59, )),
-        ('bdy',    (60, )),
-        ('bzx',    (61, )),
-        ('bdx',    (62, )),
-        ('bmdi',   (63, )),
-        ('bmks',   (64, )),
+    ('lbyr',   (1, )),
+    ('lbmon',  (2, )),
+    ('lbdat',  (3, )),
+    ('lbhr',   (4, )),
+    ('lbmin',  (5, )),
+    ('lbday',  (6, )),
+    ('lbyrd',  (7, )),
+    ('lbmond', (8, )),
+    ('lbdatd', (9, )),
+    ('lbhrd',  (10, )),
+    ('lbmind', (11, )),
+    ('lbdayd', (12, )),
+    ('lbtim',  (13, )),
+    ('lbft',   (14, )),
+    ('lblrec', (15, )),
+    ('lbcode', (16, )),
+    ('lbhem',  (17, )),
+    ('lbrow',  (18, )),
+    ('lbnpt',  (19, )),
+    ('lbext',  (20, )),
+    ('lbpack', (21, )),
+    ('lbrel',  (22, )),
+    ('lbfc',   (23, )),
+    ('lbcfc',  (24, )),
+    ('lbproc', (25, )),
+    ('lbvc',   (26, )),
+    ('lbrvc',  (27, )),
+    ('lbexp',  (28, )),
+    ('lbegin', (29, )),
+    ('lbnrec', (30, )),
+    ('lbproj', (31, )),
+    ('lbtyp',  (32, )),
+    ('lblev',  (33, )),
+    ('lbrsvd', (34, 35, 36, 37, )),
+    ('lbsrce', (38, )),
+    ('lbuser', (39, 40, 41, 42, 43, 44, 45, )),
+    ('brsvd',  (46, 47, 48, 49, )),
+    ('bdatum', (50, )),
+    ('bacc',   (51, )),
+    ('blev',   (52, )),
+    ('brlev',  (53, )),
+    ('bhlev',  (54, )),
+    ('bhrlev', (55, )),
+    ('bplat',  (56, )),
+    ('bplon',  (57, )),
+    ('bgor',   (58, )),
+    ('bzy',    (59, )),
+    ('bdy',    (60, )),
+    ('bzx',    (61, )),
+    ('bdx',    (62, )),
+    ('bmdi',   (63, )),
+    ('bmks',   (64, )),
     ]
 
 # The header definition for header release 3.
 #: A list of (header_name, position_in_header(tuple of)) pairs for
 #: header release 3 - using the one-based UM/FORTRAN indexing convention.
 UM_HEADER_3 = [
-        ('lbyr',   (1, )),
-        ('lbmon',  (2, )),
-        ('lbdat',  (3, )),
-        ('lbhr',   (4, )),
-        ('lbmin',  (5, )),
-        ('lbsec',  (6, )),
-        ('lbyrd',  (7, )),
-        ('lbmond', (8, )),
-        ('lbdatd', (9, )),
-        ('lbhrd',  (10, )),
-        ('lbmind', (11, )),
-        ('lbsecd', (12, )),
-        ('lbtim',  (13, )),
-        ('lbft',   (14, )),
-        ('lblrec', (15, )),
-        ('lbcode', (16, )),
-        ('lbhem',  (17, )),
-        ('lbrow',  (18, )),
-        ('lbnpt',  (19, )),
-        ('lbext',  (20, )),
-        ('lbpack', (21, )),
-        ('lbrel',  (22, )),
-        ('lbfc',   (23, )),
-        ('lbcfc',  (24, )),
-        ('lbproc', (25, )),
-        ('lbvc',   (26, )),
-        ('lbrvc',  (27, )),
-        ('lbexp',  (28, )),
-        ('lbegin', (29, )),
-        ('lbnrec', (30, )),
-        ('lbproj', (31, )),
-        ('lbtyp',  (32, )),
-        ('lblev',  (33, )),
-        ('lbrsvd', (34, 35, 36, 37, )),
-        ('lbsrce', (38, )),
-        ('lbuser', (39, 40, 41, 42, 43, 44, 45, )),
-        ('brsvd',  (46, 47, 48, 49, )),
-        ('bdatum', (50, )),
-        ('bacc',   (51, )),
-        ('blev',   (52, )),
-        ('brlev',  (53, )),
-        ('bhlev',  (54, )),
-        ('bhrlev', (55, )),
-        ('bplat',  (56, )),
-        ('bplon',  (57, )),
-        ('bgor',   (58, )),
-        ('bzy',    (59, )),
-        ('bdy',    (60, )),
-        ('bzx',    (61, )),
-        ('bdx',    (62, )),
-        ('bmdi',   (63, )),
-        ('bmks',   (64, )),
+    ('lbyr',   (1, )),
+    ('lbmon',  (2, )),
+    ('lbdat',  (3, )),
+    ('lbhr',   (4, )),
+    ('lbmin',  (5, )),
+    ('lbsec',  (6, )),
+    ('lbyrd',  (7, )),
+    ('lbmond', (8, )),
+    ('lbdatd', (9, )),
+    ('lbhrd',  (10, )),
+    ('lbmind', (11, )),
+    ('lbsecd', (12, )),
+    ('lbtim',  (13, )),
+    ('lbft',   (14, )),
+    ('lblrec', (15, )),
+    ('lbcode', (16, )),
+    ('lbhem',  (17, )),
+    ('lbrow',  (18, )),
+    ('lbnpt',  (19, )),
+    ('lbext',  (20, )),
+    ('lbpack', (21, )),
+    ('lbrel',  (22, )),
+    ('lbfc',   (23, )),
+    ('lbcfc',  (24, )),
+    ('lbproc', (25, )),
+    ('lbvc',   (26, )),
+    ('lbrvc',  (27, )),
+    ('lbexp',  (28, )),
+    ('lbegin', (29, )),
+    ('lbnrec', (30, )),
+    ('lbproj', (31, )),
+    ('lbtyp',  (32, )),
+    ('lblev',  (33, )),
+    ('lbrsvd', (34, 35, 36, 37, )),
+    ('lbsrce', (38, )),
+    ('lbuser', (39, 40, 41, 42, 43, 44, 45, )),
+    ('brsvd',  (46, 47, 48, 49, )),
+    ('bdatum', (50, )),
+    ('bacc',   (51, )),
+    ('blev',   (52, )),
+    ('brlev',  (53, )),
+    ('bhlev',  (54, )),
+    ('bhrlev', (55, )),
+    ('bplat',  (56, )),
+    ('bplon',  (57, )),
+    ('bgor',   (58, )),
+    ('bzy',    (59, )),
+    ('bdy',    (60, )),
+    ('bzx',    (61, )),
+    ('bdx',    (62, )),
+    ('bmdi',   (63, )),
+    ('bmks',   (64, )),
     ]
 
 # A map from header-release-number to header definition
@@ -197,21 +197,21 @@ UM_TO_PP_HEADER_OFFSET = 1
 
 #: A dictionary mapping IB values to their names.
 EXTRA_DATA = {
-                 1: 'x',
-                 2: 'y',
-                 3: 'lower_y_domain',
-                 4: 'lower_x_domain',
-                 5: 'upper_y_domain',
-                 6: 'upper_x_domain',
-                 7: 'lower_z_domain',
-                 8: 'upper_z_domain',
-                 10: 'field_title',
-                 11: 'domain_title',
-                 12: 'x_lower_bound',
-                 13: 'x_upper_bound',
-                 14: 'y_lower_bound',
-                 15: 'y_upper_bound',
-             }
+    1: 'x',
+    2: 'y',
+    3: 'lower_y_domain',
+    4: 'lower_x_domain',
+    5: 'upper_y_domain',
+    6: 'upper_x_domain',
+    7: 'lower_z_domain',
+    8: 'upper_z_domain',
+    10: 'field_title',
+    11: 'domain_title',
+    12: 'x_lower_bound',
+    13: 'x_upper_bound',
+    14: 'y_lower_bound',
+    15: 'y_upper_bound',
+    }
 
 
 #: Maps lbuser[0] to numpy data type. "default" will be interpreted if
@@ -245,8 +245,10 @@ LBPROC_PAIRS = ((1, "Difference from another experiment"),
                 (65536, "Variance of a field"),
                 (131072, "Mean over an ensemble of parallel runs"))
 
-# lbproc_map is dict mapping lbproc->English and English->lbproc essentially a one to one mapping
-lbproc_map = {x : y for x, y in itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))}
+# lbproc_map is dict mapping lbproc->English and English->lbproc
+# essentially a one to one mapping
+lbproc_map = {x: y for x, y in
+              itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))}
 
 
 class STASH(collections.namedtuple('STASH', 'model section item')):
@@ -335,7 +337,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
     def lbuser3(self):
         """Return the lbuser[3] value that this stash represents."""
         return (self.section or 0) * 1000 + (self.item or 0)
-    
+
     def lbuser6(self):
         """Return the lbuser[6] value that this stash represents."""
         return self.model or 0
@@ -359,7 +361,8 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
 
 class SplittableInt(object):
     """
-    A class to hold integers which can easily get each decimal digit individually.
+    A class to hold integers which can easily get each decimal digit
+    individually.
 
     >>> three_six_two = SplittableInt(362)
     >>> print(three_six_two)
@@ -379,7 +382,8 @@ class SplittableInt(object):
         Kwargs:
 
         * name_mapping_dict - (dict)
-            A special mapping to provide name based access to specific integer positions:
+            A special mapping to provide name based access to specific integer
+            positions:
 
                 >>> a = SplittableInt(1234, {'hundreds': 2})
                 >>> print(a.hundreds)
@@ -392,9 +396,11 @@ class SplittableInt(object):
 
         """
         if value < 0:
-            raise ValueError('Negative numbers not supported with splittable integers object')
+            raise ValueError('Negative numbers not supported with splittable'
+                             ' integers object')
 
-        # define the name lookup first (as this is the way __setattr__ is plumbed)
+        # define the name lookup first (as this is the way __setattr__ is
+        # plumbed)
         #: A dictionary mapping special attribute names on this object
         #: to the slices/indices required to access them.
         self._name_lookup = name_mapping_dict or {}
@@ -406,7 +412,8 @@ class SplittableInt(object):
         return int(self._value)
 
     def _calculate_str_value_from_value(self):
-        # Reverse the string to get the appropriate index when getting the sliced value
+        # Reverse the string to get the appropriate index when getting the
+        # sliced value
         self._strvalue = [int(c) for c in str(self._value)[::-1]]
 
         # Associate the names in the lookup table to attributes
@@ -414,7 +421,8 @@ class SplittableInt(object):
             object.__setattr__(self, name, self[index])
 
     def _calculate_value_from_str_value(self):
-        self._value = np.sum([ 10**i * val for i, val in enumerate(self._strvalue)])
+        self._value = np.sum([10**i * val for
+                              i, val in enumerate(self._strvalue)])
 
     def __len__(self):
         return len(self._strvalue)
@@ -425,40 +433,49 @@ class SplittableInt(object):
         except IndexError:
             val = 0
 
-        # if the key returns a list of values, then combine them together to an integer
+        # if the key returns a list of values, then combine them together
+        # to an integer
         if isinstance(val, list):
             val = sum([10**i * val for i, val in enumerate(val)])
 
         return val
 
     def __setitem__(self, key, value):
-        # The setitem method has been overridden so that assignment using ``val[0] = 1`` style syntax updates
+        # The setitem method has been overridden so that assignment using
+        # ``val[0] = 1`` style syntax updates
         # the entire object appropriately.
 
         if (not isinstance(value, int) or value < 0):
-            raise ValueError('Can only set %s as a positive integer value.' % key)
+            raise ValueError('Can only set %s as a positive integer value.'
+                             % key)
 
         if isinstance(key, slice):
             if ((key.start is not None and key.start < 0) or
-                (key.step is not None and key.step < 0) or
-                (key.stop is not None and key.stop < 0)):
-                raise ValueError('Cannot assign a value with slice objects containing negative indices.')
+               (key.step is not None and key.step < 0) or
+               (key.stop is not None and key.stop < 0)):
+                raise ValueError('Cannot assign a value with slice objects'
+                                 ' containing negative indices.')
 
             # calculate the current length of the value of this string
             current_length = len(range(*key.indices(len(self))))
 
-            # get indices for as many digits as have been requested. Putting the upper limit on the number of digits at 100.
+            # get indices for as many digits as have been requested. Putting
+            # the upper limit on the number of digits at 100.
             indices = range(*key.indices(100))
             if len(indices) < len(str(value)):
-                raise ValueError('Cannot put %s into %s as it has too many digits.' % (value, key))
+                raise ValueError('Cannot put %s into %s as it has too many'
+                                 ' digits.' % (value, key))
 
-            # Iterate over each of the indices in the slice, zipping them together with the associated digit
-            for index, digit in zip(indices, str(value).zfill(current_length)[::-1]):
+            # Iterate over each of the indices in the slice,
+            # zipping them together with the associated digit
+            for index, digit in zip(indices,
+                                    str(value).zfill(current_length)[::-1]):
                 # assign each digit to the associated index
                 self.__setitem__(index, int(digit))
 
         else:
-            # If we are trying to set to an index which does not currently exist in _strvalue then extend it to the
+            # If we are trying to set to an index which does not currently
+            # exist in _strvalue then extend it to the
             # appropriate length
             if (key + 1) > len(self):
                 new_str_value = [0] * (key + 1)
@@ -474,7 +491,8 @@ class SplittableInt(object):
             self._calculate_value_from_str_value()
 
     def __setattr__(self, name, value):
-        # if the attribute is a special value, update the index value which will in turn update the attribute value
+        # if the attribute is a special value, update the index value which
+        # will in turn update the attribute value
         if name != '_name_lookup' and name in self._name_lookup:
             self[self._name_lookup[name]] = value
         else:
@@ -484,7 +502,8 @@ class SplittableInt(object):
         return str(self._value)
 
     def __repr__(self):
-        return 'SplittableInt(%r, name_mapping_dict=%r)' % (self._value, self._name_lookup)
+        return 'SplittableInt(%r, name_mapping_dict=%r)' % (self._value,
+                                                            self._name_lookup)
 
     def __eq__(self, other):
         result = NotImplemented
@@ -523,7 +542,8 @@ class SplittableInt(object):
 
 class BitwiseInt(SplittableInt):
     """
-    A class to hold an integer, of fixed bit-length, which can easily get/set each bit individually.
+    A class to hold an integer, of fixed bit-length, which can easily get/set
+    each bit individually.
 
     .. deprecated:: 1.8
 
@@ -551,20 +571,21 @@ class BitwiseInt(SplittableInt):
     """
 
     def __init__(self, value, num_bits=None):
-        """ """ # intentionally empty docstring as all covered in the class docstring.
+        # intentionally empty docstring as all covered in the class docstring.
+        """ """
         warnings.warn('BitwiseInt is deprecated - please use `int` instead.')
 
         SplittableInt.__init__(self, value)
         self.flags = ()
 
-        #do we need to calculate the number of bits based on the given value?
+        # do we need to calculate the number of bits based on the given value?
         self._num_bits = num_bits
         if self._num_bits is None:
             self._num_bits = 0
             while((value >> self._num_bits) > 0):
                 self._num_bits += 1
         else:
-            #make sure the number of bits is enough to store the given value.
+            # make sure the number of bits is enough to store the given value.
             if (value >> self._num_bits) > 0:
                 raise ValueError("Not enough bits to store value")
 
@@ -615,23 +636,25 @@ class BitwiseInt(SplittableInt):
         # Allow setting of the attribute flags
         # Are we setting a flag?
         if name.startswith("flag") and name != "flags":
-            #true and false become 1 and 0
+            # true and false become 1 and 0
             if not isinstance(value, bool):
                 raise TypeError("Can only set bits to True or False")
 
             # Setting an existing flag?
             if hasattr(self, name):
-                #which flag?
+                # which flag?
                 flag_value = int(name[4:])
-                #on or off?
+                # on or off?
                 if value:
                     self |= flag_value
                 else:
                     self &= ~flag_value
 
-            # Fail if an attempt has been made to set a flag that does not exist
+            # Fail if an attempt has been made to set a flag that does not
+            # exist
             else:
-                raise AttributeError("Cannot set a flag that does not exist: %s" % name)
+                raise AttributeError("Cannot set a flag that does not"
+                                     " exist: %s" % name)
 
         # If we're not setting a flag, then continue as normal
         else:
@@ -740,8 +763,8 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
 
         if isinstance(key, slice):
             if ((key.start is not None and key.start < 0) or
-                (key.step is not None and key.step < 0) or
-                (key.stop is not None and key.stop < 0)):
+               (key.step is not None and key.step < 0) or
+               (key.stop is not None and key.stop < 0)):
                 raise ValueError('Cannot assign a value with slice '
                                  'objects containing negative indices.')
 
@@ -934,7 +957,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         data = decompress_rle(data_bytes, data_shape[0], data_shape[1], mdi)
     else:
         raise iris.exceptions.NotYetImplementedError(
-                'PP fields with LBPACK of %s are not yet supported.' % lbpack)
+            'PP fields with LBPACK of %s are not yet supported.' % lbpack)
 
     # Ensure we have write permission on the data buffer.
     data.setflags(write=True)
@@ -956,13 +979,13 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         y_height, x_width = data_shape
         # The height of the east and west components.
         mid_height = y_height - 2 * boundary_height
-        
+
         n_s_shape = boundary_height, x_width
         e_w_shape = mid_height, boundary_width
-        
+
         # Keep track of our current position in the array.
         current_posn = 0
-        
+
         north = compressed_data[:boundary_height*x_width]
         current_posn += len(north)
         data[-boundary_height:, :] = north.reshape(*n_s_shape)
@@ -977,7 +1000,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                                 current_posn + boundary_height * x_width]
         current_posn += len(south)
         data[:boundary_height, :] = south.reshape(*n_s_shape)
-        
+
         west = compressed_data[current_posn:
                                current_posn + boundary_width * mid_height]
         current_posn += len(west)
@@ -1017,19 +1040,22 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
     return data
 
 
-# The special headers of the PPField classes which get some improved functionality
+# The special headers of the PPField classes which get some improved
+# functionality
 _SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'stash',
                     't1', 't2')
 
 
 def _header_defn(release_number):
     """
-    Returns the zero-indexed header definition for a particular release of a PPField.
+    Returns the zero-indexed header definition for a particular release of
+    a PPField.
 
     """
     um_header = UM_HEADERS[release_number]
     offset = UM_TO_PP_HEADER_OFFSET
-    return [(name, tuple(position - offset for position in positions)) for name, positions in um_header]
+    return [(name, tuple(position - offset for position in positions))
+            for name, positions in um_header]
 
 
 def _pp_attribute_names(header_defn):
@@ -1040,7 +1066,8 @@ def _pp_attribute_names(header_defn):
         the possible extra data headers.
 
     """
-    normal_headers = list(name for name, positions in header_defn if name not in _SPECIAL_HEADERS)
+    normal_headers = list(name for name, positions in header_defn
+                          if name not in _SPECIAL_HEADERS)
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
@@ -1050,9 +1077,11 @@ def _pp_attribute_names(header_defn):
 
 class PPField(six.with_metaclass(abc.ABCMeta, object)):
     """
-    A generic class for PP fields - not specific to a particular header release number.
+    A generic class for PP fields - not specific to a particular
+    header release number.
 
-    A PPField instance can easily access the PP header "words" as attributes with some added useful capabilities::
+    A PPField instance can easily access the PP header "words" as attributes
+    with some added useful capabilities::
 
         for field in iris.fileformats.pp.load(filename):
             print(field.lbyr)
@@ -1143,11 +1172,15 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         """Return a string representation of the PP field."""
 
         # Define an ordering on the basic header names
-        attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
+        attribute_priority_lookup = {name: loc[0] for name, loc
+                                     in self.HEADER_DEFN}
 
-        # With the attributes sorted the order will remain stable if extra attributes are added.
-        public_attribute_names = list(attribute_priority_lookup.keys()) + list(EXTRA_DATA.values())
-        self_attrs = [(name, getattr(self, name, None)) for name in public_attribute_names]
+        # With the attributes sorted the order will remain stable if extra
+        # attributes are added.
+        public_attribute_names = list(attribute_priority_lookup.keys()) + \
+            list(EXTRA_DATA.values())
+        self_attrs = [(name, getattr(self, name, None))
+                      for name in public_attribute_names]
         self_attrs = [pair for pair in self_attrs if pair[1] is not None]
 
         # Output any masked data as separate `data` and `mask`
@@ -1162,20 +1195,29 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         else:
             self_attrs.append(('data', self._data))
 
-        # sort the attributes by position in the pp header followed, then by alphabetical order.
-        attributes = sorted(self_attrs, key=lambda pair: (attribute_priority_lookup.get(pair[0], 999), pair[0]) )
+        # sort the attributes by position in the pp header followed,
+        # then by alphabetical order.
+        attributes = sorted(self_attrs, key=lambda pair:
+                            (attribute_priority_lookup.get(pair[0], 999),
+                             pair[0]))
 
-        return 'PP Field' + ''.join(['\n   %s: %s' % (k, v) for k, v in attributes]) + '\n'
+        return 'PP Field' + ''.join(['\n   %s: %s' % (k, v)
+                                     for k, v in attributes]) + '\n'
 
     @property
     def stash(self):
-        """A stash property giving access to the associated STASH object, now supporting __eq__"""
+        """
+        A stash property giving access to the associated STASH object,
+        now supporting __eq__
+
+        """
         if (not hasattr(self, '_stash') or
                 self.lbuser[6] != self._stash.lbuser6() or
                 self.lbuser[3] != self._stash.lbuser3()):
-            self._stash = STASH(self.lbuser[6], self.lbuser[3] // 1000, self.lbuser[3] % 1000)
+            self._stash = STASH(self.lbuser[6], self.lbuser[3] // 1000,
+                                self.lbuser[3] % 1000)
         return self._stash
-    
+
     @stash.setter
     def stash(self, stash):
         if isinstance(stash, six.string_types):
@@ -1184,7 +1226,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
             self._stash = stash
         else:
             raise ValueError('Cannot set stash to {!r}'.format(stash))
-        
+
         # Keep the lbuser up to date.
         self.lbuser = list(self.lbuser)
         self.lbuser[6] = self._stash.lbuser6()
@@ -1205,7 +1247,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
     def _lbcode_setter(self, new_value):
         if not isinstance(new_value, SplittableInt):
             # add the ix/iy values for lbcode
-            new_value = SplittableInt(new_value, {'iy':slice(0, 2), 'ix':slice(2, 4)})
+            new_value = SplittableInt(new_value,
+                                      {'iy': slice(0, 2), 'ix': slice(2, 4)})
         self._lbcode = new_value
 
     lbcode = property(lambda self: self._lbcode, _lbcode_setter)
@@ -1235,7 +1278,11 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
     @property
     def data(self):
-        """The :class:`numpy.ndarray` representing the multidimensional data of the pp file"""
+        """
+        The :class:`numpy.ndarray` representing the multidimensional data
+        of the pp file
+
+        """
         # Cache the real data on first use
         if isinstance(self._data, biggus.Array):
             data = self._data.masked_array()
@@ -1264,7 +1311,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         # While there is still extra data to decode run this loop
         while extra_len > 0:
-            extra_int_code = struct.unpack_from('>L', file_reader(PP_WORD_DEPTH))[0]
+            extra_int_code = struct.unpack_from('>L',
+                                                file_reader(PP_WORD_DEPTH))[0]
             extra_len -= PP_WORD_DEPTH
 
             ib = extra_int_code % 1000
@@ -1282,7 +1330,9 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                 self.domain_title = domain_title[0].rstrip(b'\00').decode()
             elif ib in EXTRA_DATA:
                 attr_name = EXTRA_DATA[ib]
-                values = np.fromfile(pp_file, dtype=np.dtype('>f%d' % PP_WORD_DEPTH), count=ia)
+                values = np.fromfile(pp_file,
+                                     dtype=np.dtype('>f%d' % PP_WORD_DEPTH),
+                                     count=ia)
                 # Ensure the values are in the native byte order
                 if not values.dtype.isnative:
                     values.byteswap(True)
@@ -1305,7 +1355,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
     def save(self, file_handle):
         """
-        Save the PPField to the given file object (typically created with :func:`open`).
+        Save the PPField to the given file object
+        (typically created with :func:`open`).
 
         ::
 
@@ -1326,8 +1377,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         """
 
-        # Before we can actually write to file, we need to calculate the header elements.
-        # First things first, make sure the data is big-endian
+        # Before we can actually write to file, we need to calculate the header
+        # elements. First things first, make sure the data is big-endian
         data = self.data
         if isinstance(data, ma.core.MaskedArray):
             data = data.filled(fill_value=self.bmdi)
@@ -1338,8 +1389,10 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
             data.dtype = data.dtype.newbyteorder('>')
 
         # Create the arrays which will hold the header information
-        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
-        b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
+        lb = np.empty(shape=NUM_LONG_HEADERS,
+                      dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        b = np.empty(shape=NUM_FLOAT_HEADERS,
+                     dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Populate the arrays from the PPField
         for name, pos in self.HEADER_DEFN:
@@ -1353,26 +1406,32 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                     header_elem = int(header_elem)
                 lb[index] = header_elem
             else:
-                index = slice(pos[0] - NUM_LONG_HEADERS, pos[-1] - NUM_LONG_HEADERS + 1)
+                index = slice(pos[0] - NUM_LONG_HEADERS, pos[-1]
+                              - NUM_LONG_HEADERS + 1)
                 b[index] = header_elem
 
-        # Although all of the elements are now populated, we still need to update some of the elements in case
+        # Although all of the elements are now populated, we still need to
+        # update some of the elements in case
         # things have changed (for example, the data length etc.)
 
-        # Set up a variable to represent the datalength of this PPField in WORDS.
+        # Set up a variable to represent the datalength of this PPField in
+        # WORDS.
         len_of_data_payload = 0
 
-        # set up a list to hold the extra data which will need to be encoded at the end of the data
+        # set up a list to hold the extra data which will need to be encoded
+        # at the end of the data
         extra_items = []
         # iterate through all of the possible extra data fields
         for ib, extra_data_attr_name in six.iteritems(EXTRA_DATA):
-            # try to get the extra data field, returning None if it doesn't exist
+            # try to get the extra data field, returning None if it doesn't
+            # exist
             extra_elem = getattr(self, extra_data_attr_name, None)
             if extra_elem is not None:
                 # The special case of character extra data must be caught
                 if isinstance(extra_elem, six.string_types):
                     ia = len(extra_elem)
-                    # pad any strings up to a multiple of PP_WORD_DEPTH (this length is # of bytes)
+                    # pad any strings up to a multiple of PP_WORD_DEPTH
+                    # (this length is # of bytes)
                     ia = (PP_WORD_DEPTH - (ia-1) % PP_WORD_DEPTH) + (ia-1)
                     extra_elem = extra_elem.ljust(ia, '\00')
 
@@ -1387,15 +1446,17 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                         extra_elem = extra_elem.byteswap(False)
                         extra_elem.dtype = extra_elem.dtype.newbyteorder('>')
 
-                # add the number of bytes to the len_of_data_payload variable + the extra integer which will encode ia/ib
+                # add the number of bytes to the len_of_data_payload variable
+                # + the extra integer which will encode ia/ib
                 len_of_data_payload += PP_WORD_DEPTH * ia + PP_WORD_DEPTH
                 integer_code = 1000 * ia + ib
-                extra_items.append( [integer_code, extra_elem] )
+                extra_items.append([integer_code, extra_elem])
 
                 if ia >= 1000:
-                    raise IOError('PP files cannot write extra data with more than '
-                                  '1000 elements. Tried to write "%s" which has %s '
-                                  'elements.' % (extra_data_attr_name, ib)
+                    raise IOError('PP files cannot write extra data with more'
+                                  ' than 1000 elements. Tried to write "%s"'
+                                  ' which has %s elements.'
+                                  % (extra_data_attr_name, ib)
                                   )
 
         # populate lbext in WORDS
@@ -1421,28 +1482,34 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                 raise NotImplementedError(msg)
 
         # populate lbrec in WORDS
-        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload // PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload // \
+            PP_WORD_DEPTH
 
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
             lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>f8'):
-            warnings.warn("Downcasting array precision from float64 to float32 for save."
-                          "If float64 precision is required then please save in a different format")
+            warnings.warn("Downcasting array precision from float64 to float32"
+                          " for save.If float64 precision is required then"
+                          " please save in a different format")
             data = data.astype('>f4')
             lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>i4'):
-            # NB: there is no physical difference between lbuser[0] of 2 or 3 so we encode just 2
+            # NB: there is no physical difference between lbuser[0] of 2 or 3
+            # so we encode just 2
             lb[self.HEADER_DICT['lbuser'][0]] = 2
         else:
-            raise IOError('Unable to write data array to a PP file. The datatype was %s.' % data.dtype)
+            raise IOError('Unable to write data array to a PP file. '
+                          'The datatype was %s.' % data.dtype)
 
         # NB: lbegin, lbnrec, lbuser[1] not set up
 
         # Now that we have done the manouvering required, write to the file...
         if not hasattr(file_handle, 'write'):
-            raise TypeError('The file_handle argument must be an instance of a Python file object, but got %r. \n'
-                             'e.g. open(filename, "wb") to open a binary file with write permission.' % type(file_handle))
+            raise TypeError('The file_handle argument must be an instance of a'
+                            ' Python file object, but got %r. \n e.g. '
+                            'open(filename, "wb") to open a binary file with'
+                            ' write permission.' % type(file_handle))
 
         pp_file = file_handle
 
@@ -1454,7 +1521,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # 19 floats
         b.tofile(pp_file)
 
-        #Header length (again)
+        # Header length (again)
         pp_file.write(struct.pack(">L", PP_HEADER_DEPTH))
 
         # Data length (including extra data length)
@@ -1489,7 +1556,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
     #
 
     def time_unit(self, time_unit, epoch='epoch'):
-        return cf_units.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
+        return cf_units.Unit('%s since %s' % (time_unit, epoch),
+                             calendar=self.calendar)
 
     def coord_system(self):
         """Return a CoordSystem for this PPField.
@@ -1592,7 +1660,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
 class PPField2(PPField):
     """
-    A class to hold a single field from a PP file, with a header release number of 2.
+    A class to hold a single field from a PP file, with a
+    header release number of 2.
 
     """
     HEADER_DEFN = _header_defn(2)
@@ -1602,7 +1671,8 @@ class PPField2(PPField):
 
     def _get_t1(self):
         if not hasattr(self, '_t1'):
-            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
+            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat,
+                                           self.lbhr, self.lbmin)
         return self._t1
 
     def _set_t1(self, dt):
@@ -1616,11 +1686,14 @@ class PPField2(PPField):
             delattr(self, '_t1')
 
     t1 = property(_get_t1, _set_t1, None,
-        "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, and lbmin attributes.")
+                  "A netcdftime.datetime object consisting of the lbyr, lbmon,"
+                  " lbdat, lbhr, and lbmin attributes.")
 
     def _get_t2(self):
         if not hasattr(self, '_t2'):
-            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind)
+            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond,
+                                           self.lbdatd, self.lbhrd,
+                                           self.lbmind)
         return self._t2
 
     def _set_t2(self, dt):
@@ -1634,12 +1707,14 @@ class PPField2(PPField):
             delattr(self, '_t2')
 
     t2 = property(_get_t2, _set_t2, None,
-        "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, and lbmind attributes.")
+                  "A netcdftime.datetime object consisting of the lbyrd, "
+                  "lbmond, lbdatd, lbhrd, and lbmind attributes.")
 
 
 class PPField3(PPField):
     """
-    A class to hold a single field from a PP file, with a header release number of 3.
+    A class to hold a single field from a PP file, with a
+    header release number of 3.
 
     """
     HEADER_DEFN = _header_defn(3)
@@ -1649,7 +1724,8 @@ class PPField3(PPField):
 
     def _get_t1(self):
         if not hasattr(self, '_t1'):
-            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin, self.lbsec)
+            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat,
+                                           self.lbhr, self.lbmin, self.lbsec)
         return self._t1
 
     def _set_t1(self, dt):
@@ -1663,11 +1739,14 @@ class PPField3(PPField):
             delattr(self, '_t1')
 
     t1 = property(_get_t1, _set_t1, None,
-        "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, lbmin, and lbsec attributes.")
+                  "A netcdftime.datetime object consisting of the lbyr, lbmon,"
+                  " lbdat, lbhr, lbmin, and lbsec attributes.")
 
     def _get_t2(self):
         if not hasattr(self, '_t2'):
-            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind, self.lbsecd)
+            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond,
+                                           self.lbdatd, self.lbhrd,
+                                           self.lbmind, self.lbsecd)
         return self._t2
 
     def _set_t2(self, dt):
@@ -1681,7 +1760,8 @@ class PPField3(PPField):
             delattr(self, '_t2')
 
     t2 = property(_get_t2, _set_t2, None,
-        "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.")
+                  "A netcdftime.datetime object consisting of the lbyrd, "
+                  "lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.")
 
 
 PP_CLASSES = {
@@ -1713,8 +1793,9 @@ def load(filename, read_data=False):
     Kwargs:
 
     * read_data - boolean
-        Flag whether or not the data should be read, if False an empty data manager
-        will be provided which can subsequently load the data on demand. Default False.
+        Flag whether or not the data should be read, if False an empty
+        data manager will be provided which can subsequently load the data
+        on demand. Default False.
 
     To iterate through all of the fields in a pp file::
 
@@ -1909,7 +1990,8 @@ def _ensure_save_rules_loaded():
 
     if _save_rules is None:
         # Load the pp save rules
-        rules_filename = os.path.join(iris.config.CONFIG_PATH, 'pp_save_rules.txt')
+        rules_filename = os.path.join(iris.config.CONFIG_PATH,
+                                      'pp_save_rules.txt')
         with iris.fileformats.rules._disable_deprecation_warnings():
             _save_rules = iris.fileformats.rules.RulesContainer(
                 rules_filename, iris.fileformats.rules.ProcedureRule)
@@ -1981,13 +2063,13 @@ def _convert_constraints(constraints):
         Provides unique name-space for each lambda function's stashobj
         variable.
         """
-        return lambda stash: stash==stashobj
+        return lambda stash: stash == stashobj
 
     for con in constraints:
         if isinstance(con, iris.AttributeConstraint) and \
                 list(con._attributes.keys()) == ['STASH']:
             # Convert a STASH constraint.
-            # The attribute can be a STASH object, a stashcode string,or a 
+            # The attribute can be a STASH object, a stashcode string, or a
             # callable.
             stashobj = con._attributes['STASH']
             if callable(stashobj):
@@ -1998,13 +2080,13 @@ def _convert_constraints(constraints):
                 raise TypeError("STASH constraints should be either a"
                                 " callable, string or STASH object")
 
-            if not 'stash' in pp_constraints:
+            if 'stash' not in pp_constraints:
                 pp_constraints['stash'] = [call_func]
             else:
                 pp_constraints['stash'].append(call_func)
         else:
-            ## only keep the pp constraints set if they are all handled as
-            ## pp constraints
+            # only keep the pp constraints set if they are all handled as
+            # pp constraints
             unhandled_constraints = True
 
     def pp_filter(field):
@@ -2044,12 +2126,14 @@ def load_cubes(filenames, callback=None, constraints=None):
 
     * constraints - a list of Iris constraints
 
-    * callback - a function which can be passed on to :func:`iris.io.run_callback`
+    * callback - a function which can be passed on to
+                 :func:`iris.io.run_callback`
 
     .. note::
 
-        The resultant cubes may not be in the order that they are in the file (order
-        is not preserved when there is a field with orography references)
+        The resultant cubes may not be in the order that they are in the file
+        (order is not preserved when there is a field with orography
+        references)
 
     """
     return _load_cubes_variable_loader(filenames, callback, load,
@@ -2075,19 +2159,23 @@ def save(cube, target, append=False, field_coords=None):
 
     Args:
 
-        * cube         - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+        * cube         - A :class:`iris.cube.Cube`
         * target       - A filename or open file handle.
 
     Kwargs:
 
-        * append       - Whether to start a new file afresh or add the cube(s) to the end of the file.
-                         Only applicable when target is a filename, not a file handle.
+        * append       - Whether to start a new file afresh or add the cube(s)
+                         to the end of the file.
+                         Only applicable when target is a filename, not a file
+                         handle.
                          Default is False.
 
-        * field_coords - list of 2 coords or coord names which are to be used for
-                         reducing the given cube into 2d slices, which will ultimately
-                         determine the x and y coordinates of the resulting fields.
-                         If None, the final two  dimensions are chosen for slicing.
+        * field_coords - list of 2 coords or coord names which are to be used
+                         for reducing the given cube into 2d slices,
+                         which will ultimately determine the x and y
+                         coordinates of the resulting fields.
+                         If None, the final two  dimensions are chosen
+                         for slicing.
 
     See also :func:`iris.io.save`.
 
@@ -2104,7 +2192,7 @@ def as_pairs(cube, field_coords=None, target=None):
     Args:
 
     * cube:
-        A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+        A :class:`iris.cube.Cube`
 
     Kwargs:
 
@@ -2119,9 +2207,11 @@ def as_pairs(cube, field_coords=None, target=None):
 
     """
     # Open issues
-    # Could use rules in "sections" ... e.g. to process the extensive dimensions; ...?
+    # Could use rules in "sections" ... e.g. to process the extensive
+    # dimensions; ...?
     # Could pre-process the cube to add extra convenient terms?
-    #    e.g. x-coord, y-coord ... but what about multiple coordinates on the dimension?
+    #    e.g. x-coord, y-coord ... but what about multiple coordinates on the
+    #    dimension?
 
     # How to perform the slicing?
     #   Do we always slice in the last two dimensions?
@@ -2165,12 +2255,14 @@ def as_pairs(cube, field_coords=None, target=None):
         # cast the given coord/coord names into cube coords
         field_coords = cube._as_list_of_coords(field_coords)
         if len(field_coords) != 2:
-            raise ValueError('Got %s coordinates in field_coords, expecting exactly 2.' % len(field_coords))
+            raise ValueError('Got %s coordinates in field_coords, expecting'
+                             ' exactly 2.' % len(field_coords))
     else:
-        # default to the last two dimensions (if result of coords is an empty list, will
-        # raise an IndexError)
+        # default to the last two dimensions
+        # (if result of coords is an empty list, will raise an IndexError)
         # NB watch out for the ordering of the dimensions
-        field_coords = (cube.coords(dimensions=n_dims-2)[0], cube.coords(dimensions=n_dims-1)[0])
+        field_coords = (cube.coords(dimensions=n_dims-2)[0],
+                        cube.coords(dimensions=n_dims-1)[0])
 
     # Save each named or latlon slice2D in the cube
     for slice2D in cube.slices(field_coords):
@@ -2181,7 +2273,8 @@ def as_pairs(cube, field_coords=None, target=None):
         # and some others to be present before running the rules.
         for name, positions in pp_field.HEADER_DEFN:
             # Establish whether field name is integer or real
-            default = 0 if positions[0] <= NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET else 0.0
+            default = 0 if positions[0] <= NUM_LONG_HEADERS - \
+                UM_TO_PP_HEADER_OFFSET else 0.0
             # Establish whether field position is scalar or composite
             if len(positions) > 1:
                 default = [default] * len(positions)
@@ -2210,7 +2303,8 @@ def as_pairs(cube, field_coords=None, target=None):
             target = target.name
 
         with iris.fileformats.rules._disable_deprecation_warnings():
-            iris.fileformats.rules.log('PP_SAVE', str(target), verify_rules_ran)
+            iris.fileformats.rules.log('PP_SAVE', str(target),
+                                       verify_rules_ran)
 
         yield (slice2D, pp_field)
 
@@ -2223,7 +2317,7 @@ def as_fields(cube, field_coords=None, target=None):
     Args:
 
     * cube:
-        A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
+        A :class:`iris.cube.Cube`
 
     Kwargs:
 
@@ -2255,7 +2349,8 @@ def save_fields(fields, target, append=False):
     Kwargs:
 
     * append:
-        Whether to start a new file afresh or add the cube(s) to the end of the file.
+        Whether to start a new file afresh or add the cube(s) to the end
+        of the file.
         Only applicable when target is a filename, not a file handle.
         Default is False.
     * callback:
