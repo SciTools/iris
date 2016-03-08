@@ -50,7 +50,7 @@ except ImportError:
     mo_pack = None
 
 try:
-    from iris.fileformats import pp_packing
+    from iris.fileformats import _old_pp_packing as pp_packing
 except ImportError:
     pp_packing = None
 
