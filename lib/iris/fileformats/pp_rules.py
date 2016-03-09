@@ -115,8 +115,8 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     # Height.
     if (lbvc == 1) and \
-            (not (str(stash) in STASHCODE_IMPLIED_HEIGHTS)) and \
-            (np.all(blev != -1)):
+            str(stash) not in STASHCODE_IMPLIED_HEIGHTS and \
+            np.all(blev != -1):
         coord = _dim_or_aux(blev, standard_name='height', units='m',
                             attributes={'positive': 'up'})
         coords_and_dims.append((coord, dim))
@@ -164,14 +164,14 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     # Soil level/depth.
     if len(lbcode) != 5 and lbvc == 6:
-        if not (np.any(brsvd1) or np.any(brlev)):
+        if np.all(brsvd1 == 0) and np.all(brlev == 0):
             # UM populates lblev, brsvd1 and brlev metadata INCORRECTLY,
             # so continue to treat as a soil level.
             coord = _dim_or_aux(model_level_number,
                                 long_name='soil_model_level_number',
                                 attributes={'positive': 'down'})
             coords_and_dims.append((coord, dim))
-        elif np.all(brsvd1 != brlev):
+        elif np.any(brsvd1 != brlev):
             # UM populates metadata CORRECTLY,
             # so treat it as the expected (bounded) soil depth.
             coord = _dim_or_aux(blev, standard_name='depth', units='m',
@@ -181,7 +181,8 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     # Pressure.
     if (lbvc == 8) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and 1 not in [lbcode.ix, lbcode.iy])):
+            (len(lbcode) != 5 or (len(lbcode) == 5 and
+                                  1 not in [lbcode.ix, lbcode.iy])):
         coord = _dim_or_aux(blev, long_name='pressure', units='hPa')
         coords_and_dims.append((coord, dim))
 
@@ -349,6 +350,8 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     * points (array-like):
         Coordinate point values.
 
+    Kwargs:
+
     * lower_and_upper_bounds (pair of array-like, or None):
         Corresponding bounds values (lower, upper), if any.
 
@@ -391,6 +394,55 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     return used_dims, points, bounds
 
 
+def _new_coord_and_dims(is_vector_operation,
+                        name, units,
+                        points, lower_and_upper_bounds=None):
+    """
+    Make a new (coordinate, cube_dims) pair with the given points, name, units
+    and optional bounds.
+
+    In 'vector' style operation, the data arrays must have same number of
+    dimensions as the target cube, and additional operations are performed :
+
+    * dimensions with all points and bounds values the same are removed.
+    * the result coordinate may be an AuxCoord if a DimCoord cannot be made
+        (e.g. if values are non-monotonic).
+
+    Args:
+
+    * is_vector_operation (bool):
+        If True, perform 'vector' style operation.
+
+    * points (array-like):
+        Coordinate point values.
+
+    * name (string):
+        Standard name of coordinate.
+
+    * units (string or cf_unit.Unit):
+        Units of coordinate.
+
+    Kwargs:
+
+    * lower_and_upper_bounds (pair of array-like, or None):
+        Corresponding bounds values (lower, upper), if any.
+
+    Returns:
+        a new (coordinate, dims) pair.
+
+    """
+    bounds = lower_and_upper_bounds
+    if is_vector_operation:
+        dims, points, bounds = _reduce_points_and_bounds(points, bounds)
+    else:
+        dims = None
+    coord = _dim_or_aux(points, bounds=bounds, standard_name=name, units=units)
+    return (coord, dims)
+
+
+_HOURS_UNIT = cf_units.Unit('hours')
+
+
 def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
                          t1, t2, lbft,
                          t1_dims=(), t2_dims=(), lbft_dims=()):
@@ -427,24 +479,31 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         the `dims` value is None rather than an empty tuple.
 
     """
-    # Reform the input values so they have all the same number of dimensions,
-    # transposing where necessary (based on the dimension mappings) so the
-    # dimensions are common across each array.
-    # Note that this does not guarantee that the arrays are broadcastable,
-    # but subsequent arithmetic makes this assumption.
-    t1, t2, lbft = _reshape_vector_args([(t1, t1_dims), (t2, t2_dims),
-                                         (lbft, lbft_dims)])
-
     def date2hours(t):
         epoch_hours = epoch_hours_unit.date2num(t)
         if t.minute == 0 and t.second == 0:
             epoch_hours = round(epoch_hours)
         return epoch_hours
 
-    dates2hours = np.vectorize(date2hours)
+    def date2year(t_in):
+        return t_in.year
 
-    t1_epoch_hours = dates2hours(t1)
-    t2_epoch_hours = dates2hours(t2)
+    # Check whether inputs are all scalar, for faster handling of scalar cases.
+    do_vector = len(t1_dims) + len(t2_dims) + len(lbft_dims) > 0
+    if do_vector:
+        # Reform the input values so they have all the same number of
+        # dimensions, transposing where necessary (based on the dimension
+        # mappings) so that the dimensions are common across each array.
+        # Note: this does not _guarantee_ that the arrays are broadcastable,
+        # but subsequent arithmetic makes this assumption.
+        t1, t2, lbft = _reshape_vector_args([(t1, t1_dims), (t2, t2_dims),
+                                             (lbft, lbft_dims)])
+
+        date2hours = np.vectorize(date2hours)
+        date2year = np.vectorize(date2year)
+
+    t1_epoch_hours = date2hours(t1)
+    t2_epoch_hours = date2hours(t2)
     hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
     hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
     coords_and_dims = []
@@ -455,10 +514,8 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         (len(lbcode) != 5 or (len(lbcode) == 5 and
                               lbcode.ix not in [20, 21, 22, 23] and
                               lbcode.iy not in [20, 21, 22, 23]))):
-        dims, points, _ = _reduce_points_and_bounds(t1_epoch_hours)
-        coords_and_dims.append(
-            (_dim_or_aux(points, standard_name='time', units=epoch_hours_unit),
-             dims))
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'time', epoch_hours_unit, t1_epoch_hours))
 
     if ((lbtim.ia == 0) and
         (lbtim.ib == 1) and
@@ -466,72 +523,59 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         (len(lbcode) != 5 or (len(lbcode) == 5
                               and lbcode.ix not in [20, 21, 22, 23]
                               and lbcode.iy not in [20, 21, 22, 23]))):
-        dims, points, _ = _reduce_points_and_bounds(hours_from_t2_to_t1)
-        coords_and_dims.append(
-            (_dim_or_aux(points, standard_name='forecast_period',
-                         units='hours'),
-             dims))
-        dims, points, _ = _reduce_points_and_bounds(t1_epoch_hours)
-        coords_and_dims.append(
-            (_dim_or_aux(points, standard_name='time', units=epoch_hours_unit),
-             dims))
-        dims, points, _ = _reduce_points_and_bounds(t2_epoch_hours)
-        coords_and_dims.append(
-            (_dim_or_aux(points, standard_name='forecast_reference_time',
-                         units=epoch_hours_unit),
-             dims))
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'forecast_period', _HOURS_UNIT, hours_from_t2_to_t1))
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'time', epoch_hours_unit, t1_epoch_hours))
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'forecast_reference_time', epoch_hours_unit,
+            t2_epoch_hours))
 
     if ((lbtim.ib == 2) and
         (lbtim.ic in [1, 2, 4]) and
+        (np.any(date2year(t1) != 0) and np.any(date2year(t2) != 0)) and
+        # Note: don't add time coordinates when years are zero and
+        # lbtim.ib == 2.  These are handled elsewhere.
         ((len(lbcode) != 5) or (len(lbcode) == 5 and
                                 lbcode.ix not in [20, 21, 22, 23]
                                 and lbcode.iy not in [20, 21, 22, 23]))):
-        dims, points, bounds = _reduce_points_and_bounds(
-            lbft - 0.5 * hours_from_t1_to_t2,
-            (lbft - hours_from_t1_to_t2, lbft))
-        coords_and_dims.append(
-            (_dim_or_aux(standard_name='forecast_period', units='hours',
-                         points=points, bounds=bounds),
-             dims))
 
-        dims, points, bounds = _reduce_points_and_bounds(
-            0.5 * (t1_epoch_hours + t2_epoch_hours),
-            (t1_epoch_hours, t2_epoch_hours))
-        coords_and_dims.append(
-            (_dim_or_aux(standard_name='time', units=epoch_hours_unit,
-                         points=points, bounds=bounds),
-             dims))
+            coords_and_dims.append(_new_coord_and_dims(
+                do_vector, 'forecast_period', _HOURS_UNIT,
+                lbft - 0.5 * hours_from_t1_to_t2,
+                [lbft - hours_from_t1_to_t2, lbft]))
 
-        dims, points, _ = _reduce_points_and_bounds(t2_epoch_hours - lbft)
-        coords_and_dims.append(
-            (_dim_or_aux(points, standard_name='forecast_reference_time',
-                         units=epoch_hours_unit),
-             dims))
+            coords_and_dims.append(_new_coord_and_dims(
+                do_vector, 'time', epoch_hours_unit,
+                0.5 * (t1_epoch_hours + t2_epoch_hours),
+                [t1_epoch_hours, t2_epoch_hours]))
+
+            coords_and_dims.append(_new_coord_and_dims(
+                do_vector, 'forecast_reference_time', epoch_hours_unit,
+                t2_epoch_hours - lbft))
 
     if ((lbtim.ib == 3) and
         (lbtim.ic in [1, 2, 4]) and
         ((len(lbcode) != 5) or (len(lbcode) == 5 and
                                 lbcode.ix not in [20, 21, 22, 23] and
                                 lbcode.iy not in [20, 21, 22, 23]))):
-        dims, points, bounds = _reduce_points_and_bounds(
-            lbft, (lbft - hours_from_t1_to_t2, lbft))
-        coords_and_dims.append(
-            (_dim_or_aux(standard_name='forecast_period', units='hours',
-                         points=points, bounds=bounds),
-             dims))
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'forecast_period', _HOURS_UNIT,
+            lbft, [lbft - hours_from_t1_to_t2, lbft]))
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'time', epoch_hours_unit,
+            t2_epoch_hours, [t1_epoch_hours, t2_epoch_hours]))
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'forecast_reference_time', epoch_hours_unit,
+            t2_epoch_hours - lbft))
 
-        dims, points, bounds = _reduce_points_and_bounds(
-            t2_epoch_hours, (t1_epoch_hours, t2_epoch_hours))
-        coords_and_dims.append(
-            (_dim_or_aux(standard_name='time', units=epoch_hours_unit,
-                         points=points, bounds=bounds),
-             dims))
-
-        dims, points, _ = _reduce_points_and_bounds(t2_epoch_hours - lbft)
-        coords_and_dims.append(
-            (_dim_or_aux(points, standard_name='forecast_reference_time',
-                         units=epoch_hours_unit),
-             dims))
+    if \
+            (len(lbcode) == 5) and \
+            (lbcode[-1] == 3) and \
+            (lbtim.ib == 2) and (lbtim.ic == 2):
+        coords_and_dims.append(_new_coord_and_dims(
+            do_vector, 'forecast_reference_time', epoch_hours_unit,
+            t2_epoch_hours - lbft))
 
     return coords_and_dims
 
@@ -561,198 +605,6 @@ def _model_level_number(lblev):
         model_level_number = lblev
 
     return model_level_number
-
-
-def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
-    """
-    Encode scalar time values from PP headers as CM data components.
-
-    Returns a list of coords_and_dims.
-
-    """
-    def date2hours(t):
-        epoch_hours = epoch_hours_unit.date2num(t)
-        if t.minute == 0 and t.second == 0:
-            epoch_hours = round(epoch_hours)
-        return epoch_hours
-
-    t1_epoch_hours = date2hours(t1)
-    t2_epoch_hours = date2hours(t2)
-    hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
-    hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
-    coords_and_dims = []
-
-    if \
-            (lbtim.ia == 0) and \
-            (lbtim.ib == 0) and \
-            (lbtim.ic in [1, 2, 3, 4]) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
-
-    if \
-            (lbtim.ia == 0) and \
-            (lbtim.ib == 1) and \
-            (lbtim.ic in [1, 2, 3, 4]) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((DimCoord(hours_from_t2_to_t1, standard_name='forecast_period', units='hours'), None))
-        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
-
-    # Don't add time coordinates when years are zero and
-    # lbtim.ib == 2. These are handled elsewhere.
-    if \
-            (lbtim.ib == 2) and \
-            (lbtim.ic in [1, 2, 4]) and \
-            (t1.year != 0 and t2.year != 0) and \
-            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((
-            DimCoord(standard_name='forecast_period', units='hours',
-                     points=lbft - 0.5 * hours_from_t1_to_t2,
-                     bounds=[lbft - hours_from_t1_to_t2, lbft]),
-            None))
-        coords_and_dims.append((
-            DimCoord(standard_name='time', units=epoch_hours_unit,
-                     points=0.5 * (t1_epoch_hours + t2_epoch_hours),
-                     bounds=[t1_epoch_hours, t2_epoch_hours]),
-            None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
-
-    if \
-            (lbtim.ib == 3) and \
-            (lbtim.ic in [1, 2, 4]) and \
-            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((
-            DimCoord(standard_name='forecast_period', units='hours',
-                     points=lbft, bounds=[lbft - hours_from_t1_to_t2, lbft]),
-            None))
-        coords_and_dims.append((
-            DimCoord(standard_name='time', units=epoch_hours_unit,
-                     points=t2_epoch_hours, bounds=[t1_epoch_hours, t2_epoch_hours]),
-            None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
-
-    if \
-            (len(lbcode) == 5) and \
-            (lbcode[-1] == 3) and \
-            (lbtim.ib == 2) and (lbtim.ic == 2):
-        coords_and_dims.append((
-            DimCoord(standard_name='forecast_reference_time',
-                     units=epoch_hours_unit,
-                     points=t2_epoch_hours - lbft),
-            None))
-
-    return coords_and_dims
-
-
-def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
-                                    bhlev, bhrlev, brsvd1, brsvd2, brlev):
-    """
-    Encode scalar vertical level values from PP headers as CM data components.
-
-    Returns (<list of coords_and_dims>, <list of factories>)
-
-    """
-    factories = []
-    coords_and_dims = []
-    model_level_number = _model_level_number(lblev)
-
-    if \
-            (lbvc == 1) and \
-            (str(stash) not in STASHCODE_IMPLIED_HEIGHTS) and \
-            (blev != -1):
-        coords_and_dims.append(
-            (DimCoord(blev, standard_name='height', units='m',
-                      attributes={'positive': 'up'}),
-             None))
-
-    if str(stash) in STASHCODE_IMPLIED_HEIGHTS:
-        coords_and_dims.append(
-            (DimCoord(STASHCODE_IMPLIED_HEIGHTS[str(stash)],
-                      standard_name='height', units='m',
-                      attributes={'positive': 'up'}),
-             None))
-
-    if \
-            (len(lbcode) != 5) and \
-            (lbvc == 2):
-        coords_and_dims.append((DimCoord(model_level_number, standard_name='model_level_number', attributes={'positive': 'down'}), None))
-
-    if \
-            (len(lbcode) != 5) and \
-            (lbvc == 2) and \
-            (brsvd1 == brlev):
-        coords_and_dims.append((DimCoord(blev, standard_name='depth', units='m', attributes={'positive': 'down'}), None))
-
-    if \
-            (len(lbcode) != 5) and \
-            (lbvc == 2) and \
-            (brsvd1 != brlev):
-        coords_and_dims.append((DimCoord(blev, standard_name='depth', units='m', bounds=[brsvd1, brlev], attributes={'positive': 'down'}), None))
-
-    # Soil level/depth.
-    if len(lbcode) != 5 and lbvc == 6:
-        if brsvd1 == 0 and brlev == 0:
-            # UM populates lblev, brsvd1 and brlev metadata INCORRECTLY,
-            # so continue to treat lblev as a soil level.
-            coord = DimCoord(model_level_number,
-                             long_name='soil_model_level_number',
-                             attributes={'positive': 'down'})
-            coords_and_dims.append((coord, None))
-        elif brsvd1 != brlev:
-            # UM populates metadata CORRECTLY,
-            # so treat it as the expected (bounded) soil depth.
-            coord = DimCoord(blev, standard_name='depth', units='m',
-                             bounds=[brsvd1, brlev],
-                             attributes={'positive': 'down'})
-            coords_and_dims.append((coord, None))
-
-    if \
-            (lbvc == 8) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and 1 not in [lbcode.ix, lbcode.iy])):
-        coords_and_dims.append((DimCoord(blev, long_name='pressure', units='hPa'), None))
-
-    if \
-            (len(lbcode) != 5) and \
-            (lbvc == 19):
-        coords_and_dims.append((DimCoord(blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'up'}), None))
-
-    # Hybrid pressure levels (--> scalar coordinates)
-    if lbvc == 9:
-        model_level_number = DimCoord(model_level_number,
-                                      standard_name='model_level_number',
-                                      attributes={'positive': 'up'})
-        # The following match the hybrid height scheme, but data has the
-        # blev and bhlev values the other way around.
-        #level_pressure = DimCoord(blev,
-        #                          long_name='level_pressure',
-        #                          units='Pa',
-        #                          bounds=[brlev, brsvd1])
-        #sigma = AuxCoord(bhlev,
-        #                 long_name='sigma',
-        #                 bounds=[bhrlev, brsvd2])
-        level_pressure = DimCoord(bhlev,
-                                  long_name='level_pressure',
-                                  units='Pa',
-                                  bounds=[bhrlev, brsvd2])
-        sigma = AuxCoord(blev,
-                         long_name='sigma',
-                         bounds=[brlev, brsvd1])
-        coords_and_dims.extend([(model_level_number, None),
-                                    (level_pressure, None),
-                                    (sigma, None)])
-        factories.append(Factory(HybridPressureFactory,
-                                 [{'long_name': 'level_pressure'},
-                                  {'long_name': 'sigma'},
-                                  Reference('surface_air_pressure')]))
-
-    # Hybrid height levels (--> scalar coordinates + factory)
-    if lbvc == 65:
-        coords_and_dims.append((DimCoord(model_level_number, standard_name='model_level_number', attributes={'positive': 'up'}), None))
-        coords_and_dims.append((DimCoord(blev, long_name='level_height', units='m', bounds=[brlev, brsvd1], attributes={'positive': 'up'}), None))
-        coords_and_dims.append((AuxCoord(bhlev, long_name='sigma', bounds=[bhrlev, brsvd2]), None))
-        factories.append(Factory(HybridHeightFactory, [{'long_name': 'level_height'}, {'long_name': 'sigma'}, Reference('orography')]))
-
-    return coords_and_dims, factories
 
 
 def _convert_scalar_realization_coords(lbrsvd4):
@@ -801,7 +653,7 @@ def convert(f):
     aux_coords_and_dims = []
 
     # "Normal" (non-cross-sectional) Time values (--> scalar coordinates)
-    time_coords_and_dims = _convert_scalar_time_coords(
+    time_coords_and_dims = _convert_time_coords(
         lbcode=f.lbcode, lbtim=f.lbtim,
         epoch_hours_unit=f.time_unit('hours'),
         t1=f.t1, t2=f.t2, lbft=f.lbft)
@@ -810,7 +662,7 @@ def convert(f):
     # "Normal" (non-cross-sectional) Vertical levels
     #    (--> scalar coordinates and factories)
     vertical_coords_and_dims, vertical_factories = \
-        _convert_scalar_vertical_coords(
+        _convert_vertical_coords(
             lbcode=f.lbcode,
             lbvc=f.lbvc,
             blev=f.blev,
