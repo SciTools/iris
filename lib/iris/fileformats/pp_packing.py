@@ -47,6 +47,8 @@ _DEPRECATION_WARNING = (
     'This provides additional pack/unpacking functionality.')
 
 
+# Emit a deprecation warning when anyone tries to import this.
+# For quiet, can still use _old_pp_packing instead, as fileformats.pp does.
 warnings.warn(_DEPRECATION_WARNING)
 
 
@@ -62,8 +64,9 @@ def rle_decode(data, lbrow, lbnpt, bmdi):
     return old_pp_packing.rle_decode(data, lbrow, lbnpt, bmdi)
 
 
-# Add docstrings based on the wrapped functions.
 def _add_fixed_up_docstring(new_fn, original_fn):
+    # Add docstring to a wrapper function, based on the original function.
+    # This would be simpler if Sphinx were less fussy about formatting.
     docstring = original_fn.__doc__
     lines = [line for line in docstring.split('\n')]
     # Strip off last blank lines, and add deprecation notice.
