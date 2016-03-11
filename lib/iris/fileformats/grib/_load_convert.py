@@ -998,6 +998,62 @@ def grid_definition_template_40_reduced(section, metadata, cs):
     metadata['aux_coords_and_dims'].append((x_coord, 0))
 
 
+def grid_definition_template_50(section, metadata):
+    """
+    Translate template representing spherical harmonic coefficients.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    # Extract the wavenumber parameters.
+    J = section['J']
+    K = section['K']
+    M = section['M']
+
+    # Define the indexing function for each possible spectral representaion.
+    if J == K == M:
+        ttype = 'triangular'
+        Nm = lambda m: J
+    elif K == (J + M):
+        ttype = 'rhomboidal'
+        Nm = lambda m: J + m
+    elif K == J and K > M:
+        ttype = 'trapezoidal'
+        Nm = lambda m: J
+    else:
+        raise TranslationError('Unsupported spectral representation: '
+                               'J={}, K={}, M={}'.format(J, K, M))
+
+    # Calculate the wavenumber coordinates.
+    mn = [(_m, _n) for _m in range(M + 1) for _n in range(_m, Nm(_m) + 1)]
+
+    # Create AuxCoords for the wavenumber coordinates.
+    m_coord = AuxCoord([p[0] for p in mn], long_name='zonal_wavenumber',
+                       units=1, coord_system=None)
+    n_coord = AuxCoord([p[1] for p in mn], long_name='meridional_wavenumber',
+                       units=1, coord_system=None)
+
+    # Add the wavenumber coordinates to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((m_coord, 0))
+    metadata['aux_coords_and_dims'].append((n_coord, 0))
+
+    # Add extra attributes describing the spectral representation. Without
+    # these it would be very tricky to determine the type of truncation
+    # used, requiring careful inspection of the wavenumber coordinates.
+    metadata['attributes']['truncation_type'] = ttype
+    metadata['attributes']['J'] = J
+    metadata['attributes']['K'] = K
+    metadata['attributes']['M'] = M
+
+
 def grid_definition_template_90(section, metadata):
     """
     Translate template representing space view.
@@ -1147,7 +1203,11 @@ def grid_definition_section(section, metadata):
         # Process Lambert conformal:
         grid_definition_template_30(section, metadata)
     elif template == 40:
+        # Process Gaussian grid.
         grid_definition_template_40(section, metadata)
+    elif template == 50:
+        # Process spherical harmonics.
+        grid_definition_template_50(section, metadata)
     elif template == 90:
         # Process space view.
         grid_definition_template_90(section, metadata)

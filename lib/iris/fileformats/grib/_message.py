@@ -119,6 +119,28 @@ class _GribMessage(object):
             proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
                                self._recreate_raw)
             data = biggus.NumpyArrayAdapter(proxy)
+        elif template in (50,):
+            # Spherical harmonics are slightly different to spatial data. We
+            # need to determine the truncation type in order to calculate the
+            # number of coefficients in the spectral representation.
+            J = grid_section['J']
+            K = grid_section['K']
+            M = grid_section['M']
+            if J == K == M:
+                # Triangular truncation.
+                ncoefs = (M + 1) * (J + 2) // 2
+            elif K == (J + M):
+                # Rhomboidal truncation.
+                ncoefs = (M + 1) * (J + 1)
+            elif K == J and K > M:
+                # Trapezoidal truncation.
+                ncoefs = (M + 1) * (2 * J + 2 - M) // 2
+            else:
+                msg = 'Unsupported spectral representation: J={}, K={}, M={}'
+                raise TranslationError(msg.format(J, K, M))
+            proxy = _DataProxy((ncoefs,), np.dtype('c16'), np.nan,
+                               self._recreate_raw)
+            data = biggus.NumpyArrayAdapter(proxy)
         else:
             fmt = 'Grid definition template {} is not supported'
             raise TranslationError(fmt.format(template))
@@ -194,7 +216,12 @@ class _DataProxy(object):
         sections = message.sections
         bitmap_section = sections[6]
         bitmap = self._bitmap(bitmap_section)
-        data = sections[7]['codedValues']
+        # Retrieving the key 'codedValues' always results in a dtype of 'f8'
+        # (uses grib_get_double_array() under the hood). Taking a view of this
+        # array using the proxy's native dtype has no effect for a proxy whose
+        # dtype is also 'f8', but allows proxies that uses other dtypes (such
+        # as 'c16') to properly interpret the 'codedValues' key.
+        data = sections[7]['codedValues'].view(self.dtype)
 
         if bitmap is not None:
             # Note that bitmap and data are both 1D arrays at this point.

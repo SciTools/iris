@@ -71,7 +71,7 @@ class Test_data__masked(tests.IrisTest):
                            'Ni': self.shape[1]}
 
     def test_no_bitmap(self):
-        values = np.arange(12)
+        values = np.arange(12, dtype=np.float64)
         message = _make_test_message({3: self._section_3,
                                       6: SECTION_6_NO_BITMAP,
                                       7: {'codedValues': values}})
@@ -83,7 +83,7 @@ class Test_data__masked(tests.IrisTest):
     def test_bitmap_present(self):
         # Test the behaviour where bitmap and codedValues shapes
         # are not equal.
-        input_values = np.arange(5)
+        input_values = np.arange(5, dtype=np.float64)
         output_values = np.array([-1, -1, 0, 1, -1, -1, -1, 2, -1, 3, -1, 4])
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 0,
@@ -98,7 +98,7 @@ class Test_data__masked(tests.IrisTest):
     def test_bitmap__shapes_mismatch(self):
         # Test the behaviour where bitmap and codedValues shapes do not match.
         # Too many or too few unmasked values in codedValues will cause this.
-        values = np.arange(6)
+        values = np.arange(6, dtype=np.float64)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
@@ -107,7 +107,7 @@ class Test_data__masked(tests.IrisTest):
             message.data.masked_array()
 
     def test_bitmap__invalid_indicator(self):
-        values = np.arange(12)
+        values = np.arange(12, dtype=np.float64)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 100,
                                           'bitmap': None},
@@ -170,7 +170,7 @@ class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
         message = _make_test_message(
             {3: self.section_3(scanning_mode),
              6: SECTION_6_NO_BITMAP,
-             7: {'codedValues': np.arange(12)}})
+             7: {'codedValues': np.arange(12, dtype=np.float64)}})
         data = message.data
         self.assertIsInstance(data, biggus.Array)
         self.assertEqual(data.shape, (3, 4))
@@ -247,6 +247,49 @@ class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
         del section_3['Ni']
         del section_3['Nj']
         return section_3
+
+
+class Test_data_grid_template_50(tests.IrisTest):
+
+    def section_3(self, J, K, M):
+        return {'sourceOfGridDefinition': 0,
+                'numberOfOctectsForNumberOfPoints': 0,
+                'interpretationOfNumberOfPoints': 0,
+                'gridDefinitionTemplateNumber': 50,
+                'J': J,
+                'K': K,
+                'M': M}
+
+    def _test(self, J, K, M, ncoefs):
+        message = _make_test_message(
+            {3: self.section_3(J, K, M),
+             6: SECTION_6_NO_BITMAP,
+             7: {'codedValues': np.arange(ncoefs * 2, dtype=np.float64)}})
+        data = message.data
+        self.assertIsInstance(data, biggus.Array)
+        self.assertEqual(data.shape, (ncoefs,))
+        self.assertEqual(data.dtype, np.complex)
+        self.assertIs(data.fill_value, np.nan)
+        self.assertArrayEqual(
+            data.ndarray(),
+            np.arange(ncoefs * 2, dtype=np.float64).view(np.complex128))
+
+    def test_triangular(self):
+        J = K = M = 5
+        ncoefs = 21
+        self._test(J, K, M, ncoefs)
+
+    def test_rhomboidal(self):
+        J = M = 5
+        K = J + M
+        ncoefs = 36
+        self._test(J, K, M, ncoefs)
+
+    def test_trapezoidal(self):
+        J = K = 5
+        M = 3
+        ncoefs = 18
+        self._test(J, K, M, ncoefs)
 
 
 class Test_data__unknown_grid_template(tests.IrisTest):
