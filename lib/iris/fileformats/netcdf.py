@@ -1537,6 +1537,16 @@ class Saver(object):
                     cf_var_grid.scale_factor_at_central_meridian = (
                         cs.scale_factor_at_central_meridian)
 
+                # lcc
+                elif isinstance(cs, iris.coord_systems.LambertConformal):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.standard_parallel = cs.secant_latitudes
+                    cf_var_grid.latitude_of_projection_origin = cs.central_lat
+                    cf_var_grid.longitude_of_central_meridian = cs.central_lon
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn('OSGB coordinate system not yet handled')

@@ -97,6 +97,24 @@ fc_provides_grid_mapping_transverse_mercator
         python engine.rule_triggered.add(rule.name)
 
 #
+# Context: This rule will trigger iff a grid_mapping() case specific fact
+#   has been asserted that refers to a Lambert conformal.
+#
+# Purpose:
+#   Creates the Lambert conformal conic coordinate system.
+#
+fc_provides_grid_mapping_lambert_conformal
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_LAMBERT_CONFORMAL)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = build_lambert_conformal_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, lambert_conformal)
+        python engine.rule_triggered.add(rule.name)
+
+#
 # Context:
 #   This rule will trigger iff a coordinate() case specific fact
 #   has been asserted that refers to a CF latitude coordinate.     
@@ -537,6 +555,45 @@ fc_build_coordinate_projection_y_transverse_mercator
                                           coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
+#
+# Context:
+#   This rule will trigger iff a projection_x_coordinate coordinate exists and
+#   a Lambert conformal coordinate system exists.
+#
+# Purpose:
+#   Add the projection_x_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_x_lambert_conformal
+    foreach
+        facts_cf.provides(coordinate, projection_x_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, lambert_conformal)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_X,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a projection_y_coordinate coordinate exists and
+#   a Lambert conformal coordinate system exists.
+#
+# Purpose:
+#   Add the projection_y_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_y_lambert_conformal
+    foreach
+        facts_cf.provides(coordinate, projection_y_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, lambert_conformal)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_Y,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
 
 #
 # Context:
@@ -842,6 +899,7 @@ fc_extras
     CF_ATTR_GRID_SEMI_MINOR_AXIS = 'semi_minor_axis'
     CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN = 'latitude_of_projection_origin'
     CF_ATTR_GRID_LON_OF_PROJ_ORIGIN = 'longitude_of_projection_origin'
+    CF_ATTR_GRID_STANDARD_PARALLEL = 'standard_parallel'
     CF_ATTR_GRID_FALSE_EASTING = 'false_easting'
     CF_ATTR_GRID_FALSE_NORTHING = 'false_northing'
     CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN = 'scale_factor_at_projection_origin'
@@ -1027,6 +1085,39 @@ fc_extras
         cs = iris.coord_systems.TransverseMercator(
             latitude_of_projection_origin, longitude_of_central_meridian,
             false_easting, false_northing, scale_factor_at_central_meridian,
+            ellipsoid)
+
+        return cs
+
+    ################################################################################
+    def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
+        """
+        Create a Lambert conformal conic coordinate system from the CF-netCDF
+        grid mapping variable.
+
+        """
+        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+
+        latitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
+        longitude_of_central_meridian = getattr(
+            cf_grid_var, CF_ATTR_GRID_LON_OF_CENT_MERIDIAN, None)
+        false_easting = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+        false_northing = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+        standard_parallel = getattr(
+            cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
+
+        ellipsoid = None
+        if major is not None or minor is not None or \
+                inverse_flattening is not None:
+            ellipsoid = iris.coord_systems.GeogCS(major, minor,
+                                                  inverse_flattening)
+
+        cs = iris.coord_systems.LambertConformal(
+            latitude_of_projection_origin, longitude_of_central_meridian,
+            false_easting, false_northing, standard_parallel,
             ellipsoid)
 
         return cs

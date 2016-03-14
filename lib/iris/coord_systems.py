@@ -731,7 +731,7 @@ class LambertConformal(CoordSystem):
 
     """
 
-    grid_mapping_name = "lambert_conformal"
+    grid_mapping_name = "lambert_conformal_conic"
 
     def __init__(self, central_lat=39.0, central_lon=-96.0,
                  false_easting=0.0, false_northing=0.0,
@@ -790,6 +790,15 @@ class LambertConformal(CoordSystem):
                    self.central_lat, self.central_lon,
                    self.false_easting, self.false_northing,
                    self.secant_latitudes, self.ellipsoid)
+
+    def __eq__(self, other):
+        sattrs = self.__dict__.copy()
+        oattrs = other.__dict__.copy()
+        s_secant_latitudes = sattrs.pop('secant_latitudes', None)
+        o_secant_latitudes = oattrs.pop('secant_latitudes', None)
+        return (self.__class__ == other.__class__ and
+                sattrs == oattrs and
+                (s_secant_latitudes==o_secant_latitudes).all())
 
     def as_cartopy_crs(self):
         # We're either north or south polar. Set a cutoff accordingly.
