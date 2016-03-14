@@ -152,6 +152,14 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertEqual(cube.coord('projection_y_coordinate').coord_system,
                          expected)
 
+    def test_load_lcc_grid(self):
+        # Test loading a single CF-netCDF file with Lambert conformal conic
+        # grid mapping.
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'lambert_conformal',
+                                 'test_lcc.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_lcc.cml'))
+
     def test_missing_climatology(self):
         # Check we can cope with a missing climatology variable.
         with self.temp_filename(suffix='nc') as filename:
