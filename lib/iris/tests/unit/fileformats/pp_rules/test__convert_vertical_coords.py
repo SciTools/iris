@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,6 +33,7 @@ from iris.coords import DimCoord, AuxCoord
 from iris.aux_factory import HybridPressureFactory, HybridHeightFactory
 from iris.fileformats.pp import SplittableInt, STASH
 from iris.fileformats.pp_rules import Reference, _convert_vertical_coords
+from iris.fileformats.rules import Factory
 from iris.tests.unit.fileformats import TestField
 
 
@@ -402,10 +403,10 @@ class TestLBVC009_HybridPressure(TestField):
             (AuxCoord(blev,
                       long_name='sigma',
                       bounds=np.vstack((brlev, brsvd1)).T), dim))
-        expect_factories = [(HybridPressureFactory,
-                             [{'long_name': 'level_pressure'},
-                              {'long_name': 'sigma'},
-                              Reference('surface_air_pressure')])]
+        expect_factories = [Factory(HybridPressureFactory,
+                                    [{'long_name': 'level_pressure'},
+                                     {'long_name': 'sigma'},
+                                     Reference('surface_air_pressure')])]
         self.assertCoordsAndDimsListsMatch(coords_and_dims,
                                            expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)
@@ -454,10 +455,10 @@ class TestLBVC065_HybridHeight(TestField):
             (AuxCoord(bhlev,
                       long_name='sigma',
                       bounds=np.vstack((bhrlev, brsvd2)).T), dim))
-        expect_factories = [(HybridHeightFactory,
-                             [{'long_name': 'level_height'},
-                              {'long_name': 'sigma'},
-                              Reference('orography')])]
+        expect_factories = [Factory(HybridHeightFactory,
+                                    [{'long_name': 'level_height'},
+                                     {'long_name': 'sigma'},
+                                     Reference('orography')])]
         self.assertCoordsAndDimsListsMatch(coords_and_dims,
                                            expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)

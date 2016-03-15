@@ -2131,7 +2131,7 @@ def convert(field):
         raise TranslationError(msg)
 
     # Initialise the cube metadata.
-    metadata = OrderedDict()
+    metadata = {}
     metadata['factories'] = []
     metadata['references'] = []
     metadata['standard_name'] = None
@@ -2145,4 +2145,4 @@ def convert(field):
     # Convert GRIB2 message to cube metadata.
     grib2_convert(field, metadata)
 
-    return ConversionMetadata._make(metadata.values())
+    return ConversionMetadata(**metadata)
