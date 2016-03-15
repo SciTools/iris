@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,6 +31,7 @@ from iris.coords import DimCoord, AuxCoord
 from iris.aux_factory import HybridPressureFactory, HybridHeightFactory
 from iris.fileformats.pp import SplittableInt, STASH
 from iris.fileformats.pp_rules import Reference
+from iris.fileformats.rules import Factory
 from iris.tests.unit.fileformats import TestField
 
 
@@ -271,10 +272,10 @@ class TestLBVC009_HybridPressure(TestField):
                 (AuxCoord([0.15],
                           long_name='sigma',
                           bounds=[brlev, brsvd1]), None)]
-            expect_factories = [(HybridPressureFactory,
-                                 [{'long_name': 'level_pressure'},
-                                  {'long_name': 'sigma'},
-                                  Reference('surface_air_pressure')])]
+            expect_factories = [Factory(HybridPressureFactory,
+                                        [{'long_name': 'level_pressure'},
+                                         {'long_name': 'sigma'},
+                                         Reference('surface_air_pressure')])]
         else:
             expect_coords_and_dims = []
             expect_factories = []
@@ -308,10 +309,10 @@ class TestLBVC065_HybridHeight(TestField):
                           attributes={'positive': 'up'}), None),
                 (AuxCoord([0.35],
                           long_name='sigma', bounds=[bhrlev, brsvd2]), None)]
-            expect_factories = [(HybridHeightFactory,
-                                 [{'long_name': 'level_height'},
-                                  {'long_name': 'sigma'},
-                                  Reference('orography')])]
+            expect_factories = [Factory(HybridHeightFactory,
+                                        [{'long_name': 'level_height'},
+                                         {'long_name': 'sigma'},
+                                         Reference('orography')])]
         else:
             expect_coords_and_dims = []
             expect_factories = []

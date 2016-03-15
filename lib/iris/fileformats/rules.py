@@ -24,7 +24,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import abc
-import collections
 from contextlib import contextmanager
 import getpass
 import logging
@@ -46,11 +45,77 @@ import iris.exceptions
 import iris.fileformats.um_cf_map
 from iris.util import is_regular, regular_step
 
-RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
-Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
-ReferenceTarget = collections.namedtuple('ReferenceTarget',
-                                         ('name', 'transform'))
 
+class RuleResult(object):
+    """
+    The results of running rules on a field, as used by a RulesContainer's
+    :meth:`iris.fileformats.rules.RulesContainer.verify` 
+
+    """
+    def __init__(self, cube, matching_rules, factories):
+        """
+        Args:
+
+        * cube:
+            An instance of :class:`iris.cube.Cube`.
+        * matching_rules:
+            A list of rules matching in the case of the field used.
+        * factories:
+            An iterable of :class:`Factory` instances, created from the field.
+        
+        """
+        self.cube = cube
+        self.matching_rules = matching_rules
+        self.factories = factories
+
+
+class Factory(object):
+    """
+    An :class:`iris.aux_factory` class definition and the arguments required to 
+    create an instance.
+    """
+    def __init__(self, factory_class, args):
+        """
+        Args:
+
+        * factory_class:
+            An :class:`iris.aux_factory` class definition.
+        * args:
+            Constructor arguments for the class
+
+        """
+        self.factory_class = factory_class
+        self.args = args
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class ReferenceTarget(object):
+    """
+    The target for a reference data set, as required by an
+    :class:`iris.aux_factory` instance.
+    """
+    def __init__(self, name, transform):
+        """
+        Args:
+
+        * name:
+            The name of the reference cube.
+        * transform:
+            A transform function, which takes an
+            :class:`iris.fileformat.cube.Cube` instance and returns
+            a dictionary of attributes to be altered.
+
+        """
+        self.name = name
+        self.transform = transform
 
 class ConcreteReferenceTarget(object):
     """Everything you need to make a real Cube for a named reference."""
@@ -853,10 +918,8 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     return result_cube
 
 
-_loader_attrs = ('field_generator', 'field_generator_kwargs',
-                 'converter', 'legacy_custom_rules')
-class Loader(collections.namedtuple('Loader', _loader_attrs)):
-    def __new__(cls, field_generator, field_generator_kwargs, converter,
+class Loader(object):
+    def __init__(self, field_generator, field_generator_kwargs, converter,
                 legacy_custom_rules=None):
         """
         Create a definition of a field-based Cube loader.
@@ -886,17 +949,85 @@ class Loader(collections.namedtuple('Loader', _loader_attrs)):
         if legacy_custom_rules is not None:
             warnings.warn('The `legacy_custom_rules` attribute is '
                           'deprecated.')
-        return tuple.__new__(cls, (field_generator, field_generator_kwargs,
-                                   converter, legacy_custom_rules))
+        self.field_generator = field_generator
+        self.field_generator_kwargs = field_generator_kwargs
+        self.converter = converter
+        self.legacy_custom_rules = legacy_custom_rules
 
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
 
-ConversionMetadata = collections.namedtuple('ConversionMetadata',
-                                            ('factories', 'references',
-                                             'standard_name', 'long_name',
-                                             'units', 'attributes',
-                                             'cell_methods',
-                                             'dim_coords_and_dims',
-                                             'aux_coords_and_dims'))
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+class ConversionMetadata(object):
+    """
+    A Metadata collection providing the information required in order to 
+    create a Cube.
+    """
+    def __init__(self, factories, references, standard_name, long_name,
+                 units, attributes, cell_methods, dim_coords_and_dims,
+                 aux_coords_and_dims):
+        """
+        Args:
+
+        * factories
+            An iterable of :class:`Factory` instances.
+
+        * references
+            An iterable of :class:`ReferenceTarget` instances.
+
+        * standard_name
+            The standard name for the Cube's data.
+
+        * long_name
+            An unconstrained description of the cube.
+
+        * units
+            The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
+
+        * attributes
+            A dictionary of cube attributes.
+
+        * cell_methods
+            A tuple of CellMethod objects, generally set by Iris, e.g.
+            ``(CellMethod("mean", coords='latitude'), )``.
+
+        * dim_coords_and_dims
+            A list of coordinates with scalar dimension mappings, e.g
+            ``[(lat_coord, 0), (lon_coord, 1)]``.
+
+        * aux_coords_and_dims
+            A list of coordinates with dimension mappings,
+            e.g ``[(lat_coord, 0), (lon_coord, (0, 1))]``.
+            See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
+            and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
+
+        """
+        self.factories = factories
+        self.references = references
+        self.standard_name = standard_name
+        self.long_name = long_name
+        self.units = units
+        self.attributes = attributes
+        self.cell_methods = cell_methods
+        self.dim_coords_and_dims = dim_coords_and_dims
+        self.aux_coords_and_dims = aux_coords_and_dims
+
+    def __iter__(self):
+        attrs = [self.factories,
+                 self.references,
+                 self.standard_name,
+                 self.long_name,
+                 self.units,
+                 self.attributes,
+                 self.cell_methods,
+                 self.dim_coords_and_dims,
+                 self.aux_coords_and_dims]
+        return iter(attrs)
 
 
 def _make_cube(field, converter):
