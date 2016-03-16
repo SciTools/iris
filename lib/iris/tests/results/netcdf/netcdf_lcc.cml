@@ -48,7 +48,7 @@
  		..., 11.7454500198, 11.7587404251, 11.77202034]]" shape="(60, 60)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="6bd5f993" long_name="x coordinate of projection" points="[223500, 224500, 225500, 226500, 227500, 228500,
+        <dimCoord id="7e9ea616" long_name="x coordinate of projection" points="[223500, 224500, 225500, 226500, 227500, 228500,
 		229500, 230500, 231500, 232500, 233500, 234500,
 		235500, 236500, 237500, 238500, 239500, 240500,
 		241500, 242500, 243500, 244500, 245500, 246500,
@@ -58,11 +58,11 @@
 		265500, 266500, 267500, 268500, 269500, 270500,
 		271500, 272500, 273500, 274500, 275500, 276500,
 		277500, 278500, 279500, 280500, 281500, 282500]" shape="(60,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="int64" var_name="x">
-          <lambertConformal central_lat="47.5" central_lon="13.33" ellipsoid="None" false_easting="400000.0" false_northing="400000.0" secant_latitudes="[ 49.  46.]"/>
+          <lambertConformal central_lat="47.5" central_lon="13.33" ellipsoid="None" false_easting="400000.0" false_northing="400000.0" secant_latitudes="(49.0, 46.0)"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="50b13ee6" long_name="y coordinate of projection" points="[346500, 347500, 348500, 349500, 350500, 351500,
+        <dimCoord id="327b090e" long_name="y coordinate of projection" points="[346500, 347500, 348500, 349500, 350500, 351500,
 		352500, 353500, 354500, 355500, 356500, 357500,
 		358500, 359500, 360500, 361500, 362500, 363500,
 		364500, 365500, 366500, 367500, 368500, 369500,
@@ -72,7 +72,7 @@
 		388500, 389500, 390500, 391500, 392500, 393500,
 		394500, 395500, 396500, 397500, 398500, 399500,
 		400500, 401500, 402500, 403500, 404500, 405500]" shape="(60,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="int64" var_name="y">
-          <lambertConformal central_lat="47.5" central_lon="13.33" ellipsoid="None" false_easting="400000.0" false_northing="400000.0" secant_latitudes="[ 49.  46.]"/>
+          <lambertConformal central_lat="47.5" central_lon="13.33" ellipsoid="None" false_easting="400000.0" false_northing="400000.0" secant_latitudes="(49.0, 46.0)"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">

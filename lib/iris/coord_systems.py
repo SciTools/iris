@@ -779,7 +779,10 @@ class LambertConformal(CoordSystem):
         #: Y offset from planar origin in metres.
         self.false_northing = false_northing
         #: The two standard parallels of the cone.
-        self.secant_latitudes = secant_latitudes
+        try:
+            self.secant_latitudes = tuple(secant_latitudes)
+        except TypeError:
+            self.secant_latitudes = (secant_latitudes,)
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
 
@@ -790,15 +793,6 @@ class LambertConformal(CoordSystem):
                    self.central_lat, self.central_lon,
                    self.false_easting, self.false_northing,
                    self.secant_latitudes, self.ellipsoid)
-
-    def __eq__(self, other):
-        sattrs = self.__dict__.copy()
-        oattrs = other.__dict__.copy()
-        s_secant_latitudes = sattrs.pop('secant_latitudes', None)
-        o_secant_latitudes = oattrs.pop('secant_latitudes', None)
-        return (self.__class__ == other.__class__ and
-                sattrs == oattrs and
-                (s_secant_latitudes==o_secant_latitudes).all())
 
     def as_cartopy_crs(self):
         # We're either north or south polar. Set a cutoff accordingly.
