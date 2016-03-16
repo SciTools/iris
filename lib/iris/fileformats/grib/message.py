@@ -33,17 +33,31 @@ import numpy as np
 from iris.exceptions import TranslationError
 
 
-class _GribMessage(object):
+class _OpenFileRef(object):
     """
-    Lightweight GRIB message wrapper, containing **only** the coded keys and
-    data attribute of the input GRIB message.
+    A reference to an open file that ensures that the file is closed
+    when the object is garbage collected.
+    """
+    def __init__(self, open_file):
+        self.open_file = open_file
+
+    def __del__(self):
+        if not self.open_file.closed:
+            self.open_file.close()
+
+
+class GribMessage(object):
+    """
+    An in-memory representation of a GribMessage, providing
+    access to the :meth:`GribMessage.data` payload and the metadata
+    elements by section via the :meth:`GribMessage.sections` property.
 
     """
 
     @staticmethod
     def messages_from_filename(filename):
         """
-        Return a generator of :class:`_GribMessage` instances; one for
+        Return a generator of :class:`GribMessage` instances; one for
         each message in the supplied GRIB file.
 
         Args:
@@ -52,31 +66,53 @@ class _GribMessage(object):
             Name of the file to generate fields from.
 
         """
-        with open(filename, 'rb') as grib_fh:
-            while True:
-                offset = grib_fh.tell()
-                grib_id = gribapi.grib_new_from_file(grib_fh)
-                if grib_id is None:
-                    break
-                raw_message = _RawGribMessage(grib_id)
-                recreate_raw = _MessageLocation(filename, offset)
-                yield _GribMessage(raw_message, recreate_raw)
+        grib_fh = open(filename, 'rb')
+        # create an _OpenFileRef to manage the closure of the file handle
+        file_ref = _OpenFileRef(grib_fh)
 
-    def __init__(self, raw_message, recreate_raw):
+        while True:
+            offset = grib_fh.tell()
+            grib_id = gribapi.grib_new_from_file(grib_fh)
+            if grib_id is None:
+                break
+            raw_message = _RawGribMessage(grib_id)
+            recreate_raw = _MessageLocation(filename, offset)
+            yield GribMessage(raw_message, recreate_raw, file_ref=file_ref)
+
+    def __init__(self, raw_message, recreate_raw, file_ref=None):
         """
-
-        Args:
-
-        * raw_message:
-            The _RawGribMessage instance which should be wrapped to
-            provide the `data` attribute.
+        It is recommended to obtain GribMessage instance from the static method
+        :meth:`GribMessage.messages_from_filename`, rather than creating
+        them directly.
 
         """
+        # A RawGribMessage giving gribapi access to the original grib message.
         self._raw_message = raw_message
+        # A _MessageLocation which biggus uses to read the message data array,
+        # by which time this message may be dead and the original grib file
+        # closed.
         self._recreate_raw = recreate_raw
+        # An _OpenFileRef to keep the grib file open while this GribMessage is
+        # alive, so that we can always use self._raw_message to fetch keys.
+        self._file_ref = file_ref
 
     @property
     def sections(self):
+        """
+        Return the key-value pairs of the message keys, grouped by containing
+        section.
+
+        Key-value pairs are collected into a dictionary of
+        :class:`Section` objects. One such object is made for
+        each section in the message, such that the section number is the
+        object's key in the containing dictionary. Each object contains
+        key-value pairs for all of the message keys in the given section.
+
+        For example::
+
+            print(grib_message[4]['parameterNumber'])
+
+        """
         return self._raw_message.sections
 
     @property
@@ -123,6 +159,15 @@ class _GribMessage(object):
             fmt = 'Grid definition template {} is not supported'
             raise TranslationError(fmt.format(template))
         return data
+
+    def __getstate__(self):
+        """
+        Alter state of object prior to pickle, ensure open file is closed.
+
+        """
+        if not self._file_ref.open_file.closed:
+            self._file_ref.open_file.close()
+        return self
 
 
 class _MessageLocation(namedtuple('_MessageLocation', 'filename offset')):
@@ -273,15 +318,10 @@ class _RawGribMessage(object):
         section.
 
         Key-value pairs are collected into a dictionary of
-        :class:`_Section` objects. One such object is made for
+        :class:`Section` objects. One such object is made for
         each section in the message, such that the section number is the
         object's key in the containing dictionary. Each object contains
         key-value pairs for all of the message keys in the given section.
-
-        .. warning::
-            This currently does **not** return only the coded keys from a
-            message. This is because the gribapi functionality needed to
-            achieve this is broken, with a fix available from gribapi v1.13.0.
 
         """
         if self._sections is None:
@@ -301,7 +341,7 @@ class _RawGribMessage(object):
         """
         Group keys by section.
 
-        Returns a dictionary mapping section number to :class:`_Section`
+        Returns a dictionary mapping section number to :class:`Section`
         instance.
 
         .. seealso::
@@ -323,17 +363,33 @@ class _RawGribMessage(object):
             elif key_name == '7777':
                 new_section = 8
             if section != new_section:
-                sections[section] = _Section(self._message_id, section,
-                                             section_keys)
+                sections[section] = Section(self._message_id, section,
+                                            section_keys)
                 section_keys = []
                 section = new_section
             section_keys.append(key_name)
-        sections[section] = _Section(self._message_id, section, section_keys)
+        sections[section] = Section(self._message_id, section, section_keys)
         return sections
 
 
-class _Section(object):
+class Section(object):
+    """
+    A Section of a GRIB message, supporting dictionary like access to
+    attributes using gribapi key strings.
+
+    Values for keys may be changed using assignment but this does not
+    write to the file.
+
+    """
+    # Keys are read from the file as required and values are cached.
+    # Within GribMessage instances all keys will have been fetched
+
     def __init__(self, message_id, number, keys):
+        """
+        It is recommended to obtain Sections from a GribMessage,
+        not to create them directly
+
+        """
         self._message_id = message_id
         self._number = number
         self._keys = keys
@@ -349,15 +405,23 @@ class _Section(object):
 
     def __getitem__(self, key):
         if key not in self._cache:
-            if key not in self._keys:
-                raise KeyError('{!r} not defined in section {}'.format(
-                    key, self._number))
             if key == 'numberOfSection':
                 value = self._number
+            elif key not in self._keys:
+                raise KeyError('{!r} not defined in section {}'.format(
+                    key, self._number))
             else:
                 value = self._get_key_value(key)
             self._cache[key] = value
         return self._cache[key]
+
+    def __setitem__(self, key, value):
+        # Allow the overwriting of any entry already in the _cache.
+        if key in self._cache:
+            self._cache[key] = value
+        else:
+            raise KeyError('{!r} cannot be redefined in '
+                           'section {}'.format(key, self._number))
 
     def _get_key_value(self, key):
         """
@@ -412,3 +476,7 @@ class _Section(object):
         else:
             res = gribapi.grib_get(self._message_id, key)
         return res
+
+    def keys(self):
+        """Return coded keys available in this Section."""
+        return self._keys

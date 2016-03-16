@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -44,7 +44,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import _save_rules
 import iris.fileformats.grib._load_convert
-from iris.fileformats.grib._message import _GribMessage
+from iris.fileformats.grib.message import GribMessage
 import iris.fileformats.grib.load_rules
 
 
@@ -55,6 +55,7 @@ __all__ = ['as_messages', 'as_pairs', 'grib_generator', 'load_cubes',
 
 #: Set this flag to True to enable support of negative forecast periods
 #: when loading and saving GRIB files.
+#: .. deprecated:: 1.10
 hindcast_workaround = False
 
 
@@ -175,8 +176,14 @@ class GribWrapper(object):
     """
     Contains a pygrib object plus some extra keys of our own.
 
+    .. deprecated:: 1.10
+
+    The class :class:`iris.fileformats.grib.message.GribMessage`
+    provides alternative means of working with GRIB message instances.
+
     """
     def __init__(self, grib_message, grib_fh=None, auto_regularise=True):
+        warnings.warn('Deprecated at version 1.10')
         """Store the grib message and compute our extra keys."""
         self.grib_message = grib_message
         deferred = grib_fh is not None
@@ -834,6 +841,12 @@ def grib_generator(filename, auto_regularise=True):
     Returns a generator of :class:`~iris.fileformats.grib.GribWrapper`
     fields from the given filename.
 
+    .. deprecated:: 1.10
+
+    The function:
+    :meth:`iris.fileformats.grib.message.GribMessage.messages_from_filename`
+    provides alternative means of obtainig GRIB messages from a file.
+
     Args:
 
     * filename (string):
@@ -849,6 +862,7 @@ def grib_generator(filename, auto_regularise=True):
         reduced grid to an equivalent regular grid.
 
     """
+    warnings.warn('Deprecated at version 1.10')
     with open(filename, 'rb') as grib_fh:
         while True:
             grib_message = gribapi.grib_new_from_file(grib_fh)
@@ -892,7 +906,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
     """
     if iris.FUTURE.strict_grib_load:
         grib_loader = iris.fileformats.rules.Loader(
-            _GribMessage.messages_from_filename,
+            GribMessage.messages_from_filename,
             {},
             iris.fileformats.grib._load_convert.convert)
     else:
@@ -962,7 +976,7 @@ def as_pairs(cube):
 def as_messages(cube):
     """
     Convert one or more cubes to GRIB messages.
-    Returns an iterable of grib_api GRIB messages.
+    Returns an iterable of grib_api GRIB message IDs.
 
     Args:
         * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or

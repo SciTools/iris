@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ import iris.tests as tests
 
 import gribapi
 
-from iris.fileformats.grib._message import _RawGribMessage
+from iris.fileformats.grib.message import _RawGribMessage
 
 
 @tests.skip_data

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the `iris.fileformats.grib.message._GribMessage` class.
+Unit tests for the `iris.fileformats.grib.message.GribMessage` class.
 
 """
 
@@ -33,7 +33,7 @@ import biggus
 import numpy as np
 
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._message import _GribMessage
+from iris.fileformats.grib.message import GribMessage
 from iris.tests import mock
 from iris.tests.unit.fileformats.grib import _make_test_message
 
@@ -46,8 +46,18 @@ class Test_messages_from_filename(tests.IrisTest):
     def test(self):
         filename = tests.get_data_path(('GRIB', '3_layer_viz',
                                         '3_layer.grib2'))
-        messages = list(_GribMessage.messages_from_filename(filename))
+        messages = list(GribMessage.messages_from_filename(filename))
         self.assertEqual(len(messages), 3)
+
+    def test_release_file(self):
+        filename = tests.get_data_path(('GRIB', '3_layer_viz',
+                                        '3_layer.grib2'))
+        my_file = open(filename)
+        self.patch('__builtin__.open', mock.Mock(return_value=my_file))
+        messages = list(GribMessage.messages_from_filename(filename))
+        self.assertFalse(my_file.closed)
+        del messages
+        self.assertTrue(my_file.closed)
 
 
 class Test_sections(tests.IrisTest):

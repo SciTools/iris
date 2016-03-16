@@ -1,0 +1,5 @@
+* deprecated:
+ iris.fileformats.grib.hindcast_workaround,
+ :class: `iris.fileformats.grib.GribWrapper`.
+ The class :class:`iris.fileformats.grib.message.GribMessage` provides
+ alternative means of working with GRIB message instances.

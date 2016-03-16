@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -62,11 +62,11 @@ class TestToggle(tests.IrisTest):
 
     def test_strict_mode(self):
         # Ensure that `load_cubes` uses:
-        #   iris.fileformats.grib._message._GribMessage.messages_from_filename
+        #   iris.fileformats.grib.message.GribMessage.messages_from_filename
         #   iris.fileformats.grib._load_convert.convert
         self._test(
             True,
-            iris.fileformats.grib._message._GribMessage.messages_from_filename,
+            iris.fileformats.grib.message.GribMessage.messages_from_filename,
             iris.fileformats.grib._load_convert.convert)
 
 

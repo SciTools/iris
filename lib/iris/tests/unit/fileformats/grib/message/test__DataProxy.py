@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,7 @@ import numpy as np
 from numpy.random import randint
 
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._message import _DataProxy
+from iris.fileformats.grib.message import _DataProxy
 
 
 class Test__bitmap(tests.IrisTest):
