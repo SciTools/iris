@@ -57,7 +57,7 @@
 		259500, 260500, 261500, 262500, 263500, 264500,
 		265500, 266500, 267500, 268500, 269500, 270500,
 		271500, 272500, 273500, 274500, 275500, 276500,
-		277500, 278500, 279500, 280500, 281500, 282500]" shape="(60,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="int64" var_name="x">
+		277500, 278500, 279500, 280500, 281500, 282500]" shape="(60,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="int32" var_name="x">
           <lambertConformal central_lat="47.5" central_lon="13.33" ellipsoid="None" false_easting="400000.0" false_northing="400000.0" secant_latitudes="(49.0, 46.0)"/>
         </dimCoord>
       </coord>
@@ -71,7 +71,7 @@
 		382500, 383500, 384500, 385500, 386500, 387500,
 		388500, 389500, 390500, 391500, 392500, 393500,
 		394500, 395500, 396500, 397500, 398500, 399500,
-		400500, 401500, 402500, 403500, 404500, 405500]" shape="(60,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="int64" var_name="y">
+		400500, 401500, 402500, 403500, 404500, 405500]" shape="(60,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="int32" var_name="y">
           <lambertConformal central_lat="47.5" central_lon="13.33" ellipsoid="None" false_easting="400000.0" false_northing="400000.0" secant_latitudes="(49.0, 46.0)"/>
         </dimCoord>
       </coord>
@@ -93,9 +93,9 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord name="month"/>
+        <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xdce8f9a0" dtype="float64" fill_value="1e+20" mask_checksum="0x8cfaa70e" shape="(12, 60, 60)"/>
+    <data checksum="0xe2560749" dtype="float64" fill_value="1e+20" mask_checksum="0x8cfaa70e" shape="(12, 60, 60)"/>
   </cube>
 </cubes>
