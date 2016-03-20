@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 from iris.coords import DimCoord
 from iris.cube import CubeList
 from iris.exceptions import TranslationError
-from iris.fileformats.ff import FF2PP
+from iris.fileformats.um import um_to_pp
 from iris.fileformats.pp_rules import (_convert_time_coords,
                                        _convert_vertical_coords,
                                        _convert_scalar_realization_coords,
@@ -42,7 +42,7 @@ _HINTS = {name: i for i, name in zip(range(len(_HINT_COORDS)), _HINT_COORDS)}
 
 
 def _collations_from_filename(filename):
-    fields = iter(FF2PP(filename))
+    fields = iter(um_to_pp(filename))
     return group_structured_fields(fields)
 
 

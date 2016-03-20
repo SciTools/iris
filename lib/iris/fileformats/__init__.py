@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,7 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
                                    FormatSpecification, MagicNumber,
                                    UriProtocol, LeadingLine)
 from . import abf
-from . import ff
+from . import um
 try:
     from . import grib
 except ImportError:
@@ -129,7 +129,7 @@ del _nc_dap
 FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) pre v3.1',
                                           MagicNumber(8),
                                           0x000000000000000F,
-                                          ff.load_cubes,
+                                          um.load_cubes,
                                           priority=3,
                                           constraint_aware_handler=True))
 
@@ -137,7 +137,7 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) pre v3.1',
 FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) post v5.2',
                                           MagicNumber(8),
                                           0x0000000000000014,
-                                          ff.load_cubes,
+                                          um.load_cubes,
                                           priority=4,
                                           constraint_aware_handler=True))
 
@@ -145,7 +145,7 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) post v5.2',
 FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary',
                                           MagicNumber(8),
                                           0xFFFFFFFFFFFF8000,
-                                          ff.load_cubes,
+                                          um.load_cubes,
                                           priority=3,
                                           constraint_aware_handler=True))
 
@@ -154,7 +154,7 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) converted '
                                           'with ieee to 32 bit',
                                           MagicNumber(4),
                                           0x00000014,
-                                          ff.load_cubes_32bit_ieee,
+                                          um.load_cubes_32bit_ieee,
                                           priority=3,
                                           constraint_aware_handler=True))
 
@@ -163,7 +163,7 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary '
                                           'converted with ieee to 32 bit',
                                           MagicNumber(4),
                                           0xFFFF8000,
-                                          ff.load_cubes_32bit_ieee,
+                                          um.load_cubes_32bit_ieee,
                                           priority=3,
                                           constraint_aware_handler=True))
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,7 +31,8 @@ import tempfile
 import numpy as np
 
 # Borrow some definitions...
-from iris.fileformats.ff import _FF_HEADER_POINTERS, FF_HEADER as _FF_HEADER
+from iris.fileformats._ff import (_FF_HEADER_POINTERS,
+                                  FF_HEADER as _FF_HEADER)
 from iris.fileformats.pp import _header_defn
 
 try:

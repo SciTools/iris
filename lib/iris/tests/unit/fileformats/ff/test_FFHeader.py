@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,7 @@ import iris.tests as tests
 import collections
 import numpy as np
 
-from iris.fileformats.ff import FFHeader
+from iris.fileformats._ff import FFHeader
 from iris.tests import mock
 
 
@@ -64,7 +64,7 @@ class Test_grid(tests.IrisTest):
 
     def test_unknown(self):
         header = self._header(0)
-        with mock.patch('iris.fileformats.ff.NewDynamics',
+        with mock.patch('iris.fileformats._ff.NewDynamics',
                         mock.Mock(return_value=mock.sentinel.grid)):
             with mock.patch('warnings.warn') as warn:
                 grid = header.grid()
