@@ -40,12 +40,6 @@ from . import pp
 __all__ = ['FORMAT_AGENT']
 
 
-def _pp_little_endian(filename, *args, **kwargs):
-    msg = 'PP file {!r} contains little-endian data, ' \
-          'please convert to big-endian with command line utility "bigend".'
-    raise ValueError(msg.format(filename))
-
-
 FORMAT_AGENT = FormatAgent()
 FORMAT_AGENT.__doc__ = "The FORMAT_AGENT is responsible for identifying the " \
                        "format of a given URI. New formats can be added " \
@@ -67,7 +61,7 @@ FORMAT_AGENT.add_spec(
     FormatSpecification('UM Post Processing file (PP) little-endian',
                         MagicNumber(4),
                         0x00010000,
-                        _pp_little_endian,
+                        pp.load_cubes_little_endian,
                         priority=3,
                         constraint_aware_handler=True))
 

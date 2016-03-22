@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -527,6 +527,29 @@ class TestCoordinateForms(tests.IrisTest):
         self.assertEqual(pp_field.bdx, 0.0)
         self.assertArrayAllClose(pp_field.x, x_values)
         self.assertEqual(pp_field.lbnpt, nx)
+
+
+@tests.skip_data
+class TestLoadLittleendian(tests.IrisTest):
+    def test_load_sample(self):
+        file_path = tests.get_data_path(
+            ('PP', 'little_endian', 'qrparm.orog.pp'))
+        # Ensure it just loads.
+        cube = iris.load_cube(file_path, 'surface_altitude')
+        self.assertEqual(cube.shape, (110, 160))
+
+        # Check for sensible floating point numbers.
+        def check_minmax(array, expect_min, expect_max):
+            found = np.array([np.min(array), np.max(array)])
+            expected = np.array([expect_min, expect_max])
+            self.assertArrayAlmostEqual(found, expected, decimal=2)
+
+        lons = cube.coord('grid_longitude').points
+        lats = cube.coord('grid_latitude').points
+        data = cube.data
+        check_minmax(lons, 342.0, 376.98)
+        check_minmax(lats, -10.48, 13.5)
+        check_minmax(data, -30.48, 6029.1)
 
 
 if __name__ == "__main__":
