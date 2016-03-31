@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -101,27 +101,10 @@ def extend_circular_data(data, coord_dim):
     coord_slice_in_cube = [slice(None)] * data.ndim
     coord_slice_in_cube[coord_dim] = slice(0, 1)
 
-    # TODO: Restore this code after resolution of the following issue:
-    # https://github.com/numpy/numpy/issues/478
-    # data = np.append(cube.data,
-    #                  cube.data[tuple(coord_slice_in_cube)],
-    #                  axis=sample_dim)
-    # This is the alternative, temporary workaround.
-    # It doesn't use append on an nD mask.
-    if not (isinstance(data, ma.MaskedArray) and
-            not isinstance(data.mask, np.ndarray)) or \
-            len(data.mask.shape) == 0:
-        data = np.append(data,
-                         data[tuple(coord_slice_in_cube)],
-                         axis=coord_dim)
-    else:
-        new_data = np.append(data.data,
-                             data.data[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        new_mask = np.append(data.mask,
-                             data.mask[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        data = ma.array(new_data, mask=new_mask)
+    mod = ma if isinstance(data, ma.MaskedArray) else np
+    data = mod.concatenate((data,
+                            data[tuple(coord_slice_in_cube)]),
+                           axis=coord_dim)
     return data
 
 
