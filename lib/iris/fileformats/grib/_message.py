@@ -103,14 +103,14 @@ class _GribMessage(object):
             raise TranslationError('Grid definition Section 3 contains '
                                    'unsupported quasi-regular grid.')
 
-        if template in (0, 1, 5, 12, 30, 40, 90):
+        if template in (0, 1, 5, 12, 20, 30, 40, 90):
             # We can ignore the first two bits (i-neg, j-pos) because
             # that is already captured in the coordinate values.
             if grid_section['scanningMode'] & 0x3f:
                 msg = 'Unsupported scanning mode: {}'.format(
                     grid_section['scanningMode'])
                 raise TranslationError(msg)
-            if template in (30, 90):
+            if template in (20, 30, 90):
                 shape = (grid_section['Ny'], grid_section['Nx'])
             elif template == 40 and reduced:
                 shape = (grid_section['numberOfDataPoints'],)
