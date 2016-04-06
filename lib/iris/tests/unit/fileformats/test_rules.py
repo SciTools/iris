@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,14 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test metadata translation rules.
+Test iris.fileformats.rules.py - metadata translation rules.
 
 """
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 import types
@@ -31,7 +32,9 @@ from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
 from iris.fileformats.rules import (ConcreteReferenceTarget,
                                     ConversionMetadata, Factory, Loader,
-                                    Reference, ReferenceTarget, load_cubes)
+                                    Reference, ReferenceTarget, load_cubes,
+                                    scalar_cell_method)
+from iris.coords import CellMethod
 import iris.tests.stock as stock
 
 
@@ -109,6 +112,7 @@ class TestLoadCubes(tests.IrisTest):
         factory.args = [{'name': 'foo'}]
         factory.factory_class = lambda *args: \
             setattr(aux_factory, 'fake_args', args) or aux_factory
+
         def converter(field):
             return ConversionMetadata([factory], [], '', '', '', {}, [], [],
                                       [])
@@ -167,6 +171,7 @@ class TestLoadCubes(tests.IrisTest):
         # A fake rule set returning:
         #   1) A parameter cube needing an "orography" reference
         #   2) An "orography" cube
+
         def converter(field):
             if field is press_field:
                 src = param_cube
@@ -197,6 +202,32 @@ class TestLoadCubes(tests.IrisTest):
         # must have been created with the correct arguments.
         self.assertEqual(len(cubes[1].aux_factories), 1)
         self.assertEqual(len(cubes[1].coords('surface_altitude')), 1)
+
+
+class Test_scalar_cell_method(tests.IrisTest):
+    """ Tests for iris.fileformats.rules.scalar_cell_method() function """
+    def setUp(self):
+        self.cube = stock.simple_2d()
+        self.cm = CellMethod('mean', 'foo', '1 hour')
+        self.cube.cell_methods = (self.cm, )
+
+    def test_cell_method_found(self):
+        actual = scalar_cell_method(self.cube, 'mean', 'foo')
+        self.assertEqual(actual, self.cm)
+
+    def test_method_different(self):
+        actual = scalar_cell_method(self.cube, 'average', 'foo')
+        self.assertIsNone(actual)
+
+    def test_coord_name_different(self):
+        actual = scalar_cell_method(self.cube, 'average', 'bar')
+        self.assertIsNone(actual)
+
+    def test_double_coord_fails(self):
+        self.cube.cell_methods = (CellMethod('mean', ('foo', 'bar'),
+                                             ('1 hour', '1 hour')), )
+        actual = scalar_cell_method(self.cube, 'mean', 'foo')
+        self.assertIsNone(actual)
 
 
 if __name__ == "__main__":
