@@ -1,0 +1,3 @@
+* LBPROC is set correctly when a cube containing the minimum of a variable is
+ saved to a PP file. The IA component of LBTIM is set correctly when saving
+ maximum or minimum values.
