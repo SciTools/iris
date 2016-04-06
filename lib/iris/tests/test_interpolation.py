@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -510,25 +510,6 @@ class TestLinear1dInterpolation(tests.IrisTest):
         # this test tries to extract a float from an array of type integer. the result should be of type float.
         r = iris.analysis.interpolate.linear(self.simple2d_cube_extended, [('shared_x_coord', 7.5)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_casting_datatype.cml'))
-        
-    def test_mask(self):
-        # Test np.append bug with masked arrays.
-        # Based on the bug reported in https://github.com/SciTools/iris/issues/106
-        cube = tests.stock.realistic_4d_w_missing_data()
-        cube = cube[0, 2, 18::-1]
-        cube.coord('grid_longitude').circular = True
-        _ = iris.analysis.interpolate.linear(cube, [('grid_longitude', 0), ('grid_latitude', 0)])
-        # Did np.append go wrong?
-        self.assertArrayEqual(cube.data.data.shape, cube.data.mask.shape)
-    
-    def test_scalar_mask(self):
-        # Testing the bug raised in https://github.com/SciTools/iris/pull/123#issuecomment-9309872
-        # (the fix workaround for the np.append bug failed for scalar masks) 
-        cube = tests.stock.realistic_4d_w_missing_data()
-        cube.data = ma.arange(np.product(cube.shape), dtype=np.float32).reshape(cube.shape)
-        cube.coord('grid_longitude').circular = True
-        # There's no result to test, just make sure we don't cause an exception with the scalar mask.
-        _ = iris.analysis.interpolate.linear(cube, [('grid_longitude', 0), ('grid_latitude', 0)])
 
 
 @tests.skip_data

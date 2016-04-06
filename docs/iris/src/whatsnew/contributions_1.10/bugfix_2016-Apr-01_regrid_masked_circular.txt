@@ -1,0 +1,4 @@
+Fixed a bug where regridding circular data would ignore any source masking.
+  This affected any regridding using the :class:`~iris.analysis.Linear` and
+  :class:`~iris.analysis.Nearest` schemes, and also
+  :func:`iris.analysis.interpolate.linear`.

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -1213,16 +1213,113 @@ class Test___call____circular(tests.IrisTest):
             cml = RESULT_DIR + ('{}_non_circular.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
-    def test_circular_src(self):
-        # Circular src -> non-circular grid
-        src = self.src
-        src.coord('longitude').circular = True
+    def _check_circular_results(self, src_cube):
+        results = []
         for method in self.methods:
-            regridder = Regridder(src, self.grid, method, self.mode)
-            result = regridder(src)
+            regridder = Regridder(src_cube, self.grid, method, self.mode)
+            result = regridder(src_cube)
+            results.append(result)
             self.assertFalse(result.coord('longitude').circular)
             cml = RESULT_DIR + ('{}_circular_src.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
+        return results
+
+    def test_circular_src(self):
+        # Circular src -> non-circular grid, standard test.
+        src = self.src
+        src.coord('longitude').circular = True
+        self._check_circular_results(src)
+
+    def test_circular_src__masked_missingmask(self):
+        # Test the special case where src_cube.data.mask is just *False*,
+        # instead of being an array.
+        src = self.src
+        src.coord('longitude').circular = True
+        src.data = np.ma.MaskedArray(src.data)
+        self.assertEqual(src.data.mask, False)
+        method_results = self._check_circular_results(src)
+        for method_result in method_results:
+            self.assertIsInstance(method_result.data.mask, np.ndarray)
+            self.assertTrue(np.all(method_result.data.mask == np.array(False)))
+
+    def test_circular_src__masked(self):
+        # Test that masked source points produce the expected masked results.
+
+        # Define source + destination sample points.
+        # Note: these are chosen to avoid any marginal edge-cases, such as
+        # where a destination value matches a source point (for 'linear'), or a
+        # half-way point (for 'nearest').
+        src_x = [0.0, 60.0, 120.0, 180.0, 240.0, 300.0]
+        dst_x = [20.0, 80.0, 140.0, 200.0, 260.0, 320.0]
+        src_y = [100.0, 200.0, 300.0, 400.0, 500.0]
+        dst_y = [40.0, 140.0, 240.0, 340.0, 440.0, 540.0]
+
+        # Define the expected result masks for the tested methods,
+        # when just the middle source point is masked...
+        result_masks = {
+            'nearest': np.array(
+                [[0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 1, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0]],
+                dtype=bool),
+            'linear': np.array(
+                [[0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 1, 1, 0, 0, 0],
+                 [0, 1, 1, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0]],
+                dtype=bool),
+        }
+
+        # Cook up some distinctive data values.
+        src_nx, src_ny, dst_nx, dst_ny = (len(dd) for dd in
+                                          (src_x, src_y, dst_x, dst_y))
+        data_x = np.arange(src_nx).reshape((1, src_nx))
+        data_y = np.arange(src_ny).reshape((src_ny, 1))
+        data = 3.0 + data_x + 20.0 * data_y
+
+        # Make src and dst test cubes.
+        def make_2d_cube(x_points, y_points, data):
+            cube = Cube(data)
+            y_coord = DimCoord(y_points, standard_name='latitude',
+                               units='degrees')
+            x_coord = DimCoord(x_points, standard_name='longitude',
+                               units='degrees')
+            x_coord.circular = True
+            cube.add_dim_coord(y_coord, 0)
+            cube.add_dim_coord(x_coord, 1)
+            return cube
+
+        src_cube_full = make_2d_cube(src_x, src_y, data)
+        dst_cube = make_2d_cube(dst_x, dst_y, np.zeros((dst_ny, dst_nx)))
+
+        src_cube_masked = src_cube_full.copy()
+        src_cube_masked.data = np.ma.array(src_cube_masked.data,
+                                           mask=np.zeros((src_ny, src_nx)))
+
+        # Mask the middle source point, and give it a huge underlying data
+        # value to ensure that it does not take any part in the results.
+        src_cube_masked.data[2, 2] = 1e19
+        src_cube_masked.data.mask[2, 2] = True
+
+        # Test results against the unmasked operation, for each method.
+        for method in self.methods:
+            regridder = Regridder(src_cube_full, dst_cube, method,
+                                  extrapolation_mode='nan')
+            result_basic = regridder(src_cube_full)
+            result_masked = regridder(src_cube_masked)
+            # Check we get a masked result
+            self.assertIsInstance(result_masked.data, np.ma.MaskedArray)
+            # Check that the result matches the basic one, except for being
+            # masked at the specific expected points.
+            expected_result_data = np.ma.array(result_basic.data)
+            expected_result_data.mask = result_masks[method]
+            self.assertMaskedArrayEqual(result_masked.data,
+                                        expected_result_data)
 
     def test_circular_grid(self):
         # Non-circular src -> circular grid
