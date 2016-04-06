@@ -794,6 +794,76 @@ def grid_definition_template_12(section, metadata):
     metadata['dim_coords_and_dims'].append((x_coord, x_dim))
 
 
+def grid_definition_template_20(section, metadata):
+    """
+    Translate template representing a Polar Stereographic grid.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    major, minor, radius = ellipsoid_geometry(section)
+    geog_cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
+
+    proj_centre = projection_centre(section['projectionCentreFlag'])
+    if proj_centre.bipolar_and_symmetric:
+        raise TranslationError('Bipolar and symmetric polar stereo projections'
+                               ' are not supported by the '
+                               'grid_definition_template_20 translation.')
+    if proj_centre.south_pole_on_projection_plane:
+        central_lat = -90.
+    else:
+        central_lat = 90.
+    central_lon = section['orientationOfTheGrid'] * _GRID_ACCURACY_IN_DEGREES
+    true_scale_lat = section['LaD'] * _GRID_ACCURACY_IN_DEGREES
+    cs = icoord_systems.Stereographic(central_lat=central_lat,
+                                      central_lon=central_lon,
+                                      true_scale_lat=true_scale_lat,
+                                      ellipsoid=geog_cs)
+    x_coord, y_coord, scan = _calculate_proj_coords_from_lon_lat(section, cs)
+
+    # Determine the order of the dimensions.
+    y_dim, x_dim = 0, 1
+    if scan.j_consecutive:
+        y_dim, x_dim = 1, 0
+
+    # Add the projection coordinates to the metadata dim coords.
+    metadata['dim_coords_and_dims'].append((y_coord, y_dim))
+    metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
+def _calculate_proj_coords_from_lon_lat(section, cs):
+    # Construct the coordinate points, the start point is given in millidegrees
+    # but the distance measurement is in 10-3 m, so a conversion is necessary
+    # to find the origin in m.
+
+    scan = scanning_mode(section['scanningMode'])
+    lon_0 = section['longitudeOfFirstGridPoint'] * _GRID_ACCURACY_IN_DEGREES
+    lat_0 = section['latitudeOfFirstGridPoint'] * _GRID_ACCURACY_IN_DEGREES
+    x0_m, y0_m = cs.as_cartopy_crs().transform_point(
+        lon_0, lat_0, ccrs.Geodetic())
+    dx_m = section['Dx'] * 1e-3
+    dy_m = section['Dy'] * 1e-3
+    x_dir = -1 if scan.i_negative else 1
+    y_dir = 1 if scan.j_positive else -1
+    x_points = x0_m + dx_m * x_dir * np.arange(section['Nx'], dtype=np.float64)
+    y_points = y0_m + dy_m * y_dir * np.arange(section['Ny'], dtype=np.float64)
+
+    # Create the dimension coordinates.
+    x_coord = DimCoord(x_points, standard_name='projection_x_coordinate',
+                       units='m', coord_system=cs)
+    y_coord = DimCoord(y_points, standard_name='projection_y_coordinate',
+                       units='m', coord_system=cs)
+    return x_coord, y_coord, scan
+
+
 def grid_definition_template_30(section, metadata):
     """
     Translate template representing a Lambert Conformal grid.
@@ -844,26 +914,7 @@ def grid_definition_template_30(section, metadata):
         msg = 'Unable to translate resolution and component flags.'
         warnings.warn(msg)
 
-    # Construct the coordinate points, the start point is given in millidegrees
-    # but the distance measurement is in 10-3 m, so a conversion is necessary
-    # to find the origin in m.
-    scan = scanning_mode(section['scanningMode'])
-    lon_0 = section['longitudeOfFirstGridPoint'] * _GRID_ACCURACY_IN_DEGREES
-    lat_0 = section['latitudeOfFirstGridPoint'] * _GRID_ACCURACY_IN_DEGREES
-    x0_m, y0_m = cs.as_cartopy_crs().transform_point(
-        lon_0, lat_0, ccrs.Geodetic())
-    dx_m = section['Dx'] * 1e-3
-    dy_m = section['Dy'] * 1e-3
-    x_dir = -1 if scan.i_negative else 1
-    y_dir = 1 if scan.j_positive else -1
-    x_points = x0_m + dx_m * x_dir * np.arange(section['Nx'], dtype=np.float64)
-    y_points = y0_m + dy_m * y_dir * np.arange(section['Ny'], dtype=np.float64)
-
-    # Create the dimension coordinates.
-    x_coord = DimCoord(x_points, standard_name='projection_x_coordinate',
-                       units='m', coord_system=cs)
-    y_coord = DimCoord(y_points, standard_name='projection_y_coordinate',
-                       units='m', coord_system=cs)
+    x_coord, y_coord, scan = _calculate_proj_coords_from_lon_lat(section, cs)
 
     # Determine the order of the dimensions.
     y_dim, x_dim = 0, 1
@@ -1143,6 +1194,9 @@ def grid_definition_section(section, metadata):
     elif template == 12:
         # Process transverse Mercator.
         grid_definition_template_12(section, metadata)
+    elif template == 20:
+        # Polar stereographic.
+        grid_definition_template_20(section, metadata)
     elif template == 30:
         # Process Lambert conformal:
         grid_definition_template_30(section, metadata)
