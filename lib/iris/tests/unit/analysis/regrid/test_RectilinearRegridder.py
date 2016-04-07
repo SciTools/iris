@@ -179,6 +179,9 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
 
     def setUp(self):
         self.methods = ('linear', 'nearest')
+        self.test_dtypes = [np.dtype(spec)
+                            for spec in ('i8', 'i16', 'i32', 'i64',
+                                         'f8', 'f16', 'f32', 'f64')]
 
     def _regrid(self, data, method, extrapolation_mode=None):
         x = np.arange(4)
@@ -396,6 +399,25 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             with self.assertRaisesRegexp(ValueError, emsg):
                 self._regrid(data, method, 'BOGUS')
+
+    def test_method_result_types(self):
+        # Check return types from basic calculation on floats and ints.
+        for method in self.methods:
+            result_dtypes = {}
+            for source_dtype in self.test_dtypes:
+                data = np.arange(12, dtype=source_dtype).reshape(3, 4)
+                result = self._regrid(data, method)
+                result_dtypes[source_dtype] = result.dtype
+            if method == 'linear':
+                # Linear results are promoted to float.
+                expected_types_mapping = {
+                    test_dtype: np.promote_types(test_dtype, np.float16)
+                    for test_dtype in self.test_dtypes}
+            if method == 'nearest':
+                # Nearest results are the same as the original data.
+                expected_types_mapping = {test_dtype: test_dtype
+                                          for test_dtype in self.test_dtypes}
+            self.assertEqual(result_dtypes, expected_types_mapping)
 
 
 class Test___call____invalid_types(tests.IrisTest):

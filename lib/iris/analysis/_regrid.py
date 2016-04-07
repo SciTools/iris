@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -216,11 +216,12 @@ class RectilinearRegridder(object):
         shape[y_dim] = sample_grid_x.shape[0]
         shape[x_dim] = sample_grid_x.shape[1]
 
-        # If we're given integer values, convert them to the smallest
-        # possible float dtype that can accurately preserve the values.
         dtype = src_data.dtype
-        if dtype.kind == 'i':
-            dtype = np.promote_types(dtype, np.float16)
+        if method == 'linear':
+            # If we're given integer values, convert them to the smallest
+            # possible float dtype that can accurately preserve the values.
+            if dtype.kind == 'i':
+                dtype = np.promote_types(dtype, np.float16)
 
         if isinstance(src_data, ma.MaskedArray):
             data = ma.empty(shape, dtype=dtype)

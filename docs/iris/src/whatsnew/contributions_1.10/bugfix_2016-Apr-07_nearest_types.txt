@@ -1,0 +1,4 @@
+Fixed a bug where regridding or interpolation with the
+  :class:`~iris.analysis.Nearest` scheme returned floating-point results even
+  when the source data was integer typed.
+  It now always returns the same type as the source data.
