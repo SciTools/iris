@@ -348,6 +348,7 @@ class TestFutureImports(unittest.TestCase):
         '*/iris/fileformats/_pyke_rules/compiled_krb/compiled_pyke_files.py',
         '*/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py',
         '*/docs/iris/example_code/*/*.py',
+        '*/docs/iris/src/examples/*/*.py',
         '*/docs/iris/src/developers_guide/documenting/*.py',
     )
 
