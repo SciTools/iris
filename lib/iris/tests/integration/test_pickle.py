@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,25 +27,25 @@ import six.moves.cPickle as pickle
 
 if tests.GRIB_AVAILABLE:
     import gribapi
-    from iris.fileformats.grib import _GribMessage
+    from iris.fileformats.grib.message import GribMessage
 
 
 @tests.skip_data
 @tests.skip_grib
 class TestGribMessage(tests.IrisTest):
     def test(self):
-        # Check that a _GribMessage pickles without errors.
+        # Check that a GribMessage pickles without errors.
         path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
-        messages = _GribMessage.messages_from_filename(path)
+        messages = GribMessage.messages_from_filename(path)
         message = next(messages)
         with self.temp_filename('.pkl') as filename:
             with open(filename, 'wb') as f:
                 pickle.dump(message, f)
 
     def test_data(self):
-        # Check that _GribMessage.data pickles without errors.
+        # Check that GribMessage.data pickles without errors.
         path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
-        messages = _GribMessage.messages_from_filename(path)
+        messages = GribMessage.messages_from_filename(path)
         message = next(messages)
         with self.temp_filename('.pkl') as filename:
             with open(filename, 'wb') as f:

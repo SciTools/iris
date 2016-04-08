@@ -89,7 +89,7 @@ except ImportError:
     GRIB_AVAILABLE = False
 else:
     GRIB_AVAILABLE = True
-    from iris.fileformats.grib._message import _GribMessage
+    from iris.fileformats.grib.message import GribMessage
 
 
 #: Basepath for test results.
@@ -768,7 +768,7 @@ class TestGribMessage(IrisTest):
             An iterable of GRIB message keys and expected values.
 
         """
-        messages = _GribMessage.messages_from_filename(filename)
+        messages = GribMessage.messages_from_filename(filename)
         for message in messages:
             for element in contents:
                 section, key, val = element
@@ -793,8 +793,8 @@ class TestGribMessage(IrisTest):
             An iterable of section numbers to ignore during comparison.
 
         """
-        messages1 = list(_GribMessage.messages_from_filename(filename1))
-        messages2 = list(_GribMessage.messages_from_filename(filename2))
+        messages1 = list(GribMessage.messages_from_filename(filename1))
+        messages2 = list(GribMessage.messages_from_filename(filename2))
         self.assertEqual(len(messages1), len(messages2))
         for m1, m2 in zip(messages1, messages2):
             m1_sect = set(m1.sections.keys())
