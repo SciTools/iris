@@ -55,6 +55,7 @@ __all__ = ['as_messages', 'as_pairs', 'grib_generator', 'load_cubes',
 
 #: Set this flag to True to enable support of negative forecast periods
 #: when loading and saving GRIB files.
+#:
 #: .. deprecated:: 1.10
 hindcast_workaround = False
 

@@ -49,8 +49,8 @@ class _OpenFileRef(object):
 class GribMessage(object):
     """
     An in-memory representation of a GribMessage, providing
-    access to the :meth:`GribMessage.data` payload and the metadata
-    elements by section via the :meth:`GribMessage.sections` property.
+    access to the :meth:`~GribMessage.data` payload and the metadata
+    elements by section via the :meth:`~GribMessage.sections` property.
 
     """
 
@@ -82,7 +82,7 @@ class GribMessage(object):
     def __init__(self, raw_message, recreate_raw, file_ref=None):
         """
         It is recommended to obtain GribMessage instance from the static method
-        :meth:`GribMessage.messages_from_filename`, rather than creating
+        :meth:`~GribMessage.messages_from_filename`, rather than creating
         them directly.
 
         """
@@ -102,15 +102,13 @@ class GribMessage(object):
         Return the key-value pairs of the message keys, grouped by containing
         section.
 
-        Key-value pairs are collected into a dictionary of
-        :class:`Section` objects. One such object is made for
-        each section in the message, such that the section number is the
-        object's key in the containing dictionary. Each object contains
-        key-value pairs for all of the message keys in the given section.
+        Sections in a message are indexed by GRIB section-number,
+        and values in a section are indexed by key strings.
 
-        For example::
+        .. For example::
 
-            print(grib_message[4]['parameterNumber'])
+            print(grib_message.sections[4]['parameterNumber'])
+            grib_message.sections[1]['minute'] = 0
 
         """
         return self._raw_message.sections
