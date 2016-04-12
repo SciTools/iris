@@ -443,7 +443,12 @@ def _trig_method(coord, trig_function):
 
 def curl(i_cube, j_cube, k_cube=None, ignore=None):
     r'''
-    Calculate the 3d curl of the given vector of cubes.
+    Calculate the 2-dimensional or 3-dimensional spherical or cartesian
+    curl of the given vector of cubes.
+
+    As well as the standard x and y coordinates, this function requires each
+    cube to possess a vertical or z-like coordinate (representing some form
+    of height or pressure).  This can be a scalar or dimension coordinate.
 
     Args:
 
@@ -458,15 +463,31 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
         The k cube of the vector to operate on
     * ignore
         This argument is not used.
+
         .. deprecated:: 0.8
             The coordinates to ignore are determined automatically.
 
     Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)
 
+    If the k-cube is not passed in then the 2-dimensional curl will
+    be calculated, yielding a single cube representing the vertical component
+    as the result.  If the k-cube is passed in, the 3-dimensional curl will
+    be calculated, returning 3 component cubes.
+
+    All cubes passed in must have the same data units, and those units
+    must be spatially-derived (i.e. m/s or km/h).
+
     The calculation of curl is dependent on the type of
-    :func:`iris.coord_systems.CoordSystem` in the cube:
+    :func:`iris.coord_systems.CoordSystem` in the cube.
+    If the :func:`iris.coord_systems.CoordSystem` is either
+    GeogCS or RotatedGeogCS, the spherical curl will be calculated; otherwise
+    the cartesian curl will be calculated:
 
         Cartesian curl
+
+            When cartesian calculus is used, i_cube is the u vector component
+            (e.g. eastward), j_cube is the v component (e.g. northward) and
+            k_cube is the w component(vertical).
 
             The Cartesian curl is defined as:
 
