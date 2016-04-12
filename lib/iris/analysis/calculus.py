@@ -502,8 +502,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
         Spherical curl
 
-            When spherical calculus is used, i_cube is the phi vector
-            component (e.g. eastward), j_cube is the theta component
+            When spherical calculus is used, i_cube is the :math:\phi vector
+            component (e.g. eastward), j_cube is the :math:\theta component
             (e.g. northward) and k_cube is the radial component.
 
             The spherical curl is defined as:
