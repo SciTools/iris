@@ -442,7 +442,7 @@ def _trig_method(coord, trig_function):
 
 
 def curl(i_cube, j_cube, k_cube=None, ignore=None):
-    r'''
+    r"""
     Calculate the 2-dimensional or 3-dimensional spherical or cartesian
     curl of the given vector of cubes.
 
@@ -522,7 +522,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
             where phi is longitude, theta is latitude.
 
-    '''
+    """
     if ignore is not None:
         ignore = None
         warnings.warn('The ignore keyword to iris.analysis.calculus.curl '
@@ -567,7 +567,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
     # Non-spherical coords?
     spherical = isinstance(horiz_cs, (iris.coord_systems.GeogCS,
-                                        iris.coord_systems.RotatedGeogCS))
+                                      iris.coord_systems.RotatedGeogCS))
     if not spherical:
 
         # TODO Implement some mechanism for conforming to a common grid
