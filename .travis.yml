@@ -23,7 +23,7 @@ git:
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="0cd4c4f5ad330b036848f096e22d0a3a851749c1"
+  - export IRIS_TEST_DATA_REF="b7cde63a73a4762a09acf356db9901e9b9305508"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   - export IRIS_SAMPLE_DATA_REF="e292fc4ef99b0664de726774684dbeff56531b63"
