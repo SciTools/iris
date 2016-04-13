@@ -470,24 +470,23 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
     Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)
 
     If the k-cube is not passed in then the 2-dimensional curl will
-    be calculated, yielding a single cube representing the vertical component
-    as the result.  If the k-cube is passed in, the 3-dimensional curl will
+    be calculated, yielding the result: [None, None, k_cube].
+    If the k-cube is passed in, the 3-dimensional curl will
     be calculated, returning 3 component cubes.
 
     All cubes passed in must have the same data units, and those units
-    must be spatially-derived (i.e. m/s or km/h).
+    must be spatially-derived (e.g. 'm/s' or 'km/h').
 
     The calculation of curl is dependent on the type of
-    :func:`iris.coord_systems.CoordSystem` in the cube.
-    If the :func:`iris.coord_systems.CoordSystem` is either
+    :func:`~iris.coord_systems.CoordSystem` in the cube.
+    If the :func:`~iris.coord_systems.CoordSystem` is either
     GeogCS or RotatedGeogCS, the spherical curl will be calculated; otherwise
     the cartesian curl will be calculated:
 
         Cartesian curl
 
-            When cartesian calculus is used, i_cube is the u vector component
-            (e.g. eastward), j_cube is the v component (e.g. northward) and
-            k_cube is the w component(vertical).
+            When cartesian calculus is used, i_cube is the u component,
+            j_cube is the v component and k_cube is the w component.
 
             The Cartesian curl is defined as:
 
@@ -502,8 +501,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
         Spherical curl
 
-            When spherical calculus is used, i_cube is the :math:\phi vector
-            component (e.g. eastward), j_cube is the :math:\theta component
+            When spherical calculus is used, i_cube is the :math:`\phi` vector
+            component (e.g. eastward), j_cube is the :math:`\theta` component
             (e.g. northward) and k_cube is the radial component.
 
             The spherical curl is defined as:
@@ -566,10 +565,10 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
     horiz_cs = i_cube.coord_system('CoordSystem')
 
-    # Planar (non spherical) coords?
-    ellipsoidal = isinstance(horiz_cs, (iris.coord_systems.GeogCS,
+    # Non-spherical coords?
+    spherical = isinstance(horiz_cs, (iris.coord_systems.GeogCS,
                                         iris.coord_systems.RotatedGeogCS))
-    if not ellipsoidal:
+    if not spherical:
 
         # TODO Implement some mechanism for conforming to a common grid
         dj_dx = _curl_differentiate(j_cube, x_coord)
