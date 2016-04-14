@@ -480,6 +480,7 @@ def project(cube, target_proj, nx=None, ny=None):
     Return a new cube that is the result of projecting a cube with 1 or 2
     dimensional latitude-longitude coordinates from its coordinate system into
     a specified projection e.g. Robinson or Polar Stereographic.
+
     This function is intended to be used in cases where the cube's coordinates
     prevent one from directly visualising the data, e.g. when the longitude
     and latitude are two dimensional and do not make up a regular grid.
@@ -500,8 +501,20 @@ def project(cube, target_proj, nx=None, ny=None):
             covering the globe.
 
     Returns:
-        An instance of :class:`iris.cube.Cube` and a list describing the
-        extent of the projection.
+        An tuple containing an instance of :class:`iris.cube.Cube` and a list
+        describing the extent of the projection.
+
+    Example::
+
+        from iris.analysis.cartography import project
+
+        iris_cs = iris.coord_systems.Stereographic()
+        iris_cs_cube = project(cube, iris_cs)
+
+        cartopy_cs = ccrs.PlateCarree()
+        cartopy_cs_cube = project(cube, cartopy_cs)
+
+
 
     .. note::
 
@@ -509,6 +522,14 @@ def project(cube, target_proj, nx=None, ny=None):
         beyond the geographical extent of the source cube using a nearest
         neighbour approach. nx and ny then include those points which are
         outside of the target projection.
+
+    .. note::
+
+        The target coordinate system will only be assigned to the projected
+        x and y coordinates if it is an instance of
+        :class.`~iris.coord_systems.Coord_System`.  If an instance of Cartopy
+        Projection class is used, the projected grid coordinate system will be
+        None.
 
     .. note::
 
