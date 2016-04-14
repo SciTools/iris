@@ -567,7 +567,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
     # Non-spherical coords?
     spherical_coords = isinstance(horiz_cs, (iris.coord_systems.GeogCS,
-                                      iris.coord_systems.RotatedGeogCS))
+                                  iris.coord_systems.RotatedGeogCS))
     if not spherical_coords:
 
         # TODO Implement some mechanism for conforming to a common grid
