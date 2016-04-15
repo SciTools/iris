@@ -120,7 +120,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_pp_to_cube.py',
         '*/iris/tests/test_quickplot.py',
         '*/iris/tests/test_regrid.py',
-        '*/iris/tests/test_rules.py',
         '*/iris/tests/test_std_names.py',
         '*/iris/tests/test_trajectory.py',
         '*/iris/tests/test_unit.py',

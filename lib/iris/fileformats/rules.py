@@ -709,9 +709,10 @@ def scalar_cell_method(cube, method, coord_name):
     for cell_method in cube.cell_methods:
         if cell_method.method == method and len(cell_method.coord_names) == 1:
             name = cell_method.coord_names[0]
-            coords = cube.coords(name)
-            if len(coords) == 1:
-                found_cell_method = cell_method
+            if name == coord_name:
+                coords = cube.coords(name)
+                if len(coords) == 1:
+                    found_cell_method = cell_method
     return found_cell_method
 
 

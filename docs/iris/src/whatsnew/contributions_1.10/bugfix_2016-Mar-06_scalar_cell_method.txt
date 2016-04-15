@@ -1,0 +1,2 @@
+* The coord_name parameter to scalar_cell_method() is now checked correctly and
+ unit tests have been written for this function.
