@@ -546,9 +546,12 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
                              'real_circular_2dslice.cml'), checksum=False)
 
 
-@tests.skip_data
-class TestNearestNeighbour(tests.IrisTest):
-    def setUp(self):
+class MixinNearestNeighbour(object):
+    # Define standard tests for the three 'nearest_neighbour' routines.
+    # Cast as a 'mixin' as it used to test both (a) the original routines and
+    # (b) replacement operations to justify deprecation.
+
+    def _common_setUp(self):
         self.cube = iris.tests.stock.global_pp()
         points = np.arange(self.cube.coord('latitude').shape[0], dtype=np.float32)
         coord_to_add = iris.coords.DimCoord(points, long_name='i', units='meters')
@@ -694,6 +697,64 @@ class TestNearestNeighbour(tests.IrisTest):
             for point_val in lon_test_vals]
         lon_nearest_vals = [lon_coord_vals[i[1]] for i in lon_nearest_inds]
         self.assertArrayAlmostEqual(lon_nearest_vals, lon_expect_vals)
+
+
+@tests.skip_data
+class TestNearestNeighbour(tests.IrisTest, MixinNearestNeighbour):
+    def setUp(self):
+        self._common_setUp()
+
+
+@tests.skip_data
+class TestNearestNeighbour__Equivalent(tests.IrisTest, MixinNearestNeighbour):
+    # Class that repeats the tests of "TestNearestNeighbour", to check that the
+    # behaviour of the three 'nearest_neighbour' routines in
+    # iris.analysis.interpolation can be completely replicated with alternative
+    # (newer) functionality.
+
+    def setUp(self):
+        self.patch('iris.analysis.interpolate.nearest_neighbour_indices',
+                   self._equivalent_nn_indices)
+        self.patch('iris.analysis.interpolate.nearest_neighbour_data_value',
+                   self._equivalent_nn_data_value)
+        self.patch('iris.analysis.interpolate.extract_nearest_neighbour',
+                   self._equivalent_extract_nn)
+        self._common_setUp()
+
+    @staticmethod
+    def _equivalent_nn_indices(cube, sample_points,
+                               require_single_point=False):
+        indices = [slice(None) for _ in cube.shape]
+        for coord_spec, point in sample_points:
+            coord = cube.coord(coord_spec)
+            dim, = cube.coord_dims(coord)  # expect only 1d --> single dim !
+            dim_index = coord.nearest_neighbour_index(point)
+            if require_single_point:
+                # Mimic error behaviour of the original "data-value" function:
+                # Any dim already addressed must get the same index.
+                if indices[dim] != slice(None) and indices[dim] != dim_index:
+                    raise ValueError('indices over-specified')
+            indices[dim] = dim_index
+        if require_single_point:
+            # Mimic error behaviour of the original "data-value" function:
+            # All dims must have an index.
+            if any(index == slice(None) for index in indices):
+                raise ValueError('result expected to be a single point')
+        return tuple(indices)
+
+    @staticmethod
+    def _equivalent_extract_nn(cube, sample_points):
+        indices = TestNearestNeighbour__Equivalent._equivalent_nn_indices(
+            cube, sample_points)
+        new_cube = cube[indices]
+        return new_cube
+
+    @staticmethod
+    def _equivalent_nn_data_value(cube, sample_points):
+        indices = TestNearestNeighbour__Equivalent._equivalent_nn_indices(
+            # for this routine only, enable extra index checks.
+            cube, sample_points, require_single_point=True)
+        return cube.data[indices]
 
 
 if __name__ == "__main__":

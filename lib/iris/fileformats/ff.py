@@ -40,18 +40,13 @@ import warnings
 
 from iris.fileformats import _ff
 from iris.fileformats import pp
+from iris._deprecation_helpers import ClassDeprecationWrapper
 
-_DEPRECATION_WARNSTRING = "The module 'iris.fileformats.ff' is deprecated."
 
+_FF_DEPRECATION_WARNING = "The module 'iris.fileformats.ff' is deprecated."
 
-# Define a standard mechanism for deprecation messages.
-def _warn_deprecated(message=None):
-    if message is None:
-        message = _DEPRECATION_WARNSTRING
-    warnings.warn(message)
-
-# Issue a deprecation message when the module is loaded, if enabled.
-_warn_deprecated()
+# Issue a deprecation message when the module is loaded.
+warnings.warn(_FF_DEPRECATION_WARNING)
 
 # Directly import various simple data items from the 'old' ff module.
 from iris.fileformats._ff import (
@@ -76,70 +71,32 @@ from iris.fileformats._ff import (
 )
 
 
-# Make new wrappers for classes and functions, with the original public names,
-# but which emit deprecation warnings when used.
-class _DeprecationWrapperMetaclass(type):
-    def __new__(metacls, classname, bases, class_dict):
-        # Patch the subclass to duplicate docstrings from the parent class, and
-        # provide an __init__ that issues a deprecation warning and then calls
-        # the parent constructor.
-        parent_class = bases[0]
-        # Copy the original class docstring.
-        class_dict['__doc__'] = parent_class.__doc__
-
-        # Copy the init docstring too.
-        init_docstring = parent_class.__init__.__doc__
-
-        # Define a warning message.
-        depr_warnstring = _DEPRECATION_WARNSTRING
-        # Use a special class variable for an augmented warning message.
-        alternative_note = class_dict.get('_DEPRECATION_ALTERNATIVE_NOTE')
-        if alternative_note:
-            depr_warnstring = '{}\n{}\n'.format(
-                depr_warnstring, alternative_note)
-
-        # Save the parent class *on* the wrapper class, so we can chain to its
-        #  __init__ call.
-        class_dict['_target_parent_class'] = parent_class
-
-        # Create a wrapper init function which issues the deprecation.
-        def initfn(self, *args, **kwargs):
-            _warn_deprecated(depr_warnstring)
-            self._target_parent_class.__init__(self, *args, **kwargs)
-
-        # Set this as the init for the wrapper class.
-        initfn.func_name = '__init__'
-        initfn.__doc__ = init_docstring
-        class_dict['__init__'] = initfn
-
-        # Return the result.
-        return super(_DeprecationWrapperMetaclass, metacls).__new__(
-            metacls, classname, bases, class_dict)
+# Define wrappers to all public classes, that emit deprecation warnings.
+class Grid(six.with_metaclass(ClassDeprecationWrapper, _ff.Grid)):
+    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
 
 
-class Grid(six.with_metaclass(_DeprecationWrapperMetaclass, _ff.Grid)):
-    pass
+class ArakawaC(six.with_metaclass(ClassDeprecationWrapper, _ff.ArakawaC)):
+    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
 
 
-class ArakawaC(six.with_metaclass(_DeprecationWrapperMetaclass, _ff.ArakawaC)):
-    pass
-
-
-class NewDynamics(six.with_metaclass(_DeprecationWrapperMetaclass,
+class NewDynamics(six.with_metaclass(ClassDeprecationWrapper,
                                      _ff.NewDynamics)):
-    pass
+    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
 
 
-class ENDGame(six.with_metaclass(_DeprecationWrapperMetaclass, _ff.ENDGame)):
-    pass
+class ENDGame(six.with_metaclass(ClassDeprecationWrapper, _ff.ENDGame)):
+    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
 
 
-class FFHeader(six.with_metaclass(_DeprecationWrapperMetaclass, _ff.FFHeader)):
-    pass
+class FFHeader(six.with_metaclass(ClassDeprecationWrapper, _ff.FFHeader)):
+    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
 
 
-class FF2PP(six.with_metaclass(_DeprecationWrapperMetaclass, _ff.FF2PP)):
-    _DEPRECATION_ALTERNATIVE_NOTE = (
+class FF2PP(six.with_metaclass(ClassDeprecationWrapper, _ff.FF2PP)):
+    # Provide an enhanced deprecation message for this one.
+    _DEPRECATION_WARNING = (
+        _FF_DEPRECATION_WARNING + '\n' +
         "Please use 'iris.fileformats.um.um_to_pp' in place of "
         "'iris.fileformats.ff.FF2PP.")
 
