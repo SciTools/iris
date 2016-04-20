@@ -1306,12 +1306,15 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
             calendar = cf_units.CALENDAR_365_DAY
         return calendar
 
-    def _read_extra_data(self, pp_file, file_reader, extra_len):
+    def _read_extra_data(self, pp_file, file_reader, extra_len,
+                         little_ended=False):
         """Read the extra data section and update the self appropriately."""
 
+        dtype_endian_char = '<' if little_ended else '>'
         # While there is still extra data to decode run this loop
         while extra_len > 0:
-            extra_int_code = struct.unpack_from('>L',
+            dtype = '%cL' % dtype_endian_char
+            extra_int_code = struct.unpack_from(dtype,
                                                 file_reader(PP_WORD_DEPTH))[0]
             extra_len -= PP_WORD_DEPTH
 
@@ -1321,18 +1324,18 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
             data_len = ia * PP_WORD_DEPTH
 
             if ib == 10:
-                field_title = struct.unpack_from('>%ds' % data_len,
-                                                 file_reader(data_len))
+                dtype = '%c%ds' % (dtype_endian_char, data_len)
+                field_title = struct.unpack_from(dtype, file_reader(data_len))
                 self.field_title = field_title[0].rstrip(b'\00').decode()
             elif ib == 11:
-                domain_title = struct.unpack_from('>%ds' % data_len,
+                dtype = '%c%ds' % (dtype_endian_char, data_len)
+                domain_title = struct.unpack_from(dtype,
                                                   file_reader(data_len))
                 self.domain_title = domain_title[0].rstrip(b'\00').decode()
             elif ib in EXTRA_DATA:
                 attr_name = EXTRA_DATA[ib]
-                values = np.fromfile(pp_file,
-                                     dtype=np.dtype('>f%d' % PP_WORD_DEPTH),
-                                     count=ia)
+                dtype = np.dtype('%cf%d' % (dtype_endian_char, PP_WORD_DEPTH))
+                values = np.fromfile(pp_file, dtype=dtype, count=ia)
                 # Ensure the values are in the native byte order
                 if not values.dtype.isnative:
                     values.byteswap(True)
@@ -1782,7 +1785,7 @@ def make_pp_field(header):
 LoadedArrayBytes = collections.namedtuple('LoadedArrayBytes', 'bytes, dtype')
 
 
-def load(filename, read_data=False):
+def load(filename, read_data=False, little_ended=False):
     """
     Return an iterator of PPFields given a filename.
 
@@ -1797,13 +1800,18 @@ def load(filename, read_data=False):
         data manager will be provided which can subsequently load the data
         on demand. Default False.
 
+    * little_ended - boolean
+        If True, file contains all little-ended words (header and data).
+
     To iterate through all of the fields in a pp file::
 
         for field in iris.fileformats.pp.load(filename):
             print(field)
 
     """
-    return _interpret_fields(_field_gen(filename, read_data_bytes=read_data))
+    return _interpret_fields(_field_gen(filename,
+                                        read_data_bytes=read_data,
+                                        little_ended=little_ended))
 
 
 def _interpret_fields(fields):
@@ -1880,7 +1888,7 @@ def _create_field_data(field, data_shape, land_mask):
         field._data = biggus.NumpyArrayAdapter(proxy)
 
 
-def _field_gen(filename, read_data_bytes):
+def _field_gen(filename, read_data_bytes, little_ended=False):
     """
     Returns a generator of "half-formed" PPField instances derived from
     the given filename.
@@ -1894,6 +1902,7 @@ def _field_gen(filename, read_data_bytes):
     two-dimensional shape of the data.
 
     """
+    dtype_endian_char = '<' if little_ended else '>'
     with open(filename, 'rb') as pp_file:
         # Get a reference to the seek method on the file
         # (this is accessed 3* #number of headers so can provide a small
@@ -1907,13 +1916,15 @@ def _field_gen(filename, read_data_bytes):
             # Move past the leading header length word
             pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
             # Get the LONG header entries
-            header_longs = np.fromfile(pp_file, dtype='>i%d' % PP_WORD_DEPTH,
+            dtype = '%ci%d' % (dtype_endian_char, PP_WORD_DEPTH)
+            header_longs = np.fromfile(pp_file, dtype=dtype,
                                        count=NUM_LONG_HEADERS)
             # Nothing returned => EOF
             if len(header_longs) == 0:
                 break
             # Get the FLOAT header entries
-            header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH,
+            dtype = '%cf%d' % (dtype_endian_char, PP_WORD_DEPTH)
+            header_floats = np.fromfile(pp_file, dtype=dtype,
                                         count=NUM_FLOAT_HEADERS)
             header = tuple(header_longs) + tuple(header_floats)
 
@@ -1934,7 +1945,7 @@ def _field_gen(filename, read_data_bytes):
             # Read the word telling me how long the data + extra data is
             # This value is # of bytes
             len_of_data_plus_extra = struct.unpack_from(
-                '>L',
+                '%cL' % dtype_endian_char,
                 pp_file_read(PP_WORD_DEPTH))[0]
             if len_of_data_plus_extra != pp_field.lblrec * PP_WORD_DEPTH:
                 raise ValueError('LBLREC has a different value to the integer '
@@ -1949,6 +1960,15 @@ def _field_gen(filename, read_data_bytes):
             data_len = len_of_data_plus_extra - extra_len
             dtype = LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0],
                                             LBUSER_DTYPE_LOOKUP['default'])
+            if little_ended:
+                # Change data dtype for a little-ended file.
+                dtype = str(dtype)
+                if dtype[0] != '>':
+                    msg = ("Unexpected dtype {!r} can't be converted to "
+                           "little-endian")
+                    raise ValueError(msg)
+
+                dtype = np.dtype('<' + dtype[1:])
 
             if read_data_bytes:
                 # Read the actual bytes. This can then be converted to a numpy
@@ -1963,7 +1983,8 @@ def _field_gen(filename, read_data_bytes):
 
             # Do we have any extra data to deal with?
             if extra_len:
-                pp_field._read_extra_data(pp_file, pp_file_read, extra_len)
+                pp_field._read_extra_data(pp_file, pp_file_read, extra_len,
+                                          little_ended=little_ended)
 
             # Skip that last 4 byte record telling me the length of the field I
             # have already read
@@ -2137,6 +2158,33 @@ def load_cubes(filenames, callback=None, constraints=None):
 
     """
     return _load_cubes_variable_loader(filenames, callback, load,
+                                       constraints=constraints)
+
+
+def load_cubes_little_endian(filenames, callback=None, constraints=None):
+    """
+    Loads cubes from a list of pp filenames containing little-endian data.
+
+    Args:
+
+    * filenames - list of pp filenames to load
+
+    Kwargs:
+
+    * constraints - a list of Iris constraints
+
+    * callback - a function which can be passed on to
+                 :func:`iris.io.run_callback`
+
+    .. note::
+
+        The resultant cubes may not be in the order that they are in the file
+        (order is not preserved when there is a field with orography
+        references)
+
+    """
+    return _load_cubes_variable_loader(filenames, callback, load,
+                                       {'little_ended': True},
                                        constraints=constraints)
 
 
