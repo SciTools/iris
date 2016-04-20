@@ -1011,8 +1011,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         Kwargs:
 
-        * bound_position - The desired position of the bounds relative to the
-                           position of the points.
+        * bound_position:
+            The desired position of the bounds relative to the position
+            of the points.
 
         Returns:
             A numpy array of shape (len(self.points), 2).
@@ -1020,6 +1021,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         .. note::
 
             This method only works for coordinates with ``coord.ndim == 1``.
+
+        .. note::
+
+            If `iris.FUTURE.clip_latitudes` is True, then this method
+            will clip the coordinate bounds to the range [-90, 90] when:
+
+            - it is a `latitude` or `grid_latitude` coordinate,
+            - the units are degrees,
+            - all the points are in the range [-90, 90].
 
         """
         # XXX Consider moving into DimCoord
@@ -1056,6 +1066,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         bounds = np.array([min_bounds, max_bounds]).transpose()
 
+        if (iris.FUTURE.clip_latitudes and
+                self.name() in ('latitude', 'grid_latitude') and
+                self.units == 'degree'):
+            points = self.points
+            if (points >= -90).all() and (points <= 90).all():
+                np.clip(bounds, -90, 90, out=bounds)
+
         return bounds
 
     def guess_bounds(self, bound_position=0.5):
@@ -1073,8 +1090,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         Kwargs:
 
-        * bound_position - The desired position of the bounds relative to the
-                           position of the points.
+        * bound_position:
+            The desired position of the bounds relative to the position
+            of the points.
 
         .. note::
 
@@ -1086,6 +1104,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             Unevenly spaced values, such from a wrapped longitude range, can
             produce unexpected results :  In such cases you should assign
             suitable values directly to the bounds property, instead.
+
+        .. note::
+
+            If `iris.FUTURE.clip_latitudes` is True, then this method
+            will clip the coordinate bounds to the range [-90, 90] when:
+
+            - it is a `latitude` or `grid_latitude` coordinate,
+            - the units are degrees,
+            - all the points are in the range [-90, 90].
 
         """
         self.bounds = self._guess_bounds(bound_position)
