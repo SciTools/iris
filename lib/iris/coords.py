@@ -1011,8 +1011,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         Kwargs:
 
-        * bound_position - The desired position of the bounds relative to the
-                           position of the points.
+        * bound_position:
+            The desired position of the bounds relative to the position
+            of the points.
 
         Returns:
             A numpy array of shape (len(self.points), 2).
@@ -1023,10 +1024,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         .. note::
 
-            If `iris.FUTURE.clip_latitudes` is True, then this
-            method will clip the coordinate bounds to the range
-            [-90, 90] for latitude and grid_latitude coordinates
-            measured in degrees.
+            If `iris.FUTURE.clip_latitudes` is True, then this method
+            will clip the coordinate bounds to the range [-90, 90] when:
+
+            - it is a `latitude` or `grid_latitude` coordinate,
+            - the units are degrees,
+            - all the points are in the range [-90, 90].
 
         """
         # XXX Consider moving into DimCoord
@@ -1087,8 +1090,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         Kwargs:
 
-        * bound_position - The desired position of the bounds relative to the
-                           position of the points.
+        * bound_position:
+            The desired position of the bounds relative to the position
+            of the points.
 
         .. note::
 
@@ -1103,10 +1107,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         .. note::
 
-            If `iris.FUTURE.clip_latitudes` is True, then this
-            method will clip the coordinate bounds to the range
-            [-90, 90] for latitude and grid_latitude coordinates
-            measured in degrees.
+            If `iris.FUTURE.clip_latitudes` is True, then this method
+            will clip the coordinate bounds to the range [-90, 90] when:
+
+            - it is a `latitude` or `grid_latitude` coordinate,
+            - the units are degrees,
+            - all the points are in the range [-90, 90].
 
         """
         self.bounds = self._guess_bounds(bound_position)
