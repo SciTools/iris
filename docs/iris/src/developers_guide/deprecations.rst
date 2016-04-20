@@ -2,11 +2,9 @@ Deprecations
 ************
 
 If you need to make a backwards-incompatible change to a public API
-[#public-api]_ that has been included in a release, then you should
-only make that change after a deprecation period. This deprecation
-period must last at least six months or two public releases, whichever
-results in the longer period of time.  Once the deprecation period has
-expired the deprecated API should be removed/updated in the next
+[#public-api]_ that has been included in a release (e.g. deleting a
+method), then you must first deprecate the old behaviour in at least
+one release, before removing/updating it in the next
 `major release <http://semver.org/>`_.
 
 
@@ -74,7 +72,7 @@ Removing a deprecation
 ======================
 
 When the time comes to make a new major release you should locate any
-deprecated APIs within the code that satisfy the six month/two release
+deprecated APIs within the code that satisfy the one release
 minimum period described previously. Locating deprecated APIs can easily
 be done by searching for the Sphinx deprecation directives and/or
 deprecation warnings.
