@@ -1116,9 +1116,8 @@ def as_compatible_shape(src_cube, target_cube):
     This function can be used to add the dimensions that have been collapsed,
     aggregated or sliced out, promoting scalar coordinates to length one
     dimension coordinates where necessary. It operates by matching coordinate
-    metadata to infer the dimensions that need modifying, so the provided
-    cubes must have coordinates with the same metadata
-    (see :class:`iris.coords.CoordDefn`).
+    names to infer the dimensions that need modifying, so the provided
+    cubes must have coordinates with the same names along existing dimensions.
 
     .. note:: This function will load and copy the data payload of `src_cube`.
 
@@ -1140,9 +1139,9 @@ def as_compatible_shape(src_cube, target_cube):
     for coord in target_cube.aux_coords + target_cube.dim_coords:
         dims = target_cube.coord_dims(coord)
         try:
-            collapsed_dims = src_cube.coord_dims(coord)
+            collapsed_dims = src_cube.coord_dims(coord.name())
         except iris.exceptions.CoordinateNotFoundError:
-            continue
+            collapsed_dims = None
         if collapsed_dims:
             if len(collapsed_dims) == len(dims):
                 for dim_from, dim_to in zip(dims, collapsed_dims):
@@ -1179,7 +1178,7 @@ def as_compatible_shape(src_cube, target_cube):
 
     def add_coord(coord):
         """Closure used to add a suitably reshaped coord to new_cube."""
-        dims = target_cube.coord_dims(coord)
+        dims = target_cube.coord_dims(coord.name())
         shape = [new_cube.shape[dim] for dim in dims]
         if not shape:
             shape = [1]
