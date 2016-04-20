@@ -544,6 +544,19 @@ IF
 THEN
     pp.lbproc += sum([iris.fileformats.pp.lbproc_map[name] for name in cm.attributes["ukmo__process_flags"]])
 
+#zonal-mean
+IF
+    # Look for a CellMethod which is a "mean" over "longitude".
+    scalar_cell_method(cm, 'mean', 'longitude') is not None
+THEN
+    pp.lbproc += 64
+
+IF
+    # Look for a CellMethod which is a "mean" over "grid longitude".
+    scalar_cell_method(cm, 'mean', 'grid_longitude') is not None
+THEN
+    pp.lbproc += 64
+
 #time-mean
 IF
     # Look for a CellMethod which is a "mean" over "time".
@@ -564,7 +577,6 @@ IF
     scalar_cell_method(cm, 'maximum', 'time') is not None
 THEN
     pp.lbproc += 8192
-
 
 ##########################
 ### vertical - lbuser5 ###
