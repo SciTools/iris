@@ -230,6 +230,22 @@ class Future(threading.local):
             self.__dict__.clear()
             self.__dict__.update(current_state)
 
+    def all_option_names(self):
+        """List all the  control option names."""
+        return self.__dict__.keys()
+
+    def enable_all(self):
+        """
+        Enable all control options.
+
+        This ensures complete future compatibility:
+        Code that runs under this condition, and emits no deprecation warnings,
+        is guaranteed to work the same with the next Iris release.
+
+        """
+        for option in self.all_option_names():
+            setattr(self, option, True)
+
 
 #: Object containing all the Iris run-time options.
 FUTURE = Future()
