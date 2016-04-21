@@ -31,6 +31,7 @@ import six
 import collections
 import os
 import os.path
+import re
 import string
 import warnings
 
@@ -134,6 +135,116 @@ _FACTORY_DEFNS = {
         formula_terms_format='s: {s} c: {c} eta: {eta} depth: {depth} '
         'depth_c: {depth_c}')
 }
+
+
+# Cell methods.
+_CM_KNOWN_METHODS = ['point', 'sum', 'mean', 'maximum', 'minimum', 'mid_range',
+                     'standard_deviation', 'variance', 'mode', 'median']
+
+_CM_COMMENT = 'comment'
+_CM_EXTRA = 'extra'
+_CM_INTERVAL = 'interval'
+_CM_METHOD = 'method'
+_CM_NAME = 'name'
+_CM_PARSE = re.compile(r'''
+                           (?P<name>([\w_]+\s*?:\s+)+)
+                           (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
+                           (?:
+                               \(\s*
+                               (?P<extra>[^\)]+)
+                               \)\s*
+                           )?
+                       ''', re.VERBOSE)
+
+
+def parse_cell_methods(cf_var_name, nc_cell_methods):
+    """
+    Parse a CF cell_methods attribute string into a tuple of zero or
+    more CellMethod instances.
+
+    Args:
+
+    * cf_var_name (str):
+        The name of the netCDF variable that contains this cell methods
+        attribute.
+
+    * nc_cell_methods (str):
+        The value of the cell methods attribute to be parsed.
+
+    """
+
+    cell_methods = []
+    if nc_cell_methods is not None:
+        for m in _CM_PARSE.finditer(nc_cell_methods):
+            d = m.groupdict()
+            method = d[_CM_METHOD]
+            method = method.strip()
+            # Check validity of method, allowing for multi-part methods
+            # e.g. mean over years.
+            method_words = method.split()
+            if method_words[0].lower() not in _CM_KNOWN_METHODS:
+                msg = 'NetCDF variable {!r} contains unknown cell ' \
+                      'method {!r}'
+                warnings.warn(msg.format('{}'.format(cf_var_name),
+                                         '{}'.format(method_words[0])))
+            d[_CM_METHOD] = method
+            name = d[_CM_NAME]
+            name = name.replace(' ', '')
+            name = name.rstrip(':')
+            d[_CM_NAME] = tuple([n for n in name.split(':')])
+            interval = []
+            comment = []
+            if d[_CM_EXTRA] is not None:
+                #
+                # tokenise the key words and field colon marker
+                #
+                d[_CM_EXTRA] = d[_CM_EXTRA].replace('comment:',
+                                                    '<<comment>><<:>>')
+                d[_CM_EXTRA] = d[_CM_EXTRA].replace('interval:',
+                                                    '<<interval>><<:>>')
+                d[_CM_EXTRA] = d[_CM_EXTRA].split('<<:>>')
+                if len(d[_CM_EXTRA]) == 1:
+                    comment.extend(d[_CM_EXTRA])
+                else:
+                    next_field_type = comment
+                    for field in d[_CM_EXTRA]:
+                        field_type = next_field_type
+                        index = field.rfind('<<interval>>')
+                        if index == 0:
+                            next_field_type = interval
+                            continue
+                        elif index > 0:
+                            next_field_type = interval
+                        else:
+                            index = field.rfind('<<comment>>')
+                            if index == 0:
+                                next_field_type = comment
+                                continue
+                            elif index > 0:
+                                next_field_type = comment
+                        if index != -1:
+                            field = field[:index]
+                        field_type.append(field.strip())
+            #
+            # cater for a shared interval over multiple axes
+            #
+            if len(interval):
+                if len(d[_CM_NAME]) != len(interval) and len(interval) == 1:
+                    interval = interval*len(d[_CM_NAME])
+            #
+            # cater for a shared comment over multiple axes
+            #
+            if len(comment):
+                if len(d[_CM_NAME]) != len(comment) and len(comment) == 1:
+                    comment = comment*len(d[_CM_NAME])
+            d[_CM_INTERVAL] = tuple(interval)
+            d[_CM_COMMENT] = tuple(comment)
+            cell_method = iris.coords.CellMethod(d[_CM_METHOD],
+                                                 coords=d[_CM_NAME],
+                                                 intervals=d[_CM_INTERVAL],
+                                                 comments=d[_CM_COMMENT])
+            cell_methods.append(cell_method)
+    return tuple(cell_methods)
 
 
 class CFNameCoordMap(object):
