@@ -28,7 +28,7 @@ from collections import OrderedDict
 import numpy as np
 
 import iris
-from iris.analysis.interpolate import linear
+from iris.analysis._interpolate_private import linear
 from iris.tests import mock
 import iris.tests.stock as stock
 

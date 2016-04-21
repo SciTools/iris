@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ import iris.tests as tests
 
 import numpy as np
 
-import iris.analysis.interpolate as interpolate
+import iris.analysis._interpolate_private as interpolate
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.tests.test_interpolation import normalise_order

@@ -40,6 +40,7 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 
+from iris.analysis._interpolate_private import linear as regrid_linear
 import iris.config as config
 import iris.cube
 import iris.exceptions
@@ -787,7 +788,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
 def _regrid_to_target(src_cube, target_coords, target_cube):
     # Interpolate onto the target grid.
     sample_points = [(coord, coord.points) for coord in target_coords]
-    result_cube = iris.analysis.interpolate.linear(src_cube, sample_points)
+    result_cube = regrid_linear(src_cube, sample_points)
 
     # Any scalar coords on the target_cube will have become vector
     # coords on the resample src_cube (i.e. result_cube).

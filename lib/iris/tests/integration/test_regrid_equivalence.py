@@ -30,7 +30,7 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-from iris.analysis.interpolate import regrid
+from iris.analysis._interpolate_private import regrid
 from iris.analysis import Nearest
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
