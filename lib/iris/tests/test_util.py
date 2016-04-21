@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -80,7 +80,7 @@ class TestMonotonic(unittest.TestCase):
         b = np.array([3, 5.3, 5.3])
         self.assertNotMonotonic(b, strict=True)
         self.assertMonotonic(b, direction=1)
-        
+
         b = b[::-1]
         self.assertNotMonotonic(b, strict=True)
         self.assertMonotonic(b, direction=-1)
@@ -182,7 +182,7 @@ class TestClipString(unittest.TestCase):
             expected_length,
             'Mismatch in expected length of clipped string. Length was %s, '
             'expected value is %s' % (len(result), expected_length))
-        
+
 
 class TestDescribeDiff(iris.tests.IrisTest):
     def test_identical(self):
@@ -199,16 +199,16 @@ class TestDescribeDiff(iris.tests.IrisTest):
         # test incompatible attributes
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
-        
+
         test_cube_a.attributes['Conventions'] = 'CF-1.5'
         test_cube_b.attributes['Conventions'] = 'CF-1.6'
-        
+
         return_sio = six.StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
-        
+
         self.assertString(return_str, 'incompatible_attr.str.txt')
-        
+
         # test incompatible names
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
@@ -224,15 +224,15 @@ class TestDescribeDiff(iris.tests.IrisTest):
         # test incompatible unit
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
-        
+
         test_cube_a.units = cf_units.Unit('m')
 
         return_sio = six.StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
-        
+
         self.assertString(return_str, 'incompatible_unit.str.txt')
-        
+
         # test incompatible methods
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
@@ -333,6 +333,21 @@ class TestAsCompatibleShape(tests.IrisTest):
         dim_to_aux(expected, 'grid_latitude')
         res = iris.util.as_compatible_shape(src, cube)
         self.assertEqual(res, expected)
+
+    def test_mismatched_dim(self):
+        cube = tests.stock.realistic_4d()
+        cube_wrong_coord = cube.copy()
+        cube_wrong_coord.coord('time').rename('spam')
+        self.assertRaises(ValueError, iris.util.as_compatible_shape,
+                          cube_wrong_coord, cube)
+
+    def test_match_auxcoord(self):
+        cube = tests.stock.realistic_4d()
+        cube_missing_dim_coord = cube.copy()
+        cube_missing_dim_coord.remove_coord('model_level_number')
+        # This dimension still has auxcoords so mapping should still work.
+        res = iris.util.as_compatible_shape(cube_missing_dim_coord, cube)
+        self.assertEqual(res, cube_missing_dim_coord)
 
 
 if __name__ == '__main__':

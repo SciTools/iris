@@ -1148,9 +1148,16 @@ def as_compatible_shape(src_cube, target_cube):
                     dim_mapping[dim_from] = dim_to
         elif dims:
             for dim_from in dims:
-                dim_mapping[dim_from] = None
+                if dim_from not in dim_mapping:
+                    dim_mapping[dim_from] = None
 
-    if len(dim_mapping) != target_cube.ndim:
+    target_unmapped = len(dim_mapping) != target_cube.ndim
+    src_unmapped = False
+    for dim, length in enumerate(src_cube.shape):
+        if dim not in dim_mapping.values() and length > 1:
+            src_unmapped = True
+
+    if target_unmapped or src_unmapped:
         raise ValueError('Insufficient or conflicting coordinate '
                          'metadata. Cannot infer dimension mapping '
                          'to restore cube dimensions.')
