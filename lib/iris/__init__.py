@@ -104,6 +104,8 @@ import contextlib
 import itertools
 import logging
 import os
+from pkg_resources import parse_version as Version
+import re
 import threading
 
 import iris.config
@@ -133,6 +135,14 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 
 class Future(threading.local):
     """Run-time configuration controller."""
+
+    _option_releases = {
+        # Which releases introduced each still-existing option.
+        'cell_datetime_objects': (1, 6, 0),
+        'netcdf_promote': (1, 7, 0),
+        'strict_grib_load': (1, 8, 0),
+        'netcdf_no_unlimited': (1, 8, 0),
+        'clip_latitudes': (1, 10, 0)}
 
     def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
                  strict_grib_load=False, netcdf_no_unlimited=False):
@@ -197,7 +207,7 @@ class Future(threading.local):
         self.__dict__[name] = value
 
     @contextlib.contextmanager
-    def context(self, **kwargs):
+    def context(self, enable_all_at_version=None, **kwargs):
         """
         Return a context manager which allows temporary modification of
         the option values for the active thread.
@@ -205,6 +215,9 @@ class Future(threading.local):
         On entry to the `with` statement, all keyword arguments are
         applied to the Future object. On exit from the `with`
         statement, the previous state is restored.
+
+        The 'enable_all_at_version' keyword calls the function of that name,
+        and may not be combined with any other keywords.
 
         For example::
 
@@ -217,12 +230,23 @@ class Future(threading.local):
             with iris.FUTURE.context(cell_datetime_objects=True):
                 # ... code which expects time objects
 
+        Or::
+
+            with iris.FUTURE.context(enable_all_at="1.8.2"):
+                # ... code which expects time objects
+
         """
         # Save the current context
         current_state = self.__dict__.copy()
         # Update the state
-        for name, value in six.iteritems(kwargs):
-            setattr(self, name, value)
+        if enable_all_at_version is not None:
+            if len(kwargs) != 0:
+                msg = ('"enable_all_at_version" keyword may not be combined '
+                       'with any others.')
+                raise ValueError(msg)
+            self.enable_all_at_version(enable_all_at_version)
+        else:
+            self.update(**kwargs)
         try:
             yield
         finally:
@@ -230,21 +254,70 @@ class Future(threading.local):
             self.__dict__.clear()
             self.__dict__.update(current_state)
 
-    def all_option_names(self):
-        """List all the  control option names."""
+    def update(self, **kwargs):
+        """
+        Change multiple settings from keywords.
+
+        For example::
+
+            iris.FUTURE.update(strict_grib_load=True, netcdf_promote=False)
+
+        """
+        for name, value in six.iteritems(kwargs):
+            setattr(self, name, value)
+
+    def all_options(self):
+        """List the available Future options."""
         return self.__dict__.keys()
 
-    def enable_all(self):
+    _three_part_version_re_string = ('(?P<major>[0-9]+)'
+                                     '(\.(?P<minor>[0-9]+))?'
+                                     '(\.(?P<micro>[0-9]+))?')
+
+    _three_part_version_re = re.compile(_three_part_version_re_string)
+
+    def _three_part_version(self, version):
+        # Return ints (major, minor, micro)
+        parse = self._three_part_version_re.match(version)
+        parts = [parse.group(name) for name in ('major', 'minor', 'micro')]
+        parts = [int(part) if part is not None else 0 for part in parts]
+        return tuple(parts)
+
+    def enable_all_at_version(self, version):
         """
-        Enable all control options.
+        Iris version compatibility setting.
+
+        Enable all the Future options that were defined at a particular Iris
+        release version.
+        The argument must be a string in the form "major.minor[.bugfix]".
 
         This ensures complete future compatibility:
-        Code that runs under this condition, and emits no deprecation warnings,
-        is guaranteed to work the same with the next Iris release.
+        Code that runs under this condition is guaranteed to work the same
+        at the next major release, and all its minor sub-releases.
+
+        For example::
+
+            # Work with full current Future compatibility.
+            iris.FUTURE.enable_all_at_version("1.10.2")
+
+        Or::
+
+            with iris.FUTURE.context(enable_all_at_version="1.8"):
+                processed_data = get_my_data(filepath)
 
         """
-        for option in self.all_option_names():
-            setattr(self, option, True)
+        # Process the argument to give a three-part code.
+        version = self._three_part_version(version)
+        # Complain if too new.
+        iris_version = self._three_part_version(__version__)
+        if version > iris_version:
+            msg = 'Cannot set version higher than current release: {} > {}'
+            raise ValueError(msg.format(version, iris_version))
+        # Enable any options which were defined at that version.
+        for option in self.all_options():
+            from_version = self._option_releases[option]
+            if version > from_version:
+                setattr(self, option, True)
 
 
 #: Object containing all the Iris run-time options.
