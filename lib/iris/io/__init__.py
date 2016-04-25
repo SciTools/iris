@@ -30,7 +30,6 @@ import re
 import collections
 
 import iris.fileformats
-import iris.fileformats.dot
 import iris.cube
 import iris.exceptions
 
