@@ -2806,10 +2806,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         elif len(new_order) != self.data.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        # The data needs to be copied, otherwise this view of the transposed
-        # data will not be contiguous. Ensure not to assign via the cube.data
-        # setter property since we are reshaping the cube payload in-place.
-        self._my_data = np.transpose(self.data, new_order).copy()
+        self._my_data = self.lazy_data().transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 

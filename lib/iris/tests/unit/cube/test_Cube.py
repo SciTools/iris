@@ -1410,5 +1410,14 @@ class TestCellMeasures(tests.IrisTest):
             cm_dims = self.cube.cell_measure_dims(a_cell_measure)
 
 
+class Test_transpose(tests.IrisTest):
+    def test_lazy_data(self):
+        data = np.arange(12).reshape(3, 4)
+        cube = Cube(biggus.NumpyArrayAdapter(data))
+        cube.transpose()
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayEqual(data.T, cube.data)
+
+
 if __name__ == '__main__':
     tests.main()
