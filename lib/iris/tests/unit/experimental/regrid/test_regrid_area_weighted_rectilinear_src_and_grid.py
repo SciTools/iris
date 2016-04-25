@@ -40,10 +40,9 @@ from iris.tests.experimental.regrid.\
     _resampled_grid
 
 
-class TestMdtol(tests.IrisTest):
-    # Tests to check the masking behaviour controlled by mdtol kwarg.
+class Common(tests.IrisTest):
     def setUp(self):
-        # A (3, 2, 4) cube with a masked element.
+        # A (3, 2, 4) cube.
         cube = Cube(np.ma.arange(24, dtype=np.int32).reshape((3, 2, 4)))
         cs = GeogCS(6371229)
         coord = DimCoord(points=np.array([-1, 0, 1], dtype=np.int32),
@@ -58,10 +57,16 @@ class TestMdtol(tests.IrisTest):
         cube.add_dim_coord(coord, 2)
         cube.coord('latitude').guess_bounds()
         cube.coord('longitude').guess_bounds()
-        cube.data[1, 1, 2] = ma.masked
         self.src_cube = cube
         # Create (7, 2, 9) grid cube.
         self.grid_cube = _resampled_grid(cube, 2.3, 2.4)
+
+
+class TestMdtol(Common, tests.IrisTest):
+    # Tests to check the masking behaviour controlled by mdtol kwarg.
+    def setUp(self):
+        super(TestMdtol, self).setUp()
+        self.src_cube.data[1, 1, 2] = ma.masked
 
     def test_default(self):
         res = regrid(self.src_cube, self.grid_cube)
@@ -148,6 +153,46 @@ class TestMdtol(tests.IrisTest):
         # Set threshold (mdtol) to less than 0.5 (50%).
         res = regrid(src_cube, grid_cube, mdtol=0.4)
         self.assertEqual(ma.count_masked(res.data), 1)
+
+
+class TestExceptions(Common, tests.IrisTest):
+    def test_no_bounds(self):
+        self.src_cube.coord('latitude').bounds = None
+        msg = ('The horizontal grid coordinates of both the source and grid '
+               'cubes must have contiguous bounds.')
+        with self.assertRaisesRegexp(ValueError, msg):
+            regrid(self.src_cube, self.grid_cube)
+
+    def test_non_contiguous_bounds(self):
+        coord = self.src_cube.coord('latitude')
+        bounds = coord.bounds.copy()
+        bounds[1, 1] -= 0.1
+        coord.bounds = bounds
+        msg = ('The horizontal grid coordinates of both the source and grid '
+               'cubes must have contiguous bounds.')
+        with self.assertRaisesRegexp(ValueError, msg):
+            regrid(self.src_cube, self.grid_cube)
+
+    def test_missing_coords(self):
+        self.src_cube.remove_coord('latitude')
+        msg = "Cube 'unknown' must contain a single 1D y coordinate."
+        with self.assertRaisesRegexp(ValueError, msg):
+            regrid(self.src_cube, self.grid_cube)
+
+    def test_diff_cs(self):
+        y_coord = self.src_cube.coord('latitude')
+        y_coord.coord_system.semi_major_axis = 7000000
+        msg = ('The horizontal grid coordinates of both the source and grid '
+               'cubes must have the same coordinate system.')
+        with self.assertRaisesRegexp(ValueError, msg):
+            regrid(self.src_cube, self.grid_cube)
+
+
+class TestValue(Common, tests.IrisTest):
+    def test_regrid_same_grid(self):
+        res_cube = regrid(self.src_cube, self.src_cube)
+        self.assertEqual(res_cube, self.src_cube)
+        self.assertArrayAlmostEqual(res_cube.data, self.src_cube.data)
 
 
 if __name__ == '__main__':
