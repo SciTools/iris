@@ -8,6 +8,7 @@ are co-located in space in this case.
 
 For the second plot, the data used for the arrows is normalised to produce
 arrows with a uniform size on the plot.
+
 """
 
 import matplotlib.pyplot as plt
@@ -49,6 +50,7 @@ def main():
     lakes = cfeat.NaturalEarthFeature('physical', 'lakes', '50m',
                                       facecolor='none')
 
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.add_feature(lakes)
 
@@ -62,12 +64,13 @@ def main():
     plt.quiver(x, y, u, v, pivot='middle', transform=transform)
 
     plt.title("Wind speed over Lake Victoria")
-    plt.show()
+    qplt.show()
 
     # Normalise the data for uniform arrow size
     u_norm = u / np.sqrt(u ** 2.0 + v ** 2.0)
     v_norm = v / np.sqrt(u ** 2.0 + v ** 2.0)
 
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.add_feature(lakes)
 
@@ -76,7 +79,7 @@ def main():
     plt.quiver(x, y, u_norm, v_norm, pivot='middle', transform=transform)
 
     plt.title("Wind speed over Lake Victoria")
-    plt.show()
+    qplt.show()
 
 if __name__ == '__main__':
     main()
