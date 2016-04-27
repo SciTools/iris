@@ -31,6 +31,7 @@ from iris.cube import Cube
 import iris.fileformats.pp
 import iris.fileformats.pp_rules
 from iris.tests import mock
+from iris.fileformats.pp import load_pairs_from_fields
 
 
 class TestVertical(tests.IrisTest):
@@ -358,7 +359,7 @@ class TestVertical(tests.IrisTest):
             data_cube, = iris.fileformats.pp.load_cubes('DUMMY')
 
         msg = "Unable to create instance of HybridHeightFactory. " \
-              "The file(s) ['DUMMY'] don't contain field(s) for 'orography'."
+              "The source data contains no field(s) for 'orography'."
         warn.assert_called_once_with(msg)
 
         # Check the data cube is set up to use hybrid height.
@@ -550,6 +551,43 @@ class TestLoadLittleendian(tests.IrisTest):
         check_minmax(lons, 342.0, 376.98)
         check_minmax(lats, -10.48, 13.5)
         check_minmax(data, -30.48, 6029.1)
+
+
+class TestAsCubes(tests.IrisTest):
+    def test_pseudo_level_filter(self):
+        dpath = tests.get_data_path(['PP', 'meanMaxMin',
+                                     '200806081200__qwpb.T24.pp'])
+        ppfs = iris.fileformats.pp.load(dpath)
+        chosen_ppfs = []
+        for ppf in ppfs:
+            if ppf.lbuser[4] == 3:
+                chosen_ppfs.append(ppf)
+        cubes_fields = list(load_pairs_from_fields(chosen_ppfs))
+        self.assertEqual(len(cubes_fields), 8)
+
+    def test_pseudo_level_filter_none(self):
+        dpath = tests.get_data_path(['PP', 'meanMaxMin',
+                                     '200806081200__qwpb.T24.pp'])
+        ppfs = iris.fileformats.pp.load(dpath)
+        chosen_ppfs = []
+        for ppf in ppfs:
+            if ppf.lbuser[4] == 30:
+                chosen_ppfs.append(ppf)
+        cubes = list(load_pairs_from_fields(chosen_ppfs))
+        self.assertEqual(len(cubes), 0)
+
+    def test_as_pairs(self):
+        dpath = tests.get_data_path(['PP', 'meanMaxMin',
+                                     '200806081200__qwpb.T24.pp'])
+        ppfs = iris.fileformats.pp.load(dpath)
+        cube_ppf_pairs = load_pairs_from_fields(ppfs)
+        cubes = []
+        for cube, ppf in cube_ppf_pairs:
+            if ppf.lbuser[4] == 3:
+                cube.attributes['pseudo level'] = ppf.lbuser[4]
+                cubes.append(cube)
+        for cube in cubes:
+            self.assertEqual(cube.attributes['pseudo level'], 3)
 
 
 if __name__ == "__main__":
