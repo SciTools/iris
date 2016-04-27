@@ -1,0 +1,138 @@
+# IEP 1 - Enhanced indexing
+
+## Background
+
+Currently, to select a subset of a Cube based on coordinate values we use something like:
+[source,python]
+----
+cube.extract(iris.Constraint(realization=3,
+                             model_level_number=[1, 5],
+                             latitude=lambda cell: 40 <= cell <= 60))
+----
+On the plus side, this works irrespective of the dimension order of the data, but the drawbacks with this form of indexing include:
+
+* It uses a completely different syntax to position-based indexing, e.g. `cube[4, 0:6]`.
+* It uses a completely different syntax to pandas and xarray value-based indexing, e.g. `df[4, 0:6]`.
+* It is long-winded.
+
+Similarly, to select a subset of a Cube using positional indices but where the dimension is unknown has no standard syntax _at all_! Instead it requires code akin to:
+[source,python]
+----
+key = [slice(None)] * cube.ndim
+key[cube.coord_dims('model_level_number')[0]] = slice(3, 9, 2)
+cube[tuple(key)]
+----
+
+The only form of indexing that is well supported is indexing by position where the dimension order is known:
+[source,python]
+----
+cube[4, 0:6, 30:]
+----
+
+## Proposal
+
+Provide indexing helpers on the Cube to extend support to all permutations of positional vs. named dimensions and positional vs. coordinate-value based selection.
+
+### Extended pandas style
+
+Use a single helper for index by position, and a single helper for index by value. Helper names taken from pandas, but their behaviour is extended by making them callable to support named dimensions.
+
+|===
+2.2+| 2+h|Index by
+h|Position h|Value
+
+.2+h|Dimension
+h|Position
+
+a|[source,python]
+----
+cube[:, 2]  # No change
+cube.iloc[:, 2]
+----
+
+a|[source,python]
+----
+cube.loc[:, 1.5]
+----
+
+h|Name
+
+a|[source,python]
+----
+cube[dict(height=2)]
+cube.iloc[dict(height=2)]
+cube.iloc(height=2)
+----
+
+a|[source,python]
+----
+cube.loc[dict(height=1.5)]
+cube.loc(height=1.5)
+----
+|===
+
+### xarray style
+
+xarray introduces a second set of helpers for accessing named dimensions that provide the callable syntax `(foo=...)`.
+
+|===
+2.2+| 2+h|Index by
+h|Position h|Value
+
+.2+h|Dimension
+h|Position
+
+a|[source,python]
+----
+cube[:, 2]  # No change
+----
+
+a|[source,python]
+----
+cube.loc[:, 1.5]
+----
+
+h|Name
+
+a|[source,python]
+----
+ cube[dict(height=2)]
+ cube.isel(height=2)
+----
+
+a|[source,python]
+----
+cube.loc[dict(height=1.5)]
+cube.sel(height=1.5)
+----
+|===
+
+### TODO
+* Consistent terminology
+* `coord.name()` vs. `var_name` vs. "dimension name"?
+* Names that aren't valid Python identifiers
+* Inclusive vs. exclusive
+** Default: Inclusive? (as for pandas & xarray)
+** Use boolean otherwise.
+* Multi-dimensional coordinates
+* Non-orthogonal coordinates
+* Bounds
+* Boolean array indexing
+* Lambdas?
+* What to do about constrained loading?
+* Relationship to http://scitools.org.uk/iris/docs/v1.9.2/iris/iris/cube.html#iris.cube.Cube.intersection[iris.cube.Cube.intersection]?
+* Relationship to interpolation (especially nearest-neighbour)?
+** e.g. What to do about values that don't exist?
+*** pandas throws a KeyError
+*** xarray supports (several) nearest-neighbour schemes via http://xarray.pydata.org/en/stable/indexing.html#nearest-neighbor-lookups[`data.sel()`]
+*** Apparently http://holoviews.org/[holoviews] does nearest-neighbour interpolation.
+* Time handling
+** e.g. Rich Signell's http://nbviewer.jupyter.org/gist/rsignell-usgs/13d7ce9d95fddb4983d4cbf98be6c71d[xarray/iris comparison]
+
+## References
+. Iris
+ * http://scitools.org.uk/iris/docs/v1.9.2/iris/iris.html#iris.Constraint[iris.Constraint]
+ * http://scitools.org.uk/iris/docs/v1.9.2/userguide/subsetting_a_cube.html[Subsetting a cube]
+. http://pandas.pydata.org/pandas-docs/stable/indexing.html[pandas indexing]
+. http://xarray.pydata.org/en/stable/indexing.html[xarray indexing]
+. http://legacy.python.org/dev/peps/pep-0472/[PEP 472 - Support for indexing with keyword arguments]
