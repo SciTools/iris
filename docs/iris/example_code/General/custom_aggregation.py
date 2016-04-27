@@ -65,6 +65,9 @@ def count_spells(data, threshold, axis, spell_length):
 
 
 def main():
+    # Enable future options to avoid deprecations.
+    iris.FUTURE.netcdf_promote = True
+
     # Load the whole time-sequence as a single cube.
     file_path = iris.sample_data_path('E1_north_america.nc')
     cube = iris.load_cube(file_path)

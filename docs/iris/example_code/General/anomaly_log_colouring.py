@@ -36,6 +36,9 @@ import matplotlib.colors as mcols
 
 
 def main():
+    # Enable future options to avoid deprecations.
+    iris.FUTURE.netcdf_promote = True
+
     # Load a sample air temperatures sequence.
     file_path = iris.sample_data_path('E1_north_america.nc')
     temperatures = iris.load_cube(file_path)

@@ -16,6 +16,10 @@ import iris.quickplot as qplt
 
 
 def main():
+    # Enable future options to avoid deprecations.
+    iris.FUTURE.netcdf_promote = True
+
+    # Load some test data.
     fname = iris.sample_data_path('A1B_north_america.nc')
     cube = iris.load_cube(fname)
 

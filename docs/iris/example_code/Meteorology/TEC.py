@@ -20,6 +20,9 @@ import iris.quickplot as qplt
 
 
 def main():
+    # Enable future options to avoid deprecations.
+    iris.FUTURE.netcdf_promote = True
+
     # Load the "total electron content" cube.
     filename = iris.sample_data_path('space_weather.nc')
     cube = iris.load_cube(filename, 'total electron content')

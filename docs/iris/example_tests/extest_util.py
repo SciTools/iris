@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import contextlib
 import os.path
+import warnings
 import sys
 
 import matplotlib.pyplot as plt
@@ -72,3 +73,14 @@ def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
     plt.show = iplt.show = qplt.show = replacement_show
     yield
     plt.show = iplt.show = qplt.show = orig_show
+
+
+@contextlib.contextmanager
+def fail_any_deprecation_warnings():
+    # Provide a context in which any deprecation warning will cause an error.
+    with warnings.catch_warnings():
+        # Note: we detect "deprecation warnings" just by string matching, which
+        # seems a bit weak.  However, we don't use the provided
+        # DeprecationWarning class because that is ignored by default (!)
+        warnings.filterwarnings("error", ".*deprecat.*")
+        yield
