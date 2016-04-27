@@ -33,6 +33,10 @@ cube[4, 0:6, 30:]
 
 Provide indexing helpers on the Cube to extend support to all permutations of positional vs. named dimensions and positional vs. coordinate-value based selection.
 
+Commonly, the names of dimensions are also valid Python identifiers.
+For names where this is not true, the names can expressed through either the `helper[...]` or `helper(...)` syntax by constructing an explicit dict.
+For example: `cube.loc[{'12': 0}]` or `cube.loc(**{'12': 0})`.
+
 ### Out of scope
 
 * Deliberately enhancing the performance.
@@ -125,7 +129,6 @@ cube.sel(height=1.5)
 ### TODO
 * Consistent terminology
 * `coord.name()` vs. `var_name` vs. "dimension name"?
-* Names that aren't valid Python identifiers
 * Inclusive vs. exclusive
 ** Default: Inclusive? (as for pandas & xarray)
 ** Use boolean otherwise.
