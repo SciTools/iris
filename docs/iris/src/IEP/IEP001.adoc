@@ -33,6 +33,15 @@ cube[4, 0:6, 30:]
 
 Provide indexing helpers on the Cube to extend support to all permutations of positional vs. named dimensions and positional vs. coordinate-value based selection.
 
+### Out of scope
+
+* Deliberately enhancing the performance.
+This is a very valuable topic and should be addressed by subsequent efforts.
+
+* Time/date values as strings.
+Providing pandas-style string representations for convenient representation of partial date/times should be addressed in a subsequent effort.
+There is a risk that this topic could bog down when dealing with non-standard calendars and climatological date ranges.
+
 ### Extended pandas style
 
 Use a single helper for index by position, and a single helper for index by value. Helper names taken from pandas, but their behaviour is extended by making them callable to support named dimensions.
@@ -107,6 +116,12 @@ cube.sel(height=1.5)
 ----
 |===
 
+## Work required
+
+* Implementations for each of the new helper objects.
+* An update to the documentation to demonstrate best practice. Known impacted areas include:
+** The "Subsetting a Cube" chapter of the user guide.
+
 ### TODO
 * Consistent terminology
 * `coord.name()` vs. `var_name` vs. "dimension name"?
@@ -126,8 +141,6 @@ cube.sel(height=1.5)
 *** pandas throws a KeyError
 *** xarray supports (several) nearest-neighbour schemes via http://xarray.pydata.org/en/stable/indexing.html#nearest-neighbor-lookups[`data.sel()`]
 *** Apparently http://holoviews.org/[holoviews] does nearest-neighbour interpolation.
-* Time handling
-** e.g. Rich Signell's http://nbviewer.jupyter.org/gist/rsignell-usgs/13d7ce9d95fddb4983d4cbf98be6c71d[xarray/iris comparison]
 
 ## References
 . Iris
@@ -136,3 +149,4 @@ cube.sel(height=1.5)
 . http://pandas.pydata.org/pandas-docs/stable/indexing.html[pandas indexing]
 . http://xarray.pydata.org/en/stable/indexing.html[xarray indexing]
 . http://legacy.python.org/dev/peps/pep-0472/[PEP 472 - Support for indexing with keyword arguments]
+. http://nbviewer.jupyter.org/gist/rsignell-usgs/13d7ce9d95fddb4983d4cbf98be6c71d[Time slicing NetCDF or OPeNDAP datasets] - Rich Signell's xarray/iris comparison focussing on time handling and performance
