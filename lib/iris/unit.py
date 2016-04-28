@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -44,12 +44,13 @@ import warnings
 import netcdftime
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 import iris.config
 import iris.util
 
 
-warnings.warn('iris.unit is deprecated in Iris v1.9. Please use cf_units '
-              '(https://github.com/SciTools/cf_units) instead.')
+warn_deprecated('iris.unit is deprecated in Iris v1.9. Please use cf_units '
+                '(https://github.com/SciTools/cf_units) instead.')
 
 
 __all__ = ['Unit', 'date2num', 'decode_time', 'encode_clock', 'encode_date',

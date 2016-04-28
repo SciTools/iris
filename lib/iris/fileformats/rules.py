@@ -40,6 +40,7 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 from iris.analysis._interpolate_private import linear as regrid_linear
 import iris.config as config
 import iris.cube
@@ -196,12 +197,6 @@ def _prepare_rule_logger(verbose=False, log_dir=None):
 # A flag to control all the text-rules and rules-logging deprecation warnings.
 _enable_rules_deprecations = True
 
-# A local reference to warnings.warn.
-_warn_call = warnings.warn
-
-def _warn_deprecated_logging_and_rules(msg):
-    raise AssertionError(msg)
-
 # A context manager to avoid the deprecation warnings for internal calls.
 @contextmanager
 def _disable_deprecation_warnings():
@@ -222,7 +217,7 @@ _log_rules = _prepare_rule_logger()
 # Provide a public 'log' function, which issues a deprecation warning.
 def log(*args, **kwargs):
     if _enable_rules_deprecations:
-        _warn_deprecated_logging_and_rules(
+        warn_deprecated(
             "The `iris.fileformats.rules.log()` method is deprecated.")
     return _log_rules(*args, **kwargs)
 
@@ -235,7 +230,7 @@ class DebugString(str):
 
     """
     def __init__(self, *args, **kwargs):
-        _warn_deprecated_logging_and_rules(
+        warn_deprecated(
             "the `iris.fileformats.rules.DebugString class is deprecated.")
         super(DebugString, self).__init__(*args, **kwargs)
 
@@ -249,7 +244,7 @@ class CMAttribute(object):
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
-        _warn_deprecated_logging_and_rules(
+        warn_deprecated(
             "the `iris.fileformats.rules.CmAttribute class is deprecated.")
         self.name = name
         self.value = value
@@ -264,7 +259,7 @@ class CMCustomAttribute(object):
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
-        _warn_deprecated_logging_and_rules(
+        warn_deprecated(
             "the `iris.fileformats.rules.CmCustomAttribute class is "
             "deprecated.")
         self.name = name
@@ -279,7 +274,7 @@ class CoordAndDims(object):
 
     """
     def __init__(self, coord, dims=None):
-        _warn_deprecated_logging_and_rules(
+        warn_deprecated(
             "the `iris.fileformats.rules.CoordAndDims class is deprecated.")
         self.coord = coord
         if dims is None:
@@ -331,8 +326,8 @@ def calculate_forecast_period(time, forecast_reference_time):
     .. deprecated:: 1.10
 
     """
-    warnings.warn("the `iris.fileformats.rules.calculate_forecast_period "
-                  "method is deprecated.")
+    warn_deprecated("the `iris.fileformats.rules.calculate_forecast_period "
+                    "method is deprecated.")
 
     if time.points.size != 1:
         raise ValueError('Expected a time coordinate with a single '
@@ -379,7 +374,7 @@ class Rule(object):
     def __init__(self, conditions, actions):
         """Create instance methods from our conditions and actions."""
         if _enable_rules_deprecations:
-            _warn_deprecated_logging_and_rules(
+            warn_deprecated(
                 "the `iris.fileformats.rules.Rule class is deprecated.")
         if not hasattr(conditions, '__iter__'):
             raise TypeError('Variable conditions should be iterable, got: '+ type(conditions))
@@ -612,7 +607,7 @@ class RulesContainer(object):
         e.g for PP saving actions that do not return anything, such as *pp.lbuser[3] = 16203*
         """
         if _enable_rules_deprecations:
-            _warn_deprecated_logging_and_rules(
+            warn_deprecated(
                 "the `iris.fileformats.rules.RulesContainer class is deprecated.")
         self._rules = []
         self.rule_type = rule_type
@@ -886,8 +881,8 @@ class Loader(collections.namedtuple('Loader', _loader_attrs)):
 
         """
         if legacy_custom_rules is not None:
-            warnings.warn('The `legacy_custom_rules` attribute is '
-                          'deprecated.')
+            warn_deprecated('The `legacy_custom_rules` attribute is '
+                            'deprecated.')
         return tuple.__new__(cls, (field_generator, field_generator_kwargs,
                                    converter, legacy_custom_rules))
 
@@ -1031,8 +1026,8 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
     def loadcubes_user_callback_wrapper(cube, field, filename):
         # First run any custom user-provided rules.
         if loader.legacy_custom_rules:
-            warnings.warn('The `legacy_custom_rules` attribute of '
-                          'the `loader` is deprecated.')
+            warn_deprecated('The `legacy_custom_rules` attribute of '
+                            'the `loader` is deprecated.')
             loader.legacy_custom_rules.verify(cube, field)
 
         # Then also run user-provided original callback function.

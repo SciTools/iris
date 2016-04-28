@@ -37,6 +37,7 @@ import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 
+from iris._deprecation import warn_deprecated
 from iris.analysis._interpolate_private import Linear1dExtrapolator
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError
@@ -126,7 +127,7 @@ def reset_load_rules():
     .. deprecated:: 1.7
 
     """
-    warnings.warn('reset_load_rules was deprecated in v1.7.')
+    warn_deprecated('reset_load_rules was deprecated in v1.7.')
 
 
 class GribDataProxy(object):
@@ -185,7 +186,7 @@ class GribWrapper(object):
 
     """
     def __init__(self, grib_message, grib_fh=None, auto_regularise=True):
-        warnings.warn('Deprecated at version 1.10')
+        warn_deprecated('Deprecated at version 1.10')
         """Store the grib message and compute our extra keys."""
         self.grib_message = grib_message
         deferred = grib_fh is not None
@@ -864,7 +865,7 @@ def grib_generator(filename, auto_regularise=True):
         reduced grid to an equivalent regular grid.
 
     """
-    warnings.warn('Deprecated at version 1.10')
+    warn_deprecated('Deprecated at version 1.10')
     with open(filename, 'rb') as grib_fh:
         while True:
             grib_message = gribapi.grib_new_from_file(grib_fh)
@@ -915,11 +916,12 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         if auto_regularise is not None:
             # The old loader supports the auto_regularise keyword, but in
             # deprecation mode, so warning if it is found.
-            warnings.warn('the`auto_regularise` kwarg is deprecated and '
-                          'will be removed in a future release. Resampling '
-                          'quasi-regular grids on load will no longer be '
-                          'available.  Resampling should be done on the '
-                          'loaded cube instead using Cube.regrid.')
+            msg = ('the`auto_regularise` kwarg is deprecated and '
+                   'will be removed in a future release. Resampling '
+                   'quasi-regular grids on load will no longer be '
+                   'available.  Resampling should be done on the '
+                   'loaded cube instead using Cube.regrid.')
+            warn_deprecated(msg)
 
         grib_loader = iris.fileformats.rules.Loader(
             grib_generator, {'auto_regularise': auto_regularise},
@@ -1011,8 +1013,8 @@ def as_pairs(cube):
 
 
     """
-    warnings.warn('as_pairs is deprecated in v1.10; please use'
-                  ' save_pairs_from_cube instead.')
+    warn_deprecated('as_pairs is deprecated in v1.10; please use'
+                    ' save_pairs_from_cube instead.')
     return save_pairs_from_cube(cube)
 
 

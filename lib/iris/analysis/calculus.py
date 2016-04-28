@@ -26,11 +26,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import re
-import warnings
 
 import cf_units
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 import iris.cube
 import iris.coords
 import iris.coord_systems
@@ -91,8 +91,8 @@ def _construct_midpoint_coord(coord, circular=None):
     if circular is None:
         circular = getattr(coord, 'circular', False)
     elif circular != getattr(coord, 'circular', False):
-        warnings.warn('circular flag and Coord.circular attribute do '
-                      'not match')
+        warn_deprecated('circular flag and Coord.circular attribute do '
+                        'not match')
 
     if coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -525,8 +525,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
     """
     if ignore is not None:
         ignore = None
-        warnings.warn('The ignore keyword to iris.analysis.calculus.curl '
-                      'is deprecated, ignoring is now done automatically.')
+        warn_deprecated('The ignore keyword to iris.analysis.calculus.curl '
+                        'is deprecated, ignoring is now done automatically.')
 
     # Get the vector quantity names.
     # (i.e. ['easterly', 'northerly', 'vertical'])

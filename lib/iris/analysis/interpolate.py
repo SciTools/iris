@@ -34,24 +34,20 @@ import six
 
 import collections
 from functools import wraps
-import warnings
 
 import numpy as np
 import scipy
 import scipy.spatial
 from scipy.interpolate.interpolate import interp1d
 
+from iris._deprecation import (warn_deprecated as iris_warn_deprecated,
+                               ClassWrapperSameDocstring)
 from iris.analysis import Linear
 import iris.cube
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.analysis._interpolate_private as oldinterp
-
-# Import deprecation support from the underlying module.
-# Put it there so we can use it from elsewhere without triggering the
-# deprecation warning (!)
-from iris._deprecation_helpers import ClassWrapperSameDocstring
 
 
 _INTERPOLATE_DEPRECATION_WARNING = \
@@ -62,7 +58,7 @@ _INTERPOLATE_DEPRECATION_WARNING = \
 def _warn_deprecated(msg=None):
     if msg is None:
         msg = _INTERPOLATE_DEPRECATION_WARNING
-    warnings.warn(msg)
+    iris_warn_deprecated(msg)
 
 # Issue a deprecation message when the module is loaded.
 _warn_deprecated()

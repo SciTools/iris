@@ -39,6 +39,7 @@ import numpy as np
 import numpy.ma as ma
 import netcdftime
 
+from iris._deprecation import warn_deprecated
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
@@ -574,7 +575,7 @@ class BitwiseInt(SplittableInt):
     def __init__(self, value, num_bits=None):
         # intentionally empty docstring as all covered in the class docstring.
         """ """
-        warnings.warn('BitwiseInt is deprecated - please use `int` instead.')
+        warn_deprecated('BitwiseInt is deprecated - please use `int` instead.')
 
         SplittableInt.__init__(self, value)
         self.flags = ()
@@ -664,16 +665,16 @@ class BitwiseInt(SplittableInt):
 
 def _make_flag_getter(value):
     def getter(self):
-        warnings.warn('The `flag` attributes are deprecated - please use '
-                      'integer bitwise operators instead.')
+        warn_deprecated('The `flag` attributes are deprecated - please use '
+                        'integer bitwise operators instead.')
         return int(bool(self._value & value))
     return getter
 
 
 def _make_flag_setter(value):
     def setter(self, flag):
-        warnings.warn('The `flag` attributes are deprecated - please use '
-                      'integer bitwise operators instead.')
+        warn_deprecated('The `flag` attributes are deprecated - please use '
+                        'integer bitwise operators instead.')
         if not isinstance(flag, bool):
             raise TypeError('Can only set bits to True or False')
         if flag:
@@ -722,7 +723,7 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
             The value of a BitwiseInt only makes sense in base-two.
 
         """
-        warnings.warn('Length is deprecated')
+        warn_deprecated('Length is deprecated')
         return len(str(self._value))
 
     def __setattr__(self, name, value):
@@ -737,7 +738,7 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
             The value of an _LBProc only makes sense in base-two.
 
         """
-        warnings.warn('Indexing is deprecated')
+        warn_deprecated('Indexing is deprecated')
         try:
             value = int('0' + str(self._value)[::-1][key][::-1])
         except IndexError:
@@ -757,7 +758,7 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
             The value of an _LBProc only makes sense in base-two.
 
         """
-        warnings.warn('Indexing is deprecated')
+        warn_deprecated('Indexing is deprecated')
         if (not isinstance(value, int) or value < 0):
             msg = 'Can only set {} as a positive integer value.'.format(key)
             raise ValueError(msg)
@@ -820,8 +821,8 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
 
     @property
     def flags(self):
-        warnings.warn('The `flags` attribute is deprecated - please use '
-                      'integer bitwise operators instead.')
+        warn_deprecated('The `flags` attribute is deprecated - please use '
+                        'integer bitwise operators instead.')
         return tuple(2 ** i for i in range(self.NUM_BITS)
                      if self._value & 2 ** i)
 
@@ -934,7 +935,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                   'deprecated and will be removed in a future release. ' \
                   'Install mo_pack to make use of the new unpacking ' \
                   'functionality.'
-            warnings.warn(msg)
+            warn_deprecated(msg)
             decompress_wgdos = pp_packing.wgdos_unpack
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
@@ -949,7 +950,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                   'deprecated and will be removed in a future release. ' \
                   'Install/upgrade mo_pack to make use of the new unpacking ' \
                   'functionality.'
-            warnings.warn(msg)
+            warn_deprecated(msg)
             decompress_rle = pp_packing.rle_decode
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
@@ -2001,7 +2002,7 @@ def reset_load_rules():
     .. deprecated:: 1.7
 
     """
-    warnings.warn('reset_load_rules was deprecated in v1.7.')
+    warn_deprecated('reset_load_rules was deprecated in v1.7.')
 
 
 def _ensure_save_rules_loaded():
@@ -2033,7 +2034,7 @@ def add_save_rules(filename):
         alternative solution.
 
     """
-    warnings.warn(
+    warn_deprecated(
         'custom pp save rules are deprecated from v1.10.\n'
         'If you need to customise pp field saving, please refer to the '
         'functions iris.fileformats.pp.as_fields, '
@@ -2054,7 +2055,7 @@ def reset_save_rules():
         alternative solution.
 
     """
-    warnings.warn(
+    warn_deprecated(
         'custom pp save rules are deprecated from v1.10.\n'
         'If you need to customise pp field saving, please refer to the '
         'functions iris.fileformats.pp.as_fields, '
@@ -2288,8 +2289,8 @@ def as_pairs(cube, field_coords=None, target=None):
     functionality.
 
     """
-    warnings.warn('as_pairs is deprecated in v1.10; please use'
-                  ' save_pairs_from_cube instead.')
+    warn_deprecated('as_pairs is deprecated in v1.10; please use'
+                    ' save_pairs_from_cube instead.')
     return save_pairs_from_cube(cube, field_coords=field_coords,
                                 target=target)
 

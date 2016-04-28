@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,6 +39,7 @@ import netCDF4
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 import iris.util
 
 
@@ -1136,4 +1137,4 @@ def _netcdf_promote_warning():
            'vertical coordinates as independent Cubes. This behaviour is '
            'deprecated in favour of automatic promotion to Cubes. To switch '
            'to the new behaviour, set iris.FUTURE.netcdf_promote to True.')
-    warnings.warn(msg)
+    warn_deprecated(msg)

@@ -23,9 +23,13 @@ deprecation is accompanied by the introduction of a new public API.
 
 Under these circumstances the following points apply:
 
- - Using the deprecated API must result in a concise deprecation
-   warning.
- - Where possible, your deprecation warning should include advice on
+ - Using the deprecated API must result in a concise deprecation warning which
+   is an instance of :class:`iris.IrisDeprecation`.
+   It is easiest to call
+   :func:`iris._deprecation.warn_deprecated`, which is a
+   simple wrapper to :func:`warnings.warn` with the signature
+   `warn_deprecation(message, **kwargs)`.
+- Where possible, your deprecation warning should include advice on
    how to avoid using the deprecated API. For example, you might
    reference a preferred API, or more detailed documentation elsewhere.
  - You must update the docstring for the deprecated API to include a

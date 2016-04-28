@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,7 @@ import warnings
 from cf_units import CALENDAR_GREGORIAN, Unit
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 from iris.aux_factory import HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
@@ -65,7 +66,7 @@ def convert(grib):
               'Please report issues you experience to:\n'
               'https://groups.google.com/forum/#!topic/scitools-iris-dev/'
               'lMsOusKNfaU')
-        warnings.warn(msg)
+        warn_deprecated(msg)
 
     if \
             (grib.gridType=="reduced_gg"):

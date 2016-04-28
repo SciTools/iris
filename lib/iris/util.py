@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,12 +33,12 @@ import os.path
 import sys
 import tempfile
 import time
-import warnings
 
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 import iris
 import iris.exceptions
 
@@ -75,10 +75,10 @@ def broadcast_weights(weights, array, dims):
         longitude dimension in *array*.
 
     """
-    warnings.warn('broadcast_weights() is deprecated and will be removed '
-                  'in a future release. Consider converting existing code '
-                  'to use broadcast_to_shape() as a replacement.',
-                  stacklevel=2)
+    warn_deprecated('broadcast_weights() is deprecated and will be removed '
+                    'in a future release. Consider converting existing code '
+                    'to use broadcast_to_shape() as a replacement.',
+                    stacklevel=2)
     # Create a shape array, which *weights* can be re-shaped to, allowing
     # them to be broadcast with *array*.
     weights_shape = np.ones(array.ndim)
@@ -928,8 +928,8 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
 def ensure_array(a):
     """.. deprecated:: 1.7"""
-    warnings.warn('ensure_array() is deprecated and will be removed '
-                  'in a future release.')
+    warn_deprecated('ensure_array() is deprecated and will be removed '
+                    'in a future release.')
     if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
         a = np.array([a])
     return a
@@ -948,16 +948,16 @@ class _Timers(object):
         self.timers = {}
 
     def start(self, name, step_name):
-        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
-                      'in future Iris releases.')
+        warn_deprecated('Timers was deprecated in v1.7.0 and will be removed '
+                        'in future Iris releases.')
         self.stop(name)
         timer = self.timers.setdefault(name, {})
         timer[step_name] = time.time()
         timer["active_timer_step"] = step_name
 
     def restart(self, name, step_name):
-        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
-                      'in future Iris releases.')
+        warn_deprecated('Timers was deprecated in v1.7.0 and will be removed '
+                        'in future Iris releases.')
         self.stop(name)
         timer = self.timers.setdefault(name, {})
         timer[step_name] = time.time() - timer.get(step_name, 0)
