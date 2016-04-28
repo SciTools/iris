@@ -158,8 +158,8 @@ def load_NAME_III(filename):
             # Cast the x and y grid positions to floats and convert them to
             # zero based indices (the numbers are 1 based grid positions where
             # 0.5 represents half a grid point.)
-            x = float(vals[0]) - 1.5
-            y = float(vals[1]) - 1.5
+            x = int(float(vals[0]) - 1.5)
+            y = int(float(vals[1]) - 1.5)
 
             # Populate the data arrays (i.e. all columns but the leading 4).
             for i, data_array in enumerate(data_arrays):

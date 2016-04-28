@@ -79,8 +79,18 @@ def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
 def fail_any_deprecation_warnings():
     # Provide a context in which any deprecation warning will cause an error.
     with warnings.catch_warnings():
-        # Note: we detect "deprecation warnings" just by string matching, which
-        # seems a bit weak.  However, we don't use the provided
-        # DeprecationWarning class because that is ignored by default (!)
+        # Detect our "deprecation warnings", by string matching.  This may seem
+        # a bit weak, but Iris isn't using DeprecationWarning because Python
+        # currently ignores those by default (!)
         warnings.filterwarnings("error", ".*deprecat.*")
+        # Also catch any actual DeprecationWarning.
+        warnings.simplefilter("error", DeprecationWarning)
+        # Filter *out* a specific error.
+        # This is triggered in dateutil (2.4.1 tested) by matplotlib (1.3.1).
+        # N.B. must be added *afterward* to override the other filters.
+        msg_catch_re = (".*"
+                        "Using both 'count' and 'until' is inconsistent with "
+                        "RFC 2445"
+                        ".*")
+        warnings.filterwarnings("ignore", msg_catch_re)
         yield
