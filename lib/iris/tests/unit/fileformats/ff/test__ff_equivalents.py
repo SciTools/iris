@@ -181,7 +181,7 @@ class Test_FFHeader(Mixin_ConstructorTest, tests.IrisTest):
     target_class_name = 'FFHeader'
 
     @staticmethod
-    def dummy_constructor_call(self, filename, word_depth=16):
+    def dummy_constructor_call(self, filename, word_depth=12345):
         # A replacement for the 'real' constructor call in the parent class.
         # Used to check for correct args and kwargs in the call.
         # Just record the call arguments in a global, for testing.
@@ -196,8 +196,10 @@ class Test_FFHeader(Mixin_ConstructorTest, tests.IrisTest):
 
     def test__basic(self):
         # Call with just a filename.
+        # NOTE: this ignores "our" constructor word_depth default, as the
+        # default is now re-implemented in the wrapper class definition.
         self.check_call(['filename'], {},
-                        expected_result=('filename', 16))
+                        expected_result=('filename', 8))
 
     def test__word_depth(self):
         # Call with a word-depth.
@@ -220,7 +222,7 @@ class Test_FF2PP(Mixin_ConstructorTest, tests.IrisTest):
 
     @staticmethod
     def dummy_constructor_call(self, filename, read_data=False,
-                               word_depth=16):
+                               word_depth=12345):
         # A replacement for the 'real' constructor call in the parent class.
         # Used to check for correct args and kwargs in the call.
         # Just record the call arguments in a global, for testing.
@@ -235,13 +237,15 @@ class Test_FF2PP(Mixin_ConstructorTest, tests.IrisTest):
 
     def test__basic(self):
         # Call with just a filename.
+        # NOTE: this ignores "our" constructor word_depth default, as the
+        # default is now re-implemented in the wrapper class definition.
         self.check_call(['filename'], {},
-                        expected_result=('filename', False, 16))
+                        expected_result=('filename', False, 8))
 
     def test__read_data(self):
         # Call with a word-depth.
         self.check_call(['filename', True], {},
-                        expected_result=('filename', True, 16))
+                        expected_result=('filename', True, 8))
 
     def test__word_depth(self):
         # Call with a word-depth keyword.

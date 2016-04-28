@@ -25,36 +25,20 @@ import six
 import warnings
 
 
-# A Mixin for a wrapper class that mimics the underlying original, but also
-# emits deprecation warnings when it is instantiated.
-class ClassDeprecationWrapper(type):
+# A Mixin for a wrapper class that copies the docstring of the wrapped class
+# into the wrapper.
+# This is useful in producing wrapper classes that nede to mimic the original
+# but emit deprecation warnings when used.
+class ClassWrapperSameDocstring(type):
     def __new__(metacls, classname, bases, class_dict):
-        # Patch the subclass to duplicate docstrings from the parent class, and
-        # provide an __init__ that issues a deprecation warning and then calls
-        # the parent constructor.
+        # Patch the subclass to duplicate the class docstring from the wrapped
+        # class, and give it a special '__new__' that issues a deprecation
+        # warning when creating an instance.
         parent_class = bases[0]
+
         # Copy the original class docstring.
         class_dict['__doc__'] = parent_class.__doc__
 
-        # Get a warning message from the underlying class.
-        depr_warnstring = class_dict.get('_DEPRECATION_WARNING')
-
-        # Save the parent class *on* the wrapper class, so we can chain to its
-        #  __init__ call.
-        class_dict['_target_parent_class'] = parent_class
-
-        # Create a wrapper init function which issues the deprecation.
-        def initfn(self, *args, **kwargs):
-            print(repr(depr_warnstring))
-            warnings.warn(depr_warnstring)
-            self._target_parent_class.__init__(self, *args, **kwargs)
-
-        # Set this as the init for the wrapper class.
-        initfn.func_name = '__init__'
-        # Also copy the original docstring.
-        initfn.__doc__ = parent_class.__init__.__doc__
-        class_dict['__init__'] = initfn
-
         # Return the result.
-        return super(ClassDeprecationWrapper, metacls).__new__(
+        return super(ClassWrapperSameDocstring, metacls).__new__(
             metacls, classname, bases, class_dict)

@@ -43,51 +43,6 @@ import iris.coords
 import iris.exceptions
 
 
-_DEPRECATION_WARNSTRING = \
-    "The module 'iris.analysis.interpolate' is deprecated."
-
-
-# Define a standard mechanism for deprecation messages.
-def _warn_deprecated(message=None):
-    if message is None:
-        message = _DEPRECATION_WARNSTRING
-    warnings.warn(message)
-#    raise ValueError(message)
-
-
-# Make new wrappers for classes and functions, with the original public names,
-# but which emit deprecation warnings when used.
-class _DeprecationWrapperMetaclass(type):
-    def __new__(metacls, classname, bases, class_dict):
-        # Patch the subclass to duplicate docstrings from the parent class, and
-        # provide an __init__ that issues a deprecation warning and then calls
-        # the parent constructor.
-        parent_class = bases[0]
-        # Copy the original class docstring.
-        class_dict['__doc__'] = parent_class.__doc__
-
-        # Copy the init docstring too.
-        init_docstring = parent_class.__init__.__doc__
-
-        # Save the parent class *on* the wrapper class, so we can chain to its
-        #  __init__ call.
-        class_dict['_target_parent_class'] = parent_class
-
-        # Create a wrapper init function which issues the deprecation.
-        def initfn(self, *args, **kwargs):
-            _warn_deprecated(_DEPRECATION_WARNSTRING)
-            self._target_parent_class.__init__(self, *args, **kwargs)
-
-        # Set this as the init for the wrapper class.
-        initfn.func_name = '__init__'
-        initfn.__doc__ = init_docstring
-        class_dict['__init__'] = initfn
-
-        # Return the result.
-        return super(_DeprecationWrapperMetaclass, metacls).__new__(
-            metacls, classname, bases, class_dict)
-
-
 def _ll_to_cart(lon, lat):
     # Based on cartopy.img_transform.ll_to_cart()
     x = np.sin(np.deg2rad(90 - lat)) * np.cos(np.deg2rad(lon))
@@ -167,6 +122,13 @@ def nearest_neighbour_indices(cube, sample_points):
 
         Nearest neighbour interpolation of multidimensional coordinates is not
         yet supported.
+
+    .. deprecated:: 1.10
+
+        The module :mod:`iris.analysis.interpolate` is deprecated.
+        Please replace usage of
+        :func:`iris.analysis.interpolate.nearest_neighbour_indices`
+        with :meth:`iris.coords.Coord.nearest_neighbour_index`.
 
     """
     if isinstance(sample_points, dict):
@@ -371,6 +333,14 @@ def extract_nearest_neighbour(cube, sample_points):
     Returns:
         A cube that represents uninterpolated data as near to the given points as possible.
 
+    .. deprecated:: 1.10
+
+        The module :mod:`iris.analysis.interpolate` is deprecated.
+        Please replace usage of
+        :func:`iris.analysis.interpolate.extract_nearest_neighbour`
+        with :meth:`iris.cube.Cube.interpolate` using the scheme
+        :class:`iris.analysis.Nearest`.
+
     """
     return cube[nearest_neighbour_indices(cube, sample_points)]
 
@@ -403,6 +373,14 @@ def nearest_neighbour_data_value(cube, sample_points):
     Returns:
         The data value at the point in the cube closest to the supplied coordinate values.
 
+    .. deprecated:: 1.10
+
+        The module :mod:`iris.analysis.interpolate` is deprecated.
+        Please replace usage of
+        :func:`iris.analysis.interpolate.nearest_neighbour_data_value`
+        with :meth:`iris.cube.Cube.interpolate` using the scheme
+        :class:`iris.analysis.Nearest`.
+
     """
     indices = nearest_neighbour_indices(cube, sample_points)
     for ind in indices:
@@ -411,14 +389,6 @@ def nearest_neighbour_data_value(cube, sample_points):
                              'single value from the cube.' % sample_points)
 
     return cube.data[indices]
-
-
-def _regrid_with_deprecation_warning(source_cube, grid_cube, mode='bilinear',
-                                     **kwargs):
-    _warn_deprecated(
-        _DEPRECATION_WARNSTRING +
-        """  Please use iris.cube.Cube.regrid() instead.""")
-    return regrid(source_cube, grid_cube, mode=mode, **kwargs)
 
 
 def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
@@ -646,6 +616,12 @@ def regrid_to_max_resolution(cubes, **kwargs):
     Returns:
         A list of new :class:`iris.cube.Cube` instances.
 
+    .. deprecated:: 1.10
+
+        The module :mod:`iris.analysis.interpolate` is deprecated.
+        Please replace usage of :func:`regrid_to_max_resolution` with
+        :meth:`iris.cube.Cube.regrid`.
+
     """
     # TODO: This could be significantly improved for readability and functionality.
     resolution = lambda cube_: (cube_.shape[cube_.coord_dims(cube_.coord(axis="x"))[0]]) * (cube_.shape[cube_.coord_dims(cube_.coord(axis="y"))[0]])
@@ -716,6 +692,14 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         have an integer data type they will be promoted to a floating
         point data type in the result.
 
+    .. deprecated:: 1.10
+
+        The module :mod:`iris.analysis.interpolate` is deprecated.
+        Please replace usage of
+        :func:`iris.analysis.interpolate.linear`
+        with :meth:`iris.cube.Cube.interpolate` using the scheme
+        :class:`iris.analysis.Linear`.
+
     """
     if isinstance(sample_points, dict):
         sample_points = list(sample_points.items())
@@ -759,7 +743,7 @@ class Linear1dExtrapolator(object):
 
     See also: :mod:`scipy.interpolate`.
 
-    .. deprecated: 1.10
+    .. deprecated :: 1.10
 
     """
     roll_y = _interp1d_rolls_y()
@@ -769,7 +753,7 @@ class Linear1dExtrapolator(object):
         Given an already created :class:`scipy.interpolate.interp1d` instance, return a callable object
         which supports linear extrapolation.
 
-        .. deprecated: 1.10
+        .. deprecated :: 1.10
 
         """
         self._interpolator = interpolator

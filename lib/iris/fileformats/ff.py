@@ -36,17 +36,25 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
+from functools import wraps
 import warnings
 
 from iris.fileformats import _ff
 from iris.fileformats import pp
-from iris._deprecation_helpers import ClassDeprecationWrapper
+from iris._deprecation_helpers import ClassWrapperSameDocstring
 
 
 _FF_DEPRECATION_WARNING = "The module 'iris.fileformats.ff' is deprecated."
 
+
+# Define a standard mechanism for deprecation messages.
+def _warn_deprecated(message=None):
+    if message is None:
+        message = _FF_DEPRECATION_WARNING
+    warnings.warn(message)
+
 # Issue a deprecation message when the module is loaded.
-warnings.warn(_FF_DEPRECATION_WARNING)
+_warn_deprecated()
 
 # Directly import various simple data items from the 'old' ff module.
 from iris.fileformats._ff import (
@@ -72,36 +80,73 @@ from iris.fileformats._ff import (
 
 
 # Define wrappers to all public classes, that emit deprecation warnings.
-class Grid(six.with_metaclass(ClassDeprecationWrapper, _ff.Grid)):
-    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
+# Note: it seems we are obliged to provide an __init__ with a suitable matching
+# signature for each one, as Sphinx will take its constructor signature from
+# any overriding definition of __init__ or __new__.
+# So without this, the docs don't look right.
+
+class Grid(six.with_metaclass(ClassWrapperSameDocstring, _ff.Grid)):
+    @wraps(_ff.Grid.__init__)
+    def __init__(self, column_dependent_constants, row_dependent_constants,
+                 real_constants, horiz_grid_type):
+        _warn_deprecated()
+        super(Grid, self).__init__(
+            column_dependent_constants, row_dependent_constants,
+            real_constants, horiz_grid_type)
 
 
-class ArakawaC(six.with_metaclass(ClassDeprecationWrapper, _ff.ArakawaC)):
-    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
+class ArakawaC(six.with_metaclass(ClassWrapperSameDocstring, _ff.ArakawaC)):
+    @wraps(_ff.ArakawaC.__init__)
+    def __init__(self, column_dependent_constants, row_dependent_constants,
+                 real_constants, horiz_grid_type):
+        _warn_deprecated()
+        super(ArakawaC, self).__init__(
+            column_dependent_constants, row_dependent_constants,
+            real_constants, horiz_grid_type)
 
 
-class NewDynamics(six.with_metaclass(ClassDeprecationWrapper,
+class NewDynamics(six.with_metaclass(ClassWrapperSameDocstring,
                                      _ff.NewDynamics)):
-    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
+    @wraps(_ff.NewDynamics.__init__)
+    def __init__(self, column_dependent_constants, row_dependent_constants,
+                 real_constants, horiz_grid_type):
+        _warn_deprecated()
+        super(NewDynamics, self).__init__(
+            column_dependent_constants, row_dependent_constants,
+            real_constants, horiz_grid_type)
 
 
-class ENDGame(six.with_metaclass(ClassDeprecationWrapper, _ff.ENDGame)):
-    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
+class ENDGame(six.with_metaclass(ClassWrapperSameDocstring, _ff.ENDGame)):
+    @wraps(_ff.ENDGame.__init__)
+    def __init__(self, column_dependent_constants, row_dependent_constants,
+                 real_constants, horiz_grid_type):
+        _warn_deprecated()
+        super(ENDGame, self).__init__(
+            column_dependent_constants, row_dependent_constants,
+            real_constants, horiz_grid_type)
 
 
-class FFHeader(six.with_metaclass(ClassDeprecationWrapper, _ff.FFHeader)):
-    _DEPRECATION_WARNING = _FF_DEPRECATION_WARNING
+class FFHeader(six.with_metaclass(ClassWrapperSameDocstring, _ff.FFHeader)):
+    @wraps(_ff.FFHeader.__init__)
+    def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
+        _warn_deprecated()
+        super(FFHeader, self).__init__(filename, word_depth=word_depth)
 
 
-class FF2PP(six.with_metaclass(ClassDeprecationWrapper, _ff.FF2PP)):
-    # Provide an enhanced deprecation message for this one.
-    _DEPRECATION_WARNING = (
-        _FF_DEPRECATION_WARNING + '\n' +
-        "Please use 'iris.fileformats.um.um_to_pp' in place of "
-        "'iris.fileformats.ff.FF2PP.")
+class FF2PP(six.with_metaclass(ClassWrapperSameDocstring, _ff.FF2PP)):
+    @wraps(_ff.FF2PP.__init__)
+    def __init__(self, filename, read_data=False,
+                 word_depth=DEFAULT_FF_WORD_DEPTH):
+        # Provide an enhanced deprecation message for this one.
+        msg = (_FF_DEPRECATION_WARNING + '\n' +
+               "Please use 'iris.fileformats.um.um_to_pp' in place of "
+               "'iris.fileformats.ff.FF2PP.")
+        _warn_deprecated(msg)
+        super(FF2PP, self).__init__(filename, read_data=read_data,
+                                    word_depth=word_depth)
 
 
-# Make wrappers to the loader functions which also issue a warning,
+# Provide alternative loader functions which issue a deprecation warning,
 # using the original dosctrings with an appended deprecation warning.
 
 def load_cubes(filenames, callback, constraints=None):
