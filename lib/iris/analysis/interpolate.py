@@ -166,9 +166,6 @@ def nearest_neighbour_indices(cube, sample_points):
         #calculate the nearest neighbour
         min_index = coord.nearest_neighbour_index(point)
 
-        if getattr(coord, 'circular', False):
-            warnings.warn("Nearest neighbour on a circular coordinate may not be picking the nearest point.", DeprecationWarning)
-
         # If the dimension has already been interpolated then assert that the index from this coordinate
         # agrees with the index already calculated, otherwise we have a contradicting specification
         if indices[data_dim] != slice(None, None) and min_index != indices[data_dim]:
