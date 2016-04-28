@@ -22,17 +22,19 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from . import extest_util
-
-with extest_util.add_examples_to_path():
-    import hovmoller
+from .extest_util import (add_examples_to_path,
+                          show_replaced_by_check_graphic,
+                          fail_any_deprecation_warnings)
 
 
 class TestGlobalMap(tests.GraphicsTest):
     """Test the hovmoller example code."""
     def test_hovmoller(self):
-        with extest_util.show_replaced_by_check_graphic(self):
-            hovmoller.main()
+        with fail_any_deprecation_warnings():
+            with add_examples_to_path():
+                import hovmoller
+            with show_replaced_by_check_graphic(self):
+                hovmoller.main()
 
 
 if __name__ == '__main__':

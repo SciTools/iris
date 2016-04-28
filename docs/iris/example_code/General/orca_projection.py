@@ -22,6 +22,10 @@ import iris.quickplot as qplt
 
 
 def main():
+    # Enable a future option, to ensure that the netcdf load works the same way
+    # as in future Iris versions.
+    iris.FUTURE.netcdf_promote = True
+
     # Load data
     filepath = iris.sample_data_path('orca2_votemper.nc')
     cube = iris.load_cube(filepath)

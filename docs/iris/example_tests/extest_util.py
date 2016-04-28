@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,10 +26,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import contextlib
 import os.path
+import warnings
 import sys
 
 import matplotlib.pyplot as plt
 
+import iris
+from iris._deprecation import IrisDeprecation
 import iris.plot as iplt
 import iris.quickplot as qplt
 from iris.tests import _DEFAULT_IMAGE_TOLERANCE
@@ -72,3 +75,21 @@ def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
     plt.show = iplt.show = qplt.show = replacement_show
     yield
     plt.show = iplt.show = qplt.show = orig_show
+
+
+@contextlib.contextmanager
+def fail_any_deprecation_warnings():
+    """
+    Create a context in which any deprecation warning will cause an error.
+
+    The context also resets all the iris.FUTURE settings to the defaults, as
+    otherwise changes made in one test can affect subsequent ones.
+
+    """
+    with warnings.catch_warnings():
+        # Detect and error all and any Iris deprecation warnings.
+        warnings.simplefilter("error", IrisDeprecation)
+        # Run with all default settings in iris.FUTURE.
+        default_future_kwargs = iris.Future().__dict__
+        with iris.FUTURE.context(**default_future_kwargs):
+            yield
