@@ -14,13 +14,14 @@ import matplotlib.dates as mdates
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
-import iris.unit
 
 
 def main():
-    fname = iris.sample_data_path('ostia_monthly.nc')
+    # Enable future options to avoid deprecations.
+    iris.FUTURE.netcdf_promote = True
 
     # load a single cube of surface temperature between +/- 5 latitude
+    fname = iris.sample_data_path('ostia_monthly.nc')
     cube = iris.load_cube(fname,
                           iris.Constraint('surface_temperature',
                                           latitude=lambda v: -5 < v < 5))

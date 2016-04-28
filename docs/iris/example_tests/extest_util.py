@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import contextlib
 import os.path
+import warnings
 import sys
 
 import matplotlib.pyplot as plt
@@ -72,3 +73,24 @@ def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
     plt.show = iplt.show = qplt.show = replacement_show
     yield
     plt.show = iplt.show = qplt.show = orig_show
+
+
+@contextlib.contextmanager
+def fail_any_deprecation_warnings():
+    # Provide a context in which any deprecation warning will cause an error.
+    with warnings.catch_warnings():
+        # Detect our "deprecation warnings", by string matching.  This may seem
+        # a bit weak, but Iris isn't using DeprecationWarning because Python
+        # currently ignores those by default (!)
+        warnings.filterwarnings("error", ".*deprecat.*")
+        # Also catch any actual DeprecationWarning.
+        warnings.simplefilter("error", DeprecationWarning)
+        # Filter *out* a specific error.
+        # This is triggered in dateutil (2.4.1 tested) by matplotlib (1.3.1).
+        # N.B. must be added *afterward* to override the other filters.
+        msg_catch_re = (".*"
+                        "Using both 'count' and 'until' is inconsistent with "
+                        "RFC 2445"
+                        ".*")
+        warnings.filterwarnings("ignore", msg_catch_re)
+        yield

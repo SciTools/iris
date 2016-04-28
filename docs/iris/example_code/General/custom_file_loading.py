@@ -59,6 +59,8 @@ import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
+from cf_units import Unit, CALENDAR_GREGORIAN
+
 import iris
 import iris.coords as icoords
 import iris.coord_systems as icoord_systems
@@ -156,8 +158,8 @@ def load_NAME_III(filename):
             # Cast the x and y grid positions to floats and convert them to
             # zero based indices (the numbers are 1 based grid positions where
             # 0.5 represents half a grid point.)
-            x = float(vals[0]) - 1.5
-            y = float(vals[1]) - 1.5
+            x = int(float(vals[0]) - 1.5)
+            y = int(float(vals[1]) - 1.5)
 
             # Populate the data arrays (i.e. all columns but the leading 4).
             for i, data_array in enumerate(data_arrays):
@@ -203,8 +205,7 @@ def NAME_to_cube(filenames, callback):
 
             # define the time unit and use it to serialise the datetime for the
             # time coordinate
-            time_unit = iris.unit.Unit('hours since epoch',
-                                       calendar=iris.unit.CALENDAR_GREGORIAN)
+            time_unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
             time_coord = icoords.AuxCoord(
                 time_unit.date2num(field_headings['time']),
                 standard_name='time',

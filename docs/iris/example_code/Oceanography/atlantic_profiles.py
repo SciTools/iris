@@ -22,6 +22,8 @@ import matplotlib.pyplot as plt
 
 
 def main():
+    # Enable future options to avoid deprecations.
+    iris.FUTURE.netcdf_promote = True
 
     # Load the gridded temperature and salinity data.
     fname = iris.sample_data_path('atlantic_profiles.nc')
