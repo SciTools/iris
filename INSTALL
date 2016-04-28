@@ -124,7 +124,7 @@ mock 1.0.1 (http://pypi.python.org/pypi/mock/)
     Python mocking and patching package for testing. Note that this package
     is only required to support the Iris unit tests.
 
-nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
+nose 1.1.2 or later (https://nose.readthedocs.io/en/latest/)
     Python package for software testing. Iris is not compatible with nose2.
 
 pep8 1.4.6* (https://pypi.python.org/pypi/pep8) 
