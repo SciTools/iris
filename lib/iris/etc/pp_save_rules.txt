@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -150,6 +150,35 @@ IF
 THEN
     pp.lbtim.ia = 0
 
+IF
+    # If the cell methods contain a minimum then overwrite lbtim.ia with this
+    # interval
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'clim_season') is None
+    scalar_coord(cm, 'forecast_period') is not None or scalar_coord(cm, 'forecast_reference_time') is not None
+    scalar_cell_method(cm, 'minimum', 'time') is not None
+    scalar_cell_method(cm, 'minimum', 'time').intervals != ()
+    scalar_cell_method(cm, 'minimum', 'time').intervals[0].endswith('hour')
+THEN
+    # set lbtim.ia with the integer part of the cell method's interval
+    # e.g. if interval is '24 hour' then lbtim.ia becomes 24
+    pp.lbtim.ia = int(scalar_cell_method(cm, 'minimum', 'time').intervals[0][:-5])
+
+IF
+    # If the cell methods contain a maximum then overwrite lbtim.ia with this
+    # interval
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'clim_season') is None
+    scalar_coord(cm, 'forecast_period') is not None or scalar_coord(cm, 'forecast_reference_time') is not None
+    scalar_cell_method(cm, 'maximum', 'time') is not None
+    scalar_cell_method(cm, 'maximum', 'time').intervals != ()
+    scalar_cell_method(cm, 'maximum', 'time').intervals[0].endswith('hour')
+THEN
+    # set lbtim.ia with the integer part of the cell method's interval
+    # e.g. if interval is '1 hour' then lbtim.ia becomes 1
+    pp.lbtim.ia = int(scalar_cell_method(cm, 'maximum', 'time').intervals[0][:-5])
 
 #climatiological time mean - single year
 IF
@@ -521,6 +550,13 @@ IF
     scalar_cell_method(cm, 'mean', 'time') is not None
 THEN
     pp.lbproc += 128
+
+#time-minimum
+IF
+    # Look for a CellMethod which is a "minimum" over "time".
+    scalar_cell_method(cm, 'minimum', 'time') is not None
+THEN
+    pp.lbproc += 4096
 
 #time-maximum
 IF

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris.coords import DimCoord
+from iris.coords import DimCoord, CellMethod
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 from iris.tests import mock
@@ -159,6 +159,30 @@ class TestLbsrceProduction(tests.IrisTest):
     def test_um_version(self):
         self.check_cube_um_source_yields_lbsrce(
             'Data from Met Office Unified Model 12.17', '25.36', 25361111)
+
+
+class Test_Save__LbprocProduction(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.realistic_3d()
+
+    def test_no_cell_methods(self):
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 0)
+
+    def test_mean(self):
+        self.cube.cell_methods = (CellMethod('mean', 'time', '1 hour'),)
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 128)
+
+    def test_minimum(self):
+        self.cube.cell_methods = (CellMethod('minimum', 'time', '1 hour'),)
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 4096)
+
+    def test_maximum(self):
+        self.cube.cell_methods = (CellMethod('maximum', 'time', '1 hour'),)
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 8192)
 
 
 if __name__ == "__main__":
