@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ from collections import OrderedDict
 import numpy as np
 
 import iris
-from iris.analysis.interpolate import linear
+from iris.analysis._interpolate_private import linear
 from iris.tests import mock
 import iris.tests.stock as stock
 
@@ -39,7 +39,8 @@ class Test(tests.IrisTest):
         self.extrapolation = 'extrapolation_mode'
         self.scheme = mock.Mock(name='linear scheme')
 
-    @mock.patch('iris.analysis.interpolate.Linear', name='linear_patch')
+    @mock.patch('iris.analysis._interpolate_private.Linear',
+                name='linear_patch')
     @mock.patch('iris.cube.Cube.interpolate', name='cube_interp_patch')
     def _assert_expected_call(self, sample_points, sample_points_call,
                               cinterp_patch, linear_patch):

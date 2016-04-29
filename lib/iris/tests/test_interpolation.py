@@ -34,8 +34,7 @@ import iris.coord_systems
 import iris.cube
 import iris.analysis.interpolate
 import iris.tests.stock
-from iris.analysis.interpolate import Linear1dExtrapolator
-import iris.analysis.interpolate as iintrp
+import iris.analysis._interpolate_private as iintrp
 
 
 def normalise_order(cube):
@@ -50,7 +49,7 @@ def normalise_order(cube):
 class TestLinearExtrapolator(tests.IrisTest):
     def test_simple_axis0(self):
         a = np.arange(12.).reshape(3, 4)
-        r = Linear1dExtrapolator(interp1d(np.arange(3), a, axis=0))
+        r = iintrp.Linear1dExtrapolator(interp1d(np.arange(3), a, axis=0))
         
         np.testing.assert_array_equal(r(0), np.array([ 0.,  1.,  2.,  3.]))
         np.testing.assert_array_equal(r(-1), np.array([-4.,  -3.,  -2., -1.]))
@@ -88,7 +87,7 @@ class TestLinearExtrapolator(tests.IrisTest):
    
     def test_simple_axis1(self):
         a = np.arange(12).reshape(3, 4)
-        r = Linear1dExtrapolator(interp1d(np.arange(4), a, axis=1))
+        r = iintrp.Linear1dExtrapolator(interp1d(np.arange(4), a, axis=1))
         
         # check non-extrapolation given the Extrapolator object 
         np.testing.assert_array_equal(r(0), np.array([ 0.,  4.,  8.]))
@@ -140,7 +139,7 @@ class TestLinearExtrapolator(tests.IrisTest):
         
     def test_simple_3d_axis1(self):
         a = np.arange(24.).reshape(3, 4, 2)
-        r = Linear1dExtrapolator(interp1d(np.arange(4.), a, axis=1))
+        r = iintrp.Linear1dExtrapolator(interp1d(np.arange(4.), a, axis=1))
         
 #       a:
 #        [[[ 0  1]
@@ -206,7 +205,7 @@ class TestLinearExtrapolator(tests.IrisTest):
         
     def test_variable_gradient(self):
         a = np.array([[2, 4, 8], [0, 5, 11]])
-        r = Linear1dExtrapolator(interp1d(np.arange(2), a, axis=0))
+        r = iintrp.Linear1dExtrapolator(interp1d(np.arange(2), a, axis=0))
         
         np.testing.assert_array_equal(r(0), np.array([ 2.,  4.,  8.]))
         np.testing.assert_array_equal(r(-1), np.array([ 4.,  3.,  5.]))
@@ -228,27 +227,27 @@ class TestLinearLengthOneCoord(tests.IrisTest):
     def test_single_point(self):
         # Slice to form (3, 1) shaped cube.
         cube = self.cube[:, 2:3]
-        r = iris.analysis.interpolate.linear(cube, [('longitude', [1.])])
+        r = iintrp.linear(cube, [('longitude', [1.])])
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_single_pt_0'))
 
         # Slice to form (1, 4) shaped cube.
         cube = self.cube[1:2, :]
-        r = iris.analysis.interpolate.linear(cube, [('latitude', [1.])])
+        r = iintrp.linear(cube, [('latitude', [1.])])
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_single_pt_1'))
 
     def test_multiple_points(self):
         # Slice to form (3, 1) shaped cube.
         cube = self.cube[:, 2:3]
-        r = iris.analysis.interpolate.linear(cube, [('longitude',
+        r = iintrp.linear(cube, [('longitude',
                                                      [1., 2., 3., 4.])])
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_many_0'))
 
         # Slice to form (1, 4) shaped cube.
         cube = self.cube[1:2, :]
-        r = iris.analysis.interpolate.linear(cube, [('latitude',
+        r = iintrp.linear(cube, [('latitude',
                                                      [1., 2., 3., 4.])])
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_many_1'))
@@ -256,13 +255,13 @@ class TestLinearLengthOneCoord(tests.IrisTest):
     def test_single_point_to_scalar(self):
         # Slice to form (3, 1) shaped cube.
         cube = self.cube[:, 2:3]
-        r = iris.analysis.interpolate.linear(cube, [('longitude', 1.)])
+        r = iintrp.linear(cube, [('longitude', 1.)])
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_scalar_0'))
 
         # Slice to form (1, 4) shaped cube.
         cube = self.cube[1:2, :]
-        r = iris.analysis.interpolate.linear(cube, [('latitude', 1.)])
+        r = iintrp.linear(cube, [('latitude', 1.)])
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_scalar_1'))
 
@@ -270,15 +269,15 @@ class TestLinearLengthOneCoord(tests.IrisTest):
         # Slice to form (3, 1) shaped cube.
         cube = self.cube[:, 2:3]
         src_points = cube.coord('longitude').points
-        r = iris.analysis.interpolate.linear(cube, [('longitude', src_points)],
+        r = iintrp.linear(cube, [('longitude', src_points)],
                                              extrapolation_mode='linear')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_same_pt'))
-        r = iris.analysis.interpolate.linear(cube, [('longitude', src_points)],
+        r = iintrp.linear(cube, [('longitude', src_points)],
                                              extrapolation_mode='nan')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_same_pt'))
-        r = iris.analysis.interpolate.linear(cube, [('longitude', src_points)],
+        r = iintrp.linear(cube, [('longitude', src_points)],
                                              extrapolation_mode='error')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_same_pt'))
@@ -288,15 +287,15 @@ class TestLinearLengthOneCoord(tests.IrisTest):
         cube = self.cube[:, 2:3]
         src_points = cube.coord('longitude').points
         new_points = [src_points[0]] * 3
-        r = iris.analysis.interpolate.linear(cube, [('longitude', new_points)],
+        r = iintrp.linear(cube, [('longitude', new_points)],
                                              extrapolation_mode='linear')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_many_same'))
-        r = iris.analysis.interpolate.linear(cube, [('longitude', new_points)],
+        r = iintrp.linear(cube, [('longitude', new_points)],
                                              extrapolation_mode='nan')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_many_same'))
-        r = iris.analysis.interpolate.linear(cube, [('longitude', new_points)],
+        r = iintrp.linear(cube, [('longitude', new_points)],
                                              extrapolation_mode='error')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_many_same'))
@@ -312,17 +311,17 @@ class TestLinearLengthOneCoord(tests.IrisTest):
         new_points_scalar = src_points[0] + 0.2
 
         # 'nan' mode
-        r = iris.analysis.interpolate.linear(cube, [('longitude',
+        r = iintrp.linear(cube, [('longitude',
                                                      new_points_single)],
                                              extrapolation_mode='nan')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_single_pt_nan'))
-        r = iris.analysis.interpolate.linear(cube, [('longitude',
+        r = iintrp.linear(cube, [('longitude',
                                                      new_points_multiple)],
                                              extrapolation_mode='nan')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
                                      'single_pt_to_many_nan'))
-        r = iris.analysis.interpolate.linear(cube, [('longitude',
+        r = iintrp.linear(cube, [('longitude',
                                                      new_points_scalar)],
                                              extrapolation_mode='nan')
         self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
@@ -330,15 +329,15 @@ class TestLinearLengthOneCoord(tests.IrisTest):
 
         # 'error' mode
         with self.assertRaises(ValueError):
-            r = iris.analysis.interpolate.linear(cube, [('longitude',
+            r = iintrp.linear(cube, [('longitude',
                                                          new_points_single)],
                                                  extrapolation_mode='error')
         with self.assertRaises(ValueError):
-            r = iris.analysis.interpolate.linear(cube, [('longitude',
+            r = iintrp.linear(cube, [('longitude',
                                                          new_points_multiple)],
                                                  extrapolation_mode='error')
         with self.assertRaises(ValueError):
-            r = iris.analysis.interpolate.linear(cube, [('longitude',
+            r = iintrp.linear(cube, [('longitude',
                                                          new_points_scalar)],
                                                  extrapolation_mode='error')
 
@@ -380,45 +379,45 @@ class TestLinear1dInterpolation(tests.IrisTest):
         cube = self.simple2d_cube
         other = iris.coords.DimCoord([1, 2, 3, 4], long_name='was_dim')
         cube.add_aux_coord(other, 0)
-        r = iris.analysis.interpolate.linear(cube, [('dim1', [7, 3, 5])])
+        r = iintrp.linear(cube, [('dim1', [7, 3, 5])])
         normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'dim_to_aux.cml'))
 
     def test_bad_sample_point_format(self):
-        self.assertRaises(TypeError, iris.analysis.interpolate.linear, self.simple2d_cube, ('dim1', 4))
+        self.assertRaises(TypeError, iintrp.linear, self.simple2d_cube, ('dim1', 4))
     
     def test_simple_single_point(self):
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 4)])
+        r = iintrp.linear(self.simple2d_cube, [('dim1', 4)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'), checksum=False)
         np.testing.assert_array_equal(r.data, np.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
         
     def test_monotonic_decreasing_coord(self):
         c = self.simple2d_cube[::-1]
-        r = iris.analysis.interpolate.linear(c, [('dim1', 4)])
+        r = iintrp.linear(c, [('dim1', 4)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'), checksum=False)
         np.testing.assert_array_equal(r.data, np.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
         
     def test_overspecified(self):
-        self.assertRaises(ValueError, iris.analysis.interpolate.linear, self.simple2d_cube[0, :], [('dim1', 4)])
+        self.assertRaises(ValueError, iintrp.linear, self.simple2d_cube[0, :], [('dim1', 4)])
         
     def test_bounded_coordinate(self):
         # The results should be exactly the same as for the
         # non-bounded case.
         cube = self.simple2d_cube
         cube.coord('dim1').guess_bounds()
-        r = iris.analysis.interpolate.linear(cube, [('dim1', [4, 5])])
+        r = iintrp.linear(cube, [('dim1', [4, 5])])
         np.testing.assert_array_equal(r.data, np.array([[ 1.5,  2.5,  3.5], [ 3.,  4.,  5. ]]))
         normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
 
     def test_simple_multiple_point(self):
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', [4, 5])])
+        r = iintrp.linear(self.simple2d_cube, [('dim1', [4, 5])])
         np.testing.assert_array_equal(r.data, np.array([[ 1.5,  2.5,  3.5], [ 3.,  4.,  5. ]]))
         normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
         
         # Check that numpy arrays specifications work
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', np.array([4, 5]))])
+        r = iintrp.linear(self.simple2d_cube, [('dim1', np.array([4, 5]))])
         normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
 
@@ -427,88 +426,88 @@ class TestLinear1dInterpolation(tests.IrisTest):
         other = iris.coords.AuxCoord([10, 6, 7, 4], long_name='other')
         cube.add_aux_coord(other, 1)
         samples = [0, 60, 300]
-        r = iris.analysis.interpolate.linear(cube, [('theta', samples)])
+        r = iintrp.linear(cube, [('theta', samples)])
         normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'circular_vs_non_circular.cml'))
 
     def test_simple_multiple_points_circular(self):
-        r = iris.analysis.interpolate.linear(self.simple2d_cube_circular, [('theta', [0., 60., 120., 180.])])
+        r = iintrp.linear(self.simple2d_cube_circular, [('theta', [0., 60., 120., 180.])])
         normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points_circular.cml'))
         
         # check that the values returned by theta 0 & 360 are the same...
-        r1 = iris.analysis.interpolate.linear(self.simple2d_cube_circular, [('theta', 360)])
-        r2 = iris.analysis.interpolate.linear(self.simple2d_cube_circular, [('theta', 0)])
+        r1 = iintrp.linear(self.simple2d_cube_circular, [('theta', 360)])
+        r2 = iintrp.linear(self.simple2d_cube_circular, [('theta', 0)])
         np.testing.assert_array_almost_equal(r1.data, r2.data)
         
     def test_simple_multiple_coords(self):
         expected_result = np.array(2.5)
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 4), ('dim2', 3.5), ])
+        r = iintrp.linear(self.simple2d_cube, [('dim1', 4), ('dim2', 3.5), ])
         np.testing.assert_array_equal(r.data, expected_result)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords.cml'), checksum=False)
         
         # Check that it doesn't matter if you do the interpolation in separate steps...
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim2', 3.5)])
-        r = iris.analysis.interpolate.linear(r, [('dim1', 4)])
+        r = iintrp.linear(self.simple2d_cube, [('dim2', 3.5)])
+        r = iintrp.linear(r, [('dim1', 4)])
         np.testing.assert_array_equal(r.data, expected_result)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords.cml'), checksum=False)
         
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 4)])
-        r = iris.analysis.interpolate.linear(r, [('dim2', 3.5)])
+        r = iintrp.linear(self.simple2d_cube, [('dim1', 4)])
+        r = iintrp.linear(r, [('dim2', 3.5)])
         np.testing.assert_array_equal(r.data, expected_result)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords.cml'), checksum=False)
     
     def test_coord_not_found(self):
-        self.assertRaises(KeyError, iris.analysis.interpolate.linear, self.simple2d_cube, 
+        self.assertRaises(KeyError, iintrp.linear, self.simple2d_cube, 
                           [('non_existant_coord', [3.5, 3.25])])
     
     def test_simple_coord_error_extrapolation(self):
-        self.assertRaises(ValueError, iris.analysis.interpolate.linear, self.simple2d_cube, [('dim2', 2.5)], extrapolation_mode='error')
+        self.assertRaises(ValueError, iintrp.linear, self.simple2d_cube, [('dim2', 2.5)], extrapolation_mode='error')
 
     def test_simple_coord_linear_extrapolation(self):
-        r = iris.analysis.interpolate.linear( self.simple2d_cube, [('dim2', 2.5)], extrapolation_mode='linear')
+        r = iintrp.linear( self.simple2d_cube, [('dim2', 2.5)], extrapolation_mode='linear')
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_coord_linear_extrapolation.cml'))
         
         np.testing.assert_array_equal(r.data, np.array([-1.,  2.,  5.,  8.], dtype=self.simple2d_cube.data.dtype))
         
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 1)])
+        r = iintrp.linear(self.simple2d_cube, [('dim1', 1)])
         np.testing.assert_array_equal(r.data, np.array([-3., -2., -1.], dtype=self.simple2d_cube.data.dtype))
                 
     def test_simple_coord_linear_extrapolation_multipoint1(self):
-        r = iris.analysis.interpolate.linear( self.simple2d_cube, [('dim1', [-1, 1, 10, 11])], extrapolation_mode='linear')
+        r = iintrp.linear( self.simple2d_cube, [('dim1', [-1, 1, 10, 11])], extrapolation_mode='linear')
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_coord_linear_extrapolation_multipoint1.cml'))
         
     def test_simple_coord_linear_extrapolation_multipoint2(self):
-        r = iris.analysis.interpolate.linear( self.simple2d_cube, [('dim1', [1, 10])], extrapolation_mode='linear')
+        r = iintrp.linear( self.simple2d_cube, [('dim1', [1, 10])], extrapolation_mode='linear')
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_coord_linear_extrapolation_multipoint2.cml'))
         
     def test_simple_coord_nan_extrapolation(self):
-        r = iris.analysis.interpolate.linear( self.simple2d_cube, [('dim2', 2.5)], extrapolation_mode='nan')
+        r = iintrp.linear( self.simple2d_cube, [('dim2', 2.5)], extrapolation_mode='nan')
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_coord_nan_extrapolation.cml'))
     
     def test_multiple_coord_extrapolation(self):
-        self.assertRaises(ValueError, iris.analysis.interpolate.linear, self.simple2d_cube, [('dim2', 2.5), ('dim1', 12.5)], extrapolation_mode='error')    
+        self.assertRaises(ValueError, iintrp.linear, self.simple2d_cube, [('dim2', 2.5), ('dim1', 12.5)], extrapolation_mode='error')    
         
     def test_multiple_coord_linear_extrapolation(self):
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim2', 9), ('dim1', 1.5)])
+        r = iintrp.linear(self.simple2d_cube, [('dim2', 9), ('dim1', 1.5)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords_extrapolation.cml'))
         
     def test_lots_of_points(self):
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', np.linspace(3, 9, 20))])
+        r = iintrp.linear(self.simple2d_cube, [('dim1', np.linspace(3, 9, 20))])
         # XXX Implement a test!?!
         
     def test_shared_axis(self):
         c = self.simple2d_cube_extended
-        r = iris.analysis.interpolate.linear(c, [('dim2', [3.5, 3.25])])
+        r = iintrp.linear(c, [('dim2', [3.5, 3.25])])
         normalise_order(r)
         
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_shared_axis.cml'))
         
-        self.assertRaises(ValueError, iris.analysis.interpolate.linear, c, [('dim2', [3.5, 3.25]), ('shared_x_coord', [9, 7])])
+        self.assertRaises(ValueError, iintrp.linear, c, [('dim2', [3.5, 3.25]), ('shared_x_coord', [9, 7])])
 
     def test_points_datatype_casting(self):
         # this test tries to extract a float from an array of type integer. the result should be of type float.
-        r = iris.analysis.interpolate.linear(self.simple2d_cube_extended, [('shared_x_coord', 7.5)])
+        r = iintrp.linear(self.simple2d_cube_extended, [('shared_x_coord', 7.5)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_casting_datatype.cml'))
 
 
@@ -519,15 +518,15 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
         self.cube = iris.load_cube(file)
 
     def test_slice(self):
-        r = iris.analysis.interpolate.linear(self.cube, [('latitude', 0)])
+        r = iintrp.linear(self.cube, [('latitude', 0)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'real_2dslice.cml'))
     
     def test_2slices(self):
-        r = iris.analysis.interpolate.linear(self.cube, [('latitude', 0.0), ('longitude', 0.0)])
+        r = iintrp.linear(self.cube, [('latitude', 0.0), ('longitude', 0.0)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'real_2slices.cml'))
 
     def test_circular(self):
-        res = iris.analysis.interpolate.linear(self.cube,
+        res = iintrp.linear(self.cube,
                                                [('longitude', 359.8)])
         normalise_order(res)
         lon_coord = self.cube.coord('longitude').points
@@ -538,17 +537,20 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
         self.assertArrayAllClose(res.data, expected, rtol=1.0e-6)
 
         # check that the values returned by lon 0 & 360 are the same...
-        r1 = iris.analysis.interpolate.linear(self.cube, [('longitude', 360)])
-        r2 = iris.analysis.interpolate.linear(self.cube, [('longitude', 0)])
+        r1 = iintrp.linear(self.cube, [('longitude', 360)])
+        r2 = iintrp.linear(self.cube, [('longitude', 0)])
         np.testing.assert_array_equal(r1.data, r2.data)
 
         self.assertCML(res, ('analysis', 'interpolation', 'linear',
                              'real_circular_2dslice.cml'), checksum=False)
 
 
-@tests.skip_data
-class TestNearestNeighbour(tests.IrisTest):
-    def setUp(self):
+class MixinNearestNeighbour(object):
+    # Define standard tests for the three 'nearest_neighbour' routines.
+    # Cast as a 'mixin' as it used to test both (a) the original routines and
+    # (b) replacement operations to justify deprecation.
+
+    def _common_setUp(self):
         self.cube = iris.tests.stock.global_pp()
         points = np.arange(self.cube.coord('latitude').shape[0], dtype=np.float32)
         coord_to_add = iris.coords.DimCoord(points, long_name='i', units='meters')
@@ -557,10 +559,10 @@ class TestNearestNeighbour(tests.IrisTest):
     def test_nearest_neighbour(self):
         point_spec = [('latitude', 40), ('longitude', 39)]
         
-        indices = iris.analysis.interpolate.nearest_neighbour_indices(self.cube, point_spec)
+        indices = iintrp.nearest_neighbour_indices(self.cube, point_spec)
         self.assertEqual(indices, (20, 10))
         
-        b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
+        b = iintrp.extract_nearest_neighbour(self.cube, point_spec) 
 
         # Check that the data has not been loaded on either the original cube,
         # nor the interpolated one.
@@ -568,7 +570,7 @@ class TestNearestNeighbour(tests.IrisTest):
         self.assertTrue(self.cube.has_lazy_data())
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude_longitude.cml'))
         
-        value = iris.analysis.interpolate.nearest_neighbour_data_value(self.cube, point_spec)
+        value = iintrp.nearest_neighbour_data_value(self.cube, point_spec)
         self.assertEqual(value, np.array(285.98785, dtype=np.float32))
 
         # Check that the value back is that which was returned by the extract method
@@ -576,26 +578,26 @@ class TestNearestNeighbour(tests.IrisTest):
         
     def test_nearest_neighbour_slice(self):
         point_spec = [('latitude', 40)]
-        indices = iris.analysis.interpolate.nearest_neighbour_indices(self.cube, point_spec)
+        indices = iintrp.nearest_neighbour_indices(self.cube, point_spec)
         self.assertEqual(indices, (20, slice(None, None)))
 
-        b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
+        b = iintrp.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude.cml'))
         
         # cannot get a specific point from these point specifications
-        self.assertRaises(ValueError, iris.analysis.interpolate.nearest_neighbour_data_value, self.cube, point_spec)
+        self.assertRaises(ValueError, iintrp.nearest_neighbour_data_value, self.cube, point_spec)
 
     def test_nearest_neighbour_over_specification_which_is_consistent(self):
         # latitude 40 is the 20th point
         point_spec = [('latitude', 40), ('i', 20), ('longitude', 38)]
         
-        indices = iris.analysis.interpolate.nearest_neighbour_indices(self.cube, point_spec)
+        indices = iintrp.nearest_neighbour_indices(self.cube, point_spec)
         self.assertEqual(indices, (20, 10))
         
-        b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
+        b = iintrp.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude_longitude.cml'))
         
-        value = iris.analysis.interpolate.nearest_neighbour_data_value(self.cube, point_spec)
+        value = iintrp.nearest_neighbour_data_value(self.cube, point_spec)
         # Check that the value back is that which was returned by the extract method
         self.assertEqual(value, b.data)
 
@@ -604,7 +606,7 @@ class TestNearestNeighbour(tests.IrisTest):
         point_spec = [('latitude', 40), ('i', 10), ('longitude', 38)]
         
         # assert that we get a ValueError for over specifying our interpolation
-        self.assertRaises(ValueError, iris.analysis.interpolate.nearest_neighbour_data_value, self.cube, point_spec)
+        self.assertRaises(ValueError, iintrp.nearest_neighbour_data_value, self.cube, point_spec)
 
     def test_nearest_neighbour_bounded_simple(self):
         point_spec = [('latitude', 37), ('longitude', 38)]
@@ -612,7 +614,7 @@ class TestNearestNeighbour(tests.IrisTest):
         coord = self.cube.coord('latitude')
         coord.guess_bounds(0.5)
     
-        b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
+        b = iintrp.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_bounded.cml'))
         
     def test_nearest_neighbour_bounded_requested_midpoint(self):
@@ -622,13 +624,13 @@ class TestNearestNeighbour(tests.IrisTest):
         coord = self.cube.coord('latitude')
         coord.guess_bounds(0.5)
         
-        b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
+        b = iintrp.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_bounded_mid_point.cml'))
     
     def test_nearest_neighbour_locator_style_coord(self):
         point_spec = [('latitude', 39)]
         
-        b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
+        b = iintrp.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude.cml'))
 
     def test_nearest_neighbour_circular(self):
@@ -694,6 +696,67 @@ class TestNearestNeighbour(tests.IrisTest):
             for point_val in lon_test_vals]
         lon_nearest_vals = [lon_coord_vals[i[1]] for i in lon_nearest_inds]
         self.assertArrayAlmostEqual(lon_nearest_vals, lon_expect_vals)
+
+
+@tests.skip_data
+class TestNearestNeighbour(tests.IrisTest, MixinNearestNeighbour):
+    def setUp(self):
+        self._common_setUp()
+
+
+@tests.skip_data
+class TestNearestNeighbour__Equivalent(tests.IrisTest, MixinNearestNeighbour):
+    # Class that repeats the tests of "TestNearestNeighbour", to check that the
+    # behaviour of the three 'nearest_neighbour' routines in
+    # iris.analysis.interpolation can be completely replicated with alternative
+    # (newer) functionality.
+
+    def setUp(self):
+        self.patch(
+            'iris.analysis._interpolate_private.nearest_neighbour_indices',
+            self._equivalent_nn_indices)
+        self.patch(
+            'iris.analysis._interpolate_private.nearest_neighbour_data_value',
+            self._equivalent_nn_data_value)
+        self.patch(
+            'iris.analysis._interpolate_private.extract_nearest_neighbour',
+            self._equivalent_extract_nn)
+        self._common_setUp()
+
+    @staticmethod
+    def _equivalent_nn_indices(cube, sample_points,
+                               require_single_point=False):
+        indices = [slice(None) for _ in cube.shape]
+        for coord_spec, point in sample_points:
+            coord = cube.coord(coord_spec)
+            dim, = cube.coord_dims(coord)  # expect only 1d --> single dim !
+            dim_index = coord.nearest_neighbour_index(point)
+            if require_single_point:
+                # Mimic error behaviour of the original "data-value" function:
+                # Any dim already addressed must get the same index.
+                if indices[dim] != slice(None) and indices[dim] != dim_index:
+                    raise ValueError('indices over-specified')
+            indices[dim] = dim_index
+        if require_single_point:
+            # Mimic error behaviour of the original "data-value" function:
+            # All dims must have an index.
+            if any(index == slice(None) for index in indices):
+                raise ValueError('result expected to be a single point')
+        return tuple(indices)
+
+    @staticmethod
+    def _equivalent_extract_nn(cube, sample_points):
+        indices = TestNearestNeighbour__Equivalent._equivalent_nn_indices(
+            cube, sample_points)
+        new_cube = cube[indices]
+        return new_cube
+
+    @staticmethod
+    def _equivalent_nn_data_value(cube, sample_points):
+        indices = TestNearestNeighbour__Equivalent._equivalent_nn_indices(
+            # for this routine only, enable extra index checks.
+            cube, sample_points, require_single_point=True)
+        return cube.data[indices]
 
 
 if __name__ == "__main__":

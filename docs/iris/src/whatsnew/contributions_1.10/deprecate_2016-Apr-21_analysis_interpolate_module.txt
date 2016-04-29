@@ -1,0 +1,12 @@
+* deprecated the module :mod:`iris.analysis.interpolate`.
+  This contains the following public items, all of which are now deprecated and
+  will be removed in a future release:
+    * :func:`~iris.analysis.interpolate.linear`
+    * :func:`~iris.analysis.interpolate.regrid`
+    * :func:`~iris.analysis.interpolate.regrid_to_max_resolution`
+    * :func:`~iris.analysis.interpolate.nearest_neighbour_indices`
+    * :func:`~iris.analysis.interpolate.nearest_neighbour_data_value`
+    * :func:`~iris.analysis.interpolate.extract_nearest_neighbour`
+    * class :class:`~iris.analysis.interpolate.Linear1dExtrapolator`.
+  Please use the replacement facilities individually noted in the module
+  documentation for :mod:`iris.analysis.interpolate`

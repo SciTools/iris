@@ -37,7 +37,7 @@ import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 
-from iris.analysis.interpolate import Linear1dExtrapolator
+from iris.analysis._interpolate_private import Linear1dExtrapolator
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)

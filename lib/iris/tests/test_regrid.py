@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ import numpy as np
 
 import iris
 from iris import load_cube
-from iris.analysis.interpolate import regrid_to_max_resolution
+from iris.analysis._interpolate_private import regrid_to_max_resolution
 from iris.cube import Cube
 from iris.coords import DimCoord
 from iris.coord_systems import GeogCS

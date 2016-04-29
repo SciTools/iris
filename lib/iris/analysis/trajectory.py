@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,8 @@ import numpy as np
 import iris.coord_systems
 import iris.coords
 import iris.analysis
+from iris.analysis._interpolate_private import \
+    _nearest_neighbour_indices_ndcoords, linear as linear_regrid
 
 
 class _Segment(object):
@@ -239,10 +241,10 @@ def interpolate(cube, sample_points, method=None):
         point = [(coord, values[i]) for coord, values in sample_points]
 
         if method in ["linear", None]:
-            column = iris.analysis.interpolate.linear(cube, point)
+            column = linear_regrid(cube, point)
             new_cube.data[..., i] = column.data
         elif method == "nearest":
-            column_index = iris.analysis.interpolate._nearest_neighbour_indices_ndcoords(cube, point, cache=cache)
+            column_index = _nearest_neighbour_indices_ndcoords(cube, point, cache=cache)
             column = cube[column_index]
             new_cube.data[..., i] = column.data
 
