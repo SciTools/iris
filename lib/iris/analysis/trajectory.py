@@ -237,12 +237,17 @@ def interpolate(cube, sample_points, method=None):
     # Use a cache with _nearest_neighbour_indices_ndcoords()
     cache = {}
 
+    # Cache the linear interpolator
+    scheme = iris.analysis.Linear()
+    coords, points = zip(*sample_points)
+    interpolator = scheme.interpolator(cube, coords)
+
     for i in range(trajectory_size):
         point = [(coord, values[i]) for coord, values in sample_points]
 
         if method in ["linear", None]:
-            column = linear_regrid(cube, point)
-            new_cube.data[..., i] = column.data
+            column = interpolator([val[i] for _, val in sample_points])
+            new_cube.data[..., i] = column
         elif method == "nearest":
             column_index = _nearest_neighbour_indices_ndcoords(cube, point, cache=cache)
             column = cube[column_index]
