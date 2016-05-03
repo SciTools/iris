@@ -1,3 +1,5 @@
+.. _iris_development_releases:
+
 Releases
 ********
 

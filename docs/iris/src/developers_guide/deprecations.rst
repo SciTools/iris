@@ -1,3 +1,5 @@
+.. _iris_development_deprecations:
+
 Deprecations
 ************
 
@@ -82,6 +84,8 @@ Removing a public API
 
 The deprecated API should be removed and any corresponding documentation
 and/or example code should be removed/updated as appropriate.
+
+.. _iris_developer_future:
 
 Changing a default
 ------------------

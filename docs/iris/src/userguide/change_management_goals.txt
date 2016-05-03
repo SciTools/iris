@@ -1,0 +1,9 @@
+To reduce code maintenance problems to an absolute minimum, the Iris project defines
+carefully defined change management procedures to ensure that :
+
+    * you can be confident that your code will still work with a future release
+
+    * you will be aware of future incompatibility problems in advance
+
+    * you can defer making code compatibility changes for some time, until it suits you
+
