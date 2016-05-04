@@ -516,6 +516,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         .. note:: If the points argument is specified and bounds are not, the
                   resulting coordinate will have no bounds.
 
+        .. deprecated:: 1.10
+
+            By default the new coordinate's `points` and `bounds` will
+            be independent copies of the corresponding attributes of the
+            source coordinate.
+            The `share_data` attribute of `iris.FUTURE` can be used to
+            switch to the new data-sharing behaviour.
+
         """
 
         if points is None and bounds is not None:

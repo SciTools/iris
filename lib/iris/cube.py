@@ -2146,6 +2146,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         requested must be applicable directly to the cube.data attribute. All
         metadata will be subsequently indexed appropriately.
 
+        .. deprecated:: 1.10
+            The value of the `data` attribute of the result will always
+            be independent of the source Cube's data. As a result,
+            modifying data values of the result Cube will have no effect
+            on the source Cube, and vice versa.
+            The `share_data` attribute of `iris.FUTURE` can be used to
+            switch to the new data-sharing behaviour.
+
         """
         # turn the keys into a full slice spec (all dims)
         full_slice = iris.util._build_full_slice_given_keys(keys,
@@ -3106,7 +3114,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. deprecated:: 1.6
             Add/modify history metadata within
-            attr:`~iris.cube.Cube.attributes` as needed.
+            :attr:`~iris.cube.Cube.attributes` as needed.
 
         """
         warnings.warn("Cube.add_history() has been deprecated - "
