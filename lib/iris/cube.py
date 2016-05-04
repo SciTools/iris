@@ -2164,14 +2164,31 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                              self.cell_measure_dims(cm_) if
                                              dimension_mapping[d] is not None]
 
-        try:
-            first_slice = next(slice_gen)
-        except StopIteration:
-            first_slice = Ellipsis
-        data = self._my_data[first_slice]
+        if iris.FUTURE.share_data:
+            try:
+                first_slice = next(slice_gen)
+            except StopIteration:
+                first_slice = Ellipsis
+            data = self._my_data[first_slice]
+        else:
+            try:
+                first_slice = next(slice_gen)
+            except StopIteration:
+                first_slice = None
+
+            if first_slice is not None:
+                data = self._my_data[first_slice]
+            else:
+                data = copy.deepcopy(self._my_data)
 
         for other_slice in slice_gen:
             data = data[other_slice]
+
+        if not iris.FUTURE.share_data:
+            # We don't want a view of the data, so take a copy of it if it's
+            # not already our own.
+            if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
+                    data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
