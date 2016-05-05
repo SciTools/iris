@@ -1331,6 +1331,11 @@ class Test_remove_metadata(tests.IrisTest):
 
 
 class Test___getitem__nofuture(tests.IrisTest):
+    def setUp(self):
+        patch = mock.patch('iris.FUTURE.share_data', new=False)
+        self.mock_fshare = patch.start()
+        self.addCleanup(patch.stop)
+
     def test_lazy_array(self):
         cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
         cube2 = cube[1:]
@@ -1345,6 +1350,11 @@ class Test___getitem__nofuture(tests.IrisTest):
 
 
 class Test___getitem__future(tests.IrisTest):
+    def setUp(self):
+        patch = mock.patch('iris.FUTURE.share_data', new=True)
+        self.mock_fshare = patch.start()
+        self.addCleanup(patch.stop)
+
     def test_lazy_array(self):
         cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
         cube2 = cube[1:]
@@ -1353,9 +1363,8 @@ class Test___getitem__future(tests.IrisTest):
         self.assertTrue(cube2.has_lazy_data())
 
     def test_ndarray(self):
-        with mock.patch('iris.FUTURE.share_data', new=True):
-            cube = Cube(np.arange(6).reshape(2, 3))
-            cube2 = cube[1:]
+        cube = Cube(np.arange(6).reshape(2, 3))
+        cube2 = cube[1:]
         self.assertIs(cube.data.base, cube2.data.base)
 
 
