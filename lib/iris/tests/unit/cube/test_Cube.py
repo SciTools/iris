@@ -1330,6 +1330,35 @@ class Test_remove_metadata(tests.IrisTest):
                          [[self.b_cell_measure, (0, 1)]])
 
 
+class Test___getitem__nofuture(tests.IrisTest):
+    def test_lazy_array(self):
+        cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
+        cube2 = cube[1:]
+        self.assertTrue(cube2.has_lazy_data())
+        cube.data
+        self.assertTrue(cube2.has_lazy_data())
+
+    def test_ndarray(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        cube2 = cube[1:]
+        self.assertIsNot(cube.data.base, cube2.data.base)
+
+
+class Test___getitem__future(tests.IrisTest):
+    def test_lazy_array(self):
+        cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
+        cube2 = cube[1:]
+        self.assertTrue(cube2.has_lazy_data())
+        cube.data
+        self.assertTrue(cube2.has_lazy_data())
+
+    def test_ndarray(self):
+        with mock.patch('iris.FUTURE.share_data', new=True):
+            cube = Cube(np.arange(6).reshape(2, 3))
+            cube2 = cube[1:]
+        self.assertIs(cube.data.base, cube2.data.base)
+
+
 class Test__getitem_CellMeasure(tests.IrisTest):
     def setUp(self):
         cube = Cube(np.arange(6).reshape(2, 3))
