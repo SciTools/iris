@@ -16,11 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
-# Created on 12 February 2016 17:02 from 
+# Created on 06 May 2016 16:05 from 
 # http://www.metarelate.net/metOcean
-# at commit cf419fba84a70fba5f394f1481cfcdbba28877ff
+# at commit cfcd365cceeb625b579deee1d746441ee08b72cd
 
-# https://github.com/metarelate/metOcean/commit/cf419fba84a70fba5f394f1481cfcdbba28877ff
+# https://github.com/metarelate/metOcean/commit/cfcd365cceeb625b579deee1d746441ee08b72cd
 
 """
 Provides UM/CF phenomenon translations.
@@ -297,7 +297,7 @@ STASH_TO_CF = {
     'm01s01i435': CFName('surface_downwelling_shortwave_flux_in_air', None, 'W m-2'),
     'm01s02i004': CFName('air_temperature', None, 'K'),
     'm01s02i101': CFName(None, 'ratio_of_skyview_factor_to_cosine_of_surface_mean_slope_angle', '1'),
-    'm01s02i201': CFName('surface_net_downward_longwave_flux', None, 'W m-2'),
+    'm01s02i201': CFName('surface_net_downward_shortwave_flux', None, 'W m-2'),
     'm01s02i203': CFName('surface_net_downward_longwave_flux', None, 'W m-2'),
     'm01s02i204': CFName('cloud_area_fraction', None, '1'),
     'm01s02i205': CFName('toa_outgoing_longwave_flux', None, 'W m-2'),
@@ -435,6 +435,7 @@ STASH_TO_CF = {
     'm01s03i392': CFName('surface_downward_eastward_stress', None, 'Pa'),
     'm01s03i393': CFName('surface_downward_northward_stress', None, 'Pa'),
     'm01s03i394': CFName('surface_downward_northward_stress', None, 'Pa'),
+    'm01s03i395': CFName('land_area_fraction', None, '1'),
     'm01s03i401': CFName(None, 'Dust emissions division 1', 'kg/m^2/s'),
     'm01s03i402': CFName(None, 'Dust emissions division 2', 'kg/m^2/s'),
     'm01s03i403': CFName(None, 'Dust emissions division 3', 'kg/m^2/s'),
@@ -682,6 +683,7 @@ STASH_TO_CF = {
     'm01s30i203': CFName('upward_air_velocity', None, 'm s-1'),
     'm01s30i204': CFName('air_temperature', None, 'K'),
     'm01s30i205': CFName('specific_humidity', None, '1'),
+    'm01s30i206': CFName('relative_humidity', None, '1'),
     'm01s30i207': CFName('geopotential_height', None, 'm'),
     'm01s30i208': CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'),
     'm01s30i211': CFName('square_of_eastward_wind', None, 'm2 s-2'),
@@ -715,7 +717,7 @@ STASH_TO_CF = {
     'm01s30i313': CFName('upward_eliassen_palm_flux_in_air', None, 'kg s-2'),
     'm01s30i314': CFName('tendency_of_eastward_wind_due_to_eliassen_palm_flux_divergence', None, 'm s-2'),
     'm01s30i401': CFName('atmosphere_kinetic_energy_content', None, 'J m-2'),
-    'm01s30i404': CFName('atmosphere_mass_content_of_water', None, 'kg m-2'),
+    'm01s30i404': CFName('atmosphere_mass_per_unit_area', None, 'kg m-2'),
     'm01s30i405': CFName('atmosphere_cloud_liquid_water_content', None, 'kg m-2'),
     'm01s30i406': CFName('atmosphere_cloud_ice_content', None, 'kg m-2'),
     'm01s30i417': CFName('surface_air_pressure', None, 'Pa'),
