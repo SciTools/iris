@@ -809,6 +809,11 @@ def load_cubes(filenames, callback, constraints=None):
         file (order is not preserved when there is a field with
         orography references).
 
+    .. deprecated:: 1.10
+            The module :mod:`iris.fileformats.ff` is deprecated.
+            Please use :func:`iris.fileformats.um.load_cubes` in place of
+            :func:`iris.fileformats.ff.load_cubes`.
+
     """
     return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
                                           constraints=constraints)
@@ -821,6 +826,11 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
     .. seealso::
 
         :func:`load_cubes` for keyword details
+
+    .. deprecated:: 1.10
+            The module :mod:`iris.fileformats.ff` is deprecated.
+            Please use :func:`iris.fileformats.um.load_cubes_32bit_ieee`
+            in place of :func:`iris.fileformats.ff.load_cubes_32bit_ieee`.
 
     """
     return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
