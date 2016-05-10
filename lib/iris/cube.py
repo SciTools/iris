@@ -3368,8 +3368,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         A "group coordinate" is a coordinate where repeating values represent a
         single group, such as a month coordinate on a daily time slice.
-        TODO: It is not clear if repeating values must be consecutive to form a
-        group.
+        Repeated values will form a group even if they are not consecutive.
 
         The group coordinates must all be over the same cube dimension. Each
         common value group identified over all the group-by coordinates is
