@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -158,7 +158,7 @@ intersphinx_mapping = {
    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
    'matplotlib': ('http://matplotlib.org/', None),
    'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
-   'biggus': ('http://biggus.readthedocs.org/en/latest/', None),
+   'biggus': ('https://biggus.readthedocs.io/en/latest/', None),
 }
 
 

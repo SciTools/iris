@@ -1,0 +1,5 @@
+* The experimental structured Fieldsfile loader :func:`~iris.experimental.fieldsfile.load` has been extended to also load structured PP files.
+
+  Structured loading is a streamlined operation, offering the benefit of a significantly faster loading alternative to the more generic :func:`iris.load` mechanism.
+
+  Note that, structured loading is not an optimised wholesale replacement of :func:`iris.load`. Structured loading is restricted to input containing contiguously ordered fields for each phenomenon that repeat regularly over the same vertical levels and times. For further details, see :func:`~iris.experimental.fieldsfile.load` 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -87,7 +87,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     lon_bounds, lat_bounds = _convert_latlons(grid_crs, x_bounds, y_bounds)
 
     # Add grid 'coord' element for corners, and fill with corner values.
-    grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CORNER])
+    grid.add_coords(staggerloc=ESMF.StaggerLoc.CORNER)
     grid_corners_x = grid.get_coords(0, ESMF.StaggerLoc.CORNER)
     grid_corners_x[:] = lon_bounds.T
     grid_corners_y = grid.get_coords(1, ESMF.StaggerLoc.CORNER)
@@ -117,7 +117,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     lon_points, lat_points = _convert_latlons(grid_crs, x_points, y_points)
 
     # Add grid 'coord' element for centres + fill with centre-points values.
-    grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CENTER])
+    grid.add_coords(staggerloc=ESMF.StaggerLoc.CENTER)
     grid_centers_x = grid.get_coords(0, ESMF.StaggerLoc.CENTER)
     grid_centers_x[:] = lon_points.T
     grid_centers_y = grid.get_coords(1, ESMF.StaggerLoc.CENTER)
@@ -258,7 +258,7 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
                                     unmapped_action=ESMF.UnmappedAction.IGNORE,
                                     dst_frac_field=coverage_field)
         regrid_method(src_field, dst_field)
-        data = dst_field.data
+        data = np.ma.masked_array(dst_field.data)
 
         # Convert destination 'coverage fraction' into a missing-data mask.
         # Set = wherever part of cell goes outside source grid, or overlaps a
