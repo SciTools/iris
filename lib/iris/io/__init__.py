@@ -147,23 +147,26 @@ def expand_filespecs(file_specs):
         File paths which may contain '~' elements or wildcards.
 
     Returns:
-        A list of matching file paths.  If any of the file-specs matches no
+        A list of matching absolute file paths.  If any of the file-specs matches no
         existing files, an exception is raised.
 
     """
-    # Remove any hostname component - currently unused
-    filenames = [os.path.expanduser(fn[2:] if fn.startswith('//') else fn)
+    # Remove any hostname component - currently unused - expand paths as absolutes
+    filenames = [os.path.abspath(os.path.expanduser(fn[2:] if fn.startswith('//') else fn))
                  for fn in file_specs]
 
     # Try to expand all filenames as globs
     glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
 
     # If any of the specs expanded to an empty list then raise an error
-    value_lists = glob_expanded.values()
+    value_list_raw = glob_expanded.values()
+
+    # Here is a term to sort value_lists alphabetically, for consistency
+    value_lists = sorted(value_list_raw)
     if not all(value_lists):
         raise IOError("One or more of the files specified did not exist %s." %
         ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
-         for pattern, expanded in six.iteritems(glob_expanded)])
+         for pattern, expanded in sorted(six.iteritems(glob_expanded))])
 
     return sum(value_lists, [])
 
