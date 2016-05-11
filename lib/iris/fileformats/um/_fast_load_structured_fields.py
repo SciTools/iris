@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Experimental code for fast loading of structured UM data."""
+"""Code for fast loading of structured UM data."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -239,9 +239,8 @@ def group_structured_fields(field_iterator):
        :func:`iris.fileformats.pp_rules._convert_vector_time_coords`).
 
     Returns:
-        An generator of
-        :class:`~iris.experimental.fileformats.um.FieldCollation` objects,
-        each of which contains a single collated group from the input fields.
+        A generator of FieldCollation objects, each of which contains a single
+        collated group from the input fields.
 
     """
     _fields = sorted(field_iterator, key=_um_collation_key_function)
