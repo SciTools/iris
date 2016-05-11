@@ -104,25 +104,44 @@ class TestAll(tests.IrisTest):
         new_cube, extent = project(cube, ROBINSON)
         self.assertEqual(new_cube.shape, cube.shape)
 
+    def test_explicit_resolution(self):
+        cube = low_res_4d()
+        nx, ny = 5, 4
+        new_cube, extent = project(cube, ROBINSON, nx=nx, ny=ny)
+        self.assertEqual(new_cube.shape, cube.shape[:2] + (ny, nx))
+
+    def test_explicit_resolution_single_point(self):
+        cube = low_res_4d()
+        nx, ny = 1, 1
+        new_cube, extent = project(cube, ROBINSON, nx=nx, ny=ny)
+        self.assertEqual(new_cube.shape, cube.shape[:2] + (ny, nx))
+
     def test_mismatched_coord_systems(self):
         cube = low_res_4d()
         cube.coord('grid_longitude').coord_system = None
         with self.assertRaises(ValueError):
             project(cube, ROBINSON)
 
-    @tests.skip_data
+    def test_extent(self):
+        cube = low_res_4d()
+        _, extent = project(cube, ROBINSON)
+        self.assertEqual(extent, [-17005833.33052523, 17005833.33052523,
+                                  -8625155.12857459, 8625155.12857459])
+
+    def test_cube(self):
+        cube = low_res_4d()
+        new_cube, _ = project(cube, ROBINSON)
+        self.assertCMLApproxData(new_cube)
+
     def test_no_coord_system(self):
-        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
-                                                   'global.pp')))
-        cube.coord('longitude').coord_system = None
-        cube.coord('latitude').coord_system = None
+        cube = low_res_4d()
+        cube.coord('grid_longitude').coord_system = None
+        cube.coord('grid_latitude').coord_system = None
         with iris.tests.mock.patch('warnings.warn') as warn:
-            new_cube, extent = project(cube, ROBINSON)
+            _, _ = project(cube, ROBINSON)
         warn.assert_called_once_with('Coordinate system of latitude and '
                                      'longitude coordinates is not specified. '
                                      'Assuming WGS84 Geodetic.')
-        self.assertCML(new_cube,
-                       ('analysis', 'project', 'default_source_cs.cml'))
 
 
 if __name__ == '__main__':
