@@ -17,7 +17,7 @@
 """
 Conversion of cubes to/from GRIB.
 
-See also: `ECMWF GRIB API <http://www.ecmwf.int/publications/manuals/grib_api/index.html>`_.
+See also: `ECMWF GRIB API <https://software.ecmwf.int/wiki/display/GRIB/Home>`_.
 
 """
 
@@ -50,7 +50,7 @@ import iris.fileformats.grib.load_rules
 
 __all__ = ['load_cubes', 'save_grib2', 'load_pairs_from_fields',
            'save_pairs_from_cube', 'save_messages', 'GribWrapper',
-           'as_pairs', 'grib_generator', 'reset_load_rules',
+           'as_messages', 'as_pairs', 'grib_generator', 'reset_load_rules',
            'hindcast_workaround']
 
 
@@ -999,7 +999,7 @@ def save_grib2(cube, target, append=False, **kwargs):
     See also :func:`iris.io.save`.
 
     """
-    messages = (message for cube, message in save_pairs_from_cube(cube))
+    messages = as_messages(cube)
     save_messages(messages, target, append=append)
 
 
@@ -1038,6 +1038,22 @@ def save_pairs_from_cube(cube):
         grib_message = gribapi.grib_new_from_samples("GRIB2")
         _save_rules.run(slice2D, grib_message)
         yield (slice2D, grib_message)
+
+
+def as_messages(cube):
+    """
+    .. deprecated:: 1.10
+    Please use :func:`iris.fileformats.grib.save_pairs_from_cube` instead.
+
+    Convert one or more cubes to GRIB messages.
+    Returns an iterable of grib_api GRIB messages.
+
+    Args:
+        * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
+                      list of cubes.
+
+    """
+    return (message for cube, message in save_pairs_from_cube(cube))
 
 
 def save_messages(messages, target, append=False):
