@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,20 +33,35 @@ import iris.util
 _GRAPH_INDENT = ' ' * 4
 _SUBGRAPH_INDENT = ' ' * 8
 
-_DOT_EXECUTABLE_PATH = iris.config.get_option('System', 'dot_path',
-                                              default='dot')
-if not os.path.exists(_DOT_EXECUTABLE_PATH):
-    if not os.path.isabs(_DOT_EXECUTABLE_PATH):
-        try:
-            # Check PATH
-            subprocess.check_output([_DOT_EXECUTABLE_PATH, '-V'],
-                                    stderr=subprocess.STDOUT)
-        except OSError:
-            _DOT_EXECUTABLE_PATH = None
+
+_DOT_CHECKED = False
+_DOT_EXECUTABLE_PATH = None
+
+
+def _dot_path():
+    global _DOT_CHECKED, _DOT_EXECUTABLE_PATH
+
+    if _DOT_CHECKED:
+        path = _DOT_EXECUTABLE_PATH
     else:
-        _DOT_EXECUTABLE_PATH = None
+        path = iris.config.get_option('System', 'dot_path', default='dot')
+        if not os.path.exists(path):
+            if not os.path.isabs(path):
+                try:
+                    # Check PATH
+                    subprocess.check_output([path, '-V'],
+                                            stderr=subprocess.STDOUT)
+                except (OSError, subprocess.CalledProcessError):
+                    path = None
+            else:
+                path = None
+        _DOT_EXECUTABLE_PATH = path
+        _DOT_CHECKED = True
+    return path
+
+
 #: Whether the 'dot' program is present (required for "dotpng" output).
-DOT_AVAILABLE = _DOT_EXECUTABLE_PATH is not None
+DOT_AVAILABLE = _dot_path() is not None
 
 
 def save(cube, target):
@@ -104,17 +119,17 @@ def save_png(source, target, launch=False):
         raise ValueError("Can only write dot png for a Cube or DOT file")
 
     # Create png data
-    if not _DOT_EXECUTABLE_PATH:
+    if not _dot_path():
         raise ValueError('Executable "dot" not found: '
                          'Review dot_path setting in site.cfg.')
     # To filename or open file handle?
     if isinstance(target, six.string_types):
-        subprocess.call([_DOT_EXECUTABLE_PATH, '-T', 'png', '-o', target,
+        subprocess.call([_dot_path(), '-T', 'png', '-o', target,
                          dot_file_path])
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
-        subprocess.call([_DOT_EXECUTABLE_PATH, '-T', 'png', dot_file_path],
+        subprocess.call([_dot_path(), '-T', 'png', dot_file_path],
                         stdout=target)
     else:
         raise ValueError("Can only write dot png for a filename or writable")
