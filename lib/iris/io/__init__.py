@@ -362,7 +362,7 @@ def save(source, target, saver=None, **kwargs):
         # Save a cube to netCDF, defaults to NETCDF4 file format
         iris.save(my_cube, "myfile.nc")
 
-        # Save a cube list to netCDF, using the NETCDF4_CLASSIC storage option
+        # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
         iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
     .. warning::

@@ -19,7 +19,6 @@ and the keyword argument `saver` is not required.
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cubes = iris.load(filename)
-    >>> cube = cubes[0]
     >>> iris.save(cubes, '/tmp/uk_hires.nc')
 
 .. warning::
@@ -46,13 +45,13 @@ Controlling the save process
 The :py:func:`iris.save` function passes all other keywords through to the saver function defined, or automatically set from the file extension.  This enables saver specific functionality to be called.
 
     >>> # Save a cube to PP
-    >>> iris.save(cube, "myfile.pp")
+    >>> iris.save(cubes[0], "myfile.pp")
     >>> # Save a cube list to a PP file, appending to the contents of the file
     >>> # if it already exists
     >>> iris.save(cubes, "myfile.pp", append=True)
     >>> # Save a cube to netCDF, defaults to NETCDF4 file format
-    >>> iris.save(cube, "myfile.nc")
-    >>> # Save a cube list to netCDF, using the NETCDF4_CLASSIC storage option
+    >>> iris.save(cubes[0], "myfile.nc")
+    >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
     >>> iris.save(cubes, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
 See 
@@ -74,11 +73,11 @@ For example, a GRIB2 message with a particular known long_name may need to be sa
             for cube, grib_message in iris.fileformats.grib.as_pairs(cube):
                 # post process the GRIB2 message, prior to saving
                 if cube.name() == 'carefully_customised_precipitation_amount':
-		    gribapi.grib_set_long(grib_message, "typeOfStatisticalProcess", 1)
+                    gribapi.grib_set_long(grib_message, "typeOfStatisticalProcess", 1)
                     gribapi.grib_set_long(grib_message, "parameterCategory", 1)
                     gribapi.grib_set_long(grib_message, "parameterNumber", 1)
-                yield message
-        iris.fileformats.grib.save_messages(tweaked_messages(cube), '/tmp/agrib2.grib2')
+                yield grib_message
+        iris.fileformats.grib.save_messages(tweaked_messages(cubes[0]), '/tmp/agrib2.grib2')
 
 Similarly a PP field may need to be written out with a specific value for LBEXP.  This can be achieved by::
 
@@ -86,11 +85,11 @@ Similarly a PP field may need to be written out with a specific value for LBEXP.
             for cube, field in iris.fileformats.pp.as_pairs(cube):
                 # post process the PP field, prior to saving
                 if cube.name() == 'air_pressure':
-		    field.lbexp = 'meaxp'
-		elif cube.name() == 'air_density':
-		    field.lbexp = 'meaxr'
+                    field.lbexp = 'meaxp'
+                elif cube.name() == 'air_density':
+                    field.lbexp = 'meaxr'
                 yield field
-        iris.fileformats.pp.save_fields(tweaked_fields(cube), '/tmp/app.pp')
+        iris.fileformats.pp.save_fields(tweaked_fields(cubes[0]), '/tmp/app.pp')
 
 
 netCDF
