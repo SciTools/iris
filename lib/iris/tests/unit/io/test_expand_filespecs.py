@@ -30,7 +30,7 @@ import shutil
 import iris.io
 
 
-class Test_expand_filespecs(tests.IrisTest):
+class TestExpandFilespecs(tests.IrisTest):
     def setUp(self):
         tests.IrisTest.setUp(self)
         self.tmpdir = tempfile.mkdtemp()
@@ -43,17 +43,22 @@ class Test_expand_filespecs(tests.IrisTest):
         shutil.rmtree(self.tmpdir)
 
     def test_absolute_path(self):
-        self.assertEqual(iris.io.expand_filespecs([os.path.join(self.tmpdir, '*')]),
-                         [os.path.join(self.tmpdir, fname) for fname in self.fnames])
+        self.assertEqual(iris.io.expand_filespecs(
+                                 [os.path.join(self.tmpdir, '*')]),
+                         [os.path.join(self.tmpdir, fname)
+                          for fname in self.fnames])
 
     def test_double_slash(self):
-        self.assertEqual(iris.io.expand_filespecs(['//' + os.path.join(self.tmpdir, '*')]),
-                         [os.path.join(self.tmpdir, fname) for fname in self.fnames])
+        self.assertEqual(iris.io.expand_filespecs(
+            ['//' + os.path.join(self.tmpdir, '*')]),
+                         [os.path.join(self.tmpdir, fname)
+                          for fname in self.fnames])
 
     def test_relative_path(self):
-	os.chdir(self.tmpdir)
+        os.chdir(self.tmpdir)
         self.assertEqual(iris.io.expand_filespecs(['*']),
-                         [os.path.join(self.tmpdir, fname) for fname in self.fnames])
+                        [os.path.join(self.tmpdir, fname)
+                         for fname in self.fnames])
 
     def test_no_files_found(self):
         msg = 'b expanded to empty'
@@ -63,7 +68,8 @@ class Test_expand_filespecs(tests.IrisTest):
     def test_files_and_none(self):
         msg = 'b expanded to empty.*expanded to .*b.txt'
         with self.assertRaisesRegexp(IOError, msg):
-            iris.io.expand_filespecs([self.tmpdir + '_b', os.path.join(self.tmpdir, '*')])
+            iris.io.expand_filespecs([self.tmpdir + '_b',
+                                      os.path.join(self.tmpdir, '*')])
 
 
 if __name__ == "__main__":
