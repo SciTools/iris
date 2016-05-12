@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import zlib
 import cf_units
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 from iris._cube_coord_common import CFVariableMixin
 import iris.coords
 import iris.util
@@ -136,8 +137,8 @@ class LazyArray(_LazyArray):
             Defaults to None to signify the dtype is unknown.
 
         """
-        warnings.warn('LazyArray is deprecated and will be removed '
-                      'in a future release.', stacklevel=2)
+        warn_deprecated('LazyArray is deprecated and will be removed '
+                        'in a future release.', stacklevel=2)
         super(LazyArray, self).__init__(shape, func, dtype)
 
 

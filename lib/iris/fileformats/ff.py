@@ -38,11 +38,12 @@ import six
 
 import warnings
 
-# Issue a deprecation message when the module is loaded.
-warnings.warn("The module 'iris.fileformats.ff' is deprecated. "
-              "Please use iris.fileformats.um as a replacement, which "
-              "contains equivalents for all important features.")
+from iris._deprecation import warn_deprecated
 
+# Issue a deprecation message when the module is loaded.
+warn_deprecated("The module 'iris.fileformats.ff' is deprecated. "
+                "Please use iris.fileformats.um as a replacement, which "
+                "contains equivalents for all important features.")
 
 # Directly import various simple data items from the 'old' ff module.
 from iris.fileformats._ff import (

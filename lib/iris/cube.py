@@ -36,6 +36,7 @@ import biggus
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
@@ -1282,18 +1283,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Handle deprecated kwargs
         if name is not None:
             name_or_coord = name
-            warnings.warn('the name kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the name kwarg is deprecated and will be removed '
+                            'in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         if coord is not None:
             name_or_coord = coord
-            warnings.warn('the coord kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the coord kwarg is deprecated and will be '
+                            'removed in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         # Finish handling deprecated kwargs
 
         name = None
@@ -1409,18 +1410,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Handle deprecated kwargs
         if name is not None:
             name_or_coord = name
-            warnings.warn('the name kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the name kwarg is deprecated and will be removed '
+                            'in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         if coord is not None:
             name_or_coord = coord
-            warnings.warn('the coord kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the coord kwarg is deprecated and will be '
+                            'removed in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         # Finish handling deprecated kwargs
 
         coords = self.coords(name_or_coord=name_or_coord,
@@ -2119,7 +2120,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         .. deprecated:: 0.8
 
         """
-        warnings.warn('Cube.assert_valid() has been deprecated.')
+        warn_deprecated('Cube.assert_valid() has been deprecated.')
 
     def __str__(self):
         # six has a decorator for this bit, but it doesn't do errors='replace'.
@@ -3101,9 +3102,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             attr:`~iris.cube.Cube.attributes` as needed.
 
         """
-        warnings.warn("Cube.add_history() has been deprecated - "
-                      "please modify/create cube.attributes['history'] "
-                      "as needed.")
+        warn_deprecated("Cube.add_history() has been deprecated - "
+                        "please modify/create cube.attributes['history'] "
+                        "as needed.")
 
         timestamp = datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")
         string = '%s Iris: %s' % (timestamp, string)

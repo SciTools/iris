@@ -24,10 +24,21 @@ import six
 
 import warnings
 
+from iris.exceptions import IrisError
+
+
+class IrisDeprecation(UserWarning):
+    """An Iris deprecation warning."""
+    pass
+
+
+def warn_deprecated(msg, **kwargs):
+    warnings.warn(msg, IrisDeprecation, **kwargs)
+
 
 # A Mixin for a wrapper class that copies the docstring of the wrapped class
 # into the wrapper.
-# This is useful in producing wrapper classes that nede to mimic the original
+# This is useful in producing wrapper classes that need to mimic the original
 # but emit deprecation warnings when used.
 class ClassWrapperSameDocstring(type):
     def __new__(metacls, classname, bases, class_dict):

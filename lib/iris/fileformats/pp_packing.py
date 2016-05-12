@@ -28,8 +28,7 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import warnings
-
+from iris._deprecation import warn_deprecated
 from iris.fileformats import _old_pp_packing as old_pp_packing
 
 
@@ -49,18 +48,18 @@ _DEPRECATION_WARNING = (
 
 # Emit a deprecation warning when anyone tries to import this.
 # For quiet, can still use _old_pp_packing instead, as fileformats.pp does.
-warnings.warn(_DEPRECATION_WARNING)
+warn_deprecated(_DEPRECATION_WARNING)
 
 
 # Define simple wrappers for functions in pp_packing.
 # N.B. signatures must match the originals !
 def wgdos_unpack(data, lbrow, lbnpt, bmdi):
-    warnings.warn(_DEPRECATION_WARNING)
+    warn_deprecated(_DEPRECATION_WARNING)
     return old_pp_packing.wgdos_unpack(data, lbrow, lbnpt, bmdi)
 
 
 def rle_decode(data, lbrow, lbnpt, bmdi):
-    warnings.warn(_DEPRECATION_WARNING)
+    warn_deprecated(_DEPRECATION_WARNING)
     return old_pp_packing.rle_decode(data, lbrow, lbnpt, bmdi)
 
 

@@ -40,6 +40,7 @@ from iris.analysis import Linear
 import iris.cube
 import iris.coord_systems
 import iris.coords
+from iris._deprecation import warn_deprecated
 import iris.exceptions
 
 
@@ -132,7 +133,9 @@ def nearest_neighbour_indices(cube, sample_points):
 
     """
     if isinstance(sample_points, dict):
-        warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
+        msg = ('Providing a dictionary to specify points is deprecated. '
+               'Please provide a list of (coordinate, values) pairs.')
+        warn_deprecated(msg)
         sample_points = list(sample_points.items())
 
     if sample_points:
@@ -207,7 +210,9 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     # We get the nearest neighbour using this sample space cube.
 
     if isinstance(sample_point, dict):
-        warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
+        msg = ('Providing a dictionary to specify points is deprecated. '
+               'Please provide a list of (coordinate, values) pairs.')
+        warn_deprecated(msg)
         sample_point = list(sample_point.items())
 
     if sample_point:

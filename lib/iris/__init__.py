@@ -110,6 +110,7 @@ import threading
 import iris.config
 import iris.cube
 import iris._constraints
+from iris._deprecation import IrisDeprecation
 import iris.fileformats
 import iris.io
 
@@ -120,7 +121,8 @@ __version__ = '1.10.0-DEV'
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
-           'site_configuration', 'Future', 'FUTURE']
+           'site_configuration', 'Future', 'FUTURE',
+           'IrisDeprecation']
 
 
 # When required, log the usage of Iris.

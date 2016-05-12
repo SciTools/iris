@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,11 +28,12 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 import sys
-import warnings
+
+from iris._deprecation import warn_deprecated
 
 
-warnings.warn('iris.proxy is deprecated in Iris v1.9. Please use lazy '
-              'imports instead.')
+warn_deprecated('iris.proxy is deprecated in Iris v1.9. Please use lazy '
+                'imports instead.')
 
 
 class FakeModule(object):

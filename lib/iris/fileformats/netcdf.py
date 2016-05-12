@@ -40,6 +40,7 @@ import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
 
+from iris._deprecation import warn_deprecated
 import iris.analysis
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, \
     OceanSigmaZFactory, OceanSigmaFactory, OceanSFactory, OceanSg1Factory, \
@@ -1880,4 +1881,4 @@ def _no_unlim_dep_warning():
            'deprecated, in favour of no automatic assignment. To switch '
            'to the new behaviour, set iris.FUTURE.netcdf_no_unlimited to '
            'True.')
-    warnings.warn(msg)
+    warn_deprecated(msg)

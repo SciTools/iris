@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import inspect
 import cf_units
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 import iris.analysis
 import iris.coords
 import iris.cube
@@ -264,10 +265,11 @@ def _add_subtract_common(operation_function, operation_name, cube, other,
 
         # provide a deprecation warning if the ignore keyword has been set
         if ignore is not True:
-            warnings.warn('The "ignore" keyword has been deprecated in '
-                          'add/subtract. This functionality is now automatic. '
-                          'The provided value to "ignore" has been ignored, '
-                          'and has been automatically calculated.')
+            msg = ('The "ignore" keyword has been deprecated in '
+                   'add/subtract. This functionality is now automatic. '
+                   'The provided value to "ignore" has been ignored, '
+                   'and has been automatically calculated.')
+            warn_deprecated(msg)
 
         bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
                           coord_comp['resamplable'])

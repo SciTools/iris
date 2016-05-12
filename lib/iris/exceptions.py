@@ -22,8 +22,6 @@ Exceptions specific to the Iris package.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import iris.coords
-
 
 class IrisError(Exception):
     """Base class for errors in the Iris package."""
@@ -48,6 +46,8 @@ class CellMeasureNotFoundError(KeyError):
 class CoordinateMultiDimError(ValueError):
     """Raised when a routine doesn't support multi-dimensional coordinates."""
     def __init__(self, msg):
+        # N.B. deferred import to avoid a circular import dependency.
+        import iris.coords
         if isinstance(msg, iris.coords.Coord):
             fmt = "Multi-dimensional coordinate not supported: '%s'"
             msg = fmt % msg.name()
