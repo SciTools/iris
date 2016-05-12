@@ -59,6 +59,8 @@ import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
+from cf_units import Unit, CALENDAR_GREGORIAN
+
 import iris
 import iris.coords as icoords
 import iris.coord_systems as icoord_systems
@@ -203,8 +205,7 @@ def NAME_to_cube(filenames, callback):
 
             # define the time unit and use it to serialise the datetime for the
             # time coordinate
-            time_unit = iris.unit.Unit('hours since epoch',
-                                       calendar=iris.unit.CALENDAR_GREGORIAN)
+            time_unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
             time_coord = icoords.AuxCoord(
                 time_unit.date2num(field_headings['time']),
                 standard_name='time',

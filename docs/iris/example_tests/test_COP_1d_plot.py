@@ -22,17 +22,19 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from . import extest_util
-
-with extest_util.add_examples_to_path():
-    import COP_1d_plot
+from .extest_util import (add_examples_to_path,
+                          show_replaced_by_check_graphic,
+                          fail_any_deprecation_warnings)
 
 
 class TestCOP1DPlot(tests.GraphicsTest):
     """Test the COP_1d_plot example code."""
     def test_COP_1d_plot(self):
-        with extest_util.show_replaced_by_check_graphic(self):
-            COP_1d_plot.main()
+        with fail_any_deprecation_warnings():
+            with add_examples_to_path():
+                import COP_1d_plot
+            with show_replaced_by_check_graphic(self):
+                COP_1d_plot.main()
 
 
 if __name__ == '__main__':
