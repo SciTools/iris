@@ -34,7 +34,7 @@ class Test_expand_filespecs(tests.IrisTest):
     def setUp(self):
         tests.IrisTest.setUp(self)
         self.tmpdir = tempfile.mkdtemp()
-        self.fnames = ['a.foo', 'wibble.txt']
+        self.fnames = ['a.foo', 'b.txt']
         for fname in self.fnames:
             with open(os.path.join(self.tmpdir, fname), 'w') as fh:
                 fh.write('anything')
@@ -53,22 +53,17 @@ class Test_expand_filespecs(tests.IrisTest):
     def test_relative_path(self):
 	os.chdir(self.tmpdir)
         self.assertEqual(iris.io.expand_filespecs(['*']),
-                         self.fnames)
+                         [os.path.join(self.tmpdir, fname) for fname in self.fnames])
 
     def test_no_files_found(self):
-        msg = 'wibble expanded to empty'
+        msg = 'b expanded to empty'
         with self.assertRaisesRegexp(IOError, msg):
-            iris.io.expand_filespecs([self.tmpdir + '_wibble'])
+            iris.io.expand_filespecs([self.tmpdir + '_b'])
 
     def test_files_and_none(self):
-        # A function to test when there's both a valid file and an invalid one
-        # Does this make sense?
-        msg = 'wibble expanded to empty.*expanded to .*wibble.txt'
+        msg = 'b expanded to empty.*expanded to .*b.txt'
         with self.assertRaisesRegexp(IOError, msg):
-            iris.io.expand_filespecs([self.tmpdir + '_wibble', os.path.join(self.tmpdir, '*')])
-
-
-
+            iris.io.expand_filespecs([self.tmpdir + '_b', os.path.join(self.tmpdir, '*')])
 
 
 if __name__ == "__main__":
