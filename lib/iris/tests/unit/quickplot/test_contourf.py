@@ -25,6 +25,7 @@ import iris.tests as tests
 
 import numpy as np
 
+from iris.tests import mock
 from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import TestGraphicStringCoord, MixinCoords
 
@@ -54,7 +55,9 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(self.bar.size)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.this = self.patch('matplotlib.pyplot.contourf')
+        mocker = mock.Mock(alpha=0, antialiased=False)
+        self.this = self.patch('matplotlib.pyplot.contourf',
+                               return_value=mocker)
         # Also need to mock the colorbar.
         self.patch('matplotlib.pyplot.colorbar')
         self.draw = qplt.contourf
