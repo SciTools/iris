@@ -27,10 +27,11 @@ import os
 import tempfile
 import shutil
 
-import iris.io
+import iris.io as iio
 
 
 class TestExpandFilespecs(tests.IrisTest):
+
     def setUp(self):
         tests.IrisTest.setUp(self)
         self.tmpdir = tempfile.mkdtemp()
@@ -43,33 +44,31 @@ class TestExpandFilespecs(tests.IrisTest):
         shutil.rmtree(self.tmpdir)
 
     def test_absolute_path(self):
-        self.assertEqual(iris.io.expand_filespecs(
-                                 [os.path.join(self.tmpdir, '*')]),
-                         [os.path.join(self.tmpdir, fname)
-                          for fname in self.fnames])
+        result = iio.expand_filespecs([os.path.join(self.tmpdir, '*')])
+        expected = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
+        self.assertEqual(result, expected)
 
     def test_double_slash(self):
-        self.assertEqual(iris.io.expand_filespecs(
-            ['//' + os.path.join(self.tmpdir, '*')]),
-                         [os.path.join(self.tmpdir, fname)
-                          for fname in self.fnames])
+        product = iio.expand_filespecs(['//' + os.path.join(self.tmpdir, '*')])
+        predicted = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
+        self.assertEqual(product, predicted)
 
     def test_relative_path(self):
         os.chdir(self.tmpdir)
-        self.assertEqual(iris.io.expand_filespecs(['*']),
-                        [os.path.join(self.tmpdir, fname)
-                         for fname in self.fnames])
+        item_out = iio.expand_filespecs(['*'])
+        item_in = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
+        self.assertEqual(item_out, item_in)
 
     def test_no_files_found(self):
         msg = 'b expanded to empty'
         with self.assertRaisesRegexp(IOError, msg):
-            iris.io.expand_filespecs([self.tmpdir + '_b'])
+            iio.expand_filespecs([self.tmpdir + '_b'])
 
     def test_files_and_none(self):
         msg = 'b expanded to empty.*expanded to .*b.txt'
         with self.assertRaisesRegexp(IOError, msg):
-            iris.io.expand_filespecs([self.tmpdir + '_b',
-                                      os.path.join(self.tmpdir, '*')])
+            iio.expand_filespecs([self.tmpdir + '_b',
+                                 os.path.join(self.tmpdir, '*')])
 
 
 if __name__ == "__main__":
