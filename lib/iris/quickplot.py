@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -45,7 +45,7 @@ def _use_symbol(units):
 
 
 def _title(cube_or_coord, with_units):
-    if cube_or_coord is None:
+    if cube_or_coord is None or isinstance(cube_or_coord, int):
         title = ''
     else:
         title = cube_or_coord.name().replace('_', ' ').capitalize()

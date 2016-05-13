@@ -55,21 +55,42 @@ PlotDefn = collections.namedtuple('PlotDefn', ('coords', 'transpose'))
 
 
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
+    def names(coords):
+        result = []
+        for coord in coords:
+            if isinstance(coord, int):
+                result.append('dim={}'.format(coord))
+            else:
+                result.append(coord.name())
+        return ', '.join(result)
+
     def as_coord(coord):
-        coord = cube.coord(coord)
+        if isinstance(coord, int):
+            # Pass through valid dimension indexes.
+            if coord >= ndims:
+                emsg = 'The data dimension ({}) is out of range for ' \
+                    'the dimensionality of the required plot ({})'
+                raise ValueError(emsg.format(coord, ndims))
+        else:
+            coord = cube.coord(coord)
         return coord
+
     coords = list(map(as_coord, coords))
 
-    # Check that we were given the right number of coordinates
+    # Check that we were given the right number of coordinates/dimensions.
     if len(coords) != ndims:
-        coord_names = ', '.join([coord.name() for coord in coords])
         raise ValueError('The list of coordinates given (%s) should have the'
                          ' same length (%s) as the dimensionality of the'
-                         ' required plot (%s)' % (coord_names,
+                         ' required plot (%s)' % (names(coords),
                                                   len(coords), ndims))
 
     # Check which dimensions are spanned by each coordinate.
-    get_span = lambda coord: set(cube.coord_dims(coord))
+    def get_span(coord):
+        if isinstance(coord, int):
+            span = set([coord])
+        else:
+            span = set(cube.coord_dims(coord))
+        return span
     spans = list(map(get_span, coords))
     for span, coord in zip(spans, coords):
         if not span:
@@ -84,9 +105,8 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     # dimensions.
     total_span = set().union(*spans)
     if len(total_span) != ndims:
-        coord_names = ', '.join([coord.name() for coord in coords])
         raise ValueError('The given coordinates ({}) don\'t span the {} data'
-                         ' dimensions.'.format(coord_names, ndims))
+                         ' dimensions.'.format(names(coords), ndims))
 
     # If we have 2-dimensional data, and one or more 1-dimensional
     # coordinates, check if we need to transpose.
@@ -174,8 +194,9 @@ def _get_plot_defn(cube, mode, ndims=2):
     return PlotDefn(sorted_coords, transpose)
 
 
-def _can_draw_map(plot_coords):
-    std_names = [coord and coord.standard_name for coord in plot_coords]
+def _can_draw_map(coords):
+    std_names = [c and c.standard_name for c in coords
+                 if isinstance(c, iris.coords.Coord)]
     valid_std_names = [
         ['latitude', 'longitude'],
         ['grid_latitude', 'grid_longitude'],
@@ -222,7 +243,7 @@ def _invert_yaxis(v_coord, axes=None):
     """
     axes = axes if axes else plt.gca()
     yaxis_is_inverted = axes.yaxis_inverted()
-    if not yaxis_is_inverted and v_coord is not None:
+    if not yaxis_is_inverted and isinstance(v_coord, iris.coords.Coord):
         attr_pve = v_coord.attributes.get('positive')
         if attr_pve is not None and attr_pve.lower() == 'down':
             axes.invert_yaxis()
@@ -260,7 +281,12 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         for coord, axis_name, data_dim in zip([u_coord, v_coord],
                                               ['xaxis', 'yaxis'],
                                               [1, 0]):
-            if coord:
+            if coord is None:
+                values = np.arange(data.shape[data_dim] + 1)
+            elif isinstance(coord, int):
+                dim = int(not bool(coord)) if plot_defn.transpose else coord
+                values = np.arange(data.shape[dim] + 1)
+            else:
                 if coord.points.dtype.char in 'SU':
                     if coord.points.ndim != 1:
                         msg = 'Coord {!r} must be one-dimensional.'
@@ -272,8 +298,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                     values = np.arange(data.shape[data_dim] + 1) - 0.5
                 else:
                     values = coord.contiguous_bounds()
-            else:
-                values = np.arange(data.shape[data_dim] + 1)
 
             plot_arrays.append(values)
 
@@ -315,16 +339,23 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
-        if u_coord:
+        if u_coord is None:
+            u = np.arange(data.shape[1])
+        elif isinstance(u_coord, int):
+            dim = int(not bool(u_coord)) if plot_defn.transpose else u_coord
+            u = np.arange(data.shape[dim])
+        else:
             u = u_coord.points
             u = _fixup_dates(u_coord, u)
+
+        if v_coord is None:
+            v = np.arange(data.shape[0])
+        elif isinstance(v_coord, int):
+            dim = int(not bool(v_coord)) if plot_defn.transpose else v_coord
+            v = np.arange(data.shape[dim])
         else:
-            u = np.arange(data.shape[1])
-        if v_coord:
             v = v_coord.points
             v = _fixup_dates(v_coord, v)
-        else:
-            v = np.arange(data.shape[0])
 
         if plot_defn.transpose:
             u = u.T
@@ -416,7 +447,7 @@ def _get_plot_objects(args):
                                     (iris.cube.Cube, iris.coords.Coord)):
         # two arguments
         u_object, v_object = args[:2]
-        u, v = _uv_from_u_object_v_object(*args[:2])
+        u, v = _uv_from_u_object_v_object(u_object, v_object)
         args = args[2:]
         if len(u) != len(v):
             msg = "The x and y-axis objects are not compatible. They should " \
@@ -622,7 +653,7 @@ def contour(cube, *args, **kwargs):
     Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or
-        coordinate names Use the given coordinates as the axes for the
+        coordinate names. Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
@@ -646,7 +677,7 @@ def contourf(cube, *args, **kwargs):
     Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or
-        coordinate names Use the given coordinates as the axes for the
+        coordinate names. Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
@@ -823,7 +854,7 @@ def outline(cube, coords=None, color='k', linewidth=None, axes=None):
     Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or
-        coordinate names Use the given coordinates as the axes for the
+        coordinate names. Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
@@ -860,7 +891,7 @@ def pcolor(cube, *args, **kwargs):
     Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or
-        coordinate names Use the given coordinates as the axes for the
+        coordinate names. Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
@@ -886,7 +917,7 @@ def pcolormesh(cube, *args, **kwargs):
     Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or
-        coordinate names Use the given coordinates as the axes for the
+        coordinate names. Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
@@ -910,7 +941,7 @@ def points(cube, *args, **kwargs):
     Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or
-        coordinate names Use the given coordinates as the axes for the
+        coordinate names. Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis

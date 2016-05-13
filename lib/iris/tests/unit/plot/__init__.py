@@ -23,8 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris.tests.stock import simple_2d, lat_lon_cube
+from iris.plot import _broadcast_2d as broadcast
 from iris.coords import AuxCoord
+from iris.tests.stock import simple_2d, lat_lon_cube
 
 
 @tests.skip_plot
@@ -63,3 +64,61 @@ class TestGraphicStringCoord(tests.GraphicsTest):
         actual = self.tick_loc_and_label(axis, axes)
         expected = [(0.0, 'a'), (1.0, 'b'), (2.0, 'c'), (3.0, 'd')]
         self.assertEqual(expected, actual)
+
+
+@tests.skip_plot
+class MixinCoords(object):
+    """
+    Mixin class of common plotting tests providing 2-dimensional
+    permutations of coordinates and anonymous dimensions.
+
+    """
+    def _check(self, u, v, data=None):
+        self.assertEqual(self.this.call_count, 1)
+        if data is not None:
+            (actual_u, actual_v, actual_data), _ = self.this.call_args
+            self.assertArrayEqual(actual_data, data)
+        else:
+            (actual_u, actual_v), _ = self.this.call_args
+        self.assertArrayEqual(actual_u, u)
+        self.assertArrayEqual(actual_v, v)
+
+    def test_foo_bar(self):
+        self.draw(self.cube, coords=('foo', 'bar'))
+        u, v = broadcast(self.foo, self.bar)
+        self._check(u, v, self.data)
+
+    def test_bar_foo(self):
+        self.draw(self.cube, coords=('bar', 'foo'))
+        u, v = broadcast(self.bar, self.foo)
+        self._check(u, v, self.dataT)
+
+    def test_foo_0(self):
+        self.draw(self.cube, coords=('foo', 0))
+        u, v = broadcast(self.foo, self.bar_index)
+        self._check(u, v, self.data)
+
+    def test_1_bar(self):
+        self.draw(self.cube, coords=(1, 'bar'))
+        u, v = broadcast(self.foo_index, self.bar)
+        self._check(u, v, self.data)
+
+    def test_1_0(self):
+        self.draw(self.cube, coords=(1, 0))
+        u, v = broadcast(self.foo_index, self.bar_index)
+        self._check(u, v, self.data)
+
+    def test_0_foo(self):
+        self.draw(self.cube, coords=(0, 'foo'))
+        u, v = broadcast(self.bar_index, self.foo)
+        self._check(u, v, self.dataT)
+
+    def test_bar_1(self):
+        self.draw(self.cube, coords=('bar', 1))
+        u, v = broadcast(self.bar, self.foo_index)
+        self._check(u, v, self.dataT)
+
+    def test_0_1(self):
+        self.draw(self.cube, coords=(0, 1))
+        u, v = broadcast(self.bar_index, self.foo_index)
+        self._check(u, v, self.dataT)
