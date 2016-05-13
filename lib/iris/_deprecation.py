@@ -32,8 +32,34 @@ class IrisDeprecation(UserWarning):
     pass
 
 
-def warn_deprecated(msg, **kwargs):
-    warnings.warn(msg, IrisDeprecation, **kwargs)
+def warn_deprecated(msg, stacklevel=2):
+    """
+    Issue an Iris deprecation warning.
+
+    Calls :func:`warnings.warn', to emit the message 'msg' as a
+    :class:`warnings.warning`, of the subclass :class:`IrisDeprecationWarning`.
+
+    The 'stacklevel' keyword is passed through to warnings.warn.  However by
+    default this is set to 2, which ensures that the identified code line is in
+    the caller, rather than in this routine.
+    See :mod:`warnings` module documentation.
+
+    For example::
+
+        >>> from iris._deprecation import warn_deprecated
+        >>> def arrgh():
+        ...    warn_deprecated('"arrgh" is deprecated since version 3.5.')
+        ...    return 1
+        ...
+        >>> arrgh()
+        __main__:2: IrisDeprecation: "arrgh" is deprecated since version 3.5.
+        1
+        >>> arrgh()
+        1
+        >>>
+
+    """
+    warnings.warn(msg, IrisDeprecation, stacklevel=stacklevel)
 
 
 # A Mixin for a wrapper class that copies the docstring of the wrapped class
