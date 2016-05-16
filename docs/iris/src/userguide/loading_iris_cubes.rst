@@ -178,7 +178,7 @@ and a list of values can be given to constrain a coordinate to one of
 a collection of values::
 
     filename = iris.sample_data_path('uk_hires.pp')
-    level_10_or_12_fp_6 = iris.Constraint(model_level_number=[10, 16], forecast_period=6)
+    level_10_or_16_fp_6 = iris.Constraint(model_level_number=[10, 16], forecast_period=6)
     cubes = iris.load(filename, level_10_or_16_fp_6)
 
 A common requirement is to limit the value of a coordinate to a specific range, 
