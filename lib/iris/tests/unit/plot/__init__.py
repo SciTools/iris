@@ -89,7 +89,7 @@ class MixinCoords(object):
         self._check(u, v, self.data)
 
     def test_bar_foo(self):
-        self.draw_func(self.cube, coords=('bar', 'foo'))t
+        self.draw_func(self.cube, coords=('bar', 'foo'))
         u, v = broadcast(self.bar, self.foo)
         self._check(u, v, self.dataT)
 
