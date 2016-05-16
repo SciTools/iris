@@ -77,8 +77,8 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(self.bar.size)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.this = self.patch('matplotlib.pyplot.contour')
-        self.draw = iplt.contour
+        self.mpl_patch = self.patch('matplotlib.pyplot.contour')
+        self.draw_func = iplt.contour
 
 
 if __name__ == "__main__":

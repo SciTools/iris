@@ -56,11 +56,11 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.data = self.cube.data
         self.dataT = self.data.T
         mocker = mock.Mock(alpha=0, antialiased=False)
-        self.this = self.patch('matplotlib.pyplot.contourf',
-                               return_value=mocker)
+        self.mpl_patch = self.patch('matplotlib.pyplot.contourf',
+                                    return_value=mocker)
         # Also need to mock the colorbar.
         self.patch('matplotlib.pyplot.colorbar')
-        self.draw = qplt.contourf
+        self.draw_func = qplt.contourf
 
 
 if __name__ == "__main__":

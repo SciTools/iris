@@ -80,8 +80,8 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(self.bar.size)
         self.data = None
         self.dataT = None
-        self.this = self.patch('matplotlib.pyplot.scatter')
-        self.draw = iplt.points
+        self.mpl_patch = self.patch('matplotlib.pyplot.scatter')
+        self.draw_func = iplt.points
 
 
 if __name__ == "__main__":

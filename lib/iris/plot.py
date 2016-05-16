@@ -68,9 +68,9 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
         if isinstance(coord, int):
             # Pass through valid dimension indexes.
             if coord >= ndims:
-                emsg = 'The data dimension ({}) is out of range for ' \
-                    'the dimensionality of the required plot ({})'
-                raise ValueError(emsg.format(coord, ndims))
+                emsg = ('The data dimension ({}) is out of range for '
+                        'the dimensionality of the required plot ({})')
+                raise IndexError(emsg.format(coord, ndims))
         else:
             coord = cube.coord(coord)
         return coord
@@ -284,7 +284,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             if coord is None:
                 values = np.arange(data.shape[data_dim] + 1)
             elif isinstance(coord, int):
-                dim = int(not bool(coord)) if plot_defn.transpose else coord
+                dim = 1 - coord if plot_defn.transpose else coord
                 values = np.arange(data.shape[dim] + 1)
             else:
                 if coord.points.dtype.char in 'SU':
@@ -342,7 +342,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         if u_coord is None:
             u = np.arange(data.shape[1])
         elif isinstance(u_coord, int):
-            dim = int(not bool(u_coord)) if plot_defn.transpose else u_coord
+            dim = 1 - u_coord if plot_defn.transpose else u_coord
             u = np.arange(data.shape[dim])
         else:
             u = u_coord.points
@@ -351,7 +351,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         if v_coord is None:
             v = np.arange(data.shape[0])
         elif isinstance(v_coord, int):
-            dim = int(not bool(v_coord)) if plot_defn.transpose else v_coord
+            dim = 1 - v_coord if plot_defn.transpose else v_coord
             v = np.arange(data.shape[dim])
         else:
             v = v_coord.points

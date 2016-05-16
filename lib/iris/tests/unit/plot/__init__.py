@@ -74,51 +74,51 @@ class MixinCoords(object):
 
     """
     def _check(self, u, v, data=None):
-        self.assertEqual(self.this.call_count, 1)
+        self.assertEqual(self.mpl_patch.call_count, 1)
         if data is not None:
-            (actual_u, actual_v, actual_data), _ = self.this.call_args
+            (actual_u, actual_v, actual_data), _ = self.mpl_patch.call_args
             self.assertArrayEqual(actual_data, data)
         else:
-            (actual_u, actual_v), _ = self.this.call_args
+            (actual_u, actual_v), _ = self.mpl_patch.call_args
         self.assertArrayEqual(actual_u, u)
         self.assertArrayEqual(actual_v, v)
 
     def test_foo_bar(self):
-        self.draw(self.cube, coords=('foo', 'bar'))
+        self.draw_func(self.cube, coords=('foo', 'bar'))
         u, v = broadcast(self.foo, self.bar)
         self._check(u, v, self.data)
 
     def test_bar_foo(self):
-        self.draw(self.cube, coords=('bar', 'foo'))
+        self.draw_func(self.cube, coords=('bar', 'foo'))t
         u, v = broadcast(self.bar, self.foo)
         self._check(u, v, self.dataT)
 
     def test_foo_0(self):
-        self.draw(self.cube, coords=('foo', 0))
+        self.draw_func(self.cube, coords=('foo', 0))
         u, v = broadcast(self.foo, self.bar_index)
         self._check(u, v, self.data)
 
     def test_1_bar(self):
-        self.draw(self.cube, coords=(1, 'bar'))
+        self.draw_func(self.cube, coords=(1, 'bar'))
         u, v = broadcast(self.foo_index, self.bar)
         self._check(u, v, self.data)
 
     def test_1_0(self):
-        self.draw(self.cube, coords=(1, 0))
+        self.draw_func(self.cube, coords=(1, 0))
         u, v = broadcast(self.foo_index, self.bar_index)
         self._check(u, v, self.data)
 
     def test_0_foo(self):
-        self.draw(self.cube, coords=(0, 'foo'))
+        self.draw_func(self.cube, coords=(0, 'foo'))
         u, v = broadcast(self.bar_index, self.foo)
         self._check(u, v, self.dataT)
 
     def test_bar_1(self):
-        self.draw(self.cube, coords=('bar', 1))
+        self.draw_func(self.cube, coords=('bar', 1))
         u, v = broadcast(self.bar, self.foo_index)
         self._check(u, v, self.dataT)
 
     def test_0_1(self):
-        self.draw(self.cube, coords=(0, 1))
+        self.draw_func(self.cube, coords=(0, 1))
         u, v = broadcast(self.bar_index, self.foo_index)
         self._check(u, v, self.dataT)

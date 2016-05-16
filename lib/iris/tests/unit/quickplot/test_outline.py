@@ -56,8 +56,8 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(coord.points.size + 1)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.this = self.patch('matplotlib.pyplot.pcolormesh')
-        self.draw = qplt.outline
+        self.mpl_patch = self.patch('matplotlib.pyplot.pcolormesh')
+        self.draw_func = qplt.outline
 
 
 if __name__ == "__main__":
