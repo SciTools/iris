@@ -144,8 +144,7 @@ class Future(threading.local):
     """Run-time configuration controller."""
 
     def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
-                 strict_grib_load=False, external_grib_support=False,
-                 netcdf_no_unlimited=False,
+                 strict_grib_load=False, netcdf_no_unlimited=False,
                  clip_latitudes=False):
         """
         A container for run-time options controls.
@@ -189,11 +188,8 @@ class Future(threading.local):
             The 'strict_grib_load' option is now deprecated, as it affects
             only the internal grib module :mod:`iris.fileformats.grib`,
             which is now itself deprecated in favour of 'iris_grib'.
-            See the "external_grib_support" option.
-
-        The option `external_grib_support` controls whether GRIB files are
-        processed using the 'iris_grib' package, in place of the old iris
-        internal module :mod:`iris.fileformats.grib`.
+            Please remove code which sets this, and instead install the
+            'iris_grib' package : <https://github.com/SciTools/iris-grib>.
 
         The option `netcdf_no_unlimited`, when True, changes the
         behaviour of the netCDF saver, such that no dimensions are set to
@@ -208,17 +204,15 @@ class Future(threading.local):
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
         self.__dict__['netcdf_promote'] = netcdf_promote
         self.__dict__['strict_grib_load'] = strict_grib_load
-        self.__dict__['external_grib_support'] = external_grib_support
         self.__dict__['netcdf_no_unlimited'] = netcdf_no_unlimited
         self.__dict__['clip_latitudes'] = clip_latitudes
 
     def __repr__(self):
         msg = ('Future(cell_datetime_objects={}, netcdf_promote={}, '
-               'strict_grib_load={}, external_grib_support={}, '
-               'netcdf_no_unlimited={}, clip_latitudes={})')
+               'strict_grib_load={}, netcdf_no_unlimited={}, '
+               'clip_latitudes={})')
         return msg.format(self.cell_datetime_objects, self.netcdf_promote,
-                          self.strict_grib_load, self.external_grib_support,
-                          self.netcdf_no_unlimited,
+                          self.strict_grib_load, self.netcdf_no_unlimited,
                           self.clip_latitudes)
 
     deprecated_options = ['strict_grib_load']

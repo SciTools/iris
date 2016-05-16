@@ -85,11 +85,16 @@ else:
     GDAL_AVAILABLE = True
 
 try:
-    import gribapi
-except ImportError:
-    GRIB_AVAILABLE = False
-else:
+    import iris_grib
     GRIB_AVAILABLE = True
+    from iris_grib.message import GribMessage
+except ImportError:
+    try:
+        import gribapi
+        GRIB_AVAILABLE = True
+        from iris.fileformats.grib.message import GribMessage
+    except ImportError:
+        GRIB_AVAILABLE = False
 
 try:
     import iris_sample_data
@@ -763,18 +768,6 @@ class GraphicsTest(IrisTest):
             plt.close('all')
 
 
-def _ensure_lazy_import_GribMessage():
-    # Import "GribMessage" only when we really need to, so that the caller can
-    # set "iris.FUTURE.external_grib_support" first to control it.
-    # Without this, our check for deprecation warnings in the examples tests
-    # doesn't work properly.
-    global GribMessage
-    if iris.FUTURE.external_grib_support:
-        from iris_grib.message import GribMessage
-    else:
-        from iris.fileformats.grib.message import GribMessage
-
-
 class TestGribMessage(IrisTest):
 
     def assertGribMessageContents(self, filename, contents):
@@ -789,7 +782,6 @@ class TestGribMessage(IrisTest):
             An iterable of GRIB message keys and expected values.
 
         """
-        _ensure_lazy_import_GribMessage()
         messages = GribMessage.messages_from_filename(filename)
         for message in messages:
             for element in contents:
@@ -815,7 +807,6 @@ class TestGribMessage(IrisTest):
             An iterable of section numbers to ignore during comparison.
 
         """
-        _ensure_lazy_import_GribMessage()
         messages1 = list(GribMessage.messages_from_filename(filename1))
         messages2 = list(GribMessage.messages_from_filename(filename2))
         self.assertEqual(len(messages1), len(messages2))

@@ -25,15 +25,6 @@ See also: `ECMWF GRIB API <https://software.ecmwf.int/wiki/display/GRIB/Home>`_.
     the separate package
     `iris_grib <http://https://github.com/SciTools/iris-grib>`_ instead.
 
-    To enable Iris to use iris_grib for all
-    grib file operations, use the :data:`iris.FUTURE` option
-    :data:`iris.FUTURE.external_grib_support`
-
-    .. For example::
-     >>> iris.FUTURE.external_grib_support = True
-     >>> path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
-     >>> data = iris.load_cube(path)
-
 """
 
 from __future__ import (absolute_import, division, print_function)
@@ -66,8 +57,7 @@ import iris.fileformats.grib.load_rules
 # Issue a blanket deprecation for this module.
 warn_deprecated(
     "The module iris.fileformats.grib is deprecated since v1.10. "
-    "Please use the separate package 'iris_grib' package, and enable Iris to "
-    "use it by setting iris.FUTURE.external_grib_support=True.")
+    "Please install the package 'iris_grib' package instead.")
 
 
 __all__ = ['load_cubes', 'save_grib2', 'load_pairs_from_fields',

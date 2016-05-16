@@ -247,14 +247,15 @@ def _grib_save(cube, target, append=False, **kwargs):
     # allows the saver to be registered without having `gribapi`
     # installed.
     try:
-        import gribapi
-    except ImportError:
-        raise RuntimeError('Unable to save GRIB file - the ECMWF '
-                           '`gribapi` package is not installed.')
-    if iris.FUTURE.external_grib_support:
         import iris_grib as grib
-    else:
+    except ImportError:
+        try:
+            import gribapi
+        except ImportError:
+            raise RuntimeError('Unable to save GRIB file - the ECMWF '
+                               '`gribapi` package is not installed.')
         from iris.fileformats import grib
+
     return grib.save_grib2(cube, target, append, **kwargs)
 
 

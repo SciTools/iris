@@ -27,6 +27,14 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
                                    UriProtocol, LeadingLine)
 from . import abf
 from . import um
+try:
+    import iris_grib as grib
+except ImportError:
+    try:
+        from . import grib
+    except ImportError:
+        grib = None
+
 from . import name
 from . import netcdf
 from . import nimrod
@@ -66,19 +74,9 @@ FORMAT_AGENT.add_spec(
 # GRIB files.
 #
 def _load_grib(*args, **kwargs):
-    import iris
-    if iris.FUTURE.external_grib_support:
-        import iris_grib as grib
-    else:
-        try:
-            from . import grib
-        except ImportError:
-            grib = None
-
-        if grib is None:
-            raise RuntimeError('Unable to load GRIB file - the ECMWF '
-                               '`gribapi` package is not installed.')
-
+    if grib is None:
+        raise RuntimeError('Unable to load GRIB file - the ECMWF '
+                           '`gribapi` package is not installed.')
     return grib.load_cubes(*args, **kwargs)
 
 
