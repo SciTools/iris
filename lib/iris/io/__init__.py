@@ -164,7 +164,7 @@ def expand_filespecs(file_specs):
     if not all(value_lists):
         raise IOError("One or more of the files specified did not exist %s." %
         ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
-         for pattern, expanded in six.iteritems(glob_expanded)])
+         for pattern, expanded in sorted(six.iteritems(glob_expanded))])
 
     return sum(value_lists, [])
 
