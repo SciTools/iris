@@ -160,7 +160,10 @@ def expand_filespecs(file_specs):
     glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
 
     # If any of the specs expanded to an empty list then raise an error
-    value_lists = glob_expanded.values()
+    value_list_raw = glob_expanded.values()
+
+    # Here is a term to sort value_lists alphabetically, for consistency
+    value_lists = sorted(value_list_raw)
     if not all(value_lists):
         raise IOError("One or more of the files specified did not exist %s." %
         ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
