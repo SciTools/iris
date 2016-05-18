@@ -28,7 +28,8 @@ import netCDF4 as nc
 import numpy as np
 
 import iris
-from iris.coord_systems import GeogCS, TransverseMercator, RotatedGeogCS
+from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
+                                LambertConformal)
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
@@ -181,17 +182,21 @@ class Test_write(tests.IrisTest):
             self.assertEqual(res, 'something something_else')
 
 
-class TestCoordSystems(tests.IrisTest):
-    def cube_with_cs(self, coord_system,
-                     names=['grid_longitude', 'grid_latitude']):
+class Test__create_cf_grid_mapping(tests.IrisTest):
+    def _cube_with_cs(self, coord_system):
+        """Return a simple 2D cube that uses the given coordinate system."""
         cube = stock.lat_lon_cube()
         x, y = cube.coord('longitude'), cube.coord('latitude')
         x.coord_system = y.coord_system = coord_system
-        for coord, name in zip([x, y], names):
-            coord.rename(name)
         return cube
 
-    def construct_cf_grid_mapping_variable(self, cube):
+    def _grid_mapping_variable(self, coord_system):
+        """
+        Return a mock netCDF variable that represents the conversion
+        of the given coordinate system.
+
+        """
+        cube = self._cube_with_cs(coord_system)
         # Calls the actual NetCDF saver with appropriate mocking, returning
         # the grid variable that gets created.
         grid_variable = mock.Mock(name='NetCDFVariable')
@@ -202,23 +207,38 @@ class TestCoordSystems(tests.IrisTest):
                           _dataset=dataset)
         variable = mock.Mock()
 
+        # This is the method we're actually testing!
         Saver._create_cf_grid_mapping(saver, cube, variable)
+
         self.assertEqual(create_var_fn.call_count, 1)
         self.assertEqual(variable.grid_mapping,
                          grid_variable.grid_mapping_name)
         return grid_variable
 
-    def variable_attributes(self, mocked_variable):
-        """Get the attributes dictionary from a mocked NetCDF variable."""
+    def _variable_attributes(self, coord_system):
+        """
+        Return the attributes dictionary for the grid mapping variable
+        that is created from the given coordinate system.
+
+        """
+        mock_grid_variable = self._grid_mapping_variable(coord_system)
+
         # Get the attributes defined on the mock object.
-        attributes = [name for name in sorted(mocked_variable.__dict__.keys())
-                      if not name.startswith('_')]
+        attributes = sorted(mock_grid_variable.__dict__.keys())
+        attributes = [name for name in attributes if not name.startswith('_')]
         attributes.remove('method_calls')
-        return {key: getattr(mocked_variable, key) for key in attributes}
+        return {key: getattr(mock_grid_variable, key) for key in attributes}
+
+    def _test(self, coord_system, expected):
+        actual = self._variable_attributes(coord_system)
+
+        # To see obvious differences, check that they keys are the same.
+        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
+        # Now check that the values are equivalent.
+        self.assertEqual(actual, expected)
 
     def test_rotated_geog_cs(self):
         coord_system = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
-        cube = self.cube_with_cs(coord_system)
         expected = {'grid_mapping_name': 'rotated_latitude_longitude',
                     'north_pole_grid_longitude': 0.0,
                     'grid_north_pole_longitude': 177.5,
@@ -226,47 +246,40 @@ class TestCoordSystems(tests.IrisTest):
                     'longitude_of_prime_meridian': 0.0,
                     'earth_radius': 6371229.0,
                     }
+        self._test(coord_system, expected)
 
-        grid_variable = self.construct_cf_grid_mapping_variable(cube)
-        actual = self.variable_attributes(grid_variable)
-
-        # To see obvious differences, check that they keys are the same.
-        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
-        # Now check that the values are equivalent.
-        self.assertEqual(actual, expected)
 
     def test_spherical_geog_cs(self):
         coord_system = GeogCS(6371229.0)
-        cube = self.cube_with_cs(coord_system)
         expected = {'grid_mapping_name': 'latitude_longitude',
                     'longitude_of_prime_meridian': 0.0,
                     'earth_radius': 6371229.0
                     }
-
-        grid_variable = self.construct_cf_grid_mapping_variable(cube)
-        actual = self.variable_attributes(grid_variable)
-
-        # To see obvious differences, check that they keys are the same.
-        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
-        # Now check that the values are equivalent.
-        self.assertEqual(actual, expected)
+        self._test(coord_system, expected)
 
     def test_elliptic_geog_cs(self):
         coord_system = GeogCS(637, 600)
-        cube = self.cube_with_cs(coord_system)
         expected = {'grid_mapping_name': 'latitude_longitude',
                     'longitude_of_prime_meridian': 0.0,
                     'semi_minor_axis': 600.0,
                     'semi_major_axis': 637.0,
                     }
+        self._test(coord_system, expected)
 
-        grid_variable = self.construct_cf_grid_mapping_variable(cube)
-        actual = self.variable_attributes(grid_variable)
-
-        # To see obvious differences, check that they keys are the same.
-        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
-        # Now check that the values are equivalent.
-        self.assertEqual(actual, expected)
+    def test_lambert_conformal(self):
+        coord_system = LambertConformal(central_lat=44, central_lon=2,
+                                        false_easting=-2, false_northing=-5,
+                                        secant_latitudes=(38, 50),
+                                        ellipsoid=GeogCS(6371000))
+        expected = {'grid_mapping_name': 'lambert_conformal_conic',
+                    'latitude_of_projection_origin': 44,
+                    'longitude_of_central_meridian': 2,
+                    'false_easting': -2, 'false_northing': -5,
+                    'standard_parallel': (38, 50),
+                    'earth_radius': 6371000,
+                    'longitude_of_prime_meridian': 0,
+                    }
+        self._test(coord_system, expected)
 
 
 if __name__ == "__main__":
