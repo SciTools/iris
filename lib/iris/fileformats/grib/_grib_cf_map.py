@@ -16,11 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
-# Created on 06 May 2016 16:05 from 
+# Created on 18 May 2016 07:05 from 
 # http://www.metarelate.net/metOcean
-# at commit cfcd365cceeb625b579deee1d746441ee08b72cd
+# at commit 2c53cfcba3bbb43018e8a54b536041dcc7ef9128
 
-# https://github.com/metarelate/metOcean/commit/cfcd365cceeb625b579deee1d746441ee08b72cd
+# https://github.com/metarelate/metOcean/commit/2c53cfcba3bbb43018e8a54b536041dcc7ef9128
 
 """
 Provides GRIB/CF phenomenon translations.
@@ -103,7 +103,6 @@ GRIB2_TO_CF = {
     G2Param(2, 0, 3, 1): CFName('air_pressure_at_sea_level', None, 'Pa'),
     G2Param(2, 0, 3, 3): CFName(None, 'icao_standard_atmosphere_reference_height', 'm'),
     G2Param(2, 0, 3, 4): CFName('geopotential', None, 'm2 s-2'),
-    G2Param(2, 0, 3, 5): CFName('surface_altitude', None, 'm'),
     G2Param(2, 0, 3, 5): CFName('geopotential_height', None, 'm'),
     G2Param(2, 0, 3, 6): CFName('altitude', None, 'm'),
     G2Param(2, 0, 3, 9): CFName('geopotential_height_anomaly', None, 'm'),
@@ -215,7 +214,6 @@ CF_TO_GRIB2 = {
     CFName('surface_air_pressure', None, 'Pa'): G2Param(2, 0, 3, 0),
     CFName('surface_air_pressure', None, 'Pa'): G2Param(2, 0, 3, 0),
     CFName('surface_altitude', None, 'm'): G2Param(2, 2, 0, 7),
-    CFName('surface_altitude', None, 'm'): G2Param(2, 0, 3, 5),
     CFName('surface_downwelling_longwave_flux_in_air', None, 'W m-2'): G2Param(2, 0, 5, 3),
     CFName('surface_downwelling_shortwave_flux_in_air', None, 'W m-2'): G2Param(2, 0, 4, 7),
     CFName('surface_net_downward_longwave_flux', None, 'W m-2'): G2Param(2, 0, 5, 5),

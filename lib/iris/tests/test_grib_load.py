@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -725,7 +725,6 @@ class TestGrib2LoadPhenomenon(TestGribSimple):
             (0, 3, 3, None, "icao_standard_atmosphere_reference_height", "m"),
             (0, 3, 5, "geopotential_height", None, "m"),
             (0, 3, 9, "geopotential_height_anomaly", None, "m"),
-            (0, 6, 1, "cloud_area_fraction", None, "%"),
             (0, 6, 6, "atmosphere_mass_content_of_cloud_liquid_water", None,
                 "kg m-2"),
             (0, 7, 6,
