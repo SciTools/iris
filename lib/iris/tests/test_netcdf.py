@@ -172,6 +172,14 @@ class TestNetCDFLoad(tests.IrisTest):
                                  'toa_brightness_temperature.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_merc.cml'))
 
+    def test_load_stereographic_grid(self):
+        # Test loading a single CF-netCDF file with a stereographic
+        # grid_mapping.
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'stereographic',
+                                 'toa_brightness_temperature.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_stereo.cml'))
+
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.
         cubes = iris.load(tests.get_data_path(('NetCDF', 'testing',
