@@ -25,13 +25,15 @@ import iris.tests as tests
 
 from subprocess import check_output
 
+from cf_units import Unit
 import numpy.ma as ma
 
 import iris
 from iris import FUTURE, load_cube, save
-from iris.coords import CellMethod
+from iris.coords import CellMethod, DimCoord
 from iris.coord_systems import RotatedGeogCS
 from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
+import iris.tests.stock as stock
 from iris.util import is_regular
 
 # gribapi is an optional dependency
@@ -139,6 +141,26 @@ class TestPDT11(tests.TestGribMessage):
                 (4, 'typeOfStatisticalProcessing', 0),
                 (4, 'numberOfForecastsInEnsemble', 255))
             self.assertGribMessageContents(temp_file_path, expect_values)
+
+
+@tests.skip_grib
+class TestPDT40(tests.IrisTest):
+    def test_save_load(self):
+        cube = stock.lat_lon_cube()
+        cube.rename('atmosphere_mole_content_of_ozone')
+        cube.units = Unit('Dobson')
+        tcoord = DimCoord(23, 'time',
+                          units=Unit('days since epoch', calendar='standard'))
+        fpcoord = DimCoord(24, 'forecast_period', units=Unit('hours'))
+        cube.add_aux_coord(tcoord)
+        cube.add_aux_coord(fpcoord)
+        cube.attributes['WMO_constituent_type'] = 0
+
+        with self.temp_filename('test_grib_pdt40.grib2') as temp_file_path:
+            save(cube, temp_file_path)
+            with FUTURE.context(strict_grib_load=True):
+                loaded = load_cube(temp_file_path)
+            self.assertEqual(loaded.attributes, cube.attributes)
 
 
 @tests.skip_data
