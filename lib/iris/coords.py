@@ -1516,8 +1516,10 @@ class DimCoord(Coord):
     @property
     def bounds(self):
         """
-        The bounds values as a read-only NumPy array, or None if no
-        bounds have been set.
+        Property containing the bound values, as a numpy array,
+        or None if no bound values are defined.
+
+        .. note:: The shape of the bound array should be: ``(n_points, 2)``.
 
         """
         bounds = None
@@ -1537,26 +1539,6 @@ class DimCoord(Coord):
             # Checks for numeric and monotonic
             if not np.issubdtype(bounds.dtype, np.number):
                 raise ValueError('The bounds array must be numeric.')
-
-            n_bounds = bounds.shape[-1]
-            n_points = bounds.shape[0]
-            if n_points > 1:
-
-                directions = set()
-                for b_index in range(n_bounds):
-                    monotonic, direction = iris.util.monotonic(
-                        bounds[:, b_index], strict=True, return_direction=True)
-                    if not monotonic:
-                        raise ValueError('The bounds array must be strictly '
-                                         'monotonic.')
-                    directions.add(direction)
-
-                if len(directions) != 1:
-                    raise ValueError('The direction of monotonicity must be '
-                                     'consistent across all bounds')
-
-            # Ensure the array is read-only.
-            bounds.flags.writeable = False
 
         self._bounds = bounds
 
