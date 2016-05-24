@@ -16,11 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
-# Created on 18 May 2016 07:05 from 
+# Created on 24 May 2016 20:05 from 
 # http://www.metarelate.net/metOcean
-# at commit 2c53cfcba3bbb43018e8a54b536041dcc7ef9128
+# at commit 81f3a746b23534192f1377d114a2d91378415c9e
 
-# https://github.com/metarelate/metOcean/commit/2c53cfcba3bbb43018e8a54b536041dcc7ef9128
+# https://github.com/metarelate/metOcean/commit/81f3a746b23534192f1377d114a2d91378415c9e
 
 """
 Provides UM/CF phenomenon translations.
