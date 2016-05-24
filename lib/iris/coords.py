@@ -1519,6 +1519,8 @@ class DimCoord(Coord):
         Property containing the bound values, as a numpy array,
         or None if no bound values are defined.
 
+        The corresponding point values must lie within, or on, the bounds.
+
         .. note:: The shape of the bound array should be: ``(n_points, 2)``.
 
         """
@@ -1539,6 +1541,11 @@ class DimCoord(Coord):
             # Checks for numeric and monotonic
             if not np.issubdtype(bounds.dtype, np.number):
                 raise ValueError('The bounds array must be numeric.')
+            # Ensure all points lie within, or on, bounds.
+            points = self.points
+            if (np.any(points < bounds.min(axis=1)) or
+                    np.any(points > bounds.max(axis=1))):
+                raise ValueError('The points must not lie outside the bounds.')
 
         self._bounds = bounds
 
