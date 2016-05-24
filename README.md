@@ -1,7 +1,7 @@
 Iris
 ====
 
-[![Build Status](https://secure.travis-ci.org/SciTools/iris.png)](http://travis-ci.org/SciTools/iris)
+[![Build Status](https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master)](http://travis-ci.org/SciTools/iris/branches)
 
 (C) British Crown Copyright 2010 - 2015, Met Office
 
