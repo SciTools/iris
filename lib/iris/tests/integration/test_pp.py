@@ -553,34 +553,31 @@ class TestLoadLittleendian(tests.IrisTest):
         check_minmax(data, -30.48, 6029.1)
 
 
+@tests.skip_data
 class TestAsCubes(tests.IrisTest):
-    def test_pseudo_level_filter(self):
+    def setUp(self):
         dpath = tests.get_data_path(['PP', 'meanMaxMin',
                                      '200806081200__qwpb.T24.pp'])
-        ppfs = iris.fileformats.pp.load(dpath)
+        self.ppfs = iris.fileformats.pp.load(dpath)
+
+    def test_pseudo_level_filter(self):
         chosen_ppfs = []
-        for ppf in ppfs:
+        for ppf in self.ppfs:
             if ppf.lbuser[4] == 3:
                 chosen_ppfs.append(ppf)
         cubes_fields = list(load_pairs_from_fields(chosen_ppfs))
         self.assertEqual(len(cubes_fields), 8)
 
     def test_pseudo_level_filter_none(self):
-        dpath = tests.get_data_path(['PP', 'meanMaxMin',
-                                     '200806081200__qwpb.T24.pp'])
-        ppfs = iris.fileformats.pp.load(dpath)
         chosen_ppfs = []
-        for ppf in ppfs:
+        for ppf in self.ppfs:
             if ppf.lbuser[4] == 30:
                 chosen_ppfs.append(ppf)
         cubes = list(load_pairs_from_fields(chosen_ppfs))
         self.assertEqual(len(cubes), 0)
 
     def test_as_pairs(self):
-        dpath = tests.get_data_path(['PP', 'meanMaxMin',
-                                     '200806081200__qwpb.T24.pp'])
-        ppfs = iris.fileformats.pp.load(dpath)
-        cube_ppf_pairs = load_pairs_from_fields(ppfs)
+        cube_ppf_pairs = load_pairs_from_fields(self.ppfs)
         cubes = []
         for cube, ppf in cube_ppf_pairs:
             if ppf.lbuser[4] == 3:
