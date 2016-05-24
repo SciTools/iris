@@ -1177,9 +1177,16 @@ def as_compatible_shape(src_cube, target_cube):
     # for subsequent use in creating updated aux_factories.
     coord_mapping = {}
 
+    reverse_mapping = {v: k for k, v in dim_mapping.items() if v is not None}
+
     def add_coord(coord):
         """Closure used to add a suitably reshaped coord to new_cube."""
-        dims = target_cube.coord_dims(coord)
+        all_dims = target_cube.coord_dims(coord)
+        src_dims = [dim for dim in src_cube.coord_dims(coord) if
+                    src_cube.shape[dim] > 1]
+        mapped_dims = [reverse_mapping[dim] for dim in src_dims]
+        length1_dims = [dim for dim in all_dims if new_cube.shape[dim] == 1]
+        dims = length1_dims + mapped_dims
         shape = [new_cube.shape[dim] for dim in dims]
         if not shape:
             shape = [1]
