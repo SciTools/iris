@@ -764,7 +764,6 @@ fc_formula_terms
 fc_extras
     import six
 
-    import re
     import warnings
 
     import biggus
@@ -777,6 +776,7 @@ fc_extras
     import iris.coords
     import iris.coord_systems
     import iris.fileformats.cf as cf
+    import iris.fileformats.netcdf
     import iris.fileformats.pp as pp
     import iris.exceptions
     import iris.std_names
@@ -873,26 +873,6 @@ fc_extras
     CF_VALUE_STD_NAME_GRID_LON = 'grid_longitude'
     CF_VALUE_STD_NAME_PROJ_X = 'projection_x_coordinate'
     CF_VALUE_STD_NAME_PROJ_Y = 'projection_y_coordinate'
-    
-    # Cell methods.
-    CM_KNOWN_METHODS = ['point', 'sum', 'mean', 'maximum', 'minimum', 'mid_range',
-                        'standard_deviation', 'variance', 'mode', 'median']
-    
-    CM_COMMENT = 'comment'
-    CM_EXTRA = 'extra'
-    CM_INTERVAL = 'interval'
-    CM_METHOD = 'method'
-    CM_NAME = 'name'
-
-    CM_PARSE = re.compile(  r'''
-                                (?P<name>([\w_]+\s*?:\s+)+)
-                                (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
-                                (?:
-                                    \(\s*
-                                    (?P<extra>[^\)]+)
-                                    \)\s*
-                                )?
-                            ''', re.VERBOSE)
 
 
     ################################################################################
@@ -923,7 +903,8 @@ fc_extras
 
         # Incorporate cell methods
         nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-        cube.cell_methods = _parse_cell_methods(cf_var.cf_name, nc_att_cell_methods)
+        cube.cell_methods = iris.fileformats.netcdf.parse_cell_methods(
+            cf_var.cf_name, nc_att_cell_methods)
 
         # Set the cube global attributes. 
         for attr_name, attr_value in six.iteritems(cf_var.cf_group.global_attributes):
@@ -1546,75 +1527,3 @@ fc_extras
     def is_rotated_longitude(engine, cf_name):
         """Determine whether the CF coordinate variable is rotated longitude."""
         return _is_rotated(engine, cf_name, CF_VALUE_STD_NAME_GRID_LON)
-
-
-    ################################################################################
-    def _parse_cell_methods(cf_var_name, nc_cell_methods):
-        """Parse the CF cell_methods attribute string."""
-
-        cell_methods = []
-        if nc_cell_methods is not None:
-            for m in CM_PARSE.finditer(nc_cell_methods):
-                d = m.groupdict()
-                method = d[CM_METHOD]
-                method = method.strip()
-                # Check validity of method, allowing for multi-part methods
-                # e.g. mean over years.
-                method_words = method.split()
-                if method_words[0].lower() not in CM_KNOWN_METHODS:
-                    msg = 'NetCDF variable {!r} contains unknown cell ' \
-                          'method {!r}'
-                    warnings.warn(msg.format('{}'.format(cf_var_name),
-                                             '{}'.format(method_words[0])))
-                d[CM_METHOD] = method
-                name = d[CM_NAME]
-                name = name.replace(' ', '')
-                name = name.rstrip(':')
-                d[CM_NAME] = tuple([n for n in name.split(':')])
-                interval = []
-                comment = []
-                if d[CM_EXTRA] is not None:
-                    #
-                    # tokenise the key words and field colon marker
-                    #
-                    d[CM_EXTRA] = d[CM_EXTRA].replace('comment:', '<<comment>><<:>>')
-                    d[CM_EXTRA] = d[CM_EXTRA].replace('interval:', '<<interval>><<:>>')
-                    d[CM_EXTRA] = d[CM_EXTRA].split('<<:>>')
-                    if len(d[CM_EXTRA]) == 1:
-                        comment.extend(d[CM_EXTRA])
-                    else:
-                        next_field_type = comment
-                        for field in d[CM_EXTRA]:
-                            field_type = next_field_type
-                            index = field.rfind('<<interval>>')
-                            if index == 0:
-                                next_field_type = interval
-                                continue
-                            elif index > 0:
-                                next_field_type = interval
-                            else:
-                                index = field.rfind('<<comment>>')
-                                if index == 0:
-                                    next_field_type = comment
-                                    continue
-                                elif index > 0:
-                                    next_field_type = comment
-                            if index != -1:
-                                field = field[:index]
-                            field_type.append(field.strip())
-                #
-                # cater for a shared interval over multiple axes
-                #
-                if len(interval):
-                    if len(d[CM_NAME]) != len(interval) and len(interval) == 1:
-                        interval = interval*len(d[CM_NAME])
-                #
-                # cater for a shared comment over multiple axes
-                #
-                if len(comment):
-                    if len(d[CM_NAME]) != len(comment) and len(comment) == 1:
-                        comment = comment*len(d[CM_NAME])
-                d[CM_INTERVAL] = tuple(interval)
-                d[CM_COMMENT] = tuple(comment)               
-                cell_methods.append(iris.coords.CellMethod(d[CM_METHOD], coords=d[CM_NAME], intervals=d[CM_INTERVAL], comments=d[CM_COMMENT]))
-        return tuple(cell_methods)
