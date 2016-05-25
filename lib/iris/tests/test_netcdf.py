@@ -165,6 +165,13 @@ class TestNetCDFLoad(tests.IrisTest):
             dataset.close()
             cube = iris.load_cube(filename, 'Mean temperature')
 
+    def test_load_merc_grid(self):
+        # Test loading a single CF-netCDF file with a Mercator grid_mapping
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'mercator',
+                                 'toa_brightness_temperature.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_merc.cml'))
+
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.
         cubes = iris.load(tests.get_data_path(('NetCDF', 'testing',

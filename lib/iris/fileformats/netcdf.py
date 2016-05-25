@@ -1538,6 +1538,18 @@ class Saver(object):
                     cf_var_grid.scale_factor_at_central_meridian = (
                         cs.scale_factor_at_central_meridian)
 
+                # merc
+                elif isinstance(cs, iris.coord_systems.Mercator):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin)
+                    # The Mercator class has implicit defaults for certain
+                    # parameters
+                    cf_var_grid.false_easting = 0.0
+                    cf_var_grid.false_northing = 0.0
+                    cf_var_grid.scale_factor_at_projection_origin = 1.0
+
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn('OSGB coordinate system not yet handled')

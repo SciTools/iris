@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -43,6 +43,9 @@ def osgb():
                               scale_factor_at_central_meridian=0.9996012717,
                               ellipsoid=GeogCS(6377563.396, 6356256.909))
 
+def merc():
+    return Mercator(longitude_of_projection_origin=90.0,
+                    ellipsoid=GeogCS(6377563.396, 6356256.909))
 
 class TestCoordSystemLookup(tests.IrisTest):
     def setUp(self):
@@ -320,6 +323,59 @@ class Test_LambertConformal(tests.GraphicsTest):
         lcc = LambertConformal(0, 0, secant_latitudes=(-30, -60))
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(ccrs.cutoff, 30)
+
+
+class Test_Mercator_construction(tests.IrisTest):
+    def test_merc(self):
+        tm = merc()
+        self.assertXMLElement(tm, ("coord_systems", "Mercator.xml"))
+
+
+class Test_Mercator_repr(tests.IrisTest):
+    def test_merc(self):
+        tm = merc()
+        expected = "Mercator(longitude_of_projection_origin=90.0, "\
+                   "ellipsoid=GeogCS(semi_major_axis=6377563.396, "\
+                   "semi_minor_axis=6356256.909))"
+        self.assertEqual(expected, repr(tm))
+
+
+class Test_Mercator_as_cartopy_crs(tests.IrisTest):
+    def test_as_cartopy_crs(self):
+        longitude_of_projection_origin = 90.0
+        ellipsoid = GeogCS(semi_major_axis=6377563.396,
+                           semi_minor_axis=6356256.909)
+
+        merc_cs = Mercator(
+            longitude_of_projection_origin,
+            ellipsoid=ellipsoid)
+
+        expected = ccrs.Mercator(
+            central_longitude=longitude_of_projection_origin,
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
+
+        res = merc_cs.as_cartopy_crs()
+        self.assertEqual(res, expected)
+
+
+class Test_Mercator_as_cartopy_projection(tests.IrisTest):
+    def test_as_cartopy_projection(self):
+        longitude_of_projection_origin = 90.0
+        ellipsoid = GeogCS(semi_major_axis=6377563.396,
+                           semi_minor_axis=6356256.909)
+
+        merc_cs = Mercator(
+            longitude_of_projection_origin,
+            ellipsoid=ellipsoid)
+
+        expected = ccrs.Mercator(
+            central_longitude=longitude_of_projection_origin,
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
+
+        res = merc_cs.as_cartopy_projection()
+        self.assertEqual(res, expected)
 
 
 if __name__ == "__main__":
