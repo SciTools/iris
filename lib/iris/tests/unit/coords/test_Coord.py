@@ -361,12 +361,6 @@ class Test_DimCoord_copy(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, msg):
             coord2.points[:] = 0
 
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord1.bounds[:] = 0
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord2.bounds[:] = 0
-
 
 if __name__ == '__main__':
     tests.main()

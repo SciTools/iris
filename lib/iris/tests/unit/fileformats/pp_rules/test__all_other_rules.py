@@ -150,7 +150,7 @@ class TestCellMethods(tests.IrisTest):
 class TestCrossSectionalTime(TestField):
     def test_lbcode3x23(self):
         time_bounds = np.array([[0.875, 1.125], [1.125, 1.375],
-                                [1.375, 1.625], [1.625, 1.875]])
+                                [1.375, 1.625], [1.625, 1.875]]) + 720000
         field = mock.MagicMock(
             lbproc=0, bzx=0, bdx=0, lbnpt=3, lbrow=4,
             t1=nc_datetime(2000, 1, 2, hour=0, minute=0, second=0),

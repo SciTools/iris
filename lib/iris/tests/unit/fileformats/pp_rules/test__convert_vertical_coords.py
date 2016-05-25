@@ -188,7 +188,7 @@ class TestLBVC002_Depth(TestField):
                           brlev=brlev, expect_mixed=True, dim=0)
 
     def test_bounded(self):
-        self._check_depth(_lbcode(1), lblev=23.0, brlev=22.5, brsvd1=23.5,
+        self._check_depth(_lbcode(1), blev=23.0, brlev=22.5, brsvd1=23.5,
                           expect_bounds=True)
 
     def test_bounded__vector(self):

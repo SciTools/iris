@@ -69,7 +69,7 @@ class Test_write(tests.IrisTest):
 
     def _simple_cube(self, dtype):
         data = np.arange(12, dtype=dtype).reshape(3, 4)
-        points = np.arange(3, dtype=dtype)
+        points = np.arange(3, dtype=dtype) * 2
         bounds = np.arange(6, dtype=dtype).reshape(3, 2)
         cube = Cube(data, 'air_pressure_anomaly')
         coord = DimCoord(points, bounds=bounds)

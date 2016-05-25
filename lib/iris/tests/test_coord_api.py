@@ -361,17 +361,20 @@ class TestDimCoordCreation(unittest.TestCase):
         a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin',
                                  coord_system=iris.coord_systems.GeogCS(6000))
-        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), "\
-                 "coord_system=GeogCS(6000.0))"
+        result = ("DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), "
+                  "standard_name='air_temperature', units=Unit('kelvin'), "
+                  "coord_system=GeogCS(6000.0))")
         self.assertEqual(result, str(a))
         
     def test_bounded(self):
-        a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
+        a = iris.coords.DimCoord(np.arange(10) * 2, 'air_temperature',
                                  units='kelvin',
                                  bounds=np.arange(0, 20).reshape(10, 2))
-        result = ("DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
-                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "\
-                  "[10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
+        result = ("DimCoord(array([ 0,  2,  4,  6,  8, 10, 12, 14, 16, 18])"
+                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       "
+                  "[ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "
+                  "[10, 11],\n       [12, 13],\n       [14, 15],\n       "
+                  "[16, 17],\n       [18, 19]])"
                   ", standard_name='air_temperature', units=Unit('kelvin'))"
                   )
         self.assertEqual(result, str(a))      
@@ -383,10 +386,6 @@ class TestDimCoordCreation(unittest.TestCase):
         # monotonic
         with self.assertRaisesRegexp(ValueError, 'must be strictly monotonic'):
             iris.coords.DimCoord([1, 2, 99, 4, 5])
-        # monotonic bounds
-        with self.assertRaisesRegexp(ValueError, 
-                                     'monotonicity.*consistent.*all bounds'):
-            iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # shapes of points and bounds
         with self.assertRaisesRegexp(ValueError, 'shape of the bounds array'):
             iris.coords.DimCoord([1, 2, 3], bounds=[0.5, 1.5, 2.5, 3.5])
@@ -407,9 +406,11 @@ class TestDimCoordCreation(unittest.TestCase):
         self.assertNotEqual(b, d)
         
     def test_Dim_to_Aux(self):
-        a = iris.coords.DimCoord(np.arange(10), standard_name='air_temperature', long_name='custom air temp',
-                                 units='kelvin', attributes={'monty': 'python'}, 
-                                 bounds=np.arange(20).reshape(10, 2), circular=True)
+        a = iris.coords.DimCoord(
+                np.arange(10) * 2, standard_name='air_temperature',
+                long_name='custom air temp', units='kelvin',
+                attributes={'monty': 'python'},
+                bounds=np.arange(20).reshape(10, 2), circular=True)
         b = iris.coords.AuxCoord.from_coord(a)
         # Note - circular attribute is not a factor in equality comparison
         self.assertEqual(a, b)
@@ -608,9 +609,10 @@ class TestGetterSetter(tests.IrisTest):
         self.assertEqual(bounds.shape[-1], coord.nbounds)
         
         # set bounds
-        coord.bounds = bounds + 1
+        offset= 0.0001
+        coord.bounds = bounds + offset
         
-        np.testing.assert_array_equal(coord.bounds, bounds + 1)
+        np.testing.assert_array_equal(coord.bounds, bounds + offset)
 
         # set bounds - different length to existing points
         with self.assertRaises(ValueError):
@@ -624,14 +626,14 @@ class TestGetterSetter(tests.IrisTest):
         # set bounds from non-numpy pair
         coord._points = None  # reset the undelying shape of the coordinate
         coord.points = 1
-        coord.bounds = [123, 456]
+        coord.bounds = [-123, 456]
         self.assertEqual(coord.shape, (1, ))
         self.assertEqual(coord.bounds.shape, (1, 2))
         
         # set bounds from non-numpy pairs
         coord._points = None # reset the undelying shape of the coordinate
         coord.points = list(range(3))
-        coord.bounds = [[123, 456], [234, 567], [345, 678]]
+        coord.bounds = [[-123, 456], [-234, 567], [-345, 678]]
         self.assertEqual(coord.shape, (3, ))
         self.assertEqual(coord.bounds.shape, (3, 2))
         
@@ -724,7 +726,7 @@ class TestIsContiguous(tests.IrisTest):
     def test_non_contiguous(self):
         # Large enough difference to exceed default tolerance.
         delta = 1e-3
-        points = np.array([0., 10., 20.])
+        points = np.array([5., 15., 25.])
         bounds = np.array([[0., 10.],
                            [10., 20],
                            [20., 30.]])
@@ -769,7 +771,7 @@ class TestIsContiguous(tests.IrisTest):
 
     def test_specified_tol(self):
         delta = 1e-6
-        points = np.array([0., 10., 20.])
+        points = np.array([5., 15., 25.])
         bounds = np.array([[0., 10.],
                            [10., 20],
                            [20., 30.]])
