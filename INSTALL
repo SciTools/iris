@@ -88,6 +88,9 @@ PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
 
 netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
     Python interface to the netCDF version 4 C library.
+    (It is strongly recommended to ensure your installation uses a
+    thread-safe build of HDF5 to avoid segmentation faults when using
+    lazy evaluation.)
 
 cf_units 1.0 or later (https://github.com/SciTools/cf_units)
     CF data units handling, using udunits (q.v.).
