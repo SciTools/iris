@@ -29,7 +29,7 @@ import numpy as np
 
 import iris
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
-                                Mercator)
+                                Mercator, Stereographic)
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
@@ -63,6 +63,19 @@ class Test_write(tests.IrisTest):
         cube.add_dim_coord(coord, 1)
         return cube
 
+    def _stereo_cube(self, ellipsoid=None):
+        data = np.arange(12).reshape(3, 4)
+        cube = Cube(data, 'air_pressure_anomaly')
+        stereo = Stereographic(-10.0, 20.0, 500000.0, -200000.0, None,
+                               ellipsoid)
+        coord = DimCoord(np.arange(3), 'projection_y_coordinate', units='m',
+                         coord_system=stereo)
+        cube.add_dim_coord(coord, 0)
+        coord = DimCoord(np.arange(4), 'projection_x_coordinate', units='m',
+                         coord_system=stereo)
+        cube.add_dim_coord(coord, 1)
+        return cube
+
     def test_transverse_mercator(self):
         # Create a Cube with a transverse Mercator coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
@@ -89,9 +102,26 @@ class Test_write(tests.IrisTest):
                 saver.write(cube)
             self.assertCDL(nc_path)
 
+    def test_stereographic(self):
+        # Create a Cube with a stereographic coordinate system.
+        ellipsoid = GeogCS(6377563.396, 6356256.909)
+        cube = self._stereo_cube(ellipsoid)
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            self.assertCDL(nc_path)
+
     def test_mercator_no_ellipsoid(self):
         # Create a Cube with a Mercator coordinate system.
         cube = self._mercator_cube()
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            self.assertCDL(nc_path)
+
+    def test_stereographic_no_ellipsoid(self):
+        # Create a Cube with a stereographic coordinate system.
+        cube = self._stereo_cube()
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)

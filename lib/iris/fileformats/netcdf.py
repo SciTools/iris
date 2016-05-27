@@ -1550,6 +1550,25 @@ class Saver(object):
                     cf_var_grid.false_northing = 0.0
                     cf_var_grid.scale_factor_at_projection_origin = 1.0
 
+                # stereo
+                elif isinstance(cs, iris.coord_systems.Stereographic):
+                    if cs.true_scale_lat is not None:
+                        warnings.warn('Stereographic coordinate systems with '
+                                      'true scale latitude specified are not '
+                                      'yet handled')
+                    else:
+                        if cs.ellipsoid:
+                            add_ellipsoid(cs.ellipsoid)
+                        cf_var_grid.longitude_of_projection_origin = (
+                            cs.central_lon)
+                        cf_var_grid.latitude_of_projection_origin = (
+                            cs.central_lat)
+                        cf_var_grid.false_easting = cs.false_easting
+                        cf_var_grid.false_northing = cs.false_northing
+                        # The Stereographic class has an implicit scale
+                        # factor
+                        cf_var_grid.scale_factor_at_projection_origin = 1.0
+
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn('OSGB coordinate system not yet handled')

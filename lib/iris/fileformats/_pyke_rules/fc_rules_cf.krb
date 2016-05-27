@@ -96,6 +96,7 @@ fc_provides_grid_mapping_transverse_mercator
         facts_cf.provides(coordinate_system, transverse_mercator)
         python engine.rule_triggered.add(rule.name)
 
+
 #
 # Context:
 #   This rule will trigger iff a grid_mapping() case specific fact
@@ -115,6 +116,29 @@ fc_provides_grid_mapping_mercator
         python engine.provides['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, mercator)
         python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a grid_mapping() case specific fact 
+#   has been asserted that refers to a stereographic.
+#
+# Purpose:
+#   Creates the stereographic coordinate system.
+#
+fc_provides_grid_mapping_stereographic
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_STEREO)
+        check has_supported_stereographic_parameters(engine, $grid_mapping)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = build_stereographic_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, stereographic)
+        python engine.rule_triggered.add(rule.name)
+
+
 #
 # Context:
 #   This rule will trigger iff a coordinate() case specific fact
@@ -576,7 +600,6 @@ fc_build_coordinate_projection_x_mercator
                                           coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
-
 #
 # Context:
 #   This rule will trigger iff a projection_y_coordinate coordinate exists and
@@ -595,6 +618,45 @@ fc_build_coordinate_projection_y_mercator
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
                                           coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#   This rule will trigger iff a projection_x_coordinate coordinate exists and
+#   a sterographic coordinate system exists.
+#
+# Purpose:
+#   Add the projection_x_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_x_stereographic
+    foreach
+        facts_cf.provides(coordinate, projection_x_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, stereographic)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_X,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#   This rule will trigger iff a projection_y_coordinate coordinate exists and
+#   a stereographic coordinate system exists.
+#
+# Purpose:
+#   Add the projection_y_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_y_stereographic
+    foreach
+        facts_cf.provides(coordinate, projection_y_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, stereographic)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_Y,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
 
 #
 # Context:
@@ -1090,6 +1152,39 @@ fc_extras
 
         return cs
 
+    ################################################################################
+    def build_stereographic_coordinate_system(engine, cf_grid_var):
+        """
+        Create a stereographic coordinate system from the CF-netCDF
+        grid mapping variable.
+
+        """
+        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+
+        latitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
+        longitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None)
+        false_easting = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+        false_northing = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+        # Iris currently only supports Stereographic projections with a scale
+        # factor of 1.0. This is checked elsewhere.
+
+        ellipsoid = None
+        if major is not None or minor is not None or \
+                inverse_flattening is not None:
+            ellipsoid = iris.coord_systems.GeogCS(major, minor,
+                                                  inverse_flattening)
+
+        cs = iris.coord_systems.Stereographic(
+            latitude_of_projection_origin, longitude_of_projection_origin,
+            false_easting, false_northing,
+            true_scale_lat=None,
+            ellipsoid=ellipsoid)
+
+        return cs
 
     ################################################################################
     def build_mercator_coordinate_system(engine, cf_grid_var):
@@ -1672,6 +1767,26 @@ fc_extras
                 standard_parallel != 0:
             warnings.warn('Standard parallels other than 0.0 not yet '
                           'supported for Mercator projections')
+            is_valid = False
+
+        return is_valid
+
+
+    ################################################################################
+    def has_supported_stereographic_parameters(engine, cf_name):
+        """Determine whether the CF grid mapping variable has a value of 1.0
+        for the scale_factor_at_projection_origin attribute.""" 
+        
+        is_valid = True
+        cf_grid_var = engine.cf_var.cf_group[cf_name]
+
+        scale_factor_at_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None)
+
+        if scale_factor_at_projection_origin is not None and \
+                scale_factor_at_projection_origin != 1:
+            warnings.warn('Scale factors other than 1.0 not yet supported for '
+                          'stereographic projections')
             is_valid = False
 
         return is_valid
