@@ -38,13 +38,17 @@ def _get_NAME_loader(filename):
         header = name_loaders.read_header(file_handle)
 
     # Infer file type based on contents of header.
-    if 'Run name' in header:
+    if 'Run name' in header and 'Output format' not in header:
         if 'X grid origin' not in header:
             load = name_loaders.load_NAMEIII_trajectory
         elif header.get('X grid origin') is not None:
             load = name_loaders.load_NAMEIII_field
         else:
             load = name_loaders.load_NAMEIII_timeseries
+
+    elif 'Output format' in header:
+            load = name_loaders.load_NAMEIII_version2
+
     elif 'Title' in header:
         if 'Number of series' in header:
             load = name_loaders.load_NAMEII_timeseries
