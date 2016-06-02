@@ -399,10 +399,10 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
         # Define and add the singular coordinates of the field (flight
         # level, time etc.)
         if 'Z' in field_headings:
-            upper_bound, = [field_headings['... to [Z]'] \
-                                if '... to [Z]' in field_headings else None]
-            lower_bound, = [field_headings['... from [Z]'] \
-                                if '... from [Z]' in field_headings else None]
+            upper_bound, = [field_headings['... to [Z]']
+                            if '... to [Z]' in field_headings else None]
+            lower_bound, = [field_headings['... from [Z]']
+                            if '... from [Z]' in field_headings else None]
             z_coord = _cf_height_from_name(field_headings['Z'],
                                            upper_bound=upper_bound,
                                            lower_bound=lower_bound)
@@ -577,7 +577,8 @@ def load_NAMEIII_field(filename):
         # first 4 columns are ignored).
         column_headings = {}
         for column_header_name in ['Species Category', 'Name', 'Quantity',
-                                   'Species', 'Units', 'Sources', 'Ensemble Av',
+                                   'Species', 'Units', 'Sources',
+                                   'Ensemble Av',
                                    'Time Av or Int', 'Horizontal Av or Int',
                                    'Vertical Av or Int', 'Prob Perc',
                                    'Prob Perc Ens', 'Prob Perc Time',
@@ -840,7 +841,6 @@ def load_NAMEII_timeseries(filename):
     return _generate_cubes(header, column_headings, coords, data_arrays)
 
 
-
 def load_NAMEIII_version2(filename):
     """
     Load a NAME III version 2 file returning a
@@ -852,11 +852,12 @@ def load_NAMEIII_version2(filename):
         A generator :class:`iris.cube.Cube` instances.
     """
 
-    # loading a file gives a generator of lines which can be progressed using the next() method.
-    # This will come in handy as we wish to progress through the file line by line.
+    # loading a file gives a generator of lines which can be progressed
+    # using the next() method. This will come in handy as we wish to
+    # progress through the file line by line.
     with open(filename, 'r') as file_handle:
 
-        # define a dictionary which can hold the header metadata about this file
+        # define a dictionary to hold the header metadata about this file
         header = read_header(file_handle)
 
         # Skip next line which contains (Fields:)
@@ -869,11 +870,12 @@ def load_NAMEIII_version2(filename):
 
             data = [col.strip() for col in line.split(',')][:-1]
 
-            # If first column is not zero we have reached the end of the headers
+            # If first column is not zero we have reached the end
+            #  of the headers
             if data[0] != "":
                 break
 
-            column_key = data[datacol1 -1].strip(':')
+            column_key = data[datacol1 - 1].strip(':')
 
             # This will filter out any zero columns
             if filter(None, data[datacol1:]):
@@ -900,11 +902,15 @@ def load_NAMEIII_version2(filename):
         if 'Y Index' in data:
             yindex = data.index('Y Index')
             dim_coords.append('Y')
-            lat = _build_lat_lon_for_NAME_field(header, dim_coords.index('Y'), 'Y')
+            lat = _build_lat_lon_for_NAME_field(header,
+                                                dim_coords.index('Y'),
+                                                'Y')
         if 'X Index' in data:
             xindex = data.index('X Index')
             dim_coords.append('X')
-            lon = _build_lat_lon_for_NAME_field(header, dim_coords.index('X'), 'X')
+            lon = _build_lat_lon_for_NAME_field(header,
+                                                dim_coords.index('X'),
+                                                'X')
 
         # For all other variables we need the values (note that for Z the units
         # will also be given in the column header)
@@ -930,8 +936,8 @@ def load_NAMEIII_version2(filename):
             zindex = data.index(zgrid[0])
             dim_coords.append('Z')
 
-
-        # Make a list of data lists to hold the data for each column.(aimed at T-Z data)
+        # Make a list of data lists to hold the data
+        # for each column.(aimed at T-Z data)
         data_lists = [[] for i in range(header['Number of field cols'])]
         coord_lists = [[] for i in range(header['Number of preliminary cols']-1)]
 
@@ -972,7 +978,8 @@ def load_NAMEIII_version2(filename):
         if zindex is not None:
             z_array = np.array(coord_lists[dim_coords.index('Z')])
             z_unique = sorted(list(set(coord_lists[dim_coords.index('Z')])))
-            z_coord = NAMECoord(name=z_name, dimension=dim_coords.index('Z'), values=z_unique)
+            z_coord = NAMECoord(name=z_name, dimension=dim_coords.index('Z'),
+                                values=z_unique)
             for z in z_array:
                 zind.append(z_unique.index(z))
             coord_lists[dim_coords.index('Z')] = zind
@@ -981,12 +988,11 @@ def load_NAMEIII_version2(filename):
         if tindex is not None:
             time_array = np.array(coord_lists[dim_coords.index('T')])
             t_unique = sorted(list(set(coord_lists[dim_coords.index('T')])))
-            time = NAMECoord(name='time', dimension=dim_coords.index('T'), 
+            time = NAMECoord(name='time', dimension=dim_coords.index('T'),
                              values=np.array(t_unique))
             for t in time_array:
                 tind.append(t_unique.index(t))
             coord_lists[dim_coords.index('T')] = tind
-
 
         # Now determine the shape of the multidimensional array to store
         # the data in based on the length of the coordinates
@@ -1032,8 +1038,8 @@ def load_NAMEIII_version2(filename):
                          values=np.array(column_headings['T']))
         coords.append(tdim)
 
-    return  _generate_cubes(header, column_headings, coords, new_data_arrays,
-                            cell_methods=None)
+    return _generate_cubes(header, column_headings, coords, new_data_arrays,
+                           cell_methods=None)
 
 
 def load_NAMEIII_trajectory(filename):
