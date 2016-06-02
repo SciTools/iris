@@ -182,16 +182,7 @@ def get_data_path(relative_path):
                     with open(data_path, 'wb') as fh:
                         fh.writelines(gz_fh)
 
-
     return data_path
-
-
-def get_result_path(relative_path):
-    """Returns the absolute path to a result file when given the relative path
-    as a string, or sequence of strings."""
-    if not isinstance(relative_path, six.string_types):
-        relative_path = os.path.join(*relative_path)
-    return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
 
 class IrisTest(unittest.TestCase):
@@ -209,6 +200,17 @@ class IrisTest(unittest.TestCase):
             diff = ''.join(difflib.unified_diff(reference_str.splitlines(1), test_str.splitlines(1),
                                                  'Reference', 'Test result', '', '', 0))
             self.fail("%s do not match: %s\n%s" % (type_comparison_name, reference_filename, diff))
+
+    @staticmethod
+    def get_result_path(relative_path):
+        """
+        Returns the absolute path to a result file when given the relative path
+        as a string, or sequence of strings.
+
+        """
+        if not isinstance(relative_path, six.string_types):
+            relative_path = os.path.join(*relative_path)
+        return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
     def result_path(self, basename=None, ext=''):
         """
@@ -239,7 +241,7 @@ class IrisTest(unittest.TestCase):
                     break
         filename = basename + ext
 
-        result = os.path.join(get_result_path(''),
+        result = os.path.join(self.get_result_path(''),
                               sub_path.replace('test_', ''),
                               self.__class__.__name__.replace('Test_', ''),
                               filename)
@@ -252,7 +254,7 @@ class IrisTest(unittest.TestCase):
             cubes = [cubes]
         if reference_filename is None:
             reference_filename = self.result_path(None, 'cml')
-            reference_filename = [get_result_path(reference_filename)]
+            reference_filename = [self.get_result_path(reference_filename)]
         for i, cube in enumerate(cubes):
             fname = list(reference_filename)
             # don't want the ".cml" for the numpy data file
@@ -292,7 +294,7 @@ class IrisTest(unittest.TestCase):
         if reference_filename is None:
             reference_path = self.result_path(None, 'cdl')
         else:
-            reference_path = get_result_path(reference_filename)
+            reference_path = self.get_result_path(reference_filename)
 
         # Convert the netCDF file to CDL file format.
         cdl_filename = iris.util.create_temp_filename(suffix='.cdl')
@@ -359,7 +361,7 @@ class IrisTest(unittest.TestCase):
                                                 byteorder=False)
         else:
             xml = cubes.xml(checksum=checksum, order=False, byteorder=False)
-        reference_path = get_result_path(reference_filename)
+        reference_path = self.get_result_path(reference_filename)
         self._check_same(xml, reference_path)
 
     def assertTextFile(self, source_filename, reference_filename, desc="text file"):
@@ -373,7 +375,7 @@ class IrisTest(unittest.TestCase):
             self.fail("%s does not match reference file: %s\n%s" % (desc, reference_filename, diff))
 
     def assertCubeDataAlmostEqual(self, cube, reference_filename, *args, **kwargs):
-        reference_path = get_result_path(reference_filename)
+        reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
 
@@ -400,7 +402,7 @@ class IrisTest(unittest.TestCase):
                     np.save(reference_file, cube.data)
 
     def assertFilesEqual(self, test_filename, reference_filename):
-        reference_path = get_result_path(reference_filename)
+        reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             fmt = 'test file {!r} does not match reference {!r}.'
             self.assertTrue(filecmp.cmp(test_filename, reference_path),
@@ -434,7 +436,7 @@ class IrisTest(unittest.TestCase):
         if reference_filename is None:
             reference_path = self.result_path(None, 'txt')
         else:
-            reference_path = get_result_path(reference_filename)
+            reference_path = self.get_result_path(reference_filename)
         self._check_same(string, reference_path,
                          type_comparison_name='Strings')
 
@@ -464,7 +466,7 @@ class IrisTest(unittest.TestCase):
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
         pretty_xml = doc.toprettyxml(indent="  ")
-        reference_path = get_result_path(reference_filename)
+        reference_path = self.get_result_path(reference_filename)
         self._check_same(pretty_xml, reference_path,
                          type_comparison_name='XML')
 
@@ -737,6 +739,9 @@ class IrisTest(unittest.TestCase):
 
         # Return patch replacement object.
         return start_result
+
+
+get_result_path = IrisTest.get_result_path
 
 
 class GraphicsTest(IrisTest):
