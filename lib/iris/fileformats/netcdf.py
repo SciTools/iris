@@ -158,19 +158,28 @@ _CM_PARSE = re.compile(r'''
                        ''', re.VERBOSE)
 
 
-def parse_cell_methods(cf_var_name, nc_cell_methods):
+class UnknownCellMethodWarning(Warning):
+    pass
+
+
+def parse_cell_methods(nc_cell_methods):
     """
     Parse a CF cell_methods attribute string into a tuple of zero or
     more CellMethod instances.
 
     Args:
 
-    * cf_var_name (str):
-        The name of the netCDF variable that contains this cell methods
-        attribute.
-
     * nc_cell_methods (str):
         The value of the cell methods attribute to be parsed.
+
+    Returns:
+
+    * cell_methods
+        An iterable of :class:`iris.coords.CellMethod`.
+
+    Multiple coordinates, intervals and comments are supported.
+    If a method has a non-standard name a warning will be issued, but the
+    results are not affected.
 
     """
 
@@ -184,10 +193,9 @@ def parse_cell_methods(cf_var_name, nc_cell_methods):
             # e.g. mean over years.
             method_words = method.split()
             if method_words[0].lower() not in _CM_KNOWN_METHODS:
-                msg = 'NetCDF variable {!r} contains unknown cell ' \
-                      'method {!r}'
-                warnings.warn(msg.format('{}'.format(cf_var_name),
-                                         '{}'.format(method_words[0])))
+                msg = 'NetCDF variable contains unknown cell method {!r}'
+                warnings.warn(msg.format('{}'.format(method_words[0])),
+                              UnknownCellMethodWarning)
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
             name = name.replace(' ', '')

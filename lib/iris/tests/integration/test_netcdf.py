@@ -24,12 +24,19 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from contextlib import contextmanager
+import os.path
+import shutil
+import tempfile
+import warnings
+
 import numpy as np
 
 import iris
+from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 from iris.fileformats.netcdf import Saver
+from iris.fileformats.netcdf import UnknownCellMethodWarning
 from iris.tests import mock
 import iris.tests.stock as stock
 
@@ -269,6 +276,24 @@ class TestCellMeasures(tests.IrisTest):
         self.assertTrue(('\n     Cell Measures:\n          cell_area'
                          '                           -         -    '
                          '    x         x') in printed)
+
+class TestCellMethod_unknown(tests.IrisTest):
+    def test_unknown_method(self):
+        cube = Cube([1, 2], long_name='odd_phenomenon')
+        cube.add_cell_method(CellMethod(method='oddity', coords=('x',)))
+        temp_dirpath = tempfile.mkdtemp()
+        try:
+            temp_filepath = os.path.join(temp_dirpath, 'tmp.nc')
+            iris.save(cube, temp_filepath)
+            msg = ("NetCDF variable 'odd_phenomenon' contains unknown cell "
+                   "method 'oddity'")
+            with warnings.catch_warnings():
+                warnings.filterwarnings('error', '', UnknownCellMethodWarning)
+                with self.assertRaisesRegexp(UnknownCellMethodWarning, msg):
+                    iris.load(temp_filepath)
+        finally:
+            shutil.rmtree(temp_dirpath)
+
 
 if __name__ == "__main__":
     tests.main()
