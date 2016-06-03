@@ -884,7 +884,6 @@ fc_formula_terms
 fc_extras
     import six
 
-    import re
     import warnings
 
     import biggus
@@ -897,6 +896,7 @@ fc_extras
     import iris.coords
     import iris.coord_systems
     import iris.fileformats.cf as cf
+    import iris.fileformats.netcdf
     import iris.fileformats.pp as pp
     import iris.exceptions
     import iris.std_names
@@ -994,26 +994,6 @@ fc_extras
     CF_VALUE_STD_NAME_GRID_LON = 'grid_longitude'
     CF_VALUE_STD_NAME_PROJ_X = 'projection_x_coordinate'
     CF_VALUE_STD_NAME_PROJ_Y = 'projection_y_coordinate'
-    
-    # Cell methods.
-    CM_KNOWN_METHODS = ['point', 'sum', 'mean', 'maximum', 'minimum', 'mid_range',
-                        'standard_deviation', 'variance', 'mode', 'median']
-    
-    CM_COMMENT = 'comment'
-    CM_EXTRA = 'extra'
-    CM_INTERVAL = 'interval'
-    CM_METHOD = 'method'
-    CM_NAME = 'name'
-
-    CM_PARSE = re.compile(  r'''
-                                (?P<name>([\w_]+\s*?:\s+)+)
-                                (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
-                                (?:
-                                    \(\s*
-                                    (?P<extra>[^\)]+)
-                                    \)\s*
-                                )?
-                            ''', re.VERBOSE)
 
 
     ################################################################################
@@ -1044,7 +1024,8 @@ fc_extras
 
         # Incorporate cell methods
         nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-        cube.cell_methods = _parse_cell_methods(cf_var.cf_name, nc_att_cell_methods)
+        cube.cell_methods = iris.fileformats.netcdf.parse_cell_methods(
+            cf_var.cf_name, nc_att_cell_methods)
 
         # Set the cube global attributes. 
         for attr_name, attr_value in six.iteritems(cf_var.cf_group.global_attributes):
