@@ -277,6 +277,7 @@ class TestCellMeasures(tests.IrisTest):
                          '                           -         -    '
                          '    x         x') in printed)
 
+
 class TestCellMethod_unknown(tests.IrisTest):
     def test_unknown_method(self):
         cube = Cube([1, 2], long_name='odd_phenomenon')
