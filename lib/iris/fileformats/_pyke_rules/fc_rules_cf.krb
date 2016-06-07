@@ -1025,15 +1025,18 @@ fc_extras
 
         # Incorporate cell methods
         nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-        with warnings.catch_warnings():
-            warnings.filterwarnings('error', '', UnknownCellMethodWarning)
-            try:
-                cube.cell_methods = parse_cell_methods(nc_att_cell_methods)
-            except UnknownCellMethodWarning as warning:
-                name = '{}'.format(cf_var.cf_name)
-                msg = warning.message.replace('variable',
-                                              'variable {!r}'.format(name))
-                warnings.warn(msg, UnknownCellMethodWarning)
+        with warnings.catch_warnings(record=True) as warning_records:
+            cube.cell_methods = parse_cell_methods(nc_att_cell_methods)
+        # Filter to get the warning we are interested in.
+        warning_records = [record for record in warning_records
+                           if issubclass(record.category, UnknownCellMethodWarning)]
+        if len(warning_records) > 0:
+            # Output an enhanced warning message.
+            warn_record = warning_records[0]
+            name = '{}'.format(cf_var.cf_name)
+            msg = warn_record.message.args[0]
+            msg = msg.replace('variable', 'variable {!r}'.format(name))
+            warnings.warn(message=msg, category=UnknownCellMethodWarning)
 
         # Set the cube global attributes. 
         for attr_name, attr_value in six.iteritems(cf_var.cf_group.global_attributes):

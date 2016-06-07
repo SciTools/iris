@@ -286,12 +286,17 @@ class TestCellMethod_unknown(tests.IrisTest):
         try:
             temp_filepath = os.path.join(temp_dirpath, 'tmp.nc')
             iris.save(cube, temp_filepath)
+            with warnings.catch_warnings(record=True) as warning_records:
+                iris.load(temp_filepath)
+            # Filter to get the warning we are interested in.
+            warning_messages = [record.message for record in warning_records]
+            warning_messages = [warn for warn in warning_messages
+                                if isinstance(warn, UnknownCellMethodWarning)]
+            self.assertEqual(len(warning_messages), 1)
+            message = warning_messages[0].args[0]
             msg = ("NetCDF variable 'odd_phenomenon' contains unknown cell "
                    "method 'oddity'")
-            with warnings.catch_warnings():
-                warnings.filterwarnings('error', '', UnknownCellMethodWarning)
-                with self.assertRaisesRegexp(UnknownCellMethodWarning, msg):
-                    iris.load(temp_filepath)
+            self.assertIn(msg, message)
         finally:
             shutil.rmtree(temp_dirpath)
 
