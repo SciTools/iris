@@ -33,8 +33,56 @@ import mock
 from iris import sample_data_path
 
 
-class Test(tests.IrisTest):
+def _temp_file(sample_dir):
+    # Return the full path to a new genuine file within our
+    # temporary directory.
+    sample_handle, sample_path = tempfile.mkstemp(dir=sample_dir)
+    os.close(sample_handle)
+    return sample_path
+
+
+class TestIrisSampleData__get_path(tests.IrisTest):
+    def test(self):
+        try:
+            path = mock.sentinel.path
+            with mock.patch('iris_sample_data._get_path', return_value=path):
+                import iris_sample_data
+                path = iris_sample_data._get_path()
+                self.assertEqual(path, self.path)
+        except ImportError:
+            pass
+
+
+class TestIrisSampleData_path(tests.IrisTest):
     def setUp(self):
+        self.sample_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.sample_dir)
+
+    def test_path(self):
+        try:
+            with mock.patch('iris_sample_data.path', self.sample_dir):
+                import iris_sample_data
+                self.assertEqual(iris_sample_data.path, self.sample_dir)
+        except ImportError:
+            pass
+
+    def test_call(self):
+        try:
+            sample_file = _temp_file(self.sample_dir)
+            with mock.patch('iris_sample_data.path', self.sample_dir):
+                import iris_sample_data
+                result = sample_data_path(os.path.basename(sample_file))
+                self.assertEqual(result, sample_file)
+        except ImportError:
+            pass
+
+
+class TestConfig(tests.IrisTest):
+    def setUp(self):
+        # Force iris_sample_data to be unavailable.
+        self.patch('iris._SAMPLE_DATA_AVAILABLE', False)
         # All of our tests are going to run with SAMPLE_DATA_DIR
         # redirected to a temporary directory.
         self.sample_dir = tempfile.mkdtemp()
@@ -45,15 +93,8 @@ class Test(tests.IrisTest):
     def tearDown(self):
         shutil.rmtree(self.sample_dir)
 
-    def _temp_file(self):
-        # Return the full path to a new genuine file within our
-        # temporary directory.
-        sample_handle, sample_path = tempfile.mkstemp(dir=self.sample_dir)
-        os.close(sample_handle)
-        return sample_path
-
     def test_file_ok(self):
-        sample_path = self._temp_file()
+        sample_path = _temp_file(self.sample_dir)
         result = sample_data_path(os.path.basename(sample_path))
         self.assertEqual(result, sample_path)
 
@@ -66,7 +107,7 @@ class Test(tests.IrisTest):
             sample_data_path(os.path.abspath('foo'))
 
     def test_glob_ok(self):
-        sample_path = self._temp_file()
+        sample_path = _temp_file(self.sample_dir)
         sample_glob = '?' + os.path.basename(sample_path)[1:]
         result = sample_data_path(sample_glob)
         self.assertEqual(result, os.path.join(self.sample_dir, sample_glob))
