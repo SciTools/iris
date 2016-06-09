@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -481,7 +481,7 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
                 cube.add_aux_coord(icoord)
 
         # Headings/column headings which are encoded elsewhere.
-        headings = ['X', 'Y', 'Z', 'Time', 'T', 'Unit',
+        headings = ['X', 'Y', 'Z', 'Time', 'T', 'Units',
                     'Av or Int period',
                     '... from [Z]', '... to [Z]',
                     'X grid origin', 'Y grid origin',
@@ -939,7 +939,8 @@ def load_NAMEIII_version2(filename):
         # Make a list of data lists to hold the data
         # for each column.(aimed at T-Z data)
         data_lists = [[] for i in range(header['Number of field cols'])]
-        coord_lists = [[] for i in range(header['Number of preliminary cols']-1)]
+        coord_lists = [[] for i in 
+                       range(header['Number of preliminary cols']-1)]
 
         # Iterate over the remaining lines which represent the data in a
         # column form.

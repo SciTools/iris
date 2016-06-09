@@ -8,8 +8,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 1"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -71,8 +69,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 2"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -134,8 +130,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 3"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Dry deposition"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -196,8 +190,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 4"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Wet deposition"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -258,8 +250,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 5"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Deposition"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
