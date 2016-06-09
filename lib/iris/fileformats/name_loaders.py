@@ -939,7 +939,7 @@ def load_NAMEIII_version2(filename):
         # Make a list of data lists to hold the data
         # for each column.(aimed at T-Z data)
         data_lists = [[] for i in range(header['Number of field cols'])]
-        coord_lists = [[] for i in 
+        coord_lists = [[] for i in
                        range(header['Number of preliminary cols']-1)]
 
         # Iterate over the remaining lines which represent the data in a
