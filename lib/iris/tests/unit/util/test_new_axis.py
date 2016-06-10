@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ import copy
 import numpy as np
 import unittest
 
+from biggus import NumpyArrayAdapter
 import iris
 from iris.util import new_axis
 
@@ -133,6 +134,14 @@ class Test(tests.IrisTest):
 
         self.assertEqual(res, com)
         self._assert_cube_notis(res, cube)
+
+    def test_lazy_data(self):
+        cube = iris.cube.Cube(NumpyArrayAdapter(self.data))
+        cube.add_aux_coord(iris.coords.DimCoord([1], standard_name='time'))
+        res = new_axis(cube, 'time')
+        self.assertTrue(cube.has_lazy_data())
+        self.assertTrue(res.has_lazy_data())
+        self.assertEqual(res.shape, (1,) + cube.shape)
 
 
 if __name__ == '__main__':
