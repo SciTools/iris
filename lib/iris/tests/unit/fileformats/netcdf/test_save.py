@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -58,6 +58,24 @@ class Test_attributes(tests.IrisTest):
             res = ds.getncattr('bar')
             ds.close()
         self.assertArrayEqual(res, np.arange(2))
+
+    def test_no_special_attribute_clash(self):
+        # Ensure that saving multiple cubes with netCDF4 protected attributes
+        # works as expected.
+        # Note that here we are testing variable attribute clashes only - by
+        # saving multiple cubes the attributes are saved as variable
+        # attributes rather than global attributes.
+        c1 = Cube([0], var_name='test', attributes={'name': 'bar'})
+        c2 = Cube([0], var_name='test_1', attributes={'name': 'bar_1'})
+
+        with self.temp_filename('foo.nc') as nc_out:
+            save([c1, c2], nc_out)
+            ds = nc.Dataset(nc_out)
+            res = ds.variables['test'].getncattr('name')
+            res_1 = ds.variables['test_1'].getncattr('name')
+            ds.close()
+        self.assertEqual(res, 'bar')
+        self.assertEqual(res_1, 'bar_1')
 
 
 class Test_unlimited_dims(tests.IrisTest):

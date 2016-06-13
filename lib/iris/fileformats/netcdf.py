@@ -1409,7 +1409,7 @@ class Saver(object):
 
             # Don't clobber existing attributes.
             if not hasattr(cf_var, name):
-                setattr(cf_var, name, value)
+                cf_var.setncattr(name, value)
 
         return cf_name
 
@@ -1527,7 +1527,7 @@ class Saver(object):
 
             # Don't clobber existing attributes.
             if not hasattr(cf_var, name):
-                setattr(cf_var, name, value)
+                cf_var.setncattr(name, value)
 
         return cf_name
 
@@ -1795,7 +1795,7 @@ class Saver(object):
                       'global attribute.'.format(attr_name=attr_name)
                 warnings.warn(msg)
 
-            setattr(cf_var, attr_name, value)
+            cf_var.setncattr(attr_name, value)
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
