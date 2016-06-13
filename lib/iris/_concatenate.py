@@ -742,6 +742,17 @@ class _ProtoCube(object):
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
 
+        if match:
+            # If the protocube dimension order is constant (indicating it was
+            # created from a cube with a length 1 dimension coordinate) but
+            # a subsequently registered cube has a non-constant dimension
+            # order we should use that instead of _CONSTANT to make sure all
+            # the ordering checks and sorts work as expected.
+            existing_order = self._coord_signature.dim_order[self.axis]
+            this_order = coord_signature.dim_order[self.axis]
+            if existing_order == _CONSTANT and this_order != _CONSTANT:
+                self._coord_signature.dim_order[self.axis] = this_order
+
         return match
 
     def _add_skeleton(self, coord_signature, data):
