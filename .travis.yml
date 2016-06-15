@@ -42,9 +42,10 @@ install:
 
   # Create the basic testing environment
   # ------------------------------------
+  # Explicitly add defaults channel, see https://github.com/conda/conda/issues/2675
+  - conda config --add channels defaults
   - conda config --set always_yes yes --set changeps1 no
   - conda config --set show_channel_urls True
-  - conda config --add channels defaults
   - conda update --quiet conda
   - ENV_NAME='test-environment'
   - conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION
