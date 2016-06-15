@@ -1076,18 +1076,13 @@ def new_axis(src_cube, scalar_coord=None):
         >>> ncube.shape
         (1, 360, 360)
 
-    .. warning::
-
-        Calling this method will trigger any deferred loading, causing the
-        data array of the cube to be loaded into memory.
-
     """
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
 
     # Indexing numpy arrays requires loading deferred data here returning a
     # copy of the data with a new leading dimension.
-    new_cube = iris.cube.Cube(src_cube.data[None])
+    new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
     new_cube.metadata = src_cube.metadata
 
     for coord in src_cube.aux_coords:
