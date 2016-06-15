@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -54,6 +54,14 @@ class TestRealistic4d(tests.GraphicsTest):
     def test_transpose(self):
         self.assertCML(self.cube, ('stock', 'realistic_4d.cml'))
         self.cube.transpose()
+        self.assertCML(self.cube, ('derived', 'transposed.cml'))
+
+    def test_transpose_lazy(self):
+        self.assertCML(self.cube, ('stock', 'realistic_4d.cml'))
+        self.cube.lazy_data(self.cube.lazy_data())
+        self.assertTrue(self.cube.has_lazy_data())
+        self.cube.transpose()
+        self.assertTrue(self.cube.has_lazy_data())
         self.assertCML(self.cube, ('derived', 'transposed.cml'))
 
     def test_indexing(self):
