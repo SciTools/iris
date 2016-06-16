@@ -110,7 +110,7 @@ import threading
 import iris.config
 import iris.cube
 import iris._constraints
-from iris._deprecation import IrisDeprecation
+from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.fileformats
 import iris.io
 
@@ -456,6 +456,10 @@ def sample_data_path(*path_to_join):
     if _SAMPLE_DATA_AVAILABLE:
         target = os.path.join(iris_sample_data.path, target)
     else:
+        wmsg = ('iris.config.SAMPLE_DATA_DIR was deprecated in v1.10.0 and '
+                'will be removed in a future Iris release. Install the '
+                'iris_sample_data package.')
+        warn_deprecated(wmsg)
         target = os.path.join(iris.config.SAMPLE_DATA_DIR, target)
     if not glob.glob(target):
         raise ValueError('Sample data file(s) at {!r} not found.\n'
