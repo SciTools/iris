@@ -41,18 +41,6 @@ def _temp_file(sample_dir):
     return sample_path
 
 
-class TestIrisSampleData__get_path(tests.IrisTest):
-    def test(self):
-        try:
-            path = mock.sentinel.path
-            with mock.patch('iris_sample_data._get_path', return_value=path):
-                import iris_sample_data
-                path = iris_sample_data._get_path()
-                self.assertEqual(path, self.path)
-        except ImportError:
-            pass
-
-
 class TestIrisSampleData_path(tests.IrisTest):
     def setUp(self):
         self.sample_dir = tempfile.mkdtemp()
