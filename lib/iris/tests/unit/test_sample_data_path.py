@@ -31,6 +31,7 @@ import tempfile
 import mock
 
 from iris import sample_data_path
+from iris._deprecation import IrisDeprecation
 
 
 def _temp_file(sample_dir):
@@ -101,6 +102,16 @@ class TestConfig(tests.IrisTest):
     def test_glob_absolute(self):
         with self.assertRaisesRegexp(ValueError, 'Absolute path'):
             sample_data_path(os.path.abspath('foo.*'))
+
+    def test_warn_deprecated(self):
+        sample_path = _temp_file(self.sample_dir)
+        with mock.patch('warnings.warn') as warn:
+            sample_data_path(os.path.basename(sample_path))
+            self.assertEqual(warn.call_count, 1)
+            (warn_msg, warn_exception), _ = warn.call_args
+            msg = 'iris.config.SAMPLE_DATA_DIR was deprecated'
+            self.assertTrue(warn_msg.startswith(msg))
+            self.assertEqual(warn_exception, IrisDeprecation)
 
 
 if __name__ == '__main__':
