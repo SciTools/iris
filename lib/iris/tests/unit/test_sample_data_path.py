@@ -57,7 +57,6 @@ class TestIrisSampleData_path(tests.IrisTest):
     def test_call(self):
         sample_file = _temp_file(self.sample_dir)
         with mock.patch('iris_sample_data.path', self.sample_dir):
-            import iris_sample_data
             result = sample_data_path(os.path.basename(sample_file))
             self.assertEqual(result, sample_file)
 
@@ -65,7 +64,7 @@ class TestIrisSampleData_path(tests.IrisTest):
 class TestConfig(tests.IrisTest):
     def setUp(self):
         # Force iris_sample_data to be unavailable.
-        self.patch('iris._SAMPLE_DATA_AVAILABLE', False)
+        self.patch('iris.iris_sample_data', None)
         # All of our tests are going to run with SAMPLE_DATA_DIR
         # redirected to a temporary directory.
         self.sample_dir = tempfile.mkdtemp()
