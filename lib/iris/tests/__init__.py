@@ -91,6 +91,13 @@ else:
     GRIB_AVAILABLE = True
     from iris.fileformats.grib.message import GribMessage
 
+try:
+    import iris_sample_data
+except ImportError:
+    SAMPLE_DATA_AVAILABLE = False
+else:
+    SAMPLE_DATA_AVAILABLE = True
+
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
@@ -917,6 +924,11 @@ def skip_plot(fn):
 
 skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
                                                 'which is not available.')
+
+
+skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,
+                                   ('Test(s) require "iris_sample_data", '
+                                    'which is not available.'))
 
 
 def no_warnings(func):

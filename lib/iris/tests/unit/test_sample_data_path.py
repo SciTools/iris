@@ -41,6 +41,7 @@ def _temp_file(sample_dir):
     return sample_path
 
 
+@tests.skip_sample_data
 class TestIrisSampleData_path(tests.IrisTest):
     def setUp(self):
         self.sample_dir = tempfile.mkdtemp()
@@ -49,22 +50,16 @@ class TestIrisSampleData_path(tests.IrisTest):
         shutil.rmtree(self.sample_dir)
 
     def test_path(self):
-        try:
-            with mock.patch('iris_sample_data.path', self.sample_dir):
-                import iris_sample_data
-                self.assertEqual(iris_sample_data.path, self.sample_dir)
-        except ImportError:
-            pass
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            import iris_sample_data
+            self.assertEqual(iris_sample_data.path, self.sample_dir)
 
     def test_call(self):
-        try:
-            sample_file = _temp_file(self.sample_dir)
-            with mock.patch('iris_sample_data.path', self.sample_dir):
-                import iris_sample_data
-                result = sample_data_path(os.path.basename(sample_file))
-                self.assertEqual(result, sample_file)
-        except ImportError:
-            pass
+        sample_file = _temp_file(self.sample_dir)
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            import iris_sample_data
+            result = sample_data_path(os.path.basename(sample_file))
+            self.assertEqual(result, sample_file)
 
 
 class TestConfig(tests.IrisTest):
