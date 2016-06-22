@@ -31,6 +31,7 @@ from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
 import iris.fileformats.pp
 import iris.fileformats.pp_rules
+from iris.exceptions import IgnoreCubeException
 from iris.tests import mock
 from iris.fileformats.pp import load_pairs_from_fields
 
@@ -634,6 +635,26 @@ class TestSaveLBPROC(tests.IrisTest):
         cube.add_cell_method(CellMethod(method=u'mean', coords=u'longitude'))
         field = self.convert_cube_to_field(cube)
         self.assertEqual(int(field.lbproc), 192)
+
+
+class TestCallbackLoad(tests.IrisTest):
+    def callback_wrapper(self):
+        # Wrap the `iris.exceptions.IgnoreCubeException`-calling callback.
+        def callback_ignore_cube_exception(cube, field, filename):
+            skip_name = 'air_potential_temperature'
+            if cube.name() != skip_name:
+                raise IgnoreCubeException
+        return callback_ignore_cube_exception
+
+    def test_ignore_cube_callback(self):
+        test_dataset = tests.get_data_path(['PP', 'globClim1', 'dec_subset.pp'])
+        exception_callback = self.callback_wrapper()
+        original_cubes = iris.load(test_dataset)
+        n_original_cubes = len(original_cubes)
+        result_cubes = iris.load(test_dataset, callback=exception_callback)
+        n_result_cubes = len(result_cubes)
+        # We ignore only one cube (the `air_potential_temperature` cube).
+        self.assertEqual(n_result_cubes, n_original_cubes-1)
 
 
 if __name__ == "__main__":
