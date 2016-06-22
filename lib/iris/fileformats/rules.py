@@ -949,12 +949,25 @@ def _resolve_factory_references(cube, factories, concrete_reference_targets,
             cube.add_aux_factory(aux_factory)
 
 
-def _load_pairs_from_fields_and_filenames(fields_and_filenames, converter,
+def _load_pairs_from_fields_and_filenames(fields_and_filenames, loader,
                                           user_callback=None):
     # The underlying mechanism for the public 'load_pairs_from_fields' and
     # 'load_cubes'.
     # Slightly more complicated than 'load_pairs_from_fields', only because it
     # needs a filename associated with each field to support the load callback.
+
+    def loadcubes_user_callback_wrapper(cube, field, filename):
+        # First run any custom user-provided rules.
+        if loader.legacy_custom_rules:
+            warn_deprecated('The `legacy_custom_rules` attribute of '
+                            'the `loader` is deprecated.')
+            loader.legacy_custom_rules.verify(cube, field)
+
+        # Then also run user-provided original callback function.
+        cube = iris.io.run_callback(user_callback, cube, field, filename)
+        return cube
+
+    converter = loader.converter
     concrete_reference_targets = {}
     results_needing_reference = []
     for field, filename in fields_and_filenames:
@@ -963,9 +976,13 @@ def _load_pairs_from_fields_and_filenames(fields_and_filenames, converter,
 
         # Post modify the new cube with a user-callback.
         # This an ordinary Iris load callback, so it takes the filename.
-        cube = iris.io.run_callback(user_callback, cube, field, filename)
+        cube = loadcubes_user_callback_wrapper(cube, field, filename)
 
-        # Cross referencing
+        # Callback mechanism may return None, which must not be yielded.
+        if cube is None:
+            continue
+
+        # Cross referencing.
         for reference in references:
             name = reference.name
             # Register this cube as a source cube for the named reference.
@@ -1017,27 +1034,16 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
     def _generate_all_fields_and_filenames():
         for filename in filenames:
             for field in loader.field_generator(
-                filename, **loader.field_generator_kwargs):
+                    filename, **loader.field_generator_kwargs):
                 # evaluate field against format specific desired attributes
                 # load if no format specific desired attributes are violated
                 if filter_function is None or filter_function(field):
                     yield (field, filename)
 
-    def loadcubes_user_callback_wrapper(cube, field, filename):
-        # First run any custom user-provided rules.
-        if loader.legacy_custom_rules:
-            warn_deprecated('The `legacy_custom_rules` attribute of '
-                            'the `loader` is deprecated.')
-            loader.legacy_custom_rules.verify(cube, field)
-
-        # Then also run user-provided original callback function.
-        cube = iris.io.run_callback(user_callback, cube, field, filename)
-        return cube
-
     all_fields_and_filenames = _generate_all_fields_and_filenames()
     for cube, field in _load_pairs_from_fields_and_filenames(
             all_fields_and_filenames,
-            converter=loader.converter,
-            user_callback=loadcubes_user_callback_wrapper):
+            loader=loader,
+            user_callback=user_callback):
         yield cube
 
