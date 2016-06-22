@@ -22,17 +22,19 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from . import extest_util
-
-with extest_util.add_examples_to_path():
-    import lagged_ensemble
+from .extest_util import (add_examples_to_path,
+                          show_replaced_by_check_graphic,
+                          fail_any_deprecation_warnings)
 
 
 class TestLaggedEnsemble(tests.GraphicsTest):
     """Test the lagged ensemble example code."""
     def test_lagged_ensemble(self):
-        with extest_util.show_replaced_by_check_graphic(self):
-            lagged_ensemble.main()
+        with fail_any_deprecation_warnings():
+            with add_examples_to_path():
+                import lagged_ensemble
+            with show_replaced_by_check_graphic(self):
+                lagged_ensemble.main()
 
 
 if __name__ == '__main__':

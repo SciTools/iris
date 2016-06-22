@@ -823,3 +823,50 @@ class LambertConformal(CoordSystem):
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
+
+
+class Mercator(CoordSystem):
+    """
+    A coordinate system in the Mercator projection.
+
+    """
+
+    grid_mapping_name = "mercator"
+
+    def __init__(self, longitude_of_projection_origin=0, ellipsoid=None):
+        """
+        Constructs a Mercator coord system.
+
+        Args:
+
+            * longitude_of_projection_origin
+                    True longitude of planar origin in degrees.
+
+        Kwargs:
+
+            * ellipsoid
+                    :class:`GeogCS` defining the ellipsoid.
+
+        """
+
+        #: True longitude of planar origin in degrees.
+        self.longitude_of_projection_origin = longitude_of_projection_origin
+        #: Ellipsoid definition.
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        res = "Mercator(longitude_of_projection_origin={!r}, ellipsoid={!r})"
+        return res.format(self.longitude_of_projection_origin, self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
+        else:
+            globe = ccrs.Globe()
+
+        return ccrs.Mercator(
+            central_longitude=self.longitude_of_projection_origin,
+            globe=globe)
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()

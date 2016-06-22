@@ -101,16 +101,26 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import contextlib
+import glob
 import itertools
 import logging
-import os
+import os.path
 import threading
 
 import iris.config
 import iris.cube
 import iris._constraints
+from iris._deprecation import IrisDeprecation
 import iris.fileformats
 import iris.io
+
+
+try:
+    import iris_sample_data
+except ImportError:
+    _SAMPLE_DATA_AVAILABLE = False
+else:
+    _SAMPLE_DATA_AVAILABLE = True
 
 
 # Iris revision.
@@ -119,7 +129,8 @@ __version__ = '1.10.0-DEV'
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
-           'site_configuration', 'Future', 'FUTURE']
+           'site_configuration', 'Future', 'FUTURE',
+           'IrisDeprecation']
 
 
 # When required, log the usage of Iris.
@@ -426,5 +437,29 @@ save = iris.io.save
 
 
 def sample_data_path(*path_to_join):
-    """Given the sample data resource, returns the full path to the file."""
-    return os.path.join(iris.config.SAMPLE_DATA_DIR, *path_to_join)
+    """
+    Given the sample data resource, returns the full path to the file.
+
+    .. note::
+
+        This function is only for locating files in the iris sample data
+        collection (installed separately from iris). It is not needed or
+        appropriate for general file access.
+
+    """
+    target = os.path.join(*path_to_join)
+    if os.path.isabs(target):
+        raise ValueError('Absolute paths, such as {!r}, are not supported.\n'
+                         'NB. This function is only for locating files in the '
+                         'iris sample data collection. It is not needed or '
+                         'appropriate for general file access.'.format(target))
+    if _SAMPLE_DATA_AVAILABLE:
+        target = os.path.join(iris_sample_data.path, target)
+    else:
+        target = os.path.join(iris.config.SAMPLE_DATA_DIR, target)
+    if not glob.glob(target):
+        raise ValueError('Sample data file(s) at {!r} not found.\n'
+                         'NB. This function is only for locating files in the '
+                         'iris sample data collection. It is not needed or '
+                         'appropriate for general file access.'.format(target))
+    return target

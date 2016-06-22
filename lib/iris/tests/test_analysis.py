@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -991,93 +991,6 @@ class TestRollingWindow(tests.IrisTest):
                                        [12.0, 9.0]], dtype=np.float64)
         # use almost equal to compare floats
         self.assertArrayAlmostEqual(expected_result, res_cube.data)
-
-
-class TestProject(tests.GraphicsTest):
-    def setUp(self):
-        cube = iris.tests.stock.realistic_4d_no_derived()
-        # Remove some slices to speed testing.
-        self.cube = cube[0:2, 0:3]
-        self.target_proj = ccrs.Robinson()
-
-    def test_bad_resolution(self):
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube,
-                                              self.target_proj,
-                                              nx=-200, ny=200)
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube,
-                                              self.target_proj,
-                                              nx=200, ny='abc')
-
-    def test_missing_latlon(self):
-        cube = self.cube.copy()
-        cube.remove_coord('grid_latitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(cube, self.target_proj)
-        cube = self.cube.copy()
-        cube.remove_coord('grid_longitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(cube, self.target_proj)
-        self.cube.remove_coord('grid_longitude')
-        self.cube.remove_coord('grid_latitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube, self.target_proj)
-
-    def test_default_resolution(self):
-        new_cube, extent = iris.analysis.cartography.project(self.cube,
-                                                             self.target_proj)
-        self.assertEqual(new_cube.shape, self.cube.shape)
-
-    @tests.skip_data
-    @tests.skip_plot
-    def test_cartopy_projection(self):
-        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
-                                                   'global.pp')))
-        projections = {}
-        projections['RotatedPole'] = ccrs.RotatedPole(pole_longitude=177.5,
-                                                      pole_latitude=37.5)
-        projections['Robinson'] = ccrs.Robinson()
-        projections['PlateCarree'] = ccrs.PlateCarree()
-        projections['NorthPolarStereo'] = ccrs.NorthPolarStereo()
-        projections['Orthographic'] = ccrs.Orthographic(central_longitude=-90,
-                                                        central_latitude=45)
-        projections['InterruptedGoodeHomolosine'] = ccrs.InterruptedGoodeHomolosine()
-        projections['LambertCylindrical'] = ccrs.LambertCylindrical()
-
-        # Set up figure
-        fig = plt.figure(figsize=(10, 10))
-        gs = matplotlib.gridspec.GridSpec(nrows=3, ncols=3, hspace=1.5, wspace=0.5)
-        for subplot_spec, name in zip(gs, sorted(projections)):
-            target_proj = projections[name]
-            # Set up axes and title
-            ax = plt.subplot(subplot_spec, frameon=False, projection=target_proj)
-            ax.set_title(name)
-            # Transform cube to target projection
-            new_cube, extent = iris.analysis.cartography.project(cube, target_proj,
-                                                                 nx=150, ny=150)
-            # Plot
-            plt.pcolor(new_cube.coord('projection_x_coordinate').points,
-                       new_cube.coord('projection_y_coordinate').points,
-                       new_cube.data)
-            # Add coastlines
-            ax.coastlines()
-
-        # Tighten up layout
-        gs.tight_layout(plt.gcf())
-
-        # Verify resulting plot
-        self.check_graphic(tol=1.0)
-
-    @tests.skip_data
-    def test_no_coord_system(self):
-        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
-        cube.coord('longitude').coord_system = None
-        cube.coord('latitude').coord_system = None
-        new_cube, extent = iris.analysis.cartography.project(cube,
-                                                             self.target_proj)
-        self.assertCML(new_cube,
-                       ('analysis', 'project', 'default_source_cs.cml'))
 
 
 if __name__ == "__main__":

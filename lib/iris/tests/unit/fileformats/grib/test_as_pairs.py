@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,11 +30,11 @@ from iris.tests import mock
 import iris.tests.stock as stock
 
 
-class TestAsMessages(tests.IrisTest):
+class TestAsPairs(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_3d()
 
-    def test_as_messages(self):
+    def test_as_pairs(self):
         realization = 2
         type_of_process = 4
         coord = DimCoord(realization, standard_name='realization', units='1')

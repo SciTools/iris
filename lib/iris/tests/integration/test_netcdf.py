@@ -210,6 +210,7 @@ class TestLazySave(tests.IrisTest):
             self.assertCDL(other_filename)
 
 
+@tests.skip_data
 class TestCellMeasures(tests.IrisTest):
     def setUp(self):
         self.fname = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))

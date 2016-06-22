@@ -23,7 +23,7 @@ git:
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="b7cde63a73a4762a09acf356db9901e9b9305508"
+  - export IRIS_TEST_DATA_REF="76177575c4836e0b94ffa33ad91ef84c61b635ce"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   - export IRIS_SAMPLE_DATA_REF="e292fc4ef99b0664de726774684dbeff56531b63"
@@ -42,6 +42,8 @@ install:
 
   # Create the basic testing environment
   # ------------------------------------
+  # Explicitly add defaults channel, see https://github.com/conda/conda/issues/2675
+  - conda config --add channels defaults
   - conda config --set always_yes yes --set changeps1 no
   - conda config --set show_channel_urls True
   - conda update --quiet conda

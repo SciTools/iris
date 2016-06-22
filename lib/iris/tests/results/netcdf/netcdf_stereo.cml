@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="toa_brightness_temperature" standard_name="toa_brightness_temperature" units="K" var_name="data">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Note" value="This dataset is for test purposes only"/>
+      <attribute name="acknowledgement" value="EUMETSAT"/>
+      <attribute name="creator_email" value="sat_systems@metoffice.gov.uk"/>
+      <attribute name="creator_name" value="Satellite Applications, Met Office"/>
+      <attribute name="creator_type" value="group"/>
+      <attribute name="geospatial_lat_max" value="2.24208e-44"/>
+      <attribute name="geospatial_lat_min" value="0.0"/>
+      <attribute name="geospatial_lon_max" value="0.0"/>
+      <attribute name="geospatial_lon_min" value="0.0"/>
+      <attribute name="history" value="Created: 2016-05-23T09:40:00Z"/>
+      <attribute name="institution" value="Met Office, UK"/>
+      <attribute name="instrument" value="SEVIRI"/>
+      <attribute name="keywords" value="Infra-red, brightness temperature, MSG, SEVIRI"/>
+      <attribute name="platform" value="MSG"/>
+      <attribute name="source" value="EUMETSAT"/>
+      <attribute name="standard_name_vocabulary" value="CF Standard Name Table v27"/>
+      <attribute name="summary" value="Infra-red channel top of atmosphere brightness temperature, central wavelength of 10.80 microns, Stereographic projection"/>
+      <attribute name="title" value="TOA brightness temperature, 10.80 micron (MSG)"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0, 1]">
+        <auxCoord id="4a0cb9d8" points="[[67.961, 68.2429, 68.5243, ..., 34.1096,
+ 		33.8638, 33.6184],
+		[67.8378, 68.1179, 68.3976, ..., 34.0729,
+ 		33.8273, 33.5822],
+		[67.7109, 67.9893, 68.2671, ..., 34.0349,
+ 		33.7896, 33.5448],
+		..., 
+		[32.8965, 32.9768, 33.0561, ..., 17.4017,
+ 		17.2537, 17.1056],
+		[32.6643, 32.7441, 32.8228, ..., 17.2567,
+ 		17.1094, 16.962],
+		[32.4325, 32.5117, 32.5898, ..., 17.1116,
+ 		16.9649, 16.8182]]" shape="(160, 256)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="lat"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <auxCoord id="62e940e0" points="[[-101.722, -101.394, -101.058, ..., 46.6587,
+ 		46.702, 46.7449],
+		[-100.974, -100.638, -100.294, ..., 46.3615,
+ 		46.4063, 46.4507],
+		[-100.235, -99.8915, -99.5392, ..., 46.0648,
+ 		46.1111, 46.157],
+		..., 
+		[-54.193, -53.9159, -53.6379, ..., 10.6062,
+ 		10.7575, 10.9081],
+		[-54.0971, -53.8212, -53.5444, ..., 10.4515,
+ 		10.6029, 10.7534],
+		[-54.0022, -53.7274, -53.4518, ..., 10.2976,
+ 		10.449, 10.5996]]" shape="(160, 256)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="3aaada22" points="[-2.28188e+06, -2.24639e+06, -2.21091e+06, ...,
+		6.69544e+06, 6.73092e+06, 6.7664e+06]" shape="(256,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
+          <stereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="None"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="27f71466" points="[-981693.0, -1.01719e+06, -1.05269e+06, ...,
+		-6.55525e+06, -6.59075e+06, -6.62625e+06]" shape="(160,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
+          <stereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="None"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="cb784457" points="[406500.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float32" var_name="time"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xa4b27b3b" dtype="float32" fill_value="-1.07374e+09" mask_checksum="0xdb4fbb14" shape="(160, 256)"/>
+  </cube>
+</cubes>

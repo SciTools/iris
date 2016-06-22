@@ -25,8 +25,9 @@ import iris.tests as tests
 
 import numpy as np
 
+from cf_units import Unit
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.coords import AuxCoord, CellMethod
+from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
 import iris.fileformats.pp
 import iris.fileformats.pp_rules
@@ -553,34 +554,31 @@ class TestLoadLittleendian(tests.IrisTest):
         check_minmax(data, -30.48, 6029.1)
 
 
+@tests.skip_data
 class TestAsCubes(tests.IrisTest):
-    def test_pseudo_level_filter(self):
+    def setUp(self):
         dpath = tests.get_data_path(['PP', 'meanMaxMin',
                                      '200806081200__qwpb.T24.pp'])
-        ppfs = iris.fileformats.pp.load(dpath)
+        self.ppfs = iris.fileformats.pp.load(dpath)
+
+    def test_pseudo_level_filter(self):
         chosen_ppfs = []
-        for ppf in ppfs:
+        for ppf in self.ppfs:
             if ppf.lbuser[4] == 3:
                 chosen_ppfs.append(ppf)
         cubes_fields = list(load_pairs_from_fields(chosen_ppfs))
         self.assertEqual(len(cubes_fields), 8)
 
     def test_pseudo_level_filter_none(self):
-        dpath = tests.get_data_path(['PP', 'meanMaxMin',
-                                     '200806081200__qwpb.T24.pp'])
-        ppfs = iris.fileformats.pp.load(dpath)
         chosen_ppfs = []
-        for ppf in ppfs:
+        for ppf in self.ppfs:
             if ppf.lbuser[4] == 30:
                 chosen_ppfs.append(ppf)
         cubes = list(load_pairs_from_fields(chosen_ppfs))
         self.assertEqual(len(cubes), 0)
 
     def test_as_pairs(self):
-        dpath = tests.get_data_path(['PP', 'meanMaxMin',
-                                     '200806081200__qwpb.T24.pp'])
-        ppfs = iris.fileformats.pp.load(dpath)
-        cube_ppf_pairs = load_pairs_from_fields(ppfs)
+        cube_ppf_pairs = load_pairs_from_fields(self.ppfs)
         cubes = []
         for cube, ppf in cube_ppf_pairs:
             if ppf.lbuser[4] == 3:
@@ -588,6 +586,54 @@ class TestAsCubes(tests.IrisTest):
                 cubes.append(cube)
         for cube in cubes:
             self.assertEqual(cube.attributes['pseudo level'], 3)
+
+
+class TestSaveLBPROC(tests.IrisTest):
+
+    def create_cube(self, longitude_coord='longitude'):
+        cube = Cube(np.zeros((2, 3, 4)))
+        tunit = Unit('days since epoch', calendar='gregorian')
+        tcoord = DimCoord(np.arange(2), standard_name='time', units=tunit)
+        xcoord = DimCoord(np.arange(3), standard_name=longitude_coord,
+                          units='degrees')
+        ycoord = DimCoord(points=np.arange(4))
+        cube.add_dim_coord(tcoord, 0)
+        cube.add_dim_coord(xcoord, 1)
+        cube.add_dim_coord(ycoord, 2)
+        return cube
+
+    def convert_cube_to_field(self, cube):
+        field = iris.fileformats.pp.PPField3()
+        field.lbvc = 0
+        iris.fileformats.pp._ensure_save_rules_loaded()
+        iris.fileformats.pp._save_rules.verify(cube, field)
+        return field
+
+    def test_time_mean_only(self):
+        cube = self.create_cube()
+        cube.add_cell_method(CellMethod(method='mean', coords='time'))
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(int(field.lbproc), 128)
+
+    def test_longitudinal_mean_only(self):
+        cube = self.create_cube()
+        cube.add_cell_method(CellMethod(method=u'mean', coords=u'longitude'))
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(int(field.lbproc), 64)
+
+    def test_grid_longitudinal_mean_only(self):
+        cube = self.create_cube(longitude_coord='grid_longitude')
+        cube.add_cell_method(CellMethod(method=u'mean',
+                                        coords=u'grid_longitude'))
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(int(field.lbproc), 64)
+
+    def test_time_mean_and_zonal_mean(self):
+        cube = self.create_cube()
+        cube.add_cell_method(CellMethod(method=u'mean', coords=u'time'))
+        cube.add_cell_method(CellMethod(method=u'mean', coords=u'longitude'))
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(int(field.lbproc), 192)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -973,6 +973,22 @@ def _product_definition_template_8_and_11(cube, grib):
     set_time_increment(cell_method, grib)
 
 
+def product_definition_template_40(cube, grib):
+    """
+    Set keys within the provided grib message based on Product
+    Definition Template 4.40.
+
+    Template 4.40 is used to represent an analysis or forecast at a horizontal
+    level or in a horizontal layer at a point in time for atmospheric chemical
+    constituents.
+
+    """
+    gribapi.grib_set(grib, "productDefinitionTemplateNumber", 40)
+    product_definition_template_common(cube, grib)
+    constituent_type = cube.attributes['WMO_constituent_type']
+    gribapi.grib_set(grib, "constituentType", constituent_type)
+
+
 def product_definition_section(cube, grib):
     """
     Set keys within the product definition section of the provided
@@ -980,8 +996,12 @@ def product_definition_section(cube, grib):
 
     """
     if not cube.coord("time").has_bounds():
-        # forecast (template 4.0)
-        product_definition_template_0(cube, grib)
+        if 'WMO_constituent_type' in cube.attributes:
+            # forecast for atmospheric chemical constiuent (template 4.40)
+            product_definition_template_40(cube, grib)
+        else:
+            # forecast (template 4.0)
+            product_definition_template_0(cube, grib)
     elif _cube_is_time_statistic(cube):
         if cube.coords('realization'):
             # time processed (template 4.11)

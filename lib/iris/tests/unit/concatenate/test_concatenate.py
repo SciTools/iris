@@ -194,6 +194,30 @@ class TestOrder(tests.IrisTest):
         result = concatenate([top, bottom])
         self.assertEqual(len(result), 1)
 
+    def test_asc_points_with_singleton_ordered(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([15, 25])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_points_with_singleton_unordered(self):
+        top = self._make_cube([25])
+        bottom = self._make_cube([5, 15])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_bounds_with_singleton_ordered(self):
+        top = self._make_cube([5], [[0, 10]])
+        bottom = self._make_cube([15, 25], [[10, 20], [20, 30]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_bounds_with_singleton_unordered(self):
+        top = self._make_cube([25], [[20, 30]])
+        bottom = self._make_cube([5, 15], [[0, 10], [10, 20]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
     def test_desc_points(self):
         top = self._make_cube([90, 70, 50, 30, 10])
         bottom = self._make_cube([-10, -30, -50, -70, -90])
@@ -205,6 +229,57 @@ class TestOrder(tests.IrisTest):
         bottom = self._make_cube([-22.5, -67.5], [[0, -45], [-45, -90]])
         result = concatenate([top, bottom])
         self.assertEqual(len(result), 1)
+
+    def test_desc_points_with_singleton_ordered(self):
+        top = self._make_cube([25])
+        bottom = self._make_cube([15, 5])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_points_with_singleton_unordered(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([25, 15])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_bounds_with_singleton_ordered(self):
+        top = self._make_cube([25], [[30, 20]])
+        bottom = self._make_cube([15, 5], [[20, 10], [10, 0]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_bounds_with_singleton_unordered(self):
+        top = self._make_cube([5], [[10, 0]])
+        bottom = self._make_cube([25, 15], [[30, 20], [20, 10]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_points_all_singleton(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([15])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+    def test_asc_bounds_all_singleton(self):
+        top = self._make_cube([5], [0, 10])
+        bottom = self._make_cube([15], [10, 20])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+    def test_desc_bounds_all_singleton(self):
+        top = self._make_cube([5], [10, 0])
+        bottom = self._make_cube([15], [20, 10])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
 
 
 class TestConcatenateBiggus(tests.IrisTest):

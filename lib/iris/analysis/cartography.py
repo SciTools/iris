@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -668,12 +668,12 @@ def project(cube, target_proj, nx=None, ny=None):
     new_cube = iris.cube.Cube(new_data)
 
     # Add new grid coords
-    x_coord = iris.coords.DimCoord(
-        target_x[0, :], 'projection_x_coordinate',
-        coord_system=copy.copy(target_cs))
-    y_coord = iris.coords.DimCoord(
-        target_y[:, 0], 'projection_y_coordinate',
-        coord_system=copy.copy(target_cs))
+    x_coord = iris.coords.DimCoord(target_x[0, :], 'projection_x_coordinate',
+                                   units='m',
+                                   coord_system=copy.copy(target_cs))
+    y_coord = iris.coords.DimCoord(target_y[:, 0], 'projection_y_coordinate',
+                                   units='m',
+                                   coord_system=copy.copy(target_cs))
 
     new_cube.add_dim_coord(x_coord, xdim)
     new_cube.add_dim_coord(y_coord, ydim)

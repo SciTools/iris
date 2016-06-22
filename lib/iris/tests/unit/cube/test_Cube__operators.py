@@ -22,6 +22,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris
 import iris.tests as tests
 import numpy as np
+import numpy.ma as ma
 import biggus
 
 
@@ -159,6 +160,29 @@ class Test_Scalar_Cube_Lazy_Maths(tests.IrisTest):
         data = cube.data
         self.assertTrue(isinstance(data, np.ndarray))
         self.assertEqual(data.shape, ())
+
+
+class Test_Masked_Lazy_Maths(tests.IrisTest):
+
+    def build_lazy_cube(self):
+        data = ma.array([[1., 1.], [1., 100000.]], mask=[[0, 0], [0, 1]])
+        data = biggus.NumpyArrayAdapter(data)
+        cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
+        lat = iris.coords.DimCoord([-10, 10], 'latitude')
+        lon = iris.coords.DimCoord([10, 20], 'longitude')
+        cube.add_dim_coord(lat, 0)
+        cube.add_dim_coord(lon, 1)
+        return cube
+
+    def test_subtract(self):
+        cube_a = self.build_lazy_cube()
+        cube_b = self.build_lazy_cube()
+        cube_c = cube_a - cube_b
+        self.assertIsInstance(
+            cube_c.data,
+            ma.MaskedArray,
+            msg='known fail with biggus < 0.13.0, consider upgrading')
+
 
 if __name__ == "__main__":
     tests.main()

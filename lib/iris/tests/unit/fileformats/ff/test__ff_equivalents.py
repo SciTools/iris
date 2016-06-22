@@ -122,7 +122,6 @@ class Mixin_Grid_Tests(object):
                                     row_dependent_constants,
                                     real_constants,
                                     horiz_grid_type)]
-        return self
 
     def test__basic(self):
         # Call with four unnamed args.
@@ -189,7 +188,6 @@ class Test_FFHeader(Mixin_ConstructorTest, tests.IrisTest):
         # It's global because in use, we do not have the right 'self' here.
         # Note: as we append, it contains a full call history.
         constructor_calls_data += [(filename, word_depth)]
-        return self
 
     def setUp(self):
         self.constructor_setup()
@@ -199,7 +197,7 @@ class Test_FFHeader(Mixin_ConstructorTest, tests.IrisTest):
         # NOTE: this ignores "our" constructor word_depth default, as the
         # default is now re-implemented in the wrapper class definition.
         self.check_call(['filename'], {},
-                        expected_result=('filename', 8))
+                        expected_result=('filename', 12345))
 
     def test__word_depth(self):
         # Call with a word-depth.
@@ -230,7 +228,6 @@ class Test_FF2PP(Mixin_ConstructorTest, tests.IrisTest):
         # It's global because in use, we do not have the right 'self' here.
         # Note: as we append, it contains a full call history.
         constructor_calls_data += [(filename, read_data, word_depth)]
-        return self
 
     def setUp(self):
         self.constructor_setup()
@@ -240,12 +237,12 @@ class Test_FF2PP(Mixin_ConstructorTest, tests.IrisTest):
         # NOTE: this ignores "our" constructor word_depth default, as the
         # default is now re-implemented in the wrapper class definition.
         self.check_call(['filename'], {},
-                        expected_result=('filename', False, 8))
+                        expected_result=('filename', False, 12345))
 
     def test__read_data(self):
         # Call with a word-depth.
         self.check_call(['filename', True], {},
-                        expected_result=('filename', True, 8))
+                        expected_result=('filename', True, 12345))
 
     def test__word_depth(self):
         # Call with a word-depth keyword.

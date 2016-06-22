@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -42,6 +42,15 @@ def osgb():
                               false_easting=-400, false_northing=100,
                               scale_factor_at_central_meridian=0.9996012717,
                               ellipsoid=GeogCS(6377563.396, 6356256.909))
+
+def merc():
+    return Mercator(longitude_of_projection_origin=90.0,
+                    ellipsoid=GeogCS(6377563.396, 6356256.909))
+
+def stereo():
+    return Stereographic(central_lat=-90, central_lon=-45,
+                         false_easting=100, false_northing=200,
+                         ellipsoid=GeogCS(6377563.396, 6356256.909))
 
 
 class TestCoordSystemLookup(tests.IrisTest):
@@ -308,6 +317,69 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
         res = tmerc_cs.as_cartopy_projection()
         self.assertEqual(res, expected)
 
+class Test_Stereographic_construction(tests.IrisTest):
+    def test_stereo(self):
+        st = stereo()
+        self.assertXMLElement(st, ("coord_systems", "Stereographic.xml"))
+
+
+class Test_Stereographic_repr(tests.IrisTest):
+    def test_stereo(self):
+        st = stereo()
+        expected = "Stereographic(central_lat=-90.0, central_lon=-45.0, "\
+                    "false_easting=100.0, false_northing=200.0, true_scale_lat=None, "\
+                    "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909))"
+        self.assertEqual(expected, repr(st))
+
+
+class Test_Stereographic_as_cartopy_crs(tests.IrisTest):
+    def test_as_cartopy_crs(self):
+        latitude_of_projection_origin=-90.0
+        longitude_of_projection_origin=-45.0
+        false_easting=100.0
+        false_northing=200.0
+        ellipsoid=GeogCS(6377563.396, 6356256.909)
+
+        st = Stereographic(central_lat=latitude_of_projection_origin,
+            central_lon=longitude_of_projection_origin,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            ellipsoid=ellipsoid)
+        expected = ccrs.Stereographic(
+            central_latitude=latitude_of_projection_origin,
+            central_longitude=longitude_of_projection_origin,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
+
+        res = st.as_cartopy_crs()
+        self.assertEqual(res, expected)
+
+
+class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
+    def test_as_cartopy_projection(self):
+        latitude_of_projection_origin=-90.0
+        longitude_of_projection_origin=-45.0
+        false_easting=100.0
+        false_northing=200.0
+        ellipsoid=GeogCS(6377563.396, 6356256.909)
+
+        st = Stereographic(central_lat=latitude_of_projection_origin,
+            central_lon=longitude_of_projection_origin,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            ellipsoid=ellipsoid)
+        expected = ccrs.Stereographic(
+            central_latitude=latitude_of_projection_origin,
+            central_longitude=longitude_of_projection_origin,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
+
+        res = st.as_cartopy_projection()
+        self.assertEqual(res, expected)
 
 class Test_LambertConformal(tests.GraphicsTest):
 
@@ -320,6 +392,59 @@ class Test_LambertConformal(tests.GraphicsTest):
         lcc = LambertConformal(0, 0, secant_latitudes=(-30, -60))
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(ccrs.cutoff, 30)
+
+
+class Test_Mercator_construction(tests.IrisTest):
+    def test_merc(self):
+        tm = merc()
+        self.assertXMLElement(tm, ("coord_systems", "Mercator.xml"))
+
+
+class Test_Mercator_repr(tests.IrisTest):
+    def test_merc(self):
+        tm = merc()
+        expected = "Mercator(longitude_of_projection_origin=90.0, "\
+                   "ellipsoid=GeogCS(semi_major_axis=6377563.396, "\
+                   "semi_minor_axis=6356256.909))"
+        self.assertEqual(expected, repr(tm))
+
+
+class Test_Mercator_as_cartopy_crs(tests.IrisTest):
+    def test_as_cartopy_crs(self):
+        longitude_of_projection_origin = 90.0
+        ellipsoid = GeogCS(semi_major_axis=6377563.396,
+                           semi_minor_axis=6356256.909)
+
+        merc_cs = Mercator(
+            longitude_of_projection_origin,
+            ellipsoid=ellipsoid)
+
+        expected = ccrs.Mercator(
+            central_longitude=longitude_of_projection_origin,
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
+
+        res = merc_cs.as_cartopy_crs()
+        self.assertEqual(res, expected)
+
+
+class Test_Mercator_as_cartopy_projection(tests.IrisTest):
+    def test_as_cartopy_projection(self):
+        longitude_of_projection_origin = 90.0
+        ellipsoid = GeogCS(semi_major_axis=6377563.396,
+                           semi_minor_axis=6356256.909)
+
+        merc_cs = Mercator(
+            longitude_of_projection_origin,
+            ellipsoid=ellipsoid)
+
+        expected = ccrs.Mercator(
+            central_longitude=longitude_of_projection_origin,
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
+
+        res = merc_cs.as_cartopy_projection()
+        self.assertEqual(res, expected)
 
 
 if __name__ == "__main__":
