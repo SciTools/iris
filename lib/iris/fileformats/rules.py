@@ -955,7 +955,6 @@ def _load_pairs_from_fields_and_filenames(fields_and_filenames, converter,
     # 'load_cubes'.
     # Slightly more complicated than 'load_pairs_from_fields', only because it
     # needs a filename associated with each field to support the load callback.
-
     concrete_reference_targets = {}
     results_needing_reference = []
     for field, filename in fields_and_filenames:
@@ -1019,6 +1018,15 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
     if isinstance(filenames, six.string_types):
         filenames = [filenames]
 
+    def _generate_all_fields_and_filenames():
+        for filename in filenames:
+            for field in loader.field_generator(
+                    filename, **loader.field_generator_kwargs):
+                # evaluate field against format specific desired attributes
+                # load if no format specific desired attributes are violated
+                if filter_function is None or filter_function(field):
+                    yield (field, filename)
+
     def loadcubes_user_callback_wrapper(cube, field, filename):
         # First run any custom user-provided rules.
         if loader.legacy_custom_rules:
@@ -1029,15 +1037,6 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
         # Then also run user-provided original callback function.
         cube = iris.io.run_callback(user_callback, cube, field, filename)
         return cube
-
-    def _generate_all_fields_and_filenames():
-        for filename in filenames:
-            for field in loader.field_generator(
-                    filename, **loader.field_generator_kwargs):
-                # evaluate field against format specific desired attributes
-                # load if no format specific desired attributes are violated
-                if filter_function is None or filter_function(field):
-                    yield (field, filename)
 
     all_fields_and_filenames = _generate_all_fields_and_filenames()
     for cube, field in _load_pairs_from_fields_and_filenames(
