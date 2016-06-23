@@ -638,11 +638,13 @@ class TestSaveLBPROC(tests.IrisTest):
 
 
 class TestCallbackLoad(tests.IrisTest):
+    def setUp(self):
+        self.pass_name = 'air_potential_temperature'
+
     def callback_wrapper(self):
         # Wrap the `iris.exceptions.IgnoreCubeException`-calling callback.
         def callback_ignore_cube_exception(cube, field, filename):
-            skip_name = 'air_potential_temperature'
-            if cube.name() != skip_name:
+            if cube.name() != self.pass_name:
                 raise IgnoreCubeException
         return callback_ignore_cube_exception
 
@@ -650,12 +652,11 @@ class TestCallbackLoad(tests.IrisTest):
         test_dataset = tests.get_data_path(
             ['PP', 'globClim1', 'dec_subset.pp'])
         exception_callback = self.callback_wrapper()
-        original_cubes = iris.load(test_dataset)
-        n_original_cubes = len(original_cubes)
         result_cubes = iris.load(test_dataset, callback=exception_callback)
         n_result_cubes = len(result_cubes)
-        # We ignore only one cube (the `air_potential_temperature` cube).
-        self.assertEqual(n_result_cubes, n_original_cubes-1)
+        # We ignore all but one cube (the `air_potential_temperature` cube).
+        self.assertEqual(n_result_cubes, 1)
+        self.assertEqual(result_cubes[0].name(), self.pass_name)
 
 
 if __name__ == "__main__":
