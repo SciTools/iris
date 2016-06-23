@@ -647,7 +647,8 @@ class TestCallbackLoad(tests.IrisTest):
         return callback_ignore_cube_exception
 
     def test_ignore_cube_callback(self):
-        test_dataset = tests.get_data_path(['PP', 'globClim1', 'dec_subset.pp'])
+        test_dataset = tests.get_data_path(
+            ['PP', 'globClim1', 'dec_subset.pp'])
         exception_callback = self.callback_wrapper()
         original_cubes = iris.load(test_dataset)
         n_original_cubes = len(original_cubes)
