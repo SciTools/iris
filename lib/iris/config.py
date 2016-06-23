@@ -30,6 +30,8 @@ defined by :mod:`ConfigParser`.
     directory supports the Iris gallery. Directory contents accessed via
     :func:`iris.sample_data_path`.
 
+    .. deprecated:: 1.10
+
 .. py:data:: iris.config.TEST_DATA_DIR
 
     Local directory where test data exists.  Defaults to "test_data"

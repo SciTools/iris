@@ -19,6 +19,7 @@ mock
 nose
 pep8=1.5.7
 sphinx
+iris_sample_data
 
 # Optional iris dependencies
 ecmwf_grib

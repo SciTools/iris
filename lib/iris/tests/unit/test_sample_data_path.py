@@ -31,6 +31,7 @@ import tempfile
 import mock
 
 from iris import sample_data_path
+from iris._deprecation import IrisDeprecation
 
 
 def _temp_file(sample_dir):
@@ -41,18 +42,7 @@ def _temp_file(sample_dir):
     return sample_path
 
 
-class TestIrisSampleData__get_path(tests.IrisTest):
-    def test(self):
-        try:
-            path = mock.sentinel.path
-            with mock.patch('iris_sample_data._get_path', return_value=path):
-                import iris_sample_data
-                path = iris_sample_data._get_path()
-                self.assertEqual(path, self.path)
-        except ImportError:
-            pass
-
-
+@tests.skip_sample_data
 class TestIrisSampleData_path(tests.IrisTest):
     def setUp(self):
         self.sample_dir = tempfile.mkdtemp()
@@ -61,28 +51,21 @@ class TestIrisSampleData_path(tests.IrisTest):
         shutil.rmtree(self.sample_dir)
 
     def test_path(self):
-        try:
-            with mock.patch('iris_sample_data.path', self.sample_dir):
-                import iris_sample_data
-                self.assertEqual(iris_sample_data.path, self.sample_dir)
-        except ImportError:
-            pass
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            import iris_sample_data
+            self.assertEqual(iris_sample_data.path, self.sample_dir)
 
     def test_call(self):
-        try:
-            sample_file = _temp_file(self.sample_dir)
-            with mock.patch('iris_sample_data.path', self.sample_dir):
-                import iris_sample_data
-                result = sample_data_path(os.path.basename(sample_file))
-                self.assertEqual(result, sample_file)
-        except ImportError:
-            pass
+        sample_file = _temp_file(self.sample_dir)
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            result = sample_data_path(os.path.basename(sample_file))
+            self.assertEqual(result, sample_file)
 
 
 class TestConfig(tests.IrisTest):
     def setUp(self):
         # Force iris_sample_data to be unavailable.
-        self.patch('iris._SAMPLE_DATA_AVAILABLE', False)
+        self.patch('iris.iris_sample_data', None)
         # All of our tests are going to run with SAMPLE_DATA_DIR
         # redirected to a temporary directory.
         self.sample_dir = tempfile.mkdtemp()
@@ -119,6 +102,16 @@ class TestConfig(tests.IrisTest):
     def test_glob_absolute(self):
         with self.assertRaisesRegexp(ValueError, 'Absolute path'):
             sample_data_path(os.path.abspath('foo.*'))
+
+    def test_warn_deprecated(self):
+        sample_path = _temp_file(self.sample_dir)
+        with mock.patch('warnings.warn') as warn:
+            sample_data_path(os.path.basename(sample_path))
+            self.assertEqual(warn.call_count, 1)
+            (warn_msg, warn_exception), _ = warn.call_args
+            msg = 'iris.config.SAMPLE_DATA_DIR was deprecated'
+            self.assertTrue(warn_msg.startswith(msg))
+            self.assertEqual(warn_exception, IrisDeprecation)
 
 
 if __name__ == '__main__':

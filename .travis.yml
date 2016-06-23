@@ -1,5 +1,4 @@
-# Please update the cartopy, test data, and sample data git references
-# below if appropriate.
+# Please update the test data git references below if appropriate.
 #
 # Note: Contrary to the travis documentation,
 # http://about.travis-ci.org/docs/user/languages/python/#Travis-CI-Uses-Isolated-virtualenvs
@@ -25,9 +24,6 @@ git:
 install:
   - export IRIS_TEST_DATA_REF="76177575c4836e0b94ffa33ad91ef84c61b635ce"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
-
-  - export IRIS_SAMPLE_DATA_REF="e292fc4ef99b0664de726774684dbeff56531b63"
-  - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
   # -----------------
@@ -79,11 +75,6 @@ install:
   - unzip -q iris-test-data.zip
   - ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data
 
-# iris sample data
-  - wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip
-  - unzip -q iris-sample-data.zip
-  - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
-
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
   - if [[ $TEST_TARGET -ne 'coding' ]]; then
@@ -96,7 +87,6 @@ install:
 # set config paths
   - SITE_CFG=$IRIS/etc/site.cfg
   - echo "[Resources]" > $SITE_CFG
-  - echo "sample_data_dir = $(pwd)/iris-sample-data/sample_data" >> $SITE_CFG
   - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG
   - echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG
   - echo "[System]" >> $SITE_CFG
