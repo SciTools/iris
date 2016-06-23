@@ -69,6 +69,7 @@ import iris.util
 # (And remove matplotlib as an iris.tests dependency.)
 try:
     import matplotlib
+    matplotlib.use('agg')
     import matplotlib.testing.compare as mcompare
     import matplotlib.pyplot as plt
 except ImportError:
@@ -123,13 +124,10 @@ logger = logging.getLogger('tests')
 # Whether to display matplotlib output to the screen.
 _DISPLAY_FIGURES = False
 
-if MPL_AVAILABLE:
-    if '-d' in sys.argv:
-        sys.argv.remove('-d')
-        plt.switch_backend('tkagg')
-        _DISPLAY_FIGURES = True
-    else:
-        plt.switch_backend('agg')
+if (MPL_AVAILABLE and '-d' in sys.argv):
+    sys.argv.remove('-d')
+    plt.switch_backend('tkagg')
+    _DISPLAY_FIGURES = True
 
 _DEFAULT_IMAGE_TOLERANCE = 10.0
 
