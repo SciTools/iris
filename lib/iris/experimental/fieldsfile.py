@@ -145,7 +145,7 @@ def load(filenames, callback=None):
         erroneous results.
 
     """
-    loader = Loader(_collations_from_filename, {}, _convert_collation, None)
+    loader = Loader(_collations_from_filename, {}, _convert_collation)
     return CubeList(load_cubes(filenames, callback, loader, None))
 
 
