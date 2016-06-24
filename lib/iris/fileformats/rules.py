@@ -850,11 +850,9 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     return result_cube
 
 
-_loader_attrs = ('field_generator', 'field_generator_kwargs',
-                 'converter', 'legacy_custom_rules')
+_loader_attrs = ('field_generator', 'field_generator_kwargs', 'converter')
 class Loader(collections.namedtuple('Loader', _loader_attrs)):
-    def __new__(cls, field_generator, field_generator_kwargs, converter,
-                legacy_custom_rules=None):
+    def __new__(cls, field_generator, field_generator_kwargs, converter):
         """
         Create a definition of a field-based Cube loader.
 
@@ -870,21 +868,9 @@ class Loader(collections.namedtuple('Loader', _loader_attrs)):
         * converter
             A callable that converts a field object into a Cube.
 
-        Kwargs:
-
-        * legacy_custom_rules
-            An object with a callable `verify` attribute with two
-            parameters: (cube, field). Legacy method for modifying
-            Cubes during the load process. Default is None.
-
-            .. deprecated:: 1.9
-
         """
-        if legacy_custom_rules is not None:
-            warn_deprecated('The `legacy_custom_rules` attribute is '
-                            'deprecated.')
         return tuple.__new__(cls, (field_generator, field_generator_kwargs,
-                                   converter, legacy_custom_rules))
+                                   converter))
 
 
 ConversionMetadata = collections.namedtuple('ConversionMetadata',
@@ -950,7 +936,7 @@ def _resolve_factory_references(cube, factories, concrete_reference_targets,
 
 
 def _load_pairs_from_fields_and_filenames(fields_and_filenames, converter,
-                                          user_callback_wrapper=None):
+                                          user_callback=None):
     # The underlying mechanism for the public 'load_pairs_from_fields' and
     # 'load_cubes'.
     # Slightly more complicated than 'load_pairs_from_fields', only because it
@@ -963,8 +949,7 @@ def _load_pairs_from_fields_and_filenames(fields_and_filenames, converter,
 
         # Post modify the new cube with a user-callback.
         # This is an ordinary Iris load callback, so it takes the filename.
-        cube = iris.io.run_callback(user_callback_wrapper,
-                                    cube, field, filename)
+        cube = iris.io.run_callback(user_callback, cube, field, filename)
         # Callback mechanism may return None, which must not be yielded.
         if cube is None:
             continue
@@ -1027,23 +1012,10 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
                 if filter_function is None or filter_function(field):
                     yield (field, filename)
 
-    def loadcubes_user_callback_wrapper(cube, field, filename):
-        # First run any custom user-provided rules.
-        if loader.legacy_custom_rules:
-            warn_deprecated('The `legacy_custom_rules` attribute of '
-                            'the `loader` is deprecated.')
-            loader.legacy_custom_rules.verify(cube, field)
-
-        # Then also run user-provided original callback function.
-        result = cube
-        if user_callback is not None:
-            result = user_callback(cube, field, filename)
-        return result
-
     all_fields_and_filenames = _generate_all_fields_and_filenames()
     for cube, field in _load_pairs_from_fields_and_filenames(
             all_fields_and_filenames,
             converter=loader.converter,
-            user_callback_wrapper=loadcubes_user_callback_wrapper):
+            user_callback=user_callback):
         yield cube
 
