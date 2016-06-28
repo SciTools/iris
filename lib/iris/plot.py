@@ -37,6 +37,8 @@ import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mpl_ticker
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
+import nc_time_axis
+import netcdftime
 import numpy as np
 import numpy.ma as ma
 
@@ -403,8 +405,14 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
 def _fixup_dates(coord, values):
     if coord.units.calendar is not None and values.ndim == 1:
-        r = [datetime.datetime(*(coord.units.num2date(val).timetuple()[0:6]))
-             for val in values]
+        num2date = coord.units.num2date
+        if coord.units.calendar == 'gregorian':
+            r = [datetime.datetime(*(num2date(val).timetuple()[0:6]))
+                 for val in values]
+        else:
+            r = [nc_time_axis.CalendarDateTime(
+                 netcdftime.datetime(*(num2date(val).timetuple()[0:6])),
+                 coord.units.calendar) for val in values]
         values = np.empty(len(r), dtype=object)
         values[:] = r
     return values

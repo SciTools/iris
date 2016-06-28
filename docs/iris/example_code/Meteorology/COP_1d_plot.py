@@ -33,7 +33,6 @@ import iris.plot as iplt
 import iris.quickplot as qplt
 
 import iris.analysis.cartography
-import matplotlib.dates as mdates
 
 
 def main():
@@ -75,9 +74,6 @@ def main():
     a1b_mean = a1b.collapsed(['latitude', 'longitude'],
                              iris.analysis.MEAN,
                              weights=e1_grid_areas)
-
-    # Show ticks 30 years apart
-    plt.gca().xaxis.set_major_locator(mdates.YearLocator(30))
 
     # Plot the datasets
     qplt.plot(e1_mean, label='E1 scenario', lw=1.5, color='blue')
