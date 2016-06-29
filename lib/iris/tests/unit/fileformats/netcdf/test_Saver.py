@@ -308,7 +308,6 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                     }
         self._test(coord_system, expected)
 
-
     def test_spherical_geog_cs(self):
         coord_system = GeogCS(6371229.0)
         expected = {'grid_mapping_name': 'latitude_longitude',
