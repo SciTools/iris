@@ -29,14 +29,12 @@ import iris.cube
 
 class TestMerge(tests.IrisTest):
     def test(self):
-        coord_vals = [
-                      (0, 30, 100),
+        coord_vals = [(0, 30, 100),
                       (0, 40, 100),
                       (0, 40, 110),
                       (1, 30, 110),
                       (1, 30, 100),
-                      (1, 40, 110),
-                      ]
+                      (1, 40, 110)]
 
         test_raw = iris.cube.CubeList([])
 
