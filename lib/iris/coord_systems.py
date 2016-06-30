@@ -731,7 +731,7 @@ class LambertConformal(CoordSystem):
 
     """
 
-    grid_mapping_name = "lambert_conformal"
+    grid_mapping_name = "lambert_conformal_conic"
 
     def __init__(self, central_lat=39.0, central_lon=-96.0,
                  false_easting=0.0, false_northing=0.0,
@@ -779,7 +779,10 @@ class LambertConformal(CoordSystem):
         #: Y offset from planar origin in metres.
         self.false_northing = false_northing
         #: The two standard parallels of the cone.
-        self.secant_latitudes = secant_latitudes
+        try:
+            self.secant_latitudes = tuple(secant_latitudes)
+        except TypeError:
+            self.secant_latitudes = (secant_latitudes,)
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
 
