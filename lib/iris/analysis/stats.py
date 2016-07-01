@@ -48,9 +48,14 @@ def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.,
     Args:
 
     * cube_a, cube_b (cubes):
-        Cubes between which the correlation will be calculated.  The cubes
+        Cubes between which the correlation will be calculated. The cubes
         should either be the same shape and have the same dimension coordinates
-        or one cube should be broadcastable to the other.
+        or one cube should be broadcastable to the other. Currently, this means
+        the trailing dimensions of the larger cube (those to the right of the
+        dimension of interest in cube.shape) should be the same shape as the
+        corresponding dimensions of the smaller cube and the leading dimensions
+        of the smaller cube (those to the left of the dimension of interest in
+        cube.shape) must be of length 1 or non-existent.
     * corr_coords (str or list of str):
         The cube coordinate name(s) over which to calculate correlations. If no
         names are provided then correlation will be calculated over all common
