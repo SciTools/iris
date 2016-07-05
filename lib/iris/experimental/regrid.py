@@ -827,16 +827,17 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     # Get the target grid cube x and y dimension coordinates.
     tx, ty = get_xy_dim_coords(grid_cube)
 
-    if sx.units.modulus is None or sy.units.modulus is None or \
-            sx.units != sy.units:
+    #
+    # FOR NOW: minimal hacks to allow non-latlon grids
+    #
+    if sx.units != sy.units:
         msg = 'The source cube x ({!r}) and y ({!r}) coordinates must ' \
-            'have units of degrees or radians.'
+            'have the same units.'
         raise ValueError(msg.format(sx.name(), sy.name()))
 
-    if tx.units.modulus is None or ty.units.modulus is None or \
-            tx.units != ty.units:
+    if tx.units != ty.units:
         msg = 'The target grid cube x ({!r}) and y ({!r}) coordinates must ' \
-            'have units of degrees or radians.'
+            'have the same units.'
         raise ValueError(msg.format(tx.name(), ty.name()))
 
     if sx.units != tx.units:
@@ -883,25 +884,26 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         if src_cube.coord_dims(coord) == (1, 0):
             points = points.T
         if points.shape != src_cube.shape:
-            msg = 'The shape of the points array of !r is not compatible ' \
-                'with the shape of !r.'.format(coord.name(), src_cube.name())
-            raise ValueError(msg)
+            msg = 'The shape of the points array of {!r} is not compatible ' \
+                'with the shape of {!r}.'
+            raise ValueError(msg.format(coord.name(), src_cube.name()))
         return np.asarray(points.flatten())
 
     # Align and flatten the coordinate points of the source space.
     sx_points = _src_align_and_flatten(sx)
     sy_points = _src_align_and_flatten(sy)
 
-    # Match the source cube x coordinate range to the target grid
-    # cube x coordinate range.
-    min_sx, min_tx = np.min(sx.points), np.min(tx.points)
     modulus = sx.units.modulus
-    if min_sx < 0 and min_tx >= 0:
-        indices = np.where(sx_points < 0)
-        sx_points[indices] += modulus
-    elif min_sx >= 0 and min_tx < 0:
-        indices = np.where(sx_points > (modulus / 2))
-        sx_points[indices] -= modulus
+    if modulus is not None:
+        # Match the source cube x coordinate range to the target grid
+        # cube x coordinate range.
+        min_sx, min_tx = np.min(sx.points), np.min(tx.points)
+        if min_sx < 0 and min_tx >= 0:
+            indices = np.where(sx_points < 0)
+            sx_points[indices] += modulus
+        elif min_sx >= 0 and min_tx < 0:
+            indices = np.where(sx_points > (modulus / 2))
+            sx_points[indices] -= modulus
 
     # Create target grid cube x and y cell boundaries.
     tx_depth, ty_depth = tx.points.size, ty.points.size
