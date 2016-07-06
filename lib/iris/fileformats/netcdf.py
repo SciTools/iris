@@ -548,7 +548,6 @@ def _load_cube(engine, cf, cf_var, filename):
                                                         intervals=intervals,
                                                         comments=comments),)
 
-
     # Show pyke session statistics.
     _pyke_stats(engine, cf_var.cf_name)
 
