@@ -836,10 +836,10 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     * src_cube:
         A :class:`iris.cube.Cube` instance that defines the source
         variable grid to be regridded.
-    * weights:
+    * weights (array or None):
         A :class:`numpy.ndarray` instance that defines the weights
         for the source variable grid cells. Must have the same shape
-        as the :data:`src_cube.data`.
+        as the X and Y coordinates.  If weights is None, all-ones will be used.
     * grid_cube:
         A :class:`iris.cube.Cube` instance that defines the target
         rectilinear grid.
@@ -848,10 +848,21 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         A :class:`iris.cube.Cube` instance.
 
     """
-    if src_cube.shape != weights.shape:
-        msg = 'The source cube and weights require the same data shape.'
-        raise ValueError(msg)
+    regrid_info = \
+        _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
+            src_cube, weights, grid_cube)
+    result = _regrid_weighted_curvilinear_to_rectilinear__perform_regrid(
+        src_cube, regrid_info)
+    return result
 
+
+def _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
+        src_cube, weights, grid_cube):
+    """
+    Check inputs and calculate the sparse info needed for the
+    'regrid_weighted_curvilinear_to_rectilinear' calculation.
+
+    """
     if src_cube.aux_factories:
         msg = 'All source cube derived coordinates will be ignored.'
         warnings.warn(msg)
@@ -898,6 +909,13 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         msg = 'The source cube x ({!r}) and y ({!r}) coordinates must ' \
             'map onto the same cube dimensions.'
         raise ValueError(msg.format(sx.name(), sy.name()))
+
+    if weights is None:
+        weights = np.ones(sx.shape)
+    if weights.shape != sx.shape:
+        msg = ('Provided weights must have the same shape as the X and Y '
+               'coordinates.')
+        raise ValueError(msg)
 
     if tx.coord_system != ty.coord_system:
         msg = 'The target grid cube x ({!r}) and y ({!r}) coordinates must ' \
@@ -1023,13 +1041,14 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     # target cube cell.
 
     # Determine the valid indices and their offsets in M x N space.
-    if ma.isMaskedArray(src_cube.data):
-        # Calculate the valid M offsets, accounting for the source cube mask.
-        mask = ~src_cube.data.mask.flatten()
-        cols = np.where((y_indices >= 0) & (y_indices < ty_depth) &
-                        (x_indices >= 0) & (x_indices < tx_depth) &
-                        mask)[0]
-    else:
+#    if ma.isMaskedArray(src_cube.data):
+#        # Calculate the valid M offsets, accounting for the source cube mask.
+#        mask = ~src_cube.data.mask.flatten()
+#        cols = np.where((y_indices >= 0) & (y_indices < ty_depth) &
+#                        (x_indices >= 0) & (x_indices < tx_depth) &
+#                        mask)[0]
+#    else:
+    if 1:
         # Calculate the valid M offsets.
         cols = np.where((y_indices >= 0) & (y_indices < ty_depth) &
                         (x_indices >= 0) & (x_indices < tx_depth))[0]
@@ -1052,6 +1071,28 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     sparse_matrix = csc_matrix((data, (rows, cols)),
                                shape=(grid_cube.data.size, src_cube.data.size))
 
+    regrid_info = (sparse_matrix, grid_cube)
+    return regrid_info
+
+
+def _regrid_weighted_curvilinear_to_rectilinear__perform_regrid(
+        src_cube, regrid_info):
+    """
+    Perform actual regrid calculation for
+    'regrid_weighted_curvilinear_to_rectilinear'.
+
+    """
+    sparse_matrix, grid_cube = regrid_info
+
+    if not ma.isMaskedArray(src_cube.data):
+        data = src_cube.data
+    else:
+        data = src_cube.data.data
+        if np.ma.is_masked(src_cube.data):
+            # Also must adjust sparse matrix for missing data ...
+            # sparse matrix is (M,N), grid is (M,), data is (N,).
+            sparse_matrix[:, src_cube.data.mask] = 0.0
+
     # Performing a sparse sum to collapse the matrix to (M, 1).
     sum_weights = sparse_matrix.sum(axis=1).getA()
 
@@ -1067,6 +1108,10 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     weighted_mean[rows] = numerator[rows] / sum_weights[rows]
 
     # Construct the final regridded weighted mean cube.
+    tx = grid_cube.coord(axis='x', dim_coords=True)
+    ty = grid_cube.coord(axis='y', dim_coords=True)
+    tx_dim, = grid_cube.coord_dims(tx)
+    ty_dim, = grid_cube.coord_dims(ty)
     dim_coords_and_dims = list(zip((ty.copy(), tx.copy()), (ty_dim, tx_dim)))
     cube = iris.cube.Cube(weighted_mean.reshape(grid_cube.shape),
                           dim_coords_and_dims=dim_coords_and_dims)
@@ -1170,9 +1215,25 @@ class _CurvilinearRegridder(object):
                              'source grid as this regridder.')
 
         # Call the regridder function.
-        res = regrid_weighted_curvilinear_to_rectilinear(src, self.weights,
-                                                         self._target_cube)
-        return res
+#        res = regrid_weighted_curvilinear_to_rectilinear(
+#            src, self.weights, self._target_cube)
+#        return res
+        # This includes repeating over any non-XY dimensions, because the
+        # underlying routine does not support this.
+        # Just for now, we will use cube.slices and merge to achieve this,
+        # though that is not a terribly efficient method ...
+        regrid_info = None
+        result_slices = iris.cube.CubeList([])
+        for slice_cube in src.slices(sx):
+            if regrid_info is None:
+                # Calculate the basic regrid info just once.
+                regrid_info = \
+                    _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
+                        slice_cube, self.weights, self._target_cube)
+            result_slices.append(_regrid_weighted_curvilinear_to_rectilinear__perform_regrid(
+                slice_cube, regrid_info))
+        result = result_slices.merge_cube()
+        return result
 
 
 class PointInCell(object):
