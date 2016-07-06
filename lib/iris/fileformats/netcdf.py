@@ -531,6 +531,24 @@ def _load_cube(engine, cf, cf_var, filename):
     for attr_name, attr_value in tmpvar:
         _set_attributes(cube.attributes, attr_name, attr_value)
 
+    names_dict = {}
+    for coord in cube.coords():
+        names_dict[coord.var_name] = coord.name()
+
+    for i in range(len(cube.cell_methods)):
+        for j in range(len(cube.cell_methods[i].coord_names)):
+            method = cube.cell_methods[i].method[j]
+            intervals = cube.cell_methods[i].intervals[j]
+            comments = cube.cell_methods[i].comments
+            pattern = re.compile(r'\b(' + '|'.join(names_dict.keys()) + r')\b')
+            new_name = pattern.sub(lambda x: names_dict[x.group()],
+                                   cube.cell_methods[i].coord_names[j])
+            cube.cell_methods = (iris.coords.CellMethod(method=method,
+                                                        coords=new_name,
+                                                        intervals=intervals,
+                                                        comments=comments),)
+
+
     # Show pyke session statistics.
     _pyke_stats(engine, cf_var.cf_name)
 
