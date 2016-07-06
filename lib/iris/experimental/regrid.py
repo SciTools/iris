@@ -29,7 +29,7 @@ import warnings
 import cf_units
 import numpy as np
 import numpy.ma as ma
-from scipy.sparse import csc_matrix
+from scipy.sparse import csc_matrix, diags as sparse_diags
 
 import iris.analysis.cartography
 from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
@@ -1041,17 +1041,9 @@ def _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
     # target cube cell.
 
     # Determine the valid indices and their offsets in M x N space.
-#    if ma.isMaskedArray(src_cube.data):
-#        # Calculate the valid M offsets, accounting for the source cube mask.
-#        mask = ~src_cube.data.mask.flatten()
-#        cols = np.where((y_indices >= 0) & (y_indices < ty_depth) &
-#                        (x_indices >= 0) & (x_indices < tx_depth) &
-#                        mask)[0]
-#    else:
-    if 1:
-        # Calculate the valid M offsets.
-        cols = np.where((y_indices >= 0) & (y_indices < ty_depth) &
-                        (x_indices >= 0) & (x_indices < tx_depth))[0]
+    # Calculate the valid M offsets.
+    cols = np.where((y_indices >= 0) & (y_indices < ty_depth) &
+                    (x_indices >= 0) & (x_indices < tx_depth))[0]
 
     # Reduce the indices to only those that are valid.
     x_indices = x_indices[cols]
@@ -1071,7 +1063,14 @@ def _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
     sparse_matrix = csc_matrix((data, (rows, cols)),
                                shape=(grid_cube.data.size, src_cube.data.size))
 
-    regrid_info = (sparse_matrix, grid_cube)
+    # Performing a sparse sum to collapse the matrix to (M, 1).
+    sum_weights = sparse_matrix.sum(axis=1).getA()
+
+    # Determine the rows (flattened target indices) that have a
+    # contribution from one or more source points.
+    rows = np.nonzero(sum_weights)
+
+    regrid_info = (sparse_matrix, sum_weights, rows, grid_cube)
     return regrid_info
 
 
@@ -1082,29 +1081,36 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform_regrid(
     'regrid_weighted_curvilinear_to_rectilinear'.
 
     """
-    sparse_matrix, grid_cube = regrid_info
+    sparse_matrix, sum_weights, rows, grid_cube = regrid_info
 
+    # Calculate the numerator of the weighted mean (M, 1).
     if not ma.isMaskedArray(src_cube.data):
         data = src_cube.data
     else:
+        # Use raw data array
         data = src_cube.data.data
+        # Zero any masked source points so they add nothing in output sums.
         if np.ma.is_masked(src_cube.data):
-            # Also must adjust sparse matrix for missing data ...
-            # sparse matrix is (M,N), grid is (M,), data is (N,).
-            sparse_matrix[:, src_cube.data.mask] = 0.0
+            mask = src_cube.data.mask
+            valid = ~mask
+            data[mask] = 0.0
 
-    # Performing a sparse sum to collapse the matrix to (M, 1).
-    sum_weights = sparse_matrix.sum(axis=1).getA()
+    # Calculate sum in each target cell, over contributions from each source
+    # cell.
+    numerator = sparse_matrix * data.reshape(-1, 1)
 
-    # Determine the rows (flattened target indices) that have a
-    # contribution from one or more source points.
-    rows = np.nonzero(sum_weights)
-
-    # Calculate the numerator of the weighted mean (M, 1).
-    numerator = sparse_matrix * src_cube.data.reshape(-1, 1)
-
-    # Calculate the weighted mean payload.
+    # Create a template for the weighted mean result.
     weighted_mean = ma.masked_all(numerator.shape, dtype=numerator.dtype)
+
+    # Account for missing input data points.
+    if np.ma.is_masked(src_cube.data):
+        # Calculate a new 'sum_weights' to account for missing source points.
+        src_cell_validity_factors = sparse_diags(np.array(valid, dtype=int), 0)
+        valid_weights = sparse_matrix * src_cell_validity_factors
+        sum_weights = valid_weights.sum(axis=1)
+        sum_weights = np.maximum(1, sum_weights).getA()
+
+    # Calculate final results in all relevant places.
     weighted_mean[rows] = numerator[rows] / sum_weights[rows]
 
     # Construct the final regridded weighted mean cube.
