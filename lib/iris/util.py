@@ -1898,3 +1898,74 @@ def cubelike_array_as_cube(
         result.rename(name)
 
     return result
+
+def attach_cube_as_aux_coord(parent_cube, daughter_cube):
+    # Preliminary...
+    # It insists on parent cube coords matching the daughter coords.
+    # It throws away all other coords (including scalars).
+    # It retains attributes, names and units.
+    # It can handle multi-dim coords.
+
+    # Create an AuxCoord from the cube data and metadata.
+    new_coord = iris.coords.AuxCoord(
+        daughter_cube.data,
+        standard_name=daughter_cube.standard_name,
+        long_name=daughter_cube.long_name,
+        units=daughter_cube.units,
+        attributes=daughter_cube.attributes,
+        coord_system=daughter_cube.coord_system())
+
+    # Find coords covering every dimension of the source data, and identify
+    # matching ones in the parent cube, to construct a list of parent cube
+    # dimensions for the new aux-coord.
+    n_daughter_dims = daughter_cube.ndim
+    dims_to_do = np.range(n_daughter_dims)
+    parent_dim_assignments = [None] * n_daughter_dims
+    while dims_to_do:
+        # Identify the first remaining unmapped dimension that comes to hand.
+        i_dim_next = dims_to_do[0]
+
+        # Find a coord which maps to this dimension in the daughter.
+        daughter_coords = daughter_cube.coords(
+            contains_dimension=i_dim_next, dim_coord=True)
+        # Prefer dimension coords, but don't insist (so we can do multidim).
+        if not daughter_coords:
+            daughter_coords = daughter_cube.coords(
+                contains_dimension=i_dim_next)
+        if not daughter_coords:
+            msg = ("Could not find any coords in 'daughter_cube' for "
+                   "dimension {}.")
+            raise ValueError(msg.format(i_dim_next))
+        # If several coords, just take the first.
+        daughter_coord = daughter_coords[0]
+
+        # Find a unique matching coord in the parent.
+        parent_coords = parent_cube.coord(daughter_coord)
+        if len(parent_coords) != 1:
+            msg = ("Could not find a unique coord in 'parent_cube' matching "
+                   "{!r} in the daughter.")
+            raise ValueError(msg.format(daughter_coord.name()))
+        parent_coord = parent_coords[0]
+
+        # Fill in the parent-dimensions map for each dimension of this coord.
+        daughter_dims = daughter_cube.coord_dims(coord)
+        parent_dims = parent_cube.coord_dims(parent_coord)
+        for daughter_dim, parent_dim in zip(daughter_dims, parent_dims):
+            existing_dim_mapping = parent_dim_assignments[daughter_dim]
+            if existing_dim_mapping:
+                msg = "Dimension {} is mapped by both coords {!r} and {!r}."
+                raise ValueError(
+                    msg.format(parent_dim,
+                               daughter_coord.name(),
+                               existing_dim_mapping[0].name()))
+            parent_dim_assignments[daughter_dim] = (daughter_coord, parent_dim)
+            # Remove mapped daughter dims from the to-do list.
+            dims_to_do.pop(daughter_dim)
+
+    # Extract just the parent dimensions from the mapping data into a list.
+    parent_dims = [dim_assignment[1]
+                   for dim_assignment in parent_dim_assignments]
+    # Add the daughter_coord into the parent cube.
+    parent_cube.add_aux_coord(new_coord,
+                              parent_dims)
+
