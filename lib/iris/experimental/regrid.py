@@ -1135,7 +1135,7 @@ class _CurvilinearRegridder(object):
     between a curvilinear source grid and a rectilinear target grid.
 
     """
-    def __init__(self, src_grid_cube, target_grid_cube, weights):
+    def __init__(self, src_grid_cube, target_grid_cube, weights=None):
         """
         Create a regridder for conversions between the source
         and target grids.
@@ -1146,10 +1146,14 @@ class _CurvilinearRegridder(object):
             The :class:`~iris.cube.Cube` providing the source grid.
         * tgt_grid_cube:
             The :class:`~iris.cube.Cube` providing the target grid.
+
+        Optional Args:
+
         * weights:
             A :class:`numpy.ndarray` instance that defines the weights
             for the grid cells of the source grid. Must have the same shape
             as the data of the source grid.
+            If unspecified, equal weighting is assumed.
 
         """
         # Validity checks.
@@ -1249,17 +1253,18 @@ class PointInCell(object):
     :meth:`iris.cube.Cube.regrid()`.
 
     """
-    def __init__(self, weights):
+    def __init__(self, weights=None):
         """
         Point-in-cell regridding scheme suitable for regridding over one
         or more orthogonal coordinates.
 
-        Args:
+        Optional Args:
 
         * weights:
             A :class:`numpy.ndarray` instance that defines the weights
             for the grid cells of the source grid. Must have the same shape
             as the data of the source grid.
+            If unspecified, equal weighting is assumed.
 
         """
         self.weights = weights
