@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -245,24 +245,6 @@ class Test_register__data_dtype(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__fill_value(Mixin_register, tests.IrisTest):
-    @property
-    def fragments(self):
-        return ['cube data fill_value', '654', '12345']
-
-    @property
-    def cube1(self):
-        cube = example_cube()
-        cube.data = ma.array(cube.data, fill_value=654)
-        return cube
-
-    @property
-    def cube2(self):
-        cube = example_cube()
-        cube.data = ma.array(cube.data, fill_value=12345)
-        return cube
-
-
 class _MergeTest(object):
     # A mixin test class for common test methods implementation.
 
@@ -299,7 +281,6 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
         cube2 = self.cube1[1:]
         cube2.data = cube2.data.astype(np.int8)
         cube2.data = ma.array(cube2.data)
-        cube2.data.fill_value = 12345
         cube2.standard_name = "air_pressure"
         cube2.var_name = "Nudge"
         cube2.attributes['stuffed'] = 'yes'
