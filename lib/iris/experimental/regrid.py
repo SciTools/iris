@@ -849,18 +849,20 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
 
     """
     regrid_info = \
-        _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
+        _regrid_weighted_curvilinear_to_rectilinear__prepare(
             src_cube, weights, grid_cube)
-    result = _regrid_weighted_curvilinear_to_rectilinear__perform_regrid(
+    result = _regrid_weighted_curvilinear_to_rectilinear__perform(
         src_cube, regrid_info)
     return result
 
 
-def _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
+def _regrid_weighted_curvilinear_to_rectilinear__prepare(
         src_cube, weights, grid_cube):
     """
-    Check inputs and calculate the sparse info needed for the
-    'regrid_weighted_curvilinear_to_rectilinear' calculation.
+    First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
+
+    Check inputs and calculate the sparse regrid matrix and related info.
+    The 'regrid info' returned can be re-used over many 2d slices.
 
     """
     if src_cube.aux_factories:
@@ -1074,11 +1076,12 @@ def _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
     return regrid_info
 
 
-def _regrid_weighted_curvilinear_to_rectilinear__perform_regrid(
+def _regrid_weighted_curvilinear_to_rectilinear__perform(
         src_cube, regrid_info):
     """
-    Perform actual regrid calculation for
-    'regrid_weighted_curvilinear_to_rectilinear'.
+    Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
+
+    Perform the prepared regrid calculation on a single 2d cube.
 
     """
     sparse_matrix, sum_weights, rows, grid_cube = regrid_info
@@ -1238,10 +1241,12 @@ class _CurvilinearRegridder(object):
             if regrid_info is None:
                 # Calculate the basic regrid info just once.
                 regrid_info = \
-                    _regrid_weighted_curvilinear_to_rectilinear__calculate_regrid_info(
+                    _regrid_weighted_curvilinear_to_rectilinear__prepare(
                         slice_cube, self.weights, self._target_cube)
-            result_slices.append(_regrid_weighted_curvilinear_to_rectilinear__perform_regrid(
-                slice_cube, regrid_info))
+            slice_result = \
+                _regrid_weighted_curvilinear_to_rectilinear__perform(
+                    slice_cube, regrid_info)
+            result_slices.append(slice_result)
         result = result_slices.merge_cube()
         return result
 
