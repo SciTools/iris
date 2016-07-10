@@ -166,9 +166,9 @@ class Test___call__(tests.IrisTest):
             src_grid, self.weights, target_grid)
         self.assertEqual(len(patch_operate.call_args_list), 2)
         self.assertEqual(
-             patch_operate.call_args_list,
-             [mock.call(src_grid, mock.sentinel.regrid_info),
-              mock.call(different_src_cube, mock.sentinel.regrid_info)])
+            patch_operate.call_args_list,
+            [mock.call(src_grid, mock.sentinel.regrid_info),
+             mock.call(different_src_cube, mock.sentinel.regrid_info)])
 
 
 @tests.skip_data

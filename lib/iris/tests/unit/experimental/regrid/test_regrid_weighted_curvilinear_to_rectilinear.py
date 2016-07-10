@@ -34,7 +34,8 @@ import numpy.ma as ma
 
 import iris
 import iris.coords
-from iris.coord_systems import GeogCS
+from iris.coords import AuxCoord, DimCoord
+from iris.coord_systems import GeogCS, LambertConformal
 from iris.fileformats.pp import EARTH_RADIUS
 import iris.cube
 from iris.experimental.regrid \
@@ -47,14 +48,18 @@ _PLAIN_LATLON_CS = GeogCS(EARTH_RADIUS)
 class Test(tests.IrisTest):
     def setUp(self):
         # Source cube.
-        data = ma.arange(1, 13, dtype=np.float).reshape(3, 4)
-        attributes = dict(wibble='wobble')
-        bibble = iris.coords.DimCoord([1], long_name='bibble')
-        self.src = iris.cube.Cube(data,
-                                  standard_name='air_temperature',
-                                  units='K',
-                                  aux_coords_and_dims=[(bibble, None)],
-                                  attributes=attributes)
+        self.test_src_name = 'air_temperature'
+        self.test_src_units = 'K'
+        self.test_src_data = ma.arange(1, 13, dtype=np.float).reshape(3, 4)
+        self.test_src_attributes = dict(wibble='wobble')
+        self.test_scalar_coord = iris.coords.DimCoord(
+            [1], long_name='test_scalar_coord')
+        self.src = iris.cube.Cube(
+            self.test_src_data,
+            standard_name=self.test_src_name,
+            units=self.test_src_units,
+            aux_coords_and_dims=[(self.test_scalar_coord, None)],
+            attributes=self.test_src_attributes)
 
         # Source cube x-coordinates.
         points = np.array([[10, 20, 200, 220],
@@ -96,7 +101,7 @@ class Test(tests.IrisTest):
 
         # Weights.
         self.weight_factor = 10
-        self.weights = np.asarray(data) * self.weight_factor
+        self.weights = np.asarray(self.test_src_data) * self.weight_factor
 
         # Target grid cube.
         self.grid = iris.cube.Cube(np.zeros((2, 2)))
@@ -145,12 +150,12 @@ class Test(tests.IrisTest):
     def _expected_cube(self, data):
         cube = iris.cube.Cube(data)
         cube.metadata = copy.deepcopy(self.src.metadata)
-        grid_x = self.grid.coord('longitude')
-        grid_y = self.grid.coord('latitude')
+        grid_x = self.grid.coord(axis='x')
+        grid_y = self.grid.coord(axis='y')
         cube.add_dim_coord(grid_x.copy(), self.grid.coord_dims(grid_x))
         cube.add_dim_coord(grid_y.copy(), self.grid.coord_dims(grid_y))
-        src_x = self.src.coord('longitude')
-        src_y = self.src.coord('latitude')
+        src_x = self.src.coord(axis='x')
+        src_y = self.src.coord(axis='y')
         for coord in self.src.aux_coords:
             if coord is not src_x and coord is not src_y:
                 if not self.src.coord_dims(coord):
@@ -163,6 +168,75 @@ class Test(tests.IrisTest):
         self.grid.add_dim_coord(self.grid_y_inc, 0)
         self.grid.add_dim_coord(self.grid_x_inc, 1)
         result = regrid(self.src, self.weights, self.grid)
+        data = np.array([0,
+                         self._weighted_mean([3]),
+                         self._weighted_mean([7, 8]),
+                         self._weighted_mean([9, 10, 11])]).reshape(2, 2)
+        expected = self._expected_cube(data)
+        self.assertEqual(result, expected)
+        mask = np.array([[True, False], [False, False]])
+        self.assertArrayEqual(result.data.mask, mask)
+
+    def test_non_latlon(self):
+        odd_coord_system = LambertConformal()
+        co_src_y = AuxCoord(self.src_y.points,
+                            standard_name='projection_y_coordinate',
+                            units='km',
+                            coord_system=odd_coord_system)
+        co_src_x = AuxCoord(self.src_x_positive.points,
+                            standard_name='projection_x_coordinate',
+                            units='km',
+                            coord_system=odd_coord_system)
+        co_grid_y = DimCoord(self.grid_y_inc.points,
+                             bounds=self.grid_y_inc.bounds,
+                             standard_name='projection_y_coordinate',
+                             units='km',
+                             coord_system=odd_coord_system)
+        co_grid_x = DimCoord(self.grid_x_inc.points,
+                             bounds=self.grid_x_inc.bounds,
+                             standard_name='projection_x_coordinate',
+                             units='km',
+                             coord_system=odd_coord_system)
+        self.src.add_aux_coord(co_src_y, (0, 1))
+        self.src.add_aux_coord(co_src_x, (0, 1))
+        self.grid.add_dim_coord(co_grid_y, 0)
+        self.grid.add_dim_coord(co_grid_x, 1)
+        result = regrid(self.src, self.weights, self.grid)
+        data = np.array([0,
+                         self._weighted_mean([3]),
+                         self._weighted_mean([7, 8]),
+                         self._weighted_mean([9, 10, 11])]).reshape(2, 2)
+        expected = self._expected_cube(data)
+        self.assertEqual(result, expected)
+        mask = np.array([[True, False], [False, False]])
+        self.assertArrayEqual(result.data.mask, mask)
+
+    def test_src_xy_not_2d(self):
+        new_shape = (2, 2, 3)
+        # Reshape the source cube, including the X and Y coordinates,
+        # from (3, 4) to (2, 2, 3).
+        # This is really an "invalid" reshape, but should still work because
+        # the XY shape is actually irrelevant to the regrid operation.
+        src = iris.cube.Cube(
+            self.test_src_data.reshape(new_shape),
+            standard_name=self.test_src_name,
+            units=self.test_src_units,
+            aux_coords_and_dims=[(self.test_scalar_coord, None)],
+            attributes=self.test_src_attributes)
+        co_src_y = self.src_y.copy(
+            points=self.src_y.points.reshape(new_shape))
+        co_src_x = self.src_x_positive.copy(
+            points=self.src_x_positive.points.reshape(new_shape))
+        src.add_aux_coord(co_src_y, (0, 1, 2))
+        src.add_aux_coord(co_src_x, (0, 1, 2))
+        self.grid.add_dim_coord(self.grid_y_inc, 0)
+        self.grid.add_dim_coord(self.grid_x_inc, 1)
+        weights = self.weights.reshape(new_shape)
+        result = regrid(src, weights, self.grid)
+        # NOTE: set the grid of self.src to make '_expected_cube' work ...
+        self.src.add_aux_coord(self.src_y, (0, 1))
+        self.src.add_aux_coord(self.src_x_positive, (0, 1))
+        # ... given that, we expect exactly the same 'normal' result.
         data = np.array([0,
                          self._weighted_mean([3]),
                          self._weighted_mean([7, 8]),

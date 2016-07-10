@@ -1231,13 +1231,12 @@ class _CurvilinearRegridder(object):
                              'source grid as this regridder.')
 
         # Call the regridder function.
-#        res = regrid_weighted_curvilinear_to_rectilinear(
-#            src, self.weights, self._target_cube)
-#        return res
         # This includes repeating over any non-XY dimensions, because the
         # underlying routine does not support this.
-        # Just for now, we will use cube.slices and merge to achieve this,
+        # FOR NOW: we will use cube.slices and merge to achieve this,
         # though that is not a terribly efficient method ...
+        # TODO: create a template result cube and paste data slices into it,
+        # which would be more efficient.
         result_slices = iris.cube.CubeList([])
         for slice_cube in src.slices(sx):
             if self._regrid_info is None:
