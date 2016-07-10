@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,8 @@ import iris.tests as tests
 
 import numpy as np
 
+from iris.cube import Cube
+from iris.coords import AuxCoord
 from iris.experimental.regrid import _CurvilinearRegridder as Regridder
 from iris.tests import mock
 from iris.tests.stock import global_pp, lat_lon_cube
@@ -35,76 +37,125 @@ RESULT_DIR = ('analysis', 'regrid')
 
 class Test___init__(tests.IrisTest):
     def setUp(self):
-        self.ok = lat_lon_cube()
+        self.src_grid = lat_lon_cube()
         self.bad = np.ones((3, 4))
-        self.weights = np.ones(self.ok.shape, self.ok.dtype)
+        self.weights = np.ones(self.src_grid.shape, self.src_grid.dtype)
 
     def test_bad_src_type(self):
         with self.assertRaisesRegexp(TypeError, "'src_grid_cube'"):
-            Regridder(self.bad, self.ok, self.weights)
+            Regridder(self.bad, self.src_grid, self.weights)
 
     def test_bad_grid_type(self):
         with self.assertRaisesRegexp(TypeError, "'target_grid_cube'"):
-            Regridder(self.ok, self.bad, self.weights)
+            Regridder(self.src_grid, self.bad, self.weights)
 
 
 @tests.skip_data
 class Test___call__(tests.IrisTest):
     def setUp(self):
-        self.func = ('iris.experimental.regrid.'
-                     'regrid_weighted_curvilinear_to_rectilinear')
-        self.ok = global_pp()
-        y = self.ok.coord('latitude')
-        x = self.ok.coord('longitude')
-        self.ok.remove_coord('latitude')
-        self.ok.remove_coord('longitude')
-        self.ok.add_aux_coord(y, 0)
-        self.ok.add_aux_coord(x, 1)
-        self.weights = np.ones(self.ok.shape, self.ok.dtype)
+        self.func_setup = (
+            'iris.experimental.regrid.'
+            '_regrid_weighted_curvilinear_to_rectilinear__prepare')
+        self.func_operate = (
+            'iris.experimental.regrid.'
+            '_regrid_weighted_curvilinear_to_rectilinear__perform')
+        # Define a test source grid and target grid, basically the same.
+        self.src_grid = global_pp()
+        self.tgt_grid = global_pp()
+        # Modify the names so we can tell them apart.
+        self.src_grid.rename('src_grid')
+        self.tgt_grid.rename('TARGET_GRID')
+        # Replace the source-grid x and y coords with equivalent 2d versions.
+        x_coord = self.src_grid.coord('longitude')
+        y_coord = self.src_grid.coord('latitude')
+        nx, = x_coord.shape
+        ny, = y_coord.shape
+        xx, yy = np.meshgrid(x_coord.points, y_coord.points)
+        self.src_grid.remove_coord(x_coord)
+        self.src_grid.remove_coord(y_coord)
+        x_coord_2d = AuxCoord(xx,
+                              standard_name=x_coord.standard_name,
+                              units=x_coord.units,
+                              coord_system=x_coord.coord_system)
+        y_coord_2d = AuxCoord(yy,
+                              standard_name=y_coord.standard_name,
+                              units=y_coord.units,
+                              coord_system=y_coord.coord_system)
+        self.src_grid.add_aux_coord(x_coord_2d, (0, 1))
+        self.src_grid.add_aux_coord(y_coord_2d, (0, 1))
+        self.weights = np.ones(self.src_grid.shape, self.src_grid.dtype)
 
     def test_same_src_as_init(self):
-        # Modify the names so we can tell them apart.
-        src_grid = self.ok.copy()
-        src_grid.rename('src_grid')
-        target_grid = self.ok.copy()
-        target_grid.rename('TARGET_GRID')
+        # Check the regridder call calls the underlying routines as expected.
+        src_grid = self.src_grid
+        target_grid = self.tgt_grid
         regridder = Regridder(src_grid, target_grid, self.weights)
-        with mock.patch(self.func,
-                        return_value=mock.sentinel.regridded) as clr:
-            result = regridder(src_grid)
+        # Note: for now, patch the internal partial result to a "real" cube,
+        # so we can do a cubelist merge, which is too complicated to mock out.
+        mock_slice_result = Cube([1])
+        with mock.patch(self.func_setup,
+                        return_value=mock.sentinel.regrid_info) as patch_setup:
+            with mock.patch(self.func_operate,
+                            return_value=mock_slice_result) as patch_operate:
+                result = regridder(src_grid)
+        patch_setup.assert_called_once_with(
+            src_grid, self.weights, target_grid)
+        patch_operate.assert_called_once_with(
+            src_grid, mock.sentinel.regrid_info)
+        # The result is a re-merged version of the internal result, so it is
+        # therefore '==' but not the same object.
+        self.assertEqual(result, mock_slice_result)
 
-        clr.assert_called_once_with(src_grid, self.weights, target_grid)
-        self.assertIs(result, mock.sentinel.regridded)
+    def test_no_weights(self):
+        # Check we can use the regridder without weights.
+        src_grid = self.src_grid
+        target_grid = self.tgt_grid
+        regridder = Regridder(src_grid, target_grid)
+        # Note: for now, patch the internal partial result to a "real" cube,
+        # so we can do a cubelist merge, which is too complicated to mock out.
+        mock_slice_result = Cube([1])
+        with mock.patch(self.func_setup,
+                        return_value=mock.sentinel.regrid_info) as patch_setup:
+            with mock.patch(self.func_operate,
+                            return_value=mock_slice_result) as patch_operate:
+                result = regridder(src_grid)
+        patch_setup.assert_called_once_with(
+            src_grid, None, target_grid)
 
     def test_diff_src_from_init(self):
-        # Modify the names so we can tell them apart.
-        src_grid = self.ok.copy()
-        src_grid.rename('SRC_GRID')
-        target_grid = self.ok.copy()
-        target_grid.rename('TARGET_GRID')
+        # Check we can call the regridder with a different cube from the one we
+        # built it with.
+        src_grid = self.src_grid
+        target_grid = self.tgt_grid
         regridder = Regridder(src_grid, target_grid, self.weights)
-        src = self.ok.copy()
-        src.rename('SRC')
-        with mock.patch(self.func,
-                        return_value=mock.sentinel.regridded) as clr:
-            result = regridder(src)
-
-        clr.assert_called_once_with(src, self.weights, target_grid)
-        self.assertIs(result, mock.sentinel.regridded)
+        # Note: for now, patch the internal partial result to a "real" cube,
+        # so we can do a cubelist merge, which is too complicated to mock out.
+        mock_slice_result = Cube([1])
+        # Provide a "different" cube for the actual regrid.
+        different_src_cube = self.src_grid.copy()
+        # Rename so we can distinguish them.
+        different_src_cube.rename('Different_source')
+        with mock.patch(self.func_setup,
+                        return_value=mock.sentinel.regrid_info) as patch_setup:
+            with mock.patch(self.func_operate,
+                            return_value=mock_slice_result) as patch_operate:
+                result = regridder(different_src_cube)
+        patch_operate.assert_called_once_with(
+            different_src_cube, mock.sentinel.regrid_info)
 
 
 @tests.skip_data
 class Test___call____bad_src(tests.IrisTest):
     def setUp(self):
-        self.ok = global_pp()
-        y = self.ok.coord('latitude')
-        x = self.ok.coord('longitude')
-        self.ok.remove_coord('latitude')
-        self.ok.remove_coord('longitude')
-        self.ok.add_aux_coord(y, 0)
-        self.ok.add_aux_coord(x, 1)
-        weights = np.ones(self.ok.shape, self.ok.dtype)
-        self.regridder = Regridder(self.ok, self.ok, weights)
+        self.src_grid = global_pp()
+        y = self.src_grid.coord('latitude')
+        x = self.src_grid.coord('longitude')
+        self.src_grid.remove_coord('latitude')
+        self.src_grid.remove_coord('longitude')
+        self.src_grid.add_aux_coord(y, 0)
+        self.src_grid.add_aux_coord(x, 1)
+        weights = np.ones(self.src_grid.shape, self.src_grid.dtype)
+        self.regridder = Regridder(self.src_grid, self.src_grid, weights)
 
     def test_bad_src_type(self):
         with self.assertRaisesRegexp(TypeError, 'must be a Cube'):
@@ -113,7 +164,7 @@ class Test___call____bad_src(tests.IrisTest):
     def test_bad_src_shape(self):
         with self.assertRaisesRegexp(ValueError,
                                      'not defined on the same source grid'):
-            self.regridder(self.ok[::2, ::2])
+            self.regridder(self.src_grid[::2, ::2])
 
 
 if __name__ == '__main__':
