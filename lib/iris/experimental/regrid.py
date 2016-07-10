@@ -1171,6 +1171,7 @@ class _CurvilinearRegridder(object):
         self._src_cube = src_grid_cube.copy()
         self._target_cube = target_grid_cube.copy()
         self.weights = weights
+        self._regrid_info = None
 
     @staticmethod
     def _get_horizontal_coord(cube, axis):
@@ -1237,17 +1238,16 @@ class _CurvilinearRegridder(object):
         # underlying routine does not support this.
         # Just for now, we will use cube.slices and merge to achieve this,
         # though that is not a terribly efficient method ...
-        regrid_info = None
         result_slices = iris.cube.CubeList([])
         for slice_cube in src.slices(sx):
-            if regrid_info is None:
+            if self._regrid_info is None:
                 # Calculate the basic regrid info just once.
-                regrid_info = \
+                self._regrid_info = \
                     _regrid_weighted_curvilinear_to_rectilinear__prepare(
                         slice_cube, self.weights, self._target_cube)
             slice_result = \
                 _regrid_weighted_curvilinear_to_rectilinear__perform(
-                    slice_cube, regrid_info)
+                    slice_cube, self._regrid_info)
             result_slices.append(slice_result)
         result = result_slices.merge_cube()
         return result
