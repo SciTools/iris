@@ -1095,7 +1095,6 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
         # Zero any masked source points so they add nothing in output sums.
         if np.ma.is_masked(src_cube.data):
             mask = src_cube.data.mask
-            valid = ~mask
             data[mask] = 0.0
 
     # Calculate sum in each target cell, over contributions from each source
@@ -1105,10 +1104,13 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     # Create a template for the weighted mean result.
     weighted_mean = ma.masked_all(numerator.shape, dtype=numerator.dtype)
 
-    # Account for missing input data points.
+    # Account for any missing input data points.
     if np.ma.is_masked(src_cube.data):
         # Calculate a new 'sum_weights' to account for missing source points.
-        src_cell_validity_factors = sparse_diags(np.array(valid, dtype=int), 0)
+        valid_src_cells = ~mask.flat[:]
+        src_cell_validity_factors = sparse_diags(
+            np.array(valid_src_cells, dtype=int),
+            0)
         valid_weights = sparse_matrix * src_cell_validity_factors
         sum_weights = valid_weights.sum(axis=1)
         sum_weights = np.maximum(1, sum_weights).getA()
