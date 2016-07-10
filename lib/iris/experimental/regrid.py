@@ -1072,6 +1072,11 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     # contribution from one or more source points.
     rows = np.nonzero(sum_weights)
 
+    # NOTE: when source points are masked, this 'sum_weights' is possibly
+    # incorrect and needs re-calculating.  Likewise 'rows' may cover target
+    # cells which happen to get no data.  This is dealt with by adjusting as
+    # required in the '__perform' function, below.
+
     regrid_info = (sparse_matrix, sum_weights, rows, grid_cube)
     return regrid_info
 
@@ -1087,15 +1092,35 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     sparse_matrix, sum_weights, rows, grid_cube = regrid_info
 
     # Calculate the numerator of the weighted mean (M, 1).
-    if not ma.isMaskedArray(src_cube.data):
+    is_masked = ma.isMaskedArray(src_cube.data)
+    if not is_masked:
         data = src_cube.data
     else:
         # Use raw data array
         data = src_cube.data.data
-        # Zero any masked source points so they add nothing in output sums.
-        if np.ma.is_masked(src_cube.data):
+        # Check if there are any masked source points to take account of.
+        is_masked = np.ma.is_masked(src_cube.data)
+        if is_masked:
+            # Zero any masked source points so they add nothing in output sums.
             mask = src_cube.data.mask
             data[mask] = 0.0
+            # Calculate a new 'sum_weights' to allow for missing source points.
+            # N.B. it is more efficient to use the original once-calculated
+            # sparse matrix, but in this case we can't.
+            # Hopefully, this post-multiplying by the validities is less costly
+            # than repeating the whole sparse calculation.
+            valid_src_cells = ~mask.flat[:]
+            src_cell_validity_factors = sparse_diags(
+                np.array(valid_src_cells, dtype=int),
+                0)
+            valid_weights = sparse_matrix * src_cell_validity_factors
+            sum_weights = valid_weights.sum(axis=1).getA()
+            # Work out where output cells are missing all contributions.
+            # This allows for where 'rows' contains output cells that have no
+            # data because of missing input points.
+            zero_sums = sum_weights == 0.0
+            # Make sure we can still divide by sum_weights[rows].
+            sum_weights[zero_sums] = 1.0
 
     # Calculate sum in each target cell, over contributions from each source
     # cell.
@@ -1104,19 +1129,15 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     # Create a template for the weighted mean result.
     weighted_mean = ma.masked_all(numerator.shape, dtype=numerator.dtype)
 
-    # Account for any missing input data points.
-    if np.ma.is_masked(src_cube.data):
-        # Calculate a new 'sum_weights' to account for missing source points.
-        valid_src_cells = ~mask.flat[:]
-        src_cell_validity_factors = sparse_diags(
-            np.array(valid_src_cells, dtype=int),
-            0)
-        valid_weights = sparse_matrix * src_cell_validity_factors
-        sum_weights = valid_weights.sum(axis=1)
-        sum_weights = np.maximum(1, sum_weights).getA()
-
     # Calculate final results in all relevant places.
     weighted_mean[rows] = numerator[rows] / sum_weights[rows]
+    if is_masked:
+        # Ensure masked points where relevant source cells were all missing.
+        if np.any(zero_sums):
+            # Make masked if it wasn't.
+            weighted_mean = np.ma.asarray(weighted_mean)
+            # Mask where contributing sums were zero.
+            weighted_mean[zero_sums] = np.ma.masked
 
     # Construct the final regridded weighted mean cube.
     tx = grid_cube.coord(axis='x', dim_coords=True)

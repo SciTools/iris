@@ -25,8 +25,11 @@ import iris.tests as tests
 
 import numpy as np
 
+from iris.analysis.cartography import rotate_pole
 from iris.cube import Cube
-from iris.coords import AuxCoord
+from iris.coords import AuxCoord, DimCoord
+from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.fileformats.pp import EARTH_RADIUS
 from iris.experimental.regrid import _CurvilinearRegridder as Regridder
 from iris.tests import mock
 from iris.tests.stock import global_pp, lat_lon_cube
@@ -193,6 +196,109 @@ class Test___call____bad_src(tests.IrisTest):
                                      'not defined on the same source grid'):
             self.regridder(self.src_grid[::2, ::2])
 
+
+class Test__call__multidimensional(tests.IrisTest):
+    def test_multidim(self):
+        # Testing with >2D data to demonstrate correct operation over
+        # additional non-XY dimensions (including data masking), which is
+        # handled by the PointInCell wrapper class.
+
+        # Define a simple target grid first, in plain latlon coordinates.
+        plain_latlon_cs = GeogCS(EARTH_RADIUS)
+        grid_x_coord = DimCoord(points=[15.0, 25.0, 35.0],
+                                bounds=[[10.0, 20.0],
+                                        [20.0, 30.0],
+                                        [30.0, 40.0]],
+                                standard_name='longitude',
+                                units='degrees',
+                                coord_system=plain_latlon_cs)
+        grid_y_coord = DimCoord(points=[-30.0, -50.0],
+                                bounds=[[-20.0, -40.0], [-40.0, -60.0]],
+                                standard_name='latitude',
+                                units='degrees',
+                                coord_system=plain_latlon_cs)
+        grid_cube = Cube(np.zeros((2, 3)))
+        grid_cube.add_dim_coord(grid_y_coord, 0)
+        grid_cube.add_dim_coord(grid_x_coord, 1)
+
+        # Define some key points in true-lat/lon thta have known positions
+        # First 3x2 points in the centre of each output cell.
+        x_centres, y_centres = np.meshgrid(grid_x_coord.points,
+                                           grid_y_coord.points)
+        # An extra point also falling in cell 1, 1
+        x_in11, y_in11 = 26.3, -48.2
+        # An extra point completely outside the target grid
+        x_out, y_out = 70.0, -40.0
+
+        # Define a rotated coord system for the source data
+        pole_lon, pole_lat = -125.3, 53.4
+        src_cs = RotatedGeogCS(grid_north_pole_latitude=pole_lat,
+                               grid_north_pole_longitude=pole_lon,
+                               ellipsoid=plain_latlon_cs)
+
+        # Concatenate all the testpoints in a flat array, and find the rotated
+        # equivalents.
+        xx = list(x_centres.flat[:]) + [x_in11, x_out]
+        yy = list(y_centres.flat[:]) + [y_in11, y_out]
+        xx, yy = rotate_pole(lons=np.array(xx),
+                             lats=np.array(yy),
+                             pole_lon=pole_lon,
+                             pole_lat=pole_lat)
+        # Define handy index numbers for all these.
+        i00, i01, i02, i10, i11, i12, i_in, i_out = range(8)
+
+        # Build test data in the shape Z,YX = (3, 8)
+        data = [[1, 2, 3, 11, 12, 13, 7, 99],
+                [1, 2, 3, 11, 12, 13, 7, 99],
+                [7, 6, 5, 51, 52, 53, 12, 1]]
+        mask = [[0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0]]
+        src_data = np.ma.array(data, mask=mask, dtype=float)
+
+        # Make the source cube.
+        src_cube = Cube(src_data)
+        src_x = AuxCoord(xx,
+                         standard_name='grid_longitude',
+                         units='degrees',
+                         coord_system=src_cs)
+        src_y = AuxCoord(yy,
+                         standard_name='grid_latitude',
+                         units='degrees',
+                         coord_system=src_cs)
+        src_z = DimCoord(np.arange(3), long_name='z')
+        src_cube.add_dim_coord(src_z, 0)
+        src_cube.add_aux_coord(src_x, 1)
+        src_cube.add_aux_coord(src_y, 1)
+        # Add in some extra metadata, to ensure it gets copied over.
+        src_cube.add_aux_coord(DimCoord([0], long_name='extra_scalar_coord'))
+        src_cube.attributes['extra_attr'] = 12.3
+
+        # Define what the expected answers should be, shaped (3, 2, 3).
+        expected_result = [
+            [[1.0, 2.0, 3.0],
+             [11.0, 0.5 * (12 + 7), 13.0]],
+            [[1.0, -999, 3.0],
+             [11.0, 12.0, 13.0]],
+            [[7.0, 6.0, 5.0],
+             [51.0, 0.5 * (52 + 12), 53.0]],
+            ]
+        expected_result = np.ma.masked_less(expected_result, 0)
+
+        # Perform the calculation with the regridder.
+        regridder = Regridder(src_cube, grid_cube)
+
+        # Check all is as expected.
+        result = regridder(src_cube)
+        self.assertEqual(result.coord('z'), src_cube.coord('z'))
+        self.assertEqual(result.coord('extra_scalar_coord'),
+                         src_cube.coord('extra_scalar_coord'))
+        self.assertEqual(result.coord('longitude'),
+                         grid_cube.coord('longitude'))
+        self.assertEqual(result.coord('latitude'),
+                         grid_cube.coord('latitude'))
+        self.assertMaskedArrayAlmostEqual(result.data, expected_result)
+        t_dbg = 0
 
 if __name__ == '__main__':
     tests.main()
