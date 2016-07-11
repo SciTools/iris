@@ -537,9 +537,10 @@ def _load_cube(engine, cf, cf_var, filename):
                                                 intervals=method.intervals,
                                                 comments=method.comments,
                                                 coords=[names[coord_name]
+                                                        if coord_name in names
+                                                        else coord_name
                                                         for coord_name in
-                                                        method.coord_names if
-                                                        coord_name in names])
+                                                        method.coord_names])
                          for method in cube.cell_methods]
 
     # Show pyke session statistics.
