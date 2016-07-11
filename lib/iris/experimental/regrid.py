@@ -795,18 +795,12 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     mean of data values from :data:`src_cube` and the weights from
     :data:`weights` regridded onto the horizontal grid of :data:`grid_cube`.
 
-    #
-    # PP-NOTE:
-    # changes here to requirements.
-    #
-    -- This function requires that the :data:`src_cube` has a curvilinear
-    -- horizontal grid and the target :data:`grid_cube` is rectilinear
-    ++ This function requires that the :data:`src_cube` has a horizontal grid
-    ++ defined by a pair of X- and Y-axis coordinates which are mapped over the
-    ++ same cube dimensions, thus each point has an individually defined X and
-    ++ Y coordinate value.  The actual dimensions of these coordinates are of
-    ++ no significance.
-    ++ The :data:`src_cube` grid cube must have a normal horizontal grid,
+    This function requires that the :data:`src_cube` has a horizontal grid
+    defined by a pair of X- and Y-axis coordinates which are mapped over the
+    same cube dimensions, thus each point has an individually defined X and
+    Y coordinate value.  The actual dimensions of these coordinates are of
+    no significance.
+    The :data:`src_cube` grid cube must have a normal horizontal grid,
     i.e. expressed in terms of two orthogonal 1D horizontal coordinates.
     Both grids must be in the same coordinate system, and the :data:`grid_cube`
     must have horizontal coordinates that are both bounded and contiguous.
@@ -822,14 +816,8 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
 
     .. warning::
 
-    #
-    # PP_NOTE: removed restrictions
-    #
-    --    * Only 2D cubes are supported.
         * All coordinates that span the :data:`src_cube` that don't define
           the horizontal curvilinear grid will be ignored.
-    --    * The :class:`cf_units.Unit` of the horizontal grid coordinates
-    --      must be either :data:`degrees` or :data:`radians`.
 
     Args:
 
@@ -874,37 +862,9 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     # Get the target grid cube x and y dimension coordinates.
     tx, ty = get_xy_dim_coords(grid_cube)
 
-    #
-    # FOR NOW: minimal hacks to allow non-latlon grids
-    #
     if sx.units != sy.units:
         msg = 'The source cube x ({!r}) and y ({!r}) coordinates must ' \
             'have the same units.'
-        raise ValueError(msg.format(sx.name(), sy.name()))
-
-    if tx.units != ty.units:
-        msg = 'The target grid cube x ({!r}) and y ({!r}) coordinates must ' \
-            'have the same units.'
-        raise ValueError(msg.format(tx.name(), ty.name()))
-
-#    if sx.units != tx.units:
-#        msg = 'The source cube and target grid cube must have x and y ' \
-#            'coordinates with the same units.'
-#        raise ValueError(msg)
-
-    if sx.ndim != sy.ndim:
-        msg = 'The source cube x ({!r}) and y ({!r}) coordinates must ' \
-            'have the same dimensionality.'
-        raise ValueError(msg.format(sx.name(), sy.name()))
-
-#    if sx.ndim != 2:
-#        msg = 'The source cube x ({!r}) and y ({!r}) coordinates must ' \
-#            'be 2D auxiliary coordinates.'
-#        raise ValueError(msg.format(sx.name(), sy.name()))
-
-    if sx.coord_system != sy.coord_system:
-        msg = 'The source cube x ({!r}) and y ({!r}) coordinates must ' \
-            'have the same coordinate system.'
         raise ValueError(msg.format(sx.name(), sy.name()))
 
     if src_cube.coord_dims(sx) != src_cube.coord_dims(sy):
@@ -912,11 +872,24 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
             'map onto the same cube dimensions.'
         raise ValueError(msg.format(sx.name(), sy.name()))
 
-    if weights is None:
-        weights = np.ones(sx.shape)
-    if weights.shape != sx.shape:
-        msg = ('Provided weights must have the same shape as the X and Y '
-               'coordinates.')
+    if sx.coord_system != sy.coord_system:
+        msg = 'The source cube x ({!r}) and y ({!r}) coordinates must ' \
+            'have the same coordinate system.'
+        raise ValueError(msg.format(sx.name(), sy.name()))
+
+    if sx.coord_system is None:
+        msg = ('The source X and Y coordinates must have a defined '
+               'coordinate system.')
+        raise ValueError(msg)
+
+    if tx.units != ty.units:
+        msg = 'The target grid cube x ({!r}) and y ({!r}) coordinates must ' \
+            'have the same units.'
+        raise ValueError(msg.format(tx.name(), ty.name()))
+
+    if tx.coord_system is None:
+        msg = ('The target X and Y coordinates must have a defined '
+               'coordinate system.')
         raise ValueError(msg)
 
     if tx.coord_system != ty.coord_system:
@@ -924,9 +897,11 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
             'have the same coordinate system.'
         raise ValueError(msg.format(tx.name(), ty.name()))
 
-    if sx.coord_system is None or tx.coord_system is None:
-        msg = ('The source and target grid cube must both have a defined '
-               'coordinate system.')
+    if weights is None:
+        weights = np.ones(sx.shape)
+    if weights.shape != sx.shape:
+        msg = ('Provided weights must have the same shape as the X and Y '
+               'coordinates.')
         raise ValueError(msg)
 
     if not tx.has_bounds() or not tx.is_contiguous():
@@ -966,14 +941,9 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
         sx_points, sy_points = _transform_xy_arrays(
             src_crs, sx_points, sy_points, tgt_crs)
     #
-    # PP-TODO: how does this work with scaled units ??
+    # TODO: how does this work with scaled units ??
     #  e.g. if crs is latlon, units could be degrees OR radians ?
     #
-#    else:
-#        # Convert source points to target units if needed.
-#        if sx.coord_system != tx.coord_system:
-#            sx_points = sx.units.convert(sx_points, tx.units)
-#            sy_points = sy.units.convert(sy_points, ty.units)
 
     # Wrap modular values (e.g. longitudes) if required.
     modulus = sx.units.modulus
@@ -1278,6 +1248,19 @@ class PointInCell(object):
     This class describes the point-in-cell regridding scheme for regridding
     over one or more orthogonal coordinates, typically for use with
     :meth:`iris.cube.Cube.regrid()`.
+
+    The PointInCell regridder can regrid data from a source grid of any
+    dimensionality and in any coordinate system.
+    The location of each source point is specified by X and Y coordinates
+    mapped over the same cube dimensions, aka "grid dimensions" : the grid may
+    have any dimensionality.  The X and Y coordinates must also have the same,
+    defined coord_system.
+    The weights, if specified, must have the same shape as the X and Y
+    coordinates.
+    The output grid can be any 'normal' XY grid, specified by *separate* X
+    and Y coordinates :  That is, X and Y have two different cube dimensions.
+    The output X and Y coordinates must also have a common, specified
+    coord_system.
 
     """
     def __init__(self, weights=None):

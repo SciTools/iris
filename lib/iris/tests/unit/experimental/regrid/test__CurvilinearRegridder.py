@@ -89,7 +89,7 @@ class Test___call__(tests.IrisTest):
         self.weights = np.ones(self.src_grid.shape, self.src_grid.dtype)
         # Define an actual, dummy cube for the internal partial result, so we
         # can do a cubelist merge on it, which is too complicated to mock out.
-        self.mock_slice_result = Cube([1])
+        self.dummy_slice_result = Cube([1])
 
     def test_same_src_as_init(self):
         # Check the regridder call calls the underlying routines as expected.
@@ -100,7 +100,7 @@ class Test___call__(tests.IrisTest):
                         return_value=mock.sentinel.regrid_info) as patch_setup:
             with mock.patch(
                     self.func_operate,
-                    return_value=self.mock_slice_result) as patch_operate:
+                    return_value=self.dummy_slice_result) as patch_operate:
                 result = regridder(src_grid)
         patch_setup.assert_called_once_with(
             src_grid, self.weights, target_grid)
@@ -108,21 +108,18 @@ class Test___call__(tests.IrisTest):
             src_grid, mock.sentinel.regrid_info)
         # The result is a re-merged version of the internal result, so it is
         # therefore '==' but not the same object.
-        self.assertEqual(result, self.mock_slice_result)
+        self.assertEqual(result, self.dummy_slice_result)
 
     def test_no_weights(self):
         # Check we can use the regridder without weights.
         src_grid = self.src_grid
         target_grid = self.tgt_grid
         regridder = Regridder(src_grid, target_grid)
-        # Note: for now, patch the internal partial result to a "real" cube,
-        # so we can do a cubelist merge, which is too complicated to mock out.
-        mock_slice_result = Cube([1])
         with mock.patch(self.func_setup,
                         return_value=mock.sentinel.regrid_info) as patch_setup:
             with mock.patch(
                     self.func_operate,
-                    return_value=self.mock_slice_result) as patch_operate:
+                    return_value=self.dummy_slice_result) as patch_operate:
                 result = regridder(src_grid)
         patch_setup.assert_called_once_with(
             src_grid, None, target_grid)
@@ -133,9 +130,6 @@ class Test___call__(tests.IrisTest):
         src_grid = self.src_grid
         target_grid = self.tgt_grid
         regridder = Regridder(src_grid, target_grid, self.weights)
-        # Note: for now, patch the internal partial result to a "real" cube,
-        # so we can do a cubelist merge, which is too complicated to mock out.
-        mock_slice_result = Cube([1])
         # Provide a "different" cube for the actual regrid.
         different_src_cube = self.src_grid.copy()
         # Rename so we can distinguish them.
@@ -144,7 +138,7 @@ class Test___call__(tests.IrisTest):
                         return_value=mock.sentinel.regrid_info) as patch_setup:
             with mock.patch(
                     self.func_operate,
-                    return_value=self.mock_slice_result) as patch_operate:
+                    return_value=self.dummy_slice_result) as patch_operate:
                 result = regridder(different_src_cube)
         patch_operate.assert_called_once_with(
             different_src_cube, mock.sentinel.regrid_info)
@@ -155,14 +149,13 @@ class Test___call__(tests.IrisTest):
         src_grid = self.src_grid
         target_grid = self.tgt_grid
         regridder = Regridder(src_grid, target_grid, self.weights)
-        mock_slice_result = Cube([1])
         different_src_cube = self.src_grid.copy()
         different_src_cube.rename('Different_source')
         with mock.patch(self.func_setup,
                         return_value=mock.sentinel.regrid_info) as patch_setup:
             with mock.patch(
                     self.func_operate,
-                    return_value=self.mock_slice_result) as patch_operate:
+                    return_value=self.dummy_slice_result) as patch_operate:
                 result1 = regridder(src_grid)
                 result2 = regridder(different_src_cube)
         patch_setup.assert_called_once_with(
@@ -298,7 +291,7 @@ class Test__call__multidimensional(tests.IrisTest):
         self.assertEqual(result.coord('latitude'),
                          grid_cube.coord('latitude'))
         self.assertMaskedArrayAlmostEqual(result.data, expected_result)
-        t_dbg = 0
+
 
 if __name__ == '__main__':
     tests.main()

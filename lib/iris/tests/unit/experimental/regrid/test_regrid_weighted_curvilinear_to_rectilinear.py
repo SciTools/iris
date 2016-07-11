@@ -42,7 +42,7 @@ from iris.experimental.regrid \
     import regrid_weighted_curvilinear_to_rectilinear as regrid
 
 
-_PLAIN_LATLON_CS = GeogCS(EARTH_RADIUS)
+PLAIN_LATLON_CS = GeogCS(EARTH_RADIUS)
 
 
 class Test(tests.IrisTest):
@@ -69,12 +69,12 @@ class Test(tests.IrisTest):
             points,
             standard_name='longitude',
             units='degrees',
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
         self.src_x_transpose = iris.coords.AuxCoord(
             points.T,
             standard_name='longitude',
             units='degrees',
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
         points = np.array([[-180, -176, -170, -150],
                            [-180, -179, -178, -177],
                            [-170, -168, -159, -140]])
@@ -82,7 +82,7 @@ class Test(tests.IrisTest):
             points,
             standard_name='longitude',
             units='degrees',
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
 
         # Source cube y-coordinates.
         points = np.array([[0, 4, 3, 1],
@@ -92,12 +92,12 @@ class Test(tests.IrisTest):
             points,
             standard_name='latitude',
             units='degrees',
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
         self.src_y_transpose = iris.coords.AuxCoord(
             points.T,
             standard_name='latitude',
             units='degrees',
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
 
         # Weights.
         self.weight_factor = 10
@@ -113,14 +113,14 @@ class Test(tests.IrisTest):
             units='degrees',
             bounds=[[180, 190],
                     [190, 220]],
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
         self.grid_x_dec = iris.coords.DimCoord(
             [200, 187],
             standard_name='longitude',
             units='degrees',
             bounds=[[220, 190],
                     [190, 180]],
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
 
         # Target grid cube y-coordinates.
         self.grid_y_inc = iris.coords.DimCoord(
@@ -129,14 +129,14 @@ class Test(tests.IrisTest):
             units='degrees',
             bounds=[[0, 5],
                     [5, 30]],
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
         self.grid_y_dec = iris.coords.DimCoord(
             [10, 2],
             standard_name='latitude',
             units='degrees',
             bounds=[[30, 5],
                     [5, 0]],
-            coord_system=_PLAIN_LATLON_CS)
+            coord_system=PLAIN_LATLON_CS)
 
     def _weighted_mean(self, points):
         points = np.asarray(points, dtype=np.float)
