@@ -45,6 +45,11 @@ class TestLoad(tests.IrisTest):
                                                'NAMEII_timeseries.txt')))
         self.assertCMLApproxData(cubes, ('name', 'NAMEII_timeseries.cml'))
 
+    def test_NAMEIII_version2(self):
+        cubes = iris.load(tests.get_data_path(('NAME',
+                                               'NAMEIII_version2.txt')))
+        self.assertCMLApproxData(cubes, ('name', 'NAMEIII_version2.cml'))
+
     def test_NAMEII_trajectory(self):
         cubes = iris.load(tests.get_data_path(('NAME',
                                               'NAMEIII_trajectory.txt')))
