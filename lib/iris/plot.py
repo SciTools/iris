@@ -405,14 +405,16 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
 def _fixup_dates(coord, values):
     if coord.units.calendar is not None and values.ndim == 1:
-        num2date = coord.units.num2date
-        if coord.units.calendar == 'gregorian':
-            r = [datetime.datetime(*(num2date(val).timetuple()[0:6]))
+        # Convert coordinate values into tuples of
+        # (year, month, day, hour, min, sec)
+        dates = [coord.units.num2date(val).timetuple()[0:6]
                  for val in values]
+        if coord.units.calendar == 'gregorian':
+            r = [datetime.datetime(*date) for date in dates]
         else:
             r = [nc_time_axis.CalendarDateTime(
-                 netcdftime.datetime(*(num2date(val).timetuple()[0:6])),
-                 coord.units.calendar) for val in values]
+                 netcdftime.datetime(*date), coord.units.calendar)
+                 for date in dates]
         values = np.empty(len(r), dtype=object)
         values[:] = r
     return values
