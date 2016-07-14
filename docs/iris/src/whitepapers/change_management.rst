@@ -135,10 +135,11 @@ The API is the components of the iris module and its submodules which are
 does not have a single leading underscore "_".
 This applies to all public modules and their properties : submodules, contained
 public classes, data and properties, functions and methods.
-One exception is when a module or class defines an '__all__' property :  In
+An exception is when a module or class defines an '__all__' property :  In
 that case, the public aspects are just the ones listed there.
+
 Note: these are standard Python conventions, not specific to Iris.
-See: <https://www.python.org/dev/peps/pep-0008/>.
+See: `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_.
 
 The Iris project considers all public API features as "supported", which means
 that we will not change or remove them without deprecation, and will undertake
@@ -164,26 +165,36 @@ A "behaviour" is whatever Iris does when you invoke a particular API usage,
 encompassing both returned values and any side effects such as code state
 changes or data written to files.
 
-As, the above code examples are all public feature usages, they should
+As the above code examples are all public feature usages, they should
 therefore continue to work, with the same behaviours, at least until the next
 **major** version release.
 
-.. *Important*::
+.. Note::
+    What is the "same" behaviour, for backwards-compatibility purposes ?
 
     Unfortunately, the guarantee to preserve "what Iris does" within a major
-    version still cannot ensure *totally* identical and repeatable behaviour
-    for any possible usage, because this can also depend on the exact
-    installed versions of all dependencies (i.e. the other Python modules and
-    system libraries that Iris uses).
-
-    Although minor-release code changes will be backwards-compatible, resulting
-    in at least "equivalent" Iris actions, this can only be tested in specific
-    ways on a specific installation :  Any given user installation may still
-    experience changes in behaviour, though hopefully always slight, with a
-    different Iris minor release; or a different version of some dependency; or
-    a different operating system environment.
+    version cannot ensure *totally* identical and repeatable behaviour for any
+    possible usage, because this can also depend on the exact installed
+    versions of all dependencies (i.e. the other Python modules and system
+    libraries that Iris uses).
 
     See :ref:`iris_dependency_versions`.
+
+    Minor-release code changes are backwards-compatible, meaning that they must
+    result in "the same" actions from Iris.
+    Ultimately, however, this is only a statement of intent, as we need freedom
+    to modify code with "no change" effects, yet *any* change to Iris code or
+    dependencies could alter total behaviour in some respects :
+    For instance, it could take more or less time or memory, produce results in
+    a different sequence, or perform a calculation slightly differently (with
+    possible small differences in floating point results).
+
+    As behaviour can only be tested in specific ways on a specific
+    installation, so any given user installation may experience changes in
+    behaviour, though hopefully always slight, with a minor release change.
+    This applies to changes in the Iris minor release version, or a different
+    version of some dependency; or other changes to the operating system
+    environment.
 
 
 .. _iris_change_releases:
@@ -268,8 +279,8 @@ Deprecation manages incompatible changes in a strictly controlled way.
 This allows APIs to evolve to the most effective form, even when that means
 that existing code could behave differently or fail :  This is important
 because the freedom to remove features helps prevent the API becoming
-progressively cluttered, and modifying existing behaviours allows us to keep
-the most natural naming for our most commonly used features.
+progressively cluttered, and modifying existing behaviours allows us to use
+the most natural code syntax for the most used features.
 
 We can only remove features or change behaviours at a major release.  Thus, we
 first deprecate the feature in a minor release, to provide adequate warning
