@@ -19,15 +19,16 @@ Iris code editions are published as defined version releases, with a given
 major and minor version number in the version name, "major.minor.xxx",
 as explained in the :ref:`releases section <iris_change_releases>` below.
 
-    * Code that currently works should **still work**, and behave exactly the
-      same, in any subsequent sub-release with the same major release number.
+    * Code that currently works should **still work**, and have the same
+      results and effects, in any subsequent sub-release with the same major
+      release number.
 
     * The only time we will make changes that can break existing code is at
       a **major release**.
 
     * At a major release, code that works **and emits no deprecation warnings**
-      in the latest previous (minor) release should still work, and behave
-      exactly the same.
+      in the latest previous (minor) release should still work, and have the
+      same results and effects.
 
 
 **What can possibly go wrong ?**
@@ -47,7 +48,7 @@ Checklist :
 
 * when a new **minor version is released**
 
-    * review the 'Whatsnew' documentation to see if it introduces any
+    * review the 'Whats New' documentation to see if it introduces any
       deprecations that may affect you.
     * run your working legacy code and check for any deprecation warnings,
       indicating that modifications may be necessary at some point
@@ -90,26 +91,25 @@ Key concepts covered here:
 Backwards compatibility
 -----------------------
 
-"Backwards-compatible" changes are those that leave all possible existing API
+"Backwards-compatible" changes are those that leave any existing valid API
 usages unchanged (see :ref:`terminology <iris_api>` below).
 Only such changes may be included in minor releases.
 
-the following are examples of backward-compatible changes :
+The following are examples of backward-compatible changes :
 
     * changes to documentation
     * adding to a module : new submodules, functions, classes or properties
     * adding to a class : new methods or properties
-    * adding to a function or method : new optional arguments or keywords
+    * adding to a function or method : new **optional** arguments or keywords
 
 The following are examples of **non-** backward-compatible changes :
 
-    * removing a call
-    * removing a module
-    * removing an object
-    * removing an object property
-    * removing a call argument or keyword
-    * renaming a module, object, property, call, argument or keyword
-    * adding a required argument
+    * removing (which includes *renaming*) any public module or submodule
+    * removing any public component : a module, class, method, function or
+        data object property of a public API component
+    * removing any property of a public object
+    * removing an argument or keyword from a method or function
+    * adding a required argument to a method or function
     * removing a keyword (even one that has no effect)
     * changing the effect of *any* particular combination of arguments and/or
       keywords
@@ -119,7 +119,7 @@ making it depend on a newly-defined external control variable.  This is
 effectively a change to the 'default behaviour' of a specific usage.  Although
 this seems similar to adding a keyword, the cases where the new behaviour
 operates and where it does not are not distinguishable by a different code
-syntax, which makes this somewhat dangerous.  We do use this type of change,
+usage, which makes this somewhat dangerous.  We do use this type of change,
 but any behaviour 'mode' controls of this sort are usually added as part of the
 :class:`iris.Future` definition.
 See :ref:`Usage of iris.FUTURE <iris_future_usage>`, below.
@@ -130,11 +130,23 @@ See :ref:`Usage of iris.FUTURE <iris_future_usage>`, below.
 Terminology : API, features, usages and behaviours
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The API is the components of the iris module and submodules which are
-"public" :  In Python, by convention, this means everything whose name does not
-have a leading underscore "_".
-This means all public modules and submodules, and their contained classes,
-public data and properties, functions and methods.
+The API is the components of the iris module and its submodules which are
+"public" :  In Python, by convention, this normally means everything whose name
+does not have a single leading underscore "_".
+This applies to all public modules and their properties : submodules, contained
+public classes, data and properties, functions and methods.
+One exception is when a module or class defines an '__all__' property :  In
+that case, the public aspects are just the ones listed there.
+Note: these are standard Python conventions, not specific to Iris.
+See: <https://www.python.org/dev/peps/pep-0008/>.
+
+The Iris project considers all public API features as "supported", which means
+that we will not change or remove them without deprecation, and will undertake
+to fix any bugs discovered.
+We do however make an important exception for the content of the 'experimental'
+module :  APIs in :mod:`iris.experimental` module are published for initial
+evaluation and feedback, and can  be revised or removed without warning at a
+subsequent release.
 
 A "feature" of the API includes public objects as above, but may also be used
 more loosely to indicate a class or mode of behaviour, for example when a
@@ -142,20 +154,36 @@ keyword has a specific value, like "interpolate(mode='linear')".
 
 A "usage" is any code referring to public API elements, for example :
 
-        * `print iris.thing`
+        * `print(iris.thing)`
         * `iris.submodule.call(arg1)`
         * `iris.module.call(arg1, arg2, *more_args)`
         * `iris.module.call(arg1, arg2, control=3)`
         * `x = iris.module.class(arg, key=4)`
 
-A "behaviour" is whatever happens when you invoke a particular API usage,
+A "behaviour" is whatever Iris does when you invoke a particular API usage,
 encompassing both returned values and any side effects such as code state
 changes or data written to files.
 
-The above examples are all public feature usages, and therefore should
-continue to work, with the same behaviours, at least until the next **major**
-version release.
+As, the above code examples are all public feature usages, they should
+therefore continue to work, with the same behaviours, at least until the next
+**major** version release.
 
+.. *Important*::
+
+    Unfortunately, the guarantee to preserve "what Iris does" within a major
+    version still cannot ensure *totally* identical and repeatable behaviour
+    for any possible usage, because this can also depend on the exact
+    installed versions of all dependencies (i.e. the other Python modules and
+    system libraries that Iris uses).
+
+    Although minor-release code changes will be backwards-compatible, resulting
+    in at least "equivalent" Iris actions, this can only be tested in specific
+    ways on a specific installation :  Any given user installation may still
+    experience changes in behaviour, though hopefully always slight, with a
+    different Iris minor release; or a different version of some dependency; or
+    a different operating system environment.
+
+    See :ref:`iris_dependency_versions`.
 
 
 .. _iris_change_releases:
@@ -183,16 +211,17 @@ are :
     * A non-zero "<micro>" denotes a bugfix version, thus a release "X.Y.0" may
       be followed by "X.Y.1", "X.Y.2" etc, which *only* differ by containing
       bugfixes.  Any bugfix release supercedes its predecessors, and does not
-      change any (valid) APIs or behaviour :  there should be no reason not to
-      replace a given version with its latest bugfix successor.
+      change any (valid) APIs or behaviour :  hence, it is always advised to
+      replace a given version with its latest bugfix successor, and there
+      should be no reason not to.
 
     * "<extension>" is blank for formal releases.  It used to indicate
-      provisional software for testing :  The version of general Iris code in
-      development is labelled "-DEV", and release candidates for testing during
-      the release process are labelled "-rc1", "-rc2" etc.
+      provisional software for testing :  The version string in a development
+      code branch is always labelled "-DEV", and release candidates for testing
+      during the release process are labelled "-rc1", "-rc2" etc.
       For development code, the version number is that of the *next* release,
-      which this code version is progressing towards, e.g. "1.2-DEV" for code
-      following the 1.1 release and eventually giving rise to "1.2".
+      which this code version is progressing towards, e.g. "1.2-DEV" for all
+      code branches since the 1.1 release and intended for release in "1.2".
 
 .. note::
     Our use of "-<extension>" is typical, but does not follow strict SemVer
@@ -260,7 +289,7 @@ things.
 In all cases, we must provide a transitional period where both old and new
 features are available :
 
-    * the 'old' style works exactly as it did before
+    * the 'old' style works as it did before
     * any usage of the 'old' features will emit a
       :class:`warnings.WarningMessage` message, noting that the feature is
       deprecated and what to use instead
@@ -391,3 +420,21 @@ At (major) release "<X+2>...":
     * Changes to API:
         * the control property is removed
         * the "old" behaviour is removed
+
+
+
+.. _iris_dependency_versions:
+
+Versions of Installed Dependencies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The dependencies of Iris (required and optional) are defined in
+:ref:`installing_iris`.
+
+Iris does not specify exact required versions for its dependencies, but it may
+specify a minimum acceptable version number.  Iris is normally expected to be
+compatible with *any* version up to the latest current release.
+
+When a new release of a dependency is found to cause problems, Iris may define
+the supported version more precisely, but this would be a temporary fix which
+should be removed in a later release.
