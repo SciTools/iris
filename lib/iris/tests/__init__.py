@@ -85,12 +85,16 @@ else:
     GDAL_AVAILABLE = True
 
 try:
-    import gribapi
-except ImportError:
-    GRIB_AVAILABLE = False
-else:
+    import iris_grib
     GRIB_AVAILABLE = True
-    from iris.fileformats.grib.message import GribMessage
+    from iris_grib.message import GribMessage
+except ImportError:
+    try:
+        import gribapi
+        GRIB_AVAILABLE = True
+        from iris.fileformats.grib.message import GribMessage
+    except ImportError:
+        GRIB_AVAILABLE = False
 
 try:
     import iris_sample_data

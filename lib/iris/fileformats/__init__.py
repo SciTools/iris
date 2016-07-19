@@ -28,9 +28,13 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
 from . import abf
 from . import um
 try:
-    from . import grib
+    import iris_grib as grib
 except ImportError:
-    grib = None
+    try:
+        from . import grib
+    except ImportError:
+        grib = None
+
 from . import name
 from . import netcdf
 from . import nimrod
