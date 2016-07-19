@@ -38,10 +38,16 @@ from iris.util import is_regular
 
 # gribapi is an optional dependency
 try:
+    # Try to load new independent 'iris_grib' module.
+    from iris_grib import load_pairs_from_fields
+    from iris_grib.message import GribMessage
+except ImportError:
+    # Try to load old inbuilt module instead (N.B. also requires gribapi).
     import gribapi
     from iris.fileformats.grib import load_pairs_from_fields
     from iris.fileformats.grib.message import GribMessage
 except ImportError:
+    # Failed : ought to be okay anyway as it will skip the tests below.
     pass
 
 
