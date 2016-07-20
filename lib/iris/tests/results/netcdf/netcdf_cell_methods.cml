@@ -14,8 +14,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord name="lat"/>
-        <coord name="lon"/>
+        <coord name="latitude"/>
+        <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -35,8 +35,8 @@
     <cellMethods>
       <cellMethod method="mean">
         <coord name="time"/>
-        <coord name="lat"/>
-        <coord name="lon"/>
+        <coord name="latitude"/>
+        <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -58,10 +58,10 @@
         <coord name="time"/>
       </cellMethod>
       <cellMethod method="maximum">
-        <coord name="lat"/>
+        <coord name="latitude"/>
       </cellMethod>
       <cellMethod method="minimum">
-        <coord name="lon"/>
+        <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -83,8 +83,8 @@
         <coord name="time"/>
       </cellMethod>
       <cellMethod method="maximum">
-        <coord name="lat"/>
-        <coord name="lon"/>
+        <coord name="latitude"/>
+        <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -103,8 +103,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord name="lat"/>
-        <coord name="lon"/>
+        <coord name="latitude"/>
+        <coord name="longitude"/>
       </cellMethod>
       <cellMethod method="maximum">
         <coord name="time"/>
@@ -164,8 +164,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord comment="this is a shared comment" name="lat"/>
-        <coord comment="this is a shared comment" name="lon"/>
+        <coord comment="this is a shared comment" name="latitude"/>
+        <coord comment="this is a shared comment" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -184,8 +184,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord comment="this a lat comment" name="lat"/>
-        <coord comment="this is a lon comment" name="lon"/>
+        <coord comment="this a lat comment" name="latitude"/>
+        <coord comment="this is a lon comment" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -207,8 +207,8 @@
         <coord comment="this is a time comment" name="time"/>
       </cellMethod>
       <cellMethod method="mean">
-        <coord comment="this is a shared comment" name="lat"/>
-        <coord comment="this is a shared comment" name="lon"/>
+        <coord comment="this is a shared comment" name="latitude"/>
+        <coord comment="this is a shared comment" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -246,8 +246,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord interval="0.1 degrees" name="lat"/>
-        <coord interval="0.1 degrees" name="lon"/>
+        <coord interval="0.1 degrees" name="latitude"/>
+        <coord interval="0.1 degrees" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -266,8 +266,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord interval="0.1 degree_n" name="lat"/>
-        <coord interval="0.2 degree_e" name="lon"/>
+        <coord interval="0.1 degree_n" name="latitude"/>
+        <coord interval="0.2 degree_e" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -289,8 +289,8 @@
         <coord interval="1 day" name="time"/>
       </cellMethod>
       <cellMethod method="minimum">
-        <coord interval="0.1 degrees" name="lat"/>
-        <coord interval="0.1 degrees" name="lon"/>
+        <coord interval="0.1 degrees" name="latitude"/>
+        <coord interval="0.1 degrees" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -312,10 +312,10 @@
         <coord interval="1 day" name="time"/>
       </cellMethod>
       <cellMethod method="minimum">
-        <coord interval="0.1 degree_n" name="lat"/>
+        <coord interval="0.1 degree_n" name="latitude"/>
       </cellMethod>
       <cellMethod method="mean">
-        <coord interval="0.2 degree_e" name="lon"/>
+        <coord interval="0.2 degree_e" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -418,8 +418,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord comment="area-weighted" interval="0.1 degree_n" name="lat"/>
-        <coord comment="area-weighted" interval="0.2 degree_e" name="lon"/>
+        <coord comment="area-weighted" interval="0.1 degree_n" name="latitude"/>
+        <coord comment="area-weighted" interval="0.2 degree_e" name="longitude"/>
       </cellMethod>
     </cellMethods>
     <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
@@ -438,8 +438,8 @@
     </coords>
     <cellMethods>
       <cellMethod method="mean">
-        <coord comment="area-weighted" interval="0.1 degree_n" name="lat"/>
-        <coord comment="area-weighted" interval="0.2 degree_e" name="lon"/>
+        <coord comment="area-weighted" interval="0.1 degree_n" name="latitude"/>
+        <coord comment="area-weighted" interval="0.2 degree_e" name="longitude"/>
       </cellMethod>
       <cellMethod method="sum">
         <coord comment="weekly sum" interval="7 days" name="time"/>
