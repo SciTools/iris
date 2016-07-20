@@ -36,9 +36,9 @@ from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
 import iris.tests.stock as stock
 from iris.util import is_regular
 
-# gribapi is an optional dependency
+# Grib support is optional.
 try:
-    # Try to load new independent 'iris_grib' module.
+    # Try to load the independent 'iris_grib' package.
     from iris_grib import load_pairs_from_fields
     from iris_grib.message import GribMessage
 except ImportError:

@@ -28,12 +28,12 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
 from . import abf
 from . import um
 try:
-    import iris_grib as grib
+    import iris_grib as igrib
 except ImportError:
     try:
-        from . import grib
+        from . import grib as igrib
     except ImportError:
-        grib = None
+        igrib = None
 
 from . import name
 from . import netcdf
@@ -74,10 +74,10 @@ FORMAT_AGENT.add_spec(
 # GRIB files.
 #
 def _load_grib(*args, **kwargs):
-    if grib is None:
+    if igrib is None:
         raise RuntimeError('Unable to load GRIB file - the ECMWF '
                            '`gribapi` package is not installed.')
-    return grib.load_cubes(*args, **kwargs)
+    return igrib.load_cubes(*args, **kwargs)
 
 
 # NB. Because this is such a "fuzzy" check, we give this a very low
