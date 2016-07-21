@@ -29,7 +29,7 @@ import gribapi
 import iris
 from iris.fileformats.rules import Reference
 from iris.tests import mock
-from iris.tests.test_grib_load import TestGribSimple
+from iris.tests.test_grib_load_translations import TestGribSimple
 from iris.tests.unit.fileformats import TestField
 
 from iris.fileformats.grib import GribWrapper
