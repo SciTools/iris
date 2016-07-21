@@ -29,7 +29,7 @@ import iris.fileformats.grib
 from iris.fileformats.grib._save_rules import reference_time
 from iris.tests import mock
 import iris.tests.stock as stock
-from iris.tests.test_grib_load import TestGribSimple
+from iris.tests.test_grib_load_translations import TestGribSimple
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
