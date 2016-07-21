@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -52,6 +52,7 @@ try:
 except ImportError:
     from iris.fileformats import grib as iris_internal_grib_module
 
+
 @tests.skip_data
 @tests.skip_grib
 class MixinGribLoadTest(object):
@@ -65,7 +66,7 @@ class MixinGribLoadTest(object):
 
 
 include_irisgrib_fails = iris_internal_grib_module is not None
-#include_irisgrib_fails = True
+# include_irisgrib_fails = True
 
 
 class TestBasicLoad(MixinGribLoadTest, tests.GraphicsTest):
@@ -278,7 +279,6 @@ class TestShapeOfEarth(MixinGribLoadTest, tests.GraphicsTest):
         # grib1 - same as grib2 shape 6, above
         cube = self._old_compat_load("global.grib1")
         self.assertCML(cube, ("grib_load", "earth_shape_grib1.cml"))
-
 
 
 if __name__ == "__main__":
