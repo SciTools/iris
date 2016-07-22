@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,7 +35,7 @@ class TestCellMethods(tests.IrisTest):
     def test_cell_methods(self):
         header = mock.MagicMock()
         column_headings = {'Species': [1, 2, 3], 'Quantity': [4, 5, 6],
-                           "Unit": ['m', 'm', 'm'], 'Z': [1, 2, 3]}
+                           "Units": ['m', 'm', 'm'], 'Z': [1, 2, 3]}
         coords = mock.MagicMock()
         data_arrays = [mock.Mock(), mock.Mock()]
         cell_methods = ["cell_method_1", "cell_method_2"]
@@ -53,7 +53,7 @@ class TestCircularLongitudes(tests.IrisTest):
     def _simulate_with_coords(self, names, values, dimensions):
         header = mock.MagicMock()
         column_headings = {'Species': [1, 2, 3], 'Quantity': [4, 5, 6],
-                           "Unit": ['m', 'm', 'm'], 'Z': [1, 2, 3]}
+                           "Units": ['m', 'm', 'm'], 'Z': [1, 2, 3]}
         coords = [NAMECoord(name, dim, vals)
                   for name, vals, dim in zip(names, values, dimensions)]
         data_arrays = [mock.Mock()]

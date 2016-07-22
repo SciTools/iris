@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -206,11 +206,29 @@ class TestAll_NAMEIII(TestAll):
         self.assertEqual(com, res)
 
     def test_integer_height_above_sea_level(self):
-        # Parse height above sea level (agl) when its an integer.
+        # Parse height above sea level (asl) when its an integer.
         data = 'Z = 50 m asl'
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=None,
+            standard_name='altitude', long_name='altitude above sea level')
+        self.assertEqual(com, res)
+
+    def test_enotation_height_above_ground(self):
+        # Parse height above ground expressed in scientific notation
+        data = 'Z = 0.0000000E+00 m agl'
+        res = _cf_height_from_name(data)
+        com = AuxCoord(
+            units='m', points=0.0, bounds=None,
+            standard_name='height', long_name='height above ground level')
+        self.assertEqual(com, res)
+
+    def test_enotation_height_above_sea_level(self):
+        # Parse height above sea level expressed in scientific notation
+        data = 'Z = 0.0000000E+00 m asl'
+        res = _cf_height_from_name(data)
+        com = AuxCoord(
+            units='m', points=0.0, bounds=None,
             standard_name='altitude', long_name='altitude above sea level')
         self.assertEqual(com, res)
 
