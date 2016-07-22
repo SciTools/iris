@@ -36,6 +36,7 @@ import iris.coords
 
 if tests.GRIB_AVAILABLE:
     import gribapi
+    import iris.fileformats.grib
 
 
 @tests.skip_data
