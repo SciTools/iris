@@ -314,7 +314,7 @@ class _CoordSignature(namedtuple('CoordSignature',
 
 class _CubeSignature(namedtuple('CubeSignature',
                                 ['defn', 'data_shape', 'data_type',
-                                 'fill_value', 'cell_measures_and_dims'])):
+                                 'cell_measures_and_dims'])):
     """
     Criterion for identifying a specific type of :class:`iris.cube.Cube`
     based on its metadata.
@@ -329,10 +329,6 @@ class _CubeSignature(namedtuple('CubeSignature',
 
     * data_type:
         The data payload :class:`numpy.dtype` of a :class:`iris.cube.Cube`.
-
-    * fill_value:
-        The value to be used to mark missing data in the data payload,
-        or None if no such value exists.
 
     * cell_measures_and_dims:
         A list of cell_measures and dims for the cube.
@@ -384,7 +380,7 @@ class _CubeSignature(namedtuple('CubeSignature',
             - units
             - attributes
             - cell_methods
-            - shape, dtype, fill_value
+            - shape, dtype
 
         Args:
 
@@ -406,18 +402,6 @@ class _CubeSignature(namedtuple('CubeSignature',
         if self.data_type != other.data_type:
             msgs.append('cube data dtype differs: {} != {}'.format(
                 self.data_type, other.data_type))
-        # Compare fill values noting that two np.nans do not compare equal
-        # and np.isnan() raises a TypeError on strings.
-        if self.fill_value != other.fill_value:
-            try:
-                both_nan = (np.isnan(self.fill_value) and
-                            np.isnan(other.fill_value))
-            except TypeError:
-                both_nan = False
-            if not both_nan:
-                msg = 'cube data fill_value differs: ' \
-                    '{!r} != {!r}'.format(self.fill_value, other.fill_value)
-                msgs.append(msg)
         if (self.cell_measures_and_dims != other.cell_measures_and_dims):
             msgs.append('cube.cell_measures differ')
 
@@ -1591,7 +1575,7 @@ class ProtoCube(object):
         """Generate the signature that defines this cube."""
         array = cube.lazy_data()
         return _CubeSignature(cube.metadata, cube.shape, array.dtype,
-                              array.fill_value, cube._cell_measures_and_dims)
+                              cube._cell_measures_and_dims)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""
