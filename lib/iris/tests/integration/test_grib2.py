@@ -47,6 +47,7 @@ if tests.GRIB_AVAILABLE:
         from iris.fileformats.grib import load_pairs_from_fields
         from iris.fileformats.grib.message import GribMessage
 
+
 @tests.skip_data
 @tests.skip_grib
 class TestImport(tests.IrisTest):
