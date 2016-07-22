@@ -52,6 +52,10 @@ if tests.GRIB_AVAILABLE:
         iris_internal_grib_module = None
     except ImportError:
         from iris.fileformats import grib as iris_internal_grib_module
+else:
+    iris_internal_grib_module = None
+
+include_irisgrib_fails = iris_internal_grib_module is not None
 
 
 @tests.skip_data
@@ -64,10 +68,6 @@ class MixinGribLoadTest(object):
     def tearDown(self):
         if iris_internal_grib_module is not None:
             iris_internal_grib_module.hindcast_workaround = True
-
-
-include_irisgrib_fails = iris_internal_grib_module is not None
-# include_irisgrib_fails = True
 
 
 class TestBasicLoad(MixinGribLoadTest, tests.GraphicsTest):
