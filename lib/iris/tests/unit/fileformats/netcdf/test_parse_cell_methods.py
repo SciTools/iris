@@ -39,7 +39,7 @@ class Test(tests.IrisTest):
             ]
         expected = (CellMethod(method='mean', coords='time'),)
         for cell_method_str in cell_method_strings:
-            res = parse_cell_methods('test_var', cell_method_str)
+            res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
     def test_with_interval(self):
@@ -50,7 +50,7 @@ class Test(tests.IrisTest):
         expected = (CellMethod(method='variance', coords='time',
                                intervals='1 hr'),)
         for cell_method_str in cell_method_strings:
-            res = parse_cell_methods('test_var', cell_method_str)
+            res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
     def test_multiple(self):
@@ -65,7 +65,7 @@ class Test(tests.IrisTest):
                     CellMethod(method='mean', coords='time',
                                intervals='1 day'))
         for cell_method_str in cell_method_strings:
-            res = parse_cell_methods('test_var', cell_method_str)
+            res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
     def test_comment(self):
@@ -84,7 +84,7 @@ class Test(tests.IrisTest):
                     CellMethod(method='mean', coords='time',
                                intervals='1 day', comments='second bit'))
         for cell_method_str in cell_method_strings:
-            res = parse_cell_methods('test_var', cell_method_str)
+            res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
     def test_portions_of_cells(self):
@@ -95,7 +95,7 @@ class Test(tests.IrisTest):
         expected = (CellMethod(method='mean where sea_ice over sea',
                                coords='area'),)
         for cell_method_str in cell_method_strings:
-            res = parse_cell_methods('test_var', cell_method_str)
+            res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
     def test_climatology(self):
@@ -108,7 +108,7 @@ class Test(tests.IrisTest):
         expected = (CellMethod(method='minimum within days', coords='time'),
                     CellMethod(method='mean over days', coords='time'))
         for cell_method_str in cell_method_strings:
-            res = parse_cell_methods('test_var', cell_method_str)
+            res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
     def test_climatology_with_unknown_method(self):
@@ -122,9 +122,8 @@ class Test(tests.IrisTest):
                     CellMethod(method='mean over days', coords='time'))
         for cell_method_str in cell_method_strings:
             with mock.patch('warnings.warn') as warn:
-                res = parse_cell_methods('test_var', cell_method_str)
-            self.assertIn("NetCDF variable 'test_var' contains unknown "
-                          "cell method 'min'",
+                res = parse_cell_methods(cell_method_str)
+            self.assertIn("NetCDF variable contains unknown cell method 'min'",
                           warn.call_args[0][0])
             self.assertEqual(res, expected)
 

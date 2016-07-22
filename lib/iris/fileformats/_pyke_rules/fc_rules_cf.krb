@@ -954,6 +954,7 @@ fc_extras
     import iris.coord_systems
     import iris.fileformats.cf as cf
     import iris.fileformats.netcdf
+    from iris.fileformats.netcdf import parse_cell_methods, UnknownCellMethodWarning
     import iris.fileformats.pp as pp
     import iris.exceptions
     import iris.std_names
@@ -1082,8 +1083,18 @@ fc_extras
 
         # Incorporate cell methods
         nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-        cube.cell_methods = iris.fileformats.netcdf.parse_cell_methods(
-            cf_var.cf_name, nc_att_cell_methods)
+        with warnings.catch_warnings(record=True) as warning_records:
+            cube.cell_methods = parse_cell_methods(nc_att_cell_methods)
+        # Filter to get the warning we are interested in.
+        warning_records = [record for record in warning_records
+                           if issubclass(record.category, UnknownCellMethodWarning)]
+        if len(warning_records) > 0:
+            # Output an enhanced warning message.
+            warn_record = warning_records[0]
+            name = '{}'.format(cf_var.cf_name)
+            msg = warn_record.message.args[0]
+            msg = msg.replace('variable', 'variable {!r}'.format(name))
+            warnings.warn(message=msg, category=UnknownCellMethodWarning)
 
         # Set the cube global attributes. 
         for attr_name, attr_value in six.iteritems(cf_var.cf_group.global_attributes):
