@@ -46,11 +46,12 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
     import iris.quickplot as qplt
 
-try:
-    import iris_grib
-    iris_internal_grib_module = None
-except ImportError:
-    from iris.fileformats import grib as iris_internal_grib_module
+if tests.GRIB_AVAILABLE:
+    try:
+        import iris_grib
+        iris_internal_grib_module = None
+    except ImportError:
+        from iris.fileformats import grib as iris_internal_grib_module
 
 
 @tests.skip_data
