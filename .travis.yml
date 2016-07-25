@@ -50,7 +50,6 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  - conda config --add channels scitools/label/dev
   - if [[ "$TEST_MINIMAL" == true ]]; then
       conda install --quiet --file minimal-conda-requirements.txt;
     else
