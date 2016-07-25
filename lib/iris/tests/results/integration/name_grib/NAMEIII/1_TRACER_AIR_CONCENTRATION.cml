@@ -6,8 +6,8 @@
         <dimCoord bounds="[[0.0, 1.0]]" id="1d45e087" points="[1.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="77a50eb5" points="[50.6115, 50.612499, 50.613498, ..., 50.808303,
-		50.809302, 50.810301]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="77a50eb5" points="[50.6115, 50.6125, 50.6135, ..., 50.8085,
+		50.8095, 50.8105]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

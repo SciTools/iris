@@ -67,17 +67,7 @@ skip_irisgrib_fails = skipIf(iris_internal_grib_module is None,
 
 @tests.skip_data
 @tests.skip_grib
-class MixinGribLoadTest(object):
-    def setUp(self):
-        if iris_internal_grib_module is not None:
-            iris_internal_grib_module.hindcast_workaround = True
-
-    def tearDown(self):
-        if iris_internal_grib_module is not None:
-            iris_internal_grib_module.hindcast_workaround = True
-
-
-class TestBasicLoad(MixinGribLoadTest, tests.GraphicsTest):
+class TestBasicLoad(tests.GraphicsTest):
     def test_load_rotated(self):
         cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk',
                                                "uk_wrongparam.grib1")))
@@ -192,7 +182,9 @@ class TestBasicLoad(MixinGribLoadTest, tests.GraphicsTest):
         self.assertCML(cube, ("grib_load", "reduced_ll_missing_grib1.cml"))
 
 
-class TestIjDirections(MixinGribLoadTest, tests.GraphicsTest):
+@tests.skip_data
+@tests.skip_grib
+class TestIjDirections(tests.GraphicsTest):
     @staticmethod
     def _old_compat_load(name):
         cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions',
@@ -233,7 +225,9 @@ class TestIjDirections(MixinGribLoadTest, tests.GraphicsTest):
         self.check_graphic()
 
 
-class TestShapeOfEarth(MixinGribLoadTest, tests.GraphicsTest):
+@tests.skip_data
+@tests.skip_grib
+class TestShapeOfEarth(tests.GraphicsTest):
     @staticmethod
     def _old_compat_load(name):
         cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth',
