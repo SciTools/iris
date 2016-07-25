@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -44,10 +44,8 @@ def name_cb(cube, field, filename):
     # NAME contains extra vertical meta-data.
     z_coord = cube.coords('height')
     if z_coord:
+        z_coord[0].standard_name = 'height'
         z_coord[0].long_name = 'height above ground level'
-    z_coord = cube.coords('altitude')
-    if z_coord:
-        z_coord[0].long_name = 'altitude above sea level'
 
 
 @tests.skip_grib

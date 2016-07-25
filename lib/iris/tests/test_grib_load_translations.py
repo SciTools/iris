@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,16 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Tests for specific implementation aspects of the 'old' grib loaders.
 
+The class TestGribLoad has been moved to the separate source file
+'tests/integration/test_grib_load.py'.
+These tests are specific to the old internal grib module,
+:mod:`iris.fileformats.grib`, which will shortly be superceded by the separate
+'iris_grib' package, and will eventually be removed.
+
+"""
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
@@ -190,205 +199,6 @@ class FakeGribMessage(dict):
             # for some odd reason, GRIB1 code uses *both* of these
             # NOTE kludge -- the 2 keys are really the same thing
             self['unitOfTime'] = timecode
-
-
-@tests.skip_data
-@tests.skip_grib
-class TestGribLoad(tests.GraphicsTest):
-
-    def setUp(self):
-        iris.fileformats.grib.hindcast_workaround = True
-
-    def tearDown(self):
-        iris.fileformats.grib.hindcast_workaround = False
-
-    def test_load(self):
-
-        cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk',
-                                               "uk_wrongparam.grib1")))
-        self.assertCML(cubes, ("grib_load", "rotated.cml"))
-
-        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed",
-                                               "time_bound.grib1")))
-        self.assertCML(cubes, ("grib_load", "time_bound_grib1.cml"))
-
-        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed",
-                                               "time_bound.grib2")))
-        self.assertCML(cubes, ("grib_load", "time_bound_grib2.cml"))
-
-        cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz",
-                                               "3_layer.grib2")))
-        cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
-        self.assertCML(cubes, ("grib_load", "3_layer.cml"))
-
-    def test_load_masked(self):
-
-        gribfile = tests.get_data_path(
-            ('GRIB', 'missing_values', 'missing_values.grib2'))
-        cubes = iris.load(gribfile)
-        self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
-
-    @tests.skip_plot
-    def test_y_fastest(self):
-        cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
-                                               "y_fast.grib2")))
-        self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("y changes fastest")
-        self.check_graphic()
-
-    @tests.skip_plot
-    def test_ij_directions(self):
-
-        def old_compat_load(name):
-            cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions',
-                                                  name)))[0]
-            return [cube]
-
-        cubes = old_compat_load("ipos_jpos.grib2")
-        self.assertCML(cubes, ("grib_load", "ipos_jpos.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ipos_jpos cube")
-        self.check_graphic()
-
-        cubes = old_compat_load("ipos_jneg.grib2")
-        self.assertCML(cubes, ("grib_load", "ipos_jneg.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ipos_jneg cube")
-        self.check_graphic()
-
-        cubes = old_compat_load("ineg_jneg.grib2")
-        self.assertCML(cubes, ("grib_load", "ineg_jneg.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ineg_jneg cube")
-        self.check_graphic()
-
-        cubes = old_compat_load("ineg_jpos.grib2")
-        self.assertCML(cubes, ("grib_load", "ineg_jpos.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ineg_jpos cube")
-        self.check_graphic()
-
-    def test_shape_of_earth(self):
-
-        def old_compat_load(name):
-            cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth',
-                                                  name)))[0]
-            return cube
-
-        # pre-defined sphere
-        cube = old_compat_load("0.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_0.cml"))
-
-        # custom sphere
-        cube = old_compat_load("1.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_1.cml"))
-
-        # IAU65 oblate sphere
-        cube = old_compat_load("2.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_2.cml"))
-
-        # custom oblate spheroid (km)
-        cube = old_compat_load("3.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_3.cml"))
-
-        # IAG-GRS80 oblate spheroid
-        cube = old_compat_load("4.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_4.cml"))
-
-        # WGS84
-        cube = old_compat_load("5.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_5.cml"))
-
-        # pre-defined sphere
-        cube = old_compat_load("6.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_6.cml"))
-
-        # custom oblate spheroid (m)
-        cube = old_compat_load("7.grib2")
-        self.assertCML(cube, ("grib_load", "earth_shape_7.cml"))
-
-        # grib1 - same as grib2 shape 6, above
-        cube = old_compat_load("global.grib1")
-        self.assertCML(cube, ("grib_load", "earth_shape_grib1.cml"))
-
-    @tests.skip_plot
-    def test_polar_stereo_grib1(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "polar_stereo", "ST4.2013052210.01h")))
-        self.assertCML(cube, ("grib_load", "polar_stereo_grib1.cml"))
-        qplt.contourf(cube, norm=LogNorm())
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("polar stereo grib1")
-        self.check_graphic()
-
-    @tests.skip_plot
-    def test_polar_stereo_grib2(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "polar_stereo",
-             "CMC_glb_TMP_ISBL_1015_ps30km_2013052000_P006.grib2")))
-        self.assertCML(cube, ("grib_load", "polar_stereo_grib2.cml"))
-
-        qplt.contourf(cube)
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("polar stereo grib2")
-        self.check_graphic()
-
-    @tests.skip_plot
-    def test_lambert_grib1(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "lambert", "lambert.grib1")))
-        self.assertCML(cube, ("grib_load", "lambert_grib1.cml"))
-
-        qplt.contourf(cube)
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("lambert grib1")
-        self.check_graphic()
-
-    @tests.skip_plot
-    def test_lambert_grib2(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "lambert", "lambert.grib2")))
-        self.assertCML(cube, ("grib_load", "lambert_grib2.cml"))
-
-        qplt.contourf(cube)
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("lambert grib2")
-        self.check_graphic()
-
-    def test_regular_gg_grib1(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ('GRIB', 'gaussian', 'regular_gg.grib1')))
-        self.assertCML(cube, ('grib_load', 'regular_gg_grib1.cml'))
-
-    def test_regular_gg_grib2(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ('GRIB', 'gaussian', 'regular_gg.grib2')))
-        self.assertCML(cube, ('grib_load', 'regular_gg_grib2.cml'))
-
-    def test_reduced_ll(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "reduced", "reduced_ll.grib1")))
-        self.assertCML(cube, ("grib_load", "reduced_ll_grib1.cml"))
-
-    def test_reduced_gg(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "reduced", "reduced_gg.grib2")))
-        self.assertCML(cube, ("grib_load", "reduced_gg_grib2.cml"))
-
-    def test_reduced_missing(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "reduced", "reduced_ll_missing.grib1")))
-        self.assertCML(cube, ("grib_load", "reduced_ll_missing_grib1.cml"))
 
 
 @tests.skip_grib
