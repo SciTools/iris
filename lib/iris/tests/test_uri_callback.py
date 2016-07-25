@@ -24,13 +24,14 @@ import iris.tests as tests
 import os
 
 import iris.coords
-import iris.fileformats.grib
 
 
 @tests.skip_data
 class TestCallbacks(tests.IrisTest):
     @tests.skip_grib
     def test_grib_callback(self):
+        import iris.fileformats.grib
+
         def grib_thing_getter(cube, field, filename):
             if hasattr(field, 'sections'):
                 # New-style loader callback : 'field' is a GribMessage, which has 'sections'.

@@ -33,7 +33,6 @@ import iris
 import iris.cube
 import iris.coord_systems
 import iris.coords
-import iris.fileformats.grib
 
 if tests.GRIB_AVAILABLE:
     import gribapi
