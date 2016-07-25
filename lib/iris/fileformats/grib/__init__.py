@@ -23,7 +23,7 @@ See also: `ECMWF GRIB API <https://software.ecmwf.int/wiki/display/GRIB/Home>`_.
 
     This module is now deprecated.  For GRIB file support in iris, please use
     the separate package
-    `iris_grib <http://https://github.com/SciTools/iris-grib>`_ instead.
+    `iris_grib <https://github.com/SciTools/iris-grib>`_ instead.
 
 """
 
