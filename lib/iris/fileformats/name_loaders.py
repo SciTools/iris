@@ -132,7 +132,8 @@ def _read_data_arrays(file_handle, n_arrays, shape):
     return data_arrays
 
 
-def _build_lat_lon_for_NAME_field(header, dimindex, x_or_y):
+def _build_lat_lon_for_NAME_field(header, dimindex, x_or_y,
+                                  coord_names=['longitude', 'latitude']):
     """
     Return regular latitude and longitude coordinates extracted from
     the provided header dictionary.
@@ -143,13 +144,15 @@ def _build_lat_lon_for_NAME_field(header, dimindex, x_or_y):
         step = header['X grid resolution']
         count = header['X grid size']
         pts = start + np.arange(count, dtype=np.float64) * step
-        lat_lon = NAMECoord(name='longitude', dimension=dimindex, values=pts)
+        lat_lon = NAMECoord(name=coord_names[0],
+                            dimension=dimindex, values=pts)
     else:
         start = header['Y grid origin']
         step = header['Y grid resolution']
         count = header['Y grid size']
         pts = start + np.arange(count, dtype=np.float64) * step
-        lat_lon = NAMECoord(name='latitude', dimension=dimindex, values=pts)
+        lat_lon = NAMECoord(name=coord_names[1],
+                            dimension=dimindex, values=pts)
 
     return lat_lon
 
@@ -420,6 +423,10 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
             if coord.name == 'latitude' or coord.name == 'longitude':
                 coord_units = 'degrees'
                 coord_sys = iris.coord_systems.GeogCS(EARTH_RADIUS)
+            if coord.name == 'projection_x_coordinate' \
+                    or coord.name == 'projection_y_coordinate':
+                coord_units = 'm'
+                coord_sys = iris.coord_systems.OSGB()
             if coord.name == 'height':
                 coord_units = 'm'
                 long_name = 'height above ground level'
@@ -586,6 +593,14 @@ def load_NAMEIII_field(filename):
             cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[4:-1]
 
+        # Read in the column titles to determine the coordinate system
+        col_titles = next(file_handle).split(',')
+        if 'National Grid' in col_titles[2]:
+            coord_names = ['projection_x_coordinate',
+                           'projection_y_coordinate']
+        else:
+            coord_names = ['longitude', 'latitude']
+
         # Convert the time to python datetimes.
         new_time_column_header = []
         for i, t in enumerate(column_headings['Time']):
@@ -605,13 +620,12 @@ def load_NAMEIII_field(filename):
                                            tdim.name)
 
         # Build regular latitude and longitude coordinates.
-        lon = _build_lat_lon_for_NAME_field(header, 1, 'X')
-        lat = _build_lat_lon_for_NAME_field(header, 0, 'Y')
+        lon = _build_lat_lon_for_NAME_field(header, 1, 'X',
+                                            coord_names=coord_names)
+        lat = _build_lat_lon_for_NAME_field(header, 0, 'Y',
+                                            coord_names=coord_names)
 
         coords = [lon, lat, tdim]
-
-        # Skip the line after the column headings.
-        next(file_handle)
 
         # Create data arrays to hold the data for each column.
         n_arrays = header['Number of field cols']
@@ -899,18 +913,28 @@ def load_NAMEIII_version2(filename):
         xindex = None
         yindex = None
         dim_coords = []
+
+        # First determine whether we are using National Grid or lat/lon
+        if 'X (UK National Grid (m))' in data:
+            coord_names = ['projection_x_coordinate',
+                           'projection_y_coordinate']
+        else:
+            coord_names = ['longitude', 'latitude']
+
         if 'Y Index' in data:
             yindex = data.index('Y Index')
             dim_coords.append('Y')
             lat = _build_lat_lon_for_NAME_field(header,
                                                 dim_coords.index('Y'),
-                                                'Y')
+                                                'Y',
+                                                coord_names=coord_names)
         if 'X Index' in data:
             xindex = data.index('X Index')
             dim_coords.append('X')
             lon = _build_lat_lon_for_NAME_field(header,
                                                 dim_coords.index('X'),
-                                                'X')
+                                                'X',
+                                                coord_names=coord_names)
 
         # For all other variables we need the values (note that for Z the units
         # will also be given in the column header)
