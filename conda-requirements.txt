@@ -21,6 +21,7 @@ nose
 pep8=1.5.7
 sphinx
 iris_sample_data
+iris_grib
 
 # Optional iris dependencies
 ecmwf_grib
