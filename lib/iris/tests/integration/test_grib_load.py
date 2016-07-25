@@ -18,8 +18,9 @@
 Integration tests for grib2 file loading.
 
 This code used to be part of 'tests/test_grib_load.py', but these integration-
-style test have been split out of there :  They now work with the newer,
-external 'iris_grib' package.
+style tests have been split out of there :  They now work with either the
+internal 'iris.fileformats.grib' module *or* the newer, external
+'iris_grib' package.
 
 The remainder of the old 'tests/test_grib_load.py' is now renamed as
 'tests/test_grib_load_translations.py'.  Those tests are implementation-
@@ -38,6 +39,8 @@ import iris.exceptions
 from iris.tests import mock
 import iris.tests.stock
 import iris.util
+from unittest import skipIf
+
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
@@ -55,7 +58,11 @@ if tests.GRIB_AVAILABLE:
 else:
     iris_internal_grib_module = None
 
-include_irisgrib_fails = iris_internal_grib_module is not None
+# Skip out some tests that currently fail with 'iris_grib'.
+# TODO: either fix these problems, or remove the tests.
+skip_irisgrib_fails = skipIf(iris_internal_grib_module is None,
+                             'Test(s) are not currently ussable with '
+                             '"iris_grib".')
 
 
 @tests.skip_data
@@ -99,16 +106,16 @@ class TestBasicLoad(MixinGribLoadTest, tests.GraphicsTest):
         cubes = iris.load(gribfile)
         self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
 
-    if include_irisgrib_fails:
-        @tests.skip_plot
-        def test_y_fastest(self):
-            cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
-                                                   "y_fast.grib2")))
-            self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
-            iplt.contourf(cubes[0])
-            plt.gca().coastlines()
-            plt.title("y changes fastest")
-            self.check_graphic()
+    @skip_irisgrib_fails
+    @tests.skip_plot
+    def test_y_fastest(self):
+        cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
+                                               "y_fast.grib2")))
+        self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
+        iplt.contourf(cubes[0])
+        plt.gca().coastlines()
+        plt.title("y changes fastest")
+        self.check_graphic()
 
     @tests.skip_plot
     def test_polar_stereo_grib1(self):
@@ -178,11 +185,11 @@ class TestBasicLoad(MixinGribLoadTest, tests.GraphicsTest):
             ("GRIB", "reduced", "reduced_gg.grib2")))
         self.assertCML(cube, ("grib_load", "reduced_gg_grib2.cml"))
 
-    if include_irisgrib_fails:
-        def test_reduced_missing(self):
-            cube = iris.load_cube(tests.get_data_path(
-                ("GRIB", "reduced", "reduced_ll_missing.grib1")))
-            self.assertCML(cube, ("grib_load", "reduced_ll_missing_grib1.cml"))
+    @skip_irisgrib_fails
+    def test_reduced_missing(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "reduced", "reduced_ll_missing.grib1")))
+        self.assertCML(cube, ("grib_load", "reduced_ll_missing_grib1.cml"))
 
 
 class TestIjDirections(MixinGribLoadTest, tests.GraphicsTest):
@@ -243,28 +250,28 @@ class TestShapeOfEarth(MixinGribLoadTest, tests.GraphicsTest):
         cube = self._old_compat_load("1.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_1.cml"))
 
-    if include_irisgrib_fails:
-        def test_shape_of_earth_IAU65(self):
-            # IAU65 oblate sphere
-            cube = self._old_compat_load("2.grib2")
-            self.assertCML(cube, ("grib_load", "earth_shape_2.cml"))
+    @skip_irisgrib_fails
+    def test_shape_of_earth_IAU65(self):
+        # IAU65 oblate sphere
+        cube = self._old_compat_load("2.grib2")
+        self.assertCML(cube, ("grib_load", "earth_shape_2.cml"))
 
     def test_shape_of_earth_custom_3(self):
         # custom oblate spheroid (km)
         cube = self._old_compat_load("3.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_3.cml"))
 
-    if include_irisgrib_fails:
-        def test_shape_of_earth_IAG_GRS80(self):
-            # IAG-GRS80 oblate spheroid
-            cube = self._old_compat_load("4.grib2")
-            self.assertCML(cube, ("grib_load", "earth_shape_4.cml"))
+    @skip_irisgrib_fails
+    def test_shape_of_earth_IAG_GRS80(self):
+        # IAG-GRS80 oblate spheroid
+        cube = self._old_compat_load("4.grib2")
+        self.assertCML(cube, ("grib_load", "earth_shape_4.cml"))
 
-    if include_irisgrib_fails:
-        def test_shape_of_earth_WGS84(self):
-            # WGS84
-            cube = self._old_compat_load("5.grib2")
-            self.assertCML(cube, ("grib_load", "earth_shape_5.cml"))
+    @skip_irisgrib_fails
+    def test_shape_of_earth_WGS84(self):
+        # WGS84
+        cube = self._old_compat_load("5.grib2")
+        self.assertCML(cube, ("grib_load", "earth_shape_5.cml"))
 
     def test_shape_of_earth_pre_6(self):
         # pre-defined sphere
