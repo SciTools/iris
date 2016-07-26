@@ -90,6 +90,9 @@ def fail_any_deprecation_warnings():
         # Detect and error all and any Iris deprecation warnings.
         warnings.simplefilter("error", IrisDeprecation)
         # Run with all default settings in iris.FUTURE.
-        default_future_kwargs = iris.Future().__dict__
+        default_future_kwargs = iris.Future().__dict__.copy()
+        for dead_option in iris.Future.deprecated_options:
+            # Avoid a warning when setting these !
+            del default_future_kwargs[dead_option]
         with iris.FUTURE.context(**default_future_kwargs):
             yield

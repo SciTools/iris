@@ -58,6 +58,9 @@ class Test(TestGribSimple):
         iris.fileformats.grib.hindcast_workaround = True
         cube = stock.global_grib2()
         cube.remove_coord("forecast_period")
+        frt_coords = cube.coords('forecast_reference_time')
+        if frt_coords:
+            cube.remove_coord(frt_coords[0])
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)

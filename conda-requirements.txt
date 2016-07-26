@@ -23,6 +23,7 @@ sphinx
 iris_sample_data
 
 # Optional iris dependencies
+iris_grib
 ecmwf_grib
 esmpy>=7.0
 gdal
