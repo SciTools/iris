@@ -218,10 +218,9 @@ class RectilinearRegridder(object):
 
         dtype = src_data.dtype
         if method == 'linear':
-            # If we're given integer values, convert them to the smallest
-            # possible float dtype that can accurately preserve the values.
-            if dtype.kind == 'i':
-                dtype = np.promote_types(dtype, np.float16)
+            # Convert values to the smallest possible float dtype when
+            # necessary.
+            dtype = np.promote_types(dtype, np.float16)
 
         if isinstance(src_data, ma.MaskedArray):
             data = ma.empty(shape, dtype=dtype)
