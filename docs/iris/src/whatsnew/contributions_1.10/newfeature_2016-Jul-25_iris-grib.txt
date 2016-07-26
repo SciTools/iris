@@ -11,7 +11,7 @@
     'iris.fileformats.grib' when used with 'iris.FUTURE.strict_grib_load=True',
     with only small detail differences.
 
-  * The old 'iris.fileformats.grib module' is now deprecated and may shortly be
+  * The old 'iris.fileformats.grib' module is now deprecated and may shortly be
     removed.
 
     * If you are already using the recommended setting
