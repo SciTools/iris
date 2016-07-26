@@ -24,6 +24,7 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 import biggus
+from biggus._init import _Elementwise as Elementwise
 
 
 class Test_Lazy_Maths(tests.IrisTest):
@@ -38,7 +39,7 @@ class Test_Lazy_Maths(tests.IrisTest):
         return cube
 
     def assert_elementwise(self, cube, other, result, np_op):
-        self.assertIsInstance(result, biggus._Elementwise)
+        self.assertIsInstance(result, Elementwise)
         self.assertEqual(result._numpy_op, np_op)
         self.assertArrayAlmostEqual(result._array1, cube.lazy_data())
         if other is not None:
