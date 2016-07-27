@@ -2,7 +2,7 @@
 
 * Support has now been added for the
   `iris_grib <https://github.com/SciTools/iris-grib>`_ package, which
-  provides GRIB format support in an optional package, separate from Iris.  
+  provides GRIB format support in an optional package, separate from Iris.
 
   * If 'iris_grib' is available, it will always be used in place of the older
     iris module :mod:`iris.fileformats.grib`.
@@ -14,12 +14,20 @@
   * The old 'iris.fileformats.grib' module is now deprecated and may shortly be
     removed.
 
-    * If you are already using the recommended setting
-      'iris.FUTURE.strict_grib_load=True' this should not cause problems, as
-      the new package is all-but identical.  However, if your code is still
-      using the older "non-strict" grib loading style, you may need to make
-      changes:  In particular, the 'field' passed to load callbacks has
-      changed.
+    * If you are already using the recommended :data:`iris.FUTURE` setting
+      "iris.FUTURE.strict_grib_load=True" this should not cause problems, as
+      the new package is all-but identical.
+
+      * However, the option "iris.FUTURE.strict_grib_load" is itself now
+        deprecated, so you should remove code that sets it.
+
+    * If, however, your code is still using the older "non-strict" grib
+      loading, then you may need to make code changes.
+
+      * In particular, the 'field' object passed to load callbacks is
+        different.
+        See :class:`iris.fileformats.grib.message.GribMessage` (the
+        "iris_grib.message.GribMessage" class is the same as this, for now).
 
   * Please exercise your code with the new iris_grib module, and let us know of
     any problems you uncover, such as files that will no longer load with the
