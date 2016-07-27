@@ -1,3 +1,5 @@
+.. _installing_iris:
+
 ****************
 Installing Iris
 ****************
