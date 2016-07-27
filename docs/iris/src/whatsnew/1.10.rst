@@ -1,0 +1,170 @@
+What's New in Iris 1.10
+***********************
+
+:Release: 1.10
+:Date: 2016-07-27
+
+This document explains the new/changed features of Iris in version 1.10
+(:doc:`View all changes <index>`.)
+
+Iris 1.10 Features
+==================
+.. _iris_grib_added:
+
+* Support has now been added for the
+  `iris_grib <https://github.com/SciTools/iris-grib>`_ package, which
+  provides GRIB format support in an optional package, separate from Iris.
+
+  * If 'iris_grib' is available, it will always be used in place of the older
+    iris module :mod:`iris.fileformats.grib`.
+
+  * The capabilities of 'iris_grib' are essentially the same as the existing
+    'iris.fileformats.grib' when used with 'iris.FUTURE.strict_grib_load=True',
+    with only small detail differences.
+
+  * The old 'iris.fileformats.grib' module is now deprecated and may shortly be
+    removed.
+
+    * If you are already using the recommended :data:`iris.FUTURE` setting
+      "iris.FUTURE.strict_grib_load=True" this should not cause problems, as
+      the new package is all-but identical.
+
+      * However, the option "iris.FUTURE.strict_grib_load" is itself now
+        deprecated, so you should remove code that sets it.
+
+    * If, however, your code is still using the older "non-strict" grib
+      loading, then you may need to make code changes.
+
+      * In particular, the 'field' object passed to load callbacks is
+        different.
+        See :class:`iris.fileformats.grib.message.GribMessage` (the
+        "iris_grib.message.GribMessage" class is the same as this, for now).
+
+  * Please exercise your code with the new iris_grib module, and let us know of
+    any problems you uncover, such as files that will no longer load with the
+    new implementation.
+* Promoting a scalar coordinate to a dimension coordinate with `iris.util.new_axis` no longer loads deferred data.
+* The parsing functionality for Cell Methods from netCDF files is available as part of the :mod:`iris.fileformats.netcdf` module.
+* The Mercator projection is now supported with defaults for some parameters (_false easting_, _false northing_ and _scale factor at projection origin_).
+* NetCDF files which define a Mercator projection where the _false easting_, _false northing_ and _scale factor at projection origin_ match the defaults will have the projection loaded correctly. Otherwise, a warning will be issued for each parameter that does not match the default and the projection will not be loaded.
+* NetCDF files which define a steroegraphic projection where the _scale factor at projection origin_ is equal to 1.0 will have the projection loaded correctly. Otherwise, a warning will be issued and the projection will not be loaded.
+* The :mod:`iris.plot` routines :func:`~iris.plot.contour`, :func:`~iris.plot.countourf`, :func:`~iris.plot.outline`, :func:`~iris.plot.pcolor`, :func:`~iris.plot.pcolormesh` and :func:`~iris.plot.points` now support plotting cubes with anonymous dimensions by specifying the *numeric index* of the anonymous dimension within the ``coords`` keyword argument.
+
+  Note that, the axis of the anonymous dimension will be plotted in index space.
+* NetCDF loading and saving now supports Cubes that use the LambertConformal
+ coordinate system.
+* The experimental structured Fieldsfile loader :func:`~iris.experimental.fieldsfile.load` has been extended to also load structured PP files.
+
+  Structured loading is a streamlined operation, offering the benefit of a significantly faster loading alternative to the more generic :func:`iris.load` mechanism.
+
+  Note that, structured loading is not an optimised wholesale replacement of :func:`iris.load`. Structured loading is restricted to input containing contiguously ordered fields for each phenomenon that repeat regularly over the same vertical levels and times. For further details, see :func:`~iris.experimental.fieldsfile.load` 
+* Loading of 'little-endian' PP files is now supported.
+ * All appropriate iris.plot functions now handle an axes keyword, allowing use of the object oriented matplotlib interface rather than pyplot.
+* The ability to pass file format object lists into the rules based load pipeline, as used for GRIB, Fields Files and PP has been added.  The :func:`iris.fileformats.pp.load_pairs_from_fields` and :func:`iris.fileformats.grib.load_pairs_from_fields` are provided to produce cubes from such lists.  These lists may have been filtered or altered using the appropriate :mod:`iris.fileformats` modules.
+* Time coordinates from PP fields with an lbcode of 31323 are now correctly handled
+* The loading from and saving to netCDF of CF cell_measure variables is supported,
+  along with their representation within a Cube's as cell_measures.
+* Cubes with anonymous dimensions can now be concatenated. This can only occur along a dimension that is not anonymous.
+
+Bugs Fixed
+==========
+Altered Cell Methods to display coordinate's standard_name rather than var_name where appropriate to avoid human confusion.* Fixed the grid_mapping_name and secant_latitudes handling for the
+ LambertConformal coordinate system.
+* Fixed bug in :func:`iris.analysis.cartography.project` where the output
+ projection coordinates didn't have units.
+Fixed a bug where regridding or interpolation with the
+  :class:`~iris.analysis.Nearest` scheme returned floating-point results even
+  when the source data was integer typed.
+  It now always returns the same type as the source data.
+Fixed a bug where regridding circular data would ignore any source masking.
+  This affected any regridding using the :class:`~iris.analysis.Linear` and
+  :class:`~iris.analysis.Nearest` schemes, and also
+  :func:`iris.analysis.interpolate.linear`.
+* The coord_name parameter to scalar_cell_method() is now checked correctly and
+ unit tests have been written for this function.
+* LBPROC is set correctly when a cube containing the minimum of a variable is
+ saved to a PP file. The IA component of LBTIM is set correctly when saving
+ maximum or minimum values.
+* Fixed a bug with :meth:`iris.cube.Cube.data` where an :class:`numpy.ndarray`
+ was not being returned for scalar cubes with lazy data
+* When saving in netcdf format, the 'units' of 'latitude' and 'longitude'
+ coordinates specified in 'degrees' are saved as 'degrees_north' and
+ 'degrees_east' respectively, as defined in the CF conventions for netCDF
+ files: sections 4.1 and 4.2.
+Fixed a bug with a class of pp files with lbyr == 0, where the date would cause errors when converting to a datetime object (e.g. when printing a cube).
+
+When processing a pp field with lbtim = 2x, lbyr == lbyrd == 0 and lbmon == lbmond, 'month' and 'month_number' coordinates are created instead of 'time'.
+
+Fixed a bug in :meth:`~iris.analysis.calculus.curl` where the sign of the r-component for spherical coordinates was opposite to what was expected.  
+* fixed a bug where a deepcopy of a :class:`~iris.coords.DimCoord` would have writable `points` and `bounds` arrays. These arrays can now no longer be modified in-place.
+* Concatenation no longer occurs when the auxilliary coordinates of the cubes
+ do not match. This check is not applied to AuxCoords that span the dimension
+ the concatenation is occuring along. This behaviour can be switched off by
+ setting the check_aux_coords kwarg in the
+ :method:`iris.cube.CubeList.concatenate` to False.
+* fixed a bug in :mod:`iris.cube.subset` where an exception would be thrown
+  while trying to subset over a non-dimensional scalar coordinate.
+
+Deprecations
+============
+* deprecated the :class:`iris.Future` option
+  :data:`iris.FUTURE.strict_grib_load`.
+  This only affected the module :mod:`iris.fileformats.grib`, which is itself
+  now deprecated.
+  Please see :ref:`iris_grib package <iris_grib_added>`, above.
+* deprecated the module :mod:`iris.fileformats.grib`.  The new package
+  `iris_grib <https://github.com/SciTools/iris-grib>`_ replaces this
+  fuctionality, which will shortly be removed.
+  Please see :ref:`iris_grib package <iris_grib_added>`, above.
+* The use of :data:`iris.config.SAMPLE_DATA_DIR` has been deprecated and replaced by the now importable :mod:`iris_sample_data` package.
+ 
+* deprecated the module :mod:`iris.analysis.interpolate`.
+  This contains the following public items, all of which are now deprecated and
+  will be removed in a future release:
+    * :func:`~iris.analysis.interpolate.linear`
+    * :func:`~iris.analysis.interpolate.regrid`
+    * :func:`~iris.analysis.interpolate.regrid_to_max_resolution`
+    * :func:`~iris.analysis.interpolate.nearest_neighbour_indices`
+    * :func:`~iris.analysis.interpolate.nearest_neighbour_data_value`
+    * :func:`~iris.analysis.interpolate.extract_nearest_neighbour`
+    * class :class:`~iris.analysis.interpolate.Linear1dExtrapolator`.
+  Please use the replacement facilities individually noted in the module
+  documentation for :mod:`iris.analysis.interpolate`
+* the method :meth:`iris.cube.Cube.regridded` has been deprecated.
+  Please use :meth:`iris.cube.Cube.regrid` instead (see
+  :meth:`~iris.cube.Cube.regridded` for details).
+* deprecated:
+ iris.fileformats.grib.hindcast_workaround,
+ :class: `iris.fileformats.grib.GribWrapper`.
+ The class :class:`iris.fileformats.grib.message.GribMessage` provides
+ alternative means of working with GRIB message instances.
+* deprecated the module :mod:`iris.fileformats.ff`.  Please use the replacement
+  facilities in module :mod:`iris.fileformats.um` :
+
+  * :func:`iris.fileformats.um.um_to_pp` replaces :class:`iris.fileformats.ff.FF2PP`.
+  * :func:`iris.fileformats.um.load_cubes` replaces :func:`iris.fileformats.ff.load_cubes`.
+  * :func:`iris.fileformats.um.load_cubes_32bit_ieee` replaces :func:`iris.fileformats.ff.load_cubes_32bit_ieee`.
+
+  All other public components are generally deprecated and will be removed in a future release.
+* The :func:`iris.fileformats.pp.as_pairs` and :func:`iris.fileformats.grib.as_pairs` are deprecated.  These are replaced with :func:`iris.fileformats.pp.save_pairs_from_cube` and :func:`iris.fileformats.grib.save_pairs_from_cube`.
+* deprecated logging functions (currently used only for rules logging):  
+ :data:`iris.config.iris.config.RULE_LOG_DIR`,
+ :data:`iris.config.iris.config.RULE_LOG_IGNORE` and
+ :data:`iris.fileformats.rules.log`.
+* deprecated all the remaining text rules mechanisms:  
+ :class:`iris.fileformats.rules.DebugString`,
+ :class:`iris.fileformats.rules.CmAttribute`,
+ :class:`iris.fileformats.rules.CmCustomAttribute`,
+ :class:`iris.fileformats.rules.CoordAndDims`,
+ :class:`iris.fileformats.rules.Rule`,
+ :class:`iris.fileformats.rules.FunctionRule`,
+ :class:`iris.fileformats.rules.ProcedureRule`,
+ :class:`iris.fileformats.rules.RulesContainer` and
+ :func:'iris.fileformats.rules.calculate_forecast_period`.
+ * deprecated the custom pp save rules mechanism implemented by the functions
+   :func:`iris.fileformats.pp.add_save_rules' and
+   :func:`iris.fileformats.pp.reset_save_rules'.
+   The functions :func:`iris.fileformats.pp.as_fields',
+   :func:`iris.fileformats.pp.as_pairs'
+   and :func:`iris.fileformats.pp.save_fields' provide alternative means of
+   achieving the same ends.

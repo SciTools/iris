@@ -1905,7 +1905,10 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
 
     """
     dtype_endian_char = '<' if little_ended else '>'
-    with open(filename, 'rb') as pp_file:
+    pp_file_descriptor = os.open(filename, os.O_RDONLY)# | os.O_BINARY )
+    try:
+        pp_file = os.fdopen(pp_file_descriptor)
+    # with open(filename, 'rb') as pp_file:
         # Get a reference to the seek method on the file
         # (this is accessed 3* #number of headers so can provide a small
         # performance boost)
@@ -1981,7 +1984,11 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 # Provide enough context to read the data bytes later on.
                 pp_field._data = (filename, pp_file.tell(), data_len, dtype)
                 # Seek over the actual data payload.
-                pp_file_seek(data_len, os.SEEK_CUR)
+                # pp_file_seek(data_len, os.SEEK_CUR)
+                print(pp_file.tell())
+                os.lseek(pp_file_descriptor, pp_file.tell() + data_len, os.SEEK_SET)
+                print(pp_file.tell())
+                print(40*'#')
 
             # Do we have any extra data to deal with?
             if extra_len:
@@ -1992,7 +1999,10 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             # have already read
             pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
             field_count += 1
-            yield pp_field
+    finally:
+        os.close(pp_file_descriptor)
+            # yield pp_field
+    yield pp_field
 
 
 def reset_load_rules():
