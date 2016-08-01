@@ -493,8 +493,16 @@ def _load_cube(engine, cf, cf_var, filename):
     # transforms.
     dummy_data = np.zeros(1, dtype=cf_var.dtype)
     if hasattr(cf_var, 'scale_factor'):
+        if int(float(cf_var.scale_factor)) == float(cf_var.scale_factor):
+            cf_var.scale_factor = int(cf_var.scale_factor)
+        else:
+            cf_var.scale_factor = float(cf_var.scale_factor)
         dummy_data = cf_var.scale_factor * dummy_data
     if hasattr(cf_var, 'add_offset'):
+        if int(float(cf_var.add_offset)) == float(cf_var.add_offset):
+            cf_var.add_offset = int(cf_var.add_offset)
+        else:
+            cf_var.add_offset = float(cf_var.add_offset)
         dummy_data = cf_var.add_offset + dummy_data
 
     # Create cube with deferred data, but no metadata
