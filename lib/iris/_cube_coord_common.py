@@ -142,13 +142,9 @@ class CFVariableMixin(object):
 
     @var_name.setter
     def var_name(self, name):
-        if name is not None:
-            if not name:
-                raise ValueError('An empty string is not a valid CF variable '
-                                 'name.')
-            elif set(name).intersection(string.whitespace):
-                raise ValueError('{!r} is not a valid CF variable name because'
-                                 ' it contains whitespace.'.format(name))
+        if name is not None and not name:
+            raise ValueError('An empty string is not a valid CF variable '
+                             'name.')
         self._var_name = name
 
     @property
