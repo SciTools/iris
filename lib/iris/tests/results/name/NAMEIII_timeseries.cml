@@ -9,8 +9,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.4)"/>
       <attribute name="Name" value="Unnamed Field Req 5"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="1"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="0.000 to 500.000m agl"/>
       <attribute name="Release location" value="2.9833W   53.4167N"/>
@@ -78,8 +76,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.4)"/>
       <attribute name="Name" value="Unnamed Field Req 6"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="1"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="0.000 to 500.000m agl"/>
       <attribute name="Release location" value="2.9833W   53.4167N"/>
@@ -147,8 +143,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.4)"/>
       <attribute name="Name" value="Unnamed Field Req 7"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="1"/>
       <attribute name="Quantity" value="Dry Deposition Rate"/>
       <attribute name="Release height" value="0.000 to 500.000m agl"/>
       <attribute name="Release location" value="2.9833W   53.4167N"/>
@@ -215,8 +209,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.4)"/>
       <attribute name="Name" value="Unnamed Field Req 8"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="1"/>
       <attribute name="Quantity" value="Wet Deposition Rate"/>
       <attribute name="Release height" value="0.000 to 500.000m agl"/>
       <attribute name="Release location" value="2.9833W   53.4167N"/>
@@ -283,8 +275,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.4)"/>
       <attribute name="Name" value="Unnamed Field Req 9"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="1"/>
       <attribute name="Quantity" value="Deposition Rate"/>
       <attribute name="Release height" value="0.000 to 500.000m agl"/>
       <attribute name="Release location" value="2.9833W   53.4167N"/>

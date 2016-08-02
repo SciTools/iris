@@ -243,15 +243,19 @@ def _dot_save_png(cube, target, **kwargs):
 
 
 def _grib_save(cube, target, append=False, **kwargs):
-    # A simple wrapper for `iris.fileformats.grib.save_grib2` which
-    # allows the saver to be registered without having `gribapi`
-    # installed.
+    # A simple wrapper for the grib save routine, which allows the saver to be
+    # registered without having the grib implementation installed.
     try:
-        import gribapi
+        import iris_grib as igrib
     except ImportError:
-        raise RuntimeError('Unable to save GRIB file - the ECMWF '
-                           '`gribapi` package is not installed.')
-    return iris.fileformats.grib.save_grib2(cube, target, append, **kwargs)
+        try:
+            import gribapi
+        except ImportError:
+            raise RuntimeError('Unable to save GRIB file - the ECMWF '
+                               '`gribapi` package is not installed.')
+        from iris.fileformats import grib as igrib
+
+    return igrib.save_grib2(cube, target, append, **kwargs)
 
 
 def _check_init_savers():
@@ -320,7 +324,7 @@ def save(source, target, saver=None, **kwargs):
         * netCDF - the Unidata network Common Data Format:
             * see :func:`iris.fileformats.netcdf.save`
         * GRIB2  - the WMO GRIdded Binary data format;
-            * see :func:`iris.fileformats.grib.save_grib2`
+            * see <http://https://github.com/SciTools/iris-grib>.
         * PP     - the Met Office UM Post Processing Format.
             * see :func:`iris.fileformats.pp.save`
 

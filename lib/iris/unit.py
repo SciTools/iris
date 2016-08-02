@@ -1852,8 +1852,7 @@ class Unit(iris.util._OrderedHashable):
 
         .. note::
 
-            Conversion is done *in-place* for numpy arrays. Also note that,
-            conversion between unit calendars is not permitted.
+            Conversion between unit calendars is not permitted.
 
         """
         result = None

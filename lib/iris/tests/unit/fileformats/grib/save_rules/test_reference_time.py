@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,7 @@ import iris.fileformats.grib
 from iris.fileformats.grib._save_rules import reference_time
 from iris.tests import mock
 import iris.tests.stock as stock
-from iris.tests.test_grib_load import TestGribSimple
+from iris.tests.test_grib_load_translations import TestGribSimple
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
@@ -58,6 +58,9 @@ class Test(TestGribSimple):
         iris.fileformats.grib.hindcast_workaround = True
         cube = stock.global_grib2()
         cube.remove_coord("forecast_period")
+        frt_coords = cube.coords('forecast_reference_time')
+        if frt_coords:
+            cube.remove_coord(frt_coords[0])
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)

@@ -727,9 +727,6 @@ class FF2PP(object):
                 stash_entry = STASH_TRANS.get(stash, None)
                 if stash_entry is None:
                     subgrid = None
-                    warnings.warn('The STASH code {0} was not found in the '
-                                  'STASH to grid type mapping. Picking the P '
-                                  'position as the cell type'.format(stash))
                 else:
                     subgrid = stash_entry.grid_code
                     if subgrid not in HANDLED_GRIDS:
@@ -745,6 +742,11 @@ class FF2PP(object):
                 no_x = field.bzx in (0, field.bmdi) and field.x is None
                 no_y = field.bzy in (0, field.bmdi) and field.y is None
                 if no_x and no_y:
+                    if subgrid is None:
+                        msg = ('The STASH code {0} was not found in the '
+                               'STASH to grid type mapping. Picking the P '
+                               'position as the cell type'.format(stash))
+                        warnings.warn(msg)
                     field.bzx, field.bdx = grid.regular_x(subgrid)
                     field.bzy, field.bdy = grid.regular_y(subgrid)
                     field.bplat = grid.pole_lat

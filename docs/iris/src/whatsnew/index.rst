@@ -1,3 +1,5 @@
+.. _iris_whatsnew:
+
 What's new in Iris
 ******************
 

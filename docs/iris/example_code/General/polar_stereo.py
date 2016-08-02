@@ -15,10 +15,6 @@ import iris.quickplot as qplt
 
 
 def main():
-    # Enable a future option, to ensure that the grib load works the same way
-    # as in future Iris versions.
-    iris.FUTURE.strict_grib_load = True
-
     file_path = iris.sample_data_path('polar_stereo.grib2')
     cube = iris.load_cube(file_path)
     qplt.contourf(cube)

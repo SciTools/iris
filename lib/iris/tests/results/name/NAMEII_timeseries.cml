@@ -7,7 +7,6 @@
       <attribute name="Location" value="Birmingham"/>
       <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow"/>
       <attribute name="NAME Version" value="NAME III (version 6.0 for VAAC)"/>
-      <attribute name="Number of series" value="2"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="8376.000m asl +/- 6864.000m"/>
       <attribute name="Release location" value="19.0500W   63.6300N"/>
@@ -53,7 +52,6 @@
       <attribute name="Location" value="Bristol"/>
       <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow"/>
       <attribute name="NAME Version" value="NAME III (version 6.0 for VAAC)"/>
-      <attribute name="Number of series" value="2"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="8376.000m asl +/- 6864.000m"/>
       <attribute name="Release location" value="19.0500W   63.6300N"/>

@@ -22,9 +22,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import os
-import warnings
 import datetime
-from distutils.version import StrictVersion
 
 import cf_units
 import numpy as np
@@ -44,14 +42,6 @@ class TestLoadSave(tests.TestGribMessage):
 
     def setUp(self):
         self.skip_keys = []
-        if gribapi.__version__ < '1.13':
-            self.skip_keys = ['g2grid', 'gridDescriptionSectionPresent',
-                              'latitudeOfLastGridPointInDegrees',
-                              'iDirectionIncrementInDegrees',
-                              'longitudeOfLastGridPointInDegrees',
-                              'latLonValues', 'distinctLatitudes',
-                              'distinctLongitudes', 'lengthOfHeaders',
-                              'values', 'x']
 
     def test_latlon_forecast_plev(self):
         source_grib = tests.get_data_path(("GRIB", "uk_t", "uk_t.grib2"))
@@ -85,7 +75,6 @@ class TestLoadSave(tests.TestGribMessage):
                             'shapeOfTheEarth': (0, 1),
                             'scaledValueOfRadiusOfSphericalEarth': (4294967295,
                                                                     6367470),
-                            'iDirectionIncrement': (109994, 109993),
                             'longitudeOfLastGridPoint': (392109982, 32106370),
                             'latitudeOfLastGridPoint': (19419996, 19419285),
                             'typeOfGeneratingProcess': (0, 255),
@@ -97,33 +86,29 @@ class TestLoadSave(tests.TestGribMessage):
 
     def test_time_mean(self):
         # This test for time-mean fields also tests negative forecast time.
-        try:
-            iris.fileformats.grib.hindcast_workaround = True
-            source_grib = tests.get_data_path(("GRIB", "time_processed",
-                                               "time_bound.grib2"))
-            cubes = iris.load(source_grib)
-            expect_diffs = {'totalLength': (21232, 21227),
-                            'productionStatusOfProcessedData': (0, 255),
-                            'scaleFactorOfRadiusOfSphericalEarth': (4294967295,
-                                                                    0),
-                            'shapeOfTheEarth': (0, 1),
-                            'scaledValueOfRadiusOfSphericalEarth': (4294967295,
-                                                                    6367470),
-                            'longitudeOfLastGridPoint': (356249908, 356249810),
-                            'latitudeOfLastGridPoint': (-89999938, -89999944),
-                            'typeOfGeneratingProcess': (0, 255),
-                            'generatingProcessIdentifier': (128, 255),
-                            'typeOfTimeIncrement': (2, 255)
-                            }
-            self.skip_keys.append('stepType')
-            self.skip_keys.append('stepTypeInternal')
-            with self.temp_filename(suffix='.grib2') as temp_file_path:
-                iris.save(cubes, temp_file_path)
-                self.assertGribMessageDifference(source_grib, temp_file_path,
-                                                 expect_diffs, self.skip_keys,
+        source_grib = tests.get_data_path(("GRIB", "time_processed",
+                                           "time_bound.grib2"))
+        cubes = iris.load(source_grib)
+        expect_diffs = {'totalLength': (21232, 21227),
+                        'productionStatusOfProcessedData': (0, 255),
+                        'scaleFactorOfRadiusOfSphericalEarth': (4294967295,
+                                                                0),
+                        'shapeOfTheEarth': (0, 1),
+                        'scaledValueOfRadiusOfSphericalEarth': (4294967295,
+                                                                6367470),
+                        'longitudeOfLastGridPoint': (356249908, 356249809),
+                        'latitudeOfLastGridPoint': (-89999938, -89999944),
+                        'typeOfGeneratingProcess': (0, 255),
+                        'generatingProcessIdentifier': (128, 255),
+                        'typeOfTimeIncrement': (2, 255)
+                        }
+        self.skip_keys.append('stepType')
+        self.skip_keys.append('stepTypeInternal')
+        with self.temp_filename(suffix='.grib2') as temp_file_path:
+            iris.save(cubes, temp_file_path)
+            self.assertGribMessageDifference(source_grib, temp_file_path,
+                                             expect_diffs, self.skip_keys,
                                              skip_sections=[2])
-        finally:
-            iris.fileformats.grib.hindcast_workaround = False
 
 
 @tests.skip_data
