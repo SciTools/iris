@@ -242,6 +242,114 @@ class Test_write(tests.IrisTest):
             self.assertEqual(res, 'something something_else')
 
 
+class Test_write__valid_x(tests.IrisTest):
+    """Testing valid_range, valid_min and valid_max attributes."""
+
+    def test_valid_range_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        vrange = np.array([1, 2], dtype='int32')
+        cube.attributes['valid_range'] = vrange
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.valid_range, vrange)
+            ds.close()
+
+    def test_valid_min_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        cube.attributes['valid_min'] = 1
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.valid_min, 1)
+            ds.close()
+
+    def test_valid_max_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        cube.attributes['valid_max'] = 2
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.valid_max, 2)
+            ds.close()
+
+    def test_valid_range_type_coerce(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        vrange = np.array([1, 2], dtype='float')
+        cube.attributes['valid_range'] = vrange
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertEqual(ds.valid_range.dtype, cube.data.dtype)
+            ds.close()
+
+    def test_valid_range_unsigned_int8_data_signed_range(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('uint8')
+
+        vrange = np.array([1, 2], dtype='int8')
+        cube.attributes['valid_range'] = vrange
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertEqual(ds.valid_range.dtype, vrange.dtype)
+            ds.close()
+
+    def test_valid_range_cannot_coerce(self):
+        # Ensure that we are unable to save a compliant valid_range
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int8')
+
+        vrange = np.array([1.5, 2.5], dtype='float64')
+        cube.attributes['valid_range'] = vrange
+        msg = '"valid_range" is not of a suitable value'
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                with self.assertRaisesRegexp(ValueError, msg):
+                    saver.write(cube)
+
+    def test_valid_range_iterable(self):
+        # Ensure we handle the case where an iterable is provided rather than
+        # a numpy array.
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int8')
+
+        vrange = [1, 2]
+        cube.attributes['valid_range'] = vrange
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertEqual(ds.valid_range.dtype, np.int64)
+            ds.close()
+
+    def test_valid_range_and_valid_min_valid_max_provided(self):
+        # Conflicting attributes should raise a suitable exception.
+        cube = tests.stock.lat_lon_cube()
+        cube.data = np.ma.array(cube.data, dtype='int8')
+
+        cube.attributes['valid_range'] = [1, 2]
+        cube.attributes['valid_min'] = 1
+        msg = 'Both "valid_range" and "valid_min"'
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                with self.assertRaisesRegexp(ValueError, msg):
+                    saver.write(cube)
+
+
 class Test__create_cf_grid_mapping(tests.IrisTest):
     def _cube_with_cs(self, coord_system):
         """Return a simple 2D cube that uses the given coordinate system."""
