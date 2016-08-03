@@ -18,14 +18,14 @@ import user_interface as ui
 import matplotlib.pyplot as plt
 import iris
 import iris.quickplot as iplt
+import cube_utils
 
 import fileinput
 import math
 import subprocess
 from subprocess import call
 
-#
-print("Hello...")
+ui.cleanup_start()
 
 #Filesystem, database filename and list of files to upload:
 files_to_upload = ui.command_line_start_upload()
@@ -53,7 +53,16 @@ for each_line in fileinput.input(files_to_upload):
     #file and cubes it contains:
     database_file.write("FILE:\n")
     database_file.write(each_line)
-    database_file.write(str(cubes)+"\n\n")
+    for each_cube in cubes:
+        database_file.write("CUBE:\n")
+        database_file.write(str(each_cube.standard_name)+"\n")
+        for each_coord in each_cube.coords():
+            coordmin, coordmax, coordunits = cube_utils.get_bounds(each_cube,each_coord.standard_name)
+            database_file.write("COORDINATE:\n")
+            database_file.write(each_coord.standard_name+" "+  str(coordmin)+" "+  str(coordmax)+" "+  str(coordunits)+"\n")
+
+        database_file.write("METADATA:\n")
+        database_file.write( str(each_cube.metadata) + "\n" )
 
     #Upload the binary (NetCDF) file to the database:
 #    upload_command="scp "+each_line[:-1]+" "+filesystem_location
@@ -63,3 +72,5 @@ for each_line in fileinput.input(files_to_upload):
 #    print(remove_command)
 #    os.system(remove_command)
 database_file.close()
+
+

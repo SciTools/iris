@@ -120,6 +120,11 @@ def read_cubes_from_file(filename):
 
 ########3
 
+def cleanup_start():
+    #Clean compiled files:
+    print("Cleaning up compiled files...")
+    silentremove('compiled_krb')
+    silentremove('__pycache__')
 
 def cleanup_and_finish():
     #Clean compiled files:
