@@ -59,7 +59,7 @@ for each_line in fileinput.input(files_to_upload):
         for each_coord in each_cube.coords():
             coordmin, coordmax, coordunits = cube_utils.get_bounds(each_cube,each_coord.standard_name)
             database_file.write("COORDINATE:\n")
-            database_file.write(each_coord.standard_name+" "+  str(coordmin)+" "+  str(coordmax)+" "+  str(coordunits)+"\n")
+            database_file.write(each_coord.standard_name+" "+  str(coordmin)+" "+  str(coordmax)+" "+ "<<"+ str(coordunits)+">>"+"\n")
 
         database_file.write("METADATA:\n")
         database_file.write( str(each_cube.metadata) + "\n" )

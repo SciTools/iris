@@ -5,4 +5,3 @@
 /home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_199501010130-199912302230.nc
 /home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_200001010130-200412302230.nc
 /home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_200501010130-200512302230.nc
-/home/mhpcproj/NetCDF_files/sococa.ts1.r1.cam2.h1.1989-12-27-00000.nc
