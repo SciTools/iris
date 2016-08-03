@@ -82,6 +82,39 @@ def command_line_load():
         print(cubes_avail)
     return cubes
 
+#########
+
+def read_cubes_from_file(filename):
+    #Clean compiled files:
+    print("Cleaning up compiled files...")
+    silentremove('compiled_krb')
+    silentremove('__pycache__')
+
+    #Load cubes from file:
+    try:
+        cubes = iris.load(filename)
+    except IOError:
+        print('Cannot open file {}.'.format(filename)+
+          ' Please make sure that file exists.')
+    except ValueError:
+        print('Cannot open file {}.'.format(filename)+
+          ' Please make sure that the file is compatible with Iris.')
+    
+    #print loaded cubes:
+    print('\n\n')
+    print("{} cubes read from {}):".format(len(cubes),filename) )
+    print(cubes)
+    if(len(cubes) == 0):
+        cubes_avail = iris.load(filenames)
+        print("Available cubes: ")
+        print(cubes_avail)
+
+
+    return cubes
+
+
+########3
+
 
 def cleanup_and_finish():
     #Clean compiled files:
