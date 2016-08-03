@@ -19,7 +19,7 @@ import os, errno
 #The following line should be replaced by "import iris"
 #import iris
 #iris = SourceFileLoader("iris", "/home/juan/MHPC-Thesis/iris/lib/iris/__init__.py").load_module()
-iris = SourceFileLoader("iris", "/home/mhpcproj/pipistrello/lib/iris/__init__.py").load_module()
+iris = SourceFileLoader("iris", "../lib/iris/__init__.py").load_module()
 iris.FUTURE.netcdf_promote = True
 
 def silentremove(filename):
