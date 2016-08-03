@@ -27,19 +27,17 @@ from subprocess import call
 #
 print("Hello...")
 
-#Filesystem:
-filesystem_location = "/home/jcarmona/SomeFilesystem/"
+#Filesystem, database filename and list of files to upload:
+files_to_upload = ui.command_line_start_upload()
+filesystem_location = "/home/mhpcproj/SomeFilesystem/"
+database_filename = "database_file.txt"
 
 #Where the database info is going to be written:
-database_filename = "database_file.txt"
 database_file = open(filesystem_location+database_filename,mode="w")
 
 #File containing the filenames to upload:
-files_to_upload = "File_list.txt"
 
 for each_line in fileinput.input(files_to_upload):
-    print("\n===============================================================")
-
 ########THIS IS FOR HADOOP###############
 #    command="ls -l "+each_line
 #    size=float(os.popen(command).read().split(" ")[4])
@@ -48,22 +46,20 @@ for each_line in fileinput.input(files_to_upload):
 #########################################
 
     #read the cubes contained in each filename:
-    print(each_line)
+    print("reading "+each_line)
     cubes = ui.read_cubes_from_file(each_line[:-1])
 
     #Write info to database: name of the binary (NetCDF) 
     #file and cubes it contains:
+    database_file.write("FILE:\n")
     database_file.write(each_line)
-    database_file.write(cubes)
+    database_file.write(str(cubes)+"\n\n")
 
     #Upload the binary (NetCDF) file to the database:
-    upload_command="scp "+each_line[:-1]+" "+filesystem_location
-    remove_command="rm "+filesystem_location+each_line[:-1]
-    print(upload_command)
-    os.system(upload_command)
-    print(remove_command)
-    os.system(remove_command)
-
-    print("===============================================================\n")
-
+#    upload_command="scp "+each_line[:-1]+" "+filesystem_location
+#    remove_command="rm "+filesystem_location+each_line[:-1]
+#    print(upload_command)
+#    os.system(upload_command)
+#    print(remove_command)
+#    os.system(remove_command)
 database_file.close()
