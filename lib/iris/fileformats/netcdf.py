@@ -887,7 +887,9 @@ class Saver(object):
 
         # Ensure that attributes are CF compliant and if possible to make them
         # compliant.
-        self.check_attribute_compliance(cube)
+        self.check_attribute_compliance(cube, cube.lazy_data())
+        for coord in cube.coords():
+            self.check_attribute_compliance(coord, coord.points)
 
         # Get suitable dimension names.
         dimension_names = self._get_dim_names(cube)
@@ -940,7 +942,8 @@ class Saver(object):
                     'cf_patch')
                 warnings.warn(msg)
 
-    def check_attribute_compliance(self, cube):
+    @staticmethod
+    def check_attribute_compliance(container, data):
         def _coerce_value(val_attr, val_attr_value, data_dtype):
             val_attr_tmp = np.array(val_attr_value, dtype=data_dtype)
             if (val_attr_tmp != val_attr_value).any():
@@ -948,19 +951,19 @@ class Saver(object):
                 raise ValueError(msg.format(val_attr, val_attr_value))
             return val_attr_tmp
 
-        data_dtype = cube.lazy_data().dtype
+        data_dtype = data.dtype
 
         # Ensure that conflicting attributes are not provided.
-        if ((cube.attributes.get('valid_min') is not None or
-                cube.attributes.get('valid_max') is not None) and
-                cube.attributes.get('valid_range') is not None):
+        if ((container.attributes.get('valid_min') is not None or
+                container.attributes.get('valid_max') is not None) and
+                container.attributes.get('valid_range') is not None):
             msg = ('Both "valid_range" and "valid_min" or "valid_max" '
                    'attributes present.')
             raise ValueError(msg)
 
         # Ensure correct datatype
         for val_attr in ['valid_range', 'valid_min', 'valid_max']:
-            val_attr_value = cube.attributes.get(val_attr)
+            val_attr_value = container.attributes.get(val_attr)
             if val_attr_value is not None:
                 val_attr_value = np.asarray(val_attr_value)
                 if data_dtype.itemsize is 1:
@@ -968,7 +971,8 @@ class Saver(object):
                     if val_attr_value.dtype.kind == 'i':
                         continue
                 new_val = _coerce_value(val_attr, val_attr_value, data_dtype)
-                cube.attributes[val_attr] = new_val
+                container.attributes[val_attr] = new_val
+
 
     def update_global_attributes(self, attributes=None, **kwargs):
         """
