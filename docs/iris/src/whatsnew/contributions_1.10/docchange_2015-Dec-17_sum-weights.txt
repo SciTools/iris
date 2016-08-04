@@ -1,0 +1,1 @@
+* The docstring for iris.analysis.SUM has been updated to explicitly state that weights passed to it aren't normalised internally.
