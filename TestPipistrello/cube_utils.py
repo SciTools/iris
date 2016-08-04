@@ -26,7 +26,7 @@ from subprocess import call
 
 def get_bounds(c0,coordinate):
     #We get the bounds:
-    print(coordinate)
+    print("coordinate = {}".format( coordinate))
     if not c0.coord(coordinate).has_bounds():
         c0.coord(coordinate).guess_bounds()
         

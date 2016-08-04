@@ -29,7 +29,7 @@ ui.cleanup_start()
 
 #Filesystem, database filename and list of files to upload:
 files_to_upload = ui.command_line_start_upload()
-filesystem_location = "/home/mhpcproj/SomeFilesystem/"
+filesystem_location = "/home/juan/SomeFilesystem/"
 database_filename = "database_file.txt"
 
 #Where the database info is going to be written:
@@ -49,18 +49,19 @@ for each_line in fileinput.input(files_to_upload):
     print("reading "+each_line)
     cubes = ui.read_cubes_from_file(each_line[:-1])
 
-    #Write info to database: name of the binary (NetCDF) 
-    #file and cubes it contains:
+    #Write info to database: location of the binary (NetCDF) files:
     database_file.write("FILE:\n")
     database_file.write(each_line)
+    #Write cubes it contains:  
     for each_cube in cubes:
         database_file.write("CUBE:\n")
         database_file.write(str(each_cube.standard_name)+"\n")
+        #Write the coordinates of each cube; its name, max, min, and units:
         for each_coord in each_cube.coords():
             coordmin, coordmax, coordunits = cube_utils.get_bounds(each_cube,each_coord.standard_name)
             database_file.write("COORDINATE:\n")
             database_file.write(each_coord.standard_name+" "+  str(coordmin)+" "+  str(coordmax)+" "+ "<<"+ str(coordunits)+">>"+"\n")
-
+		#Write the metadata of the cube:
         database_file.write("METADATA:\n")
         database_file.write( str(each_cube.metadata) + "\n" )
 
@@ -72,5 +73,3 @@ for each_line in fileinput.input(files_to_upload):
 #    print(remove_command)
 #    os.system(remove_command)
 database_file.close()
-
-

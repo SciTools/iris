@@ -73,13 +73,13 @@ def command_line_load():
         print('Cannot open one or more files in {}.'.format(filenames)+
           ' Please make sure that all files exist.')
         print_usage()
-        sys.exit()
+        raise
     except ValueError:
         print('Cannot open one or more files in {}.'.format(filenames)+
           ' Please make sure that all files are '
           'compatible with Iris.')
         print_usage()
-        sys.exit()
+        raise
 
 
     #print loaded cubes:
@@ -104,13 +104,15 @@ def read_cubes_from_file(filename):
     except ValueError:
         print('Cannot open file {}.'.format(filename)+
           ' Please make sure that the file is compatible with Iris.')
+    except:
+        raise
     
     #print loaded cubes:
     print('\n\n')
     print("{} cubes read from {}:".format(len(cubes),filename) )
     print(cubes)
     if(len(cubes) == 0):
-        cubes_avail = iris.load(filenames)
+        cubes_avail = iris.load(filename)
         print("Available cubes: ")
         print(cubes_avail)
 
