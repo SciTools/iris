@@ -1,0 +1,1 @@
+* An incorrect note in Unit.convert has been removed.
