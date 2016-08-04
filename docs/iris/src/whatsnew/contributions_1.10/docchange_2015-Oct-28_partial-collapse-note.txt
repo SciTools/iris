@@ -1,0 +1,1 @@
+* A note regarding the impossibility of partially collapsing multi-dimensional coordinates has been added to the user guide
