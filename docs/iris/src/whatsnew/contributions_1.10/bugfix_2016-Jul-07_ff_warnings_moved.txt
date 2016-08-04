@@ -1,0 +1,1 @@
+* The warning for a lack of FF subgrid has been moved so it will only appear when it's relevant.
