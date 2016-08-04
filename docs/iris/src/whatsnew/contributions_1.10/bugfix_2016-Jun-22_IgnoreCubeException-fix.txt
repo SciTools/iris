@@ -1,1 +1,0 @@
-* `IgnoreCubeException` is now respected when PP files are loaded with a user callback.
