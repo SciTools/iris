@@ -1,1 +1,1 @@
-* The performance of cube.extract when a list of values is given to a constraint has been improved considerably.
+* The performance of :meth:`iris.cube.Cube.extract` when a list of values is given to an instance of :class:`iris.Constraint` has been improved considerably.
