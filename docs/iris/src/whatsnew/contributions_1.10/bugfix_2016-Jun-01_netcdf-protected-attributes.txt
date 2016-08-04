@@ -1,1 +1,1 @@
-* Saving multiple cubes with netcdf4 protected attributes should now work as expected.
+* Saving multiple cubes with netCDF4 protected attributes should now work as expected.
