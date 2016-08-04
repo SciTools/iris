@@ -1,0 +1,1 @@
+* A new code example, demonstrating the use of a quiver plot to display wind speeds over Lake Victoria, has been added to the gallery.
