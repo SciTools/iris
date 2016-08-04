@@ -1,0 +1,1 @@
+* The performance of cube.extract when a list of values is given to a constraint has been improved considerably.
