@@ -1,0 +1,1 @@
+* Support for the NameIII Version 2 file format has been added.
