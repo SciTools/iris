@@ -1,0 +1,1 @@
+* Iris now checks for broken dot installations when checking whether dot is installed.
