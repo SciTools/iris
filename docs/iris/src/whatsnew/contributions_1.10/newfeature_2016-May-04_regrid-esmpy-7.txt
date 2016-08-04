@@ -1,0 +1,1 @@
+* `regrid_conservative_via_esmpy` is now compatible with ESMPy v7.
