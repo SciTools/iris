@@ -1,1 +1,1 @@
-* Attempting to use `iris.sample_data_path` to access a file that isn't actually Iris sample data now raises a more descriptive error. A note about the appropriate use of `sample_data_path` has also been added to the documentation.
+* Attempting to use :meth:`iris.sample_data_path` to access a file that isn't actually Iris sample data now raises a more descriptive error. A note about the appropriate use of `sample_data_path` has also been added to the documentation.
