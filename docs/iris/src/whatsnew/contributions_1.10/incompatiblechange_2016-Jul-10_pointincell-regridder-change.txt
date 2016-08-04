@@ -1,0 +1,1 @@
+* The source and target for :meth:`iris.experimental.regrid.PointInCell.regridder` must now have defined coordinate systems (i.e. not `None`). Additionally, the source data X and Y coordinates must have the same cube dimensions.
