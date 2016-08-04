@@ -973,7 +973,6 @@ class Saver(object):
                 new_val = _coerce_value(val_attr, val_attr_value, data_dtype)
                 container.attributes[val_attr] = new_val
 
-
     def update_global_attributes(self, attributes=None, **kwargs):
         """
         Update the CF global attributes based on the provided
