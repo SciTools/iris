@@ -1,1 +1,1 @@
-* False claims about :meth:`iris.fileformats.pp.save`, :meth:`iris.fileformats.pp.as_pairs`, and `iris.fileformats.as_fields` being able to take instances of :class:`iris.cube.CubeList` as inputs have been removed.
+* False claims about :meth:`iris.fileformats.pp.save`, :meth:`iris.fileformats.pp.as_pairs`, and :meth:`iris.fileformats.as_fields` being able to take instances of :class:`iris.cube.CubeList` as inputs have been removed.
