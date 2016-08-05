@@ -1,1 +1,1 @@
-* The documentation for the `curl` method in `iris.analysis.calculus` has been updated for clarity.
+* The documentation for :meth:`iris.analysis.calculus.curl` has been updated for clarity.
