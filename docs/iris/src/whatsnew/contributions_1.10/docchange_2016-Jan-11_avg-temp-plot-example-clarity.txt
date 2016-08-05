@@ -1,1 +1,0 @@
-* The "Global average annual temperature plot" example code (docs/iris/example_code/Meteorology/COP_1d_plot.py) has been edited for clarity.
