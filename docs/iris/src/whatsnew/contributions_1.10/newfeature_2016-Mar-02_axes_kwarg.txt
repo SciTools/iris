@@ -1,1 +1,1 @@
- * All appropriate iris.plot functions now handle an axes keyword, allowing use of the object oriented matplotlib interface rather than pyplot.
+* All appropriate :mod:`iris.plot` functions now handle an axes keyword, allowing use of the object oriented matplotlib interface rather than pyplot.
