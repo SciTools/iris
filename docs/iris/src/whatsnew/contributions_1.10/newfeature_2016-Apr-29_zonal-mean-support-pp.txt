@@ -1,1 +1,0 @@
-* Zonal (i.e. longitudinal) mean support has been added to the LBPROC save rule for pp files.

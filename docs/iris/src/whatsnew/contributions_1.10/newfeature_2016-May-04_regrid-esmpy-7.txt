@@ -1,1 +1,0 @@
-* :mod:`iris.experimental.regrid_conservative` is now compatible with ESMPy v7.

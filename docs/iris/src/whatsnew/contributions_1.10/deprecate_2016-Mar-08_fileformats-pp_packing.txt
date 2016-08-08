@@ -1,1 +1,0 @@
-* `iris.fileformats.pp_packing` has been hidden behind a deprecation interface. Please install mo_pack (https://github.com/SciTools/mo_pack) to use instead.

@@ -1,1 +1,0 @@
-* Cubes can now have an 'hour' coordinate added with :meth:`iris.coord_categorisation.add_hour`.

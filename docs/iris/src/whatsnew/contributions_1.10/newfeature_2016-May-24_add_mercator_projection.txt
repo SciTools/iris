@@ -1,2 +1,0 @@
-* The Mercator projection is now supported with defaults for some parameters (_false easting_, _false northing_ and _scale factor at projection origin_).
-* NetCDF files which define a Mercator projection where the _false easting_, _false northing_ and _scale factor at projection origin_ match the defaults will have the projection loaded correctly. Otherwise, a warning will be issued for each parameter that does not match the default and the projection will not be loaded.

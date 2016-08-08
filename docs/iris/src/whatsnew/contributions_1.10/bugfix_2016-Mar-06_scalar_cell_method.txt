@@ -1,1 +1,0 @@
-* The `coord_name` parameter to :func:`~iris.fileformats.rules.scalar_cell_method` is now checked correctly.

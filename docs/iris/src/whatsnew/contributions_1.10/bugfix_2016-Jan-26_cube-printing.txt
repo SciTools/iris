@@ -1,1 +1,0 @@
-* A bug that prevented cube printing in some cases has been fixed.

@@ -1,1 +1,0 @@
-* Plotting non-Gregorian calendars is now supported. This adds nc_time_axis as a dependency.

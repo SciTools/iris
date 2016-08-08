@@ -1,1 +1,0 @@
-* The documentation for :meth:`iris.analysis.calculus.curl` has been updated for clarity.
