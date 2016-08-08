@@ -38,6 +38,10 @@ iris_image_test_output/
 .pydevproject
 .settings
 
+# PyCharm files
+/.idea
+*.cover
+
 # Auto generated documentation files
 docs/iris/src/_static/random_image.js
 docs/iris/src/_templates/gallery.html
