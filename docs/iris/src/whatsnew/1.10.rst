@@ -15,14 +15,14 @@ Iris 1.10 Features
   `iris_grib <https://github.com/SciTools/iris-grib>`_ package, which
   provides GRIB format support in an optional package, separate from Iris.
 
-  * If `iris_grib` is available, it will always be used in place of the older
+  * If ``iris_grib`` is available, it will always be used in place of the older
     iris module :mod:`iris.fileformats.grib`.
 
-  * The capabilities of `iris_grib` are essentially the same as the existing
-    `iris.fileformats.grib` when used with ``iris.FUTURE.strict_grib_load=True``,
+  * The capabilities of ``iris_grib`` are essentially the same as the existing
+    :mod:`iris.fileformats.grib` when used with ``iris.FUTURE.strict_grib_load=True``,
     with only small detail differences.
 
-  * The old 'iris.fileformats.grib' module is now deprecated and may shortly be
+  * The old :mod:`iris.fileformats.grib` module is now deprecated and may shortly be
     removed.
 
     * If you are already using the recommended :data:`iris.FUTURE` setting
@@ -105,7 +105,7 @@ Incompatible Changes
 Deprecations
 ============
 * Deprecated the :class:`iris.Future` option
-  :data:`iris.FUTURE.strict_grib_load`.
+  ``iris.FUTURE.strict_grib_load``.
   This only affected the module :mod:`iris.fileformats.grib`, which is itself
   now deprecated.
   Please see :ref:`iris_grib package <iris_grib_added>`, above.
@@ -113,7 +113,7 @@ Deprecations
   `iris_grib <https://github.com/SciTools/iris-grib>`_ replaces this
   fuctionality, which will shortly be removed.
   Please see :ref:`iris_grib package <iris_grib_added>`, above.
-* The use of :data:`iris.config.SAMPLE_DATA_DIR` has been deprecated and replaced by the now importable :mod:`iris_sample_data` package.
+* The use of :data:`iris.config.SAMPLE_DATA_DIR` has been deprecated and replaced by the now importable `iris_sample_data <https://github.com/SciTools/iris-sample-data>`_ package.
  
 * Deprecated the module :mod:`iris.analysis.interpolate`.
   This contains the following public items, all of which are now deprecated and
