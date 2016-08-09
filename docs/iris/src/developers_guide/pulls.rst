@@ -20,7 +20,8 @@ The Iris Check List
   changed and why.  This should include:
 
  * the aim of the change - the problem addressed, a link to the issue;
- * how the change has been delivered.
+ * how the change has been delivered;
+ * a "What's New" entry, submitted as part of the pull request. See `Contributing a "What's New" entry`_.
 
 * Do new files pass PEP8?
 
@@ -62,12 +63,6 @@ The Iris Check List
 
  * ``make doctest``, ``make extest``  in ``./docs/iris``.
 
-* Is there an associated iris-code-generators pull request?
-
- * iris-code-generators_ is a github project which provides processes for
-   generating a small subset of the Iris source code files from other 
-   information sources.
-
 * Has the travis file been updated to reflect any dependency updates?
 
  * ``./.travis.yml`` is used to manage the continuous integration testing.
@@ -77,5 +72,6 @@ The Iris Check List
 .. _python-pep8: https://pypi.python.org/pypi/pep8
 .. _iris-test-data: https://github.com/SciTools/iris-test-data
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
-.. _iris-code-generators: https://github.com/SciTools/iris-code-generators
 .. _docstrings: http://scitools.org.uk/iris/docs/latest/developers_guide/documenting/docstrings.html
+.. _Contributing a "What's New" entry: http://scitools.org.uk/iris/docs/latest/developers_guide/documenting/whats_new_contributions.html
+
