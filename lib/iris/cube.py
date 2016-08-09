@@ -469,7 +469,7 @@ class CubeList(list):
 
         return merged_cubes
 
-    def concatenate_cube(self, check_aux_coords=True):
+    def concatenate_cube(self, check_aux_coords=False):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
         :class:`Cube`.
@@ -483,7 +483,7 @@ class CubeList(list):
         * check_aux_coords
             Checks the auxilliary coordinates of the cubes match. This check
             is not applied to auxilliary coordinates that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            the concatenation is occuring along. Defaults to False.
 
         .. note::
 
