@@ -1418,6 +1418,14 @@ class Test_transpose(tests.IrisTest):
         self.assertTrue(cube.has_lazy_data())
         self.assertArrayEqual(data.T, cube.data)
 
+    def test_not_lazy_data(self):
+        data = np.arange(12).reshape(3, 4)
+        cube = Cube(data)
+        cube.transpose()
+        self.assertFalse(cube.has_lazy_data())
+        self.assertIs(data.base, cube.data.base)
+        self.assertArrayEqual(data.T, cube.data)
+
 
 if __name__ == '__main__':
     tests.main()

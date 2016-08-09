@@ -2802,11 +2802,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if new_order is None:
-            new_order = np.arange(self.data.ndim)[::-1]
-        elif len(new_order) != self.data.ndim:
+            new_order = np.arange(self.ndim)[::-1]
+        elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        self._my_data = self.lazy_data().transpose(new_order)
+        if self.has_lazy_data():
+            self._my_data = self.lazy_data().transpose(new_order)
+        else:
+            self._my_data = self.data.transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
