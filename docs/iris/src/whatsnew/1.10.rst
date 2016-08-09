@@ -47,12 +47,12 @@ Iris 1.10 Features
 * :meth:`iris.experimental.regrid.PointInCell.regridder` now works across coordinate systems, including non latlon systems. Additionally, the requirement that the source data X and Y coordinates be 2D has been removed. NB: some aspects of this change are backwards incompatible.
 * Plotting non-Gregorian calendars is now supported. This adds `nc_time_axis <https://github.com/SciTools/nc-time-axis>`_ as a dependency.
 * Promoting a scalar coordinate to a dimension coordinate with :func:`iris.util.new_axis` no longer loads deferred data.
-* The parsing functionality for Cell Methods from netCDF files is available as part of the :mod:`iris.fileformats.netcdf` module.
+* The parsing functionality for Cell Methods from netCDF files is available as part of the :mod:`iris.fileformats.netcdf` module as :func:`iris.fileformats.netcdf.parse_cell_methods`.
 * Support for the NameIII Version 2 file format has been added.
-* The Mercator projection is now supported with defaults for some parameters (_false easting\_, _false northing\_ and _scale factor at projection origin\_).
+* The Mercator projection is now supported with defaults for some parameters (``false easting``, ``false northing`` and ``scale factor at projection origin``).
 
-  * NetCDF files which define a Mercator projection where the _false easting\_, _false northing\_ and _scale factor at projection origin\_ match the defaults will have the projection loaded correctly. Otherwise, a warning will be issued for each parameter that does not match the default and the projection will not be loaded.
-  * NetCDF files which define a steroegraphic projection where the _scale factor at projection origin\_ is equal to 1.0 will have the projection loaded correctly. Otherwise, a warning will be issued and the projection will not be loaded.
+  * NetCDF files which define a Mercator projection where the ``false easting``, ``false northing`` and ``scale factor at projection origin`` match the defaults will have the projection loaded correctly. Otherwise, a warning will be issued for each parameter that does not match the default and the projection will not be loaded.
+  * NetCDF files which define a steroegraphic projection where the ``scale factor at projection origin`` is equal to 1.0 will have the projection loaded correctly. Otherwise, a warning will be issued and the projection will not be loaded.
 
 * The :mod:`iris.plot` routines :func:`~iris.plot.contour`, :func:`~iris.plot.contourf`, :func:`~iris.plot.outline`, :func:`~iris.plot.pcolor`, :func:`~iris.plot.pcolormesh` and :func:`~iris.plot.points` now support plotting cubes with anonymous dimensions by specifying the *numeric index* of the anonymous dimension within the ``coords`` keyword argument.
 
@@ -64,14 +64,15 @@ Iris 1.10 Features
 
   Note that structured loading is not an optimised wholesale replacement of :func:`iris.load`. Structured loading is restricted to input containing contiguously ordered fields for each phenomenon that repeat regularly over the same vertical levels and times. For further details, see :func:`~iris.experimental.fieldsfile.load` 
 * :mod:`iris.experimental.regrid_conservative` is now compatible with ESMPy v7.
-* Zonal (i.e. longitudinal) mean support has been added to the LBPROC save rule for pp files.
+* Saving zonal (i.e. longitudinal) means to PP files now sets the '64s' bit in LBPROC.
 * Loading of 'little-endian' PP files is now supported.
 * All appropriate :mod:`iris.plot` functions now handle an ``axes`` keyword, allowing use of the object oriented matplotlib interface rather than pyplot.
 * The ability to pass file format object lists into the rules based load pipeline, as used for GRIB, Fields Files and PP has been added.  The :func:`iris.fileformats.pp.load_pairs_from_fields` and :func:`iris.fileformats.grib.load_pairs_from_fields` are provided to produce cubes from such lists.  These lists may have been filtered or altered using the appropriate :mod:`iris.fileformats` modules.
 * Cubes can now have an 'hour' coordinate added with :meth:`iris.coord_categorisation.add_hour`.
 * Time coordinates from PP fields with an lbcode of 31323 are now correctly handled
-* The loading from and saving to netCDF of CF cell_measure variables is supported, along with their representation within a Cube's as cell_measures.
+* The loading from and saving to netCDF of CF cell_measure variables is supported, along with their representation within a Cube as :attr:`~iris.cube.Cube.cell_measures`.
 * Cubes with anonymous dimensions can now be concatenated. This can only occur along a dimension that is not anonymous.
+* NetCDF saving of ``valid_range``, ``valid_min`` and ``valid_max`` cube attributes is now allowed.
 
 Bugs Fixed
 ==========
@@ -95,7 +96,7 @@ Bugs Fixed
 * Fixed a bug in :meth:`~iris.analysis.calculus.curl` where the sign of the r-component for spherical coordinates was opposite to what was expected.  
 * A bug that prevented cube printing in some cases has been fixed.
 * Fixed a bug where a deepcopy of a :class:`~iris.coords.DimCoord` would have writable ``points`` and ``bounds`` arrays. These arrays can now no longer be modified in-place.
-* Concatenation no longer occurs when the auxilliary coordinates of the cubes do not match. This check is not applied to AuxCoords that span the dimension the concatenation is occuring along. This behaviour can be switched off by setting the ``check_aux_coords`` kwarg in :meth:`iris.cube.CubeList.concatenate` to False.
+* Concatenation no longer occurs when the auxiliary coordinates of the cubes do not match. This check is not applied to AuxCoords that span the dimension the concatenation is occuring along. This behaviour can be switched off by setting the ``check_aux_coords`` kwarg in :meth:`iris.cube.CubeList.concatenate` to False.
 * Fixed a bug in :meth:`iris.cube.Cube.subset` where an exception would be thrown while trying to subset over a non-dimensional scalar coordinate.
 
 Incompatible Changes
@@ -142,7 +143,7 @@ Deprecations
 
   All other public components are generally deprecated and will be removed in a future release.
 * The :func:`iris.fileformats.pp.as_pairs` and :func:`iris.fileformats.grib.as_pairs` are deprecated.  These are replaced with :func:`iris.fileformats.pp.save_pairs_from_cube` and :func:`iris.fileformats.grib.save_pairs_from_cube`.
-* ``iris.fileformats.pp_packing`` has been hidden behind a deprecation interface. Please install `mo_pack <https://github.com/SciTools/mo_pack>`_ to use instead.
+* ``iris.fileformats.pp_packing`` has been deprecated. Please install the separate `mo_pack <https://github.com/SciTools/mo_pack>`_ package instead. This provides the same functionality.
 * Deprecated logging functions (currently used only for rules logging):  
  :data:`iris.config.iris.config.RULE_LOG_DIR`,
  :data:`iris.config.iris.config.RULE_LOG_IGNORE` and
@@ -164,7 +165,7 @@ Documentation Changes
 * It is now clear that repeated values will form a group under :meth:`iris.cube.Cube.aggregated_by` even if they aren't consecutive. Hence, the documentation for :mod:`iris.cube` has been changed to reflect this.
 * The documentation for :meth:`iris.analysis.calculus.curl` has been updated for clarity.
 * False claims about :meth:`iris.fileformats.pp.save`, :meth:`iris.fileformats.pp.as_pairs`, and :meth:`iris.fileformats.pp.as_fields` being able to take instances of :class:`iris.cube.CubeList` as inputs have been removed.
-* A new code example, demonstrating the use of a quiver plot to display wind speeds over Lake Victoria, has been added to the gallery.
+* A :doc:`new code example <../examples/Meteorology/wind_speed>`, demonstrating the use of a quiver plot to display wind speeds over Lake Victoria, has been added.
 * The docstring for :data:`iris.analysis.SUM` has been updated to explicitly state that weights passed to it aren't normalised internally.
 * A note regarding the impossibility of partially collapsing multi-dimensional coordinates has been added to the user guide.
 
