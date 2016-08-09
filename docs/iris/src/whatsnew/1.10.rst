@@ -69,7 +69,7 @@ Iris 1.10 Features
 * All appropriate :mod:`iris.plot` functions now handle an ``axes`` keyword, allowing use of the object oriented matplotlib interface rather than pyplot.
 * The ability to pass file format object lists into the rules based load pipeline, as used for GRIB, Fields Files and PP has been added.  The :func:`iris.fileformats.pp.load_pairs_from_fields` and :func:`iris.fileformats.grib.load_pairs_from_fields` are provided to produce cubes from such lists.  These lists may have been filtered or altered using the appropriate :mod:`iris.fileformats` modules.
 * Cubes can now have an 'hour' coordinate added with :meth:`iris.coord_categorisation.add_hour`.
-* Time coordinates from PP fields with an lbcode of 31323 are now correctly handled
+* Time coordinates from PP fields with an lbcode of the form 3xx23 are now correctly encoded with a 360-day calendar.
 * The loading from and saving to netCDF of CF cell_measure variables is supported, along with their representation within a Cube as :attr:`~iris.cube.Cube.cell_measures`.
 * Cubes with anonymous dimensions can now be concatenated. This can only occur along a dimension that is not anonymous.
 * NetCDF saving of ``valid_range``, ``valid_min`` and ``valid_max`` cube attributes is now allowed.
