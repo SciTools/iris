@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -123,6 +123,9 @@ class TestCoordAttributes(tests.IrisTest):
         self.flag_masks = mock.sentinel.flag_masks
         self.flag_meanings = mock.sentinel.flag_meanings
         self.flag_values = mock.sentinel.flag_values
+        self.valid_range = mock.sentinel.valid_range
+        self.valid_min = mock.sentinel.valid_min
+        self.valid_max = mock.sentinel.valid_max
 
     def _make(self, names, attrs):
         coords = [DimCoord(i, long_name=name) for i, name in enumerate(names)]
@@ -162,14 +165,20 @@ class TestCoordAttributes(tests.IrisTest):
                   ('wibble', 'wibble')],
                  [('flag_meanings', self.flag_meanings),
                   ('add_offset', 'add_offset')],
-                 [('flag_values', self.flag_values)]]
+                 [('flag_values', self.flag_values)],
+                 [('valid_range', self.valid_range)],
+                 [('valid_min', self.valid_min)],
+                 [('valid_max', self.valid_max)]]
         cf, cf_var = self._make(names, attrs)
         cube = _load_cube(self.engine, cf, cf_var, self.filename)
         self.assertEqual(len(cube.coords()), 3)
         self.assertEqual(set([c.name() for c in cube.coords()]), set(names))
         expected = [attrs[0],
                     [attrs[1][0]],
-                    attrs[2]]
+                    attrs[2],
+                    attrs[3],
+                    attrs[4],
+                    attrs[5]]
         for name, expect in zip(names, expected):
             attributes = cube.coord(name).attributes
             self.assertEqual(set(attributes.items()), set(expect))
@@ -187,6 +196,9 @@ class TestCubeAttributes(tests.IrisTest):
         self.flag_masks = mock.sentinel.flag_masks
         self.flag_meanings = mock.sentinel.flag_meanings
         self.flag_values = mock.sentinel.flag_values
+        self.valid_range = mock.sentinel.valid_range
+        self.valid_min = mock.sentinel.valid_min
+        self.valid_max = mock.sentinel.valid_max
 
     def _make(self, attrs):
         cf_attrs_unused = mock.Mock(return_value=attrs)
@@ -216,8 +228,14 @@ class TestCubeAttributes(tests.IrisTest):
                  ('flag_meanings', self.flag_meanings),
                  ('add_offset', 'add_offset'),
                  ('flag_values', self.flag_values),
-                 ('standard_name', 'air_temperature')]
-        expected = set([attrs[0], attrs[1], attrs[2], attrs[4]])
+                 ('standard_name', 'air_temperature'),
+                 ('valid_range', self.valid_range),
+                 ('valid_min', self.valid_min),
+                 ('valid_max', self.valid_max)]
+
+        # Expect everything from above to be returned except those
+        # corresponding to exclude_ind.
+        expected = set([attrs[ind] for ind in [0, 1, 2, 4, 6, 7, 8]])
         cf_var = self._make(attrs)
         cube = _load_cube(self.engine, self.cf, cf_var, self.filename)
         self.assertEqual(len(cube.attributes), len(expected))
