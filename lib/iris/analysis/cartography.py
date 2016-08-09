@@ -70,13 +70,36 @@ def wrap_lons(lons, base, period):
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     """
-    Convert rotated-pole lons and lats to unrotated ones.
+    Convert arrays of rotated-pole longitudes and latitudes to unrotated
+    arrays of longitudes and latitudes. The values of ``pole_lon`` and
+    ``pole_lat`` should describe the location of the rotated pole that
+    describes the arrays of rotated-pole longitudes and latitudes.
+
+    As the arrays of rotated-pole longitudes and latitudes must describe a
+    rectilinear grid, the arrays of rotated-pole longitudes and latitudes must
+    be of the same length as each other.
 
     Example::
 
         lons, lats = unrotate_pole(grid_lons, grid_lats, pole_lon, pole_lat)
 
     .. note:: Uses proj.4 to perform the conversion.
+
+    Args:
+
+        * rotated_lons:
+            An array of rotated-pole longitude values.
+        * rotated_lats:
+            An array of rotated-pole latitude values.
+        * pole_lon:
+            The longitude of the rotated pole that describes the arrays of
+            rotated-pole longitudes and latitudes.
+        * pole_lat:
+            The latitude of the rotated pole that describes the arrays of
+            rotated-pole longitudes and latitudes.
+
+    Returns:
+        An array of unrotated longitudes and an array of unrotated latitudes.
 
     """
     src_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon,
@@ -92,13 +115,37 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
 
 def rotate_pole(lons, lats, pole_lon, pole_lat):
     """
-    Convert arrays of lons and lats to ones on a rotated pole.
+    Convert arrays of longitudes and latitudes to arrays of rotated-pole
+    longitudes and latitudes. The values of ``pole_lon`` and ``pole_lat``
+    should describe the rotated pole that the arrays of longitudes and
+    latitudes are to be rotated onto.
+
+    As the arrays oflongitudes and latitudes must describe a rectilinear grid,
+    the arrays of rotated-pole longitudes and latitudes must be of the same
+    length as each other.
 
     Example::
 
         grid_lons, grid_lats = rotate_pole(lons, lats, pole_lon, pole_lat)
 
     .. note:: Uses proj.4 to perform the conversion.
+
+    Args:
+
+        * lons:
+            An array of longitude values.
+        * lats:
+            An array of latitude values.
+        * pole_lon:
+            The longitude of the rotated pole that the arrays of longitudes and
+            latitudes are to be rotated onto.
+        * pole_lat:
+            The latitude of the rotated pole that the arrays of longitudes and
+            latitudes are to be rotated onto.
+
+    Returns:
+        An array of rotated-pole longitudes and an array of rotated-pole
+        latitudes.
 
     """
     src_proj = ccrs.Geodetic()
