@@ -25,7 +25,7 @@ class database():
 
     #a database object is initialized by 
     #specifying a location in the filesystem:
-    def __init__(self,location):
+    def __init__(self,location,new_catalogue=False):
         #File which contains all the datafiles, cubes, 
         #coordinates and metadata of the database:
         self.catalogue_filename = "CATALOGUE.txt"
@@ -50,32 +50,118 @@ class database():
         #The [i][j][k] entry will contain the coordinate k of cube j in file i.
         self.coordinates = []
 
-        #The [i][j][k] entry will contain the metadata of cube j in file i.
+        #The [i][j] entry will contain the metadata of cube j in file i.
         self.metadatas = []
 
+        #Database object is initialized by loading the catalogue file above.
+        #If the file is not present, the catalogue file is created.
         try:
             self.load()
         except FileNotFoundError:
-            print("{} not found in {}.".format(self.catalogue_filename,location))
-            print("Trying to create it now...")
-            self.create_catalogue()
+            print("{} not found in {}.".format(self.catalogue_filename,self.location))
+            if new_catalogue:
+                print("Creating it now...")
+                self.create_catalogue()
+            else:
+                print(
+                        
+                        '\tIf you want to use "{}"\n '
+                        '\tas a pipistrello database,\n '
+                        '\tadd the argument "new_catalogue=True" when creating\n '
+                        '\tthe pipistrello database object, e.g.\n\n'
+                        'my_database = ' 
+                        'pipistrello.database("{}",new_catalogue=True)'
+                        .format(self.location,self.location)
+                     )
 
+
+
+    #This is the core function for creating a database object:
+    #It scans, from the catalogue file, all the available cubes.
+    #It creates a directory of the cubes contained in each file,
+    #its coordinates and its metadata. No cubes is ever loaded.
     def load(self):
-
         #Where the database info is going to be written:
         try:
             catalogue_file = open(self.catalogue_filepath,mode="r")
         except FileNotFoundError:
             raise
-        print("loading database...")
-        #Create the list of available cubes
+
+        print("Loading database...")
+
+        #Here is an extract of a sample catalogue file.
+        #The next line to the label "FILE:" is the filename of a database file.
+        #The next line to the label "CUBE:" 
+        #                           gives an iris_cube.name() present on the above file.
+        #The next line to the label "COORDINATE:" 
+        #                        is an iris_coordinate.name() present on the above cube.
+        #The next line to the label "METADATA:" 
+        #                            is an iris_cube.metadata present on the above cube.
+        ################################################################################
+        ################################################################################
+                #FILE:
+                #coads_climatology.nc
+                #CUBE:
+                #SEA SURFACE TEMPERATURE
+                #COORDINATE:
+                #TIME, 0.7575, 8766.5775, , hour since 0000-01-01 00:00:00
+                #COORDINATE:
+                #latitude, -90.0, 90.0, , degrees
+                #COORDINATE:
+                #longitude, 20.0, 380.0, , degrees
+                #METADATA:
+                #CubeMetadata(...)
+                #CUBE:
+                #MERIDIONAL WIND
+                #COORDINATE:
+                #TIME, 0.7575, 8766.5775, , hour since 0000-01-01 00:00:00
+                #COORDINATE:
+                #latitude, -90.0, 90.0, , degrees
+                #COORDINATE:
+                #longitude, 20.0, 380.0, , degrees
+                #METADATA:
+                #CubeMetadata(...)
+                #CUBE:
+                #ZONAL WIND
+                #COORDINATE:
+                #TIME, 0.7575, 8766.5775, , hour since 0000-01-01 00:00:00
+                #COORDINATE:
+                #latitude, -90.0, 90.0, , degrees
+                #COORDINATE:
+                #longitude, 20.0, 380.0, , degrees
+                #METADATA:
+                #CubeMetadata(...)
+                #CUBE:
+                #AIR TEMPERATURE
+                #COORDINATE:
+                #TIME, 0.7575, 8766.5775, , hour since 0000-01-01 00:00:00
+                #COORDINATE:
+                #latitude, -90.0, 90.0, , degrees
+                #COORDINATE:
+                #longitude, 20.0, 380.0, , degrees
+                #METADATA:
+                #CubeMetadata(...)
+                #FILE:
+                #...
+                #CUBE:
+                #...
+                #COORDINATE:
+                #...
+                #METADATA:
+                #...
+        ################################################################################
+        ################################################################################
+
+        #The following loop fills the lists of 
+        #filenames, cubes, coordinates and metadata
+        #available from the catalogue file.
         ifile = -1
         flag_file = False
         flag_cube = False
         flag_coordinate = False
         flag_metadata = False
         for line in fileinput.input(self.catalogue_filepath):
-            #Put the line in the corresponding list
+            #Put the line after the label in the corresponding list
             if flag_file:
                 utils.debug("{}, {}, {}".format(ifile,icube,line))
                 self.datafiles.append(line[:-1])
@@ -93,6 +179,10 @@ class database():
                 self.metadatas[ifile].append(line[:-1])
                 flag_metadata = False
 
+            #If the label "FILE:" is found, we will need to
+            #add cubes, coordinates and metadata.
+            #We alseo increase the counter of filenames read
+            #and reset the cube counter.
             if line == 'FILE:\n':
                 utils.debug(line)
                 flag_file = True
@@ -101,24 +191,33 @@ class database():
                 self.metadatas.append([])
                 ifile += 1
                 icube = -1
+
+            #If the label "CUBE:" is found, we will need
+            #to add coordinates and increase the cube counter.
             elif line == 'CUBE:\n':
                 utils.debug(line)
                 self.coordinates[ifile].append([])
-                #self.metadatas[ifile].append([])
                 flag_cube = True
                 icube += 1
+
+            #For the next two labels we only get preared
+            #for what to read next.
             elif line == 'COORDINATE:\n':
                 utils.debug(line)
                 flag_coordinate = True
             elif line == 'METADATA:\n':
                 utils.debug(line)
                 flag_metadata = True
+        return
 
+    #When initializing a database object, if a catalogue file is not
+    #found inside the database location, this function is automatically
+    #called to create one.
     def create_catalogue(self):
 
-        #Get the list of files inside the specified path:
+        #Get the list of files inside the location of the database.
         files_to_catalogue = os.listdir(self.location)
-        print(files_to_catalogue)
+        utils.debug(files_to_catalogue)
 
         #The catalogue will be written here:
         catalogue_file = open(self.catalogue_filepath,'w')
@@ -126,41 +225,54 @@ class database():
         #files that were not read are stored in this list and printed at the end:
         not_read_files = []
 
-        #Go through each file, find what is inside and ad it 
-        #to the catalogue:
+        #Go through each file, find what is inside and add it 
+        #to the catalogue. If an error occurs with a file, add it
+        #to the not_read_files list.
         for each_file in files_to_catalogue:
-            #read the cubes contained in each filename:
+
+            #We want the catalogue to contain full path filenames,
+            #Even if only printing the filename inside the database
+            #directory.
+            each_file_path = self.location+each_file
             print("reading "+each_file)
             try:    
-                cubes = utils.read_cubes_from_file(self.location+"/"+each_file)
+                cubes = utils.read_cubes_from_file(each_file_path)
             except:
-                not_read_files.append(self.location+"/"+each_file)
+                not_read_files.append(each_file_path)
                 continue
 
     
             #Write location of the binary (NetCDF) files:
             catalogue_file.write("FILE:\n")
-            catalogue_file.write(each_file+"\n")
+            catalogue_file.write(each_file_path+"\n")
+
             #Write cubes it contains:  
             for each_cube in cubes:
                 catalogue_file.write("CUBE:\n")
                 catalogue_file.write(str(each_cube.name())+"\n")
+
                 #Write the coordinates of each cube; its name, max, min, and units:
                 for each_coord in each_cube.coords():
-                    coordmin, coordmax, coordunits = utils.get_bounds(each_cube,each_coord.name())
                     catalogue_file.write("COORDINATE:\n")
+                    coordmin, coordmax, coordunits = utils.get_bounds(each_cube,each_coord.name())
                     catalogue_file.write(each_coord.name()+", "+  str(coordmin)+", "+  str(coordmax)+", "+ ", "+ str(coordunits)+"\n")
+
                 #Write the metadata of the cube:
                 catalogue_file.write("METADATA:\n")
                 catalogue_file.write( str(each_cube.metadata) + "\n" )
-    
+   
+        #Close the catalogue file just created 
         catalogue_file.close()
 
+
+        #If there were files inside the databae location that were not
+        #loaded, let the user know by printing a message.
         if( len(not_read_files) > 0 ):
             print("The following files were not added to the catalogue:")
             for item in not_read_files:
                 print(item)
 
+        #Load the databae with the catalogue just created.
         self.load()
 
     #This function adds a file to the catalogue:
