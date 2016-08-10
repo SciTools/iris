@@ -13,8 +13,10 @@
 
 #Import modules:
 import os, errno
+import sys
 import utils
 import iris
+import time
 
 import fileinput
 
@@ -34,7 +36,12 @@ class database():
         self.location = location+"/"
 
         #Location of the catalogue file inside the filesystem:
-        self.catalogue_filepath = self.location+self.catalogue_filename
+        self.catalogue_filepath = "./"+self.catalogue_filename#self.location+self.catalogue_filename
+        print("Catalogue location is here!!!")
+        print("Catalogue location is here!!!")
+        print("Catalogue location is here!!!")
+        print("Catalogue location is here!!!")
+        print("Catalogue location is here!!!")
 
         #List of all filenames in the database:
         self.datafiles = [] 
@@ -228,8 +235,18 @@ class database():
         #Go through each file, find what is inside and add it 
         #to the catalogue. If an error occurs with a file, add it
         #to the not_read_files list.
+        i = 0
+        print("Creating catalogue for {} files...".format(len(files_to_catalogue)))
+        t_0 = time.clock()
+        t_a = time.clock()
         for each_file in files_to_catalogue:
-
+            i += 1
+            if(i%100 == 0):
+                files_remaining = len(files_to_catalogue) - i
+                minutes_remaining = files_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
+                print("Time taken for adding {} files to catalogue: {} seconds".format(i,time.clock() - t_0))
+                print("{} files to go. Estimated time remaining: {} minutes".format( files_remaining, minutes_remaining ) )
+                t_a = time.clock()
             #We want the catalogue to contain full path filenames,
             #Even if only printing the filename inside the database
             #directory.
@@ -254,7 +271,11 @@ class database():
                 #Write the coordinates of each cube; its name, max, min, and units:
                 for each_coord in each_cube.coords():
                     catalogue_file.write("COORDINATE:\n")
-                    coordmin, coordmax, coordunits = utils.get_bounds(each_cube,each_coord.name())
+                    try:
+                        coordmin, coordmax, coordunits = utils.get_bounds(each_cube,each_coord.name())
+                    except:
+                        sys.stderr.write("\nUnable to set bounds, handle this error propery\n")
+                        continue
                     catalogue_file.write(each_coord.name()+", "+  str(coordmin)+", "+  str(coordmax)+", "+ ", "+ str(coordunits)+"\n")
 
                 #Write the metadata of the cube:
@@ -302,7 +323,7 @@ class database():
         loaded_cubes = []
         for indices in indices_to_load:
             loaded_cubes.append(
-                iris.load(self.location+self.datafiles[indices[0]],
+                iris.load(self.datafiles[indices[0]],
                           self.cubes[indices[0]][indices[1]])
                          )
     
