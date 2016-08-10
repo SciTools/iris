@@ -1,2 +1,0 @@
-* Fixed bug in :func:`iris.analysis.cartography.project` where the output
- projection coordinates didn't have units.

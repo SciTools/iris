@@ -1,1 +1,0 @@
-* Loading of 'little-endian' PP files is now supported.

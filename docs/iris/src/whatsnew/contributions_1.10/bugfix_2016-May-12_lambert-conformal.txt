@@ -1,2 +1,0 @@
-* Fixed the grid_mapping_name and secant_latitudes handling for the
- LambertConformal coordinate system.
