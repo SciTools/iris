@@ -32,8 +32,8 @@ class database():
     def __init__(self,location):
         #What we need to know about our database:
         self.catalogue_filename = "CATALOGUE.txt"
-        self.location = location
-        self.catalogue_filepath = self.location+"/"+self.catalogue_filename
+        self.location = location+"/"
+        self.catalogue_filepath = self.location+self.catalogue_filename
         self.datafiles = []
         self.cubes = []
         self.coordinates = []
@@ -55,7 +55,7 @@ class database():
             raise
         print("loading database...")
         #Create the list of available cubes
-        index = -1
+        ifile = -1
         flag_file = False
         flag_cube = False
         flag_coordinate = False
@@ -63,30 +63,41 @@ class database():
         for line in fileinput.input(self.catalogue_filepath):
             #Put the line in the corresponding list
             if flag_file:
+                debug(False,ifile,icube,line)
                 self.datafiles.append(line[:-1])
-                print(self.datafiles[-1])
                 flag_file = False
             if flag_cube:
-                print("index = ",index)
-                self.cubes[index].append(line[:-1])
+                debug(False,ifile,icube,line)
+                self.cubes[ifile].append(line[:-1])
                 flag_cube = False
             if flag_coordinate:
-                self.coordinates[index].append(line[:-1])
+                debug(False,ifile, icube,line)
+                self.coordinates[ifile][icube].append(line[:-1])
                 flag_coordinate = False
             if flag_metadata:
-                self.metadatas.append(line[:-1])
+                debug(False,ifile,icube,line)
+                self.metadatas[ifile][icube].append(line[:-1])
                 flag_metadata = False
 
             if line == 'FILE:\n':
+                debug(False,line)
                 flag_file = True
-                self.coordinates.append([])
                 self.cubes.append([])
-                index += 1
+                self.coordinates.append([])
+                self.metadatas.append([])
+                ifile += 1
+                icube = -1
             elif line == 'CUBE:\n':
+                debug(False,line)
+                self.coordinates[ifile].append([])
+                self.metadatas[ifile].append([])
                 flag_cube = True
+                icube += 1
             elif line == 'COORDINATE:\n':
+                debug(False,line)
                 flag_coordinate = True
             elif line == 'METADATA:\n':
+                debug(False,line)
                 flag_metadata = True
 
     def create_catalogue(self):
@@ -124,7 +135,7 @@ class database():
                 for each_coord in each_cube.coords():
                     coordmin, coordmax, coordunits = cube_utils.get_bounds(each_cube,each_coord.name())
                     catalogue_file.write("COORDINATE:\n")
-                    catalogue_file.write(each_coord.name()+" "+  str(coordmin)+" "+  str(coordmax)+" "+ "<<"+ str(coordunits)+">>"+"\n")
+                    catalogue_file.write(each_coord.name()+", "+  str(coordmin)+", "+  str(coordmax)+", "+ ", "+ str(coordunits)+"\n")
                 #Write the metadata of the cube:
                 catalogue_file.write("METADATA:\n")
                 catalogue_file.write( str(each_cube.metadata) + "\n" )
@@ -137,3 +148,49 @@ class database():
                 print(item)
 
         self.load()
+
+    #This function adds a file to the catalogue:
+    def add_to_catalogue(filename):
+        print("To be implemented. Use instead create_catalogue")
+        return
+
+
+    def load_cubes(self,cube_name=''):
+       
+        #To avoid confusion, we map the input of the user
+        #to lower case letters.  
+        cube_name = cube_name.lower()
+
+        #Scan the catalogue and obtain the indices
+        #corresponding to the filenames and cubes
+        #requested by the user.
+        indices_to_load = []
+        for i in range(len(self.datafiles)):
+            for j in range(len(self.cubes[i])):
+                if cube_name in self.cubes[i][j].lower():
+                    indices_to_load.append([i,j])
+
+        #Create a list with the desired Iris cubes.
+        #It is only at this point that the cubes are
+        #actually loaded 
+        loaded_cubes = []
+        for indices in indices_to_load:
+            loaded_cubes.append(
+                iris.load(self.location+self.datafiles[indices[0]],
+                          self.cubes[indices[0]][indices[1]])
+                         )
+    
+        #If the list of cubes is empty, print a message including
+        #possible cube names that the user may have intended.
+        if len(loaded_cubes) < 1:
+            print('No cubes found with "{}" in its name'.format(cube_name))
+            print("Did you mean...?")
+    
+            for i in range(len(self.datafiles)):
+                for j in range(len(self.cubes[i])):
+                    for k in range(0,len(cube_name)-3):
+                        if cube_name[k:k+3] in self.cubes[i][j].lower():
+                            print(self.cubes[i][j])
+                            break
+    
+        return loaded_cubes

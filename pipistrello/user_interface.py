@@ -13,13 +13,33 @@
 #Import modules:
 import sys
 import argparse
-from importlib.machinery import SourceFileLoader
 import os, errno
 
-#The following line should be replaced by "import iris"
+#To use the installed version:
 #import iris
-#iris = SourceFileLoader("iris", "/home/juan/MHPC-Thesis/iris/lib/iris/__init__.py").load_module()
-iris = SourceFileLoader("iris", "../lib/iris/__init__.py").load_module()
+
+#In python 3:
+from importlib.machinery import SourceFileLoader
+iris = SourceFileLoader("iris", "/home/juan/MHPC-Thesis/pipistrello/lib/iris/__init__.py").load_module()
+#iris = SourceFileLoader("iris", "../lib/iris/__init__.py").load_module()
+
+#In python 2:
+#import importlib
+#for entry in sys.modules:
+#    print(entry)
+#iris = importlib.importmodule('iris')
+#sys.path.append('/home/juan/MHPC-Thesis/pipistrello/lib/iris')
+#import imp
+#for entry in sys.path:
+#    print(entry) 
+#f, pathname, description = imp.find_module('iris')
+#print(f)
+#print(pathname)
+#print(description)
+#iris = imp.load_source('iris','/home/juan/MHPC-Thesis/pipistrello/lib/iris')
+#iris = imp.load_module('iris', f, pathname, description)
+
+#Put this to supress some warnings:
 iris.FUTURE.netcdf_promote = True
 
 def silentremove(filename):

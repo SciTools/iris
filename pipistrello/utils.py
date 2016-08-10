@@ -24,6 +24,10 @@ import math
 import subprocess
 from subprocess import call
 
+#example use:
+#    get_bounds(some_iris_cube,'latitude')
+#    get_bounds(some_iris_cube,'longitude')
+#    get_bounds(some_iris_cube,'TIME')
 def get_bounds(c0,coordinate):
     #We get the bounds:
     print("coordinate = {}".format( coordinate))
@@ -34,7 +38,7 @@ def get_bounds(c0,coordinate):
     maxcoord = c0.coord(coordinate).bounds.max()
     return str(mincoord), str(maxcoord), str(c0.coord(coordinate).units)
 
-#example use:
-#    get_bounds(some_iris_cube,'latitude')
-#    get_bounds(some_iris_cube,'longitude')
-#    get_bounds(some_iris_cube,'TIME')
+def debug(on=False,message)
+    if on:
+        print(message)
+    return

@@ -16,7 +16,7 @@ import os, errno
 import user_interface as ui
 import matplotlib.pyplot as plt
 import iris
-import iris.quickplot as iplt
+#import iris.quickplot as iplt
 
 #load cubes from command line:
 cubes = ui.command_line_load()
