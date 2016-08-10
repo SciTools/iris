@@ -120,7 +120,7 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     should describe the rotated pole that the arrays of longitudes and
     latitudes are to be rotated onto.
 
-    As the arrays oflongitudes and latitudes must describe a rectilinear grid,
+    As the arrays of longitudes and latitudes must describe a rectilinear grid,
     the arrays of rotated-pole longitudes and latitudes must be of the same
     length as each other.
 
