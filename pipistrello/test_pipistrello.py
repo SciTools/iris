@@ -11,17 +11,19 @@
 ######################################################
 
 #Import modules:
-import sys
-import os, errno
-import user_interface as ui
-import matplotlib.pyplot as plt
-import iris
-#import iris.quickplot as iplt
+import pipistrello
+import utils
+import time
 
-#load cubes from command line:
+time_a = time.clock()
+database_dir = ('/home/esp-shared-b/RegCM_Data/CAM2')
+all_cubes = pipistrello.database(database_dir,new_catalogue=True)
+time_b = time.clock()
+
+print("total time taken: {} seconds.\n".format(time_b - time_a))
 
 
 
 #This cleans up leftover files (compiled python files)
 #and prints a good-bye message.
-ui.cleanup_and_finish()
+utils.cleanup_and_finish()
