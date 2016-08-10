@@ -44,5 +44,16 @@ def command_line_load_cubes():
     except:
         print_usage()
         raise
+    
+    #Print loaded cubes:
+    print('\n\n')
+    print("{} cubes read from {}:".format(len(cubes),filenames) )
+    print(str(cubes))
+
+    #If no cubes were loaded, a list of available cubes is given:
+    if(len(cubes) == 0):
+        cubes_avail = iris.load(filenames)
+        print("Available cubes: ")
+        print(cubes_avail)
 
     return cubes

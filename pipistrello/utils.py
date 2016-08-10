@@ -20,6 +20,8 @@ import sys
 import argparse
 import os, errno
 
+DEBUG_FLAG=False
+
 #To use the installed version of iris:
 #import iris
 
@@ -72,22 +74,8 @@ def read_cubes_from_file(filenames,constraints=None):
           ' Please make sure that the file is compatible with Iris.')
     except:
         raise
-    
-    #Print loaded cubes:
-    print('\n\n')
-    print("{} cubes read from {}:".format(len(cubes),filenames) )
-    print(cubes)
-
-    #If no cubes were loaded, a list of available cubes is given:
-    if(len(cubes) == 0):
-        cubes_avail = iris.load(filenames)
-        print("Available cubes: ")
-        print(cubes_avail)
-
 
     return cubes
-
-########
 
 #cleans up compiled files:
 def cleanup_start():
@@ -113,7 +101,7 @@ def cleanup_and_finish():
 #get_bounds(some_iris_cube,'latitude')
 def get_bounds(some_cube,coordinate):
     #We get the bounds:
-    print("coordinate = {}".format( coordinate))
+    debug("coordinate = {}".format( coordinate))
     if not some_cube.coord(coordinate).has_bounds():
         some_cube.coord(coordinate).guess_bounds()
         
@@ -122,7 +110,7 @@ def get_bounds(some_cube,coordinate):
     return str(mincoord), str(maxcoord), str(some_cube.coord(coordinate).units)
 
 #prints a message if debug switch is on
-def debug(message,on=True):
+def debug(message,on=False):
     if on:
         print(message)
     return
