@@ -27,8 +27,8 @@ DEBUG_FLAG=False
 
 #In python 3:
 from importlib.machinery import SourceFileLoader
-iris = SourceFileLoader("iris", "/home/juan/MHPC-Thesis/pipistrello/lib/iris/__init__.py").load_module()
-#iris = SourceFileLoader("iris", "../lib/iris/__init__.py").load_module()
+#iris = SourceFileLoader("iris", "/home/juan/MHPC-Thesis/pipistrello/lib/iris/__init__.py").load_module()
+iris = SourceFileLoader("iris", "../lib/iris/__init__.py").load_module()
 
 #In python 2: I cannot manage to make it work, stick to python 3.
 #import importlib
@@ -103,7 +103,10 @@ def get_bounds(some_cube,coordinate):
     #We get the bounds:
     debug("coordinate = {}".format( coordinate))
     if not some_cube.coord(coordinate).has_bounds():
-        some_cube.coord(coordinate).guess_bounds()
+        try:
+            some_cube.coord(coordinate).guess_bounds()
+        except:
+            raise
         
     mincoord = some_cube.coord(coordinate).bounds.min()
     maxcoord = some_cube.coord(coordinate).bounds.max()
