@@ -12,31 +12,45 @@
 ######################################################
 
 #Import modules:
-import sys
 import os, errno
-import user_interface as ui
-import matplotlib.pyplot as plt
+import utils
 import iris
-import iris.quickplot as iplt
-import cube_utils
 
 import fileinput
-import math
-import subprocess
-from subprocess import call
 
-ui.cleanup_start()
+#cleans compiled files that may be present:
+utils.cleanup_start()
 
 class database():
 
+    #a database object is initialized by 
+    #specifying a location in the filesystem:
     def __init__(self,location):
-        #What we need to know about our database:
+        #File which contains all the datafiles, cubes, 
+        #coordinates and metadata of the database:
         self.catalogue_filename = "CATALOGUE.txt"
+
+        #Location of the database inside the filesystem:
         self.location = location+"/"
+
+        #Location of the catalogue file inside the filesystem:
         self.catalogue_filepath = self.location+self.catalogue_filename
-        self.datafiles = []
-        self.cubes = []
+
+        #List of all filenames in the database:
+        self.datafiles = [] 
+        
+        #List of all filenames in the database:
+        self.datafiles = [] 
+        
+        #List of lists. 
+        #The [i][j] entry will contain the cube j in file i.
+        self.cubes = [] 
+        
+        #Three nested lists. 
+        #The [i][j][k] entry will contain the coordinate k of cube j in file i.
         self.coordinates = []
+
+        #The [i][j][k] entry will contain the metadata of cube j in file i.
         self.metadatas = []
 
         try:
@@ -63,24 +77,24 @@ class database():
         for line in fileinput.input(self.catalogue_filepath):
             #Put the line in the corresponding list
             if flag_file:
-                debug(False,ifile,icube,line)
+                utils.debug("{}, {}, {}".format(ifile,icube,line))
                 self.datafiles.append(line[:-1])
                 flag_file = False
             if flag_cube:
-                debug(False,ifile,icube,line)
+                utils.debug("{}, {}, {}".format(ifile,icube,line))
                 self.cubes[ifile].append(line[:-1])
                 flag_cube = False
             if flag_coordinate:
-                debug(False,ifile, icube,line)
+                utils.debug("{}, {}, {}".format(ifile,icube,line))
                 self.coordinates[ifile][icube].append(line[:-1])
                 flag_coordinate = False
             if flag_metadata:
-                debug(False,ifile,icube,line)
-                self.metadatas[ifile][icube].append(line[:-1])
+                utils.debug("{}, {}, {}".format(ifile,icube,line))
+                self.metadatas[ifile].append(line[:-1])
                 flag_metadata = False
 
             if line == 'FILE:\n':
-                debug(False,line)
+                utils.debug(line)
                 flag_file = True
                 self.cubes.append([])
                 self.coordinates.append([])
@@ -88,16 +102,16 @@ class database():
                 ifile += 1
                 icube = -1
             elif line == 'CUBE:\n':
-                debug(False,line)
+                utils.debug(line)
                 self.coordinates[ifile].append([])
-                self.metadatas[ifile].append([])
+                #self.metadatas[ifile].append([])
                 flag_cube = True
                 icube += 1
             elif line == 'COORDINATE:\n':
-                debug(False,line)
+                utils.debug(line)
                 flag_coordinate = True
             elif line == 'METADATA:\n':
-                debug(False,line)
+                utils.debug(line)
                 flag_metadata = True
 
     def create_catalogue(self):
@@ -118,7 +132,7 @@ class database():
             #read the cubes contained in each filename:
             print("reading "+each_file)
             try:    
-                cubes = ui.read_cubes_from_file(self.location+"/"+each_file)
+                cubes = utils.read_cubes_from_file(self.location+"/"+each_file)
             except:
                 not_read_files.append(self.location+"/"+each_file)
                 continue
@@ -133,7 +147,7 @@ class database():
                 catalogue_file.write(str(each_cube.name())+"\n")
                 #Write the coordinates of each cube; its name, max, min, and units:
                 for each_coord in each_cube.coords():
-                    coordmin, coordmax, coordunits = cube_utils.get_bounds(each_cube,each_coord.name())
+                    coordmin, coordmax, coordunits = utils.get_bounds(each_cube,each_coord.name())
                     catalogue_file.write("COORDINATE:\n")
                     catalogue_file.write(each_coord.name()+", "+  str(coordmin)+", "+  str(coordmax)+", "+ ", "+ str(coordunits)+"\n")
                 #Write the metadata of the cube:

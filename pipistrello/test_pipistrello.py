@@ -19,13 +19,6 @@ import iris
 #import iris.quickplot as iplt
 
 #load cubes from command line:
-cubes = ui.command_line_load()
-
-#print each cube:
-for i in range(len(cubes)):
-    print("------ Cube {}: ------".format(i))
-    print(cubes[i])
-    print("\n")
 
 
 
