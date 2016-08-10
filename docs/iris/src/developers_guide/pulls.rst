@@ -63,9 +63,14 @@ The Iris Check List
 
  * ``make doctest``, ``make extest``  in ``./docs/iris``.
 
-* Has the travis file been updated to reflect any dependency updates?
+* Does this update introduce/change any dependencies? If so:
 
- * ``./.travis.yml`` is used to manage the continuous integration testing.
+  * Has the travis file been updated to reflect these changes?
+
+   * ``./.travis.yml`` is used to manage the continuous integration testing.
+  
+  * Has ``conda-requirements.txt`` been updated to reflect these changes?
+  * Has the ``INSTALL`` file been updated to reflect these changes?
 
 
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
