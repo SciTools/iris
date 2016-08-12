@@ -1461,7 +1461,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                     raise IOError('PP files cannot write extra data with more'
                                   ' than 1000 elements. Tried to write "%s"'
                                   ' which has %s elements.'
-                                  % (extra_data_attr_name, ib)
+                                  % (extra_data_attr_name, ia)
                                   )
 
         # populate lbext in WORDS
