@@ -103,6 +103,12 @@ except ImportError:
 else:
     SAMPLE_DATA_AVAILABLE = True
 
+try:
+    import nc_time_axis
+    NC_TIME_AXIS_AVAILABLE = True
+except ImportError:
+    NC_TIME_AXIS_AVAILABLE = False
+
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
@@ -931,6 +937,11 @@ skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
 skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,
                                    ('Test(s) require "iris_sample_data", '
                                     'which is not available.'))
+
+
+skip_nc_time_axis = unittest.skipIf(
+    not NC_TIME_AXIS_AVAILABLE,
+    'Test(s) require "nc_time_axis", which is not available.')
 
 
 def no_warnings(func):
