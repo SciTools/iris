@@ -61,7 +61,8 @@ class database():
         self.metadatas = []
 
         #Database object is initialized by loading the catalogue file above.
-        #If the file is not present, the catalogue file is created.
+        #If the file is not present, the catalogue file is created, only if
+        #explicitly asked by the user.
         try:
             self.load()
         except FileNotFoundError:
@@ -71,7 +72,6 @@ class database():
                 self.create_catalogue()
             else:
                 print(
-                        
                         '\tIf you want to use "{}"\n '
                         '\tas a pipistrello database,\n '
                         '\tadd the argument "new_catalogue=True" when creating\n '
@@ -223,7 +223,16 @@ class database():
     def create_catalogue(self):
 
         #Get the list of files inside the location of the database.
-        files_to_catalogue = os.listdir(self.location)
+        #files_to_catalogue = os.listdir(self.location)
+#####
+        files_to_catalogue = [ os.path.join(p,filename) 
+                               for (p,d,f) in os.walk(self.location,onerror=utils.catch_walk_error) 
+                               for filename in f ]
+
+        for f in files_to_catalogue:
+            print(f)
+
+#####
         utils.debug(files_to_catalogue)
 
         #The catalogue will be written here:

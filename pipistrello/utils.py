@@ -117,3 +117,10 @@ def debug(message,on=False):
     if on:
         print(message)
     return
+
+#catches walk error
+def catch_walk_error(error):
+    print("\n\nOops!! We had an error while walking through your database path...\n")
+    print(error)
+    print("\n\n")
+    raise
