@@ -1000,14 +1000,19 @@ fc_extras
     # Different ways of writing hPa:
     #
     HECTOPASCAL = ['hpa','hectopascal']
+    
+    #
+    # Different ways of writing level???????:
+    #
+    LEVEL = ['level']
  
     #
     # Different ways of writing w m-2:
     #
-    WATT_PER_SQUARE_METRE = ['watt per meter2', 'w m-2']
+    WATT_PER_SQUARE_METRE = ['watt per meter2', 'w m-2', 'w/m2']
  
     #
-    # Different ways of writing hPa:
+    # Different ways of writing N m-2:
     #
     NEWTON_PER_SQUARE_METRE = ['newton per meter2','n m-2']
 
@@ -1378,6 +1383,10 @@ fc_extras
         if attr_units in NEWTON_PER_SQUARE_METRE:
             attr_units = 'newton per meter2'
 
+        if attr_units in LEVEL:
+            print("what's 'level' unit???")
+            attr_units = 'atm'
+
         return attr_units
 
 
@@ -1385,11 +1394,17 @@ fc_extras
     def get_attr_units(cf_var, attributes):
         attr_units = getattr(cf_var, CF_ATTR_UNITS, cf_units._UNIT_DIMENSIONLESS)
         attr_units = sanitise_units(attr_units)
-
         # Graceful loading of invalid units.
         try:
             cf_units.as_unit(attr_units)
-        except ValueError:
+        except ValueError as e:
+            print('\n\nvv debug vv')
+            print(e)
+            print('It may be that you need to add a missing unit.')
+            print('Go to:')
+            print("pipistrello/lib/iris/fileformats/_pyke_rules/fc_rules_cf.krb")
+            print("There modify the function sanitise_units(...)")
+            print('^^ debug ^^\n\n')
         
         # Using converted unicode message. Can be reverted with Python 3.
             msg = u'Ignoring netCDF variable {!r} invalid units {!r}'.format(

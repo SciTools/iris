@@ -249,6 +249,8 @@ class database():
         t_0 = time.clock()
         t_a = time.clock()
         for each_file in files_to_catalogue:
+
+			#Print timing information.
             i += 1
             if(i%100 == 0):
                 files_remaining = len(files_to_catalogue) - i
@@ -256,6 +258,7 @@ class database():
                 print("Time taken for adding {} files to catalogue: {} seconds".format(i,time.clock() - t_0))
                 print("{} files to go. Estimated time remaining: {} minutes".format( files_remaining, minutes_remaining ) )
                 t_a = time.clock()
+
             #We want the catalogue to contain full path filenames,
             #Even if only printing the filename inside the database
             #directory.
