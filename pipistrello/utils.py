@@ -66,12 +66,12 @@ def read_cubes_from_file(filenames,constraints=None):
     #Load cubes from file:
     try:
         cubes = iris.load(filenames,constraints)
-    except IOError:
-        print('Cannot open one or more files in {}.'.format(filenames)+
-          ' Please make sure that file exists.')
-    except ValueError:
-        print('Cannot open one or more files in {}.'.format(filenames)+
-          ' Please make sure that the file is compatible with Iris.')
+    #except IOError:
+    #    print('Cannot open one or more files in {}.'.format(filenames)+
+    #      ' Please make sure that file exists.')
+    #except ValueError:
+    #    print('Cannot open one or more files in {}.'.format(filenames)+
+    #      ' Please make sure that the file is compatible with Iris.')
     except:
         raise
 
