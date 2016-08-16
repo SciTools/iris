@@ -16,14 +16,16 @@ import utils
 import time
 import os
 
+utils.cleanup_start()
 time_a = time.clock()
-#database_dir = ('/home/esp-shared-b/RegCM_Data/CAM2')
-database_dir = ('/home/esp-shared-b/RegCM_Data/regcm3')
+database_dir = ('/home/esp-shared-b/RegCM_Data/CAM2')
+#database_dir = ('/home/esp-shared-b/RegCM_Data/regcm3')
+#database_dir = ('/home/esp-shared-b/RegCM_Data')
 all_cubes = pipistrello.database(database_dir,new_catalogue=True)
 
 cubesA = all_cubes.load_cubes('')
 for cube in cubesA:
-	print(cube)
+    print(cube)
 
 time_b = time.clock()
 
