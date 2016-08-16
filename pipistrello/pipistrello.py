@@ -163,58 +163,53 @@ class database():
         #filenames, cubes, coordinates and metadata
         #available from the catalogue file.
         ifile = -1
-        flag_file = False
-        flag_cube = False
-        flag_coordinate = False
-        flag_metadata = False
         for line in fileinput.input(self.catalogue_filepath):
-            #Put the line after the label in the corresponding list
-            if flag_file:
-                utils.debug("{}, {}, {}".format(ifile,icube,line))
-                self.datafiles.append(line[:-1])
-                flag_file = False
-            if flag_cube:
-                utils.debug("{}, {}, {}".format(ifile,icube,line))
-                self.cubes[ifile].append(line[:-1])
-                flag_cube = False
-            if flag_coordinate:
-                utils.debug("{}, {}, {}".format(ifile,icube,line))
-                self.coordinates[ifile][icube].append(line[:-1])
-                flag_coordinate = False
-            if flag_metadata:
-                utils.debug("{}, {}, {}".format(ifile,icube,line))
-                self.metadatas[ifile].append(line[:-1])
-                flag_metadata = False
 
-            #If the label "FILE:" is found, we will need to
-            #add cubes, coordinates and metadata.
-            #We alseo increase the counter of filenames read
-            #and reset the cube counter.
-            if line == 'FILE:\n':
-                utils.debug(line)
-                flag_file = True
-                self.cubes.append([])
-                self.coordinates.append([])
-                self.metadatas.append([])
-                ifile += 1
-                icube = -1
+            #These labels say what next line after them is EXPECTED to be...
+            if line in [ 'FILE:\n','CUBE:\n','COORDINATE:\n','METADATA:\n' ]:
+                #If the label "FILE:" is found, we will need to
+                #add cubes, coordinates and metadata.
+                #We alseo increase the counter of filenames read
+                #and reset the cube counter.
+                if line == 'FILE:\n':
+                    utils.debug(line)
+                    self.cubes.append([])
+                    self.coordinates.append([])
+                    self.metadatas.append([])
+                    ifile += 1
+                    icube = -1
+    
+                #If the label "CUBE:" is found, we will need
+                #to add coordinates and increase the cube counter.
+                elif line == 'CUBE:\n':
+                    utils.debug(line)
+                    self.coordinates[ifile].append([])
+                    icube += 1
+    
+                #For the next two labels we only get preared
+                #for what to read next.
+                elif line == 'COORDINATE:\n':
+                    utils.debug(line)
+                elif line == 'METADATA:\n':
+                    utils.debug(line)
 
-            #If the label "CUBE:" is found, we will need
-            #to add coordinates and increase the cube counter.
-            elif line == 'CUBE:\n':
-                utils.debug(line)
-                self.coordinates[ifile].append([])
-                flag_cube = True
-                icube += 1
+                #Next line should contain information related to the flag:
+                flag = line[:-2]
 
-            #For the next two labels we only get preared
-            #for what to read next.
-            elif line == 'COORDINATE:\n':
-                utils.debug(line)
-                flag_coordinate = True
-            elif line == 'METADATA:\n':
-                utils.debug(line)
-                flag_metadata = True
+            else:
+                #Put the line after the label in the corresponding list
+                if flag == 'FILE':
+                    utils.debug("{}, {}, {}".format(ifile,icube,line))
+                    self.datafiles.append(line[:-1])
+                if flag == 'CUBE':
+                    utils.debug("{}, {}, {}".format(ifile,icube,line))
+                    self.cubes[ifile].append(line[:-1])
+                if flag == 'COORDINATE':
+                    utils.debug("{}, {}, {}".format(ifile,icube,line))
+                    self.coordinates[ifile][icube].append(line[:-1])
+                if flag == 'METADATA':
+                    utils.debug("{}, {}, {}".format(ifile,icube,line))
+                    self.metadatas[ifile].append(line[:-1])
         return
 
     #When initializing a database object, if a catalogue file is not
@@ -244,7 +239,7 @@ class database():
         t_a = time.clock()
         for each_file in files_to_catalogue:
 
-			#Print timing information.
+            #Print timing information.
             i += 1
             if(i%100 == 0):
                 files_remaining = len(files_to_catalogue) - i
@@ -276,13 +271,13 @@ class database():
 
                 #Write the coordinates of each cube; its name, max, min, and units:
                 for each_coord in each_cube.coords():
-                    catalogue_file.write("COORDINATE:\n")
                     try:
                         coordmin, coordmax, coordunits = utils.get_bounds(each_cube,each_coord.name())
                     except:
-                        sys.stderr.write("\nUnable to set bounds, handle this error propery\n")
+                        sys.stderr.write("\n{}: In cube '{}': Unable to set bounds for coordinate '{}'. Coordinate not addded to catalogue\n".format(each_file_path, each_cube.name(),each_coord.name()))
                         continue
-                    catalogue_file.write(each_coord.name()+", "+  str(coordmin)+", "+  str(coordmax)+", "+ ", "+ str(coordunits)+"\n")
+                    catalogue_file.write("COORDINATE:\n")
+                    catalogue_file.write(each_coord.name()+", "+  str(coordmin)+", "+  str(coordmax)+", "+ str(coordunits)+"\n")
 
                 #Write the metadata of the cube:
                 catalogue_file.write("METADATA:\n")
@@ -322,16 +317,52 @@ class database():
             for j in range(len(self.cubes[i])):
                 if cube_name in self.cubes[i][j].lower():
                     indices_to_load.append([i,j])
+        ncubes_to_load = len(indices_to_load)
+        print('Number of cubes to be loaded: {}'.format(ncubes_to_load))
 
         #Create a list with the desired Iris cubes.
         #It is only at this point that the cubes are
         #actually loaded 
         loaded_cubes = []
+        i = 0
+        t_0 = time.clock()
+        t_a = time.clock()
+############ A ########################
+#        for indices in indices_to_load:
+#            try:
+#                new_cube = iris.load_cube(self.datafiles[indices[0]],
+#                          self.cubes[indices[0]][indices[1]])
+#
+#            except:
+#                sys.stderr.write('Cube not loaded: {}, {} '.format(self.datafiles[indices[0]],self.cubes[indices[0]][indices[1]]))
+#                sys.stderr.write('Error: {}\n'.format(sys.exc_info()))
+#                continue
+#
+#            loaded_cubes.append(new_cube)
+#            i += 1
+#            if( i % 100 == 0 ):
+#                cubes_remaining = ncubes_to_load - i
+#                minutes_remaining = cubes_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
+#                print("Time taken for loading {} cubes: {} seconds".format(i,time.clock() - t_0))
+#                print("{} cubes to go. Estimated time remaining: {} minutes".format( cubes_remaining, minutes_remaining ) )
+#                t_a = time.clock()
+#
+############ B ########################
         for indices in indices_to_load:
-            loaded_cubes.append(
-                iris.load(self.datafiles[indices[0]],
+            new_cube = iris.load_cube(self.datafiles[indices[0]],
                           self.cubes[indices[0]][indices[1]])
-                         )
+            loaded_cubes.append(new_cube)
+            i += 1
+            if( i % 100 == 0 ):
+                cubes_remaining = ncubes_to_load - i
+                minutes_remaining = cubes_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
+                print("Time taken for loading {} cubes: {} seconds".format(i,time.clock() - t_0))
+                print("{} cubes to go. Estimated time remaining: {} minutes".format( cubes_remaining, minutes_remaining ) )
+                t_a = time.clock()
+#####################################
+
+
+                
     
         #If the list of cubes is empty, print a message including
         #possible cube names that the user may have intended.
