@@ -961,6 +961,11 @@ fc_extras
     import iris.util
 
     #
+    # Unitless:
+    #
+    UNITLESS = [ 'unitless', 'none']
+
+    #
     # Different ways of writing meters per sec:
     #
     METERS_PER_SECOND = ['meters per second','meter per second',
@@ -1002,15 +1007,20 @@ fc_extras
     HECTOPASCAL = ['hpa','hectopascal']
     
     #
-    # Different ways of writing level???????:
-    #
-    LEVEL = ['level']
- 
-    #
     # Different ways of writing w m-2:
     #
-    WATT_PER_SQUARE_METRE = ['watt per meter2', 'w m-2', 'w/m2']
+    WATT_PER_SQUARE_METRE = ['watt per meter2', 'w m-2', 'w/m2', 'w/m^2' ]
  
+    #
+    # Different ways of writing J m-2:
+    #
+    JOULE_PER_SQUARE_METRE = ['joule per meter2','j/m^2' , 'j m-2', 'j/m2']
+    
+    #
+    # Different ways of writing mJ m-2:
+    #
+    MILLIJOULE_PER_SQUARE_METRE = ["millijoule per meter2", "mj/m2", "mj m-2", "mj/m2"]
+
     #
     # Different ways of writing N m-2:
     #
@@ -1357,7 +1367,7 @@ fc_extras
 
     #standardize different ways of writing units.
     def sanitise_units(attr_units):
-        if not attr_units:
+        if not attr_units or attr_units in UNITLESS:
             attr_units = '1'
         else:
             attr_units = attr_units.lower()
@@ -1382,10 +1392,12 @@ fc_extras
  
         if attr_units in NEWTON_PER_SQUARE_METRE:
             attr_units = 'newton per meter2'
+        
+        if attr_units in JOULE_PER_SQUARE_METRE:
+            attr_units = 'joule per meter2'
 
-        if attr_units in LEVEL:
-            print("what's 'level' unit???")
-            attr_units = 'atm'
+        if attr_units in MILLIJOULE_PER_SQUARE_METRE:
+            attr_units = 'millijoule per meter2'
 
         return attr_units
 
@@ -1398,13 +1410,13 @@ fc_extras
         try:
             cf_units.as_unit(attr_units)
         except ValueError as e:
-            print('\n\nvv debug vv')
-            print(e)
-            print('It may be that you need to add a missing unit.')
-            print('Go to:')
-            print("pipistrello/lib/iris/fileformats/_pyke_rules/fc_rules_cf.krb")
-            print("There modify the function sanitise_units(...)")
-            print('^^ debug ^^\n\n')
+            #print('vv debug vv')
+            #print(e)
+            #print('It may be that you need to add a missing unit.')
+            #print('Go to:')
+            warnings.warn("look into pipistrello/lib/iris/fileformats/_pyke_rules/fc_rules_cf.krb\n")
+            #print("There modify the function sanitise_units(...)")
+            #print('^^ debug ^^')
         
         # Using converted unicode message. Can be reverted with Python 3.
             msg = u'Ignoring netCDF variable {!r} invalid units {!r}'.format(
