@@ -210,6 +210,8 @@ class database():
                 if flag == 'METADATA':
                     utils.debug("{}, {}, {}".format(ifile,icube,line))
                     self.metadatas[ifile].append(line[:-1])
+
+        print("...database loaded.")
         return
 
     #When initializing a database object, if a catalogue file is not
@@ -286,6 +288,8 @@ class database():
         #Close the catalogue file just created 
         catalogue_file.close()
 
+        #
+        print("...catalogue created.")
 
         #If there were files inside the databae location that were not
         #loaded, let the user know by printing a message.
@@ -303,77 +307,38 @@ class database():
         return
 
 
-    def load_cubes(self,cube_name=''):
+    def load_cubes(self,cube_requested=''):
        
         #To avoid confusion, we map the input of the user
         #to lower case letters.  
-        cube_name = cube_name.lower()
+        cube_requested = cube_requested.lower()
 
-        #Scan the catalogue and obtain the indices
-        #corresponding to the filenames and cubes
-        #requested by the user.
-        indices_to_load = []
-        for i in range(len(self.datafiles)):
-            for j in range(len(self.cubes[i])):
-                if cube_name in self.cubes[i][j].lower():
-                    indices_to_load.append([i,j])
-        ncubes_to_load = len(indices_to_load)
-        print('Number of cubes to be loaded: {}'.format(ncubes_to_load))
-
-        #Create a list with the desired Iris cubes.
-        #It is only at this point that the cubes are
-        #actually loaded 
+        #Scan the catalogue and load requested cubes:
         loaded_cubes = []
-        i = 0
-        t_0 = time.clock()
-        t_a = time.clock()
-############ A ########################
-#        for indices in indices_to_load:
-#            try:
-#                new_cube = iris.load_cube(self.datafiles[indices[0]],
-#                          self.cubes[indices[0]][indices[1]])
-#
-#            except:
-#                sys.stderr.write('Cube not loaded: {}, {} '.format(self.datafiles[indices[0]],self.cubes[indices[0]][indices[1]]))
-#                sys.stderr.write('Error: {}\n'.format(sys.exc_info()))
-#                continue
-#
-#            loaded_cubes.append(new_cube)
-#            i += 1
-#            if( i % 100 == 0 ):
-#                cubes_remaining = ncubes_to_load - i
-#                minutes_remaining = cubes_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
-#                print("Time taken for loading {} cubes: {} seconds".format(i,time.clock() - t_0))
-#                print("{} cubes to go. Estimated time remaining: {} minutes".format( cubes_remaining, minutes_remaining ) )
-#                t_a = time.clock()
-#
-############ B ########################
-        for indices in indices_to_load:
-            new_cube = iris.load_cube(self.datafiles[indices[0]],
-                          self.cubes[indices[0]][indices[1]])
-            loaded_cubes.append(new_cube)
-            i += 1
-            if( i % 100 == 0 ):
-                cubes_remaining = ncubes_to_load - i
-                minutes_remaining = cubes_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
-                print("Time taken for loading {} cubes: {} seconds".format(i,time.clock() - t_0))
-                print("{} cubes to go. Estimated time remaining: {} minutes".format( cubes_remaining, minutes_remaining ) )
-                t_a = time.clock()
-#####################################
-
-
-                
+        for i in range(len(self.datafiles)):
+            cubes_to_load = []
+            for j in range(len(self.cubes[i])):
+                cube_name = self.cubes[i][j]
+                if cube_requested in cube_name.lower():
+                   cubes_to_load.append(cube_name)
+            if len(cubes_to_load) > 0:
+                try:
+                    loaded_cubes += iris.load(self.datafiles[i],cubes_to_load)
+                except:
+                    raise
+        #print('{} cubes loaded'.format(len(loaded_cubes))) 
+        loaded_cubes = iris.cube.CubeList(loaded_cubes)
     
         #If the list of cubes is empty, print a message including
         #possible cube names that the user may have intended.
         if len(loaded_cubes) < 1:
-            print('No cubes found with "{}" in its name'.format(cube_name))
+            print('No cubes found with "{}" in its name'.format(cube_requested))
             print("Did you mean...?")
     
             for i in range(len(self.datafiles)):
                 for j in range(len(self.cubes[i])):
-                    for k in range(0,len(cube_name)-3):
-                        if cube_name[k:k+3] in self.cubes[i][j].lower():
+                    for k in range(0,len(cube_requested)-3):
+                        if cube_requested[k:k+3] in self.cubes[i][j].lower():
                             print(self.cubes[i][j])
                             break
     
