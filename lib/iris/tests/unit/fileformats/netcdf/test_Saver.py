@@ -242,6 +242,222 @@ class Test_write(tests.IrisTest):
             self.assertEqual(res, 'something something_else')
 
 
+class Test_write__valid_x_cube_attributes(tests.IrisTest):
+    """Testing valid_range, valid_min and valid_max attributes."""
+
+    def test_valid_range_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        vrange = np.array([1, 2], dtype='int32')
+        cube.attributes['valid_range'] = vrange
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.valid_range, vrange)
+            ds.close()
+
+    def test_valid_min_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        cube.attributes['valid_min'] = 1
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.valid_min, 1)
+            ds.close()
+
+    def test_valid_max_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        cube.attributes['valid_max'] = 2
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.valid_max, 2)
+            ds.close()
+
+
+class Test_write__valid_x_coord_attributes(tests.IrisTest):
+    """Testing valid_range, valid_min and valid_max attributes."""
+
+    def test_valid_range_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        vrange = np.array([1, 2], dtype='int32')
+        cube.coord(axis='x').attributes['valid_range'] = vrange
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.variables['longitude'].valid_range,
+                                  vrange)
+            ds.close()
+
+    def test_valid_min_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        cube.coord(axis='x').attributes['valid_min'] = 1
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.variables['longitude'].valid_min, 1)
+            ds.close()
+
+    def test_valid_max_saved(self):
+        cube = tests.stock.lat_lon_cube()
+        cube.data = cube.data.astype('int32')
+
+        cube.coord(axis='x').attributes['valid_max'] = 2
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.variables['longitude'].valid_max, 2)
+            ds.close()
+
+
+class _Common__check_attribute_compliance(object):
+    def setUp(self):
+        self.container = mock.Mock(name='container', attributes={})
+        self.data = np.array(1, dtype='int32')
+
+        patch = mock.patch('netCDF4.Dataset')
+        mock_netcdf_dataset = patch.start()
+        self.addCleanup(patch.stop)
+
+    def set_attribute(self, value):
+        self.container.attributes[self.attribute] = value
+
+    def assertAttribute(self, value):
+        self.assertEqual(
+            np.asarray(self.container.attributes[self.attribute]).dtype,
+            value)
+
+    def check_attribute_compliance_call(self, value):
+        self.set_attribute(value)
+        with Saver(mock.Mock(), 'NETCDF4') as saver:
+            saver.check_attribute_compliance(self.container, self.data)
+
+
+class Test_check_attribute_compliance__valid_range(
+        _Common__check_attribute_compliance, tests.IrisTest):
+
+    @property
+    def attribute(self):
+        return 'valid_range'
+
+    def test_valid_range_type_coerce(self):
+        value = np.array([1, 2], dtype='float')
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(self.data.dtype)
+
+    def test_valid_range_unsigned_int8_data_signed_range(self):
+        self.data = self.data.astype('uint8')
+        value = np.array([1, 2], dtype='int8')
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(value.dtype)
+
+    def test_valid_range_cannot_coerce(self):
+        value = np.array([1.5, 2.5], dtype='float64')
+        msg = '"valid_range" is not of a suitable value'
+        with self.assertRaisesRegexp(ValueError, msg):
+            self.check_attribute_compliance_call(value)
+
+    def test_valid_range_not_numpy_array(self):
+        # Ensure we handle the case when not a numpy array is provided.
+        self.data = self.data.astype('int8')
+        value = [1, 2]
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(np.int64)
+
+
+class Test_check_attribute_compliance__valid_min(
+        _Common__check_attribute_compliance, tests.IrisTest):
+
+    @property
+    def attribute(self):
+        return 'valid_min'
+
+    def test_valid_range_type_coerce(self):
+        value = np.array(1, dtype='float')
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(self.data.dtype)
+
+    def test_valid_range_unsigned_int8_data_signed_range(self):
+        self.data = self.data.astype('uint8')
+        value = np.array(1, dtype='int8')
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(value.dtype)
+
+    def test_valid_range_cannot_coerce(self):
+        value = np.array(1.5, dtype='float64')
+        msg = '"valid_min" is not of a suitable value'
+        with self.assertRaisesRegexp(ValueError, msg):
+            self.check_attribute_compliance_call(value)
+
+    def test_valid_range_not_numpy_array(self):
+        # Ensure we handle the case when not a numpy array is provided.
+        self.data = self.data.astype('int8')
+        value = 1
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(np.int64)
+
+
+class Test_check_attribute_compliance__valid_max(
+        _Common__check_attribute_compliance, tests.IrisTest):
+
+    @property
+    def attribute(self):
+        return 'valid_max'
+
+    def test_valid_range_type_coerce(self):
+        value = np.array(2, dtype='float')
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(self.data.dtype)
+
+    def test_valid_range_unsigned_int8_data_signed_range(self):
+        self.data = self.data.astype('uint8')
+        value = np.array(2, dtype='int8')
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(value.dtype)
+
+    def test_valid_range_cannot_coerce(self):
+        value = np.array(2.5, dtype='float64')
+        msg = '"valid_max" is not of a suitable value'
+        with self.assertRaisesRegexp(ValueError, msg):
+            self.check_attribute_compliance_call(value)
+
+    def test_valid_range_not_numpy_array(self):
+        # Ensure we handle the case when not a numpy array is provided.
+        self.data = self.data.astype('int8')
+        value = 2
+        self.check_attribute_compliance_call(value)
+        self.assertAttribute(np.int64)
+
+
+class Test_check_attribute_compliance__exception_handlng(
+        _Common__check_attribute_compliance, tests.IrisTest):
+
+    def test_valid_range_and_valid_min_valid_max_provided(self):
+        # Conflicting attributes should raise a suitable exception.
+        self.data = self.data.astype('int8')
+        self.container.attributes['valid_range'] = [1, 2]
+        self.container.attributes['valid_min'] = [1]
+        msg = 'Both "valid_range" and "valid_min"'
+        with Saver(mock.Mock(), 'NETCDF4') as saver:
+            with self.assertRaisesRegexp(ValueError, msg):
+                saver.check_attribute_compliance(self.container, self.data)
+
+
 class Test__create_cf_grid_mapping(tests.IrisTest):
     def _cube_with_cs(self, coord_system):
         """Return a simple 2D cube that uses the given coordinate system."""

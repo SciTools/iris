@@ -1,2 +1,0 @@
-* NetCDF loading and saving now supports Cubes that use the LambertConformal
- coordinate system.

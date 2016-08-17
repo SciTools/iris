@@ -1,1 +1,0 @@
-* NetCDF files which define a steroegraphic projection where the _scale factor at projection origin_ is equal to 1.0 will have the projection loaded correctly. Otherwise, a warning will be issued and the projection will not be loaded.

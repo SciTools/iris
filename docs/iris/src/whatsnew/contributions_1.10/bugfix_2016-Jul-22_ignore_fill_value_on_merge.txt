@@ -1,0 +1,1 @@
+* Merging no longer fails when encountering cubes with different fill values.
