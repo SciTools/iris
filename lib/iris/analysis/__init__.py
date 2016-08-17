@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -51,6 +51,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
+import warnings
 
 import biggus
 import numpy as np
@@ -2327,3 +2328,12 @@ class Nearest(object):
         """
         return RectilinearRegridder(src_grid, target_grid, 'nearest',
                                     self.extrapolation_mode)
+
+
+# XXX Ensure implicit import of interpolate still works when importing this
+# module.
+# Since iris.analysis.interpolate imports Linear from this module, this import
+# must appear after Linear has been defined.
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import iris.analysis.interpolate

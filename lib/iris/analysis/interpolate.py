@@ -47,7 +47,8 @@ import iris.cube
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-import iris.analysis._interpolate_private as oldinterp
+# XXX Relative import so that this module can be imported by iris.analysis.
+from . import _interpolate_private as oldinterp
 
 
 _INTERPOLATE_DEPRECATION_WARNING = \
