@@ -315,7 +315,10 @@ class database():
 
         #Scan the catalogue and load requested cubes:
         loaded_cubes = []
+        t_0 = time.clock()
+        t_a = time.clock()
         for i in range(len(self.datafiles)):
+            I = i+1
             cubes_to_load = []
             for j in range(len(self.cubes[i])):
                 cube_name = self.cubes[i][j]
@@ -326,7 +329,15 @@ class database():
                     loaded_cubes += iris.load(self.datafiles[i],cubes_to_load)
                 except:
                     raise
-        #print('{} cubes loaded'.format(len(loaded_cubes))) 
+
+            if(I%100 == 0):
+                files_remaining = len(self.datafiles) - I
+                minutes_remaining = files_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
+                print("Time taken for exploring {} files in catalogue: {} seconds".format(i,time.clock() - t_0))
+                print("{} files to go. Estimated time remaining: {} minutes".format( files_remaining, minutes_remaining ) )
+                t_a = time.clock()
+
+
         loaded_cubes = iris.cube.CubeList(loaded_cubes)
     
         #If the list of cubes is empty, print a message including
