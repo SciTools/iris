@@ -352,5 +352,79 @@ class database():
                         if cube_requested[k:k+3] in self.cubes[i][j].lower():
                             print(self.cubes[i][j])
                             break
+        else:
+            print("{} cubes found".format(len(loaded_cubes)))
     
+        return loaded_cubes
+
+
+    def load_no_catalogue(self, name_requested=''):
+
+        #Get the list of files inside the location of the database.
+        files_to_load = [ os.path.join(p,filename) 
+                               for (p,d,f) in os.walk(self.location,onerror=utils.catch_walk_error) 
+                               for filename in f ]
+        utils.debug(files_to_load)
+
+        #files that were not read will be stored in this list and printed at the end:
+        not_read_files = []
+
+        #all the cubes that loaded will be stored here:
+        loaded_cubes = []
+
+        #Go through each file, find what is inside and add it 
+        #to the list if necessary. If an error occurs with a file, add it
+        #to the not_read_files list.
+        i = 0
+        print("Loading directly from {} files...".format(len(files_to_load)))
+        t_0 = time.clock()
+        t_a = time.clock()
+        for each_file in files_to_load:
+
+            #Print timing information.
+            i += 1
+            if(i%100 == 0):
+                files_remaining = len(files_to_load) - i
+                minutes_remaining = files_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
+                print("Time taken for reading {} files: {} seconds".format(i,time.clock() - t_0))
+                print("{} files to go. Estimated time remaining: {} minutes".format( files_remaining, minutes_remaining ) )
+                t_a = time.clock()
+
+            #Read all the cubes in each file:
+            try:    
+                cubes = utils.read_cubes_from_file(each_file)
+            except:
+                not_read_files.append(each_file)
+                continue            
+
+            #Chose the relevant cubes:
+            cubes_to_save = []
+            for j in range(len(cubes)):
+                cube_name = cubes[j].name()
+                if name_requested in cube_name.lower():
+                   cubes_to_save.append(cube_name)
+
+            #Save the cubes just chosen:
+            if len(cubes_to_save) > 0:
+                try:
+                    loaded_cubes += iris.load(each_file,cubes_to_save)
+                except:
+                    raise
+
+        #Make the list of cubes an iris CubeList:
+        loaded_cubes = iris.cube.CubeList(loaded_cubes)
+ 
+        #If no cubes were found, say it...
+        if len(loaded_cubes) < 1:
+            print('No cubes found with "{}" in its name'.format(name_requested))
+        else:
+            print("{} cubes found".format(len(loaded_cubes)))
+
+        #If there were problematic files, warn the user:
+        if( len(not_read_files) > 0 ):
+            print("The following files were not read:")
+            for item in not_read_files:
+                print(item)
+
+
         return loaded_cubes
