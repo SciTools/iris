@@ -215,13 +215,17 @@ class Future(threading.local):
                           self.strict_grib_load, self.netcdf_no_unlimited,
                           self.clip_latitudes)
 
-    deprecated_options = ['strict_grib_load']
+    deprecated_options = {
+        'strict_grib_load': ('This is because "iris.fileformats.grib" is now '
+                             'deprecated :  Please install the "iris_grib" '
+                             'package instead.')}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
+            reason = self.deprecated_options[name]
             msg = ("the 'Future' object property {!r} is now deprecated. "
-                   "Please remove code which uses this.")
-            warn_deprecated(msg.format(name))
+                   "Please remove code which uses this.  {}")
+            warn_deprecated(msg.format(name, reason))
         if name not in self.__dict__:
             msg = "'Future' object has no attribute {!r}".format(name)
             raise AttributeError(msg)
