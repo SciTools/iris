@@ -54,6 +54,7 @@ class Test(tests.IrisTest):
                     datetime.datetime(2000, 4, 13, 0, 0, 2)]
         self.assertArrayEqual(result, expected)
 
+    @tests.skip_nc_time_axis
     def test_360_day_calendar(self):
         unit = Unit('days since 2000-02-25 00:00:00', calendar='360_day')
         coord = AuxCoord([3, 4, 5], 'time', units=unit)
@@ -64,6 +65,7 @@ class Test(tests.IrisTest):
         self.assertArrayEqual([cdt.datetime for cdt in result],
                               expected_datetimes)
 
+    @tests.skip_nc_time_axis
     def test_365_day_calendar(self):
         unit = Unit('minutes since 2000-02-25 00:00:00', calendar='365_day')
         coord = AuxCoord([30, 60, 150], 'time', units=unit)
@@ -74,6 +76,7 @@ class Test(tests.IrisTest):
         self.assertArrayEqual([cdt.datetime for cdt in result],
                               expected_datetimes)
 
+    @tests.skip_nc_time_axis
     def test_360_day_calendar_attribute(self):
         unit = Unit('days since 2000-02-01 00:00:00', calendar='360_day')
         coord = AuxCoord([0, 3, 6], 'time', units=unit)
