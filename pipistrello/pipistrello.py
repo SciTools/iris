@@ -333,7 +333,7 @@ class database():
             if(I%100 == 0):
                 files_remaining = len(self.datafiles) - I
                 minutes_remaining = files_remaining * ( ( time.clock() - t_a ) / 100.0 ) / 60.0
-                print("Time taken for exploring {} files in catalogue: {} seconds".format(i,time.clock() - t_0))
+                print("Time taken for exploring {} files in catalogue: {} seconds".format(I,time.clock() - t_0))
                 print("{} files to go. Estimated time remaining: {} minutes".format( files_remaining, minutes_remaining ) )
                 t_a = time.clock()
 

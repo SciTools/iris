@@ -23,11 +23,11 @@ database_dir = ('/home/esp-shared-b/RegCM_Data/CAM2')
 #database_dir = ('/home/esp-shared-b/RegCM_Data')
 all_cubes = pipistrello.database(database_dir,new_catalogue=True)
 
-cubesA = all_cubes.load_cubes('')
-for cube in cubesA:
-    print(cube)
-
+cubesA = all_cubes.load_cubes('temperature')
 time_b = time.clock()
+print(cubesA)
+#for cube in cubesA:
+#    print(cube)
 
 print("total time taken: {} seconds.\n".format(time_b - time_a))
 
@@ -36,4 +36,3 @@ print("total time taken: {} seconds.\n".format(time_b - time_a))
 #This cleans up leftover files (compiled python files)
 #and prints a good-bye message.
 utils.cleanup_and_finish()
-
