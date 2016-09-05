@@ -1,2 +1,0 @@
-* NetCDF saving of valid_range, valid_min and valid_max cube attributes is
- now allowed.

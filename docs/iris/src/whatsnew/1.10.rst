@@ -2,7 +2,7 @@ What's New in Iris 1.10
 ***********************
 
 :Release: 1.10
-:Date: 2016-08-08
+:Date: 2016-09-05
 
 This document explains the new/changed features of Iris in version 1.10
 (:doc:`View all changes <index>`.)
