@@ -180,8 +180,8 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
     def setUp(self):
         self.methods = ('linear', 'nearest')
         self.test_dtypes = [np.dtype(spec)
-                            for spec in ('i8', 'i16', 'i32', 'i64',
-                                         'f8', 'f16', 'f32', 'f64')]
+                            for spec in ('i1', 'i2', 'i4', 'i8',
+                                         'f2', 'f4', 'f8')]
 
     def _regrid(self, data, method, extrapolation_mode=None):
         x = np.arange(4)
