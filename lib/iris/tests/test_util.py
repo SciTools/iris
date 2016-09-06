@@ -354,5 +354,22 @@ class TestAsCompatibleShape(tests.IrisTest):
         self.assertEqual(res[0], target[0])
 
 
+class TestNewAxis(tests.IrisTest):
+    def test_make_new_axis(self):
+        cube = tests.stock.lat_lon_cube()
+        cube = iris.util.new_axis(cube)
+        expected_shape = (1, 3, 4)
+        self.assertEqual(cube.shape, expected_shape)
+
+    def test_masked_unit_array(self):
+        cube = tests.stock.simple_3d_mask()
+        test_cube = cube[0][0][0]
+        test_cube = iris.util.new_axis(test_cube, 'longitude')
+        test_cube = iris.util.new_axis(test_cube, 'latitude')
+        data_shape = test_cube.data.shape
+        mask_shape = test_cube.data.mask.shape
+        self.assertEqual(data_shape, mask_shape)
+
+
 if __name__ == '__main__':
     unittest.main()
