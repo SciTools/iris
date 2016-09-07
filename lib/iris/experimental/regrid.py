@@ -953,9 +953,15 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
         min_sx, min_tx = np.min(sx.points), np.min(tx.points)
         if min_sx < 0 and min_tx >= 0:
             indices = np.where(sx_points < 0)
+            # Ensure += doesn't raise a TypeError
+            if not np.can_cast(modulus, sx_points.dtype):
+                sx_points = sx_points.astype(type(modulus), casting='safe')
             sx_points[indices] += modulus
         elif min_sx >= 0 and min_tx < 0:
             indices = np.where(sx_points > (modulus / 2))
+            # Ensure -= doesn't raise a TypeError
+            if not np.can_cast(modulus, sx_points.dtype):
+                sx_points = sx_points.astype(type(modulus), casting='safe')
             sx_points[indices] -= modulus
 
     # Create target grid cube x and y cell boundaries.
