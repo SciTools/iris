@@ -205,6 +205,14 @@ class IrisTest(unittest.TestCase):
         iris.site_configuration['cf_profile'] = None
 
     def _assert_str_same(self, reference_str, test_str, reference_filename, type_comparison_name='Strings'):
+        # Work around to deal with alterations to attribute typing in
+        # netcdf4python, introduced in 1.1 and present in 1.2. see:
+        # https://github.com/Unidata/netcdf-c/issues/298
+        # https://github.com/Unidata/netcdf4-python/issues/529
+        # https://github.com/Unidata/netcdf4-python/issues/575
+        # amongst others for further details.
+        if type_comparison_name == 'CDL' and reference_str != test_str:
+            test_str = test_str.replace('\t\tstring ', '\t\t')
         if reference_str != test_str:
             diff = ''.join(difflib.unified_diff(reference_str.splitlines(1), test_str.splitlines(1),
                                                  'Reference', 'Test result', '', '', 0))
