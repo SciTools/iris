@@ -1,3 +1,0 @@
-* The :mod:`iris.plot` routines :func:`~iris.plot.contour`, :func:`~iris.plot.countourf`, :func:`~iris.plot.outline`, :func:`~iris.plot.pcolor`, :func:`~iris.plot.pcolormesh` and :func:`~iris.plot.points` now support plotting cubes with anonymous dimensions by specifying the *numeric index* of the anonymous dimension within the ``coords`` keyword argument.
-
-  Note that, the axis of the anonymous dimension will be plotted in index space.

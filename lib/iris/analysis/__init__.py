@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -64,7 +64,6 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
-
 
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
@@ -2327,3 +2326,7 @@ class Nearest(object):
         """
         return RectilinearRegridder(src_grid, target_grid, 'nearest',
                                     self.extrapolation_mode)
+
+# Import "iris.analysis.interpolate" to replicate older automatic imports.
+# NOTE: do this at end, as otherwise its import of 'Linear' will fail.
+from . import _interpolate_backdoor as interpolate

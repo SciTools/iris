@@ -1,1 +1,0 @@
-* The parsing functionality for Cell Methods from netCDF files is available as part of the :mod:`iris.fileformats.netcdf` module.

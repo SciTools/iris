@@ -37,7 +37,6 @@ import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mpl_ticker
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
-import nc_time_axis
 import netcdftime
 import numpy as np
 import numpy.ma as ma
@@ -45,6 +44,7 @@ import numpy.ma as ma
 import iris.cube
 import iris.analysis.cartography as cartography
 import iris.coords
+from iris.exceptions import IrisError
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
 
@@ -412,6 +412,16 @@ def _fixup_dates(coord, values):
         if coord.units.calendar == 'gregorian':
             r = [datetime.datetime(*date) for date in dates]
         else:
+            try:
+                import nc_time_axis
+            except ImportError:
+                msg = ('Cannot plot against time in a non-gregorian '
+                       'calendar, because "nc_time_axis" is not available :  '
+                       'Install the package from '
+                       'https://github.com/SciTools/nc-time-axis to enable '
+                       'this usage.')
+                raise IrisError(msg)
+
             r = [nc_time_axis.CalendarDateTime(
                  netcdftime.datetime(*date), coord.units.calendar)
                  for date in dates]

@@ -2,10 +2,9 @@
 # conda create -n <name> --file conda-requirements.txt
 
 # Mandatory dependencies
-biggus>=0.13.0
+biggus>=0.14.0
 cartopy
 matplotlib=1.3.1
-nc_time_axis
 netcdf4
 numpy
 pyke
@@ -23,6 +22,7 @@ sphinx
 iris_sample_data
 
 # Optional iris dependencies
+nc_time_axis
 iris_grib
 ecmwf_grib
 esmpy>=7.0

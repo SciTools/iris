@@ -1,3 +1,0 @@
-* the method :meth:`iris.cube.Cube.regridded` has been deprecated.
-  Please use :meth:`iris.cube.Cube.regrid` instead (see
-  :meth:`~iris.cube.Cube.regridded` for details).

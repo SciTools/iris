@@ -1,5 +1,0 @@
-* deprecated the :class:`iris.Future` option
-  :data:`iris.FUTURE.strict_grib_load`.
-  This only affected the module :mod:`iris.fileformats.grib`, which is itself
-  now deprecated.
-  Please see :ref:`iris_grib package <iris_grib_added>`, above.

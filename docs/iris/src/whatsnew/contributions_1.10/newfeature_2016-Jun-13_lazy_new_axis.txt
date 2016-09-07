@@ -1,1 +1,0 @@
-* Promoting a scalar coordinate to a dimension coordinate with `iris.util.new_axis` no longer loads deferred data.

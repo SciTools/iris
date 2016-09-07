@@ -27,7 +27,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from cf_units import Unit
-from nc_time_axis import CalendarDateTime
+if tests.NC_TIME_AXIS_AVAILABLE:
+    from nc_time_axis import CalendarDateTime
 import numpy as np
 
 from iris.coords import AuxCoord
@@ -38,6 +39,7 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
+@tests.skip_nc_time_axis
 @tests.skip_plot
 class Test(tests.GraphicsTest):
     def test_360_day_calendar(self):

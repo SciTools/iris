@@ -1,1 +1,0 @@
-Altered Cell Methods to display coordinate's standard_name rather than var_name where appropriate to avoid human confusion.

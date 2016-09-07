@@ -1,2 +1,0 @@
-* The use of :data:`iris.config.SAMPLE_DATA_DIR` has been deprecated and replaced by the now importable :mod:`iris_sample_data` package.
- 
