@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -322,6 +322,12 @@ class Test1dQuickplotScatter(Test1dScatter):
             tests.get_data_path(('NAME', 'NAMEIII_trajectory.txt')),
             'Temperature')
         self.draw_method = qplt.scatter
+
+    def test_cube_coord(self):
+        pass
+
+    def test_coord_coord(self):
+        pass
 
 
 @tests.skip_data

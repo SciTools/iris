@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -199,10 +199,6 @@ class TestBoundedCube(tests.GraphicsTest):
         # specifically, in coordinates that don't wrap).
         plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
         iplt.pcolormesh(self.cube)
-        self.check_graphic()
-
-    def test_grid(self):
-        iplt.outline(self.cube)
         self.check_graphic()
 
     def test_default_projection_and_extent(self):
