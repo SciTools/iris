@@ -1168,6 +1168,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         Only works for one-dimensional coordinates.
 
+        For example:
+
+        >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
+        >>> cube.coord('latitude').nearest_neighbour_index(0)
+        9
+        >>> cube.coord('longitude').nearest_neighbour_index(10)
+        12
+
         .. note:: If the coordinate contains bounds, these will be used to
             determine the nearest neighbour instead of the point values.
 
