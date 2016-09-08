@@ -1612,7 +1612,7 @@ def _num2date_to_nearest_second(time_value, units):
     except AttributeError:
         microsecond = 0
     if has_half_second or microsecond > 0:
-        if has_half_second or round(microsecond, -6) == 1000000:
+        if has_half_second or microsecond >= 500000:
             seconds = cf_units.Unit('second')
             second_frac = seconds.convert(0.75, units.utime().units)
             time_value += second_frac
