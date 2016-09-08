@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -129,6 +129,9 @@ def _assert_shared(np_obj, pandas_obj):
         base = pandas_obj.base
     else:
         base = pandas_obj[0].base
+
+    if pandas_obj.values is np_obj:
+        return
     # Chase the stack of NumPy `base` references back to see if any of
     # them are our original array.
     while base is not None:
