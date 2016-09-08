@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,6 +35,7 @@ import pandas
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.util import _num2date_to_nearest_second
 
 
 def _add_iris_coord(cube, name, points, dim, calendar=None):
@@ -119,7 +120,8 @@ def _as_pandas_coord(coord):
     """Convert an Iris Coord into a Pandas index or columns array."""
     index = coord.points
     if coord.units.is_time_reference():
-        index = coord.units.num2date(index)
+        index = np.array([_num2date_to_nearest_second(point, coord.units)
+                          for point in index])
     return index
 
 
