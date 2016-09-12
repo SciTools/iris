@@ -324,9 +324,15 @@ class Test1dQuickplotScatter(Test1dScatter):
         self.draw_method = qplt.scatter
 
     def test_cube_coord(self):
+        # Test skip pattern: this test from Test1dScatter
+        # is not suitable for the Test1dQuickplotScatter
+        # sub-class.
         pass
 
     def test_coord_coord(self):
+        # Test skip pattern: this test from Test1dScatter
+        # is not suitable for the Test1dQuickplotScatter
+        # sub-class.
         pass
 
 
