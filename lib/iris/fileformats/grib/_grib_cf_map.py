@@ -194,7 +194,7 @@ CF_TO_GRIB2 = {
     CFName('low_type_cloud_area_fraction', None, '%'): G2Param(2, 0, 6, 3),
     CFName('medium_type_cloud_area_fraction', None, '%'): G2Param(2, 0, 6, 4),
     CFName('moisture_content_of_soil_layer', None, 'kg m-2'): G2Param(2, 2, 0, 22),
-    CFName('precipitation_amount', None, 'kg m-2'): G2Param(2, 0, 1, 49),
+    CFName('precipitation_amount', None, 'kg m-2'): G2Param(2, 0, 1, 8),
     CFName('precipitation_flux', None, 'kg m-2 s-1'): G2Param(2, 0, 1, 7),
     CFName('relative_humidity', None, '%'): G2Param(2, 0, 1, 1),
     CFName('sea_ice_area_fraction', None, '1'): G2Param(2, 10, 2, 0),
