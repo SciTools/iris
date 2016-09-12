@@ -32,14 +32,9 @@ from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.tests.stock import global_pp
 
-# Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
-    import iris.quickplot as qplt
-
 
 @tests.skip_data
-@tests.skip_plot
-class TestOSGBToLatLon(tests.GraphicsTest):
+class TestOSGBToLatLon(tests.IrisTest):
     def setUp(self):
         path = tests.get_data_path(
             ('NIMROD', 'uk2km', 'WO0000000003452',
@@ -58,21 +53,23 @@ class TestOSGBToLatLon(tests.GraphicsTest):
     def _regrid(self, method):
         regridder = Regridder(self.src, self.grid, method, 'mask')
         result = regridder(self.src)
-        qplt.pcolor(result, antialiased=False)
-        qplt.plt.gca().coastlines()
+        return result
 
     def test_linear(self):
-        self._regrid('linear')
-        self.check_graphic()
+        result = self._regrid('linear')
+        self.assertEqual(result.shape, (73, 96))
+        self.assertArrayAlmostEqual(result.data.mean(), -16100.352673)
+        self.assertArrayAlmostEqual(result.data.std(), 5603.851053)
 
     def test_nearest(self):
-        self._regrid('nearest')
-        self.check_graphic()
+        result = self._regrid('nearest')
+        self.assertEqual(result.shape, (73, 96))
+        self.assertArrayAlmostEqual(result.data.mean(), -16095.965870)
+        self.assertArrayAlmostEqual(result.data.std(), 5612.657238)
 
 
 @tests.skip_data
-@tests.skip_plot
-class TestGlobalSubsample(tests.GraphicsTest):
+class TestGlobalSubsample(tests.IrisTest):
     def setUp(self):
         self.src = global_pp()
         # Subsample and shift the target grid so that we can see a visual
@@ -85,16 +82,19 @@ class TestGlobalSubsample(tests.GraphicsTest):
     def _regrid(self, method):
         regridder = Regridder(self.src, self.grid, method, 'mask')
         result = regridder(self.src)
-        qplt.pcolormesh(result)
-        qplt.plt.gca().coastlines()
+        return result
 
     def test_linear(self):
-        self._regrid('linear')
-        self.check_graphic()
+        result = self._regrid('linear')
+        self.assertEqual(result.shape, (36, 32))
+        self.assertArrayAlmostEqual(result.data.mean(), 280.35907)
+        self.assertArrayAlmostEqual(result.data.std(), 15.997223)
 
     def test_nearest(self):
-        self._regrid('nearest')
-        self.check_graphic()
+        result = self._regrid('nearest')
+        self.assertEqual(result.shape, (36, 32))
+        self.assertArrayAlmostEqual(result.data.mean(), 280.33725)
+        self.assertArrayAlmostEqual(result.data.std(), 16.064001)
 
 
 if __name__ == "__main__":
