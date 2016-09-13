@@ -40,7 +40,7 @@ class TestOSGBToLatLon(tests.IrisTest):
             ('NIMROD', 'uk2km', 'WO0000000003452',
              '201007020900_u1096_ng_ey00_visibility0180_screen_2km'))
         self.src = iris.load_cube(path)[0]
-        self.src.data = self.src.data.astype(np.float32)
+        self.src.data = self.src.data.astype(np.float64)
         self.grid = Cube(np.empty((73, 96)))
         cs = GeogCS(6370000)
         lat = DimCoord(np.linspace(46, 65, 73), 'latitude', units='degrees',
@@ -58,20 +58,22 @@ class TestOSGBToLatLon(tests.IrisTest):
     def test_linear(self):
         result = self._regrid('linear')
         self.assertEqual(result.shape, (73, 96))
-        self.assertArrayAlmostEqual(result.data.mean(), -16100.352673)
-        self.assertArrayAlmostEqual(result.data.std(), 5603.851053)
+        self.assertArrayAlmostEqual(result.data.mean(), -16100.351951)
+        self.assertArrayAlmostEqual(result.data.std(), 5603.850769)
 
     def test_nearest(self):
         result = self._regrid('nearest')
         self.assertEqual(result.shape, (73, 96))
-        self.assertArrayAlmostEqual(result.data.mean(), -16095.965870)
-        self.assertArrayAlmostEqual(result.data.std(), 5612.657238)
+        self.assertArrayAlmostEqual(result.data.mean(), -16095.965585)
+        self.assertArrayAlmostEqual(result.data.std(), 5612.657155)
 
 
 @tests.skip_data
 class TestGlobalSubsample(tests.IrisTest):
     def setUp(self):
         self.src = global_pp()
+        _ = self.src.data
+        self.src.data = self.src.data.astype(np.float64)
         # Subsample and shift the target grid so that we can see a visual
         # difference between regridding scheme methods.
         grid = self.src[1::2, 1::3]
@@ -93,7 +95,7 @@ class TestGlobalSubsample(tests.IrisTest):
     def test_nearest(self):
         result = self._regrid('nearest')
         self.assertEqual(result.shape, (36, 32))
-        self.assertArrayAlmostEqual(result.data.mean(), 280.33725)
+        self.assertArrayAlmostEqual(result.data.mean(), 280.33726)
         self.assertArrayAlmostEqual(result.data.std(), 16.064001)
 
 
