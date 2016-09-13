@@ -40,6 +40,8 @@ class TestOSGBToLatLon(tests.IrisTest):
             ('NIMROD', 'uk2km', 'WO0000000003452',
              '201007020900_u1096_ng_ey00_visibility0180_screen_2km'))
         self.src = iris.load_cube(path)[0]
+        # Cast up to float64, to work around numpy<=1.8 bug with means of
+        # arrays of 32bit floats.
         self.src.data = self.src.data.astype(np.float64)
         self.grid = Cube(np.empty((73, 96)))
         cs = GeogCS(6370000)
@@ -73,6 +75,8 @@ class TestGlobalSubsample(tests.IrisTest):
     def setUp(self):
         self.src = global_pp()
         _ = self.src.data
+        # Cast up to float64, to work around numpy<=1.8 bug with means of
+        # arrays of 32bit floats.
         self.src.data = self.src.data.astype(np.float64)
         # Subsample and shift the target grid so that we can see a visual
         # difference between regridding scheme methods.
