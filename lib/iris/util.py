@@ -1082,7 +1082,16 @@ def new_axis(src_cube, scalar_coord=None):
 
     # Indexing numpy arrays requires loading deferred data here returning a
     # copy of the data with a new leading dimension.
-    new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+    # If the source cube is a Masked Constant, it is changed here to a Masked
+    # Array to allow the mask to gain an extra dimension with the data.
+    if src_cube.has_lazy_data():
+        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+    else:
+        if isinstance(src_cube.data, ma.core.MaskedConstant):
+            new_data = ma.array([np.nan], mask=[True])
+        else:
+            new_data = src_cube.data[None]
+        new_cube = iris.cube.Cube(new_data)
     new_cube.metadata = src_cube.metadata
 
     for coord in src_cube.aux_coords:
