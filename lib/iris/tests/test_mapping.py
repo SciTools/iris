@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests map creation.
+Integration tests for map creation, plot and quickplot.
 
 """
 from __future__ import (absolute_import, division, print_function)
@@ -38,6 +38,7 @@ import iris.tests.stock
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
     import iris.plot as iplt
+    import iris.quickplot as qplt
 
 
 # A specific cartopy Globe matching the iris RotatedGeogCS default.
@@ -52,18 +53,18 @@ class TestBasic(tests.GraphicsTest):
 
     def test_contourf(self):
         cube = self.cube[0, 0]
-        iplt.contourf(cube)
+        qplt.contourf(cube)
         self.check_graphic()
 
     def test_pcolor(self):
         cube = self.cube[0, 0]
-        iplt.pcolor(cube)
+        qplt.pcolor(cube)
         self.check_graphic()
 
     def test_unmappable(self):
         cube = self.cube[0, 0]
         cube.coord('grid_longitude').standard_name = None
-        iplt.contourf(cube)
+        qplt.contourf(cube)
         self.check_graphic()
 
     def test_default_projection_and_extent(self):
