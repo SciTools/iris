@@ -59,6 +59,7 @@ install:
         conda install --quiet --file conda-requirements.txt;
       fi
     fi
+  - pip install coveralls
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
@@ -105,7 +106,7 @@ install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+      coverage run setup.py test --default-tests --system-tests --print-failed-images;
     fi
   - if [[ $TEST_TARGET == 'example' ]]; then
       python -m iris.tests.runner --example-tests --print-failed-images;
@@ -128,3 +129,4 @@ script:
   - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py test --coding-tests;
     fi
+after_success: coveralls
