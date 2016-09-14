@@ -130,8 +130,14 @@ def _assert_shared(np_obj, pandas_obj):
     else:
         base = pandas_obj[0].base
 
-    if pandas_obj.values is np_obj:
-        return
+    # Prior to Pandas 0.17, when pandas_obj is a Series, pandas_obj.values
+    # returns a view of the underlying array, and pandas_obj.base, which calls
+    # pandas_obj.values.base, returns the underlying array. In 0.17 and 0.18
+    # pandas_obj.values returns the underlying array, so base may be None even
+    # if the array is shared.
+    if base is None:
+        base = pandas_obj.values
+
     # Chase the stack of NumPy `base` references back to see if any of
     # them are our original array.
     while base is not None:
