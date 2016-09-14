@@ -60,14 +60,14 @@ class TestOSGBToLatLon(tests.IrisTest):
     def test_linear(self):
         result = self._regrid('linear')
         self.assertEqual(result.shape, (73, 96))
-        self.assertArrayAlmostEqual(result.data.mean(), -16100.351951)
-        self.assertArrayAlmostEqual(result.data.std(), 5603.850769)
+        self.assertAlmostEqual(result.data.mean(), -16100.351951, places=5)
+        self.assertAlmostEqual(result.data.std(), 5603.850769, places=5)
 
     def test_nearest(self):
         result = self._regrid('nearest')
         self.assertEqual(result.shape, (73, 96))
-        self.assertArrayAlmostEqual(result.data.mean(), -16095.965585)
-        self.assertArrayAlmostEqual(result.data.std(), 5612.657155)
+        self.assertAlmostEqual(result.data.mean(), -16095.965585, places=5)
+        self.assertAlmostEqual(result.data.std(), 5612.657155, places=5)
 
 
 @tests.skip_data
@@ -93,14 +93,14 @@ class TestGlobalSubsample(tests.IrisTest):
     def test_linear(self):
         result = self._regrid('linear')
         self.assertEqual(result.shape, (36, 32))
-        self.assertArrayAlmostEqual(result.data.mean(), 280.35907)
-        self.assertArrayAlmostEqual(result.data.std(), 15.997223)
+        self.assertAlmostEqual(result.data.mean(), 280.35907, places=5)
+        self.assertAlmostEqual(result.data.std(), 15.997223, places=5)
 
     def test_nearest(self):
         result = self._regrid('nearest')
         self.assertEqual(result.shape, (36, 32))
-        self.assertArrayAlmostEqual(result.data.mean(), 280.33726)
-        self.assertArrayAlmostEqual(result.data.std(), 16.064001)
+        self.assertAlmostEqual(result.data.mean(), 280.33726, places=5)
+        self.assertAlmostEqual(result.data.std(), 16.064001, places=5)
 
 
 if __name__ == "__main__":
