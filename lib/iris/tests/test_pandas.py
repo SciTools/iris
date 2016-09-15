@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -59,30 +59,24 @@ class TestAsSeries(tests.IrisTest):
     def test_no_dim_coord(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
         series = iris.pandas.as_series(cube)
+        expected_index = np.array([0, 1, 2, 3, 4])
         self.assertArrayEqual(series, cube.data)
-        self.assertString(
-            str(series),
-            tests.get_result_path(('pandas', 'as_series',
-                                   'no_dim_coord.txt')))
+        self.assertArrayEqual(series.index, expected_index)
 
     def test_simple(self):
         cube = Cube(np.array([0, 1, 2, 3, 4.4]), long_name="foo")
         dim_coord = DimCoord([5, 6, 7, 8, 9], long_name="bar")
         cube.add_dim_coord(dim_coord, 0)
+        expected_index = np.array([5, 6, 7, 8, 9])
         series = iris.pandas.as_series(cube)
         self.assertArrayEqual(series, cube.data)
-        self.assertString(
-            str(series),
-            tests.get_result_path(('pandas', 'as_series', 'simple.txt')))
+        self.assertArrayEqual(series.index, expected_index)
 
     def test_masked(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4.4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
         series = iris.pandas.as_series(cube)
         self.assertArrayEqual(series, cube.data.astype('f').filled(np.nan))
-        self.assertString(
-            str(series),
-            tests.get_result_path(('pandas', 'as_series', 'masked.txt')))
 
     def test_time_gregorian(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="ts")
@@ -90,12 +84,14 @@ class TestAsSeries(tests.IrisTest):
                               long_name="time",
                               units="days since 2000-01-01 00:00")
         cube.add_dim_coord(time_coord, 0)
+        expected_index = [datetime.datetime(2000, 1, 1, 0, 0),
+                          datetime.datetime(2000, 4, 10, 2, 24),
+                          datetime.datetime(2000, 7, 19, 4, 48),
+                          datetime.datetime(2000, 10, 27, 7, 12),
+                          datetime.datetime(2001, 2, 4, 9, 36)]
         series = iris.pandas.as_series(cube)
         self.assertArrayEqual(series, cube.data)
-        self.assertString(
-            str(series),
-            tests.get_result_path(('pandas', 'as_series',
-                                  'time_gregorian.txt')))
+        self.assertListEqual(list(series.index), expected_index)
 
     def test_time_360(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="ts")
@@ -104,12 +100,14 @@ class TestAsSeries(tests.IrisTest):
         time_coord = DimCoord([0, 100.1, 200.2, 300.3, 400.4],
                               long_name="time", units=time_unit)
         cube.add_dim_coord(time_coord, 0)
+        expected_index = [netcdftime.datetime(2000, 1, 1, 0, 0),
+                          netcdftime.datetime(2000, 4, 11, 2, 24),
+                          netcdftime.datetime(2000, 7, 21, 4, 48),
+                          netcdftime.datetime(2000, 11, 1, 7, 12),
+                          netcdftime.datetime(2001, 2, 11, 9, 36)]
         series = iris.pandas.as_series(cube)
         self.assertArrayEqual(series, cube.data)
-        self.assertString(
-            str(series),
-            tests.get_result_path(('pandas', 'as_series',
-                                   'time_360.txt')))
+        self.assertArrayEqual(series.index, expected_index)
 
     def test_copy_true(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
@@ -156,36 +154,36 @@ class TestAsDataFrame(tests.IrisTest):
     def test_no_dim_coords(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
                     long_name="foo")
+        expected_index = [0, 1]
+        expected_columns = [0, 1, 2, 3, 4]
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data)
-        self.assertString(
-            str(data_frame),
-            tests.get_result_path(('pandas', 'as_dataframe',
-                                   'no_dim_coords.txt')))
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.columns, expected_columns)
 
     def test_no_x_coord(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
                     long_name="foo")
         y_coord = DimCoord([10, 11], long_name="bar")
         cube.add_dim_coord(y_coord, 0)
+        expected_index = [10, 11]
+        expected_columns = [0, 1, 2, 3, 4]
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data)
-        self.assertString(
-            str(data_frame),
-            tests.get_result_path(('pandas', 'as_dataframe',
-                                   'no_x_coord.txt')))
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.columns, expected_columns)
 
     def test_no_y_coord(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
                     long_name="foo")
         x_coord = DimCoord([10, 11, 12, 13, 14], long_name="bar")
         cube.add_dim_coord(x_coord, 1)
+        expected_index = [0, 1]
+        expected_columns = [10, 11, 12, 13, 14]
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data)
-        self.assertString(
-            str(data_frame),
-            tests.get_result_path(('pandas', 'as_dataframe',
-                                   'no_y_coord.txt')))
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.columns, expected_columns)
 
     def test_simple(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
@@ -194,23 +192,23 @@ class TestAsDataFrame(tests.IrisTest):
         y_coord = DimCoord([15, 16], long_name="milk")
         cube.add_dim_coord(x_coord, 1)
         cube.add_dim_coord(y_coord, 0)
+        expected_index = [15, 16]
+        expected_columns = [10, 11, 12, 13, 14]
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data)
-        self.assertString(
-            str(data_frame),
-            tests.get_result_path(('pandas', 'as_dataframe',
-                                   'simple.txt')))
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.columns, expected_columns)
 
     def test_masked(self):
         data = np.ma.MaskedArray([[0, 1, 2, 3, 4.4], [5, 6, 7, 8, 9]],
                                  mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]])
         cube = Cube(data, long_name="foo")
+        expected_index = [0, 1]
+        expected_columns = [0, 1, 2, 3, 4]
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data.astype('f').filled(np.nan))
-        self.assertString(
-            str(data_frame),
-            tests.get_result_path(('pandas', 'as_dataframe',
-                                   'masked.txt')))
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.columns, expected_columns)
 
     def test_time_gregorian(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
@@ -238,12 +236,13 @@ class TestAsDataFrame(tests.IrisTest):
         time_coord = DimCoord([100.1, 200.2], long_name="time",
                               units=time_unit)
         cube.add_dim_coord(time_coord, 0)
+        expected_index = [netcdftime.datetime(2000, 4, 11, 2, 24),
+                          netcdftime.datetime(2000, 7, 21, 4, 48)]
+        expected_columns = [0, 1, 2, 3, 4]
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data)
-        self.assertString(
-            str(data_frame),
-            tests.get_result_path(('pandas', 'as_dataframe',
-                                   'time_360.txt')))
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.columns, expected_columns)
 
     def test_copy_true(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
