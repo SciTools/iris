@@ -472,8 +472,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.coord('longitude').guess_bounds()
         dest = _resampled_grid(src, 0.4, 0.3)
         res = regrid_area_weighted(src, dest)
-        self.assertAlmostEqual(res.data.mean(), 280.137698, places=5)
-        self.assertAlmostEqual(res.data.std(), 15.998966, places=5)
+        self.assertArrayShapeStats(res, (21, 38), 280.137698, 15.998966)
 
     @tests.skip_data
     def test_global_data_increase_res(self):
@@ -482,8 +481,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.coord('longitude').guess_bounds()
         dest = _resampled_grid(src, 1.5, 1.5)
         res = regrid_area_weighted(src, dest)
-        self.assertAlmostEqual(res.data.mean(), 279.955722, places=5)
-        self.assertAlmostEqual(res.data.std(), 16.313940, places=5)
+        self.assertArrayShapeStats(res, (109, 144), 279.955722, 16.313940)
 
     @tests.skip_data
     def test_global_data_same_res(self):
@@ -491,8 +489,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.coord('latitude').guess_bounds()
         src.coord('longitude').guess_bounds()
         res = regrid_area_weighted(src, src)
-        self.assertAlmostEqual(res.data.mean(), 279.945167, places=5)
-        self.assertAlmostEqual(res.data.std(), 16.345842, places=5)
+        self.assertArrayShapeStats(res, (73, 96), 279.945167, 16.345842)
 
     @tests.skip_data
     def test_global_data_subset(self):
@@ -512,8 +509,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertAlmostEqual(res.data.mean(), 280.979336, places=5)
-        self.assertAlmostEqual(res.data.std(), 16.640421, places=5)
+        self.assertArrayShapeStats(res, (40, 30), 280.979336, 16.640421)
 
     @tests.skip_data
     def test_circular_subset(self):
@@ -533,8 +529,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertAlmostEqual(res.data.mean(), 285.653967, places=5)
-        self.assertAlmostEqual(res.data.std(), 15.212710, places=5)
+        self.assertArrayShapeStats(res, (40, 7), 285.653967, 15.212710)
 
     @tests.skip_data
     def test_non_circular_subset(self):
@@ -555,8 +550,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertAlmostEqual(res.data.mean(), 285.550800, places=5)
-        self.assertAlmostEqual(res.data.std(), 15.190245, places=5)
+        self.assertArrayShapeStats(res, (40, 7), 285.550800, 15.190245)
 
 
 if __name__ == "__main__":
