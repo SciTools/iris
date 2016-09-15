@@ -755,6 +755,18 @@ class IrisTest(unittest.TestCase):
         # Return patch replacement object.
         return start_result
 
+    def assertArrayShapeStats(self, result, shape, mean, std_dev):
+        """
+        Assert that the result, a cube, has the provided shape and that the
+        mean and standard deviation of the data array are also as provided.
+        Thus build confidence that a cube processing operation, such as a
+        cube.regrid, has maintained its behaviour.
+ 
+        """
+        self.assertEqual(result.shape, shape)
+        self.assertAlmostEqual(result.data.mean(), mean, places=5)
+        self.assertAlmostEqual(result.data.std(), std_dev, places=5)
+
 
 get_result_path = IrisTest.get_result_path
 

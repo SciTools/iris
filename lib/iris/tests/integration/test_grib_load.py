@@ -42,13 +42,6 @@ import iris.util
 from unittest import skipIf
 
 
-# Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import LogNorm
-    import iris.plot as iplt
-    import iris.quickplot as qplt
-
 if tests.GRIB_AVAILABLE:
     try:
         import iris_grib
@@ -97,63 +90,31 @@ class TestBasicLoad(tests.GraphicsTest):
         self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
 
     @skip_irisgrib_fails
-    @tests.skip_plot
     def test_y_fastest(self):
         cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
                                                "y_fast.grib2")))
         self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("y changes fastest")
-        self.check_graphic()
 
-    @tests.skip_plot
     def test_polar_stereo_grib1(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "polar_stereo", "ST4.2013052210.01h")))
         self.assertCML(cube, ("grib_load", "polar_stereo_grib1.cml"))
-        qplt.contourf(cube, norm=LogNorm())
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("polar stereo grib1")
-        self.check_graphic()
 
-    @tests.skip_plot
     def test_polar_stereo_grib2(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "polar_stereo",
              "CMC_glb_TMP_ISBL_1015_ps30km_2013052000_P006.grib2")))
         self.assertCML(cube, ("grib_load", "polar_stereo_grib2.cml"))
 
-        qplt.contourf(cube)
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("polar stereo grib2")
-        self.check_graphic()
-
-    @tests.skip_plot
     def test_lambert_grib1(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "lambert", "lambert.grib1")))
         self.assertCML(cube, ("grib_load", "lambert_grib1.cml"))
 
-        qplt.contourf(cube)
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("lambert grib1")
-        self.check_graphic()
-
-    @tests.skip_plot
     def test_lambert_grib2(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "lambert", "lambert.grib2")))
         self.assertCML(cube, ("grib_load", "lambert_grib2.cml"))
-
-        qplt.contourf(cube)
-        plt.gca().coastlines()
-        plt.gca().gridlines()
-        plt.title("lambert grib2")
-        self.check_graphic()
 
     def test_regular_gg_grib1(self):
         cube = iris.load_cube(tests.get_data_path(
@@ -191,38 +152,21 @@ class TestIjDirections(tests.GraphicsTest):
                                               name)))[0]
         return [cube]
 
-    @tests.skip_plot
     def test_ij_directions_ipos_jpos(self):
         cubes = self._old_compat_load("ipos_jpos.grib2")
         self.assertCML(cubes, ("grib_load", "ipos_jpos.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ipos_jpos cube")
-        self.check_graphic()
 
     def test_ij_directions_ipos_jneg(self):
         cubes = self._old_compat_load("ipos_jneg.grib2")
         self.assertCML(cubes, ("grib_load", "ipos_jneg.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ipos_jneg cube")
-        self.check_graphic()
 
     def test_ij_directions_ineg_jneg(self):
         cubes = self._old_compat_load("ineg_jneg.grib2")
         self.assertCML(cubes, ("grib_load", "ineg_jneg.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ineg_jneg cube")
-        self.check_graphic()
 
     def test_ij_directions_ineg_jpos(self):
         cubes = self._old_compat_load("ineg_jpos.grib2")
         self.assertCML(cubes, ("grib_load", "ineg_jpos.cml"))
-        iplt.contourf(cubes[0])
-        plt.gca().coastlines()
-        plt.title("ineg_jpos cube")
-        self.check_graphic()
 
 
 @tests.skip_data

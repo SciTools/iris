@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,10 +28,6 @@ import numpy as np
 import iris.analysis.trajectory
 import iris.tests.stock
 
-# Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
-    import matplotlib.pyplot as plt
-
 
 class TestSimple(tests.IrisTest):
     def test_invalid_coord(self):
@@ -58,7 +54,6 @@ class TestTrajectory(tests.IrisTest):
         self.assertEqual(trajectory.sampled_points[31], {'lat': 0.12499999999999989, 'lon': 3.875})
 
     @tests.skip_data
-    @tests.skip_plot
     def test_trajectory_extraction(self):
 
         # Load the COLPEX data => TZYX
@@ -113,11 +108,6 @@ class TestTrajectory(tests.IrisTest):
         self.assertCML(trajectory_cube, ('trajectory',
                                          'constant_latitude.cml'))
 
-        # Sanity check the results against a simple slice
-        plt.plot(cube[0, 0, 10, :].data)
-        plt.plot(trajectory_cube[0, 0, :].data)
-        self.check_graphic()
-
         # Extract a zig-zag trajectory
         waypoints = [
             {'grid_latitude': -0.1188, 'grid_longitude': 359.5886},
@@ -139,17 +129,7 @@ class TestTrajectory(tests.IrisTest):
         self.assertCML(trajectory_cube, ('trajectory', 'zigzag.cml'), checksum=False)
         self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
 
-        # Sanity check the results against a simple slice
-        x = cube.coord('grid_longitude').points
-        y = cube.coord('grid_latitude').points
-        plt.pcolormesh(x, y, cube[0, 0, :, :].data)
-        x = trajectory_cube.coord('grid_longitude').points
-        y = trajectory_cube.coord('grid_latitude').points
-        plt.scatter(x, y, c=trajectory_cube.data)
-        self.check_graphic()
-
     @tests.skip_data
-    @tests.skip_plot
     def test_tri_polar(self):
         # load data
         cubes = iris.load(tests.get_data_path(['NetCDF', 'ORCA2', 'votemper.nc']))
@@ -167,15 +147,6 @@ class TestTrajectory(tests.IrisTest):
         # extract
         sampled_cube = iris.analysis.trajectory.interpolate(cube, sample_points)
         self.assertCML(sampled_cube, ('trajectory', 'tri_polar_latitude_slice.cml'))
-
-        # turn it upside down for the visualisation
-        plot_cube = sampled_cube[0]
-        plot_cube = plot_cube[::-1, :]
-
-        plt.clf()
-        plt.pcolormesh(plot_cube.data, vmin=cube.data.min(), vmax=cube.data.max())
-        plt.colorbar()
-        self.check_graphic()
 
         # Try to request linear interpolation.
         # Not allowed, as we have multi-dimensional coords.
