@@ -96,5 +96,150 @@ class Test_unlimited_dims(tests.IrisTest):
                 self.assertFalse(ds.dimensions['latitude'].isunlimited())
 
 
+@tests.skip_data
+class Test_packed_data(tests.IrisTest):
+    def _get_scale_factor_add_offset(self, cube, datatype):
+        dt = np.dtype(datatype)
+        cmax = cube.data.max()
+        cmin = cube.data.min()
+        n = dt.itemsize * 8
+        if isinstance(cube.data, np.ma.core.MaskedArray):
+            masked = True
+        else:
+            masked = False
+        if masked:
+            scale_factor = (cmax - cmin)/(2**n-2)
+        else:
+            scale_factor = (cmax-cmin)/(2**n-1)
+        if dt.kind == 'u':
+            add_offset = cmin
+        elif dt.kind == 'i':
+            if masked:
+                add_offset = (cmax + cmin)/2
+            else:
+                add_offset = cmin + 2**(n-1)*scale_factor
+        return (scale_factor, add_offset)
+
+    def test_single_packed_signed(self):
+        """Test saving a single CF-netCDF file with packing."""
+        # Read PP input file.
+        file_in = tests.get_data_path(
+            ('PP', 'cf_processing',
+             '000003000000.03.236.000128.1990.12.01.00.00.b.pp'))
+        cube = iris.load_cube(file_in)
+        datatype = 'i2'
+        scale_factor, offset = self._get_scale_factor_add_offset(cube,
+                                                                 datatype)
+        # Write Cube to netCDF file.
+        with self.temp_filename(suffix='.nc') as file_out:
+            iris.save(cube, file_out, pack_dtype=datatype)
+            decimal = int(-np.log10(scale_factor))
+            packedcube = iris.load_cube(file_out)
+            # Check that packed cube is accurate to expected precision
+            self.assertArrayAlmostEqual(cube.data, packedcube.data,
+                                        decimal=decimal)
+            # Check the netCDF file against CDL expected output.
+            self.assertCDL(file_out, ('unit', 'fileformats', 'netcdf',
+                                      'save',
+                                      'single_packed_signed.cdl'))
+
+    def test_single_packed_unsigned(self):
+        """Test saving a single CF-netCDF file with packing into unsigned. """
+        # Read PP input file.
+        file_in = tests.get_data_path(
+            ('PP', 'cf_processing',
+             '000003000000.03.236.000128.1990.12.01.00.00.b.pp'))
+        cube = iris.load_cube(file_in)
+        datatype = 'u1'
+        scale_factor, offset = self._get_scale_factor_add_offset(cube,
+                                                                 datatype)
+        # Write Cube to netCDF file.
+        with self.temp_filename(suffix='.nc') as file_out:
+            iris.save(cube, file_out, pack_dtype=datatype)
+            decimal = int(-np.log10(scale_factor))
+            packedcube = iris.load_cube(file_out)
+            # Check that packed cube is accurate to expected precision
+            self.assertArrayAlmostEqual(cube.data, packedcube.data,
+                                        decimal=decimal)
+            # Check the netCDF file against CDL expected output.
+            self.assertCDL(file_out, ('unit', 'fileformats', 'netcdf',
+                                      'save',
+                                      'single_packed_unsigned.cdl'))
+
+    def test_single_packed_manual_scale(self):
+        """Test saving a single CF-netCDF file with packing with scale
+        factor and add_offset set manually."""
+        file_in = tests.get_data_path(
+            ('PP', 'cf_processing',
+             '000003000000.03.236.000128.1990.12.01.00.00.b.pp'))
+        cube = iris.load_cube(file_in)
+        datatype = 'i2'
+        scale_factor, offset = self._get_scale_factor_add_offset(cube,
+                                                                 datatype)
+        cube.attributes['scale_factor'] = scale_factor
+        cube.attributes['add_offset'] = offset
+
+        # Write Cube to netCDF file.
+        with self.temp_filename(suffix='.nc') as file_out:
+            from shutil import copyfile
+            iris.save(cube, file_out, pack_dtype=datatype)
+            decimal = int(-np.log10(scale_factor))
+            packedcube = iris.load_cube(file_out)
+            # Check that packed cube is accurate to expected precision
+            # Check the netCDF file against CDL expected output.
+            self.assertCDL(file_out, ('unit', 'fileformats', 'netcdf',
+                                      'save',
+                                      'single_packed_manual.cdl'))
+            self.assertArrayAlmostEqual(cube.data, packedcube.data,
+                                        decimal=decimal)
+
+    def test_multi_packed_single_dtype(self):
+        """Test saving multiple packed cubes with the same pack_dtype."""
+        # Read PP input file.
+        file_in = tests.get_data_path(('PP', 'cf_processing',
+                                       'abcza_pa19591997_daily_29.b.pp'))
+        cubes = iris.load(file_in)
+        dtype = 'i2'
+        # Write Cube to netCDF file.
+        with self.temp_filename(suffix='.nc') as file_out:
+            iris.save(cubes, file_out, pack_dtype=dtype)
+            # Check the netCDF file against CDL expected output.
+            self.assertCDL(file_out, ('unit', 'fileformats', 'netcdf',
+                                      'save',
+                                      'multi_packed_single_dtype.cdl'))
+            packedcubes = iris.load(file_out)
+            for cube, packedcube in zip(cubes, packedcubes):
+                sf, ao = self._get_scale_factor_add_offset(cube, dtype)
+                decimal = int(-np.log10(sf))
+                # Check that packed cube is accurate to expected precision
+                self.assertArrayAlmostEqual(cube.data, packedcube.data,
+                                            decimal=decimal)
+
+    def test_multi_packed_multi_dtype(self):
+        """Test saving multiple packed cubes with pack_dtype list."""
+        # Read PP input file.
+        file_in = tests.get_data_path(('PP', 'cf_processing',
+                                       'abcza_pa19591997_daily_29.b.pp'))
+        cubes = iris.load(file_in)
+        dtypes = ['i2', None, 'u2']
+        # Write Cube to netCDF file.
+        with self.temp_filename(suffix='.nc') as file_out:
+            iris.save(cubes, file_out, pack_dtype=dtypes)
+            # Check the netCDF file against CDL expected output.
+            self.assertCDL(file_out, ('unit', 'fileformats', 'netcdf',
+                                      'save',
+                                      'multi_packed_multi_dtype.cdl'))
+            packedcubes = iris.load(file_out)
+            for cube, packedcube, dtype in zip(cubes, packedcubes, dtypes):
+                if dtype:
+                    sf, ao = self._get_scale_factor_add_offset(cube, dtype)
+                    decimal = int(-np.log10(sf))
+                    # Check that packed cube is accurate to expected precision
+                    self.assertArrayAlmostEqual(cube.data, packedcube.data,
+                                                decimal=decimal)
+                else:
+                    self.assertArrayEqual(cube.data, packedcube.data)
+
+
 if __name__ == "__main__":
     tests.main()

@@ -83,13 +83,14 @@ _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
              'cell_measures', 'cell_methods', 'climatology', 'compress',
              'coordinates', '_FillValue', 'formula_terms', 'grid_mapping',
              'leap_month', 'leap_year', 'long_name', 'missing_value',
-             'month_lengths', 'scale_factor', 'standard_error_multiplier',
+             'month_lengths', 'standard_error_multiplier', 'scale_factor',
              'standard_name', 'units']
 
 # CF attributes that should not be global.
-_CF_DATA_ATTRS = ['flag_masks', 'flag_meanings', 'flag_values',
+_CF_DATA_ATTRS = ['add_offset',
+                  'flag_masks', 'flag_meanings', 'flag_values',
                   'instance_dimension', 'sample_dimension',
-                  'standard_error_multiplier']
+                  'scale_factor', 'standard_error_multiplier']
 
 # CF attributes that should only be global.
 _CF_GLOBAL_ATTRS = ['conventions', 'featureType', 'history', 'title']
@@ -776,13 +777,13 @@ class Saver(object):
     def write(self, cube, local_keys=None, unlimited_dimensions=None,
               zlib=False, complevel=4, shuffle=True, fletcher32=False,
               contiguous=False, chunksizes=None, endian='native',
-              least_significant_digit=None):
+              least_significant_digit=None, pack_dtype=None):
         """
         Wrapper for saving cubes to a NetCDF file.
 
         Args:
 
-        * cube (:class:`iris.cube.Cube`):
+        * cube (:class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
 
         Kwargs:
@@ -855,6 +856,23 @@ class Saver(object):
             place in unpacked data that is a reliable value". Default is
             `None`, or no quantization, or 'lossless' compression.
 
+        * pack_dtype (type or string):
+            A numpy integer datatype (signed or unsigned) or a string that
+            describes a numpy integer dtype (i.e. 'i2', 'short', 'u4'). This
+            provides support for netCDF data packing as described in
+            http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+            If either `scale_factor` or `add_offset` are set in
+            `cube.attributes`, those values are used. If neither is set,
+            appropriate values of `scale_factor` and `add_offset` are
+            calculated based on `cube.data`, `pack_dtype` and possible masking
+            (see the link for details). Note that automatic calculation of
+            `scale_factor` and `add_offset` will trigger loading of lazy_data;
+            set `scale_factor` and `add_offset` manually in `cube.attributes`
+            if you wish to avoid this. For masked data, `fill_values` are taken
+            from `netCDF4.default_fillvals`. The default is `None`, in which
+            case the datatype is determined from the cube and no packing will
+            occur.
+
         Returns:
             None.
 
@@ -877,6 +895,12 @@ class Saver(object):
                 unlimited_dimensions = []
             else:
                 _no_unlim_dep_warning()
+
+        if pack_dtype and np.dtype(pack_dtype).kind not in ('u', 'i'):
+            msg = """Argument pack_dtype must be None or a numpy integer
+                     type or a string representation of a numpy integer
+                     type."""
+            raise ValueError(msg)
 
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
                                 in [None, False])
@@ -902,7 +926,8 @@ class Saver(object):
             cube, dimension_names, local_keys, zlib=zlib, complevel=complevel,
             shuffle=shuffle, fletcher32=fletcher32, contiguous=contiguous,
             chunksizes=chunksizes, endian=endian,
-            least_significant_digit=least_significant_digit)
+            least_significant_digit=least_significant_digit,
+            pack_dtype=pack_dtype)
 
         # Add coordinate variables.
         self._add_dim_coords(cube, dimension_names)
@@ -1782,6 +1807,12 @@ class Saver(object):
             An interable of cube attribute keys. Any cube attributes
             with matching keys will become attributes on the data variable.
 
+        * pack_dtype (numpy datatype or string):
+            A numpy datatype or a string that describes a numpy dtype. If not
+            provided, the datatype is the same as the cube.data array. This
+            allows variable packing when cube attributes `add_offset` and/or
+            `scale_factor` have been set.
+
         All other keywords are passed through to the dataset's `createVariable`
         method.
 
@@ -1793,77 +1824,135 @@ class Saver(object):
         while cf_name in self._dataset.variables:
             cf_name = self._increment_name(cf_name)
 
+        if 'pack_dtype' in kwargs:
+            datatype = kwargs.pop('pack_dtype')
+        else:
+            datatype = None
+
+        def set_local_attrs(cf_var, local_keys):
+            """ Attributes add_offset and/or scale_factor must be set
+                after netCDF variable creation but before data is saved
+                to the netCDF Dataset.
+            """
+            if cube.standard_name:
+                cf_var.standard_name = cube.standard_name
+
+            if cube.long_name:
+                cf_var.long_name = cube.long_name
+
+            if cube.units != 'unknown':
+                cf_var.units = str(cube.units)
+
+            # Add data variable-only attribute names to local_keys.
+            if local_keys is None:
+                local_keys = set()
+            else:
+                local_keys = set(local_keys)
+            local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
+
+            # Add any cube attributes whose keys are in local_keys as
+            # CF-netCDF data variable attributes.
+            attr_names = set(cube.attributes).intersection(local_keys)
+            for attr_name in sorted(attr_names):
+                # Do not output 'conventions' attribute.
+                if attr_name.lower() == 'conventions':
+                    continue
+
+                value = cube.attributes[attr_name]
+
+                if attr_name == 'STASH':
+                    # Adopting provisional Metadata Conventions for
+                    # representing MO
+                    # Scientific Data encoded in NetCDF Format.
+                    attr_name = 'um_stash_source'
+                    value = str(value)
+
+                if attr_name == "ukmo__process_flags":
+                    value = " ".join([x.replace(" ", "_") for x in value])
+
+                if attr_name in _CF_GLOBAL_ATTRS:
+                    msg = '{attr_name!r} is being added as CF data variable ' \
+                          'attribute, but {attr_name!r} should only be a CF ' \
+                          'global attribute.'.format(attr_name=attr_name)
+                    warnings.warn(msg)
+
+                cf_var.setncattr(attr_name, value)
+
+            # calculate and set suitable scale_factor and add_offset if not set
+            if (datatype is not None and
+                    'scale_factor' not in cube.attributes and
+                    'add_offset' not in cube.attributes):
+
+                dt = np.dtype(datatype)
+                cmax = cube.data.max()
+                cmin = cube.data.min()
+                n = dt.itemsize * 8
+                if isinstance(cube.data, np.ma.core.MaskedArray):
+                    masked = True
+                else:
+                    masked = False
+                if masked:
+                    scale_factor = (cmax - cmin)/(2**n-2)
+                else:
+                    scale_factor = (cmax-cmin)/(2**n-1)
+                if dt.kind == 'u':
+                    add_offset = cmin
+                elif dt.kind == 'i':
+                    if masked:
+                        add_offset = (cmax + cmin)/2
+                    else:
+                        add_offset = cmin + 2**(n-1)*scale_factor
+                cf_var.setncattr('add_offset', add_offset)
+                cf_var.setncattr('scale_factor', scale_factor)
+
         # if netcdf3 avoid streaming due to dtype handling
-        if (not cube.has_lazy_data()
-                or self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                                 'NETCDF3_64BIT')):
+        if (not cube.has_lazy_data() or
+                self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                              'NETCDF3_64BIT')):
             # Determine whether there is a cube MDI value.
             fill_value = None
             if isinstance(cube.data, ma.core.MaskedArray):
-                fill_value = cube.data.fill_value
+                if datatype is not None:
+                    dtstr = np.dtype(datatype).str[1:]
+                    fill_value = netCDF4.default_fillvals[dtstr]
+                else:
+                    fill_value = cube.data.fill_value
 
             # Get the values in a form which is valid for the file format.
             data = self._ensure_valid_dtype(cube.data, 'cube', cube)
 
+            if datatype is None:
+                dtype = data.dtype.newbyteorder('=')
+            else:
+                dtype = datatype
+
             # Create the cube CF-netCDF data variable with data payload.
             cf_var = self._dataset.createVariable(
-                cf_name, data.dtype.newbyteorder('='), dimension_names,
+                cf_name, dtype, dimension_names,
                 fill_value=fill_value, **kwargs)
+
+            set_local_attrs(cf_var, local_keys)
             cf_var[:] = data
 
         else:
+            if datatype is None:
+                dtype = cube.lazy_data().dtype.newbyteorder('=')
+                fill_value = cube.lazy_data().fill_value
+            else:
+                dtype = datatype
+                dtstr = np.dtype(datatype).str[1:]
+                fill_value = netCDF4.default_fillvals[dtstr]
+
             # Create the cube CF-netCDF data variable.
             # Explicitly assign the fill_value, which will be the type default
             # in the case of an unmasked array.
             cf_var = self._dataset.createVariable(
-                cf_name, cube.lazy_data().dtype.newbyteorder('='),
-                dimension_names, fill_value=cube.lazy_data().fill_value,
+                cf_name, dtype,
+                dimension_names, fill_value=fill_value,
                 **kwargs)
+            set_local_attrs(cf_var, local_keys)
             # stream the data
             biggus.save([cube.lazy_data()], [cf_var], masked=True)
-
-        if cube.standard_name:
-            cf_var.standard_name = cube.standard_name
-
-        if cube.long_name:
-            cf_var.long_name = cube.long_name
-
-        if cube.units != 'unknown':
-            cf_var.units = str(cube.units)
-
-        # Add data variable-only attribute names to local_keys.
-        if local_keys is None:
-            local_keys = set()
-        else:
-            local_keys = set(local_keys)
-        local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
-
-        # Add any cube attributes whose keys are in local_keys as
-        # CF-netCDF data variable attributes.
-        attr_names = set(cube.attributes).intersection(local_keys)
-        for attr_name in sorted(attr_names):
-            # Do not output 'conventions' attribute.
-            if attr_name.lower() == 'conventions':
-                continue
-
-            value = cube.attributes[attr_name]
-
-            if attr_name == 'STASH':
-                # Adopting provisional Metadata Conventions for representing MO
-                # Scientific Data encoded in NetCDF Format.
-                attr_name = 'um_stash_source'
-                value = str(value)
-
-            if attr_name == "ukmo__process_flags":
-                value = " ".join([x.replace(" ", "_") for x in value])
-
-            if attr_name in _CF_GLOBAL_ATTRS:
-                msg = '{attr_name!r} is being added as CF data variable ' \
-                      'attribute, but {attr_name!r} should only be a CF ' \
-                      'global attribute.'.format(attr_name=attr_name)
-                warnings.warn(msg)
-
-            cf_var.setncattr(attr_name, value)
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
@@ -1907,7 +1996,7 @@ class Saver(object):
 def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
          unlimited_dimensions=None, zlib=False, complevel=4, shuffle=True,
          fletcher32=False, contiguous=False, chunksizes=None, endian='native',
-         least_significant_digit=None):
+         least_significant_digit=None, pack_dtype=None):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
@@ -2004,6 +2093,25 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         in unpacked data that is a reliable value". Default is `None`, or no
         quantization, or 'lossless' compression.
 
+    * pack_dtype (type or string or list):
+        A numpy integer datatype (signed or unsigned) or a string that
+        describes a numpy integer dtype (i.e. 'i2', 'short', 'u4'). This
+        provides support for netCDF data packing as described in
+        http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+        If either `scale_factor` or `add_offset` are set in `cube.attributes`,
+        those values are used. If neither is set, appropriate values of
+        `scale_factor` and `add_offset` are calculated based on `cube.data`,
+        `pack_dtype` and possible masking (see the link for details). Note
+        that automatic calculation of `scale_factor` and `add_offset` will
+        trigger loading of lazy_data; set `scale_factor` and `add_offset`
+        manually in `cube.attributes` if you wish to avoid this. For
+        masked data, `fill_values` are taken from `netCDF4.default_fillvals`.
+        If the argument to `cube` is an iterable and different datatypes are
+        desired for each cube, `pack_dtype` can also be a list with the same
+        number of elements as the iterable. The default is `None`, in which
+        case the datatype is determined from the cube and no packing will
+        occur.
+
     Returns:
         None.
 
@@ -2062,9 +2170,19 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
         for cube in cubes:
+            if isinstance(pack_dtype, list):
+                if len(pack_dtype) > 0:
+                    dtype = pack_dtype.pop(0)
+                else:
+                    msg = ('If pack_dtype is a list, it must have the '
+                           'same number of elements as the argument to'
+                           'cube.')
+                    raise ValueError(msg)
+            else:
+                dtype = pack_dtype
             sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
-                       least_significant_digit)
+                       least_significant_digit, pack_dtype=dtype)
 
         conventions = CF_CONVENTIONS_VERSION
 
