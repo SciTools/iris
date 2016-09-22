@@ -79,7 +79,7 @@ install:
 
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
-  - if [[ $TEST_TARGET != 'coding' -a  $COVERAGE != true ]]; then
+  - if [[ $TEST_TARGET != 'coding' &&  $COVERAGE != true ]]; then
       IRIS=$(ls -d1 build/lib*/iris);
       mkdir $IRIS/etc;
     else
@@ -96,7 +96,7 @@ install:
 
   # The coding standards tests expect all the standard names and PyKE
   # modules to be present.
-  - if [[ $TEST_TARGET == 'coding' -o $COVERAGE == true ]]; then
+  - if [[ $TEST_TARGET == 'coding' || $COVERAGE == true ]]; then
       python setup.py std_names;
       PYTHONPATH=lib python setup.py pyke_rules;
     fi
