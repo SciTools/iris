@@ -5,8 +5,9 @@
 [run]
 branch = True
 omit =
-    test*.py
+    lib/iris/tests/*
     setup.py
+source = lib/iris
 
 
 [report]
