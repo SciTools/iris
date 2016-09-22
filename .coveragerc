@@ -5,6 +5,7 @@
 [run]
 branch = True
 omit =
+    lib/iris/fileformats/_pyke_rules/compiled_krb/*
     lib/iris/tests/*
     setup.py
 source = lib/iris
