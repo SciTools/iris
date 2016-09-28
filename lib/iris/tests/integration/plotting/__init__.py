@@ -253,9 +253,9 @@ class TestNDCoordinatesGiven(tests.GraphicsTest):
 
     def test_bad__duplicate_coord(self):
         cube = self.cube[0, 0, :, :]
-        draw_fn = getattr(self.draw_module, 'contourf')
-        self.assertRaises(ValueError, draw_fn, cube,
-                          coords=['grid_longitude', 'grid_longitude'])
+        with self.assertRaises(ValueError):
+            self.draw('contourf', cube, coords=['grid_longitude',
+                                                'grid_longitude'])
 
     def test_bad__too_many_coords(self):
         cube = self.cube[0, 0, :, :]

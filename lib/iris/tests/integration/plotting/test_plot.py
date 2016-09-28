@@ -24,26 +24,25 @@ import six
 # importing anything else
 import iris.tests as tests
 import iris
-from iris.tests.integration.plotting import \
-    (simple_cube, Test1dScatter,
-     TestNDCoordinatesGiven, LambdaStr, load_cube_once)
+
+import iris.tests.integration.plotting as plotting
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
     from iris.plot import (plot, contour, contourf, pcolor, pcolormesh,
-                           scatter, orography_at_points)
+                           scatter, points, orography_at_points)
 
 
 @tests.skip_plot
 class TestSimple(tests.GraphicsTest):
     def test_points(self):
-        cube = simple_cube()
+        cube = plotting.simple_cube()
         contourf(cube)
         self.check_graphic()
 
     def test_bounds(self):
-        cube = simple_cube()
+        cube = plotting.simple_cube()
         pcolor(cube)
         self.check_graphic()
 
@@ -57,17 +56,17 @@ class TestMissingCoord(tests.GraphicsTest):
         self.check_graphic()
 
     def test_no_u(self):
-        cube = simple_cube()
+        cube = plotting.simple_cube()
         cube.remove_coord('grid_longitude')
         self._check(cube)
 
     def test_no_v(self):
-        cube = simple_cube()
+        cube = plotting.simple_cube()
         cube.remove_coord('time')
         self._check(cube)
 
     def test_none(self):
-        cube = simple_cube()
+        cube = plotting.simple_cube()
         cube.remove_coord('grid_longitude')
         cube.remove_coord('time')
         self._check(cube)
@@ -109,7 +108,7 @@ class TestMissingCoordSystem(tests.GraphicsTest):
 
 @tests.skip_data
 @tests.skip_plot
-class Test1dPlotScatter(Test1dScatter):
+class Test1dPlotScatter(plotting.Test1dScatter):
 
     def setUp(self):
         self.cube = iris.load_cube(
@@ -121,34 +120,35 @@ class Test1dPlotScatter(Test1dScatter):
 
 @tests.skip_data
 @tests.skip_plot
-class TestPlotCoordinatesGiven(TestNDCoordinatesGiven):
+class TestPlotCoordinatesGiven(plotting.TestNDCoordinatesGiven):
     def setUp(self):
         filename = tests.get_data_path(('PP', 'COLPEX',
                                         'theta_and_orog_subset.pp'))
-        self.cube = load_cube_once(filename, 'air_potential_temperature')
+        self.cube = plotting.load_cube_once(filename,
+                                            'air_potential_temperature')
 
         self.draw_module = iris.plot
-        self.contourf = LambdaStr('iris.plot.contourf',
-                                  lambda cube, *args, **kwargs:
-                                  iris.plot.contourf(cube, *args, **kwargs))
-        self.contour = LambdaStr('iris.plot.contour',
-                                 lambda cube, *args, **kwargs:
-                                 iris.plot.contour(cube, *args, **kwargs))
-        self.pcolor = LambdaStr('iris.quickplot.pcolor',
-                                lambda cube, *args, **kwargs:
-                                pcolor(cube, *args, **kwargs))
-        self.pcolormesh = LambdaStr('iris.quickplot.pcolormesh',
-                                    lambda cube, *args, **kwargs:
-                                    pcolormesh(cube, *args, **kwargs))
-        self.points = LambdaStr('iris.plot.points',
-                                lambda cube, *args, **kwargs:
-                                iris.plot.points(cube, c=cube.data,
-                                                 *args, **kwargs))
-        self.plot = LambdaStr('iris.plot.plot',
-                              lambda cube, *args, **kwargs:
-                              iris.plot.plot(cube, *args, **kwargs))
+        self.contourf = plotting.LambdaStr('iris.plot.contourf',
+                                           lambda cube, *args, **kwargs:
+                                           contourf(cube, *args, **kwargs))
+        self.contour = plotting.LambdaStr('iris.plot.contour',
+                                          lambda cube, *args, **kwargs:
+                                          contour(cube, *args, **kwargs))
+        self.pcolor = plotting.LambdaStr('iris.quickplot.pcolor',
+                                         lambda cube, *args, **kwargs:
+                                         pcolor(cube, *args, **kwargs))
+        self.pcolormesh = plotting.LambdaStr('iris.quickplot.pcolormesh',
+                                             lambda cube, *args, **kwargs:
+                                             pcolormesh(cube, *args, **kwargs))
+        self.points = plotting.LambdaStr('iris.plot.points',
+                                         lambda cube, *args, **kwargs:
+                                         points(cube, c=cube.data,
+                                                *args, **kwargs))
+        self.plot = plotting.LambdaStr('iris.plot.plot',
+                                       lambda cube, *args, **kwargs:
+                                       plot(cube, *args, **kwargs))
 
-        super(TestPlotCoordinatesGiven, self).__init__()
+        super(TestPlotCoordinatesGiven, self).setUp()
 
 
 if __name__ == "__main__":

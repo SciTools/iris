@@ -24,8 +24,7 @@ import six
 # importing anything else
 import iris.tests as tests
 import iris
-from iris.tests.integration.plotting import \
-     TestNDCoordinatesGiven, LambdaStr, load_cube_once, load_theta
+import iris.tests.integration.plotting as plotting
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
@@ -64,39 +63,41 @@ class TestAttributePositive(tests.GraphicsTest):
 
 @tests.skip_data
 @tests.skip_plot
-class TestQuickplotCoordinatesGiven(TestNDCoordinatesGiven):
+class TestQuickplotCoordinatesGiven(plotting.TestNDCoordinatesGiven):
     def setUp(self):
         filename = tests.get_data_path(
             ('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
-        self.cube = load_cube_once(filename, 'air_potential_temperature')
+        self.cube = plotting.load_cube_once(filename,
+                                            'air_potential_temperature')
 
-        self.contourf = LambdaStr('iris.quickplot.contourf',
-                                  lambda cube, *args, **kwargs:
-                                  contourf(cube, *args, **kwargs))
-        self.contour = LambdaStr('iris.quickplot.contour',
-                                 lambda cube, *args, **kwargs:
-                                 contour(cube, *args, **kwargs))
-        self.pcolor = LambdaStr('iris.quickplot.pcolor',
-                                lambda cube, *args, **kwargs:
-                                pcolor(cube, *args, **kwargs))
-        self.pcolormesh = LambdaStr('iris.quickplot.pcolormesh',
-                                    lambda cube, *args, **kwargs:
-                                    pcolormesh(cube, *args, **kwargs))
-        self.points = LambdaStr('iris.quickplot.points',
-                                lambda cube, *args, **kwargs:
-                                points(cube, c=cube.data, *args, **kwargs))
-        self.plot = LambdaStr('iris.quickplot.plot',
-                              lambda cube, *args, **kwargs:
-                              plot(cube, *args, **kwargs))
+        self.contourf = plotting.LambdaStr('iris.quickplot.contourf',
+                                           lambda cube, *args, **kwargs:
+                                           contourf(cube, *args, **kwargs))
+        self.contour = plotting.LambdaStr('iris.quickplot.contour',
+                                          lambda cube, *args, **kwargs:
+                                          contour(cube, *args, **kwargs))
+        self.pcolor = plotting.LambdaStr('iris.quickplot.pcolor',
+                                         lambda cube, *args, **kwargs:
+                                         pcolor(cube, *args, **kwargs))
+        self.pcolormesh = plotting.LambdaStr('iris.quickplot.pcolormesh',
+                                             lambda cube, *args, **kwargs:
+                                             pcolormesh(cube, *args, **kwargs))
+        self.points = plotting.LambdaStr('iris.quickplot.points',
+                                         lambda cube, *args, **kwargs:
+                                         points(cube, c=cube.data,
+                                                *args, **kwargs))
+        self.plot = plotting.LambdaStr('iris.quickplot.plot',
+                                       lambda cube, *args, **kwargs:
+                                       plot(cube, *args, **kwargs))
 
-        super(TestQuickplotCoordinatesGiven, self).__init__()
+        super(TestQuickplotCoordinatesGiven, self).setUp()
 
 
 @tests.skip_data
 @tests.skip_plot
 class TestLabels(tests.GraphicsTest):
     def setUp(self):
-        self.theta = load_theta()
+        self.theta = plotting.load_theta()
 
     def _slice(self, coords):
         """Returns the first cube containing the requested coordinates."""
