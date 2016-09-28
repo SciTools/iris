@@ -29,8 +29,8 @@ import numpy as np
 
 import iris
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
-                                LambertConformal, Mercator, Stereographic)
-
+                                LambertConformal, Mercator, Stereographic,
+                                LambertAzimuthalEqualArea)
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
@@ -458,6 +458,34 @@ class Test_check_attribute_compliance__exception_handlng(
                 saver.check_attribute_compliance(self.container, self.data)
 
 
+class Test__cf_coord_identity(tests.IrisTest):
+    def check_call(self, coord_system, units, expected_units):
+        coord = iris.coords.DimCoord([30, 45], 'latitude', units=units,
+                                     coord_system=coord_system)
+        result = Saver._cf_coord_identity(coord)
+        self.assertEqual(result, (coord.standard_name, coord.long_name,
+                                  expected_units))
+
+    def test_geogcs(self):
+        crs = iris.coord_systems.GeogCS(60, 0)
+        self.check_call(coord_system=crs, units='degrees',
+                        expected_units='degrees_north')
+
+    def test_no_coord_system(self):
+        self.check_call(coord_system=None, units='degrees',
+                        expected_units='degrees_north')
+
+    def test_rotatedgeogcs(self):
+        crs = iris.coord_systems.RotatedGeogCS(30, 175)
+        self.check_call(coord_system=crs, units='degrees',
+                        expected_units='degrees')
+
+    def test_crs_with_no_default_units(self):
+        crs = iris.coord_systems.LambertConformal(0, 20)
+        self.check_call(coord_system=crs, units='km',
+                        expected_units='km')
+
+
 class Test__create_cf_grid_mapping(tests.IrisTest):
     def _cube_with_cs(self, coord_system):
         """Return a simple 2D cube that uses the given coordinate system."""
@@ -553,6 +581,20 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                     'standard_parallel': (38, 50),
                     'earth_radius': 6371000,
                     'longitude_of_prime_meridian': 0,
+                    }
+        self._test(coord_system, expected)
+
+    def test_laea_cs(self):
+        coord_system = LambertAzimuthalEqualArea(
+            latitude_of_projection_origin=52,
+            longitude_of_projection_origin=10,
+            false_easting=100,
+            false_northing=200)
+        expected = {'grid_mapping_name': 'lambert_azimuthal_equal_area',
+                    'latitude_of_projection_origin': 52,
+                    'longitude_of_projection_origin': 10,
+                    'false_easting': 100,
+                    'false_northing': 200,
                     }
         self._test(coord_system, expected)
 

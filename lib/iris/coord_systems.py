@@ -494,13 +494,13 @@ class Orthographic(CoordSystem):
         * longitude_of_projection_origin:
             True longitude of planar origin in degrees.
 
+        Kwargs:
+
         * false_easting
             X offset from planar origin in metres. Defaults to 0.
 
         * false_northing
             Y offset from planar origin in metres. Defaults to 0.
-
-        Kwargs:
 
         * ellipsoid
             :class:`GeogCS` defining the ellipsoid.
@@ -577,13 +577,13 @@ class VerticalPerspective(CoordSystem):
             Altitude of satellite in metres above the surface of the
             ellipsoid.
 
+        Kwargs:
+
         * false_easting
             X offset from planar origin in metres. Defaults to 0.
 
         * false_northing
             Y offset from planar origin in metres. Defaults to 0.
-
-        Kwargs:
 
         * ellipsoid
             :class:`GeogCS` defining the ellipsoid.
@@ -667,13 +667,13 @@ class Stereographic(CoordSystem):
             * central_lon
                     The central longitude, which aligns with the y axis.
 
+        Kwargs:
+
             * false_easting
                     X offset from planar origin in metres. Defaults to 0.
 
             * false_northing
                     Y offset from planar origin in metres. Defaults to 0.
-
-        Kwargs:
 
             * true_scale_lat
                     Latitude of true scale.
@@ -739,7 +739,7 @@ class LambertConformal(CoordSystem):
         """
         Constructs a LambertConformal coord system.
 
-        Args:
+        Kwargs:
 
             * central_lat
                     The latitude of "unitary scale".
@@ -752,8 +752,6 @@ class LambertConformal(CoordSystem):
 
             * false_northing
                     Y offset from planar origin in metres.
-
-        Kwargs:
 
             * secant_latitudes
                     Latitudes of secant intersection.
@@ -837,13 +835,9 @@ class Mercator(CoordSystem):
         """
         Constructs a Mercator coord system.
 
-        Args:
-
+        Kwargs:
             * longitude_of_projection_origin
                     True longitude of planar origin in degrees.
-
-        Kwargs:
-
             * ellipsoid
                     :class:`GeogCS` defining the ellipsoid.
 
@@ -866,6 +860,76 @@ class Mercator(CoordSystem):
 
         return ccrs.Mercator(
             central_longitude=self.longitude_of_projection_origin,
+            globe=globe)
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
+
+
+class LambertAzimuthalEqualArea(CoordSystem):
+    """
+    A coordinate system in the Lambert Azimuthal Equal Area projection.
+
+    """
+
+    grid_mapping_name = "lambert_azimuthal_equal_area"
+
+    def __init__(self, latitude_of_projection_origin=0.0,
+                 longitude_of_projection_origin=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 ellipsoid=None):
+        """
+        Constructs a Lambert Azimuthal Equal Area coord system.
+
+        Kwargs:
+
+            * latitude_of_projection_origin
+                    True latitude of planar origin in degrees. Defaults to 0.
+
+            * longitude_of_projection_origin
+                    True longitude of planar origin in degrees. Defaults to 0.
+
+            * false_easting
+                    X offset from planar origin in metres. Defaults to 0.
+
+            * false_northing
+                    Y offset from planar origin in metres. Defaults to 0.
+
+            * ellipsoid
+                    :class:`GeogCS` defining the ellipsoid.
+
+        """
+        #: True latitude of planar origin in degrees.
+        self.latitude_of_projection_origin = latitude_of_projection_origin
+        #: True longitude of planar origin in degrees.
+        self.longitude_of_projection_origin = longitude_of_projection_origin
+        #: X offset from planar origin in metres.
+        self.false_easting = false_easting
+        #: Y offset from planar origin in metres.
+        self.false_northing = false_northing
+        #: Ellipsoid definition.
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return "LambertAzimuthalEqualArea(latitude_of_projection_origin={!r}, "\
+               "longitude_of_projection_origin={!r}, false_easting={!r}, "\
+               "false_northing={!r}, ellipsoid={!r})".format(
+                   self.latitude_of_projection_origin,
+                   self.longitude_of_projection_origin,
+                   self.false_easting,
+                   self.false_northing,
+                   self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
+        else:
+            globe = ccrs.Globe()
+        return ccrs.LambertAzimuthalEqualArea(
+            central_longitude=self.longitude_of_projection_origin,
+            central_latitude=self.latitude_of_projection_origin,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
             globe=globe)
 
     def as_cartopy_projection(self):
