@@ -1,0 +1,7 @@
+/home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_197501010130-197912302230.nc
+/home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_198001010130-198412302230.nc
+/home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_198501010130-198912302230.nc
+/home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_199001010130-199412302230.nc
+/home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_199501010130-199912302230.nc
+/home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_200001010130-200412302230.nc
+/home/mhpcproj/NetCDF_files/pr_3hr_HadGEM2-ES_historical_r2i1p1_200501010130-200512302230.nc

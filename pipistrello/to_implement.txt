@@ -1,0 +1,9 @@
+a function that returns the size of the database. 
+Maybe returns a tuple: (m,n,p) with m the number
+of files, n the number of cubes and p the number
+of coordinates??
+
+check that all this has the same length:
+print(len(all_cubes.datafiles),
+      len(all_cubes.cubes),
+	        len(all_cubes.coordinates))
