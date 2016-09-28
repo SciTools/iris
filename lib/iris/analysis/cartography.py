@@ -77,11 +77,12 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
 
     As the arrays of rotated-pole longitudes and latitudes must describe a
     rectilinear grid, the arrays of rotated-pole longitudes and latitudes must
-    be of the same length as each other.
+    be of the same shape as each other.
 
     Example::
 
-        lons, lats = unrotate_pole(grid_lons, grid_lats, pole_lon, pole_lat)
+        lons, lats = unrotate_pole(rotated_lons, rotated_lats, \
+          pole_lon, pole_lat)
 
     .. note:: Uses proj.4 to perform the conversion.
 
@@ -122,11 +123,12 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
     As the arrays of longitudes and latitudes must describe a rectilinear grid,
     the arrays of rotated-pole longitudes and latitudes must be of the same
-    length as each other.
+    shape as each other.
 
     Example::
 
-        grid_lons, grid_lats = rotate_pole(lons, lats, pole_lon, pole_lat)
+        rotated_lons, rotated_lats = rotate_pole(lons, lats,\
+         pole_lon, pole_lat)
 
     .. note:: Uses proj.4 to perform the conversion.
 
