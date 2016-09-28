@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,7 @@ import six
 import iris.tests as tests
 
 import types
+import netcdftime
 
 import cf_units
 import numpy as np
@@ -169,6 +170,8 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         f = mock.MagicMock(lbtim=SplittableInt(4, {'ia': 2, 'ib': 1, 'ic': 0}),
                            lbyr=2013, lbmon=1, lbdat=1, lbhr=12, lbmin=0,
                            lbsec=0,
+                           t1=netcdftime.datetime(2013, 1, 1, 12, 0, 0),
+                           t2=netcdftime.datetime(2013, 1, 2, 12, 0, 0),
                            spec=PPField3)
         f.time_unit = six.create_bound_method(PPField3.time_unit, f)
         f.calendar = cf_units.CALENDAR_365_DAY
