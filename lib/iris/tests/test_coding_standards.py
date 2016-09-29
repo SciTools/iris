@@ -118,7 +118,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_pp_module.py',
         '*/iris/tests/test_pp_stash.py',
         '*/iris/tests/test_pp_to_cube.py',
-        '*/iris/tests/test_quickplot.py',
         '*/iris/tests/test_regrid.py',
         '*/iris/tests/test_std_names.py',
         '*/iris/tests/test_trajectory.py',
