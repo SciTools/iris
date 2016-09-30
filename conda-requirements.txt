@@ -4,7 +4,8 @@
 # Mandatory dependencies
 biggus>=0.14.0
 cartopy
-matplotlib=1.3.1
+matplotlib
+nc_time_axis
 netcdf4
 numpy
 pyke

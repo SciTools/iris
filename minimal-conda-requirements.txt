@@ -2,14 +2,15 @@
 # conda create -n <name> --file minimal-conda-requirements.txt
 
 # Mandatory dependencies
-biggus>=0.14.0
-cartopy
+biggus=0.14.0
+cartopy=0.11
 matplotlib=1.3.1
-netcdf4
-numpy
-pyke
-udunits2
-cf_units
+nc_time_axis=1.0
+netcdf4=0.9.9
+numpy=1.6
+pyke=1.1.1
+udunits2=2.1.24
+cf_units=1.0
 
 # Iris build dependencies
 setuptools
