@@ -110,7 +110,7 @@ class Test_packed_data(tests.IrisTest):
         if masked:
             scale_factor = (cmax - cmin)/(2**n-2)
         else:
-            scale_factor = (cmax-cmin)/(2**n-1)
+            scale_factor = (cmax - cmin)/(2**n-1)
         if dt.kind == 'u':
             add_offset = cmin
         elif dt.kind == 'i':
@@ -208,6 +208,9 @@ class Test_packed_data(tests.IrisTest):
                                       'save',
                                       'multi_packed_single_dtype.cdl'))
             packedcubes = iris.load(file_out)
+            # ensure cube order is the same:
+            cubes.sort(key=lambda cube: cube.cell_methods[0].method)
+            packedcubes.sort(key=lambda cube: cube.cell_methods[0].method)
             for cube, packedcube in zip(cubes, packedcubes):
                 sf, ao = self._get_scale_factor_add_offset(cube, dtype)
                 decimal = int(-np.log10(sf))
@@ -230,6 +233,9 @@ class Test_packed_data(tests.IrisTest):
                                       'save',
                                       'multi_packed_multi_dtype.cdl'))
             packedcubes = iris.load(file_out)
+            # ensure cube order is the same:
+            cubes.sort(key=lambda cube: cube.cell_methods[0].method)
+            packedcubes.sort(key=lambda cube: cube.cell_methods[0].method)
             for cube, packedcube, dtype in zip(cubes, packedcubes, dtypes):
                 if dtype:
                     sf, ao = self._get_scale_factor_add_offset(cube, dtype)
