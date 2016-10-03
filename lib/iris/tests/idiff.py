@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -71,7 +71,7 @@ def step_over_diffs():
     image_dir = os.path.join(os.path.dirname(iris.tests.__file__),
                              'results', 'visual_tests')
     diff_dir = os.path.join(os.path.dirname(iris.tests.__file__),
-                            'result_image_comparison')
+                            'iris_image_test_output')
 
     for expected_fname in sorted(os.listdir(image_dir)):
         result_path = os.path.join(diff_dir, 'result-' + expected_fname)
