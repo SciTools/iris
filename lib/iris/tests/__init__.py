@@ -45,6 +45,7 @@ import io
 import logging
 import os
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -212,7 +213,12 @@ class IrisTest(unittest.TestCase):
         # https://github.com/Unidata/netcdf4-python/issues/575
         # amongst others for further details.
         if type_comparison_name == 'CDL' and reference_str != test_str:
-            test_str = test_str.replace('\t\tstring ', '\t\t')
+            # Match where a new line contains only:
+            # tab|tab|string |attr_definition.
+            pattern = re.compile('(^\t\t)string (.+)$', re.MULTILINE)
+            # Replace with tab|tab|attr_definition.
+            replacement = r'\t\t\2'
+            test_str = re.sub(pattern, replacement, test_str)
         if reference_str != test_str:
             diff = ''.join(difflib.unified_diff(reference_str.splitlines(1), test_str.splitlines(1),
                                                  'Reference', 'Test result', '', '', 0))
