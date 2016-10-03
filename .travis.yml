@@ -105,10 +105,10 @@ install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+      python -m iris.tests.runner --default-tests --system-tests;
     fi
   - if [[ $TEST_TARGET == 'example' ]]; then
-      python -m iris.tests.runner --example-tests --print-failed-images;
+      python -m iris.tests.runner --example-tests;
     fi
   # "make html" produces an error when run on Travis that does not
   # affect any downstream functionality but causes the build to fail

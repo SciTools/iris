@@ -620,16 +620,20 @@ class IrisTest(unittest.TestCase):
 
         """
         # Obtain a consistent ID for the current test.
-
         # NB. unittest.TestCase.id() returns different values depending on
         # whether the test has been run explicitly, or via test discovery.
         # For example:
         #   python tests/test_plot.py => '__main__.TestContourf.test_tx'
         #   ird -t => 'iris.tests.test_plot.TestContourf.test_tx'
-        bits = self.id().split('.')[-3:]
+        bits = self.id().split('.')
         if bits[0] == '__main__':
-            file_name = os.path.basename(sys.modules['__main__'].__file__)
+            floc = sys.modules['__main__'].__file__
+            path, file_name = os.path.split(os.path.abspath(floc))
             bits[0] = os.path.splitext(file_name)[0]
+            folder, location = os.path.split(path)
+            while location != 'iris':
+                folder, location = os.path.split(folder)
+                bits = [location] + bits
         test_id = '.'.join(bits)
 
         # Derive the sequential assertion ID within the test
@@ -652,8 +656,12 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def check_graphic(self, tol=_DEFAULT_IMAGE_TOLERANCE):
-        """Checks the CRC matches for the current matplotlib.pyplot figure, and closes the figure."""
+    def check_graphic(self, tol=None):
+        """
+        Checks the CRC matches for the current matplotlib.pyplot figure,
+        and closes the figure.
+
+        """
 
         unique_id = self._unique_id()
 
@@ -699,7 +707,18 @@ class IrisTest(unittest.TestCase):
                 warnings.warn('Created image for test %s' % unique_id)
                 shutil.copy2(result_fname, expected_fname)
 
-            err = mcompare.compare_images(expected_fname, result_fname, tol=tol)
+            # hash the created image using sha1
+            import hashlib
+            with open(result_fname, 'rb') as res_file:
+                sha1 = hashlib.sha1(res_file.read())
+
+            err = ''
+            
+            with open(expected_fname, 'rb') as exp_file:
+                exp_sha1 = hashlib.sha1(exp_file.read())
+            if sha1.hexdigest() != exp_sha1.hexdigest():
+                err = 'Image file SHA1: {}\n not equal to expected SHA1:{}\n '
+                err = err.format(sha1.hexdigest(), exp_sha1.hexdigest())
 
             if _DISPLAY_FIGURES:
                 if err:
