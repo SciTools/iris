@@ -656,7 +656,7 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def check_graphic(self):
+    def check_graphic(self, tol=None):
         """
         Checks the CRC matches for the current matplotlib.pyplot figure,
         and closes the figure.
