@@ -652,8 +652,12 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def check_graphic(self, tol=_DEFAULT_IMAGE_TOLERANCE):
-        """Checks the CRC matches for the current matplotlib.pyplot figure, and closes the figure."""
+    def check_graphic(self):
+        """
+        Checks the CRC matches for the current matplotlib.pyplot figure,
+        and closes the figure.
+
+        """
 
         unique_id = self._unique_id()
 
@@ -699,7 +703,18 @@ class IrisTest(unittest.TestCase):
                 warnings.warn('Created image for test %s' % unique_id)
                 shutil.copy2(result_fname, expected_fname)
 
-            err = mcompare.compare_images(expected_fname, result_fname, tol=tol)
+            # hash the created image using sha1
+            import hashlib
+            with open(result_fname, 'rb') as res_file:
+                sha1 = hashlib.sha1(res_file.read())
+
+            err = ''
+            
+            with open(expected_fname, 'rb') as exp_file:
+                exp_sha1 = hashlib.sha1(exp_file.read())
+            if sha1.hexdigest() != exp_sha1.hexdigest():
+                err = 'Image file SHA1: {}\n not equal to expected SHA1:{}\n '
+                err = err.format(sha1.hexdigest(), exp_sha1.hexdigest())
 
             if _DISPLAY_FIGURES:
                 if err:
