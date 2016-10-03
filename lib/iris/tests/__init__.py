@@ -620,16 +620,20 @@ class IrisTest(unittest.TestCase):
 
         """
         # Obtain a consistent ID for the current test.
-
         # NB. unittest.TestCase.id() returns different values depending on
         # whether the test has been run explicitly, or via test discovery.
         # For example:
         #   python tests/test_plot.py => '__main__.TestContourf.test_tx'
         #   ird -t => 'iris.tests.test_plot.TestContourf.test_tx'
-        bits = self.id().split('.')[-3:]
+        bits = self.id().split('.')
         if bits[0] == '__main__':
-            file_name = os.path.basename(sys.modules['__main__'].__file__)
+            floc = sys.modules['__main__'].__file__
+            path, file_name = os.path.split(os.path.abspath(floc))
             bits[0] = os.path.splitext(file_name)[0]
+            folder, location = os.path.split(path)
+            while location != 'iris':
+                folder, location = os.path.split(folder)
+                bits = [location] + bits
         test_id = '.'.join(bits)
 
         # Derive the sequential assertion ID within the test
