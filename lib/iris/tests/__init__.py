@@ -669,8 +669,8 @@ class IrisTest(unittest.TestCase):
 
         figure = plt.gcf()
     
-        fname = os.path.join(os.path.dirname(__file__), 'results', 'imagerepo.json')
-        with open(fname, 'rb') as fi:
+        repo_fname = os.path.join(os.path.dirname(__file__), 'results', 'imagerepo.json')
+        with open(repo_fname, 'rb') as fi:
             repo = json.load(fi)
 
         try:
@@ -711,11 +711,16 @@ class IrisTest(unittest.TestCase):
             err = ''
 
             # XXX: Deal with more than one expected hash ...
-            exp_sha1 = os.path.splitext(os.path.basename(repo[unique_id][0]))[0]
+            try:
+                ehash = repo[unique_id][0]
+                exp_sha1 = os.path.splitext(os.path.basename(ehash))[0]
+            except KeyError:
+                emsg = 'Missing image repo entry for "{}"'.format(unique_id)
+                raise ValueError(emsg)
 
             if sha1.hexdigest() != exp_sha1:
-                err = 'Image file SHA1: {}\n\t not equal to expected SHA1: {}\n '
-                err = err.format(sha1.hexdigest(), exp_sha1)
+                err = 'Actual SHA1 "{}" != expected SHA1 "{}" for test "{}"'
+                err = err.format(sha1.hexdigest(), exp_sha1, unique_id)
 
             if _DISPLAY_FIGURES:
                 if err:
