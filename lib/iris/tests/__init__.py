@@ -711,7 +711,7 @@ class IrisTest(unittest.TestCase):
             err = ''
 
             # XXX: Deal with more than one expected hash ...
-            exp_sha1 = os.path.splitext(os.path.basename(repo[unique_id]))[0]
+            exp_sha1 = os.path.splitext(os.path.basename(repo[unique_id][0]))[0]
 
             if sha1.hexdigest() != exp_sha1:
                 err = 'Image file SHA1: {}\n\t not equal to expected SHA1: {}\n '
