@@ -716,7 +716,9 @@ class IrisTest(unittest.TestCase):
             
             with open(expected_fname, 'rb') as exp_file:
                 exp_sha1 = hashlib.sha1(exp_file.read())
+            exp_sha1_list = known_sha1_values[unique_id]
             if sha1.hexdigest() != exp_sha1.hexdigest():
+            # if sha1.hexdigest() not in exp_sha1_list:
                 err = 'Image file SHA1: {}\n not equal to expected SHA1:{}\n '
                 err = err.format(sha1.hexdigest(), exp_sha1.hexdigest())
 
