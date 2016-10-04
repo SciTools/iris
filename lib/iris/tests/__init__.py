@@ -702,9 +702,7 @@ class IrisTest(unittest.TestCase):
 
             figure.savefig(result_fname)
 
-            if not os.path.exists(expected_fname):
-                warnings.warn('Created image for test %s' % unique_id)
-                shutil.copy2(result_fname, expected_fname)
+            # XXX: Deal with a new test result i.e. it's not in the repo
 
             # hash the created image using sha1
             with open(result_fname, 'rb') as res_file:
