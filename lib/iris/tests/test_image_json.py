@@ -46,13 +46,11 @@ class _ResolveWorkerThread(Thread):
         self.daemon = True
 
     def run(self):
-        print('running')
         while not self.queue.empty():
             resource = self.queue.get()
-            print(resource)
             result = requests.get(resource)
-            print(result.status_code)
-            if result.status_code == 200:
+            if (result.status_code == 200 and
+                resource.startswith('https://scitools.github.io')):
                 self.deque.append(resource)
 
             self.queue.task_done()
@@ -60,14 +58,13 @@ class _ResolveWorkerThread(Thread):
 
 class TestImageFile(tests.IrisTest):
     def test_resolve(self):
-        repo_fname = os.path.join(os.path.dirname(__file__), 'results', 'imagerepo.json')
+        repo_fname = os.path.join(os.path.dirname(__file__), 'results',
+                                  'imagerepo.json')
         with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
         uris = []
         for k, v in repo.iteritems():
             uris = uris + v
-        # uris = ['https://scitools.github.io/test-images-scitools/image_files/.gitignore',
-        #         'https://scitools.github.io/test-images-scitools/image_files/.notagitignore']
         uri_list = deque()
         uri_queue = Queue()
         uri_queue_length = len(uris)
