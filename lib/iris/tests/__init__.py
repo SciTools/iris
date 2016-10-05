@@ -735,6 +735,10 @@ class IrisTest(unittest.TestCase):
                 if sha1.hexdigest() not in expected:
                     emsg = 'Actual SHA1 {} not in expected {} for test {}.'
                     emsg = emsg.format(sha1.hexdigest(), expected, unique_id)
+                else:
+                    # There is no difference between the actual and expected
+                    # result, so remove the actual result file.
+                    os.remove(result_fname)
 
             if _DISPLAY_FIGURES:
                 if emsg is not None:
