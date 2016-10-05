@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -144,7 +144,7 @@ class TestProjection(tests.IrisTest):
             self.assertEqual(
                 dataset.GetProjection(),
                 'GEOGCS["unnamed ellipse",DATUM["unknown",'
-                'SPHEROID["unnamed",6377000,375.117647058816]],'
+                'SPHEROID["unnamed",6377000,375.1176470588235]],'
                 'PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]')
 
 
