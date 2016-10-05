@@ -20,7 +20,8 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 import codecs
@@ -33,6 +34,7 @@ from threading import Thread
 
 # maximum number of threads for multi-threading code
 MAXTHREADS = 128
+
 
 class _ResolveWorkerThread(Thread):
     """
@@ -49,13 +51,16 @@ class _ResolveWorkerThread(Thread):
     def run(self):
         while not self.queue.empty():
             resource = self.queue.get()
-            result = requests.get(resource)
-            if (result.status_code == 200 and
-                resource.startswith('https://scitools.github.io')):
-                self.deque.append(resource)
-            else:
-                msg = '{} is not resolving correctly.'.format(resource)
-                self.exceptions.append(ValueError(msg))
+            try:
+                result = requests.head(resource)
+                if (result.status_code == 200 and
+                   resource.startswith('https://scitools.github.io')):
+                    self.deque.append(resource)
+                else:
+                    msg = '{} is not resolving correctly.'.format(resource)
+                    self.exceptions.append(ValueError(msg))
+            except Exception, e:
+                self.exceptions.append(e)
             self.queue.task_done()
 
 
