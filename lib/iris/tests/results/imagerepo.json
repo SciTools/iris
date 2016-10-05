@@ -117,7 +117,8 @@
         "https://scitools.github.io/test-images-scitools/image_files/30570614007e1f55df68f04b37e348c46a9a20b9.png"
     ], 
     "iris.tests.test_analysis.TestRotatedPole.test_all.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/0f5c99da44a0f4640374961907f324a5dac767eb.png"
+        "https://scitools.github.io/test-images-scitools/image_files/0f5c99da44a0f4640374961907f324a5dac767eb.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6b5e42fc27c146b1e5e6b6e57b7d4dce0891463b.png"
     ], 
     "iris.tests.test_analysis.TestRotatedPole.test_all.3": [
         "https://scitools.github.io/test-images-scitools/image_files/27e9a9ca84937d9b13ba997cfbc6f461c925b20d.png"
