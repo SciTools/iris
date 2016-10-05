@@ -28,7 +28,7 @@ import codecs
 from collections import deque
 import json
 import os
-from Queue import Queue
+from six.moves.queue import Queue
 import requests
 from threading import Thread
 
