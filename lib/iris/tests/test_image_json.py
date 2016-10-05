@@ -20,39 +20,50 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 import codecs
 from collections import deque
 import json
+import logging
 import os
-from Queue import Queue
+from six.moves.queue import Queue
 import requests
 from threading import Thread
 
 # maximum number of threads for multi-threading code
 MAXTHREADS = 128
 
+# Turn down requests logging
+logging.getLogger("requests").setLevel(logging.CRITICAL)
+
 class _ResolveWorkerThread(Thread):
     """
     A :class:threading.Thread which moves objects from an input queue to an
     output deque using a 'dowork' method, as defined by a subclass.
     """
-    def __init__(self, aqueue, adeque):
+    def __init__(self, aqueue, adeque, exceptions):
         self.queue = aqueue
         self.deque = adeque
+        self.exceptions = exceptions
         Thread.__init__(self)
         self.daemon = True
 
     def run(self):
         while not self.queue.empty():
             resource = self.queue.get()
-            result = requests.get(resource)
-            if (result.status_code == 200 and
-                resource.startswith('https://scitools.github.io')):
-                self.deque.append(resource)
-
+            try:
+                result = requests.head(resource)
+                if (result.status_code == 200 and
+                   resource.startswith('https://scitools.github.io')):
+                    self.deque.append(resource)
+                else:
+                    msg = '{} is not resolving correctly.'.format(resource)
+                    self.exceptions.append(ValueError(msg))
+            except Exception as e:
+                self.exceptions.append(e)
             self.queue.task_done()
 
 
@@ -66,15 +77,15 @@ class TestImageFile(tests.IrisTest):
         for k, v in repo.iteritems():
             uris = uris + v
         uri_list = deque()
+        exceptions = deque()
         uri_queue = Queue()
-        uri_queue_length = len(uris)
         for uri in uris:
             uri_queue.put(uri)
 
         for i in range(MAXTHREADS):
-            _ResolveWorkerThread(uri_queue, uri_list).start()
+            _ResolveWorkerThread(uri_queue, uri_list, exceptions).start()
         uri_queue.join()
-        self.assertEqual(len(uri_list), uri_queue_length)
+        self.assertEqual(deque(), exceptions)
 
 if __name__ == "__main__":
     tests.main()
