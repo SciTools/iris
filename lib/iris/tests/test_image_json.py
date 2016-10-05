@@ -62,7 +62,7 @@ class _ResolveWorkerThread(Thread):
                 else:
                     msg = '{} is not resolving correctly.'.format(resource)
                     self.exceptions.append(ValueError(msg))
-            except Exception, e:
+            except Exception as e:
                 self.exceptions.append(e)
             self.queue.task_done()
 
