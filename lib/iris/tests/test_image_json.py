@@ -39,6 +39,7 @@ MAXTHREADS = 128
 # Turn down requests logging
 logging.getLogger("requests").setLevel(logging.CRITICAL)
 
+
 class _ResolveWorkerThread(Thread):
     """
     A :class:threading.Thread which moves objects from an input queue to an
