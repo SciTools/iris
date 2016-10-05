@@ -710,8 +710,8 @@ class IrisTest(unittest.TestCase):
             with open(result_fname, 'rb') as res_file:
                 sha1 = hashlib.sha1(res_file.read())
             if unique_id not in repo:
-                wmsg = 'Created image {} for test {}.'
-                warnings.warn(wmsg.format(result_fname, unique_id))
+                msg = 'Image comparison failed: Created image {} for test {}.'
+                raise ValueError(msg.format(result_fname, unique_id))
             else:
                 uris = repo[unique_id]
                 # Cherry-pick the registered expected hashes from the
@@ -727,7 +727,7 @@ class IrisTest(unittest.TestCase):
                               'Message: %s' % emsg)
                     else:
                         raise ValueError('Image comparison failed.'
-                                         ' Message: %s' % emsg)
+                                         ' Message: {}'.format(emsg))
 
                 else:
                     # There is no difference between the actual and expected
