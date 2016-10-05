@@ -39,6 +39,7 @@ MAXTHREADS = 128
 # Turn down requests logging
 logging.getLogger("requests").setLevel(logging.CRITICAL)
 
+
 class _ResolveWorkerThread(Thread):
     """
     A :class:threading.Thread which moves objects from an input queue to an
@@ -74,7 +75,7 @@ class TestImageFile(tests.IrisTest):
         with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
         uris = []
-        for k, v in repo.iteritems():
+        for k, v in six.iteritems(repo):
             uris = uris + v
         uri_list = deque()
         exceptions = deque()

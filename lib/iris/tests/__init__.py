@@ -634,6 +634,7 @@ class IrisTest(unittest.TestCase):
             path, file_name = os.path.split(os.path.abspath(floc))
             bits[0] = os.path.splitext(file_name)[0]
             folder, location = os.path.split(path)
+            bits = [location] + bits
             while location != 'iris':
                 folder, location = os.path.split(folder)
                 bits = [location] + bits
@@ -708,45 +709,33 @@ class IrisTest(unittest.TestCase):
             # hash the created image using sha1
             with open(result_fname, 'rb') as res_file:
                 sha1 = hashlib.sha1(res_file.read())
-
-            emsg = None
-
-            try:
-                uris = repo[unique_id]
-            except KeyError:
-                # This test is not registered in the image json store,
-                # therefore treat it as a *new* test to be registered.
-                dname = os.path.join(os.path.dirname(__file__),
-                                     'results', 'visual_tests')
-                expected_fname = os.path.join(dname, unique_id+'.png')
-                if not os.path.isdir(dname):
-                    os.makedirs(dname)
-                wmsg = 'Created image for test {}'
-                warnings.warn(wmsg.format(unique_id))
-                shutil.copy2(result_fname, expected_fname)
+            if unique_id not in repo:
+                wmsg = 'Created image {} for test {}.'
+                warnings.warn(wmsg.format(result_fname, unique_id))
             else:
+                uris = repo[unique_id]
                 # Cherry-pick the registered expected hashes from the
                 # test case uri/s.
-                expected = []
-                for uri in uris:
-                    ehash = os.path.splitext(os.path.basename(uri))[0]
-                    expected.append(ehash)
+                expected = [os.path.splitext(os.path.basename(uri))[0]
+                            for uri in uris]
 
                 if sha1.hexdigest() not in expected:
                     emsg = 'Actual SHA1 {} not in expected {} for test {}.'
                     emsg = emsg.format(sha1.hexdigest(), expected, unique_id)
+                    if _DISPLAY_FIGURES:
+                        print('Image comparison would have failed. '
+                              'Message: %s' % emsg)
+                    else:
+                        raise ValueError('Image comparison failed.'
+                                         ' Message: %s' % emsg)
+
                 else:
                     # There is no difference between the actual and expected
                     # result, so remove the actual result file.
                     os.remove(result_fname)
-
+                
             if _DISPLAY_FIGURES:
-                if emsg is not None:
-                    print('Image comparison would have failed. '
-                          'Message: %s' % emsg)
                 plt.show()
-            else:
-                assert not emsg, 'Image comparison failed. Message: %s' % emsg
 
         finally:
             plt.close()
