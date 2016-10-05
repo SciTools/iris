@@ -27,6 +27,7 @@ import iris.tests as tests
 import codecs
 from collections import deque
 import json
+import logging
 import os
 from six.moves.queue import Queue
 import requests
@@ -35,6 +36,8 @@ from threading import Thread
 # maximum number of threads for multi-threading code
 MAXTHREADS = 128
 
+# Turn down requests logging
+logging.getLogger("requests").setLevel(logging.CRITICAL)
 
 class _ResolveWorkerThread(Thread):
     """
