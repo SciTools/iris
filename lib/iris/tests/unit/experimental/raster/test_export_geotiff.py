@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
+import re
 try:
     from osgeo import gdal
     from iris.experimental.raster import export_geotiff
@@ -130,22 +131,36 @@ class TestProjection(tests.IrisTest):
         with self.temp_filename('.tif') as temp_filename:
             export_geotiff(cube, temp_filename)
             dataset = gdal.Open(temp_filename, gdal.GA_ReadOnly)
-            self.assertEqual(
-                dataset.GetProjection(),
-                'GEOGCS["unnamed ellipse",DATUM["unknown",'
-                'SPHEROID["unnamed",6377000,0]],PRIMEM["Greenwich",0],'
-                'UNIT["degree",0.0174532925199433]]')
+            projection_string = dataset.GetProjection()
+            # String has embedded floating point values,
+            # Test with values to N decimal places, using a regular expression.
+            re_pattern = (
+                r'GEOGCS\["unnamed ellipse",DATUM\["unknown",'
+                r'SPHEROID\["unnamed",637....,0\]\],PRIMEM\["Greenwich",0\],'
+                r'UNIT\["degree",0.01745[0-9]*\]\]')
+            re_exp = re.compile(re_pattern)
+            self.assertIsNotNone(
+                re_exp.match(projection_string),
+                'projection string {!r} does not match {!r}'.format(
+                    projection_string, re_pattern))
 
     def test_ellipsoid(self):
         cube = self._cube(GeogCS(6377000, 6360000))
         with self.temp_filename('.tif') as temp_filename:
             export_geotiff(cube, temp_filename)
             dataset = gdal.Open(temp_filename, gdal.GA_ReadOnly)
-            self.assertEqual(
-                dataset.GetProjection(),
-                'GEOGCS["unnamed ellipse",DATUM["unknown",'
-                'SPHEROID["unnamed",6377000,375.117647058816]],'
-                'PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]')
+            projection_string = dataset.GetProjection()
+            # String has embedded floating point values,
+            # Test with values to N decimal places, using a regular expression.
+            re_pattern = (
+                r'GEOGCS\["unnamed ellipse",DATUM\["unknown",'
+                r'SPHEROID\["unnamed",637....,375.117[0-9]*\]\],'
+                r'PRIMEM\["Greenwich",0\],UNIT\["degree",0.01745[0-9]*\]\]')
+            re_exp = re.compile(re_pattern)
+            self.assertIsNotNone(
+                re_exp.match(projection_string),
+                'projection string {!r} does not match {!r}'.format(
+                    projection_string, re_pattern))
 
 
 @tests.skip_gdal
