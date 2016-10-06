@@ -116,12 +116,20 @@ def diff_viewer(repo, key, dname, expected_fname, result_fname, diff_fname):
         os.remove(diff_fname)
         plt.close()
 
-    ax_accept = plt.axes([0.7, 0.05, 0.1, 0.075])
-    ax_reject = plt.axes([0.81, 0.05, 0.1, 0.075])
-    bnext = mwidget.Button(ax_accept, 'Accept')
-    bnext.on_clicked(accept)
-    bprev = mwidget.Button(ax_reject, 'Reject')
-    bprev.on_clicked(reject)
+    def skip(event):
+        print('SKIPPED:   {}'.format(os.path.basename(result_fname)))
+        os.remove(diff_fname)
+        plt.close()
+
+    ax_accept = plt.axes([0.59, 0.05, 0.1, 0.075])
+    ax_reject = plt.axes([0.7, 0.05, 0.1, 0.075])
+    ax_skip = plt.axes([0.81, 0.05, 0.1, 0.075])
+    baccept = mwidget.Button(ax_accept, 'Accept')
+    baccept.on_clicked(accept)
+    breject = mwidget.Button(ax_reject, 'Reject')
+    breject.on_clicked(reject)
+    bskip = mwidget.Button(ax_skip, 'Skip')
+    bskip.on_clicked(skip)
     plt.show()
 
 
@@ -134,6 +142,7 @@ def step_over_diffs(result_dir):
         with open(fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
 
+        processed = False
         result_dir = os.path.join(dname, 'result_image_comparison')
         for fname in sorted(os.listdir(result_dir)):
             result_fname = os.path.join(result_dir, fname)
@@ -148,6 +157,7 @@ def step_over_diffs(result_dir):
                 warnings.warn(wmsg.format(key))
                 continue
             with temp_png(key) as expected_fname:
+                processed = True
                 resource = requests.get(uri)
                 with open(expected_fname, 'wb') as fo:
                     fo.write(resource.content)
@@ -155,6 +165,9 @@ def step_over_diffs(result_dir):
                 diff_fname = result_fname[:-4] + '-failed-diff.png'
                 diff_viewer(repo, key, dname, expected_fname, result_fname,
                             diff_fname)
+        if not processed:
+            msg = '\n{}: There are no iris test result images to process.\n'
+            print(msg.format(os.path.splitext(sys.argv[0])[0]))
 
 
 if __name__ == '__main__':
