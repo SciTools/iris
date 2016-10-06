@@ -25,12 +25,13 @@ import six
 import iris.tests as tests
 
 import codecs
-from collections import deque
 import json
 import logging
 import os
-from six.moves.queue import Queue
 import requests
+from collections import deque
+from itertools import chain
+from six.moves.queue import Queue
 from threading import Thread
 
 # maximum number of threads for multi-threading code
@@ -74,9 +75,7 @@ class TestImageFile(tests.IrisTest):
                                   'imagerepo.json')
         with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
-        uris = []
-        for k, v in six.iteritems(repo):
-            uris = uris + v
+        uris = list(chain.from_iterable(six.itervalues(repo)))
         uri_list = deque()
         exceptions = deque()
         uri_queue = Queue()

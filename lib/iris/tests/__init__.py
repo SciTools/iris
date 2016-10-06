@@ -635,7 +635,7 @@ class IrisTest(unittest.TestCase):
             bits[0] = os.path.splitext(file_name)[0]
             folder, location = os.path.split(path)
             bits = [location] + bits
-            while location != 'iris':
+            while location not in ['iris', 'example_tests']:
                 folder, location = os.path.split(folder)
                 bits = [location] + bits
         test_id = '.'.join(bits)
