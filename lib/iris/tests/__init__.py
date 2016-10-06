@@ -142,7 +142,7 @@ if (MPL_AVAILABLE and '-d' in sys.argv):
     plt.switch_backend('tkagg')
     _DISPLAY_FIGURES = True
 
-_DEFAULT_IMAGE_TOLERANCE = 10.0
+_DEFAULT_IMAGE_TOLERANCE = 0.1
 
 
 def main():
