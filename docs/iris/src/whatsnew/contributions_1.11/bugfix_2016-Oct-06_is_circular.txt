@@ -1,2 +1,2 @@
-- Fixed a bug where the :func:`iris.util._is_circular` would return false where 
+* Fixed a bug where the :func:`iris.util._is_circular` would return false where 
   the coordinate values are decreasing.
