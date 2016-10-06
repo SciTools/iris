@@ -1398,7 +1398,7 @@ def _is_circular(points, modulus, bounds=None):
         if len(points) > 1:
             diffs = list(set(np.diff(points)))
             diff = np.mean(diffs)
-            abs_tol = diff * 1.0e-4
+            abs_tol = np.abs(diff * 1.0e-4)
             diff_approx_equal = np.max(np.abs(diffs - diff)) < abs_tol
             if diff_approx_equal:
                 circular_value = (points[-1] + diff) % modulus
