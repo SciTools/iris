@@ -20,6 +20,7 @@ nose
 pep8=1.5.7
 sphinx
 iris_sample_data
+filelock
 
 # Optional iris dependencies
 nc_time_axis
