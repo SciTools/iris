@@ -143,6 +143,15 @@ class Test(tests.IrisTest):
         self.assertTrue(res.has_lazy_data())
         self.assertEqual(res.shape, (1,) + cube.shape)
 
+    def test_masked_unit_array(self):
+        cube = tests.stock.simple_3d_mask()
+        test_cube = cube[0, 0, 0]
+        test_cube = new_axis(test_cube, 'longitude')
+        test_cube = new_axis(test_cube, 'latitude')
+        data_shape = test_cube.data.shape
+        mask_shape = test_cube.data.mask.shape
+        self.assertEqual(data_shape, mask_shape)
+
 
 if __name__ == '__main__':
     unittest.main()
