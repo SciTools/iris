@@ -395,7 +395,8 @@
         "https://scitools.github.io/test-images-scitools/image_files/72d57508c5d53419e5a7fa833159da110843b026.png"
     ], 
     "iris.tests.test_plot.TestHybridHeight.test_orography.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/2b59e053a13b5968e07607424f03468fda2b695a.png"
+        "https://scitools.github.io/test-images-scitools/image_files/2b59e053a13b5968e07607424f03468fda2b695a.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/65565c2043e6193c02aeb9d5334d400bb6740f9d.png"
     ], 
     "iris.tests.test_plot.TestHybridHeight.test_orography.1": [
         "https://scitools.github.io/test-images-scitools/image_files/092427a8ef17decf87a865e7dd183116b039ac7f.png"
@@ -688,7 +689,8 @@
         "https://scitools.github.io/test-images-scitools/image_files/9a54b4493a32f380aaaaeeee8eeda968b3ca2c53.png"
     ], 
     "iris.tests.test_quickplot.TestLabels.test_alignment.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/099663b5c0dd1cf4c19a0c87c497cc9fb5bf011f.png"
+        "https://scitools.github.io/test-images-scitools/image_files/099663b5c0dd1cf4c19a0c87c497cc9fb5bf011f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/12f88961b94c15c97c5b3834a4898cb750f3b468.png"
     ], 
     "iris.tests.test_quickplot.TestLabels.test_contour.0": [
         "https://scitools.github.io/test-images-scitools/image_files/bece9c7ca07a73c9bdf7b25fa2469fa61b04c37f.png", 
