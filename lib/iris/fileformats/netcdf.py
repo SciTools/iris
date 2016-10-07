@@ -705,6 +705,34 @@ def load_cubes(filenames, callback=None):
             yield cube
 
 
+def _bytes_if_ascii(string):
+    """
+    Convert the given string to a byte string (str in py2k, bytes in py3k)
+    iff the given string can be encoded to ascii, else maintain the type
+    of the inputted string.
+
+    Note: passing objects without an `encode` method (such as None) will
+    be returned by the function unchanged.
+
+    """
+    if isinstance(string, six.string_types):
+        try:
+            return string.encode(encoding='ascii')
+        except (AttributeError, UnicodeEncodeError):
+            pass
+    return string
+
+
+def _setncattr(variable, name, attribute):
+    """
+    Put the given attribute on the given netCDF4 Data type, casting
+    attributes as we go to bytes rather than unicode.
+
+    """
+    attribute = _bytes_if_ascii(attribute)
+    return variable.setncattr(name, attribute)
+
+
 class Saver(object):
     """A manager for saving netcdf files."""
 
@@ -990,10 +1018,10 @@ class Saver(object):
                 attributes = dict(attributes)
 
             for attr_name in sorted(attributes):
-                self._dataset.setncattr(attr_name, attributes[attr_name])
+                _setncattr(self._dataset, attr_name, attributes[attr_name])
 
         for attr_name in sorted(kwargs):
-            self._dataset.setncattr(attr_name, kwargs[attr_name])
+            _setncattr(self._dataset, attr_name, kwargs[attr_name])
 
     def _create_cf_dimensions(self, cube, dimension_names,
                               unlimited_dimensions=None):
@@ -1196,12 +1224,12 @@ class Saver(object):
                                                             dimension_names,
                                                             primary_coord)
                             cf_var = self._dataset.variables[name]
-                            cf_var.standard_name = std_name
+                            _setncattr(cf_var, 'standard_name', std_name)
                             cf_var.axis = 'Z'
                             # Update the formula terms.
                             ft = formula_terms.split()
                             ft = [name if t == cf_name else t for t in ft]
-                            cf_var.formula_terms = ' '.join(ft)
+                            _setncattr(cf_var, 'formula_terms', ' '.join(ft))
                             # Update the cache.
                             self._formula_terms_cache[key] = name
                         # Update the associated cube variable.
@@ -1209,9 +1237,9 @@ class Saver(object):
                         coords = [name if c == cf_name else c for c in coords]
                         cf_var_cube.coordinates = ' '.join(coords)
                 else:
-                    cf_var.standard_name = std_name
+                    _setncattr(cf_var, 'standard_name', std_name)
                     cf_var.axis = 'Z'
-                    cf_var.formula_terms = formula_terms
+                    _setncattr(cf_var, 'formula_terms', formula_terms)
 
     def _get_dim_names(self, cube):
         """
@@ -1299,7 +1327,7 @@ class Saver(object):
             elif coord.standard_name == "longitude":
                 units = 'degrees_east'
 
-        return coord.standard_name, coord.long_name, units
+        return (coord.standard_name, coord.long_name, units)
 
     def _ensure_valid_dtype(self, values, src_name, src_object):
         # NetCDF3 does not support int64 or unsigned ints, so we check
@@ -1411,7 +1439,6 @@ class Saver(object):
                     name = 'unknown_scalar'
             # Convert to lower case and replace whitespace by underscores.
             cf_name = '_'.join(name.lower().split())
-
         return cf_name
 
     def _create_cf_cell_measure_variable(self, cube, dimension_names,
@@ -1456,10 +1483,10 @@ class Saver(object):
             cf_var.units = str(cell_measure.units)
 
         if cell_measure.standard_name is not None:
-            cf_var.standard_name = cell_measure.standard_name
+            _setncattr(cf_var, 'standard_name', cell_measure.standard_name)
 
         if cell_measure.long_name is not None:
-            cf_var.long_name = cell_measure.long_name
+            _setncattr(cf_var, 'long_name', cell_measure.long_name)
 
         # Add any other custom coordinate attributes.
         for name in sorted(cell_measure.attributes):
@@ -1467,7 +1494,7 @@ class Saver(object):
 
             # Don't clobber existing attributes.
             if not hasattr(cf_var, name):
-                cf_var.setncattr(name, value)
+                _setncattr(cf_var, name, value)
 
         return cf_name
 
@@ -1564,14 +1591,14 @@ class Saver(object):
             cf_var.units = units
 
         if standard_name is not None:
-            cf_var.standard_name = standard_name
+            _setncattr(cf_var, 'standard_name', standard_name)
 
         if long_name is not None:
-            cf_var.long_name = long_name
+            _setncattr(cf_var, 'long_name', long_name)
 
         # Add the CF-netCDF calendar attribute.
         if coord.units.calendar:
-            cf_var.calendar = coord.units.calendar
+            _setncattr(cf_var, 'calendar', coord.units.calendar)
 
         # Add any other custom coordinate attributes.
         for name in sorted(coord.attributes):
@@ -1585,7 +1612,7 @@ class Saver(object):
 
             # Don't clobber existing attributes.
             if not hasattr(cf_var, name):
-                cf_var.setncattr(name, value)
+                _setncattr(cf_var, name, value)
 
         return cf_name
 
@@ -1823,13 +1850,13 @@ class Saver(object):
             biggus.save([cube.lazy_data()], [cf_var], masked=True)
 
         if cube.standard_name:
-            cf_var.standard_name = cube.standard_name
+            _setncattr(cf_var, 'standard_name', cube.standard_name)
 
         if cube.long_name:
-            cf_var.long_name = cube.long_name
+            _setncattr(cf_var, 'long_name', cube.long_name)
 
         if cube.units != 'unknown':
-            cf_var.units = str(cube.units)
+            _setncattr(cf_var, 'units', str(cube.units))
 
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:
@@ -1863,13 +1890,13 @@ class Saver(object):
                       'global attribute.'.format(attr_name=attr_name)
                 warnings.warn(msg)
 
-            cf_var.setncattr(attr_name, value)
+            _setncattr(cf_var, attr_name, value)
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
 
         if cell_methods:
-            cf_var.cell_methods = cell_methods
+            _setncattr(cf_var, 'cell_methods', cell_methods)
 
         # Create the CF-netCDF grid mapping.
         self._create_cf_grid_mapping(cube, cf_var)
