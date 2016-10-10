@@ -1300,7 +1300,8 @@ class Saver(object):
                 dimension_names.append(dim_name)
         return dimension_names
 
-    def _cf_coord_identity(self, coord):
+    @staticmethod
+    def _cf_coord_identity(coord):
         """
         Determine a suitable units from a given coordinate.
 
@@ -1327,7 +1328,7 @@ class Saver(object):
             elif coord.standard_name == "longitude":
                 units = 'degrees_east'
 
-        return (coord.standard_name, coord.long_name, units)
+        return coord.standard_name, coord.long_name, units
 
     def _ensure_valid_dtype(self, values, src_name, src_object):
         # NetCDF3 does not support int64 or unsigned ints, so we check
@@ -1778,6 +1779,18 @@ class Saver(object):
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn('OSGB coordinate system not yet handled')
+
+                # lambert azimuthal equal area
+                elif isinstance(cs,
+                                iris.coord_systems.LambertAzimuthalEqualArea):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin)
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin)
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
 
                 # other
                 else:

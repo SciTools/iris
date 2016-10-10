@@ -301,5 +301,13 @@ class TestCellMethod_unknown(tests.IrisTest):
             shutil.rmtree(temp_dirpath)
 
 
+class TestCoordSystem(tests.IrisTest):
+    def test_load_laea_grid(self):
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'lambert_azimuthal_equal_area',
+                                 'euro_air_temp.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_laea.cml'))
+
+
 if __name__ == "__main__":
     tests.main()
