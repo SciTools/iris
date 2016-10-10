@@ -35,7 +35,7 @@ from six.moves.queue import Queue
 from threading import Thread
 
 # maximum number of threads for multi-threading code
-MAXTHREADS = 128
+MAXTHREADS = 8
 
 # Turn down requests logging
 logging.getLogger("requests").setLevel(logging.CRITICAL)
