@@ -483,7 +483,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         epoch_hours = epoch_hours_unit.date2num(t)
         if t.minute == 0 and t.second == 0:
             epoch_hours = round(epoch_hours)
-        return epoch_hours
+        return float(epoch_hours)
 
     def date2year(t_in):
         return t_in.year
