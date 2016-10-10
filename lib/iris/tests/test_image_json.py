@@ -58,8 +58,7 @@ class _ResolveWorkerThread(Thread):
             resource = self.queue.get()
             try:
                 result = requests.head(resource)
-                if (result.status_code == 200 and
-                   resource.startswith('https://scitools.github.io')):
+                if result.status_code == 200:
                     self.deque.append(resource)
                 else:
                     msg = '{} is not resolving correctly.'.format(resource)
@@ -80,7 +79,11 @@ class TestImageFile(tests.IrisTest):
         exceptions = deque()
         uri_queue = Queue()
         for uri in uris:
-            uri_queue.put(uri)
+            if uri.startswith('https://scitools.github.io'):
+                uri_queue.put(uri)
+            else:
+                msg = '{} is not a valid resource.'.format(uri)
+                exceptions.append(ValueError(msg))
 
         for i in range(MAXTHREADS):
             _ResolveWorkerThread(uri_queue, uri_list, exceptions).start()
