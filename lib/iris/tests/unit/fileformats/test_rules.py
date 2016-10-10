@@ -52,7 +52,9 @@ class TestConcreteReferenceTarget(tests.IrisTest):
         self.assertEqual(target.name, 'foo')
         self.assertIsNone(target.transform)
 
-        transform = lambda _: _
+        def transform(_):
+            return _
+
         target = ConcreteReferenceTarget('foo', transform)
         self.assertEqual(target.name, 'foo')
         self.assertIs(target.transform, transform)
@@ -64,7 +66,9 @@ class TestConcreteReferenceTarget(tests.IrisTest):
         self.assertIs(target.as_cube(), src)
 
     def test_single_cube_with_transform(self):
-        transform = lambda cube: {'long_name': 'wibble'}
+        def transform(cube):
+            return {'long_name': 'wibble'}
+
         target = ConcreteReferenceTarget('foo', transform)
         src = stock.simple_2d()
         target.add_cube(src)
@@ -84,7 +88,9 @@ class TestConcreteReferenceTarget(tests.IrisTest):
         self.assertEqual(dest, src)
 
     def test_multiple_cubes_with_transform(self):
-        transform = lambda cube: {'long_name': 'wibble'}
+        def transform(cube):
+            return {'long_name': 'wibble'}
+
         target = ConcreteReferenceTarget('foo', transform)
         src = stock.realistic_4d()
         for i in range(src.shape[0]):
@@ -104,7 +110,10 @@ class TestLoadCubes(tests.IrisTest):
         # The fake PPField which will be supplied to our converter.
         field = Mock()
         field.data = None
-        field_generator = lambda filename: [field]
+
+        def field_generator(filename):
+            return [field]
+
         # A fake conversion function returning:
         #   1) A parameter cube needing a simple factory construction.
         aux_factory = Mock()
@@ -167,7 +176,10 @@ class TestLoadCubes(tests.IrisTest):
         press_field.data = param_cube.data
         orog_field = Mock()
         orog_field.data = orog_cube.data
-        field_generator = lambda filename: [press_field, orog_field]
+
+        def field_generator(filename):
+            return [press_field, orog_field]
+
         # A fake rule set returning:
         #   1) A parameter cube needing an "orography" reference
         #   2) An "orography" cube

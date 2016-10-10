@@ -1132,7 +1132,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Search derived aux coords
         target_defn = coord._as_defn()
         if not matches:
-            match = lambda factory: factory._as_defn() == target_defn
+            def match(factory):
+                return factory._as_defn() == target_defn
             factories = filter(match, self._aux_factories)
             matches = [factory.derived_dims(self.coord_dims) for factory in
                        factories]
@@ -1341,9 +1342,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 msg = 'The attributes keyword was expecting a dictionary ' \
                       'type, but got a %s instead.' % type(attributes)
                 raise ValueError(msg)
-            attr_filter = lambda coord_: all(k in coord_.attributes and
-                                             coord_.attributes[k] == v for
-                                             k, v in six.iteritems(attributes))
+
+            def attr_filter(coord_):
+                return all(k in coord_.attributes and coord_.attributes[k] == v
+                           for k, v in six.iteritems(attributes))
+
             coords_and_factories = [coord_ for coord_ in coords_and_factories
                                     if attr_filter(coord_)]
 
@@ -2157,13 +2160,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # multiple times)
         dimension_mapping, slice_gen = iris.util.column_slices_generator(
             full_slice, len(self.shape))
-        new_coord_dims = lambda coord_: [dimension_mapping[d] for d in
-                                         self.coord_dims(coord_) if
-                                         dimension_mapping[d] is not None]
 
-        new_cell_measure_dims = lambda cm_: [dimension_mapping[d] for d in
-                                             self.cell_measure_dims(cm_) if
-                                             dimension_mapping[d] is not None]
+        def new_coord_dims(coord_):
+            return [dimension_mapping[d]
+                    for d in self.coord_dims(coord_)
+                    if dimension_mapping[d] is not None]
+
+        def new_cell_measure_dims(cm_):
+            return [dimension_mapping[d]
+                    for d in self.cell_measure_dims(cm_)
+                    if dimension_mapping[d] is not None]
 
         try:
             first_slice = next(slice_gen)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -50,7 +50,10 @@ class Test(tests.IrisTest):
         section = {'NV': 1}
         this = 'iris.fileformats.grib._load_convert.hybrid_factories'
         factory = mock.sentinel.factory
-        func = lambda section, metadata: metadata['factories'].append(factory)
+
+        def func(section, metadata):
+            return metadata['factories'].append(factory)
+
         with mock.patch(this, side_effect=func) as hybrid_factories:
             vertical_coords(section, metadata)
             self.assertTrue(hybrid_factories.called)

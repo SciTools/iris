@@ -152,7 +152,9 @@ def unscale(value, factor):
         is returned.
 
     """
-    _unscale = lambda v, f: v / 10.0 ** f
+    def _unscale(v, f):
+        return v / 10.0 ** f
+
     if isinstance(value, Iterable) or isinstance(factor, Iterable):
         def _masker(item):
             result = ma.masked_equal(item, _MDI)

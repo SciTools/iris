@@ -341,12 +341,13 @@ class _CubeSignature(object):
         # Collate the auxiliary coordinate metadata and scalar coordinates.
         #
         axes = dict(T=0, Z=1, Y=2, X=3)
+
         # Coordinate sort function - by guessed coordinate axis, then
         # by coordinate definition, then by dimensions, in ascending order.
-        key_func = lambda coord: (axes.get(guess_coord_axis(coord),
-                                           len(axes) + 1),
-                                  coord._as_defn(),
-                                  cube.coord_dims(coord))
+        def key_func(coord):
+            return (axes.get(guess_coord_axis(coord), len(axes) + 1),
+                    coord._as_defn(),
+                    cube.coord_dims(coord))
 
         for coord in sorted(cube.aux_coords, key=key_func):
             dims = cube.coord_dims(coord)
@@ -647,8 +648,7 @@ class _ProtoCube(object):
 
             # Sequence the skeleton segments into the correct order
             # pending concatenation.
-            key_func = lambda skeleton: skeleton.signature.dim_extents
-            skeletons.sort(key=key_func,
+            skeletons.sort(key=lambda skeleton: skeleton.signature.dim_extents,
                            reverse=(order == _DECREASING))
 
             # Concatenate the new dimension coordinate.

@@ -81,8 +81,10 @@ def add_categorised_coord(cube, name, from_coord, category_function,
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
         # Use a common type for string arrays (N.B. limited to 64 chars)
         all_cases_string_type = '|S64' if six.PY2 else '|U64'
-        vectorised_fn = lambda *args: str_vectorised_fn(*args).astype(
-            all_cases_string_type)
+
+        def vectorised_fn(*args):
+            return str_vectorised_fn(*args).astype(all_cases_string_type)
+
     else:
         vectorised_fn = np.vectorize(category_function)
     new_coord = iris.coords.AuxCoord(vectorised_fn(from_coord,

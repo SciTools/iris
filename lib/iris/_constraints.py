@@ -264,11 +264,15 @@ class _CoordConstraint(object):
             desired_values = list(self._coord_thing)
             # A dramatic speedup can be had if we don't have bounds.
             if coord.has_bounds():
-                call_func = lambda cell: cell in desired_values
+                def call_func(cell):
+                    return cell in desired_values
             else:
-                call_func = lambda cell: cell.point in desired_values
+                def call_func(cell):
+                    return cell.point in desired_values
         else:
-            call_func = lambda c: c == self._coord_thing
+            def call_func(c):
+                return c == self._coord_thing
+
             try_quick = (isinstance(coord, iris.coords.DimCoord) and
                          not isinstance(self._coord_thing, iris.coords.Cell))
 

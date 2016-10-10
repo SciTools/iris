@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -49,7 +49,8 @@ class Test_add_categorised_coord(tests.IrisTest):
         # numpy.vectorize, before being applied to the points array.
         # The reason we use numpy.vectorize is to support multi-dimensional
         # coordinate points.
-        fn = lambda coord, v: v**2
+        def fn(coord, v):
+            return v**2
 
         with mock.patch('numpy.vectorize',
                         return_value=self.vectorised) as vectorise_patch:
@@ -75,7 +76,8 @@ class Test_add_categorised_coord(tests.IrisTest):
     def test_string_vectorised(self):
         # Check that special case handling of a vectorized string returning
         # function is taking place.
-        fn = lambda coord, v: '0123456789'[:v]
+        def fn(coord, v):
+            return '0123456789'[:v]
 
         with mock.patch('numpy.vectorize',
                         return_value=self.vectorised) as vectorise_patch:

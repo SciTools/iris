@@ -525,7 +525,9 @@ def _load_cube(engine, cf, cf_var, filename):
     # Populate coordinate attributes with the untouched attributes from the
     # associated CF-netCDF variable.
     coordinates = engine.provides.get('coordinates', [])
-    attribute_predicate = lambda item: item[0] not in _CF_ATTRS
+
+    def attribute_predicate(item):
+        return item[0] not in _CF_ATTRS
 
     for coord, cf_var_name in coordinates:
         tmpvar = filter(attribute_predicate,

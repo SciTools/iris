@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,7 +35,10 @@ class Test(tests.IrisTest):
         field = _make_test_message(sections)
         this = 'iris.fileformats.grib._load_convert.grib2_convert'
         factory = mock.sentinel.factory
-        func = lambda field, metadata: metadata['factories'].append(factory)
+
+        def func(field, metadata):
+            return metadata['factories'].append(factory)
+
         with mock.patch(this, side_effect=func) as grib2_convert:
             # The call being tested.
             result = convert(field)

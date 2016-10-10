@@ -159,7 +159,8 @@ def _adjust_dims(coords_and_dims, n_dims):
 
 def _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
                  aux_coords_and_dims):
-    key_func = lambda item: _HINTS.get(item[0].name(), len(_HINTS))
+    def key_func(item):
+        return _HINTS.get(item[0].name(), len(_HINTS))
     # Target the first DimCoord for a dimension at dim_coords,
     # and target everything else at aux_coords.
     for coord, dims in sorted(coords_and_dims, key=key_func):
