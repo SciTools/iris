@@ -28,19 +28,20 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import argparse
 import codecs
 import contextlib
+from glob import glob
 import hashlib
 import json
 import os.path
-import requests
-import shutil
 import sys
 import warnings
 
+from PIL import Image
 import filelock
 import matplotlib.pyplot as plt
 import matplotlib.image as mimg
 import matplotlib.testing.compare as mcompare
 import matplotlib.widgets as mwidget
+import requests
 
 # Force iris.tests to use the ```tkagg``` backend by using the '-d'
 # command-line argument as idiff is an interactive tool that requires a
@@ -50,9 +51,9 @@ import iris.tests
 import iris.util as iutil
 
 
-_HASH_DIR = os.path.join('results', 'visual_tests')
-_POSTFIX_LOCK = os.path.join('results', 'imagerepo.lock')
+_POSTFIX_DIFF = '-failed-diff.png'
 _POSTFIX_JSON = os.path.join('results', 'imagerepo.json')
+_POSTFIX_LOCK = os.path.join('results', 'imagerepo.lock')
 _PREFIX_URI = 'https://scitools.github.io/test-images-scitools/image_files'
 _TIMEOUT = 30
 _TOL = 0
@@ -69,7 +70,8 @@ def temp_png(suffix=''):
         os.remove(fname)
 
 
-def diff_viewer(repo, key, dname, expected_fname, result_fname, diff_fname):
+def diff_viewer(repo, key, repo_fname,
+                expected_fname, result_fname, diff_fname):
     plt.figure(figsize=(14, 12))
     plt.suptitle(os.path.basename(expected_fname))
     ax = plt.subplot(221)
@@ -82,8 +84,10 @@ def diff_viewer(repo, key, dname, expected_fname, result_fname, diff_fname):
     # Determine the new image hash.png name.
     with open(result_fname, 'rb') as fi:
         sha1 = hashlib.sha1(fi.read())
-    hash_fname = os.path.join(dname, _HASH_DIR, sha1.hexdigest()+'.png')
-    uri = os.path.join(_PREFIX_URI, os.path.basename(hash_fname))
+    result_dir = os.path.dirname(result_fname)
+    fname = sha1.hexdigest() + '.png'
+    uri = os.path.join(_PREFIX_URI, fname)
+    hash_fname = os.path.join(result_dir, fname)
 
     def accept(event):
         if uri not in repo[key]:
@@ -91,9 +95,10 @@ def diff_viewer(repo, key, dname, expected_fname, result_fname, diff_fname):
             # associated with the repo key is the oldest, and the last
             # uri is the youngest
             repo[key].append(uri)
-            with open(os.path.join(dname, _POSTFIX_JSON), 'wb') as fo:
+            # Update the image repo.
+            with open(repo_fname, 'wb') as fo:
                 json.dump(repo, fo, indent=4, sort_keys=True)
-            shutil.copy2(result_fname, hash_fname)
+            os.rename(result_fname, hash_fname)
             msg = 'ACCEPTED:  {} -> {}'
             print(msg.format(os.path.basename(result_fname),
                              os.path.basename(hash_fname)))
@@ -101,7 +106,7 @@ def diff_viewer(repo, key, dname, expected_fname, result_fname, diff_fname):
             msg = 'DUPLICATE: {} -> {} (ignored)'
             print(msg.format(os.path.basename(result_fname),
                              os.path.basename(hash_fname)))
-        os.remove(result_fname)
+            os.remove(result_fname)
         os.remove(diff_fname)
         plt.close()
 
@@ -112,7 +117,7 @@ def diff_viewer(repo, key, dname, expected_fname, result_fname, diff_fname):
             msg = 'DUPLICATE: {} -> {} (ignored)'
             print(msg.format(os.path.basename(result_fname),
                              os.path.basename(hash_fname)))
-            os.remove(result_fname)
+        os.remove(result_fname)
         os.remove(diff_fname)
         plt.close()
 
@@ -134,22 +139,31 @@ def diff_viewer(repo, key, dname, expected_fname, result_fname, diff_fname):
 
 
 def step_over_diffs(result_dir):
+    processed = False
     dname = os.path.dirname(iris.tests.__file__)
     lock = filelock.FileLock(os.path.join(dname, _POSTFIX_LOCK))
 
+    # Remove old image diff results.
+    target = os.path.join(result_dir, '*{}'.format(_POSTFIX_DIFF))
+    for fname in glob(target):
+        os.remove(fname)
+
     with lock.acquire(timeout=_TIMEOUT):
-        fname = os.path.join(dname, _POSTFIX_JSON)
-        with open(fname, 'rb') as fi:
+        # Load the imagerepo.
+        repo_fname = os.path.join(dname, _POSTFIX_JSON)
+        with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
 
-        processed = False
-        result_dir = os.path.join(dname, 'result_image_comparison')
-        for fname in sorted(os.listdir(result_dir)):
-            result_fname = os.path.join(result_dir, fname)
-            ext = os.path.splitext(result_fname)[1]
-            if not (os.path.isfile(result_fname) and ext == '.png'):
+        target = os.path.join(result_dir, 'result-*.png')
+        for result_fname in sorted(glob(target)):
+            # We only care about PNG images.
+            try:
+                im = Image.open(result_fname)
+                if im.format != 'PNG':
+                    continue
+            except IOError:
                 continue
-            key = os.path.splitext('-'.join(fname.split('-')[1:]))[0]
+            key = os.path.splitext('-'.join(result_fname.split('-')[1:]))[0]
             try:
                 uri = repo[key][0]
             except KeyError:
@@ -162,9 +176,9 @@ def step_over_diffs(result_dir):
                 with open(expected_fname, 'wb') as fo:
                     fo.write(resource.content)
                 mcompare.compare_images(expected_fname, result_fname, tol=_TOL)
-                diff_fname = result_fname[:-4] + '-failed-diff.png'
-                diff_viewer(repo, key, dname, expected_fname, result_fname,
-                            diff_fname)
+                diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
+                diff_viewer(repo, key, repo_fname, expected_fname,
+                            result_fname, diff_fname)
         if not processed:
             msg = '\n{}: There are no iris test result images to process.\n'
             print(msg.format(os.path.splitext(sys.argv[0])[0]))
