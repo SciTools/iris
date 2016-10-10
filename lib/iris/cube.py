@@ -2648,9 +2648,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 coords.append(self.coord(name_or_coord))
             else:
                 # Don't know how to handle this type
-                msg = "Don't know how to handle coordinate of type %s. " \
-                      "Ensure all coordinates are of type six.string_types or " \
-                      "iris.coords.Coord." % type(name_or_coord)
+                msg = ("Don't know how to handle coordinate of type %s. "
+                       "Ensure all coordinates are of type six.string_types "
+                       "or iris.coords.Coord.") % (type(name_or_coord), )
                 raise TypeError(msg)
         return coords
 
