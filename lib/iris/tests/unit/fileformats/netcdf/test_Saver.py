@@ -459,31 +459,35 @@ class Test_check_attribute_compliance__exception_handlng(
 
 
 class Test__cf_coord_identity(tests.IrisTest):
-    def check_call(self, coord_system, units, expected_units):
-        coord = iris.coords.DimCoord([30, 45], 'latitude', units=units,
+    def check_call(self, coord_name, coord_system, units, expected_units):
+        coord = iris.coords.DimCoord([30, 45], coord_name, units=units,
                                      coord_system=coord_system)
         result = Saver._cf_coord_identity(coord)
         self.assertEqual(result, (coord.standard_name, coord.long_name,
                                   expected_units))
 
-    def test_geogcs(self):
+    def test_geogcs_latitude(self):
         crs = iris.coord_systems.GeogCS(60, 0)
-        self.check_call(coord_system=crs, units='degrees',
+        self.check_call('latitude', coord_system=crs, units='degrees',
                         expected_units='degrees_north')
 
-    def test_no_coord_system(self):
-        self.check_call(coord_system=None, units='degrees',
+    def test_geogcs_longitude(self):
+        crs = iris.coord_systems.GeogCS(60, 0)
+        self.check_call('longitude', coord_system=crs, units='degrees',
+                        expected_units='degrees_east')
+
+    def test_no_coord_system_latitude(self):
+        self.check_call('latitude', coord_system=None, units='degrees',
                         expected_units='degrees_north')
 
-    def test_rotatedgeogcs(self):
-        crs = iris.coord_systems.RotatedGeogCS(30, 175)
-        self.check_call(coord_system=crs, units='degrees',
-                        expected_units='degrees')
+    def test_no_coord_system_longitude(self):
+        self.check_call('longitude', coord_system=None, units='degrees',
+                        expected_units='degrees_east')
 
-    def test_crs_with_no_default_units(self):
+    def test_passthrough_units(self):
         crs = iris.coord_systems.LambertConformal(0, 20)
-        self.check_call(coord_system=crs, units='km',
-                        expected_units='km')
+        self.check_call('projection_x_coordinate', coord_system=crs,
+                        units='km', expected_units='km')
 
 
 class Test__create_cf_grid_mapping(tests.IrisTest):
@@ -589,12 +593,16 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             latitude_of_projection_origin=52,
             longitude_of_projection_origin=10,
             false_easting=100,
-            false_northing=200)
+            false_northing=200,
+            ellipsoid=GeogCS(6377563.396, 6356256.909))
         expected = {'grid_mapping_name': 'lambert_azimuthal_equal_area',
                     'latitude_of_projection_origin': 52,
                     'longitude_of_projection_origin': 10,
                     'false_easting': 100,
                     'false_northing': 200,
+                    'semi_major_axis': 6377563.396,
+                    'semi_minor_axis': 6356256.909,
+                    'longitude_of_prime_meridian': 0,
                     }
         self._test(coord_system, expected)
 

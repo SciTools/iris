@@ -36,10 +36,14 @@ class Test_as_cartopy_crs(tests.IrisTest):
         self.longitude_of_projection_origin = 0.0
         self.semi_major_axis = 6377563.396
         self.semi_minor_axis = 6356256.909
+        self.false_easting = 0.0
+        self.false_northing = 0.0
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
         self.laea_cs = LambertAzimuthalEqualArea(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
+            self.false_easting,
+            self.false_northing,
             ellipsoid=self.ellipsoid)
 
     def test_crs_creation(self):
@@ -50,6 +54,8 @@ class Test_as_cartopy_crs(tests.IrisTest):
         expected = ccrs.LambertAzimuthalEqualArea(
             self.longitude_of_projection_origin,
             self.latitude_of_projection_origin,
+            self.false_easting,
+            self.false_northing,
             globe=globe)
         self.assertEqual(res, expected)
 
@@ -60,10 +66,14 @@ class Test_as_cartopy_projection(tests.IrisTest):
         self.longitude_of_projection_origin = 0.0
         self.semi_major_axis = 6377563.396
         self.semi_minor_axis = 6356256.909
+        self.false_easting = 0.0
+        self.false_northing = 0.0
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
         self.laea_cs = LambertAzimuthalEqualArea(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
+            self.false_easting,
+            self.false_northing,
             ellipsoid=self.ellipsoid)
 
     def test_projection_creation(self):
@@ -74,6 +84,8 @@ class Test_as_cartopy_projection(tests.IrisTest):
         expected = ccrs.LambertAzimuthalEqualArea(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
+            self.false_easting,
+            self.false_northing,
             globe=globe)
         self.assertEqual(res, expected)
 

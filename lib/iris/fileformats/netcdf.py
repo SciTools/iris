@@ -1328,9 +1328,6 @@ class Saver(object):
             elif coord.standard_name == "longitude":
                 units = 'degrees_east'
 
-        elif isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
-            units = 'degrees'
-
         return coord.standard_name, coord.long_name, units
 
     def _ensure_valid_dtype(self, values, src_name, src_object):
