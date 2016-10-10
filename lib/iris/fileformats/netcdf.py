@@ -1100,8 +1100,8 @@ class Saver(object):
         # Add CF-netCDF auxiliary coordinate variable references to the
         # CF-netCDF data variable.
         if auxiliary_coordinate_names:
-            cf_var_cube.coordinates = ' '.join(
-                sorted(auxiliary_coordinate_names))
+            coord_variable_names = ' '.join(sorted(auxiliary_coordinate_names))
+            _setncattr(cf_var_cube, 'coordinates', coord_variable_names)
 
     def _add_cell_measures(self, cube, cf_var_cube, dim_names):
         """
@@ -1381,7 +1381,7 @@ class Saver(object):
                 # Create the bounds dimension with the appropriate extent.
                 self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
-            cf_var.bounds = cf_name + '_bnds'
+            _setncattr(cf_var, 'bounds', cf_name + '_bnds')
             cf_var_bounds = self._dataset.createVariable(
                 cf_var.bounds, bounds.dtype.newbyteorder('='),
                 cf_var.dimensions + (bounds_dimension_name,))
