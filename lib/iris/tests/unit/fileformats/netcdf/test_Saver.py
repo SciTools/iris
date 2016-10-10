@@ -520,7 +520,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
     def test_rotated_geog_cs(self):
         coord_system = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
-        expected = {'grid_mapping_name': 'rotated_latitude_longitude',
+        expected = {'grid_mapping_name': b'rotated_latitude_longitude',
                     'north_pole_grid_longitude': 0.0,
                     'grid_north_pole_longitude': 177.5,
                     'grid_north_pole_latitude': 37.5,
@@ -531,7 +531,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
     def test_spherical_geog_cs(self):
         coord_system = GeogCS(6371229.0)
-        expected = {'grid_mapping_name': 'latitude_longitude',
+        expected = {'grid_mapping_name': b'latitude_longitude',
                     'longitude_of_prime_meridian': 0.0,
                     'earth_radius': 6371229.0
                     }
@@ -539,7 +539,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
     def test_elliptic_geog_cs(self):
         coord_system = GeogCS(637, 600)
-        expected = {'grid_mapping_name': 'latitude_longitude',
+        expected = {'grid_mapping_name': b'latitude_longitude',
                     'longitude_of_prime_meridian': 0.0,
                     'semi_minor_axis': 600.0,
                     'semi_major_axis': 637.0,
@@ -551,7 +551,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                                         false_easting=-2, false_northing=-5,
                                         secant_latitudes=(38, 50),
                                         ellipsoid=GeogCS(6371000))
-        expected = {'grid_mapping_name': 'lambert_conformal_conic',
+        expected = {'grid_mapping_name': b'lambert_conformal_conic',
                     'latitude_of_projection_origin': 44,
                     'longitude_of_central_meridian': 2,
                     'false_easting': -2, 'false_northing': -5,
