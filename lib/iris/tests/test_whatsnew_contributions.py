@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,6 +39,7 @@ import iris.tests as tests
 import os
 import os.path
 import subprocess
+import sys
 
 import iris
 
@@ -61,8 +62,9 @@ class TestWhatsnewContribs(tests.IrisTest):
         # Travis bypasses this problem by running the test directly.
         if os.path.exists(whatsnew_dirpath):
             # Run a 'check contributions' command in that directory.
-            cmd = 'python aggregate_directory.py --checkonly --quiet'
-            subprocess.check_call(cmd, cwd=whatsnew_dirpath, shell=True)
+            cmd = [sys.executable, 'aggregate_directory.py', '--checkonly',
+                   '--quiet']
+            subprocess.check_call(cmd, cwd=whatsnew_dirpath)
 
 
 if __name__ == "__main__":

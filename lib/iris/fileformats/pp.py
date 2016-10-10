@@ -2442,8 +2442,8 @@ def as_fields(cube, field_coords=None, target=None):
         A filename or open file handle.
 
     """
-    return (field for cube, field in as_pairs(cube, field_coords=field_coords,
-                                              target=target))
+    return (field for cube, field in save_pairs_from_cube(
+        cube, field_coords=field_coords, target=target))
 
 
 def save_fields(fields, target, append=False):
