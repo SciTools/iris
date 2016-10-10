@@ -513,14 +513,19 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                             createVariable=create_var_fn)
         saver = mock.Mock(spec=Saver, _coord_systems=[],
                           _dataset=dataset)
-        variable = mock.Mock()
+
+        class NCMock(mock.Mock):
+            def setncattr(self, name, attr):
+                setattr(self, name, attr)
+
+        variable = NCMock()
 
         # This is the method we're actually testing!
         Saver._create_cf_grid_mapping(saver, cube, variable)
 
         self.assertEqual(create_var_fn.call_count, 1)
         self.assertEqual(variable.grid_mapping,
-                         grid_variable.grid_mapping_name)
+                         str.encode(grid_variable.grid_mapping_name))
         return grid_variable
 
     def _variable_attributes(self, coord_system):
