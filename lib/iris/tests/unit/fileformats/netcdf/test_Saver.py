@@ -481,7 +481,10 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                             createVariable=create_var_fn)
         saver = mock.Mock(spec=Saver, _coord_systems=[],
                           _dataset=dataset)
-        variable = mock.Mock()
+        class NCMock(mock.Mock):
+            def setncattr(self, name, attr):
+                setattr(self, name, attr)
+        variable = NCMock()
 
         # This is the method we're actually testing!
         Saver._create_cf_grid_mapping(saver, cube, variable)
