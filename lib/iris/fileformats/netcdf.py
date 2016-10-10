@@ -1135,8 +1135,8 @@ class Saver(object):
         # Add CF-netCDF cell measure variable references to the
         # CF-netCDF data variable.
         if cell_measure_names:
-            cf_var_cube.cell_measures = ' '.join(
-                sorted(cell_measure_names))
+            cm_var_names = ' '.join(sorted(cell_measure_names))
+            _setncattr(cf_var_cube, 'cell_measures', cm_var_names)
 
     def _add_dim_coords(self, cube, dimension_names):
         """
@@ -1225,7 +1225,7 @@ class Saver(object):
                                                             primary_coord)
                             cf_var = self._dataset.variables[name]
                             _setncattr(cf_var, 'standard_name', std_name)
-                            cf_var.axis = 'Z'
+                            _setncattr(cf_var, 'axis', 'Z')
                             # Update the formula terms.
                             ft = formula_terms.split()
                             ft = [name if t == cf_name else t for t in ft]
@@ -1235,10 +1235,11 @@ class Saver(object):
                         # Update the associated cube variable.
                         coords = cf_var_cube.coordinates.split()
                         coords = [name if c == cf_name else c for c in coords]
-                        cf_var_cube.coordinates = ' '.join(coords)
+                        _setncattr(cf_var_cube, 'coordinates',
+                                   ' '.join(coords))
                 else:
                     _setncattr(cf_var, 'standard_name', std_name)
-                    cf_var.axis = 'Z'
+                    _setncattr(cf_var, 'axis', 'Z')
                     _setncattr(cf_var, 'formula_terms', formula_terms)
 
     def _get_dim_names(self, cube):
@@ -1480,7 +1481,7 @@ class Saver(object):
         cf_var[:] = data
 
         if cell_measure.units != 'unknown':
-            cf_var.units = str(cell_measure.units)
+            _setncattr(cf_var, 'units', str(cell_measure.units))
 
         if cell_measure.standard_name is not None:
             _setncattr(cf_var, 'standard_name', cell_measure.standard_name)
@@ -1576,7 +1577,7 @@ class Saver(object):
             if coord in cf_coordinates:
                 axis = iris.util.guess_coord_axis(coord)
                 if axis is not None and axis.lower() in SPATIO_TEMPORAL_AXES:
-                    cf_var.axis = axis.upper()
+                    _setncattr(cf_var, 'axis', axis.upper())
 
             # Add the data to the CF-netCDF variable.
             cf_var[:] = points
@@ -1588,7 +1589,7 @@ class Saver(object):
         standard_name, long_name, units = self._cf_coord_identity(coord)
 
         if units != 'unknown':
-            cf_var.units = units
+            _setncattr(cf_var, 'units', units)
 
         if standard_name is not None:
             _setncattr(cf_var, 'standard_name', standard_name)
@@ -1788,7 +1789,7 @@ class Saver(object):
                 self._coord_systems.append(cs)
 
             # Refer to grid var
-            cf_var_cube.grid_mapping = cs.grid_mapping_name
+            _setncattr(cf_var_cube, 'grid_mapping', cs.grid_mapping_name)
 
     def _create_cf_data_variable(self, cube, dimension_names, local_keys=None,
                                  **kwargs):
