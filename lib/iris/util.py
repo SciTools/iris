@@ -306,8 +306,8 @@ def guess_coord_axis(coord):
     elif coord.standard_name in ('latitude', 'grid_latitude',
                                  'projection_y_coordinate'):
         axis = 'Y'
-    elif (coord.units.is_convertible('hPa')
-          or coord.attributes.get('positive') in ('up', 'down')):
+    elif (coord.units.is_convertible('hPa') or
+          coord.attributes.get('positive') in ('up', 'down')):
         axis = 'Z'
     elif coord.units.is_time_reference():
         axis = 'T'

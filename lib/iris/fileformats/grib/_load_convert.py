@@ -1072,15 +1072,15 @@ def grid_definition_template_90(section, metadata):
         raise TranslationError('Unsupported space-view orientation.')
 
     # Determine the coordinate system.
-    sub_satellite_lat = (section['latitudeOfSubSatellitePoint']
-                         * _GRID_ACCURACY_IN_DEGREES)
+    sub_satellite_lat = (section['latitudeOfSubSatellitePoint'] *
+                         _GRID_ACCURACY_IN_DEGREES)
     # The subsequent calculations to determine the apparent Earth
     # diameters rely on the satellite being over the equator.
     if sub_satellite_lat != 0:
         raise TranslationError('Unsupported non-zero latitude for '
                                'space-view perspective.')
-    sub_satellite_lon = (section['longitudeOfSubSatellitePoint']
-                         * _GRID_ACCURACY_IN_DEGREES)
+    sub_satellite_lon = (section['longitudeOfSubSatellitePoint'] *
+                         _GRID_ACCURACY_IN_DEGREES)
     major, minor, radius = ellipsoid_geometry(section)
     geog_cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
     height_above_centre = geog_cs.semi_major_axis * section['Nr'] / 1e6

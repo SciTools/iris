@@ -1836,9 +1836,9 @@ class Saver(object):
             cf_name = self._increment_name(cf_name)
 
         # if netcdf3 avoid streaming due to dtype handling
-        if (not cube.has_lazy_data()
-                or self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                                 'NETCDF3_64BIT')):
+        if (not cube.has_lazy_data() or
+                self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                              'NETCDF3_64BIT')):
             # Determine whether there is a cube MDI value.
             fill_value = None
             if isinstance(cube.data, ma.core.MaskedArray):
