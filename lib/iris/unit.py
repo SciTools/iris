@@ -1972,19 +1972,6 @@ class Unit(iris.util._OrderedHashable):
 
         Returns:
             float or numpy.ndarray of float.
-
-        For example:
-
-            >>> import cf_units as unit
-            >>> import datetime
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00',
-            ...               calendar=unit.CALENDAR_STANDARD)
-            >>> u.date2num(datetime.datetime(1970, 1, 1, 5))
-            5.00000000372529
-            >>> u.date2num([datetime.datetime(1970, 1, 1, 5),
-            ...             datetime.datetime(1970, 1, 1, 6)])
-            array([ 5.,  6.])
-
         """
 
         cdf_utime = self.utime()
@@ -2016,18 +2003,6 @@ class Unit(iris.util._OrderedHashable):
 
         Returns:
             datetime, or numpy.ndarray of datetime object.
-
-        For example:
-
-            >>> import cf_units as unit
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00',
-            ...               calendar=unit.CALENDAR_STANDARD)
-            >>> u.num2date(6)
-            datetime.datetime(1970, 1, 1, 6, 0)
-            >>> u.num2date([6, 7])
-            array([datetime.datetime(1970, 1, 1, 6, 0),
-                   datetime.datetime(1970, 1, 1, 7, 0)], dtype=object)
-
         """
         cdf_utime = self.utime()
         return cdf_utime.num2date(time_value)
