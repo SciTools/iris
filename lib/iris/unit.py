@@ -1932,16 +1932,6 @@ class Unit(iris.util._OrderedHashable):
 
         Returns:
             netcdftime.utime.
-
-        For example:
-
-            >>> import cf_units as unit
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00',
-            ...               calendar=unit.CALENDAR_STANDARD)
-            >>> ut = u.utime()
-            >>> ut.num2date(2)
-            datetime.datetime(1970, 1, 1, 2, 0)
-
         """
 
         #
