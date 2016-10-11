@@ -1691,13 +1691,12 @@ class Saver(object):
             if cs not in self._coord_systems:
                 while cs.grid_mapping_name in self._dataset.variables:
                     aname = self._increment_name(cs.grid_mapping_name)
-                    _setncattr(cs, 'grid_mapping_name', aname)
+                    cs.grid_mapping_name = aname
 
                 cf_var_grid = self._dataset.createVariable(
                     cs.grid_mapping_name, np.int32)
                 _setncattr(cf_var_grid, 'grid_mapping_name',
                            cs.grid_mapping_name)
-
 
                 def add_ellipsoid(ellipsoid):
                     cf_var_grid.longitude_of_prime_meridian = (
