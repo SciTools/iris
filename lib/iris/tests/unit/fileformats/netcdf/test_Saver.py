@@ -505,19 +505,19 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
         """
         cube = self._cube_with_cs(coord_system)
-        # Calls the actual NetCDF saver with appropriate mocking, returning
-        # the grid variable that gets created.
-        grid_variable = mock.Mock(name='NetCDFVariable')
-        create_var_fn = mock.Mock(side_effect=[grid_variable])
-        dataset = mock.Mock(variables=[],
-                            createVariable=create_var_fn)
-        saver = mock.Mock(spec=Saver, _coord_systems=[],
-                          _dataset=dataset)
 
         class NCMock(mock.Mock):
             def setncattr(self, name, attr):
                 setattr(self, name, attr)
 
+        # Calls the actual NetCDF saver with appropriate mocking, returning
+        # the grid variable that gets created.
+        grid_variable = NCMock(name='NetCDFVariable')
+        create_var_fn = mock.Mock(side_effect=[grid_variable])
+        dataset = mock.Mock(variables=[],
+                            createVariable=create_var_fn)
+        saver = mock.Mock(spec=Saver, _coord_systems=[],
+                          _dataset=dataset)
         variable = NCMock()
 
         # This is the method we're actually testing!
@@ -525,7 +525,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
         self.assertEqual(create_var_fn.call_count, 1)
         self.assertEqual(variable.grid_mapping,
-                         str.encode(grid_variable.grid_mapping_name))
+                         grid_variable.grid_mapping_name)
         return grid_variable
 
     def _variable_attributes(self, coord_system):
@@ -552,7 +552,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
     def test_rotated_geog_cs(self):
         coord_system = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
-        expected = {'grid_mapping_name': 'rotated_latitude_longitude',
+        expected = {'grid_mapping_name': b'rotated_latitude_longitude',
                     'north_pole_grid_longitude': 0.0,
                     'grid_north_pole_longitude': 177.5,
                     'grid_north_pole_latitude': 37.5,
@@ -563,7 +563,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
     def test_spherical_geog_cs(self):
         coord_system = GeogCS(6371229.0)
-        expected = {'grid_mapping_name': 'latitude_longitude',
+        expected = {'grid_mapping_name': b'latitude_longitude',
                     'longitude_of_prime_meridian': 0.0,
                     'earth_radius': 6371229.0
                     }
@@ -571,7 +571,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
     def test_elliptic_geog_cs(self):
         coord_system = GeogCS(637, 600)
-        expected = {'grid_mapping_name': 'latitude_longitude',
+        expected = {'grid_mapping_name': b'latitude_longitude',
                     'longitude_of_prime_meridian': 0.0,
                     'semi_minor_axis': 600.0,
                     'semi_major_axis': 637.0,
@@ -583,7 +583,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                                         false_easting=-2, false_northing=-5,
                                         secant_latitudes=(38, 50),
                                         ellipsoid=GeogCS(6371000))
-        expected = {'grid_mapping_name': 'lambert_conformal_conic',
+        expected = {'grid_mapping_name': b'lambert_conformal_conic',
                     'latitude_of_projection_origin': 44,
                     'longitude_of_central_meridian': 2,
                     'false_easting': -2, 'false_northing': -5,
@@ -600,7 +600,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             false_easting=100,
             false_northing=200,
             ellipsoid=GeogCS(6377563.396, 6356256.909))
-        expected = {'grid_mapping_name': 'lambert_azimuthal_equal_area',
+        expected = {'grid_mapping_name': b'lambert_azimuthal_equal_area',
                     'latitude_of_projection_origin': 52,
                     'longitude_of_projection_origin': 10,
                     'false_easting': 100,
