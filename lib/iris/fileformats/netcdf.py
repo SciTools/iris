@@ -708,7 +708,7 @@ def load_cubes(filenames, callback=None):
 def _bytes_if_ascii(string):
     """
     Convert the given string to a byte string (str in py2k, bytes in py3k)
-    iff the given string can be encoded to ascii, else maintain the type
+    if the given string can be encoded to ascii, else maintain the type
     of the inputted string.
 
     Note: passing objects without an `encode` method (such as None) will
@@ -1690,12 +1690,14 @@ class Saver(object):
             # Grid var not yet created?
             if cs not in self._coord_systems:
                 while cs.grid_mapping_name in self._dataset.variables:
-                    cs.grid_mapping_name = (
-                        self._increment_name(cs.grid_mapping_name))
+                    aname = self._increment_name(cs.grid_mapping_name)
+                    _setncattr(cs, 'grid_mapping_name', aname)
 
                 cf_var_grid = self._dataset.createVariable(
                     cs.grid_mapping_name, np.int32)
-                cf_var_grid.grid_mapping_name = cs.grid_mapping_name
+                _setncattr(cf_var_grid, 'grid_mapping_name',
+                           cs.grid_mapping_name)
+
 
                 def add_ellipsoid(ellipsoid):
                     cf_var_grid.longitude_of_prime_meridian = (
