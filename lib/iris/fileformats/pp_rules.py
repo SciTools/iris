@@ -480,10 +480,15 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
 
     """
     def date2hours(t):
-        epoch_hours = epoch_hours_unit.date2num(t)
+        # netcdf4python has changed it's behaviour, at version 1.2, such
+        # that a date2num calculation returns a python float, not
+        # numpy.float64.  The behaviour of round is to recast this to an
+        # int, which is not the desired behaviour for PP files.
+        # So, cast the answer to numpy.float_ to be safe.
+        epoch_hours = np.float_(epoch_hours_unit.date2num(t))
         if t.minute == 0 and t.second == 0:
             epoch_hours = round(epoch_hours)
-        return float(epoch_hours)
+        return epoch_hours
 
     def date2year(t_in):
         return t_in.year
