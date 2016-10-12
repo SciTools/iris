@@ -1,874 +1,921 @@
 {
     "example_tests.test_COP_1d_plot.TestCOP1DPlot.test_COP_1d_plot.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/775b9dec3549e46f9671f79899f09f5c42870b0c.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/6d726f53e6e2e9aa1d812312aac27276a34616cf.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/775b9dec3549e46f9671f79899f09f5c42870b0c.png",
+        "https://scitools.github.io/test-images-scitools/image_files/6d726f53e6e2e9aa1d812312aac27276a34616cf.png",
+        "https://scitools.github.io/test-images-scitools/image_files/33271b3159960ea7eeff11d42d7e3f9bd5575cc2.png"
+    ],
     "example_tests.test_COP_maps.TestCOPMaps.test_cop_maps.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/4da9442a24056728296b6637f062f42a9cd6ee06.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/14505f4a4c2fdb306751de8bacfac6b44dadee85.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/4da9442a24056728296b6637f062f42a9cd6ee06.png",
+        "https://scitools.github.io/test-images-scitools/image_files/14505f4a4c2fdb306751de8bacfac6b44dadee85.png",
         "https://scitools.github.io/test-images-scitools/image_files/20d1518ef92f2187038385ca28f474d3e764bc52.png"
-    ], 
+    ],
     "example_tests.test_SOI_filtering.TestSOIFiltering.test_soi_filtering.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c998a36d81d38745ab2513af5450a39494edb2af.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/73ae763ac65b57c7cfc797c04a34afd7e32cd123.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/c998a36d81d38745ab2513af5450a39494edb2af.png",
+        "https://scitools.github.io/test-images-scitools/image_files/73ae763ac65b57c7cfc797c04a34afd7e32cd123.png",
+        "https://scitools.github.io/test-images-scitools/image_files/ffd8d3a3a85a12ff2b90c310c22d8aacfa62f2e5.png"
+    ],
     "example_tests.test_TEC.TestTEC.test_TEC.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/463935ede08ceddadcc24324e0a11c24fb46a0c8.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/463935ede08ceddadcc24324e0a11c24fb46a0c8.png",
         "https://scitools.github.io/test-images-scitools/image_files/ef9eaafe15d78b0dca80674e2b4183d06d957af1.png"
-    ], 
+    ],
     "example_tests.test_anomaly_log_colouring.TestAnomalyLogColouring.test_anomaly_log_colouring.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/19db1152a859567b0bf9fe89a7d1880acafbf100.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/6e2454e989a05be593bd1082f905a9fd46c2049a.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/19db1152a859567b0bf9fe89a7d1880acafbf100.png",
+        "https://scitools.github.io/test-images-scitools/image_files/6e2454e989a05be593bd1082f905a9fd46c2049a.png",
         "https://scitools.github.io/test-images-scitools/image_files/0ee76c4de7f5e3c47198f191ab825c8974874dc7.png"
-    ], 
+    ],
     "example_tests.test_atlantic_profiles.TestAtlanticProfiles.test_atlantic_profiles.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/0bde47fbbc4a15498c0ecb8bd3eb5e63339e5121.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/b8365851d0b4b5589289026eda692c643499c7f3.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/0bde47fbbc4a15498c0ecb8bd3eb5e63339e5121.png",
+        "https://scitools.github.io/test-images-scitools/image_files/b8365851d0b4b5589289026eda692c643499c7f3.png",
+        "https://scitools.github.io/test-images-scitools/image_files/c3a2ccc6873ddee7ea0dafd25498b743ffece4fa.png",
+        "https://scitools.github.io/test-images-scitools/image_files/4cbda27eb65fc360d08dde0ccf40b951fdfe4453.png",
+        "https://scitools.github.io/test-images-scitools/image_files/3a2f43bc6b1bd4397a8eb6877a128ab7a4f051ff.png",
+        "https://scitools.github.io/test-images-scitools/image_files/da5cd8269bcc96533c8c2f4a788e2c980381dfef.png"
+    ],
     "example_tests.test_atlantic_profiles.TestAtlanticProfiles.test_atlantic_profiles.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/ddc7f58664e61c5798ecfc7e55ec3c6c62ab1a24.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/ddc7f58664e61c5798ecfc7e55ec3c6c62ab1a24.png",
         "https://scitools.github.io/test-images-scitools/image_files/b26878c2fabfdc727787dd98f465043bbbfd3553.png"
-    ], 
+    ],
     "example_tests.test_coriolis_plot.TestCoriolisPlot.test_coriolis_plot.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/7576971ae4fce5456c67c5d54f3f4110d6e85e13.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/fb246b208d11834e8108067504c6a73ee05f85ee.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/7576971ae4fce5456c67c5d54f3f4110d6e85e13.png",
+        "https://scitools.github.io/test-images-scitools/image_files/fb246b208d11834e8108067504c6a73ee05f85ee.png",
         "https://scitools.github.io/test-images-scitools/image_files/e675b4d1cc5d38da66de49a1f204bc1cc983ebba.png"
-    ], 
+    ],
     "example_tests.test_cross_section.TestCrossSection.test_cross_section.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/7b5c6d7466e953e845d0bc1ec9f08b01471b87ee.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/a4e6e12b25cacfcb7c112bec3cec754c3b165a60.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/7b5c6d7466e953e845d0bc1ec9f08b01471b87ee.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a4e6e12b25cacfcb7c112bec3cec754c3b165a60.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a09ea89f76efcdbfe0a8e130bf9c991961150794.png"
+    ],
     "example_tests.test_cross_section.TestCrossSection.test_cross_section.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/3589f5e242ce5b565b74da23287fddec32d102fa.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3589f5e242ce5b565b74da23287fddec32d102fa.png",
         "https://scitools.github.io/test-images-scitools/image_files/4ddf3595a4c21da1ea984d2bd377ff45c1ffd37b.png"
-    ], 
+    ],
     "example_tests.test_custom_aggregation.TestCustomAggregation.test_custom_aggregation.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/3fd959e6f86fbe99ff0fa9fb06d5af48edde69a6.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/53e6e605d77d92b7a565a05b94fbe71b0884dcfe.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3fd959e6f86fbe99ff0fa9fb06d5af48edde69a6.png",
+        "https://scitools.github.io/test-images-scitools/image_files/53e6e605d77d92b7a565a05b94fbe71b0884dcfe.png",
         "https://scitools.github.io/test-images-scitools/image_files/33d66426e41b24bfc1135e2c03390aa73cac44c0.png"
-    ], 
+    ],
     "example_tests.test_custom_file_loading.TestCustomFileLoading.test_custom_file_loading.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c903e396c04a4d1076767c8474b1e48c80413aab.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c903e396c04a4d1076767c8474b1e48c80413aab.png",
         "https://scitools.github.io/test-images-scitools/image_files/73399ce0ab66b9237ea3573390a6abc95a86393e.png"
-    ], 
+    ],
     "example_tests.test_deriving_phenomena.TestDerivingPhenomena.test_deriving_phenomena.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/4f6ee4c1ad1b3fa3c5d31ddeba34c8ec544fed50.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/4f6ee4c1ad1b3fa3c5d31ddeba34c8ec544fed50.png",
         "https://scitools.github.io/test-images-scitools/image_files/c127277d79e408af8d9826269858168632629e83.png"
-    ], 
+    ],
     "example_tests.test_global_map.TestGlobalMap.test_global_map.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c4193550f97b1384419c0761ba85304012638ce8.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/0d370726237672639b01eda6795297af1e7153d3.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c4193550f97b1384419c0761ba85304012638ce8.png",
+        "https://scitools.github.io/test-images-scitools/image_files/0d370726237672639b01eda6795297af1e7153d3.png",
         "https://scitools.github.io/test-images-scitools/image_files/2f0db2900216842956d316b3a92831f3bcff8a72.png"
-    ], 
+    ],
     "example_tests.test_hovmoller.TestGlobalMap.test_hovmoller.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/6de52bb3dc3838802c87fedfcdd3db585bae4ccf.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6de52bb3dc3838802c87fedfcdd3db585bae4ccf.png",
         "https://scitools.github.io/test-images-scitools/image_files/12ee81f8bd07182dd5165a0e77c4cf3b746fa93a.png"
-    ], 
+    ],
     "example_tests.test_inset_plot.TestInsetPlot.test_inset_plot.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/a4d290bab6da123ef455b39979f415debb2b925c.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/414dadf1e840ec67c96612e4ac832019bd605bd5.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/a4d290bab6da123ef455b39979f415debb2b925c.png",
+        "https://scitools.github.io/test-images-scitools/image_files/414dadf1e840ec67c96612e4ac832019bd605bd5.png",
+        "https://scitools.github.io/test-images-scitools/image_files/988896162aa71b6cb7034dae4a221feacd38094c.png"
+    ],
     "example_tests.test_lagged_ensemble.TestLaggedEnsemble.test_lagged_ensemble.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c23632eba452a7c3074396c288ddc85cf9a27923.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/ed98c2a750eae4f06b269c38ca3810ce9eb51c38.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/8f68ed33e818f4cde38bc94c755e2a98b58016fe.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/c23632eba452a7c3074396c288ddc85cf9a27923.png",
+        "https://scitools.github.io/test-images-scitools/image_files/ed98c2a750eae4f06b269c38ca3810ce9eb51c38.png",
+        "https://scitools.github.io/test-images-scitools/image_files/8f68ed33e818f4cde38bc94c755e2a98b58016fe.png",
+        "https://scitools.github.io/test-images-scitools/image_files/6624fb203d0d905c5dc49f362ce502932692ed3f.png"
+    ],
     "example_tests.test_lagged_ensemble.TestLaggedEnsemble.test_lagged_ensemble.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/2aae63c8a7581a0a84c3ec3df73cf96a3afa6cda.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/03f5499e7b8c1c3885249f8f15a7ab1ce4b39b7f.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/2aae63c8a7581a0a84c3ec3df73cf96a3afa6cda.png",
+        "https://scitools.github.io/test-images-scitools/image_files/03f5499e7b8c1c3885249f8f15a7ab1ce4b39b7f.png",
+        "https://scitools.github.io/test-images-scitools/image_files/086e2955203872dcdbdeef91b335f618231cfb18.png"
+    ],
     "example_tests.test_lineplot_with_legend.TestLineplotWithLegend.test_lineplot_with_legend.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/f4d65c3ff5b1c11617479af2977279f3b9c743bd.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/b0483b5e302db34c4d6ca74a729cc6c9056e2b36.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/f4d65c3ff5b1c11617479af2977279f3b9c743bd.png",
+        "https://scitools.github.io/test-images-scitools/image_files/b0483b5e302db34c4d6ca74a729cc6c9056e2b36.png",
+        "https://scitools.github.io/test-images-scitools/image_files/50fd225845d2dec87e56e63534564d5727dc60cc.png"
+    ],
     "example_tests.test_orca_projection.TestOrcaProjection.test_orca_projection.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/31770e35ff8b5d35be3d167362ad3beed4ab9bde.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/31770e35ff8b5d35be3d167362ad3beed4ab9bde.png",
         "https://scitools.github.io/test-images-scitools/image_files/fdb6621e8a1a84845411329e86e773e5a40ffbb4.png"
-    ], 
+    ],
     "example_tests.test_orca_projection.TestOrcaProjection.test_orca_projection.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/12e559666b9116918c861fe09ddcf989f35699d4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/12e559666b9116918c861fe09ddcf989f35699d4.png",
         "https://scitools.github.io/test-images-scitools/image_files/38cb106e87d8540d9999bd47587e718244ca398d.png"
-    ], 
+    ],
     "example_tests.test_orca_projection.TestOrcaProjection.test_orca_projection.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/eef5b0eb8018eb07bbf9457c0641d062baa289a7.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/b97f483476f3006f83886fd6746a38193b65a16f.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/ddbcb3a5f795c9e064ea6b42bbb06fe65c80673e.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/eef5b0eb8018eb07bbf9457c0641d062baa289a7.png",
+        "https://scitools.github.io/test-images-scitools/image_files/b97f483476f3006f83886fd6746a38193b65a16f.png",
+        "https://scitools.github.io/test-images-scitools/image_files/ddbcb3a5f795c9e064ea6b42bbb06fe65c80673e.png",
+        "https://scitools.github.io/test-images-scitools/image_files/4f5a4c1ed5e0a3bedeac0433212c8b2296af68b4.png"
+    ],
     "example_tests.test_orca_projection.TestOrcaProjection.test_orca_projection.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/76a40975b3e35f8226c37be146ad6fc678eea13a.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/76a40975b3e35f8226c37be146ad6fc678eea13a.png",
         "https://scitools.github.io/test-images-scitools/image_files/81c58c8883d143a774546e8c368e5468a9f691cc.png"
-    ], 
+    ],
     "example_tests.test_polar_stereo.TestPolarStereo.test_polar_stereo.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/889b91c7a5ff2403e24dce5047e95dc7eec7efe7.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/9dc8f0fb0201cca91dd00f0ede59c326f0d8a8f4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/889b91c7a5ff2403e24dce5047e95dc7eec7efe7.png",
+        "https://scitools.github.io/test-images-scitools/image_files/9dc8f0fb0201cca91dd00f0ede59c326f0d8a8f4.png",
         "https://scitools.github.io/test-images-scitools/image_files/daa99a98023de225e84ff8230cd5f0e60c451b30.png"
-    ], 
+    ],
     "example_tests.test_polynomial_fit.TestPolynomialFit.test_polynomial_fit.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/63876535ed13433a906cd08480032b741194e326.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/be0c6a43152e1b3b5e16de751423d93ccdfe6c6e.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/63876535ed13433a906cd08480032b741194e326.png",
+        "https://scitools.github.io/test-images-scitools/image_files/be0c6a43152e1b3b5e16de751423d93ccdfe6c6e.png",
+        "https://scitools.github.io/test-images-scitools/image_files/c7390b915798d1c3c793d71f22cb0e2d3524d294.png"
+    ],
     "example_tests.test_projections_and_annotations.TestProjectionsAndAnnotations.test_projections_and_annotations.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/2e6dffe8498e3d961e4f91d9a4fd796c537204a6.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/7c494eca724172babf8ddc474670cb050c5a4c7f.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/2e6dffe8498e3d961e4f91d9a4fd796c537204a6.png",
+        "https://scitools.github.io/test-images-scitools/image_files/7c494eca724172babf8ddc474670cb050c5a4c7f.png",
+        "https://scitools.github.io/test-images-scitools/image_files/dd26ab7e528a6a2b001357a2a6b5fc25f583b097.png"
+    ],
     "example_tests.test_projections_and_annotations.TestProjectionsAndAnnotations.test_projections_and_annotations.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/3107cb6d9c75ad3f78a30a0657427cebd7239c63.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/e25bc860ffeda3dfe1de7822030d213f9ff86767.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/3107cb6d9c75ad3f78a30a0657427cebd7239c63.png",
+        "https://scitools.github.io/test-images-scitools/image_files/e25bc860ffeda3dfe1de7822030d213f9ff86767.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a6855a21c27c9ce5d6434955af1994e9f3f99e20.png"
+    ],
     "example_tests.test_rotated_pole_mapping.TestRotatedPoleMapping.test_rotated_pole_mapping.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/8b0a45dad08dffcd7fbcef60ca847d6193f0990b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/8b0a45dad08dffcd7fbcef60ca847d6193f0990b.png",
         "https://scitools.github.io/test-images-scitools/image_files/cb603bff7b7872819d2aae6d0b551e084239db73.png"
-    ], 
+    ],
     "example_tests.test_rotated_pole_mapping.TestRotatedPoleMapping.test_rotated_pole_mapping.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/6f59adaf0345b659549a8e4429776bb3ccc72eb5.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6f59adaf0345b659549a8e4429776bb3ccc72eb5.png",
         "https://scitools.github.io/test-images-scitools/image_files/b307d35db4a3aab8f17b58f84ef633e5e960cc1e.png"
-    ], 
+    ],
     "example_tests.test_rotated_pole_mapping.TestRotatedPoleMapping.test_rotated_pole_mapping.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/b1337a8c553127842a7dcb56eb45eb6dd332b9c0.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/b1337a8c553127842a7dcb56eb45eb6dd332b9c0.png",
         "https://scitools.github.io/test-images-scitools/image_files/d684a833cbc4b7b98e8296dafdc9e3d82fb40da8.png"
-    ], 
+    ],
     "example_tests.test_rotated_pole_mapping.TestRotatedPoleMapping.test_rotated_pole_mapping.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/d369be63c5fae9796bf7e5be812347e84e7856b7.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d369be63c5fae9796bf7e5be812347e84e7856b7.png",
         "https://scitools.github.io/test-images-scitools/image_files/da0acccc8e39e841536d3e9ef421c729721357a7.png"
-    ], 
+    ],
     "example_tests.test_wind_speed.TestWindSpeed.test_wind_speed.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/b0686cad2a2b5f522f7d00a97e84c1362ccf6aff.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/b0686cad2a2b5f522f7d00a97e84c1362ccf6aff.png",
         "https://scitools.github.io/test-images-scitools/image_files/4e2a32e477c2d5b0c1752b1248ba6d21bab58248.png"
-    ], 
+    ],
     "example_tests.test_wind_speed.TestWindSpeed.test_wind_speed.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/315f0ed273e0a806cf5f4526c2fec51c528e721f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/315f0ed273e0a806cf5f4526c2fec51c528e721f.png",
         "https://scitools.github.io/test-images-scitools/image_files/0d265952bdb7c2afd7cf9e6a1280c82b6c7b9a92.png"
-    ], 
+    ],
     "iris.tests.experimental.test_animate.IntegrationTest.test_cube_animation.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/617b8b23a9df4829e085772ea92e44642e2128e8.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/617b8b23a9df4829e085772ea92e44642e2128e8.png",
         "https://scitools.github.io/test-images-scitools/image_files/791751f845cad5be024bec59791a1fa51482ca2c.png"
-    ], 
+    ],
     "iris.tests.experimental.test_animate.IntegrationTest.test_cube_animation.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/807be711fd047fbde8b49d2262614b93bd392eef.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/807be711fd047fbde8b49d2262614b93bd392eef.png",
         "https://scitools.github.io/test-images-scitools/image_files/a63c4b6d0e73b27b049fcf8e2c4454afe35f4f68.png"
-    ], 
+    ],
     "iris.tests.experimental.test_animate.IntegrationTest.test_cube_animation.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/be7ca725fd9003151265478e426a612a5b65b901.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/be7ca725fd9003151265478e426a612a5b65b901.png",
         "https://scitools.github.io/test-images-scitools/image_files/f0874f5b6e14acdc59720248d0309f3655470c2a.png"
-    ], 
+    ],
     "iris.tests.test_analysis.TestProject.test_cartopy_projection.0": [
         "https://scitools.github.io/test-images-scitools/image_files/35abe0d7038a75580aac6bbde6045213ba0f2509.png"
-    ], 
+    ],
     "iris.tests.test_analysis.TestRotatedPole.test_all.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/66ed0f9d1ef83b714fda7299264e6c420ca04159.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/66ed0f9d1ef83b714fda7299264e6c420ca04159.png",
         "https://scitools.github.io/test-images-scitools/image_files/c007fa9d002b911e9868cb11474b827959bc70b7.png"
-    ], 
+    ],
     "iris.tests.test_analysis.TestRotatedPole.test_all.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/30570614007e1f55df68f04b37e348c46a9a20b9.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/30570614007e1f55df68f04b37e348c46a9a20b9.png",
         "https://scitools.github.io/test-images-scitools/image_files/cef41b6507d40504c099a6c493b4fe0b9ed1adb5.png"
-    ], 
+    ],
     "iris.tests.test_analysis.TestRotatedPole.test_all.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/0f5c99da44a0f4640374961907f324a5dac767eb.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/6b5e42fc27c146b1e5e6b6e57b7d4dce0891463b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/0f5c99da44a0f4640374961907f324a5dac767eb.png",
+        "https://scitools.github.io/test-images-scitools/image_files/6b5e42fc27c146b1e5e6b6e57b7d4dce0891463b.png",
         "https://scitools.github.io/test-images-scitools/image_files/afae7fcc28956b67b89e39617e097fdca40045e3.png"
-    ], 
+    ],
     "iris.tests.test_analysis.TestRotatedPole.test_all.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/27e9a9ca84937d9b13ba997cfbc6f461c925b20d.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/27e9a9ca84937d9b13ba997cfbc6f461c925b20d.png",
         "https://scitools.github.io/test-images-scitools/image_files/2ce911bda2c1a416a57eeea6bf07728ed698f160.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestBasic.test_contourf.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/144c741aead354b149cb838df59b9db6c179f22b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/144c741aead354b149cb838df59b9db6c179f22b.png",
         "https://scitools.github.io/test-images-scitools/image_files/7ae053ffe77756ded77985b7bf19b2c9fba039ff.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestBasic.test_pcolor.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/597727cac62033e69449cd1df51442b00600d044.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/597727cac62033e69449cd1df51442b00600d044.png",
         "https://scitools.github.io/test-images-scitools/image_files/8c8d7cf37f4757fc89404e82c383e18ee34e5696.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestBasic.test_unmappable.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/cd0806eafb5b42d2ee4b58bbe0ec4a9acc31b2f8.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/cd0806eafb5b42d2ee4b58bbe0ec4a9acc31b2f8.png",
         "https://scitools.github.io/test-images-scitools/image_files/24e1cf26f60b7c56444f67d9206aaef2cde9bb39.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestBoundedCube.test_grid.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/a13f5471b13c6ee588d12e826397b2ca95957de8.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/e7f0d9d512e15dc173a04ccd527643f6cde456e8.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/a13f5471b13c6ee588d12e826397b2ca95957de8.png",
+        "https://scitools.github.io/test-images-scitools/image_files/e7f0d9d512e15dc173a04ccd527643f6cde456e8.png",
         "https://scitools.github.io/test-images-scitools/image_files/3842c692047aa9b4437e8055e82da4dbc248170b.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestBoundedCube.test_pcolormesh.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/b565f8a9ce5b591c734db50342dc8d56715aa747.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/b565f8a9ce5b591c734db50342dc8d56715aa747.png",
         "https://scitools.github.io/test-images-scitools/image_files/4c193d2c0ec8af2d3ea829347f6ee89447939ef2.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_grid.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/edd8ff73460d9550e3314b2bb557a825d14c3297.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/edd8ff73460d9550e3314b2bb557a825d14c3297.png",
         "https://scitools.github.io/test-images-scitools/image_files/405f5499bc76fce8fffffabb28eea56c9fe1c464.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_outline.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/e0c2ae53c64f2ed1b15dc7cb7c3651245358f390.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/e0c2ae53c64f2ed1b15dc7cb7c3651245358f390.png",
         "https://scitools.github.io/test-images-scitools/image_files/9e56756e082d8b5b76ea671931ee105a394186ae.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_pcolormesh.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/d81f45733e18b59f9c406c24f317f17541206a31.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d81f45733e18b59f9c406c24f317f17541206a31.png",
         "https://scitools.github.io/test-images-scitools/image_files/0a8032c44f9b5728d6ef8dd7c5e57ed6b5954577.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_scatter.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/4bc661c638c6a9efbfd7fe86bcecc374f8346ba4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/4bc661c638c6a9efbfd7fe86bcecc374f8346ba4.png",
         "https://scitools.github.io/test-images-scitools/image_files/edd68f2989889690baf4be218a50f9b88676b820.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLowLevel.test_keywords.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/35df96c086fb2fd3d9caf6fb83f4d60ec374d911.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/35df96c086fb2fd3d9caf6fb83f4d60ec374d911.png",
         "https://scitools.github.io/test-images-scitools/image_files/2c12aa65ca5fac60900ed84fd52b59ca34d5b8be.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLowLevel.test_keywords.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/1889a8bc69e1bb2aff055a15502254750f75f49b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/1889a8bc69e1bb2aff055a15502254750f75f49b.png",
         "https://scitools.github.io/test-images-scitools/image_files/b1237842f3d13e93357847de9bbc0484db230ba1.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLowLevel.test_params.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/56e43bfbdd03403311ebb360a61555f95109f77e.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/56e43bfbdd03403311ebb360a61555f95109f77e.png",
         "https://scitools.github.io/test-images-scitools/image_files/92221793e3048db4227114d2a882aeed79f96aab.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLowLevel.test_params.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/35df96c086fb2fd3d9caf6fb83f4d60ec374d911.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/35df96c086fb2fd3d9caf6fb83f4d60ec374d911.png",
         "https://scitools.github.io/test-images-scitools/image_files/2c12aa65ca5fac60900ed84fd52b59ca34d5b8be.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLowLevel.test_params.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/09ff363a1480723718fb45a3ee00cd96d381af03.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/09ff363a1480723718fb45a3ee00cd96d381af03.png",
         "https://scitools.github.io/test-images-scitools/image_files/68e1bbf9b952646a7f9ca64f94af124f93208765.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestLowLevel.test_simple.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/daa3fdca43751f47850fede89dd7cee264869a56.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/daa3fdca43751f47850fede89dd7cee264869a56.png",
         "https://scitools.github.io/test-images-scitools/image_files/a48ba70d0c9201d2ebf3893dbe0c74fc50d80127.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestMappingSubRegion.test_simple.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/ca5c4ee2e91cb93ac7c4fd1d26b2a82782d8889c.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/3fe974f3e046169628361621901cc9a1598ff339.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/ca5c4ee2e91cb93ac7c4fd1d26b2a82782d8889c.png",
+        "https://scitools.github.io/test-images-scitools/image_files/3fe974f3e046169628361621901cc9a1598ff339.png",
         "https://scitools.github.io/test-images-scitools/image_files/f4910056a31c9270285cf88314451e2b8f9a6306.png"
-    ], 
+    ],
     "iris.tests.test_mapping.TestUnmappable.test_simple.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/6c139dab88d9e5884d313f1a607de5e9c4fe5a93.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6c139dab88d9e5884d313f1a607de5e9c4fe5a93.png",
         "https://scitools.github.io/test-images-scitools/image_files/a14231d0f6fe19de89dfd200d25f1d7dbc31b2ff.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dPlotMultiArgs.test_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/5aa8117fa9dc96301a1228ca474ea9aa33a12bc0.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/5aa8117fa9dc96301a1228ca474ea9aa33a12bc0.png",
         "https://scitools.github.io/test-images-scitools/image_files/2d5d327c119b82076f71f0d50adac0135c49b0c8.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dPlotMultiArgs.test_coord_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/b74ae4b75a5170367fe2e796ccf4898eae52b414.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/b74ae4b75a5170367fe2e796ccf4898eae52b414.png",
         "https://scitools.github.io/test-images-scitools/image_files/4338a2ee07771aa802886c77d3bb7952ec324af4.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dPlotMultiArgs.test_coord_coord_map.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/d19ccf44440ea05d2194498aa777ba1360093a1f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d19ccf44440ea05d2194498aa777ba1360093a1f.png",
         "https://scitools.github.io/test-images-scitools/image_files/2d2e8c4507ca5e9fb1526b327a8e2e04e1adcf00.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dPlotMultiArgs.test_coord_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/da5c4399b8b13a28856f849d33316512a8ede165.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/da5c4399b8b13a28856f849d33316512a8ede165.png",
         "https://scitools.github.io/test-images-scitools/image_files/4ea8acf9846d2dc93caacaba9656f4cee23ab719.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dPlotMultiArgs.test_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/19cea174453fe151e0dfd39c11228fda6c9cfee4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/19cea174453fe151e0dfd39c11228fda6c9cfee4.png",
         "https://scitools.github.io/test-images-scitools/image_files/29956f9f561c751da7fbf9fb03b114dbbd8ce1c0.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dPlotMultiArgs.test_cube_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/94e545eaa00fdd0fe50c26115adf754f2bbca24e.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/94e545eaa00fdd0fe50c26115adf754f2bbca24e.png",
         "https://scitools.github.io/test-images-scitools/image_files/9b2e3f8560a967f30b97b1f48dbb403b1f8060c9.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dPlotMultiArgs.test_cube_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/dbca489c3218db86e912f317fe71c57f39df144c.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/dbca489c3218db86e912f317fe71c57f39df144c.png",
         "https://scitools.github.io/test-images-scitools/image_files/6bcd98aeb7c21aa6f09cad643dd8f4cbeb8af138.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dQuickplotPlotMultiArgs.test_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c7ea0e1e12e3e9bf1b7f2e2c51fb20b174bcad4e.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c7ea0e1e12e3e9bf1b7f2e2c51fb20b174bcad4e.png",
         "https://scitools.github.io/test-images-scitools/image_files/99056671bd8e0a3c896d0f84a4ac8288f9a8b71b.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dQuickplotPlotMultiArgs.test_coord_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/74b7de58343ad7d62d8d7ad5f22bc3cc22a4af80.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/8595c3c3b7cfdd83704a5575bac475e78f4c0988.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/74b7de58343ad7d62d8d7ad5f22bc3cc22a4af80.png",
+        "https://scitools.github.io/test-images-scitools/image_files/8595c3c3b7cfdd83704a5575bac475e78f4c0988.png",
+        "https://scitools.github.io/test-images-scitools/image_files/f8456f010e73daaebf04b7358c8c481ccb0304d4.png"
+    ],
     "iris.tests.test_plot.Test1dQuickplotPlotMultiArgs.test_coord_coord_map.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/d19ccf44440ea05d2194498aa777ba1360093a1f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d19ccf44440ea05d2194498aa777ba1360093a1f.png",
         "https://scitools.github.io/test-images-scitools/image_files/2d2e8c4507ca5e9fb1526b327a8e2e04e1adcf00.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dQuickplotPlotMultiArgs.test_coord_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/b1a4d231a7c6253b1caa08a66e19714ae5db7223.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/a8c760535b4261150d84e3c6c5e8e8ca4c289da0.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/b1a4d231a7c6253b1caa08a66e19714ae5db7223.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a8c760535b4261150d84e3c6c5e8e8ca4c289da0.png",
+        "https://scitools.github.io/test-images-scitools/image_files/5ba5f9bf96cb3fde4d2ac306baffe2235a6c0f77.png"
+    ],
     "iris.tests.test_plot.Test1dQuickplotPlotMultiArgs.test_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/4340a0484d945f089fa69c7613a1f0b6043fe112.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/4340a0484d945f089fa69c7613a1f0b6043fe112.png",
         "https://scitools.github.io/test-images-scitools/image_files/7f5cb39b8cbdfd83d918380e61d6ea416a743272.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dQuickplotPlotMultiArgs.test_cube_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/fd829406f32eee12a67c2f49c249b7cd6f688982.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/e97c0bed3b3e3684c0bd57626d053af6113856b1.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/fd829406f32eee12a67c2f49c249b7cd6f688982.png",
+        "https://scitools.github.io/test-images-scitools/image_files/e97c0bed3b3e3684c0bd57626d053af6113856b1.png",
+        "https://scitools.github.io/test-images-scitools/image_files/505d390e2b1aa575b2df596579f9ff2dbb39e523.png"
+    ],
     "iris.tests.test_plot.Test1dQuickplotPlotMultiArgs.test_cube_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/d3a5a78878fbd3ff950154e31777873a1c2e8a8d.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/2bca4a4ac5efc3fb9bc94a5a5e5b915ce4438bbf.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/d3a5a78878fbd3ff950154e31777873a1c2e8a8d.png",
+        "https://scitools.github.io/test-images-scitools/image_files/2bca4a4ac5efc3fb9bc94a5a5e5b915ce4438bbf.png",
+        "https://scitools.github.io/test-images-scitools/image_files/4e0a80600580b041f24e475d7ff3500e79a64908.png"
+    ],
     "iris.tests.test_plot.Test1dQuickplotScatter.test_coord_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/ed82a70b0c0be29125ed8617170e4dbf70b85ade.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/1fdde24b734abf1af4a37b7ea60b57a3faaf1488.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/d344596a8cb8dad4b91a76d98202666b6c8c94a2.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/ed82a70b0c0be29125ed8617170e4dbf70b85ade.png",
+        "https://scitools.github.io/test-images-scitools/image_files/1fdde24b734abf1af4a37b7ea60b57a3faaf1488.png",
+        "https://scitools.github.io/test-images-scitools/image_files/d344596a8cb8dad4b91a76d98202666b6c8c94a2.png",
+        "https://scitools.github.io/test-images-scitools/image_files/63ca0481334cb371fb5c75028e6c5725cbaf060b.png"
+    ],
     "iris.tests.test_plot.Test1dQuickplotScatter.test_coord_coord_map.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c4b3148593e87a8c3d2b1d572b1b4ae03dd94dbc.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c4b3148593e87a8c3d2b1d572b1b4ae03dd94dbc.png",
         "https://scitools.github.io/test-images-scitools/image_files/0c82dc83c8d95f449551f9a75b16734f36541919.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dQuickplotScatter.test_coord_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/679e07758bc9c5f7351c3986e8fe62eac2da1a7f.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/dbd3bc8c9f24e2b9e834c297efc35682a00e4f80.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/679e07758bc9c5f7351c3986e8fe62eac2da1a7f.png",
+        "https://scitools.github.io/test-images-scitools/image_files/dbd3bc8c9f24e2b9e834c297efc35682a00e4f80.png",
+        "https://scitools.github.io/test-images-scitools/image_files/e8131492116ae2fae77b054fe9ead0e90a40b8e9.png"
+    ],
     "iris.tests.test_plot.Test1dQuickplotScatter.test_cube_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/a8e1b690b0fc82f84cd1f7059293a87ad24e488a.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/2027525091f6570aa174cace65946c194850da81.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/8157c5dbb3f7d01d2e226d3a58570dd630179ecc.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/a8e1b690b0fc82f84cd1f7059293a87ad24e488a.png",
+        "https://scitools.github.io/test-images-scitools/image_files/2027525091f6570aa174cace65946c194850da81.png",
+        "https://scitools.github.io/test-images-scitools/image_files/8157c5dbb3f7d01d2e226d3a58570dd630179ecc.png",
+        "https://scitools.github.io/test-images-scitools/image_files/d5157f58f74be1c834e0b28774753ad2fc1e8889.png"
+    ],
     "iris.tests.test_plot.Test1dQuickplotScatter.test_cube_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/705b1845dc46f3cee92246ae51b8a4a15c67c863.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/90e402d52b2128f0f7fdf746d257fb6e236bc02c.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/705b1845dc46f3cee92246ae51b8a4a15c67c863.png",
+        "https://scitools.github.io/test-images-scitools/image_files/90e402d52b2128f0f7fdf746d257fb6e236bc02c.png",
+        "https://scitools.github.io/test-images-scitools/image_files/cdc698c44b9fd2f8e37deddf01e7081572727271.png"
+    ],
     "iris.tests.test_plot.Test1dScatter.test_coord_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/52d74d1fb0042835b59ab1f4ef561add128bd7ee.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/52d74d1fb0042835b59ab1f4ef561add128bd7ee.png",
         "https://scitools.github.io/test-images-scitools/image_files/fca1ad75eec300e800c032cb4cf543a464c813ef.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dScatter.test_coord_coord_map.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c4b3148593e87a8c3d2b1d572b1b4ae03dd94dbc.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c4b3148593e87a8c3d2b1d572b1b4ae03dd94dbc.png",
         "https://scitools.github.io/test-images-scitools/image_files/0c82dc83c8d95f449551f9a75b16734f36541919.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dScatter.test_coord_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/233e0e250ef5c2719c96ce7b16c6ed7a0a88091e.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/f2a7582eee8bcc28165892ff79208ff52f3391c9.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/233e0e250ef5c2719c96ce7b16c6ed7a0a88091e.png",
+        "https://scitools.github.io/test-images-scitools/image_files/f2a7582eee8bcc28165892ff79208ff52f3391c9.png",
+        "https://scitools.github.io/test-images-scitools/image_files/7197e56fd10cd434f2f8e58917c9acfec667bb07.png"
+    ],
     "iris.tests.test_plot.Test1dScatter.test_cube_coord.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/69f542f0da3bc5412a25bf271335552ca0eb785f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/69f542f0da3bc5412a25bf271335552ca0eb785f.png",
         "https://scitools.github.io/test-images-scitools/image_files/bbb2fba60da420568a2b0722dbc206c35672add5.png"
-    ], 
+    ],
     "iris.tests.test_plot.Test1dScatter.test_cube_cube.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/3afc7171e4f3aa35bf7f9577ec6e2f1d89aea9d9.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3afc7171e4f3aa35bf7f9577ec6e2f1d89aea9d9.png",
         "https://scitools.github.io/test-images-scitools/image_files/c23c92bf3da4afe36be1d788060ccc40ea848779.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestAttributePositive.test_1d_positive_down.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/5db053328dde597011079c185d2a56c37f248e3e.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/ea81e3633dc538e5bf3af1b3c0022439093cad0f.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/5db053328dde597011079c185d2a56c37f248e3e.png",
+        "https://scitools.github.io/test-images-scitools/image_files/ea81e3633dc538e5bf3af1b3c0022439093cad0f.png",
+        "https://scitools.github.io/test-images-scitools/image_files/f343ecd24ba5046d375546433b7c93ee37556cac.png"
+    ],
     "iris.tests.test_plot.TestAttributePositive.test_1d_positive_up.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/4a779f53a265583be6689e8f667c28e59cfaac0d.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/f2129377dd7ede7eec7f70bca0f84bd2eeb70d52.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/4a779f53a265583be6689e8f667c28e59cfaac0d.png",
+        "https://scitools.github.io/test-images-scitools/image_files/f2129377dd7ede7eec7f70bca0f84bd2eeb70d52.png",
+        "https://scitools.github.io/test-images-scitools/image_files/0276a55299bdc663825bf2235ab816f141e863bd.png"
+    ],
     "iris.tests.test_plot.TestAttributePositive.test_2d_positive_down.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/1e7c0a564478517423eea820359b75c153314cbd.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/1e7c0a564478517423eea820359b75c153314cbd.png",
         "https://scitools.github.io/test-images-scitools/image_files/a56aca1e4ed34aae81548fa5a1c39283abbd5937.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestAttributePositive.test_2d_positive_up.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/aed8a66271753fafa072ec951e3fd639f7e038a6.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/aed8a66271753fafa072ec951e3fd639f7e038a6.png",
         "https://scitools.github.io/test-images-scitools/image_files/83a7f9e9d402b52f40e617d8b67bc9a7dd60c661.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContour.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/ecbddd9552047a1b3b6b0dc33a7d1bb399fe0588.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/ecbddd9552047a1b3b6b0dc33a7d1bb399fe0588.png",
         "https://scitools.github.io/test-images-scitools/image_files/6fe984479ba6dec981843414d11cd1ef99b40904.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContour.test_ty.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/e357cd154fb1b164a3525e33977b0e76e34da335.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/e357cd154fb1b164a3525e33977b0e76e34da335.png",
         "https://scitools.github.io/test-images-scitools/image_files/35ea880e758b887a9d476628b05c488a1b8317d8.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContour.test_tz.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/633b37b1fba2128d0aec99cb3e3588bfac7a3220.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/633b37b1fba2128d0aec99cb3e3588bfac7a3220.png",
         "https://scitools.github.io/test-images-scitools/image_files/a5c94bd724080b5461e987a84cbb3281da34ae1d.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContour.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/8d00c052103838ffeef1cf6b816995f0be0399d7.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/8d00c052103838ffeef1cf6b816995f0be0399d7.png",
         "https://scitools.github.io/test-images-scitools/image_files/542374569a5b6869e1aa01b703de0d696ff8fcf6.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContour.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/7076696188d3928b351175309a0f9112bc36211e.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/7076696188d3928b351175309a0f9112bc36211e.png",
         "https://scitools.github.io/test-images-scitools/image_files/d58296e373eecc7aa15381c0eded8cf0a51dd1f4.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContour.test_zy.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/baa6a4ac704a961e93c2333c4294cc6788a1138d.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/baa6a4ac704a961e93c2333c4294cc6788a1138d.png",
         "https://scitools.github.io/test-images-scitools/image_files/77c4b909e14e488ac73dde32a6b5d36d2afe0c34.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContourf.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/3a3f733ca19bb77f75edc78434e426a0712b4000.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3a3f733ca19bb77f75edc78434e426a0712b4000.png",
         "https://scitools.github.io/test-images-scitools/image_files/da4a9ba2550509d2ec50d60bd192cb58e185ffe7.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContourf.test_ty.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/7e50729fc9e158c860c05ea49a972c46367ba30c.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/7e50729fc9e158c860c05ea49a972c46367ba30c.png",
         "https://scitools.github.io/test-images-scitools/image_files/25e048a25ca5216403736cd005834a4a0fa34595.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContourf.test_tz.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/eb9af9a834557d5eefdf3a49f5eea00b7b4d2e91.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/eb9af9a834557d5eefdf3a49f5eea00b7b4d2e91.png",
         "https://scitools.github.io/test-images-scitools/image_files/5897561dc579118cf987f4c02dd0f906d7b430a1.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContourf.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/0b2acc1d2b501c52340d207483d45f8fc4826c01.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/0b2acc1d2b501c52340d207483d45f8fc4826c01.png",
         "https://scitools.github.io/test-images-scitools/image_files/8b560325804df478fdb35cc6a4ca20e084bd4d63.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContourf.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/3f5dbae7d5380f95e09b58d420374b15617fb182.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3f5dbae7d5380f95e09b58d420374b15617fb182.png",
         "https://scitools.github.io/test-images-scitools/image_files/a7360ab2a036f70cafe8eb9fe3176697224133c3.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestContourf.test_zy.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/5e817ab96c8382085f37e78d61ee7998cfa16597.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/5e817ab96c8382085f37e78d61ee7998cfa16597.png",
         "https://scitools.github.io/test-images-scitools/image_files/52ec80b64735f439c109df643d6a1660c8cba2e0.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_bounds.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/72d57508c5d53419e5a7fa833159da110843b026.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/72d57508c5d53419e5a7fa833159da110843b026.png",
         "https://scitools.github.io/test-images-scitools/image_files/f7c4cf6c37cb689165b216ce0e1f7c987d378db5.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_bounds.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/fce74a970a8ef5cb45ed924f97fdd4ce6dd97a54.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/fce74a970a8ef5cb45ed924f97fdd4ce6dd97a54.png",
         "https://scitools.github.io/test-images-scitools/image_files/9604d038db8ab2e7e3308458ec235daf8c4610f7.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_bounds.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/72d57508c5d53419e5a7fa833159da110843b026.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/72d57508c5d53419e5a7fa833159da110843b026.png",
         "https://scitools.github.io/test-images-scitools/image_files/f7c4cf6c37cb689165b216ce0e1f7c987d378db5.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_orography.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/2b59e053a13b5968e07607424f03468fda2b695a.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/65565c2043e6193c02aeb9d5334d400bb6740f9d.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/2b59e053a13b5968e07607424f03468fda2b695a.png",
+        "https://scitools.github.io/test-images-scitools/image_files/65565c2043e6193c02aeb9d5334d400bb6740f9d.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a6d0f9af82109140accf394a0ee2a3e96fd20993.png"
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_orography.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/092427a8ef17decf87a865e7dd183116b039ac7f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/092427a8ef17decf87a865e7dd183116b039ac7f.png",
         "https://scitools.github.io/test-images-scitools/image_files/e21632c44c58dcc2268fbf11be8a2627a73dded5.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_points.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/87d20ae64afcafd9479aeda97e492f4b67d1159b.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/067f9e1d6dc194ad0861a45d18573f19bac3f202.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/87d20ae64afcafd9479aeda97e492f4b67d1159b.png",
+        "https://scitools.github.io/test-images-scitools/image_files/067f9e1d6dc194ad0861a45d18573f19bac3f202.png",
+        "https://scitools.github.io/test-images-scitools/image_files/0e800cec8412becfae868215c7a081764b0d0f49.png"
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_points.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/187bf26afa32f03cf8498285d52fb7b52a8887f2.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/187bf26afa32f03cf8498285d52fb7b52a8887f2.png",
         "https://scitools.github.io/test-images-scitools/image_files/baedd85137dc24401cc5fa76f556ea7955bdf86c.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_points.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/6ad78d87a51a56e5f8cb52ae819ff4a187063a37.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6ad78d87a51a56e5f8cb52ae819ff4a187063a37.png",
         "https://scitools.github.io/test-images-scitools/image_files/02ec82592428888c5bab75e6ef80776e74861db1.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_points.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/87d20ae64afcafd9479aeda97e492f4b67d1159b.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/067f9e1d6dc194ad0861a45d18573f19bac3f202.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/87d20ae64afcafd9479aeda97e492f4b67d1159b.png",
+        "https://scitools.github.io/test-images-scitools/image_files/067f9e1d6dc194ad0861a45d18573f19bac3f202.png",
+        "https://scitools.github.io/test-images-scitools/image_files/0e800cec8412becfae868215c7a081764b0d0f49.png"
+    ],
     "iris.tests.test_plot.TestHybridHeight.test_points.4": [
-        "https://scitools.github.io/test-images-scitools/image_files/02a257230279e7a43f26af8cb3a00f9e8ce03be0.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/02a257230279e7a43f26af8cb3a00f9e8ce03be0.png",
         "https://scitools.github.io/test-images-scitools/image_files/49c80c6cf12a286d99e727115736269063e7b258.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestMissingCS.test_missing_cs.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/94c6c29a1e6a0378b37df21493e19b2df9f5840e.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/428ca72c04078527fe951bbd73dd23964de02811.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/94c6c29a1e6a0378b37df21493e19b2df9f5840e.png",
+        "https://scitools.github.io/test-images-scitools/image_files/428ca72c04078527fe951bbd73dd23964de02811.png",
         "https://scitools.github.io/test-images-scitools/image_files/42b6e22df9465f0e443e3a9edb6243e36d18cc4b.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestMissingCoord.test_no_u.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/deb931aad496b36dd8b79610352b8a851e5c39d7.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/deb931aad496b36dd8b79610352b8a851e5c39d7.png",
         "https://scitools.github.io/test-images-scitools/image_files/a3de61fefe1e1e3c9e300dadbb60646505228053.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestMissingCoord.test_no_u.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/23e45f4ae38676a4643267f901baf23b09ede8b1.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/23e45f4ae38676a4643267f901baf23b09ede8b1.png",
         "https://scitools.github.io/test-images-scitools/image_files/5c697622accd8e92631923b4db7baae71b6a1f35.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestMissingCoord.test_no_v.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/6d93e3bdbd66d8941d60c290d74c9b8c562b804e.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6d93e3bdbd66d8941d60c290d74c9b8c562b804e.png",
         "https://scitools.github.io/test-images-scitools/image_files/2aba727925ccac999a54c91cc340f7006a8e8e0b.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestMissingCoord.test_no_v.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/7724dc04c133d21604039cfca06cc41c77092e86.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/7724dc04c133d21604039cfca06cc41c77092e86.png",
         "https://scitools.github.io/test-images-scitools/image_files/3ba6a8ed432f97c005f23fe3bcc56ced98c40deb.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestMissingCoord.test_none.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/b00df556989c9ed0df534bc13f7579c10110d758.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/b00df556989c9ed0df534bc13f7579c10110d758.png",
         "https://scitools.github.io/test-images-scitools/image_files/707ebc57b1154760c4dae71aecbd5537ff002e79.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestMissingCoord.test_none.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/ddc3ca21a5d6b0447170bb879cf099e137cf47b8.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/5c75d832ccc9dc26b1e975b7fbd4e002d644eabd.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/ddc3ca21a5d6b0447170bb879cf099e137cf47b8.png",
+        "https://scitools.github.io/test-images-scitools/image_files/5c75d832ccc9dc26b1e975b7fbd4e002d644eabd.png",
+        "https://scitools.github.io/test-images-scitools/image_files/cdc49b63017caec6a6eb2b71326e1b1dd848e4f3.png"
+    ],
     "iris.tests.test_plot.TestPcolor.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/ed3586eb8646d7255e875dc8d85b16f6eadab639.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/ed3586eb8646d7255e875dc8d85b16f6eadab639.png",
         "https://scitools.github.io/test-images-scitools/image_files/b76d492be6c68349795716b9e9077dccd5763ff4.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolor.test_ty.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/f64ba3feb7baeebfa4a660ec361db5dbd6fa5132.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/f64ba3feb7baeebfa4a660ec361db5dbd6fa5132.png",
         "https://scitools.github.io/test-images-scitools/image_files/4a4dfd34a1e9d314f03e478c615538ea49030fe3.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolor.test_tz.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/f4b028a5707513cd318edbf8693e806c4d421bfe.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/f4b028a5707513cd318edbf8693e806c4d421bfe.png",
         "https://scitools.github.io/test-images-scitools/image_files/b7fe389cb63ec9a0e928cb7dbbccb3b0e75c6c14.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolor.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/3060c1d145f261b476d0906c9a596e40e45a4bab.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3060c1d145f261b476d0906c9a596e40e45a4bab.png",
         "https://scitools.github.io/test-images-scitools/image_files/a5a11c5ac31eb67755ee853c1ada7eeb7654ace4.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolor.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/7c6b88aec0be02b3804ccd95cb68325d5d6f327b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/7c6b88aec0be02b3804ccd95cb68325d5d6f327b.png",
         "https://scitools.github.io/test-images-scitools/image_files/8c8350acdbf2835dded1a11604fd9b7a5170ed77.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolor.test_zy.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/50a2e6837c4d0b055163217b772ad7933ba96bbf.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/50a2e6837c4d0b055163217b772ad7933ba96bbf.png",
         "https://scitools.github.io/test-images-scitools/image_files/490f110f97e5cbbc957f66ff8df1c786fa6b0eab.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolorNoBounds.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/99a94071255af42db0cf41871ce60ef0adf33064.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/99a94071255af42db0cf41871ce60ef0adf33064.png",
         "https://scitools.github.io/test-images-scitools/image_files/032cfe8ef2497d211918e422a29e3edae19f6389.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolorNoBounds.test_ty.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/f2e8a2e5adfbc1fb94151fe7899134709e555901.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/f2e8a2e5adfbc1fb94151fe7899134709e555901.png",
         "https://scitools.github.io/test-images-scitools/image_files/050bb5ae494782ec2bca362804bcf69466aa1871.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolorNoBounds.test_tz.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/70c36a003abe6a985edc41e65cffdc36953a2355.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/70c36a003abe6a985edc41e65cffdc36953a2355.png",
         "https://scitools.github.io/test-images-scitools/image_files/ed2aedc76a29fde4b409d83069f39a963619aa9e.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolorNoBounds.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/b822214ce05f8834b435f71552c81d043e257136.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/b822214ce05f8834b435f71552c81d043e257136.png",
         "https://scitools.github.io/test-images-scitools/image_files/f5f6ce3115a81eaf46121700936659f9604e995b.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolorNoBounds.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/1721021e3704965a27a51c41b59c77c8ac73bc01.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/1721021e3704965a27a51c41b59c77c8ac73bc01.png",
         "https://scitools.github.io/test-images-scitools/image_files/ab4b425c8d83ed23776c75f66e1028eef2715fba.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolorNoBounds.test_zy.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/b348e719432227c2e65d1727d86dea1505646356.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/b348e719432227c2e65d1727d86dea1505646356.png",
         "https://scitools.github.io/test-images-scitools/image_files/add1633c0955a4b81817f2f027775fc22cb71261.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormesh.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/10193a9247d62a08b7ed61434ef5b189c7b40751.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/10193a9247d62a08b7ed61434ef5b189c7b40751.png",
         "https://scitools.github.io/test-images-scitools/image_files/a059d36e62dfc4574643b754ee0e17de8adc48ba.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormesh.test_ty.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c4413609a7701c0e0c4823d677bd3e39181bce16.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c4413609a7701c0e0c4823d677bd3e39181bce16.png",
         "https://scitools.github.io/test-images-scitools/image_files/93199ae96e9458aca2ffc0a9d3084f3ad73398d5.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormesh.test_tz.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/747234677aa00f34cb49135043a03ff1361818d9.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/747234677aa00f34cb49135043a03ff1361818d9.png",
         "https://scitools.github.io/test-images-scitools/image_files/41eec607e1a3412780ace7433841d2d134c0608a.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormesh.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/e0dff0df961f5a7aa0e06cb81fc661acf5dc7474.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/e0dff0df961f5a7aa0e06cb81fc661acf5dc7474.png",
         "https://scitools.github.io/test-images-scitools/image_files/1930e5ae3b11ba68230fb32f0670b4fad7881d32.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormesh.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/14c1392b7ccfd6966d2ba9281430b0f638d79a03.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/14c1392b7ccfd6966d2ba9281430b0f638d79a03.png",
         "https://scitools.github.io/test-images-scitools/image_files/e3848849f48caaf38258c6f626a542958c43dc34.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormesh.test_zy.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/743934b3c5aa14de22ff775f296c8744af4fde05.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/743934b3c5aa14de22ff775f296c8744af4fde05.png",
         "https://scitools.github.io/test-images-scitools/image_files/183e1c5d76968b4c04ba435d32d255e2ba617b1b.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/edddddd5d22d623fb4d1a143a39db8057a4742f4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/edddddd5d22d623fb4d1a143a39db8057a4742f4.png",
         "https://scitools.github.io/test-images-scitools/image_files/df5c9200e047cb3cc93409c8b5f7799dfb4f5640.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_ty.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/a2ac84b94dd8b512fb5e77b8da157486fc30a232.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/a2ac84b94dd8b512fb5e77b8da157486fc30a232.png",
         "https://scitools.github.io/test-images-scitools/image_files/c9c8d819bb992b0490d5d8084f85ec80ea266e4b.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_tz.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/f6d1f29f4bf79198eae13145a64f7c936ed1d582.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/f6d1f29f4bf79198eae13145a64f7c936ed1d582.png",
         "https://scitools.github.io/test-images-scitools/image_files/a6f2e301c9ab79f7443e179a49da805d534a30fe.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c47aad379d3da85e70995a4775dd8c0f881d297b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c47aad379d3da85e70995a4775dd8c0f881d297b.png",
         "https://scitools.github.io/test-images-scitools/image_files/c6076b0192f0f06ce4efca505694f53c5f88058c.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/d331b2a3543136ab5e5d51fe7cf7c2e067976cf9.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d331b2a3543136ab5e5d51fe7cf7c2e067976cf9.png",
         "https://scitools.github.io/test-images-scitools/image_files/66eb6e0e6ce906647d1b941b63fbcf5efaccdced.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_zy.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/69afc985fc57279c12a5f97ddd7eca23b7aed7fc.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/69afc985fc57279c12a5f97ddd7eca23b7aed7fc.png",
         "https://scitools.github.io/test-images-scitools/image_files/a55fd654226f157b5d7a5253cf1ca021688c296d.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlot.test_t.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/ec760318aab220acf29d66f5a2007cf109f30194.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/ec760318aab220acf29d66f5a2007cf109f30194.png",
         "https://scitools.github.io/test-images-scitools/image_files/8303b571ca49dd457637122a4bbf9ce98e9cc239.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlot.test_t_dates.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/f84fe424e7c5ffdeeff15d1946f7d2ba65ef490e.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/f84fe424e7c5ffdeeff15d1946f7d2ba65ef490e.png",
         "https://scitools.github.io/test-images-scitools/image_files/c2f32a32efb69b958b9cc8b5a9acb191018f474a.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlot.test_x.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/ec89f5306f1b4a078f4547adddb9fc55eff15edf.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/ec89f5306f1b4a078f4547adddb9fc55eff15edf.png",
         "https://scitools.github.io/test-images-scitools/image_files/372dcad7b73e0960e714ce931699f20de5d160c0.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlot.test_y.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/1ac3bc18c016737efe66c0a356423eea3204b5e6.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/1ac3bc18c016737efe66c0a356423eea3204b5e6.png",
         "https://scitools.github.io/test-images-scitools/image_files/a58133e859775ae3d4c0ada74aea46192921d3f2.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlot.test_z.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/19cea174453fe151e0dfd39c11228fda6c9cfee4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/19cea174453fe151e0dfd39c11228fda6c9cfee4.png",
         "https://scitools.github.io/test-images-scitools/image_files/29956f9f561c751da7fbf9fb03b114dbbd8ce1c0.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_non_cube_coordinate.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/c973d852e08896a67a368bf806c8de029038ff18.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/c973d852e08896a67a368bf806c8de029038ff18.png",
         "https://scitools.github.io/test-images-scitools/image_files/d70cfeb9c716b059545164db6672e9d076e24936.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/8f01262e3361ba06260b6b2821f4a09dc904efa2.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/8f01262e3361ba06260b6b2821f4a09dc904efa2.png",
         "https://scitools.github.io/test-images-scitools/image_files/7897729d745d7740e7db929042f87197531cef2d.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/8e741d3f2b69f4cbee3e47bca9217938ac50eebc.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/8e741d3f2b69f4cbee3e47bca9217938ac50eebc.png",
         "https://scitools.github.io/test-images-scitools/image_files/684caca8a9aaac24bf1e88720c5e57ab784fdc39.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/21957367ef36fbf347891c520c04558f94f62ca7.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/21957367ef36fbf347891c520c04558f94f62ca7.png",
         "https://scitools.github.io/test-images-scitools/image_files/7879a246e6382561bf3c6d8f96e895a526bddfc0.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/bc73ecda38e30c90eebce3b951d6f1d898484af8.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/bc73ecda38e30c90eebce3b951d6f1d898484af8.png",
         "https://scitools.github.io/test-images-scitools/image_files/f1fb7eef7c66b42b67074a4ded9aafe4335b3804.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.4": [
-        "https://scitools.github.io/test-images-scitools/image_files/39436a8c895057e3f29277858acfad6af89b7e36.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/39436a8c895057e3f29277858acfad6af89b7e36.png",
         "https://scitools.github.io/test-images-scitools/image_files/6030ad045a05681b8a98eccdd617cab881d633cf.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.5": [
-        "https://scitools.github.io/test-images-scitools/image_files/5bdd0865ba9c5664dc1743f139a6838fc676393a.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/5bdd0865ba9c5664dc1743f139a6838fc676393a.png",
         "https://scitools.github.io/test-images-scitools/image_files/b0f722c304de6473845b35a1dabdb82e0a99bf48.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_x.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/3d792cfba0ca5d66ee22fac67d863aecd5606eda.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3d792cfba0ca5d66ee22fac67d863aecd5606eda.png",
         "https://scitools.github.io/test-images-scitools/image_files/b2b00c49bf6eecd34c4db36ee937094ca0665f14.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_y.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/202e1df3fae8e833d0949650c598efb0cd140e5a.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/202e1df3fae8e833d0949650c598efb0cd140e5a.png",
         "https://scitools.github.io/test-images-scitools/image_files/05dacb1d5eb8ae47e51f2299cf7da3065edd4c48.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/6f87fe87f1ffb75f5e50cc8eaec4047b7584be93.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6f87fe87f1ffb75f5e50cc8eaec4047b7584be93.png",
         "https://scitools.github.io/test-images-scitools/image_files/d79bfa0ae0e71297d199bbc5609241381c7bbe01.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_yx.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/144c741aead354b149cb838df59b9db6c179f22b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/144c741aead354b149cb838df59b9db6c179f22b.png",
         "https://scitools.github.io/test-images-scitools/image_files/7ae053ffe77756ded77985b7bf19b2c9fba039ff.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_yx.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/5a2784600f0dca647c817d6878bb2e0bd1f8e6f5.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/5a2784600f0dca647c817d6878bb2e0bd1f8e6f5.png",
         "https://scitools.github.io/test-images-scitools/image_files/edd374a5f8d455485f8f9b8f1732abcbe82e119e.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_yx.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/37a79c901ac12b04e3303b785586fe2855ed24a2.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/37a79c901ac12b04e3303b785586fe2855ed24a2.png",
         "https://scitools.github.io/test-images-scitools/image_files/dd8b22d9a3217de8b7becfa5714dfc27403d22a5.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_yx.4": [
-        "https://scitools.github.io/test-images-scitools/image_files/d34377839f882f665fede8e867a496e20a7499d4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d34377839f882f665fede8e867a496e20a7499d4.png",
         "https://scitools.github.io/test-images-scitools/image_files/fab55937cf3c5a94f4b9faa0c9f944fc980c29aa.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_yx.5": [
-        "https://scitools.github.io/test-images-scitools/image_files/57d78a1764a6944006f732e647452850259e34a4.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/57d78a1764a6944006f732e647452850259e34a4.png",
         "https://scitools.github.io/test-images-scitools/image_files/88b4e9eb8512b81bcb7079a94bd86298e6d83657.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/cff7fc43cc20f061cedfad66e15562c487b73b25.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/cff7fc43cc20f061cedfad66e15562c487b73b25.png",
         "https://scitools.github.io/test-images-scitools/image_files/a48d3672e8567845ef2515d5f5a127fcd5613281.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_zx.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/18f4f6169d78bb0b9d4191a680d5c9fbb249dee3.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/18f4f6169d78bb0b9d4191a680d5c9fbb249dee3.png",
         "https://scitools.github.io/test-images-scitools/image_files/8f2a6278348eac5a54218992c919f68bfca09f3f.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_zx.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/8f1799e8e9b5a9c7893d61b7b2f6c930396e9450.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/8f1799e8e9b5a9c7893d61b7b2f6c930396e9450.png",
         "https://scitools.github.io/test-images-scitools/image_files/2915785c0013e5a9996b5df03873ff59ea6cd7aa.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_zx.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/0ec37a2ff0ba8b6df1122f5fac781c64f55a76fc.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/0ec37a2ff0ba8b6df1122f5fac781c64f55a76fc.png",
         "https://scitools.github.io/test-images-scitools/image_files/70c493ba6df7137aca9be9a8e86ad61540853fc7.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_zx.4": [
-        "https://scitools.github.io/test-images-scitools/image_files/6c2963b178809bf81c799d689aa507effe797419.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6c2963b178809bf81c799d689aa507effe797419.png",
         "https://scitools.github.io/test-images-scitools/image_files/d801b827516cdb35a29a0d61d8ba4ad99b49f7a2.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_zx.5": [
-        "https://scitools.github.io/test-images-scitools/image_files/59e7290980c342b05e2b2707e86e0768c3dd143e.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/59e7290980c342b05e2b2707e86e0768c3dd143e.png",
         "https://scitools.github.io/test-images-scitools/image_files/532e45498e5878face0feeed3836862871588673.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotDimAndAuxCoordsKwarg.test_coord_names.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/92a0fb778fe3539faf14e9efca3b60fd6f8967fb.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/92a0fb778fe3539faf14e9efca3b60fd6f8967fb.png",
         "https://scitools.github.io/test-images-scitools/image_files/0509d84d4abbf23451192feac4e5e56b4b341d60.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotDimAndAuxCoordsKwarg.test_coord_names.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/9295b9ff72e37335564eff01a2ec5e4bccf463dd.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/9295b9ff72e37335564eff01a2ec5e4bccf463dd.png",
         "https://scitools.github.io/test-images-scitools/image_files/25263598c52a1f72e240ae473177a8587b6f3ba5.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotDimAndAuxCoordsKwarg.test_coords.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/92a0fb778fe3539faf14e9efca3b60fd6f8967fb.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/92a0fb778fe3539faf14e9efca3b60fd6f8967fb.png",
         "https://scitools.github.io/test-images-scitools/image_files/0509d84d4abbf23451192feac4e5e56b4b341d60.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotDimAndAuxCoordsKwarg.test_coords.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/9295b9ff72e37335564eff01a2ec5e4bccf463dd.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/9295b9ff72e37335564eff01a2ec5e4bccf463dd.png",
         "https://scitools.github.io/test-images-scitools/image_files/25263598c52a1f72e240ae473177a8587b6f3ba5.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotDimAndAuxCoordsKwarg.test_default.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/92a0fb778fe3539faf14e9efca3b60fd6f8967fb.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/92a0fb778fe3539faf14e9efca3b60fd6f8967fb.png",
         "https://scitools.github.io/test-images-scitools/image_files/0509d84d4abbf23451192feac4e5e56b4b341d60.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotDimAndAuxCoordsKwarg.test_yx_order.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/a748361b255e33cf408dbb1005212bf21aee6a7b.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/a748361b255e33cf408dbb1005212bf21aee6a7b.png",
         "https://scitools.github.io/test-images-scitools/image_files/ba124f6cd47e19352d0bc1e271390b51014275e8.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotDimAndAuxCoordsKwarg.test_yx_order.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/84baaf4f046ec536e8f6f32494c03562575825ec.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/84baaf4f046ec536e8f6f32494c03562575825ec.png",
         "https://scitools.github.io/test-images-scitools/image_files/3a4946552b14fe213030cf9644879e86b18a9fcc.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestPlotOtherCoordSystems.test_plot_tmerc.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/fb5ac629208f3864e93d9e3df9137887f71e177d.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/fb5ac629208f3864e93d9e3df9137887f71e177d.png",
         "https://scitools.github.io/test-images-scitools/image_files/0ac9db49ff4074b2e9afc02af7dd40133e53d295.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestQuickplotPlot.test_t.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/5c4d8a9c2dca9a57ecaf12afa85091a1587e125c.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/98a2598870fb3d135911f8c7cfa6162238a740f9.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/5c4d8a9c2dca9a57ecaf12afa85091a1587e125c.png",
+        "https://scitools.github.io/test-images-scitools/image_files/98a2598870fb3d135911f8c7cfa6162238a740f9.png",
+        "https://scitools.github.io/test-images-scitools/image_files/03151a42face2ef4cff6662acf3631bd4059c636.png"
+    ],
     "iris.tests.test_plot.TestQuickplotPlot.test_t_dates.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/665a14c0697e3a0991e1c2ff303984fc4c206a76.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/665a14c0697e3a0991e1c2ff303984fc4c206a76.png",
         "https://scitools.github.io/test-images-scitools/image_files/45b706130baf4556c3521cafc2bdfb8baa7b887d.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestQuickplotPlot.test_x.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/6fc00b020a645686cb332f80ab6fa7ab4902421e.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/a9879ffe1824a276b2079acc4923b64bcd0ff8b8.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/6fc00b020a645686cb332f80ab6fa7ab4902421e.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a9879ffe1824a276b2079acc4923b64bcd0ff8b8.png",
+        "https://scitools.github.io/test-images-scitools/image_files/8aaf4c9b88a600988e051b4f306538a2806d18f5.png"
+    ],
     "iris.tests.test_plot.TestQuickplotPlot.test_y.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/65fef514fff742d71ec88b2c414ef1f271019d5b.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/48b6f897d7f1ed3d2c864b1ebb6b550b9c931fa3.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/65fef514fff742d71ec88b2c414ef1f271019d5b.png",
+        "https://scitools.github.io/test-images-scitools/image_files/48b6f897d7f1ed3d2c864b1ebb6b550b9c931fa3.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a7fb328f81491704f1ea8e18c3440e387beeaddb.png"
+    ],
     "iris.tests.test_plot.TestQuickplotPlot.test_z.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/4340a0484d945f089fa69c7613a1f0b6043fe112.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/4340a0484d945f089fa69c7613a1f0b6043fe112.png",
         "https://scitools.github.io/test-images-scitools/image_files/7f5cb39b8cbdfd83d918380e61d6ea416a743272.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestSimple.test_bounds.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/248236308c46e42eb8f5c6f436808a1ba9727dfe.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/248236308c46e42eb8f5c6f436808a1ba9727dfe.png",
         "https://scitools.github.io/test-images-scitools/image_files/73bfb7b11184e3264e495da2855af48044181bf6.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestSimple.test_points.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/d28a67b006291c0f5386c2b50a5d63a5fe358cf1.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d28a67b006291c0f5386c2b50a5d63a5fe358cf1.png",
         "https://scitools.github.io/test-images-scitools/image_files/b1f76959e22f4d91f1c4b30a9ef19372621d7e94.png"
-    ], 
+    ],
     "iris.tests.test_plot.TestSymbols.test_cloud_cover.0": [
         "https://scitools.github.io/test-images-scitools/image_files/9a54b4493a32f380aaaaeeee8eeda968b3ca2c53.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_alignment.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/099663b5c0dd1cf4c19a0c87c497cc9fb5bf011f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/099663b5c0dd1cf4c19a0c87c497cc9fb5bf011f.png",
         "https://scitools.github.io/test-images-scitools/image_files/12f88961b94c15c97c5b3834a4898cb750f3b468.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_contour.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/bece9c7ca07a73c9bdf7b25fa2469fa61b04c37f.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/0f38e8d59ccb033a18fdc2c0a98c2525d00c6d1a.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/bece9c7ca07a73c9bdf7b25fa2469fa61b04c37f.png",
+        "https://scitools.github.io/test-images-scitools/image_files/0f38e8d59ccb033a18fdc2c0a98c2525d00c6d1a.png",
+        "https://scitools.github.io/test-images-scitools/image_files/33a70fbe70404d9e90efe86ae9e3c0d79f8e401b.png"
+    ],
     "iris.tests.test_quickplot.TestLabels.test_contour.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/a7b7ddf4d89b32d8f59011154190cba5dc1484f4.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/7389babefbd8ca2e652ff605f0c4682e8e8b8372.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/a7b7ddf4d89b32d8f59011154190cba5dc1484f4.png",
+        "https://scitools.github.io/test-images-scitools/image_files/7389babefbd8ca2e652ff605f0c4682e8e8b8372.png",
+        "https://scitools.github.io/test-images-scitools/image_files/3b2ca36d1c4e923991e411fa662ee5a1f9681a90.png"
+    ],
     "iris.tests.test_quickplot.TestLabels.test_contourf.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/4af801dc3d081db570124bcaa269fcb5c364c724.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/4af801dc3d081db570124bcaa269fcb5c364c724.png",
         "https://scitools.github.io/test-images-scitools/image_files/89ef02f25987505d296bd74faed3c410eabb80d1.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_contourf.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/a7b7ddf4d89b32d8f59011154190cba5dc1484f4.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/7389babefbd8ca2e652ff605f0c4682e8e8b8372.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/a7b7ddf4d89b32d8f59011154190cba5dc1484f4.png",
+        "https://scitools.github.io/test-images-scitools/image_files/7389babefbd8ca2e652ff605f0c4682e8e8b8372.png",
+        "https://scitools.github.io/test-images-scitools/image_files/3b2ca36d1c4e923991e411fa662ee5a1f9681a90.png"
+    ],
     "iris.tests.test_quickplot.TestLabels.test_contourf.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/48298dbc091c279eb1674f1f1fb5b692b0fc32a2.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/48298dbc091c279eb1674f1f1fb5b692b0fc32a2.png",
         "https://scitools.github.io/test-images-scitools/image_files/496373ad43910f4457d9594a41f06e6558d2cdbc.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_contourf_nameless.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/81c7f4b0b2b506af20c55c6f762a4f6e812b25cd.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/81c7f4b0b2b506af20c55c6f762a4f6e812b25cd.png",
         "https://scitools.github.io/test-images-scitools/image_files/78811e93803265796e724aa6f28729cd2802ec5f.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_map.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/71ba9935c4c4d7a5de8c94318b1b886ce9ee27cb.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/71ba9935c4c4d7a5de8c94318b1b886ce9ee27cb.png",
         "https://scitools.github.io/test-images-scitools/image_files/6b37a0e9e7ce43b585828f57a9006f9f9dee4d0e.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_map.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/2531a058acebb2d395cdeac444e015a1ed977114.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/2531a058acebb2d395cdeac444e015a1ed977114.png",
         "https://scitools.github.io/test-images-scitools/image_files/683d37db3b5d5ba7d336f160a85c0bc3bd4bcf27.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_pcolor.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/81ccb3e1c9a205343e1666467a6a68560ab20c70.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/81ccb3e1c9a205343e1666467a6a68560ab20c70.png",
         "https://scitools.github.io/test-images-scitools/image_files/862404feb54dbba26383d257de3dcf03408fd98b.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestLabels.test_pcolormesh.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/23b255285e5b93ead96742c98d69942d49a3e4e8.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/23b255285e5b93ead96742c98d69942d49a3e4e8.png",
         "https://scitools.github.io/test-images-scitools/image_files/5004ac3bc7336061888fa847c69d8f2ea360663b.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_non_cube_coordinate.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/3b501710b88eb0fee89e0bf6991cbe26a91dde40.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3b501710b88eb0fee89e0bf6991cbe26a91dde40.png",
         "https://scitools.github.io/test-images-scitools/image_files/5afe8cd6d1605a92532857ec2ebf9a2f1d97c4e8.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/24dcd675b066a4ceac4d74e4c4ec6d84d5b6584a.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/24dcd675b066a4ceac4d74e4c4ec6d84d5b6584a.png",
         "https://scitools.github.io/test-images-scitools/image_files/aeb0316d461b17a80b866f449e584e70543b5d27.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/d28a67b006291c0f5386c2b50a5d63a5fe358cf1.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d28a67b006291c0f5386c2b50a5d63a5fe358cf1.png",
         "https://scitools.github.io/test-images-scitools/image_files/b1f76959e22f4d91f1c4b30a9ef19372621d7e94.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/5cc16996e640cc192d0d7c477499254b988726d2.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/5cc16996e640cc192d0d7c477499254b988726d2.png",
         "https://scitools.github.io/test-images-scitools/image_files/b9d293ded31684bb3340d4c33bdfc2b1befe6581.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/af90334cfac4da7da907d83b2a718b99c3ef13ed.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/934670d9981496aebb3b389a468109d9d70775fb.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/af90334cfac4da7da907d83b2a718b99c3ef13ed.png",
+        "https://scitools.github.io/test-images-scitools/image_files/934670d9981496aebb3b389a468109d9d70775fb.png",
+        "https://scitools.github.io/test-images-scitools/image_files/b3a163c2ed32c3aeadb25038ba060773870940b8.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.4": [
-        "https://scitools.github.io/test-images-scitools/image_files/d6d5f20c52a1caad2dee6a808106cf188085f3d6.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/d6d5f20c52a1caad2dee6a808106cf188085f3d6.png",
         "https://scitools.github.io/test-images-scitools/image_files/ab44fe3502b6c7e4173f7c34cf6434977d993176.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.5": [
-        "https://scitools.github.io/test-images-scitools/image_files/62a58743b114392de24ef212674c21f71bb4f372.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/d97ff8b837e7acb6f233f4ba35e1eda8d57547d8.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/62a58743b114392de24ef212674c21f71bb4f372.png",
+        "https://scitools.github.io/test-images-scitools/image_files/d97ff8b837e7acb6f233f4ba35e1eda8d57547d8.png",
+        "https://scitools.github.io/test-images-scitools/image_files/62d016999c224704057ec404fd22ab048462867c.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_x.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/8ab60a9149fe130e8ee33dafce5a291f832465c1.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/177ec14024ed9ad1e201e307cd5669eefd9c25f1.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/8ab60a9149fe130e8ee33dafce5a291f832465c1.png",
+        "https://scitools.github.io/test-images-scitools/image_files/177ec14024ed9ad1e201e307cd5669eefd9c25f1.png",
+        "https://scitools.github.io/test-images-scitools/image_files/baac265d11d068d939071f728e9876fb2181e487.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_y.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/8b803be114227b39cb4bf41fe8dd1355b31ca83b.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/b3f073dfedf52dfec9814c97211afb67678af2cb.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/8b803be114227b39cb4bf41fe8dd1355b31ca83b.png",
+        "https://scitools.github.io/test-images-scitools/image_files/b3f073dfedf52dfec9814c97211afb67678af2cb.png",
+        "https://scitools.github.io/test-images-scitools/image_files/8c133bbce67f944b1ca505577c2acbbeea4fb7de.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_yx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/58980b9a539d71094318403999772cdc7ef480b1.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/58980b9a539d71094318403999772cdc7ef480b1.png",
         "https://scitools.github.io/test-images-scitools/image_files/1fc87fa03b788ff7390ec218551e6fae91155e70.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_yx.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/0650e2de7082c3e2052758c584854023adce4c07.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/0650e2de7082c3e2052758c584854023adce4c07.png",
         "https://scitools.github.io/test-images-scitools/image_files/76b9ef820329b58d2a4a0ec8bddc2cde3a9b6dcf.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_yx.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/a6c192b994f0781b3538a794bdddff0d84bd9954.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/3759871c9cb796985b09699de633f29f2f054d01.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/a6c192b994f0781b3538a794bdddff0d84bd9954.png",
+        "https://scitools.github.io/test-images-scitools/image_files/3759871c9cb796985b09699de633f29f2f054d01.png",
+        "https://scitools.github.io/test-images-scitools/image_files/ad13f00d1d88ba2c903def2fffbdf0d932cbaced.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_yx.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/71ba9935c4c4d7a5de8c94318b1b886ce9ee27cb.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/71ba9935c4c4d7a5de8c94318b1b886ce9ee27cb.png",
         "https://scitools.github.io/test-images-scitools/image_files/6b37a0e9e7ce43b585828f57a9006f9f9dee4d0e.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_yx.4": [
-        "https://scitools.github.io/test-images-scitools/image_files/139739470587376aebae270abeca5100e2e996ff.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/82737f30059330b4d1b8286110a482ff9e2975f1.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/139739470587376aebae270abeca5100e2e996ff.png",
+        "https://scitools.github.io/test-images-scitools/image_files/82737f30059330b4d1b8286110a482ff9e2975f1.png",
+        "https://scitools.github.io/test-images-scitools/image_files/1f62abf9f24fa817f4308fd86f876a3e3cf20e12.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_yx.5": [
-        "https://scitools.github.io/test-images-scitools/image_files/6e2ee19aab2fdcdf3e3cb940987abcd1d682fe48.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/6e2ee19aab2fdcdf3e3cb940987abcd1d682fe48.png",
         "https://scitools.github.io/test-images-scitools/image_files/0bf0adf4e0c7998c6b5e879d2af1e9dec4e13359.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_zx.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/e8f27272cfb56af77be12f9652a63842a0fd9ce8.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/e8f27272cfb56af77be12f9652a63842a0fd9ce8.png",
         "https://scitools.github.io/test-images-scitools/image_files/14127d16204049c9463f8ed7d5c51cd250dc7556.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_zx.1": [
-        "https://scitools.github.io/test-images-scitools/image_files/3bced65ec9fdea60baeeea8a1743f9e7ab6f876f.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/3bced65ec9fdea60baeeea8a1743f9e7ab6f876f.png",
         "https://scitools.github.io/test-images-scitools/image_files/cd24c4923efaedc1ef5b19ee39d729cc88ccf23f.png"
-    ], 
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_zx.2": [
-        "https://scitools.github.io/test-images-scitools/image_files/c83f0af560a06159f052d19b67166bf1636028e3.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/a4e99fe82705b50dcc6f260779c604a3600fb2e9.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/c83f0af560a06159f052d19b67166bf1636028e3.png",
+        "https://scitools.github.io/test-images-scitools/image_files/a4e99fe82705b50dcc6f260779c604a3600fb2e9.png",
+        "https://scitools.github.io/test-images-scitools/image_files/6d7842f31a67ae32c7d050e818424573f37e442e.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_zx.3": [
-        "https://scitools.github.io/test-images-scitools/image_files/995656ea051a42c5e2c0f27e71ab23fd929ca5a7.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/6a0cb7ec5858f9416a1fe0e3be5bb051cc205cfd.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/995656ea051a42c5e2c0f27e71ab23fd929ca5a7.png",
+        "https://scitools.github.io/test-images-scitools/image_files/6a0cb7ec5858f9416a1fe0e3be5bb051cc205cfd.png",
+        "https://scitools.github.io/test-images-scitools/image_files/87cb7c6c2507fdeb600f3ff09223d81bdc6ad670.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_zx.4": [
-        "https://scitools.github.io/test-images-scitools/image_files/da3401dbe9a72f6d5440e503077f3c5a8c822530.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/f15a6d1b89260e180d6a12cbe90c36953930e5ba.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/da3401dbe9a72f6d5440e503077f3c5a8c822530.png",
+        "https://scitools.github.io/test-images-scitools/image_files/f15a6d1b89260e180d6a12cbe90c36953930e5ba.png",
+        "https://scitools.github.io/test-images-scitools/image_files/2a963195b2d538cf3fd443c04632187a4af5e76d.png"
+    ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_zx.5": [
-        "https://scitools.github.io/test-images-scitools/image_files/d2fe7bb8377160a3e7f6fff364d7b6e95cf03bc3.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/ba9a2021710f0c148ac1dff99fb1b3f117b1cfc9.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/d2fe7bb8377160a3e7f6fff364d7b6e95cf03bc3.png",
+        "https://scitools.github.io/test-images-scitools/image_files/ba9a2021710f0c148ac1dff99fb1b3f117b1cfc9.png",
+        "https://scitools.github.io/test-images-scitools/image_files/071aa7880cf6ac51743c29cab96672c86e520a17.png"
+    ],
     "iris.tests.test_quickplot.TestTimeReferenceUnitsLabels.test_not_reference_time_units.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/632a054a5fadd90e17de14d4052107801ce99f26.png", 
-        "https://scitools.github.io/test-images-scitools/image_files/3def630430310102bd2d81a925bca02f795deb48.png"
-    ], 
+        "https://scitools.github.io/test-images-scitools/image_files/632a054a5fadd90e17de14d4052107801ce99f26.png",
+        "https://scitools.github.io/test-images-scitools/image_files/3def630430310102bd2d81a925bca02f795deb48.png",
+        "https://scitools.github.io/test-images-scitools/image_files/e822dd65eef18122ed2f17ddfd080f8ebbeb8dd3.png"
+    ],
     "iris.tests.test_quickplot.TestTimeReferenceUnitsLabels.test_reference_time_units.0": [
-        "https://scitools.github.io/test-images-scitools/image_files/5da05ddeaaa666336d8daf1d1bc2473fda1b1fd0.png", 
+        "https://scitools.github.io/test-images-scitools/image_files/5da05ddeaaa666336d8daf1d1bc2473fda1b1fd0.png",
         "https://scitools.github.io/test-images-scitools/image_files/47cab4d1931d1a28b4bb59ba985b1f4a9992ec30.png"
     ]
 }
