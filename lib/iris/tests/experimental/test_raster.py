@@ -39,12 +39,12 @@ class TestGeoTiffExport(tests.IrisTest):
             im = PIL.Image.open(fh)
             file_keys = im.tag.keys()
 
-            missing_keys = sorted(list(set(expect_keys) - set(file_keys)))
+            missing_keys = sorted(set(expect_keys) - set(file_keys))
             msg_nokeys = "Tiff header has missing keys : {}."
             self.assertEqual(missing_keys, [],
                              msg_nokeys.format(missing_keys))
 
-            extra_keys = sorted(list(set(file_keys) - set(expect_keys)))
+            extra_keys = sorted(set(file_keys) - set(expect_keys))
             msg_extrakeys = "Tiff header has extra unexpected keys : {}."
             self.assertEqual(extra_keys, [],
                              msg_extrakeys.format(extra_keys))
