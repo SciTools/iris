@@ -220,7 +220,8 @@ if __name__ == '__main__':
                         action='store_true',
                         default=True,
                         help=help)
-    help = 'Compare result image with the oldest or last registered expected test image'
+    help = ('Compare result image with the oldest or last registered '
+            'expected test image')
     parser.add_argument('--last', '-l',
                         action='store_true',
                         default=False,
