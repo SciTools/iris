@@ -671,8 +671,7 @@ class TestMaskedArrays(tests.IrisTest):
                 # "TypeError: ufunc 'true_divide' output (typecode 'd') could
                 # not be coerced to provided output parameter (typecode 'l')
                 # according to the casting rule ''same_kind''"
-                test_op(ma.MaskedArray(self.data1, dtype='float'),
-                        ma.MaskedArray(self.data2, dtype='float'))
+                test_op(self.data1.astype('float'), self.data2.astype('float'))
             else:
                 test_op(self.data1, self.data2)
 
