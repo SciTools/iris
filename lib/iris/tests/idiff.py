@@ -55,8 +55,6 @@ import iris.util as iutil
 _POSTFIX_DIFF = '-failed-diff.png'
 _POSTFIX_JSON = os.path.join('results', 'imagerepo.json')
 _POSTFIX_LOCK = os.path.join('results', 'imagerepo.lock')
-_PREFIX_URI = 'https://scitools.github.io/test-images-scitools/image_files'
-_RESOLVED_STATUS = 200  # HTTP response status code - OK
 _TIMEOUT = 30
 _TOL = 0
 
@@ -88,7 +86,8 @@ def diff_viewer(repo, key, repo_fname,
         sha1 = hashlib.sha1(fi.read())
     result_dir = os.path.dirname(result_fname)
     fname = sha1.hexdigest() + '.png'
-    uri = os.path.join(_PREFIX_URI, fname)
+    base_uri = 'https://scitools.github.io/test-images-scitools/image_files'
+    uri = os.path.join(base_uri, fname)
     hash_fname = os.path.join(result_dir, fname)
 
     def accept(event):
@@ -181,7 +180,7 @@ def step_over_diffs(result_dir, index):
             with temp_png(key) as expected_fname:
                 processed = True
                 resource = requests.get(uri)
-                if resource.status_code == _RESOLVED_STATUS:
+                if resource.status_code == 200:
                     with open(expected_fname, 'wb') as fo:
                         fo.write(resource.content)
                 else:
