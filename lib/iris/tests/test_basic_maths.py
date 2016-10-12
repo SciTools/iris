@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -638,6 +638,8 @@ class TestLog(tests.IrisTest):
 class TestMaskedArrays(tests.IrisTest):
     ops = (operator.add, operator.sub, operator.mul)
     iops = (operator.iadd, operator.isub, operator.imul)
+    # This is to ensure compatibility for both Python2 (which uses div and
+    # idiv) and Python3 (which uses truediv and itruediv).
     try:
         ops = ops + (operator.div, )
         iops = iops + (operator.idiv, )
@@ -646,8 +648,10 @@ class TestMaskedArrays(tests.IrisTest):
         iops = iops + (operator.itruediv, )
 
     def setUp(self):
-        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8,]], mask=[[0, 1, 0], [0, 0, 1]])
-        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2,]], mask=[[0, 1, 0], [0, 1, 1]])
+        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8,]],
+                                    mask=[[0, 1, 0], [0, 0, 1]])
+        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2,]],
+                                    mask=[[0, 1, 0], [0, 1, 1]])
 
         self.cube1 = iris.cube.Cube(self.data1)
         self.cube2 = iris.cube.Cube(self.data2)
@@ -662,7 +666,14 @@ class TestMaskedArrays(tests.IrisTest):
     def test_operator_in_place(self):
         for test_op in self.iops:
             test_op(self.cube1, self.cube2)
-            test_op(self.data1, self.data2)
+            if test_op == operator.itruediv:
+                # Python3 itruediv requires floats to return floats, numpy1.10:
+                # "TypeError: ufunc 'true_divide' output (typecode 'd') could
+                # not be coerced to provided output parameter (typecode 'l')
+                # according to the casting rule ''same_kind''"
+                test_op(self.data1.astype('float'), self.data2.astype('float'))
+            else:
+                test_op(self.data1, self.data2)
 
             np.testing.assert_array_equal(self.cube1.data, self.data1)
 
