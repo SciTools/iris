@@ -774,7 +774,7 @@ class IrisTest(unittest.TestCase):
         lock = filelock.FileLock(fname)
         # The imagerepo.json file is a critical resource, so ensure thread
         # safe read/write behaviour via platform independent file locking.
-        with lock.acquire(timeout=30):
+        with lock.acquire(timeout=600):
             self._assert_graphic()
 
     def _remove_testcase_patches(self):
