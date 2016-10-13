@@ -1852,40 +1852,41 @@ class Saver(object):
         """
         if 'packing' in kwargs:
             packing = kwargs.pop('packing')
-            scale_factor = None
-            add_offset = None
-            fill_value = None
-            masked = isinstance(cube.data, np.ma.core.MaskedArray)
-            if isinstance(packing, dict):
-                if 'dtype' not in packing:
-                    msg = ("The dtype attribute is required for packing. ")
-                    raise ValueError(msg)
-                dtype = np.dtype(packing['dtype'])
-                if 'scale_factor' in packing:
-                    scale_factor = packing['scale_factor']
-                if 'add_offset' in packing:
-                    add_offset = packing['add_offset']
-                if 'fill_value' in packing:
-                    fill_value = packing['fill_value']
-            else:
-                dtype = np.dtype(packing)
-                cmax = cube.data.max()
-                cmin = cube.data.min()
-                n = dtype.itemsize * 8
-                if masked:
-                    scale_factor = (cmax - cmin)/(2**n-2)
+            if packing:
+                scale_factor = None
+                add_offset = None
+                fill_value = None
+                masked = isinstance(cube.data, np.ma.core.MaskedArray)
+                if isinstance(packing, dict):
+                    if 'dtype' not in packing:
+                        msg = ("The dtype attribute is required for packing. ")
+                        raise ValueError(msg)
+                    dtype = np.dtype(packing['dtype'])
+                    if 'scale_factor' in packing:
+                        scale_factor = packing['scale_factor']
+                    if 'add_offset' in packing:
+                        add_offset = packing['add_offset']
+                    if 'fill_value' in packing:
+                        fill_value = packing['fill_value']
                 else:
-                    scale_factor = (cmax - cmin)/(2**n-1)
-                if dtype.kind == 'u':
-                    add_offset = cmin
-                elif dtype.kind == 'i':
+                    dtype = np.dtype(packing)
+                    cmax = cube.data.max()
+                    cmin = cube.data.min()
+                    n = dtype.itemsize * 8
                     if masked:
-                        add_offset = (cmax + cmin)/2
+                        scale_factor = (cmax - cmin)/(2**n-2)
                     else:
-                        add_offset = cmin + 2**(n-1)*scale_factor
-            if masked and not fill_value:
-                dtstr = np.dtype(dtype).str[1:]
-                fill_value = netCDF4.default_fillvals[dtstr]
+                        scale_factor = (cmax - cmin)/(2**n-1)
+                    if dtype.kind == 'u':
+                        add_offset = cmin
+                    elif dtype.kind == 'i':
+                        if masked:
+                            add_offset = (cmax + cmin)/2
+                        else:
+                            add_offset = cmin + 2**(n-1)*scale_factor
+                if masked and not fill_value:
+                    dtstr = dtype.str[1:]
+                    fill_value = netCDF4.default_fillvals[dtstr]
         else:
             packing = None
 

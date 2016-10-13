@@ -41,6 +41,8 @@ lib/iris/tests/results/imagerepo.lock
 .pydevproject
 .settings
 
+.sublime-project
+
 # PyCharm files
 /.idea
 *.cover
