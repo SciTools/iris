@@ -86,8 +86,8 @@ def diff_viewer(repo, key, repo_fname,
         sha1 = hashlib.sha1(fi.read())
     result_dir = os.path.dirname(result_fname)
     fname = sha1.hexdigest() + '.png'
-    base_uri = 'https://scitools.github.io/test-images-scitools/image_files'
-    uri = os.path.join(base_uri, fname)
+    base_uri = 'https://scitools.github.io/test-images-scitools/image_files/{}'
+    uri = base_uri.format(fname)
     hash_fname = os.path.join(result_dir, fname)
 
     def accept(event):
