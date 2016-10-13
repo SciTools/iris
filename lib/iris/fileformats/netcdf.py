@@ -806,7 +806,7 @@ class Saver(object):
     def write(self, cube, local_keys=None, unlimited_dimensions=None,
               zlib=False, complevel=4, shuffle=True, fletcher32=False,
               contiguous=False, chunksizes=None, endian='native',
-              least_significant_digit=None):
+              least_significant_digit=None, packing=None):
         """
         Wrapper for saving cubes to a NetCDF file.
 
@@ -885,6 +885,23 @@ class Saver(object):
             place in unpacked data that is a reliable value". Default is
             `None`, or no quantization, or 'lossless' compression.
 
+        * packing (type or string or dict or list): A numpy integer datatype
+            (signed or unsigned) or a string that describes a numpy integer
+            dtype(i.e. 'i2', 'short', 'u4') or a dict of packing parameters as
+            described below. This provides support for netCDF data packing as
+            described in
+            http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+            If this argument is a type (or type string), appropriate values of
+            scale_factor and add_offset will be automatically calculated based
+            on `cube.data` and possible masking. For masked data, `fill_value`
+            is taken from netCDF4.default_fillvals. For more control, pass a
+            dict with one or more of the following keys: `dtype` (required),
+            `scale_factor`, `add_offset`, and `fill_value`. Note that automatic
+            calculation of packing parameters will trigger loading of lazy
+            data; set them manually using a dict to avoid this. The default is
+            `None`, in which case the datatype is determined from the cube and
+            no packing will occur.
+
         Returns:
             None.
 
@@ -932,7 +949,7 @@ class Saver(object):
             cube, dimension_names, local_keys, zlib=zlib, complevel=complevel,
             shuffle=shuffle, fletcher32=fletcher32, contiguous=contiguous,
             chunksizes=chunksizes, endian=endian,
-            least_significant_digit=least_significant_digit)
+            least_significant_digit=least_significant_digit, packing=packing)
 
         # Add coordinate variables.
         self._add_dim_coords(cube, dimension_names)
@@ -1833,18 +1850,67 @@ class Saver(object):
             The newly created CF-netCDF data variable.
 
         """
+        if 'packing' in kwargs:
+            packing = kwargs.pop('packing')
+            scale_factor = None
+            add_offset = None
+            fill_value = None
+            masked = isinstance(cube.data, np.ma.core.MaskedArray)
+            if isinstance(packing, dict):
+                if 'dtype' not in packing:
+                    msg = ("The dtype attribute is required for packing. ")
+                    raise ValueError(msg)
+                dtype = np.dtype(packing['dtype'])
+                if 'scale_factor' in packing:
+                    scale_factor = packing['scale_factor']
+                if 'add_offset' in packing:
+                    add_offset = packing['add_offset']
+                if 'fill_value' in packing:
+                    fill_value = packing['fill_value']
+            else:
+                dtype = np.dtype(packing)
+                cmax = cube.data.max()
+                cmin = cube.data.min()
+                n = dtype.itemsize * 8
+                if masked:
+                    scale_factor = (cmax - cmin)/(2**n-2)
+                else:
+                    scale_factor = (cmax - cmin)/(2**n-1)
+                if dtype.kind == 'u':
+                    add_offset = cmin
+                elif dtype.kind == 'i':
+                    if masked:
+                        add_offset = (cmax + cmin)/2
+                    else:
+                        add_offset = cmin + 2**(n-1)*scale_factor
+            if masked and not fill_value:
+                dtstr = np.dtype(dtype).str[1:]
+                fill_value = netCDF4.default_fillvals[dtstr]
+        else:
+            packing = None
+
+        def set_packing_ncattrs(cfvar):
+            """Set netCDF packing attributes."""
+            if packing:
+                if scale_factor:
+                    _setncattr(cfvar, 'scale_factor', scale_factor)
+                if add_offset:
+                    _setncattr(cfvar, 'add_offset', add_offset)
+
         cf_name = self._get_cube_variable_name(cube)
         while cf_name in self._dataset.variables:
             cf_name = self._increment_name(cf_name)
 
         # if netcdf3 avoid streaming due to dtype handling
-        if (not cube.has_lazy_data() or
-                self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                              'NETCDF3_64BIT')):
-            # Determine whether there is a cube MDI value.
-            fill_value = None
-            if isinstance(cube.data, ma.core.MaskedArray):
-                fill_value = cube.data.fill_value
+        if (not cube.has_lazy_data()
+                or self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                                 'NETCDF3_64BIT')):
+
+            if not packing:
+                # Determine whether there is a cube MDI value.
+                fill_value = None
+                if isinstance(cube.data, ma.core.MaskedArray):
+                    fill_value = cube.data.fill_value
 
             # Get the values in a form which is valid for the file format.
             data = self._ensure_valid_dtype(cube.data, 'cube', cube)
@@ -1853,16 +1919,21 @@ class Saver(object):
             cf_var = self._dataset.createVariable(
                 cf_name, data.dtype.newbyteorder('='), dimension_names,
                 fill_value=fill_value, **kwargs)
+            set_packing_ncattrs(cf_var)
             cf_var[:] = data
 
         else:
             # Create the cube CF-netCDF data variable.
             # Explicitly assign the fill_value, which will be the type default
             # in the case of an unmasked array.
+            if not packing:
+                fill_value = cube.lazy_data().fill_value
+
             cf_var = self._dataset.createVariable(
                 cf_name, cube.lazy_data().dtype.newbyteorder('='),
-                dimension_names, fill_value=cube.lazy_data().fill_value,
+                dimension_names, fill_value=fill_value,
                 **kwargs)
+            set_packing_ncattrs(cf_var)
             # stream the data
             biggus.save([cube.lazy_data()], [cf_var], masked=True)
 
@@ -1951,7 +2022,7 @@ class Saver(object):
 def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
          unlimited_dimensions=None, zlib=False, complevel=4, shuffle=True,
          fletcher32=False, contiguous=False, chunksizes=None, endian='native',
-         least_significant_digit=None):
+         least_significant_digit=None, packing=None):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
@@ -2048,6 +2119,24 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         in unpacked data that is a reliable value". Default is `None`, or no
         quantization, or 'lossless' compression.
 
+    * packing (type or string or dict or list): A numpy integer datatype
+        (signed or unsigned) or a string that describes a numpy integer dtype
+        (i.e. 'i2', 'short', 'u4') or a dict of packing parameters as described
+        below or a list of such types, strings, or dicts. This provides support
+        for netCDF data packing as described in
+        http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+        If this argument is a type (or type string), appropriate values of
+        scale_factor and add_offset will be automatically calculated based on
+        `cube.data` and possible masking. For masked data, `fill_value` is
+        taken from netCDF4.default_fillvals. For more control, pass a dict with
+        one or more of the following keys: `dtype` (required), `scale_factor`,
+        `add_offset`, and `fill_value`. To save multiple cubes with different
+        packing parameters, pass a list of types, strings, dicts, or `None`,
+        one for each cube.  Note that automatic calculation of packing
+        parameters will trigger loading of lazy data; set them manually using a
+        dict to avoid this. The default is `None`, in which case the datatype
+        is determined from the cube and no packing will occur.
+
     Returns:
         None.
 
@@ -2105,10 +2194,20 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     # Initialise Manager for saving
     with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
-        for cube in cubes:
+        for cube in enumerate(cubes):
+            if isinstance(packing, list):
+                if len(packing) > 0:
+                    packspec = packing.pop(0)
+                else:
+                    msg = ('If packing is a list, it must have the '
+                           'same number of elements as the argument to'
+                           'cube.')
+                    raise ValueError(msg)
+            else:
+                packspec = packing
             sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
-                       least_significant_digit)
+                       least_significant_digit, packspec)
 
         conventions = CF_CONVENTIONS_VERSION
 
