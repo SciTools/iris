@@ -2194,7 +2194,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     # Initialise Manager for saving
     with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
-        for cube in enumerate(cubes):
+        for cube in cubes:
             if isinstance(packing, list):
                 if len(packing) > 0:
                     packspec = packing.pop(0)
@@ -2207,7 +2207,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                 packspec = packing
             sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
-                       least_significant_digit, packspec)
+                       least_significant_digit, packing=packspec)
 
         conventions = CF_CONVENTIONS_VERSION
 
