@@ -672,6 +672,7 @@ class IrisTest(unittest.TestCase):
         output directory, and the imagerepo.json file being updated.
 
         """
+        dev_mode = os.environ.get('IRIS_TEST_CREATE_MISSING')
         unique_id = self._unique_id()
         repo_fname = os.path.join(os.path.dirname(__file__),
                                   'results', 'imagerepo.json')
@@ -712,20 +713,27 @@ class IrisTest(unittest.TestCase):
                     sha1 = hashlib.sha1(fi.read())
                 return sha1
 
+            def _create_missing():
+                fname = sha1.hexdigest() + '.png'
+                base_uri = ('https://scitools.github.io/test-images-scitools/'
+                            'image_files/{}')
+                uri = base_uri.format(fname)
+                hash_fname = os.path.join(image_output_directory, fname)
+                uris = repo.setdefault(unique_id, [])
+                uris.append(uri)
+                print('Creating image file: {}'.format(hash_fname))
+                os.rename(result_fname, hash_fname)
+                msg = 'Creating imagerepo entry: {} -> {}'
+                print(msg.format(unique_id, uri))
+                with open(repo_fname, 'wb') as fo:
+                    json.dump(repo, codecs.getwriter('utf-8')(fo), indent=4,
+                              sort_keys=True)
+
             sha1 = _save_figure_hash()
 
             if unique_id not in repo:
-                if os.environ.get('IRIS_TEST_CREATE_MISSING'):
-                    fname = sha1.hexdigest() + '.png'
-                    base_uri = ('https://scitools.github.io/'
-                                'test-images-scitools/image_files/{}')
-                    uri = base_uri.format(fname)
-                    hash_fname = os.path.join(result_output_directory, fname)
-                    os.rename(result_fname, hash_fname)
-                    repo[unique_id] = [uri]
-                    with open(repo_fname, 'wb') as fo:
-                        json.dump(repo, codecs.getwriter('utf-8')(fo),
-                                  indent=4, sort_keys=True)
+                if dev_mode:
+                    _create_missing()
                 else:
                     emsg = 'Missing image test result: {}.'
                     raise ValueError(emsg.format(unique_id))
@@ -743,15 +751,18 @@ class IrisTest(unittest.TestCase):
                     sha1 = _save_figure_hash()
 
                 if sha1.hexdigest() not in expected:
-                    emsg = 'Actual SHA1 {} not in expected {} for test {}.'
-                    emsg = emsg.format(sha1.hexdigest(), expected, unique_id)
-                    if _DISPLAY_FIGURES:
-                        print('Image comparison would have failed. '
-                              'Message: %s' % emsg)
+                    if dev_mode:
+                        _create_missing()
                     else:
-                        raise ValueError('Image comparison failed.'
-                                         ' Message: {}'.format(emsg))
-
+                        emsg = 'Actual SHA1 {} not in expected {} for test {}.'
+                        emsg = emsg.format(sha1.hexdigest(), expected,
+                                           unique_id)
+                        if _DISPLAY_FIGURES:
+                            print('Image comparison would have failed. '
+                                  'Message: %s' % emsg)
+                        else:
+                            raise ValueError('Image comparison failed. '
+                                             'Message: {}'.format(emsg))
                 else:
                     # There is no difference between the actual and expected
                     # result, so remove the actual result file.
