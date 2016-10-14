@@ -2220,7 +2220,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         packspecs = repeat(packing)
     else:
         # Assume iterable, make sure packing is the same length as cubes.
-        for cube, packspec in zip_longest(cubes, packing, -1):
+        for cube, packspec in zip_longest(cubes, packing, fillvalue=-1):
             if cube == -1 or packspec == -1:
                 msg = ('If packing is a list, it must have the '
                        'same number of elements as the argument to'
