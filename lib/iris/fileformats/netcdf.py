@@ -2211,7 +2211,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                 msg = "The packing datatype must be a numpy integer type."
                 raise ValueError(msg)
             return True
-        elif packing is None:
+        elif p is None:
             return True
         else:
             return False
