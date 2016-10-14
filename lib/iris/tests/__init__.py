@@ -61,6 +61,7 @@ try:
 except ImportError:
     import mock
 
+import filelock
 import numpy as np
 import numpy.ma as ma
 
@@ -660,16 +661,21 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def check_graphic(self, tol=None):
+    def _assert_graphic(self):
         """
-        Checks the CRC matches for the current matplotlib.pyplot figure,
-        and closes the figure.
+        Check the hash of the current matplotlib figure matches the expected
+        image hash for the current graphic test.
+
+        To create missing image test results, set the IRIS_TEST_CREATE_MISSING
+        environment variable before running the tests. This will result in new
+        and appropriately "<hash>.png" image files being generated in the image
+        output directory, and the imagerepo.json file being updated.
 
         """
-
+        dev_mode = os.environ.get('IRIS_TEST_CREATE_MISSING')
         unique_id = self._unique_id()
-
-        repo_fname = os.path.join(os.path.dirname(__file__), 'results', 'imagerepo.json')
+        repo_fname = os.path.join(os.path.dirname(__file__),
+                                  'results', 'imagerepo.json')
         with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
 
@@ -700,20 +706,37 @@ class IrisTest(unittest.TestCase):
                     if err.errno != 17:
                         raise
 
-            def save_figure_hash():
-                figure = plt.gcf()
-                figure.savefig(result_fname)
-
-                # hash the created image using sha1
-                with open(result_fname, 'rb') as res_file:
-                    sha1 = hashlib.sha1(res_file.read())
+            def _save_figure_hash():
+                plt.gcf().savefig(result_fname)
+                # Determine the test result image hash using sha1.
+                with open(result_fname, 'rb') as fi:
+                    sha1 = hashlib.sha1(fi.read())
                 return sha1
 
-            sha1 = save_figure_hash()
+            def _create_missing():
+                fname = sha1.hexdigest() + '.png'
+                base_uri = ('https://scitools.github.io/test-images-scitools/'
+                            'image_files/{}')
+                uri = base_uri.format(fname)
+                hash_fname = os.path.join(image_output_directory, fname)
+                uris = repo.setdefault(unique_id, [])
+                uris.append(uri)
+                print('Creating image file: {}'.format(hash_fname))
+                os.rename(result_fname, hash_fname)
+                msg = 'Creating imagerepo entry: {} -> {}'
+                print(msg.format(unique_id, uri))
+                with open(repo_fname, 'wb') as fo:
+                    json.dump(repo, codecs.getwriter('utf-8')(fo), indent=4,
+                              sort_keys=True)
+
+            sha1 = _save_figure_hash()
 
             if unique_id not in repo:
-                msg = 'Image comparison failed: Created image {} for test {}.'
-                raise ValueError(msg.format(result_fname, unique_id))
+                if dev_mode:
+                    _create_missing()
+                else:
+                    emsg = 'Missing image test result: {}.'
+                    raise ValueError(emsg.format(unique_id))
             else:
                 uris = repo[unique_id]
                 # Cherry-pick the registered expected hashes from the
@@ -725,28 +748,45 @@ class IrisTest(unittest.TestCase):
                     # This can be an accidental failure, unusual, but it occurs
                     # https://github.com/SciTools/iris/issues/2195
                     # retry once, in case it passes second time round.
-                    sha1 = save_figure_hash()
+                    sha1 = _save_figure_hash()
 
                 if sha1.hexdigest() not in expected:
-                    emsg = 'Actual SHA1 {} not in expected {} for test {}.'
-                    emsg = emsg.format(sha1.hexdigest(), expected, unique_id)
-                    if _DISPLAY_FIGURES:
-                        print('Image comparison would have failed. '
-                              'Message: %s' % emsg)
+                    if dev_mode:
+                        _create_missing()
                     else:
-                        raise ValueError('Image comparison failed.'
-                                         ' Message: {}'.format(emsg))
-
+                        emsg = 'Actual SHA1 {} not in expected {} for test {}.'
+                        emsg = emsg.format(sha1.hexdigest(), expected,
+                                           unique_id)
+                        if _DISPLAY_FIGURES:
+                            print('Image comparison would have failed. '
+                                  'Message: %s' % emsg)
+                        else:
+                            raise ValueError('Image comparison failed. '
+                                             'Message: {}'.format(emsg))
                 else:
                     # There is no difference between the actual and expected
                     # result, so remove the actual result file.
                     os.remove(result_fname)
-                
+
             if _DISPLAY_FIGURES:
                 plt.show()
 
         finally:
             plt.close()
+
+    def check_graphic(self, tol=None):
+        """
+        Checks that the image hash for the current matplotlib figure matches
+        the expected image hash for the current test.
+
+        """
+        fname = os.path.join(os.path.dirname(__file__),
+                             'results', 'imagerepo.lock')
+        lock = filelock.FileLock(fname)
+        # The imagerepo.json file is a critical resource, so ensure thread
+        # safe read/write behaviour via platform independent file locking.
+        with lock.acquire(timeout=600):
+            self._assert_graphic()
 
     def _remove_testcase_patches(self):
         """Helper to remove per-testcase patches installed by :meth:`patch`."""
@@ -798,7 +838,7 @@ class IrisTest(unittest.TestCase):
         mean and standard deviation of the data array are also as provided.
         Thus build confidence that a cube processing operation, such as a
         cube.regrid, has maintained its behaviour.
- 
+
         """
         self.assertEqual(result.shape, shape)
         self.assertAlmostEqual(result.data.mean(), mean, places=5)
