@@ -32,6 +32,7 @@ from glob import glob
 import hashlib
 import json
 import os.path
+import shutil
 import sys
 import warnings
 
@@ -54,7 +55,6 @@ import iris.util as iutil
 _POSTFIX_DIFF = '-failed-diff.png'
 _POSTFIX_JSON = os.path.join('results', 'imagerepo.json')
 _POSTFIX_LOCK = os.path.join('results', 'imagerepo.lock')
-_PREFIX_URI = 'https://scitools.github.io/test-images-scitools/image_files'
 _TIMEOUT = 30
 _TOL = 0
 
@@ -86,7 +86,8 @@ def diff_viewer(repo, key, repo_fname,
         sha1 = hashlib.sha1(fi.read())
     result_dir = os.path.dirname(result_fname)
     fname = sha1.hexdigest() + '.png'
-    uri = os.path.join(_PREFIX_URI, fname)
+    base_uri = 'https://scitools.github.io/test-images-scitools/image_files/{}'
+    uri = base_uri.format(fname)
     hash_fname = os.path.join(result_dir, fname)
 
     def accept(event):
@@ -97,7 +98,8 @@ def diff_viewer(repo, key, repo_fname,
             repo[key].append(uri)
             # Update the image repo.
             with open(repo_fname, 'wb') as fo:
-                json.dump(repo, fo, indent=4, sort_keys=True)
+                json.dump(repo, codecs.getwriter('utf-8')(fo),
+                          indent=4, sort_keys=True)
             os.rename(result_fname, hash_fname)
             msg = 'ACCEPTED:  {} -> {}'
             print(msg.format(os.path.basename(result_fname),
@@ -122,8 +124,8 @@ def diff_viewer(repo, key, repo_fname,
         plt.close()
 
     def skip(event):
+        # Let's keep both the result and the diff files.
         print('SKIPPED:   {}'.format(os.path.basename(result_fname)))
-        os.remove(diff_fname)
         plt.close()
 
     ax_accept = plt.axes([0.59, 0.05, 0.1, 0.075])
@@ -138,10 +140,13 @@ def diff_viewer(repo, key, repo_fname,
     plt.show()
 
 
-def step_over_diffs(result_dir):
+def step_over_diffs(result_dir, index):
     processed = False
     dname = os.path.dirname(iris.tests.__file__)
     lock = filelock.FileLock(os.path.join(dname, _POSTFIX_LOCK))
+    prog = os.path.basename(os.path.splitext(sys.argv[0])[0])
+    msg = '\n{}: Comparing result image with {} expected test image.'
+    print(msg.format(prog, 'oldest' if index == 0 else 'youngest'))
 
     # Remove old image diff results.
     target = os.path.join(result_dir, '*{}'.format(_POSTFIX_DIFF))
@@ -160,12 +165,14 @@ def step_over_diffs(result_dir):
             try:
                 im = Image.open(result_fname)
                 if im.format != 'PNG':
+                    # Ignore - it's not a png image.
                     continue
             except IOError:
+                # Ignore - it's not an image.
                 continue
             key = os.path.splitext('-'.join(result_fname.split('-')[1:]))[0]
             try:
-                uri = repo[key][0]
+                uri = repo[key][index]
             except KeyError:
                 wmsg = 'Ignoring unregistered test result {!r}.'
                 warnings.warn(wmsg.format(key))
@@ -173,15 +180,30 @@ def step_over_diffs(result_dir):
             with temp_png(key) as expected_fname:
                 processed = True
                 resource = requests.get(uri)
-                with open(expected_fname, 'wb') as fo:
-                    fo.write(resource.content)
+                if resource.status_code == 200:
+                    with open(expected_fname, 'wb') as fo:
+                        fo.write(resource.content)
+                else:
+                    # Perhaps the uri has not been pushed into the repo yet,
+                    # so check if a local "developer" copy is available ...
+                    local_fname = os.path.join(result_dir,
+                                               os.path.basename(uri))
+                    if not os.path.isfile(local_fname):
+                        emsg = 'Bad URI {!r} for test {!r}.'
+                        raise ValueError(uri, key)
+                    else:
+                        # The temporary expected filename has the test name
+                        # baked into it, and is used in the diff plot title.
+                        # So copy the local file to the exected file to
+                        # maintain this helpfulness.
+                        shutil.copy(local_fname, expected_fname)
                 mcompare.compare_images(expected_fname, result_fname, tol=_TOL)
                 diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
                 diff_viewer(repo, key, repo_fname, expected_fname,
                             result_fname, diff_fname)
         if not processed:
             msg = '\n{}: There are no iris test result images to process.\n'
-            print(msg.format(os.path.splitext(sys.argv[0])[0]))
+            print(msg.format(prog))
 
 
 if __name__ == '__main__':
@@ -198,9 +220,16 @@ if __name__ == '__main__':
                         action='store_true',
                         default=True,
                         help=help)
+    help = ('Compare result image with the oldest or last registered '
+            'expected test image')
+    parser.add_argument('--last', '-l',
+                        action='store_true',
+                        default=False,
+                        help=help)
     args = parser.parse_args()
     result_dir = args.resultdir
     if not os.path.isdir(result_dir):
         emsg = 'Invalid results directory: {}'
         raise ValueError(emsg.format(result_dir))
-    step_over_diffs(result_dir)
+    index = -1 if args.last else 0
+    step_over_diffs(result_dir, index)
