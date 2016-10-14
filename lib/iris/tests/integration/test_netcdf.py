@@ -23,8 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from itertools import repeat
 from contextlib import contextmanager
+from itertools import repeat
 import os.path
 import shutil
 import tempfile
