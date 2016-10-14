@@ -20,3 +20,6 @@ nose
 pep8=1.5.7
 sphinx
 filelock
+
+# Optional iris dependencies
+mo_pack
