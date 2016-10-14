@@ -54,6 +54,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
+from itertools import repeat, zip_longest
 
 
 # Show Pyke inference engine statistics.
@@ -1850,16 +1851,16 @@ class Saver(object):
             The newly created CF-netCDF data variable.
 
         """
+        masked = ma.isMaskedArray(cube.data)
         if 'packing' in kwargs:
             packing = kwargs.pop('packing')
             if packing:
                 scale_factor = None
                 add_offset = None
                 fill_value = None
-                masked = isinstance(cube.data, np.ma.core.MaskedArray)
                 if isinstance(packing, dict):
                     if 'dtype' not in packing:
-                        msg = ("The dtype attribute is required for packing. ")
+                        msg = "The dtype attribute is required for packing."
                         raise ValueError(msg)
                     dtype = np.dtype(packing['dtype'])
                     if 'scale_factor' in packing:
@@ -1884,7 +1885,7 @@ class Saver(object):
                             add_offset = (cmax + cmin)/2
                         else:
                             add_offset = cmin + 2**(n-1)*scale_factor
-                if masked and not fill_value:
+                if masked and fill_value is not None:
                     dtstr = dtype.str[1:]
                     fill_value = netCDF4.default_fillvals[dtstr]
         else:
@@ -1907,11 +1908,12 @@ class Saver(object):
                 or self._dataset.file_format in ('NETCDF3_CLASSIC',
                                                  'NETCDF3_64BIT')):
 
-            if not packing:
+            if packing is None:
                 # Determine whether there is a cube MDI value.
-                fill_value = None
-                if isinstance(cube.data, ma.core.MaskedArray):
+                if masked:
                     fill_value = cube.data.fill_value
+                else:
+                    fill_value = None
 
             # Get the values in a form which is valid for the file format.
             data = self._ensure_valid_dtype(cube.data, 'cube', cube)
@@ -1927,7 +1929,7 @@ class Saver(object):
             # Create the cube CF-netCDF data variable.
             # Explicitly assign the fill_value, which will be the type default
             # in the case of an unmasked array.
-            if not packing:
+            if packing is None:
                 fill_value = cube.lazy_data().fill_value
 
             cf_var = self._dataset.createVariable(
@@ -2123,8 +2125,8 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     * packing (type or string or dict or list): A numpy integer datatype
         (signed or unsigned) or a string that describes a numpy integer dtype
         (i.e. 'i2', 'short', 'u4') or a dict of packing parameters as described
-        below or a list of such types, strings, or dicts. This provides support
-        for netCDF data packing as described in
+        below or an iterable of such types, strings, or dicts.
+        This provides support for netCDF data packing as described in
         http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based on
@@ -2132,8 +2134,8 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         taken from netCDF4.default_fillvals. For more control, pass a dict with
         one or more of the following keys: `dtype` (required), `scale_factor`,
         `add_offset`, and `fill_value`. To save multiple cubes with different
-        packing parameters, pass a list of types, strings, dicts, or `None`,
-        one for each cube.  Note that automatic calculation of packing
+        packing parameters, pass an iterable of types, strings, dicts, or
+        `None`, one for each cube.  Note that automatic calculation of packing
         parameters will trigger loading of lazy data; set them manually using a
         dict to avoid this. The default is `None`, in which case the datatype
         is determined from the cube and no packing will occur.
@@ -2192,20 +2194,45 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         common_keys.difference_update(different_value_keys)
         local_keys.update(different_value_keys)
 
+    def is_valid_packspec(p):
+        """ Only checks that the datatype is valid. """
+        if isinstance(p, dict):
+            if 'dtype' in p:
+                return is_valid_packspec(p['dtype'])
+            else:
+                msg = "The argument to packing must contain the key 'dtype'."
+                raise ValueError(msg)
+        elif (isinstance(p, unicode) or isinstance(p, type) or
+              isinstance(p, str)):
+            pdtype = np.dtype(p)  # Does nothing if it's already a numpy dtype
+            if pdtype.kind != 'i' and pdtype.kind != 'u':
+                msg = "The packing datatype must be a numpy integer type."
+                raise ValueError(msg)
+            return True
+        elif packing is None:
+            return True
+        else:
+            return False
+
+    if is_valid_packspec(packing):
+        packspecs = repeat(packing)
+    else:
+        # Assume iterable, make sure packing is the same length as cubes.
+        for cube, packspec in zip_longest(cubes, packing, -1):
+            if cube == -1 or packspec == -1:
+                msg = ('If packing is a list, it must have the '
+                       'same number of elements as the argument to'
+                       'cube.')
+                raise ValueError(msg)
+            if not is_valid_packspec(packing):
+                msg = ('Invalid packing argument: {}.'.format(packspec))
+                raise ValueError(msg)
+        packspecs = packing
+
     # Initialise Manager for saving
     with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
-        for cube in cubes:
-            if isinstance(packing, list):
-                if len(packing) > 0:
-                    packspec = packing.pop(0)
-                else:
-                    msg = ('If packing is a list, it must have the '
-                           'same number of elements as the argument to'
-                           'cube.')
-                    raise ValueError(msg)
-            else:
-                packspec = packing
+        for cube, packspec in zip(cubes, packspecs):
             sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
                        least_significant_digit, packing=packspec)
