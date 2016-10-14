@@ -132,7 +132,7 @@ mock 1.0.1 (http://pypi.python.org/pypi/mock/)
 nose 1.1.2 or later (https://nose.readthedocs.io/en/latest/)
     Python package for software testing. Iris is not compatible with nose2.
 
-pep8 1.4.6* (https://pypi.python.org/pypi/pep8) 
+pep8 1.4.6 (https://pypi.python.org/pypi/pep8)
     Python package for software testing.
 
 pandas 0.11.0 or later (http://pandas.pydata.org)

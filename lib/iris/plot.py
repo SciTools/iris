@@ -167,8 +167,7 @@ def _get_plot_defn(cube, mode, ndims=2):
             aux_coords = [coord for coord in aux_coords
                           if isinstance(coord, iris.coords.DimCoord)]
             if aux_coords:
-                key_func = lambda coord: coord._as_defn()
-                aux_coords.sort(key=key_func)
+                aux_coords.sort(key=lambda coord: coord._as_defn())
                 coords[dim] = aux_coords[0]
 
     if mode == iris.coords.POINT_MODE:
@@ -974,7 +973,9 @@ def points(cube, *args, **kwargs):
     keyword arguments.
 
     """
-    _scatter_args = lambda u, v, data, *args, **kwargs: ((u, v) + args, kwargs)
+    def _scatter_args(u, v, data, *args, **kwargs):
+        return ((u, v) + args, kwargs)
+
     return _draw_2d_from_points('scatter', _scatter_args, cube,
                                 *args, **kwargs)
 

@@ -911,9 +911,9 @@ class LambertAzimuthalEqualArea(CoordSystem):
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
-        return "LambertAzimuthalEqualArea(latitude_of_projection_origin={!r}, "\
-               "longitude_of_projection_origin={!r}, false_easting={!r}, "\
-               "false_northing={!r}, ellipsoid={!r})".format(
+        return ("LambertAzimuthalEqualArea(latitude_of_projection_origin={!r},"
+                " longitude_of_projection_origin={!r}, false_easting={!r},"
+                " false_northing={!r}, ellipsoid={!r})").format(
                    self.latitude_of_projection_origin,
                    self.longitude_of_projection_origin,
                    self.false_easting,

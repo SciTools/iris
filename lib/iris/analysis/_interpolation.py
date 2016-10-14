@@ -405,8 +405,8 @@ class RectilinearInterpolator(object):
                 # Only DimCoords can be circular.
                 if circular:
                     coord_points = extend_circular_coord(coord, coord_points)
-                offset = ((coord_points.max() + coord_points.min() - modulus)
-                          * 0.5)
+                offset = 0.5 * (coord_points.max() + coord_points.min() -
+                                modulus)
                 self._circulars.append((circular, modulus,
                                         index, coord_dims[0],
                                         offset))
@@ -634,8 +634,8 @@ class RectilinearInterpolator(object):
             return new_coord, dims
 
         def gen_new_cube():
-            if (isinstance(new_coord, DimCoord) and len(dims) > 0
-                    and dims[0] not in dims_with_dim_coords):
+            if (isinstance(new_coord, DimCoord) and len(dims) > 0 and
+                    dims[0] not in dims_with_dim_coords):
                 new_cube._add_unique_dim_coord(new_coord, dims)
                 dims_with_dim_coords.append(dims[0])
             else:

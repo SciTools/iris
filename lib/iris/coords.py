@@ -964,7 +964,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if np.issubdtype(self.dtype, np.str):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
-            serialize = lambda x: '|'.join([str(i) for i in x.flatten()])
+            def serialize(x):
+                return '|'.join([str(i) for i in x.flatten()])
             bounds = None
             string_type_fmt = 'S{}' if six.PY2 else 'U{}'
             if self.bounds is not None:

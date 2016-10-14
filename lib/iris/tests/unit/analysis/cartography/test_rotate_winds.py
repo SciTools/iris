@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -162,8 +162,8 @@ class TestAnalyticComparison(tests.IrisTest):
                    np.sin(np.radians(trueLongitude) - lambda_angle) *
                    np.cos(phi_angle))
         sin_rot = -((np.sin(np.radians(trueLongitude) - lambda_angle) *
-                     np.sin(phi_angle))
-                    / np.cos(np.radians(rotated_lats)))
+                     np.sin(phi_angle)) /
+                    np.cos(np.radians(rotated_lats)))
 
         # Matrix-multiply to rotate the vectors.
         u_true = rotated_us * cos_rot - rotated_vs * sin_rot

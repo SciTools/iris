@@ -600,8 +600,8 @@ def _is_single_item(testee):
     We count string types as 'single', also.
 
     """
-    return (isinstance(testee, six.string_types)
-            or not isinstance(testee, collections.Iterable))
+    return (isinstance(testee, six.string_types) or
+            not isinstance(testee, collections.Iterable))
 
 
 class Cube(CFVariableMixin):
@@ -1132,7 +1132,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Search derived aux coords
         target_defn = coord._as_defn()
         if not matches:
-            match = lambda factory: factory._as_defn() == target_defn
+            def match(factory):
+                return factory._as_defn() == target_defn
             factories = filter(match, self._aux_factories)
             matches = [factory.derived_dims(self.coord_dims) for factory in
                        factories]
@@ -1341,9 +1342,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 msg = 'The attributes keyword was expecting a dictionary ' \
                       'type, but got a %s instead.' % type(attributes)
                 raise ValueError(msg)
-            attr_filter = lambda coord_: all(k in coord_.attributes and
-                                             coord_.attributes[k] == v for
-                                             k, v in six.iteritems(attributes))
+
+            def attr_filter(coord_):
+                return all(k in coord_.attributes and coord_.attributes[k] == v
+                           for k, v in six.iteritems(attributes))
+
             coords_and_factories = [coord_ for coord_ in coords_and_factories
                                     if attr_filter(coord_)]
 
@@ -2157,13 +2160,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # multiple times)
         dimension_mapping, slice_gen = iris.util.column_slices_generator(
             full_slice, len(self.shape))
-        new_coord_dims = lambda coord_: [dimension_mapping[d] for d in
-                                         self.coord_dims(coord_) if
-                                         dimension_mapping[d] is not None]
 
-        new_cell_measure_dims = lambda cm_: [dimension_mapping[d] for d in
-                                             self.cell_measure_dims(cm_) if
-                                             dimension_mapping[d] is not None]
+        def new_coord_dims(coord_):
+            return [dimension_mapping[d]
+                    for d in self.coord_dims(coord_)
+                    if dimension_mapping[d] is not None]
+
+        def new_cell_measure_dims(cm_):
+            return [dimension_mapping[d]
+                    for d in self.cell_measure_dims(cm_)
+                    if dimension_mapping[d] is not None]
 
         try:
             first_slice = next(slice_gen)
@@ -2648,9 +2654,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 coords.append(self.coord(name_or_coord))
             else:
                 # Don't know how to handle this type
-                msg = "Don't know how to handle coordinate of type %s. " \
-                      "Ensure all coordinates are of type six.string_types or " \
-                      "iris.coords.Coord." % type(name_or_coord)
+                msg = ("Don't know how to handle coordinate of type %s. "
+                       "Ensure all coordinates are of type six.string_types "
+                       "or iris.coords.Coord.") % (type(name_or_coord), )
                 raise TypeError(msg)
         return coords
 
@@ -3316,8 +3322,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_result = unrolled_data
 
         # Perform the aggregation in lazy form if possible.
-        elif (aggregator.lazy_func is not None
-                and len(dims_to_collapse) == 1 and self.has_lazy_data()):
+        elif (aggregator.lazy_func is not None and
+                len(dims_to_collapse) == 1 and self.has_lazy_data()):
             # Use a lazy operation separately defined by the aggregator, based
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'

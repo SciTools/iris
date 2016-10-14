@@ -46,10 +46,13 @@ class Test__regrid__linear(tests.IrisTest):
         self.y = DimCoord(np.linspace(0, 49, 50))
         self.xs, self.ys = np.meshgrid(self.x.points, self.y.points)
 
-        transformation = lambda x, y: x + y ** 2
+        def transformation(x, y):
+            return x + y ** 2
+
         # Construct a function which adds dimensions to the 2D data array
         # so that we can test higher dimensional functionality.
-        dim_extender = lambda arr: (arr[np.newaxis, ..., np.newaxis] * [1, 2])
+        def dim_extender(arr):
+            return arr[np.newaxis, ..., np.newaxis] * [1, 2]
 
         self.data = dim_extender(transformation(self.xs, self.ys))
 

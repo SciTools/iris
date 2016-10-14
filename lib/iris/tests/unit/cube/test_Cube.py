@@ -327,8 +327,7 @@ class Test_aggregated_by(tests.IrisTest):
         self.mock_agg.aggregate = mock.Mock(
             return_value=mock.Mock(dtype='object'))
         self.mock_agg.aggregate_shape = mock.Mock(return_value=())
-        post_process_func = lambda x, y, z: x
-        self.mock_agg.post_process = mock.Mock(side_effect=post_process_func)
+        self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
     def test_string_coord_agg_by_label(self):
         # Aggregate a cube on a string coordinate label where label
@@ -379,8 +378,7 @@ class Test_rolling_window(tests.IrisTest):
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.aggregate = mock.Mock(
             return_value=np.empty([4]))
-        post_process_func = lambda x, y, z: x
-        self.mock_agg.post_process = mock.Mock(side_effect=post_process_func)
+        self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
     def test_string_coord(self):
         # Rolling window on a cube that contains a string coordinate.

@@ -1411,8 +1411,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                     header_elem = int(header_elem)
                 lb[index] = header_elem
             else:
-                index = slice(pos[0] - NUM_LONG_HEADERS, pos[-1]
-                              - NUM_LONG_HEADERS + 1)
+                index = slice(pos[0] - NUM_LONG_HEADERS,
+                              pos[-1] - NUM_LONG_HEADERS + 1)
                 b[index] = header_elem
 
         # Although all of the elements are now populated, we still need to

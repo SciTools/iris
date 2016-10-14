@@ -120,10 +120,13 @@ class FieldCollation(object):
         """Define the field components used in the structure analysis."""
         # Define functions to make t1 and t2 values as date-time tuples.
         # These depend on header version (PPField2 has no seconds values).
-        t1_fn = lambda fld: (fld.lbyr, fld.lbmon, fld.lbdat,
-                             fld.lbhr, fld.lbmin, getattr(fld, 'lbsec', 0))
-        t2_fn = lambda fld: (fld.lbyrd, fld.lbmond, fld.lbdatd,
-                             fld.lbhrd, fld.lbmind, getattr(fld, 'lbsecd', 0))
+        def t1_fn(fld):
+            return (fld.lbyr, fld.lbmon, fld.lbdat, fld.lbhr, fld.lbmin,
+                    getattr(fld, 'lbsec', 0))
+
+        def t2_fn(fld):
+            return (fld.lbyrd, fld.lbmond, fld.lbdatd, fld.lbhrd, fld.lbmind,
+                    getattr(fld, 'lbsecd', 0))
 
         # Return a list of (name, array) for the vectorizable elements.
         component_arrays = [

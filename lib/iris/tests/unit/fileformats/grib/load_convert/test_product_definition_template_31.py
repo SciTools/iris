@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -64,7 +64,11 @@ class Test(tests.IrisTest):
         with mock.patch(this, warn_on_unsupported=request_warning):
             # The call being tested.
             product_definition_template_31(section, metadata, rt_coord)
+
         # Check the result.
+        def unscale(v, f):
+            return v / 10.0 ** f
+
         expected = deepcopy(self.metadata)
         coord = AuxCoord(series, long_name='satellite_series')
         expected['aux_coords_and_dims'].append((coord, None))
@@ -72,7 +76,6 @@ class Test(tests.IrisTest):
         expected['aux_coords_and_dims'].append((coord, None))
         coord = AuxCoord(instrument, long_name='instrument_type')
         expected['aux_coords_and_dims'].append((coord, None))
-        unscale = lambda v, f: v / 10.0 ** f
         standard_name = 'sensor_band_central_radiation_wavenumber'
         coord = AuxCoord(unscale(value, factor),
                          standard_name=standard_name,

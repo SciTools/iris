@@ -283,39 +283,50 @@ def coord_comparison(*cubes):
 
         # Get all coordinate groups which aren't complete (i.e. there is a
         # None in the group)
-        coord_is_None_fn = lambda cube, coord: coord is None
+        def coord_is_None_fn(cube, coord):
+            return coord is None
+
         if coord_group.matches_any(coord_is_None_fn):
             ungroupable.add(coord_group)
 
         # Get all coordinate groups which don't all equal one another
         # (None -> group not all equal)
-        not_equal_fn = lambda cube, coord: coord != first_coord
+        def not_equal_fn(cube, coord):
+            return coord != first_coord
+
         if coord_group.matches_any(not_equal_fn):
             not_equal.add(coord_group)
 
         # Get all coordinate groups which don't all share the same shape
         # (None -> group has different shapes)
-        diff_shape_fn = lambda cube, coord: coord.shape != first_coord.shape
+        def diff_shape_fn(cube, coord):
+            return coord.shape != first_coord.shape
+
         if coord_group.matches_any(diff_shape_fn):
             different_shaped_coords.add(coord_group)
 
         # Get all coordinate groups which don't all share the same data
         # dimension on their respective cubes
         # (None -> group describes a different dimension)
-        diff_data_dim_fn = lambda cube, coord: \
-            cube.coord_dims(coord) != first_cube.coord_dims(first_coord)
+        def diff_data_dim_fn(cube, coord):
+            return cube.coord_dims(coord) != first_cube.coord_dims(first_coord)
+
         if coord_group.matches_any(diff_data_dim_fn):
             different_data_dimension.add(coord_group)
 
         # get all coordinate groups which don't describe a dimension
         # (None -> doesn't describe a dimension)
-        no_data_dim_fn = lambda cube, coord: cube.coord_dims(coord) == ()
+        def no_data_dim_fn(cube, coord):
+            return cube.coord_dims(coord) == ()
+
         if coord_group.matches_all(no_data_dim_fn):
             no_data_dimension.add(coord_group)
 
         # get all coordinate groups which don't describe a dimension
         # (None -> not a scalar coordinate)
-        no_data_dim_fn = lambda cube, coord: coord.shape == (1, )
+        def no_data_dim_fn(cube, coord):
+            return coord.shape == (1, )
+
         if coord_group.matches_all(no_data_dim_fn):
             scalar_coords.add(coord_group)
 

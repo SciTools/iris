@@ -525,7 +525,9 @@ def _load_cube(engine, cf, cf_var, filename):
     # Populate coordinate attributes with the untouched attributes from the
     # associated CF-netCDF variable.
     coordinates = engine.provides.get('coordinates', [])
-    attribute_predicate = lambda item: item[0] not in _CF_ATTRS
+
+    def attribute_predicate(item):
+        return item[0] not in _CF_ATTRS
 
     for coord, cf_var_name in coordinates:
         tmpvar = filter(attribute_predicate,
@@ -1836,9 +1838,9 @@ class Saver(object):
             cf_name = self._increment_name(cf_name)
 
         # if netcdf3 avoid streaming due to dtype handling
-        if (not cube.has_lazy_data()
-                or self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                                 'NETCDF3_64BIT')):
+        if (not cube.has_lazy_data() or
+                self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                              'NETCDF3_64BIT')):
             # Determine whether there is a cube MDI value.
             fill_value = None
             if isinstance(cube.data, ma.core.MaskedArray):

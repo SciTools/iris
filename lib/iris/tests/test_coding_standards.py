@@ -69,6 +69,13 @@ DOCS_DIRS = [DOC_DIR for DOC_DIR in DOCS_DIRS if os.path.basename(DOC_DIR) not
              in exclusion]
 
 
+# pycodestyle / pep8 error codes that should be ignored:
+PYCODESTYLE_IGNORE_OPTIONS = (
+    # "Module level import not at top of file" - due to conditional imports
+    'E402',
+)
+
+
 class StandardReportWithExclusions(pep8.StandardReport):
     expected_bad_files = [
         '*/iris/std_names.py',
@@ -180,6 +187,7 @@ class TestCodeFormat(unittest.TestCase):
         # "reporter=pep8.FileReport" to the StyleGuide constructor.
         pep8style = pep8.StyleGuide(quiet=False,
                                     reporter=StandardReportWithExclusions)
+        pep8style.options.ignore += PYCODESTYLE_IGNORE_OPTIONS
 
         # Allow users to add their own exclude list.
         extra_exclude_file = os.path.join(os.path.dirname(__file__),

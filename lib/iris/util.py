@@ -306,8 +306,8 @@ def guess_coord_axis(coord):
     elif coord.standard_name in ('latitude', 'grid_latitude',
                                  'projection_y_coordinate'):
         axis = 'Y'
-    elif (coord.units.is_convertible('hPa')
-          or coord.attributes.get('positive') in ('up', 'down')):
+    elif (coord.units.is_convertible('hPa') or
+          coord.attributes.get('positive') in ('up', 'down')):
         axis = 'Z'
     elif coord.units.is_time_reference():
         axis = 'T'
@@ -598,8 +598,9 @@ def column_slices_generator(full_slice, ndims):
 
     # Get all of the dimensions for which a tuple of indices were provided
     # (numpy.ndarrays are treated in the same way tuples in this case)
-    is_tuple_style_index = lambda key: isinstance(key, tuple) or \
-        (isinstance(key, np.ndarray) and key.ndim == 1)
+    def is_tuple_style_index(key):
+        return (isinstance(key, tuple) or
+                (isinstance(key, np.ndarray) and key.ndim == 1))
     tuple_indices = [i for i, key in enumerate(full_slice)
                      if is_tuple_style_index(key)]
 

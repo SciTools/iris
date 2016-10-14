@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -156,10 +156,10 @@ def british_national_grid_y(cube, field):
 
     """
     if field.origin_corner == 0:  # top left
-        y_coord = DimCoord(np.arange(field.num_rows)[::-1] *
-                           -field.row_step + field.y_origin,
-                           standard_name="projection_y_coordinate", units="m",
-                           coord_system=iris.coord_systems.OSGB())
+        y_coord = DimCoord(
+            np.arange(field.num_rows)[::-1] * -field.row_step + field.y_origin,
+            standard_name="projection_y_coordinate", units="m",
+            coord_system=iris.coord_systems.OSGB())
         cube.add_dim_coord(y_coord, 0)
     else:
         raise TranslationError("Corner {0} not yet implemented".

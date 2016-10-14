@@ -252,10 +252,8 @@ class TestGribTimecodes(tests.IrisTest):
                 )
 
                 # Check the data-starttime calculation.
-                interval_start_to_end = (
-                    wrapped_msg._phenomenonDateTime
-                    - wrapped_msg._referenceDateTime
-                )
+                interval_start_to_end = (wrapped_msg._phenomenonDateTime -
+                                         wrapped_msg._referenceDateTime)
                 if grib_edition == 1:
                     interval_from_units = wrapped_msg.P1
                 else:
