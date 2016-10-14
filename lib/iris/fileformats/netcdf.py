@@ -1852,8 +1852,6 @@ class Saver(object):
             The newly created CF-netCDF data variable.
 
         """
-        if not cube.has_lazy_data():
-            masked = ma.isMaskedArray(cube.data)
         if 'packing' in kwargs:
             packing = kwargs.pop('packing')
             if packing:
@@ -1872,6 +1870,7 @@ class Saver(object):
                     if 'fill_value' in packing:
                         fill_value = packing['fill_value']
                 else:
+                    masked = ma.isMaskedArray(cube.data)
                     dtype = np.dtype(packing)
                     cmax = cube.data.max()
                     cmin = cube.data.min()
@@ -1887,7 +1886,8 @@ class Saver(object):
                             add_offset = (cmax + cmin)/2
                         else:
                             add_offset = cmin + 2**(n-1)*scale_factor
-                if masked and fill_value is not None:
+                if (cube.has_lazy_data() or ma.isMaskedArray(cube.data)
+                    and fill_value is None):
                     dtstr = dtype.str[1:]
                     fill_value = netCDF4.default_fillvals[dtstr]
         else:
@@ -1912,7 +1912,7 @@ class Saver(object):
 
             if packing is None:
                 # Determine whether there is a cube MDI value.
-                if masked:
+                if ma.isMaskedArray(cube.data):
                     fill_value = cube.data.fill_value
                 else:
                     fill_value = None
