@@ -2205,8 +2205,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
             else:
                 msg = "The argument to packing must contain the key 'dtype'."
                 raise ValueError(msg)
-        elif (isinstance(p, six.text_type) or isinstance(p, type) or
-              isinstance(p, str)):
+        elif (isinstance(p, six.text_type) or isinstance(p, type)):
             pdtype = np.dtype(p)  # Does nothing if it's already a numpy dtype
             if pdtype.kind != 'i' and pdtype.kind != 'u':
                 msg = "The packing datatype must be a numpy integer type."
