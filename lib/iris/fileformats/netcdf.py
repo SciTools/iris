@@ -25,7 +25,7 @@ Version 1.4, 27 February 2009.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from six.moves import (filter, input, map, range, zip, zip_longest)  # noqa
 import six
 
 import collections
@@ -54,7 +54,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from itertools import repeat, zip_longest
+from itertools import repeat
 
 
 # Show Pyke inference engine statistics.
