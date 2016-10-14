@@ -22,7 +22,6 @@ sphinx
 filelock
 
 # Optional iris dependencies
-gdal
 libmo_unpack
 pandas
 pyugrid
