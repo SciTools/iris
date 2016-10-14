@@ -26,9 +26,11 @@ Version 1.4, 27 February 2009.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+from six.moves import zip_longest  # Previous line may not be tampered with!
 import six
 
 import collections
+from itertools import repeat
 import os
 import os.path
 import re
@@ -54,8 +56,6 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from itertools import repeat
-from six.moves import zip_longest
 
 
 # Show Pyke inference engine statistics.
@@ -2226,7 +2226,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                        'same number of elements as the argument to'
                        'cube.')
                 raise ValueError(msg)
-            if not is_valid_packspec(packing):
+            if not is_valid_packspec(packspec):
                 msg = ('Invalid packing argument: {}.'.format(packspec))
                 raise ValueError(msg)
         packspecs = packing
