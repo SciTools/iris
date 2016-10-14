@@ -669,8 +669,6 @@ class IrisTest(unittest.TestCase):
 
         unique_id = self._unique_id()
 
-        figure = plt.gcf()
-    
         repo_fname = os.path.join(os.path.dirname(__file__), 'results', 'imagerepo.json')
         with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
@@ -702,13 +700,17 @@ class IrisTest(unittest.TestCase):
                     if err.errno != 17:
                         raise
 
-            figure.savefig(result_fname)
+            def save_figure_hash():
+                figure = plt.gcf()
+                figure.savefig(result_fname)
 
-            # XXX: Deal with a new test result i.e. it's not in the repo
+                # hash the created image using sha1
+                with open(result_fname, 'rb') as res_file:
+                    sha1 = hashlib.sha1(res_file.read())
+                return sha1
 
-            # hash the created image using sha1
-            with open(result_fname, 'rb') as res_file:
-                sha1 = hashlib.sha1(res_file.read())
+            sha1 = save_figure_hash()
+
             if unique_id not in repo:
                 msg = 'Image comparison failed: Created image {} for test {}.'
                 raise ValueError(msg.format(result_fname, unique_id))
@@ -718,6 +720,12 @@ class IrisTest(unittest.TestCase):
                 # test case uri/s.
                 expected = [os.path.splitext(os.path.basename(uri))[0]
                             for uri in uris]
+
+                if sha1.hexdigest() not in expected:
+                    # This can be an accidental failure, unusual, but it occurs
+                    # https://github.com/SciTools/iris/issues/2195
+                    # retry once, in case it passes second time round.
+                    sha1 = save_figure_hash()
 
                 if sha1.hexdigest() not in expected:
                     emsg = 'Actual SHA1 {} not in expected {} for test {}.'
