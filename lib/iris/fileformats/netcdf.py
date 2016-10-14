@@ -1886,8 +1886,9 @@ class Saver(object):
                             add_offset = (cmax + cmin)/2
                         else:
                             add_offset = cmin + 2**(n-1)*scale_factor
-                if (cube.has_lazy_data() or ma.isMaskedArray(cube.data)
-                    and fill_value is None):
+                needs_fill_value = (cube.has_lazy_data() or
+                                    ma.isMaskedArray(cube.data))
+                if needs_fill_value and fill_value is None:
                     dtstr = dtype.str[1:]
                     fill_value = netCDF4.default_fillvals[dtstr]
         else:
@@ -1906,9 +1907,9 @@ class Saver(object):
             cf_name = self._increment_name(cf_name)
 
         # if netcdf3 avoid streaming due to dtype handling
-        if (not cube.has_lazy_data()
-            or self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                             'NETCDF3_64BIT')):
+        if (not cube.has_lazy_data() or
+            self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                          'NETCDF3_64BIT')):
 
             if packing is None:
                 # Determine whether there is a cube MDI value.
