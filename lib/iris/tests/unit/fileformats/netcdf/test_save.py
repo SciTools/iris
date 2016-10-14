@@ -175,7 +175,7 @@ class Test_packed_data(tests.IrisTest):
         # ensure cube order is the same:
         cubes.sort(key=lambda cube: cube.cell_methods[0].method)
         datatype = 'i2'
-        scale_factor, offset = self._get_scale_factor_add_offset(cubes[0],
+        scale_factor, offset = _get_scale_factor_add_offset(cubes[0],
                                                                  datatype)
         if multi_dtype:
             packdict = dict(dtype=datatype, scale_factor=scale_factor,

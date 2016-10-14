@@ -1852,7 +1852,8 @@ class Saver(object):
             The newly created CF-netCDF data variable.
 
         """
-        masked = ma.isMaskedArray(cube.data)
+        if not cube.has_lazy_data():
+            masked = ma.isMaskedArray(cube.data)
         if 'packing' in kwargs:
             packing = kwargs.pop('packing')
             if packing:
@@ -1906,7 +1907,7 @@ class Saver(object):
 
         # if netcdf3 avoid streaming due to dtype handling
         if (not cube.has_lazy_data()
-                or self._dataset.file_format in ('NETCDF3_CLASSIC',
+            or self._dataset.file_format in ('NETCDF3_CLASSIC',
                                                  'NETCDF3_64BIT')):
 
             if packing is None:
