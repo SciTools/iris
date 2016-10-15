@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,32 +24,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Because this file is imported by setup.py, there may be additional runtime
 # imports later in the file.
-import glob
 import multiprocessing
 import os
 import sys
-
-
-def _failed_images_iter():
-    """
-    Return a generator of [expected, actual, diff] filenames for all failed
-    image tests since the test output directory was created.
-    """
-    baseline_img_dir = os.path.join(os.path.dirname(__file__), os.path.pardir,
-                                    'results', 'visual_tests')
-    diff_dir = os.path.join(os.path.dirname(__file__), os.path.pardir,
-                            'result_image_comparison')
-    if not os.access(diff_dir, os.W_OK):
-        diff_dir = os.path.join(os.getcwd(), 'iris_image_test_output')
-
-    baselines = sorted(glob.glob(os.path.join(baseline_img_dir, '*.png')))
-    for expected_fname in baselines:
-        result_fname = os.path.join(
-            diff_dir,
-            'result-' + os.path.basename(expected_fname))
-        diff_fname = result_fname[:-4] + '-failed-diff.png'
-        if os.path.exists(diff_fname):
-            yield expected_fname, result_fname, diff_fname
 
 
 def failed_images_html():
@@ -57,6 +34,8 @@ def failed_images_html():
     Generates HTML which shows the image failures side-by-side
     when viewed in a web browser.
     """
+    from iris.tests.idiff import step_over_diffs
+
     data_uri_template = '<img alt="{alt}" src="data:image/png;base64,{img}">'
 
     def image_as_base64(fname):
@@ -64,8 +43,12 @@ def failed_images_html():
             return fh.read().encode("base64").replace("\n", "")
 
     html = ['<!DOCTYPE html>', '<html>', '<body>']
+    rdir = os.path.join(os.path.dirname(__file__), os.path.pardir,
+                        'result_image_comparison')
+    if not os.access(rdir, os.W_OK):
+        rdir = os.path.join(os.getcwd(), 'iris_image_test_output')
 
-    for expected, actual, diff in _failed_images_iter():
+    for expected, actual, diff in step_over_diffs(rdir, 'similar', False):
         expected_html = data_uri_template.format(
             alt='expected', img=image_as_base64(expected))
         actual_html = data_uri_template.format(

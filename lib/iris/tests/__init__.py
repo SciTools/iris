@@ -41,7 +41,6 @@ import difflib
 import filecmp
 import functools
 import gzip
-import hashlib
 import inspect
 import json
 import io
@@ -116,6 +115,10 @@ except ImportError:
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
+#: Default perceptual hash size.
+_HASH_SIZE = 16
+#: Default maximum perceptual hash hamming distance.
+_HAMMING_DISTANCE = 2
 
 if '--data-files-used' in sys.argv:
     sys.argv.remove('--data-files-used')
@@ -142,8 +145,6 @@ if (MPL_AVAILABLE and '-d' in sys.argv):
     sys.argv.remove('-d')
     plt.switch_backend('tkagg')
     _DISPLAY_FIGURES = True
-
-_DEFAULT_IMAGE_TOLERANCE = 10.0
 
 
 def main():
@@ -661,7 +662,7 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def _assert_graphic(self):
+    def _assert_graphic(self, tol=_HAMMING_DISTANCE):
         """
         Check the hash of the current matplotlib figure matches the expected
         image hash for the current graphic test.
@@ -672,10 +673,12 @@ class IrisTest(unittest.TestCase):
         output directory, and the imagerepo.json file being updated.
 
         """
+        import imagehash
+        from PIL import Image
+
         dev_mode = os.environ.get('IRIS_TEST_CREATE_MISSING')
         unique_id = self._unique_id()
-        repo_fname = os.path.join(os.path.dirname(__file__),
-                                  'results', 'imagerepo.json')
+        repo_fname = os.path.join(_RESULT_PATH, 'imagerepo.json')
         with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
 
@@ -706,17 +709,10 @@ class IrisTest(unittest.TestCase):
                     if err.errno != 17:
                         raise
 
-            def _save_figure_hash():
-                plt.gcf().savefig(result_fname)
-                # Determine the test result image hash using sha1.
-                with open(result_fname, 'rb') as fi:
-                    sha1 = hashlib.sha1(fi.read())
-                return sha1
-
             def _create_missing():
-                fname = sha1.hexdigest() + '.png'
-                base_uri = ('https://scitools.github.io/test-images-scitools/'
-                            'image_files/{}')
+                fname = '{}.png'.format(phash)
+                base_uri = ('https://scitools.github.io/test-iris-imagehash/'
+                            'images/{}')
                 uri = base_uri.format(fname)
                 hash_fname = os.path.join(image_output_directory, fname)
                 uris = repo.setdefault(unique_id, [])
@@ -729,7 +725,25 @@ class IrisTest(unittest.TestCase):
                     json.dump(repo, codecs.getwriter('utf-8')(fo), indent=4,
                               sort_keys=True)
 
-            sha1 = _save_figure_hash()
+            # TBD: Push this fix to imagehash (done!)
+            # See https://github.com/JohannesBuchner/imagehash/pull/31
+            # Now need this imagehash/master pushed to pypi ...
+            def _hex_to_hash(hexstr, hash_size=_HASH_SIZE):
+                l = []
+                count = hash_size * (hash_size // 4)
+                if len(hexstr) != count:
+                    emsg = 'Expected hex string size of {}.'
+                    raise ValueError(emsg.format(count))
+                for i in range(count // 2):
+                    h = hexstr[i*2:i*2+2]
+                    v = int("0x" + h, 16)
+                    l.append([v & 2**i > 0 for i in range(8)])
+                return imagehash.ImageHash(np.array(l))
+
+            # Calculate the test result perceptual image hash. 
+            plt.gcf().savefig(result_fname)
+            phash = imagehash.phash(Image.open(result_fname),
+                                    hash_size=_HASH_SIZE)
 
             if unique_id not in repo:
                 if dev_mode:
@@ -739,30 +753,26 @@ class IrisTest(unittest.TestCase):
                     raise ValueError(emsg.format(unique_id))
             else:
                 uris = repo[unique_id]
-                # Cherry-pick the registered expected hashes from the
-                # test case uri/s.
-                expected = [os.path.splitext(os.path.basename(uri))[0]
+                # Create the expected perceptual image hashes from the uris.
+                expected = [_hex_to_hash(os.path.splitext(os.path.basename(uri))[0])
                             for uri in uris]
 
-                if sha1.hexdigest() not in expected:
-                    # This can be an accidental failure, unusual, but it occurs
-                    # https://github.com/SciTools/iris/issues/2195
-                    # retry once, in case it passes second time round.
-                    sha1 = _save_figure_hash()
+                # Calculate the hamming distance vector for the result hash.
+                distances = [e - phash for e in expected]
 
-                if sha1.hexdigest() not in expected:
+                if np.all([hd > tol for hd in distances]):
                     if dev_mode:
                         _create_missing()
                     else:
-                        emsg = 'Actual SHA1 {} not in expected {} for test {}.'
-                        emsg = emsg.format(sha1.hexdigest(), expected,
-                                           unique_id)
+                        msg = ('Bad phash {} with hamming distance {} '
+                               'for test {}.')
+                        msg = msg.format(phash, distances, unique_id)
                         if _DISPLAY_FIGURES:
-                            print('Image comparison would have failed. '
-                                  'Message: %s' % emsg)
+                            emsg = 'Image comparion would have failed: {}'
+                            print(emsg.format(msg))
                         else:
-                            raise ValueError('Image comparison failed. '
-                                             'Message: {}'.format(emsg))
+                            emsg = 'Image comparison failed: {}'
+                            raise ValueError(emsg.format(msg))
                 else:
                     # There is no difference between the actual and expected
                     # result, so remove the actual result file.
@@ -774,14 +784,13 @@ class IrisTest(unittest.TestCase):
         finally:
             plt.close()
 
-    def check_graphic(self, tol=None):
+    def check_graphic(self):
         """
         Checks that the image hash for the current matplotlib figure matches
         the expected image hash for the current test.
 
         """
-        fname = os.path.join(os.path.dirname(__file__),
-                             'results', 'imagerepo.lock')
+        fname = os.path.join(_RESULT_PATH, 'imagerepo.lock')
         lock = filelock.FileLock(fname)
         # The imagerepo.json file is a critical resource, so ensure thread
         # safe read/write behaviour via platform independent file locking.

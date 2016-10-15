@@ -33,7 +33,7 @@ class TestAtlanticProfiles(tests.GraphicsTest):
         with fail_any_deprecation_warnings():
             with add_examples_to_path():
                 import atlantic_profiles
-            with show_replaced_by_check_graphic(self, tol=14.0):
+            with show_replaced_by_check_graphic(self):
                 atlantic_profiles.main()
 
 
