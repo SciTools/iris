@@ -2,7 +2,7 @@
 # conda create -n <name> --file minimal-conda-requirements.txt
 
 # Mandatory dependencies
-biggus>=0.14.0
+biggus
 cartopy
 matplotlib
 netcdf4
@@ -22,8 +22,4 @@ sphinx
 filelock
 
 # Optional iris dependencies
-gdal
-libmo_unpack
-pandas
-pyugrid
-mo_pack=0.2.0
+mo_pack

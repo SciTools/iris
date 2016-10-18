@@ -2,7 +2,7 @@
 # conda create -n <name> --file conda-requirements.txt
 
 # Mandatory dependencies
-biggus>=0.14.0
+biggus
 cartopy
 matplotlib
 netcdf4
@@ -25,10 +25,9 @@ filelock
 # Optional iris dependencies
 nc_time_axis
 iris_grib
-ecmwf_grib
 esmpy>=7.0
 gdal
 libmo_unpack
 pandas
 pyugrid
-mo_pack=0.2.0
+mo_pack
