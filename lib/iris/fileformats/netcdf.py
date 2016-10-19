@@ -815,7 +815,7 @@ class Saver(object):
         Args:
 
         * cube (:class:`iris.cube.Cube`):
-            A :class:`iris.cube.Cube` to be saved to a netCDF file.
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.a
 
         Kwargs:
 
@@ -1921,9 +1921,12 @@ class Saver(object):
             # Get the values in a form which is valid for the file format.
             data = self._ensure_valid_dtype(cube.data, 'cube', cube)
 
+            if packing is None:
+                dtype = data.dtype.newbyteorder('=')
+
             # Create the cube CF-netCDF data variable with data payload.
             cf_var = self._dataset.createVariable(
-                cf_name, data.dtype.newbyteorder('='), dimension_names,
+                cf_name, dtype, dimension_names,
                 fill_value=fill_value, **kwargs)
             set_packing_ncattrs(cf_var)
             cf_var[:] = data
@@ -1934,9 +1937,10 @@ class Saver(object):
             # in the case of an unmasked array.
             if packing is None:
                 fill_value = cube.lazy_data().fill_value
+                dtype = cube.lazy_data().dtype.newbyteorder('=')
 
             cf_var = self._dataset.createVariable(
-                cf_name, cube.lazy_data().dtype.newbyteorder('='),
+                cf_name, dtype,
                 dimension_names, fill_value=fill_value,
                 **kwargs)
             set_packing_ncattrs(cf_var)

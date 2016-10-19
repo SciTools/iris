@@ -4,7 +4,7 @@ dimensions:
 	latitude = 73 ;
 	longitude = 96 ;
 variables:
-	float air_temperature(time, latitude, longitude) ;
+	short air_temperature(time, latitude, longitude) ;
 		air_temperature:scale_factor = 0.0024257504786326 ;
 		air_temperature:add_offset = 261.648002426021 ;
 		air_temperature:standard_name = "air_temperature" ;
@@ -45,7 +45,7 @@ variables:
 		height:units = "m" ;
 		height:standard_name = "height" ;
 		height:positive = "up" ;
-	float precipitation_flux(time, latitude, longitude) ;
+	short precipitation_flux(time, latitude, longitude) ;
 		precipitation_flux:scale_factor = 2.9897383798121e-08 ;
 		precipitation_flux:add_offset = 0.000979677472296829 ;
 		precipitation_flux:standard_name = "precipitation_flux" ;
@@ -54,7 +54,7 @@ variables:
 		precipitation_flux:cell_methods = "time: mean (interval: 1 hour)" ;
 		precipitation_flux:grid_mapping = "latitude_longitude" ;
 		precipitation_flux:coordinates = "forecast_period forecast_reference_time" ;
-	float air_temperature_0(time, latitude, longitude) ;
+	short air_temperature_0(time, latitude, longitude) ;
 		air_temperature_0:scale_factor = 0.0020141666756075 ;
 		air_temperature_0:add_offset = 242.787445071619 ;
 		air_temperature_0:standard_name = "air_temperature" ;

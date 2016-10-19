@@ -3,7 +3,7 @@ dimensions:
 	bnds = 2 ;
 	longitude = 96 ;
 variables:
-	float air_temperature(latitude, longitude) ;
+	short air_temperature(latitude, longitude) ;
 		air_temperature:scale_factor = 0.00119806791576066 ;
 		air_temperature:add_offset = 267.40062344802 ;
 		air_temperature:standard_name = "air_temperature" ;
