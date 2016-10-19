@@ -27,6 +27,7 @@ import argparse
 from datetime import datetime
 import os.path
 import requests
+import sys
 
 from metarelate.fuseki import FusekiServer
 
@@ -89,9 +90,6 @@ Provides UM/CF phenomenon translations.
 
 """'''
 
-DIR_BASE = '../lib/iris/fileformats'
-FILE_UM_CF = os.path.join(DIR_BASE, 'um_cf_map.py')
-
 YEAR = datetime.utcnow().year
 
 def _retrieve_mappings(fuseki, source, target):
@@ -119,7 +117,7 @@ def _retrieve_mappings(fuseki, source, target):
     return fuseki.retrieve_mappings(source, target, service=suri)
 
 
-def build_um_cf_map(fuseki, filename, now, git_sha):
+def build_um_cf_map(fuseki, now, git_sha, base_dir):
     """
     Encode the UM/CF phenomenon translation mappings
     within the specified file.
@@ -127,10 +125,17 @@ def build_um_cf_map(fuseki, filename, now, git_sha):
     Args:
     * fuseki:
         The :class:`metarelate.fuseki.FusekiServer` instance.
-    * filename:
-        The name of the file to contain the translations.
+    * now:
+        Time stamp to write into the file
+    * git_sha:
+        The git SHA1 of the metarelate commit
+    * base_dir:
+        The root directory of the Iris source.
 
     """
+    filename = os.path.join(base_dir, 'lib', 'iris', 'fileformats',
+                            'um_cf_map.py')
+
     # Create the base directory.
     if not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
@@ -170,8 +175,12 @@ def build_grib_cf_map(fuseki, now, git_sha, base_dir):
     Args:
     * fuseki:
         The :class:`metarelate.fuseki.FusekiServer` instance.
-    * filename:
-        The name of the file to contain the translations.
+    * now:
+        Time stamp to write into the file
+    * git_sha:
+        The git SHA1 of the metarelate commit
+    * base_dir:
+        The root directory of the iris-grib source.
 
     """
     file_grib_cf = os.path.join(base_dir, 'iris_grib', '_grib_cf_map.py')
@@ -222,11 +231,12 @@ def main():
     args = parser.parse_args()
     now = datetime.utcnow().strftime('%d %B %Y %H:%m')
     git_sha = requests.get('http://www.metarelate.net/metOcean/latest_sha').text
+    gen_path = os.path.abspath(sys.modules['__main__'].__file__)
+    iris_path = os.path.dirname(os.path.dirname(gen_path))
     with FusekiServer() as fuseki:
+        build_um_cf_map(fuseki, now, git_sha, iris_path)
         if args.iris_grib:
             build_grib_cf_map(fuseki, now, git_sha, args.iris_grib)
-        else:
-            build_um_cf_map(fuseki, FILE_UM_CF, now, git_sha)
         
     if (git_sha !=
         requests.get('http://www.metarelate.net/metOcean/latest_sha').text):
