@@ -155,26 +155,31 @@ class TestWrapAround(tests.IrisTest):
         # Ensure that floating point numbers are treated appropriately when
         # introducing precision difference from wrap_around.
         source = Cube([[1]])
+        cs = GeogCS(6371229)
+
         bounds = np.array([[-91, 0]], dtype='float')
         points = bounds.mean(axis=1)
-        lon_coord = DimCoord(points, bounds=bounds, standard_name='longitude')
+        lon_coord = DimCoord(points, bounds=bounds, standard_name='longitude',
+                             units='degrees', coord_system=cs)
         source.add_aux_coord(lon_coord, 1)
 
         bounds = np.array([[-90, 90]], dtype='float')
         points = bounds.mean(axis=1)
-        lat_coord = DimCoord(points, bounds=bounds, standard_name='latitude')
+        lat_coord = DimCoord(points, bounds=bounds, standard_name='latitude',
+                             units='degrees', coord_system=cs)
         source.add_aux_coord(lat_coord, 0)
 
         grid = Cube([[0]])
         bounds = np.array([[270, 360]], dtype='float')
         points = bounds.mean(axis=1)
-        lon_coord = DimCoord(points, bounds=bounds, standard_name='longitude')
+        lon_coord = DimCoord(points, bounds=bounds, standard_name='longitude',
+                             units='degrees', coord_system=cs)
         grid.add_aux_coord(lon_coord, 1)
         grid.add_aux_coord(lat_coord, 0)
 
         res = regrid(source, grid)
         # The result should be equal to the source data and NOT be masked.
-        self.assertMaskedArrayEqual(res.data, np.array([1.0]))
+        self.assertArrayEqual(res.data, np.array([1.0]))
 
 
 if __name__ == '__main__':
