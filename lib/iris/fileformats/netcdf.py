@@ -815,7 +815,7 @@ class Saver(object):
         Args:
 
         * cube (:class:`iris.cube.Cube`):
-            A :class:`iris.cube.Cube` to be saved to a netCDF file.a
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.
 
         Kwargs:
 
