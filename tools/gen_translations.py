@@ -23,9 +23,11 @@ metOcean mapping translations.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import argparse
 from datetime import datetime
 import os.path
 import requests
+import sys
 
 from metarelate.fuseki import FusekiServer
 
@@ -39,20 +41,20 @@ from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFNameMappings,
 
 HEADER = """# (C) British Crown Copyright 2013 - {year}, Met Office
 #
-# This file is part of Iris.
+# This file is part of {name}.
 #
-# Iris is free software: you can redistribute it and/or modify it under
+# {name} is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Iris is distributed in the hope that it will be useful,
+# {name} is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# along with {name}.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
 # Created on {datestamp} from 
@@ -88,9 +90,6 @@ Provides UM/CF phenomenon translations.
 
 """'''
 
-DIR_BASE = '../lib/iris/fileformats'
-FILE_UM_CF = os.path.join(DIR_BASE, 'um_cf_map.py')
-FILE_GRIB_CF = os.path.join(DIR_BASE, 'grib', '_grib_cf_map.py')
 YEAR = datetime.utcnow().year
 
 def _retrieve_mappings(fuseki, source, target):
@@ -118,7 +117,7 @@ def _retrieve_mappings(fuseki, source, target):
     return fuseki.retrieve_mappings(source, target, service=suri)
 
 
-def build_um_cf_map(fuseki, filename, now, git_sha):
+def build_um_cf_map(fuseki, now, git_sha, base_dir):
     """
     Encode the UM/CF phenomenon translation mappings
     within the specified file.
@@ -126,10 +125,17 @@ def build_um_cf_map(fuseki, filename, now, git_sha):
     Args:
     * fuseki:
         The :class:`metarelate.fuseki.FusekiServer` instance.
-    * filename:
-        The name of the file to contain the translations.
+    * now:
+        Time stamp to write into the file
+    * git_sha:
+        The git SHA1 of the metarelate commit
+    * base_dir:
+        The root directory of the Iris source.
 
     """
+    filename = os.path.join(base_dir, 'lib', 'iris', 'fileformats',
+                            'um_cf_map.py')
+
     # Create the base directory.
     if not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
@@ -137,7 +143,7 @@ def build_um_cf_map(fuseki, filename, now, git_sha):
     # Create the file to contain UM/CF translations.
     with open(filename, 'w') as fh:
         fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_UM,
-                               datestamp=now, git_sha=git_sha))
+                               datestamp=now, git_sha=git_sha, name='Iris'))
         fh.write('\n')
 
         # Encode the relevant UM to CF translations.
@@ -161,7 +167,7 @@ def build_um_cf_map(fuseki, filename, now, git_sha):
         fh.writelines(cffc.lines(fuseki))
 
 
-def build_grib_cf_map(fuseki, filename, now, git_sha):
+def build_grib_cf_map(fuseki, now, git_sha, base_dir):
     """
     Encode the GRIB/CF phenomenon translation mappings
     within the specified file.
@@ -169,18 +175,25 @@ def build_grib_cf_map(fuseki, filename, now, git_sha):
     Args:
     * fuseki:
         The :class:`metarelate.fuseki.FusekiServer` instance.
-    * filename:
-        The name of the file to contain the translations.
+    * now:
+        Time stamp to write into the file
+    * git_sha:
+        The git SHA1 of the metarelate commit
+    * base_dir:
+        The root directory of the iris-grib source.
 
     """
-    # Create the base directory.
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
+    file_grib_cf = os.path.join(base_dir, 'iris_grib', '_grib_cf_map.py')
+    if not os.path.exists(os.path.dirname(file_grib_cf)):
+        emsg = ('The iris_grib directory {} does not '
+                'exist.'.format(os.path.dirname(file_grib_cf)))
+        raise ValueError(emsg)
 
     # Create the file to contain GRIB/CF translations.
-    with open(FILE_GRIB_CF, 'w') as fh:
+    with open(file_grib_cf, 'w') as fh:
         fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_GRIB,
-                               datestamp=now, git_sha=git_sha))
+                               datestamp=now, git_sha=git_sha,
+                               name='iris-grib'))
         fh.write(HEADER_GRIB)
         fh.write('\n')
 
@@ -210,11 +223,21 @@ def build_grib_cf_map(fuseki, filename, now, git_sha):
 
 
 def main():
+    desc = 'Update translations from metarelate into your source tree'
+    parser = argparse.ArgumentParser(desc)
+    helptxt = ('The location of your local checkout of iris-grib checkout'
+               ' where the updated translations are to be stored.')
+    parser.add_argument('--iris_grib', action='store', help=helptxt)
+    args = parser.parse_args()
     now = datetime.utcnow().strftime('%d %B %Y %H:%m')
     git_sha = requests.get('http://www.metarelate.net/metOcean/latest_sha').text
+    gen_path = os.path.abspath(sys.modules['__main__'].__file__)
+    iris_path = os.path.dirname(os.path.dirname(gen_path))
     with FusekiServer() as fuseki:
-        build_um_cf_map(fuseki, FILE_UM_CF, now, git_sha)
-        build_grib_cf_map(fuseki, FILE_GRIB_CF, now, git_sha)
+        build_um_cf_map(fuseki, now, git_sha, iris_path)
+        if args.iris_grib:
+            build_grib_cf_map(fuseki, now, git_sha, args.iris_grib)
+        
     if (git_sha !=
         requests.get('http://www.metarelate.net/metOcean/latest_sha').text):
         raise ValueError('The metarelate translation store has altered during'
