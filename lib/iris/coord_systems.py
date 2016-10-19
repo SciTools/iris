@@ -914,11 +914,11 @@ class LambertAzimuthalEqualArea(CoordSystem):
         return ("LambertAzimuthalEqualArea(latitude_of_projection_origin={!r},"
                 " longitude_of_projection_origin={!r}, false_easting={!r},"
                 " false_northing={!r}, ellipsoid={!r})").format(
-                   self.latitude_of_projection_origin,
-                   self.longitude_of_projection_origin,
-                   self.false_easting,
-                   self.false_northing,
-                   self.ellipsoid)
+                    self.latitude_of_projection_origin,
+                    self.longitude_of_projection_origin,
+                    self.false_easting,
+                    self.false_northing,
+                    self.ellipsoid)
 
     def as_cartopy_crs(self):
         if self.ellipsoid is not None:
