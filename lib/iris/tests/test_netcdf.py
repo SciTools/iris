@@ -413,8 +413,9 @@ class TestNetCDFSave(tests.IrisTest):
             # Test NETCDF4_64BIT file format saving.
             iris.save(cube, file_out, netcdf_format='NETCDF3_64BIT')
             ds = nc.Dataset(file_out)
-            self.assertEqual(ds.file_format, 'NETCDF3_64BIT',
-                             'Failed to save as NETCDF3_64BIT format')
+            self.assertTrue(ds.file_format in ['NETCDF3_64BIT',
+                                               'NETCDF3_64BIT_OFFSET'],
+                            'Failed to save as NETCDF3_64BIT format')
             ds.close()
 
             # Test invalid file format saving.
@@ -695,20 +696,50 @@ class TestNetCDFSave(tests.IrisTest):
 
     def test_attributes(self):
         # Should be global attributes.
-        self.cube.attributes['history'] = 'A long time ago...'
-        self.cube.attributes['title'] = 'Attribute test'
-        self.cube.attributes['foo'] = 'bar'
-        # Should be data varible attributes.
-        self.cube.attributes['standard_error_multiplier'] = 23
-        self.cube.attributes['flag_masks'] = 'a'
-        self.cube.attributes['flag_meanings'] = 'b'
-        self.cube.attributes['flag_values'] = 'c'
-        self.cube.attributes['STASH'] = iris.fileformats.pp.STASH(1, 2, 3)
+        aglobals = {'history': 'A long time ago...',
+                    'title': 'Attribute test',
+                    'foo': 'bar'}
+        for k, v in six.iteritems(aglobals):
+            self.cube.attributes[k] = v
         # Should be overriden.
-        self.cube.attributes['conventions'] = 'TEST'
+        aover = {'Conventions': 'TEST'}
+        for k, v in six.iteritems(aover):
+            self.cube.attributes[k] = v
+        # Should be data varible attributes.
+        avars = {'standard_error_multiplier': 23,
+                 'flag_masks': 'a',
+                 'flag_meanings': 'b',
+                 'flag_values': 'c',
+                 'STASH': iris.fileformats.pp.STASH(1, 2, 3)}
+        for k, v in six.iteritems(avars):
+            self.cube.attributes[k] = v
         with self.temp_filename(suffix='.nc') as filename:
             iris.save(self.cube, filename)
-            self.assertCDL(filename, ('netcdf', 'netcdf_save_attr.cdl'))
+            # Load the dataset.
+            ds = nc.Dataset(filename, 'r')
+            exceptions = []
+            # Should be global attributes.
+            for gkey in aglobals:
+                if getattr(ds, gkey) != aglobals.get(gkey):
+                    exceptions.append('{} != {}'.format(getattr(ds, gkey),
+                                                        aglobals.get(gkey)))
+            # Should be overriden.
+            for okey in aover:
+                if getattr(ds, okey) == aover.get(okey):
+                    exceptions.append('{} != {}'.format(getattr(ds, okey),
+                                                        avars.get(okey)))
+            dv = ds['temp']
+            # Should be data varible attributes;
+            # except STASH -> um_stash_source.
+            for vkey in avars:
+                if vkey != 'STASH' and (getattr(dv, vkey) != avars.get(vkey)):
+                    exceptions.append('{} != {}'.format(getattr(dv, vkey),
+                                                        avars.get(vkey)))
+            if getattr(dv, 'um_stash_source') != avars.get('STASH'):
+                exc = '{} != {}'.format(getattr(dv, 'um_stash_source'),
+                                        avars.get(vkey))
+                exceptions.append(exc)
+        self.assertEqual(exceptions, [])
 
     def test_conflicting_attributes(self):
         # Should be data variable attributes.
