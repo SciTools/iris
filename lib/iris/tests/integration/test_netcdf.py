@@ -29,6 +29,7 @@ import shutil
 import tempfile
 import warnings
 
+import netCDF4 as nc
 import numpy as np
 
 import iris
@@ -214,7 +215,9 @@ class TestLazySave(tests.IrisTest):
             ncube = iris.load_cube(filename)
             # Lazy save of the masked cube
             iris.save(ncube, other_filename, unlimited_dimensions=[])
-            self.assertCDL(other_filename)
+            ds = nc.Dataset(other_filename, 'r')
+            avar = ds['unknown']
+            self.assertEqual(avar._FillValue, -1)
 
 
 @tests.skip_data
