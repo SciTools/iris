@@ -51,6 +51,7 @@ import shutil
 import subprocess
 import sys
 import unittest
+import threading
 import warnings
 import xml.dom.minidom
 import zlib
@@ -145,6 +146,9 @@ if (MPL_AVAILABLE and '-d' in sys.argv):
     sys.argv.remove('-d')
     plt.switch_backend('tkagg')
     _DISPLAY_FIGURES = True
+
+# Threading non re-entrant blocking lock to ensure thread-safe plotting.
+_lock = threading.Lock()
 
 
 def main():
@@ -698,12 +702,12 @@ class IrisTest(unittest.TestCase):
             result_fname = os.path.join(image_output_directory,
                                         'result-' + unique_id + '.png')
 
-            if not os.path.isdir(os.path.dirname(result_fname)):
+            if not os.path.isdir(image_output_directory):
                 # Handle race-condition where the directories are
                 # created sometime between the check above and the
                 # creation attempt below.
                 try:
-                    os.makedirs(os.path.dirname(result_fname))
+                    os.makedirs(image_output_directory)
                 except OSError as err:
                     # Don't care about "File exists"
                     if err.errno != 17:
@@ -718,7 +722,7 @@ class IrisTest(unittest.TestCase):
                 uris = repo.setdefault(unique_id, [])
                 uris.append(uri)
                 print('Creating image file: {}'.format(hash_fname))
-                os.rename(result_fname, hash_fname)
+                figure.savefig(hash_fname)
                 msg = 'Creating imagerepo entry: {} -> {}'
                 print(msg.format(unique_id, uri))
                 with open(repo_fname, 'wb') as fo:
@@ -740,15 +744,18 @@ class IrisTest(unittest.TestCase):
                     l.append([v & 2**i > 0 for i in range(8)])
                 return imagehash.ImageHash(np.array(l))
 
-            # Calculate the test result perceptual image hash. 
-            plt.gcf().savefig(result_fname)
-            phash = imagehash.phash(Image.open(result_fname),
-                                    hash_size=_HASH_SIZE)
+            # Calculate the test result perceptual image hash.
+            buffer = io.BytesIO()
+            figure = plt.gcf()
+            figure.savefig(buffer, format='png')
+            buffer.seek(0)
+            phash = imagehash.phash(Image.open(buffer), hash_size=_HASH_SIZE)
 
             if unique_id not in repo:
                 if dev_mode:
                     _create_missing()
                 else:
+                    figure.savefig(result_fname)
                     emsg = 'Missing image test result: {}.'
                     raise ValueError(emsg.format(unique_id))
             else:
@@ -764,6 +771,7 @@ class IrisTest(unittest.TestCase):
                     if dev_mode:
                         _create_missing()
                     else:
+                        figure.savefig(result_fname)
                         msg = ('Bad phash {} with hamming distance {} '
                                'for test {}.')
                         msg = msg.format(phash, distances, unique_id)
@@ -773,10 +781,6 @@ class IrisTest(unittest.TestCase):
                         else:
                             emsg = 'Image comparison failed: {}'
                             raise ValueError(emsg.format(msg))
-                else:
-                    # There is no difference between the actual and expected
-                    # result, so remove the actual result file.
-                    os.remove(result_fname)
 
             if _DISPLAY_FIGURES:
                 plt.show()
@@ -859,7 +863,13 @@ get_result_path = IrisTest.get_result_path
 
 class GraphicsTest(IrisTest):
 
+    # nose directive: dispatch tests concurrently.
+    _multiprocess_can_split_ = True
+
     def setUp(self):
+        # Acquire threading non re-entrant blocking lock to ensure
+        # thread-safe plotting.
+        _lock.acquire()
         # Make sure we have no unclosed plots from previous tests before
         # generating this one.
         if MPL_AVAILABLE:
@@ -870,10 +880,11 @@ class GraphicsTest(IrisTest):
         # in an odd state, so we make sure it's been disposed of.
         if MPL_AVAILABLE:
             plt.close('all')
+        # Release the non re-entrant blocking lock.
+        _lock.release()
 
 
 class TestGribMessage(IrisTest):
-
     def assertGribMessageContents(self, filename, contents):
         """
         Evaluate whether all messages in a GRIB2 file contain the provided

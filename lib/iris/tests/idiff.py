@@ -133,7 +133,7 @@ def diff_viewer(repo, key, repo_fname, phash, status,
     breject.on_clicked(reject)
     bskip = mwidget.Button(ax_skip, 'Skip')
     bskip.on_clicked(skip)
-    plt.text(0.59, 0.02, status, transform=fig.transFigure)
+    plt.text(0.59, 0.15, status, transform=fig.transFigure)
     plt.show()
 
 
@@ -254,8 +254,9 @@ def step_over_diffs(result_dir, action, display=True):
                 diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
                 args = expected_fname, result_fname, diff_fname
                 if display:
-                    msg = 'Image {} of {} with hamming distance of {}'
-                    status = msg.format(count_index+1, count, distance)
+                    msg = ('Image {} of {}: hamming distance = {} '
+                           '[{!r}]')
+                    status = msg.format(count_index+1, count, distance, kind)
                     prefix = repo, key, repo_fname, phash, status
                     yield prefix + args
                 else:

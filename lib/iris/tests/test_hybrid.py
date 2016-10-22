@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,6 +39,7 @@ import iris.tests.stock
 @tests.skip_plot
 class TestRealistic4d(tests.GraphicsTest):
     def setUp(self):
+        super(TestRealistic4d, self).setUp()
         self.cube = iris.tests.stock.realistic_4d()
         self.altitude = self.cube.coord('altitude')
 
