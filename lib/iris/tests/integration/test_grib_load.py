@@ -100,11 +100,24 @@ class TestBasicLoad(tests.GraphicsTest):
             ("GRIB", "polar_stereo", "ST4.2013052210.01h")))
         self.assertCML(cube, ("grib_load", "polar_stereo_grib1.cml"))
 
-    def test_polar_stereo_grib2(self):
+    def test_polar_stereo_grib2_grid_definition(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "polar_stereo",
              "CMC_glb_TMP_ISBL_1015_ps30km_2013052000_P006.grib2")))
-        self.assertCML(cube, ("grib_load", "polar_stereo_grib2.cml"))
+        self.assertEqual(cube.shape, (200, 247))
+        pxc = cube.coord('projection_x_coordinate')
+        self.assertAlmostEqual(pxc.points.max(), 4769905.5125, places=4)
+        self.assertAlmostEqual(pxc.points.min(), -2610094.4875, places=4)
+        pyc = cube.coord('projection_y_coordinate')
+        self.assertAlmostEqual(pyc.points.max(), -216.1459, places=4)
+        self.assertAlmostEqual(pyc.points.min(), -5970216.1459, places=4)
+        self.assertEqual(pyc.coord_system, pxc.coord_system)
+        self.assertEqual(pyc.coord_system.grid_mapping_name, 'stereographic')
+        self.assertEqual(pyc.coord_system.central_lat, 90.0)
+        self.assertEqual(pyc.coord_system.central_lon, 249.0)
+        self.assertEqual(pyc.coord_system.false_easting, 0.0)
+        self.assertEqual(pyc.coord_system.false_northing, 0.0)
+        self.assertEqual(pyc.coord_system.true_scale_lat, 60.0)
 
     def test_lambert_grib1(self):
         cube = iris.load_cube(tests.get_data_path(
