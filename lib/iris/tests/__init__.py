@@ -45,6 +45,7 @@ import inspect
 import json
 import io
 import logging
+import math
 import os
 import os.path
 import shutil
@@ -281,12 +282,11 @@ class IrisTest(unittest.TestCase):
             reference_filename = [self.get_result_path(reference_filename)]
         for i, cube in enumerate(cubes):
             fname = list(reference_filename)
-            # don't want the ".cml" for the numpy data file
+            # don't want the ".cml" for the json stats file
             if fname[-1].endswith(".cml"):
                 fname[-1] = fname[-1][:-4]
-            fname[-1] += '.data.%d.npy' % i
+            fname[-1] += '.data.%d.json' % i
             self.assertCubeDataAlmostEqual(cube, fname, *args, **kwargs)
-
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags='-h'):
@@ -402,28 +402,27 @@ class IrisTest(unittest.TestCase):
         reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
-
-            result = np.load(reference_path)
-            if isinstance(result, np.lib.npyio.NpzFile):
-                self.assertIsInstance(cube.data, ma.MaskedArray, 'Cube data was not a masked array.')
-                # Avoid comparing any non-initialised array data.
-                data = cube.data.filled()
-                np.testing.assert_array_almost_equal(data, result['data'],
-                                                     *args, **kwargs)
-                np.testing.assert_array_equal(cube.data.mask, result['mask'])
-            else:
-                np.testing.assert_array_almost_equal(cube.data, result, *args, **kwargs)
+            with open(reference_path, 'r') as reference_file:
+                stats = json.load(reference_file)
+                if not math.isnan(stats.get('mean', 0)):
+                    self.assertAlmostEqual(stats.get('mean', 0), cube.data.mean())
+                    self.assertAlmostEqual(stats.get('std', 0), cube.data.std())
+                    self.assertAlmostEqual(stats.get('max', 0), cube.data.max())
+                    self.assertAlmostEqual(stats.get('min', 0), cube.data.min())
+                self.assertEqual(stats.get('shape', []), list(cube.shape))
+                self.assertAlmostEqual(stats.get('masked', False),
+                                       isinstance(cube.data, ma.MaskedArray))
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
+            masked = False
             if isinstance(cube.data, ma.MaskedArray):
-                # Avoid recording any non-initialised array data.
-                data = cube.data.filled()
-                with open(reference_path, 'wb') as reference_file:
-                    np.savez(reference_file, data=data, mask=cube.data.mask)
-            else:
-                with open(reference_path, 'wb') as reference_file:
-                    np.save(reference_file, cube.data)
+                masked = True
+            stats = {'mean': np.float_(cube.data.mean()), 'std': np.float_(cube.data.std()),
+                     'max': np.float_(cube.data.max()), 'min': np.float_(cube.data.min()),
+                     'shape': cube.shape, 'masked': masked}
+            with open(reference_path, 'w') as reference_file:
+                reference_file.write(json.dumps(stats))
 
     def assertFilesEqual(self, test_filename, reference_filename):
         reference_path = self.get_result_path(reference_filename)
