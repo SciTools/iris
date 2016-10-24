@@ -471,8 +471,7 @@ def realistic_4d():
 #    >>> arrays.append(theta.data)
 #    >>> arrays.append(theta.coord('sigma').coord_system.orography.data)
 #    >>> np.savez('stock_arrays.npz', *arrays)
-
-    data_path = os.path.join(os.path.dirname(__file__), 'stock_arrays.npz')
+    data_path = tests.get_data_path(('stock_arrays.npz'))
     r = np.load(data_path)
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
     _, arrays =  zip(*sorted(six.iteritems(r), key=lambda item: int(item[0][4:])))
