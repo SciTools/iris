@@ -163,7 +163,7 @@ class TestRunner():
 
         args = ['', None, '--processes=%s' % n_processors,
                 '--verbosity=2', regexp_pat,
-                '--process-timeout=250']
+                '--process-timeout=600']
         try:
             import gribapi
         except ImportError:
