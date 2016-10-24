@@ -35,7 +35,6 @@ import iris
 from iris._deprecation import IrisDeprecation
 import iris.plot as iplt
 import iris.quickplot as qplt
-from iris.tests import _DEFAULT_IMAGE_TOLERANCE
 
 
 EXAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)),
@@ -60,7 +59,7 @@ def add_examples_to_path():
 
 
 @contextlib.contextmanager
-def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
+def show_replaced_by_check_graphic(test_case):
     """
     Creates a context manager which can be used to replace the functionality
     of matplotlib.pyplot.show with a function which calls the check_graphic
@@ -69,7 +68,7 @@ def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
     """
     def replacement_show():
         # form a closure on test_case and tolerance
-        test_case.check_graphic(tol=tol)
+        test_case.check_graphic()
 
     orig_show = plt.show
     plt.show = iplt.show = qplt.show = replacement_show

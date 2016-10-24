@@ -382,7 +382,6 @@ class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
         self.assertEqual(res, expected)
 
 class Test_LambertConformal(tests.GraphicsTest):
-
     def test_north_cutoff(self):
         lcc = LambertConformal(0, 0, secant_latitudes=(30, 60))
         ccrs = lcc.as_cartopy_crs()

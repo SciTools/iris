@@ -29,7 +29,6 @@ import argparse
 import codecs
 import contextlib
 from glob import glob
-import hashlib
 import json
 import os.path
 import shutil
@@ -38,10 +37,12 @@ import warnings
 
 from PIL import Image
 import filelock
+import imagehash
 import matplotlib.pyplot as plt
 import matplotlib.image as mimg
 import matplotlib.testing.compare as mcompare
 import matplotlib.widgets as mwidget
+import numpy as np
 import requests
 
 # Force iris.tests to use the ```tkagg``` backend by using the '-d'
@@ -55,8 +56,6 @@ import iris.util as iutil
 _POSTFIX_DIFF = '-failed-diff.png'
 _POSTFIX_JSON = os.path.join('results', 'imagerepo.json')
 _POSTFIX_LOCK = os.path.join('results', 'imagerepo.lock')
-_TIMEOUT = 30
-_TOL = 0
 
 
 @contextlib.contextmanager
@@ -70,9 +69,9 @@ def temp_png(suffix=''):
         os.remove(fname)
 
 
-def diff_viewer(repo, key, repo_fname,
+def diff_viewer(repo, key, repo_fname, phash, status,
                 expected_fname, result_fname, diff_fname):
-    plt.figure(figsize=(14, 12))
+    fig = plt.figure(figsize=(14, 12))
     plt.suptitle(os.path.basename(expected_fname))
     ax = plt.subplot(221)
     ax.imshow(mimg.imread(expected_fname))
@@ -81,14 +80,11 @@ def diff_viewer(repo, key, repo_fname,
     ax = plt.subplot(223, sharex=ax, sharey=ax)
     ax.imshow(mimg.imread(diff_fname))
 
-    # Determine the new image hash.png name.
-    with open(result_fname, 'rb') as fi:
-        sha1 = hashlib.sha1(fi.read())
     result_dir = os.path.dirname(result_fname)
-    fname = sha1.hexdigest() + '.png'
-    base_uri = 'https://scitools.github.io/test-images-scitools/image_files/{}'
+    fname = '{}.png'.format(phash)
+    base_uri = 'https://scitools.github.io/test-iris-imagehash/images/{}'
     uri = base_uri.format(fname)
-    hash_fname = os.path.join(result_dir, fname)
+    phash_fname = os.path.join(result_dir, fname)
 
     def accept(event):
         if uri not in repo[key]:
@@ -100,14 +96,14 @@ def diff_viewer(repo, key, repo_fname,
             with open(repo_fname, 'wb') as fo:
                 json.dump(repo, codecs.getwriter('utf-8')(fo),
                           indent=4, sort_keys=True)
-            os.rename(result_fname, hash_fname)
+            os.rename(result_fname, phash_fname)
             msg = 'ACCEPTED:  {} -> {}'
             print(msg.format(os.path.basename(result_fname),
-                             os.path.basename(hash_fname)))
+                             os.path.basename(phash_fname)))
         else:
             msg = 'DUPLICATE: {} -> {} (ignored)'
             print(msg.format(os.path.basename(result_fname),
-                             os.path.basename(hash_fname)))
+                             os.path.basename(phash_fname)))
             os.remove(result_fname)
         os.remove(diff_fname)
         plt.close()
@@ -118,7 +114,7 @@ def diff_viewer(repo, key, repo_fname,
         else:
             msg = 'DUPLICATE: {} -> {} (ignored)'
             print(msg.format(os.path.basename(result_fname),
-                             os.path.basename(hash_fname)))
+                             os.path.basename(phash_fname)))
         os.remove(result_fname)
         os.remove(diff_fname)
         plt.close()
@@ -137,42 +133,99 @@ def diff_viewer(repo, key, repo_fname,
     breject.on_clicked(reject)
     bskip = mwidget.Button(ax_skip, 'Skip')
     bskip.on_clicked(skip)
+    plt.text(0.59, 0.15, status, transform=fig.transFigure)
     plt.show()
 
 
-def step_over_diffs(result_dir, index):
+# TBD: Push this fix to imagehash (done!)
+# See https://github.com/JohannesBuchner/imagehash/pull/31
+# Now need this imagehash/master pushed to pypi ...
+def _hex_to_hash(hexstr, hash_size=iris.tests._HASH_SIZE):
+    l = []
+    count = hash_size * (hash_size // 4)
+    if len(hexstr) != count:
+        emsg = 'Expected hex string size of {}.'
+        raise ValueError(emsg.format(count))
+    for i in range(count // 2):
+        h = hexstr[i*2:i*2+2]
+        v = int("0x" + h, 16)
+        l.append([v & 2**i > 0 for i in range(8)])
+    return imagehash.ImageHash(np.array(l))
+
+
+def _calculate_hit(uris, phash, action):
+    # Create the expected perceptual image hashes from the uris.
+    expected = [_hex_to_hash(os.path.splitext(os.path.basename(uri))[0])
+                for uri in uris]
+    # Calculate the hamming distance vector for the result hash.
+    distances = [e - phash for e in expected]
+    if action == 'first':
+        index = 0
+    elif action == 'last':
+        index = -1
+    elif action == 'similar':
+        index = np.argmin(distances)
+    elif action == 'difference':
+        index = np.argmax(distances)
+    else:
+        emsg = 'Unknown action: {!r}'
+        raise ValueError(emsg.format(action))
+    return index, distances[index]
+
+
+def step_over_diffs(result_dir, action, display=True):
     processed = False
     dname = os.path.dirname(iris.tests.__file__)
     lock = filelock.FileLock(os.path.join(dname, _POSTFIX_LOCK))
-    prog = os.path.basename(os.path.splitext(sys.argv[0])[0])
-    msg = '\n{}: Comparing result image with {} expected test image.'
-    print(msg.format(prog, 'oldest' if index == 0 else 'youngest'))
+    if action in ['first', 'last']:
+        kind = action
+    elif action in ['similar', 'different']:
+        kind = 'most {}'.format(action)
+    else:
+        emsg = 'Unknown action: {!r}'
+        raise ValueError(emsg.format(action))
+    if display:
+        msg = ('\nComparing the {!r} expected image with '
+               'the test result image.')
+        print(msg.format(kind))
 
     # Remove old image diff results.
     target = os.path.join(result_dir, '*{}'.format(_POSTFIX_DIFF))
     for fname in glob(target):
         os.remove(fname)
 
-    with lock.acquire(timeout=_TIMEOUT):
+    with lock.acquire(timeout=30):
         # Load the imagerepo.
         repo_fname = os.path.join(dname, _POSTFIX_JSON)
         with open(repo_fname, 'rb') as fi:
             repo = json.load(codecs.getreader('utf-8')(fi))
 
-        target = os.path.join(result_dir, 'result-*.png')
-        for result_fname in sorted(glob(target)):
+        # Filter out all non-test result image files.
+        target_glob = os.path.join(result_dir, 'result-*.png')
+        results = []
+        for fname in sorted(glob(target_glob)):
             # We only care about PNG images.
             try:
-                im = Image.open(result_fname)
+                im = Image.open(fname)
                 if im.format != 'PNG':
                     # Ignore - it's not a png image.
                     continue
             except IOError:
                 # Ignore - it's not an image.
                 continue
+            results.append(fname)
+
+        count = len(results)
+
+        for count_index, result_fname in enumerate(results):
             key = os.path.splitext('-'.join(result_fname.split('-')[1:]))[0]
             try:
-                uri = repo[key][index]
+                # Calculate the test result perceptual image hash.
+                phash = imagehash.phash(Image.open(result_fname),
+                                        hash_size=iris.tests._HASH_SIZE)
+                uris = repo[key]
+                hash_index, distance = _calculate_hit(uris, phash, action)
+                uri = uris[hash_index]
             except KeyError:
                 wmsg = 'Ignoring unregistered test result {!r}.'
                 warnings.warn(wmsg.format(key))
@@ -197,39 +250,50 @@ def step_over_diffs(result_dir, index):
                         # So copy the local file to the exected file to
                         # maintain this helpfulness.
                         shutil.copy(local_fname, expected_fname)
-                mcompare.compare_images(expected_fname, result_fname, tol=_TOL)
+                mcompare.compare_images(expected_fname, result_fname, tol=0)
                 diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
-                diff_viewer(repo, key, repo_fname, expected_fname,
-                            result_fname, diff_fname)
-        if not processed:
-            msg = '\n{}: There are no iris test result images to process.\n'
-            print(msg.format(prog))
+                args = expected_fname, result_fname, diff_fname
+                if display:
+                    msg = ('Image {} of {}: hamming distance = {} '
+                           '[{!r}]')
+                    status = msg.format(count_index+1, count, distance, kind)
+                    prefix = repo, key, repo_fname, phash, status
+                    yield prefix + args
+                else:
+                    yield args
+        if display and not processed:
+            print('\nThere are no iris test result images to process.\n')
 
 
 if __name__ == '__main__':
     default = os.path.join(os.path.dirname(iris.tests.__file__),
                            'result_image_comparison')
     description = 'Iris graphic test difference tool.'
-    parser = argparse.ArgumentParser(description=description)
-    help = 'Path to iris tests result image directory (default: %(default)s)'
+    formatter_class = argparse.RawTextHelpFormatter
+    parser = argparse.ArgumentParser(description=description,
+                                     formatter_class=formatter_class)
+    help = 'path to iris tests result image directory (default: %(default)s)'
     parser.add_argument('--resultdir', '-r',
                         default=default,
                         help=help)
-    help = 'Force "iris.tests" to use the tkagg backend (default: %(default)s)'
+    help = 'force "iris.tests" to use the tkagg backend (default: %(default)s)'
     parser.add_argument('-d',
                         action='store_true',
                         default=True,
                         help=help)
-    help = ('Compare result image with the oldest or last registered '
-            'expected test image')
-    parser.add_argument('--last', '-l',
-                        action='store_true',
-                        default=False,
-                        help=help)
+    help = """
+first     - compare result image with first (oldest) expected image
+last      - compare result image with last (youngest) expected image
+similar   - compare result image with most similar expected image (default)
+different - compare result image with most unsimilar expected image
+"""
+    choices = ('first', 'last', 'similar', 'different')
+    parser.add_argument('action', nargs='?', choices=choices,
+                        default='similar', help=help)
     args = parser.parse_args()
     result_dir = args.resultdir
     if not os.path.isdir(result_dir):
         emsg = 'Invalid results directory: {}'
         raise ValueError(emsg.format(result_dir))
-    index = -1 if args.last else 0
-    step_over_diffs(result_dir, index)
+    for args in step_over_diffs(result_dir, args.action):
+        diff_viewer(*args)

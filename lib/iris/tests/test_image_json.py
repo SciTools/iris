@@ -34,10 +34,11 @@ from itertools import chain
 from six.moves.queue import Queue
 from threading import Thread
 
-# maximum number of threads for multi-threading code
+
+# Maximum number of threads for multi-threading code.
 MAXTHREADS = 8
 
-# Turn down requests logging
+# Turn down requests logging.
 logging.getLogger("requests").setLevel(logging.CRITICAL)
 
 
@@ -45,6 +46,7 @@ class _ResolveWorkerThread(Thread):
     """
     A :class:threading.Thread which moves objects from an input queue to an
     output deque using a 'dowork' method, as defined by a subclass.
+
     """
     def __init__(self, aqueue, adeque, exceptions):
         self.queue = aqueue
@@ -78,8 +80,9 @@ class TestImageFile(tests.IrisTest):
         uri_list = deque()
         exceptions = deque()
         uri_queue = Queue()
+        prefix = 'https://scitools.github.io/test-iris-imagehash'
         for uri in uris:
-            if uri.startswith('https://scitools.github.io'):
+            if uri.startswith(prefix):
                 uri_queue.put(uri)
             else:
                 msg = '{} is not a valid resource.'.format(uri)
