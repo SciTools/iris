@@ -398,19 +398,24 @@ class IrisTest(unittest.TestCase):
             diff = ''.join(difflib.unified_diff(reference_text, source_text, 'Reference', 'Test result', '', '', 0))
             self.fail("%s does not match reference file: %s\n%s" % (desc, reference_filename, diff))
 
-    def assertCubeDataAlmostEqual(self, cube, reference_filename, *args, **kwargs):
+    def assertCubeDataAlmostEqual(self, cube, reference_filename, *args,
+                                  **kwargs):
         reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
             with open(reference_path, 'r') as reference_file:
                 stats = json.load(reference_file)
-                if not math.isnan(stats.get('mean', 0)):
-                    self.assertAlmostEqual(stats.get('mean', 0), cube.data.mean())
-                    self.assertAlmostEqual(stats.get('std', 0), cube.data.std())
-                    self.assertAlmostEqual(stats.get('max', 0), cube.data.max())
-                    self.assertAlmostEqual(stats.get('min', 0), cube.data.min())
+                nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
+                                   stats.get('max', 0), stats.get('min', 0)))
+                if math.isnan(stats.get('mean', 0)):
+                    self.assertEqual(math.isnan(stats.get('mean', 0)),
+                                     math.isnan(cube.data.mean()))
+                else:
+                    cube_stats = np.array((cube.data.mean(), cube.data.std(),
+                                           cube.data.max(), cube.data.min()))
+                    self.assertArrayAllClose(nstats, cube_stats)
                 self.assertEqual(stats.get('shape', []), list(cube.shape))
-                self.assertAlmostEqual(stats.get('masked', False),
+                self.assertEqual(stats.get('masked', False),
                                        isinstance(cube.data, ma.MaskedArray))
         else:
             self._ensure_folder(reference_path)
@@ -418,8 +423,10 @@ class IrisTest(unittest.TestCase):
             masked = False
             if isinstance(cube.data, ma.MaskedArray):
                 masked = True
-            stats = {'mean': np.float_(cube.data.mean()), 'std': np.float_(cube.data.std()),
-                     'max': np.float_(cube.data.max()), 'min': np.float_(cube.data.min()),
+            stats = {'mean': np.float_(cube.data.mean()),
+                     'std': np.float_(cube.data.std()),
+                     'max': np.float_(cube.data.max()),
+                     'min': np.float_(cube.data.min()),
                      'shape': cube.shape, 'masked': masked}
             with open(reference_path, 'w') as reference_file:
                 reference_file.write(json.dumps(stats))
