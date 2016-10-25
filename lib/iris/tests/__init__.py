@@ -413,7 +413,7 @@ class IrisTest(unittest.TestCase):
                 else:
                     cube_stats = np.array((cube.data.mean(), cube.data.std(),
                                            cube.data.max(), cube.data.min()))
-                    self.assertArrayAllClose(nstats, cube_stats)
+                    self.assertArrayAllClose(nstats, cube_stats, rtol=1e-06)
                 self.assertEqual(stats.get('shape', []), list(cube.shape))
                 self.assertEqual(stats.get('masked', False),
                                        isinstance(cube.data, ma.MaskedArray))
