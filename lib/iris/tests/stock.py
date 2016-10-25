@@ -528,7 +528,7 @@ def realistic_4d_no_derived():
 
 def realistic_4d_w_missing_data():
     data_path = tests.get_data_path(('stock', 'stock_mdi_arrays.npz'))
-    if not os.path.is_file(data_path):
+    if not os.path.isfile(data_path):
         raise IOError('Test data is not available at {}.'.format(data_path))
     data_archive = np.load(data_path)
     data = ma.masked_array(data_archive['arr_0'], mask=data_archive['arr_1'])
