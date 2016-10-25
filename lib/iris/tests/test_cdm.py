@@ -1086,7 +1086,7 @@ class TestCubeCollapsed(tests.IrisTest):
         self.assertCMLApproxData(triple_collapse, ('cube_collapsed',
                                                    ('triple_collapse_lat_ml'
                                                    '_pt.cml')),
-                                                   rtol=1e-07)
+                                                   rtol=1)
 
         # Ensure no side effects
         self.assertCML(cube, ('cube_collapsed', 'original.cml'))
