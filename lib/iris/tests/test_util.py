@@ -184,6 +184,7 @@ class TestClipString(unittest.TestCase):
             'expected value is %s' % (len(result), expected_length))
 
 
+@tests.skip_data
 class TestDescribeDiff(iris.tests.IrisTest):
     def test_identical(self):
         test_cube_a = stock.realistic_4d()
@@ -262,6 +263,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
                               'incompatible_cubes.str.txt')
 
 
+@tests.skip_data
 class TestAsCompatibleShape(tests.IrisTest):
     def test_slice(self):
         cube = tests.stock.realistic_4d()

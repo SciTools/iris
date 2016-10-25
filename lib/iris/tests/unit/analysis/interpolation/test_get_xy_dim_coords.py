@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,6 +38,7 @@ import iris.tests.stock
 
 
 class TestGetXYCoords(tests.IrisTest):
+    @tests.skip_data
     def test_grid_lat_lon(self):
         cube = iris.tests.stock.realistic_4d()
         x, y = get_xy_dim_coords(cube)
@@ -58,18 +59,21 @@ class TestGetXYCoords(tests.IrisTest):
         self.assertIs(x, cube.coord('projection_x_coordinate'))
         self.assertIs(y, cube.coord('projection_y_coordinate'))
 
+    @tests.skip_data
     def test_missing_x_coord(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord('grid_longitude')
         with self.assertRaises(ValueError):
             get_xy_dim_coords(cube)
 
+    @tests.skip_data
     def test_missing_y_coord(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord('grid_latitude')
         with self.assertRaises(ValueError):
             get_xy_dim_coords(cube)
 
+    @tests.skip_data
     def test_multiple_coords(self):
         cube = iris.tests.stock.realistic_4d()
         cs = iris.coord_systems.GeogCS(6371229)

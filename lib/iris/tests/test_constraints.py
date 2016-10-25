@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -43,8 +43,11 @@ def workaround_pending_1262(cubes):
             cubes[i] = cube[::-1]
 
 
+@tests.skip_data
 class TestSimple(tests.IrisTest):
-    slices = iris.cube.CubeList(stock.realistic_4d().slices(['grid_latitude', 'grid_longitude']))
+    def setUp(self):
+        names = ['grid_latitude', 'grid_longitude']
+        self.slices = iris.cube.CubeList(stock.realistic_4d().slices(names))
 
     def test_constraints(self):
         constraint = iris.Constraint(model_level_number=10)

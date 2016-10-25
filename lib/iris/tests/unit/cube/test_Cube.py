@@ -409,6 +409,7 @@ class Test_rolling_window(tests.IrisTest):
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
 
+@tests.skip_data
 class Test_slices_over(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_4d()

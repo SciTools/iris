@@ -226,6 +226,7 @@ class TestConservativeRegrid(tests.IrisTest):
                                [True, False, False, False, True],
                                [True, True, True, True, True]])
 
+    @tests.skip_data
     def test_multidimensional(self):
         """
         Check valid operation on a multidimensional cube.
