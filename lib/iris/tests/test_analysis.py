@@ -212,30 +212,30 @@ class TestAnalysisBasic(tests.IrisTest):
         self.assertCML(self.cube, ('analysis', original_name))
 
     def test_mean(self):
-        self._common('mean', iris.analysis.MEAN, decimal=1)
+        self._common('mean', iris.analysis.MEAN, rtol=1e-05)
 
     def test_std_dev(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('std_dev', iris.analysis.STD_DEV, decimal=1)
+        self._common('std_dev', iris.analysis.STD_DEV, rtol=1e-05)
 
     def test_hmean(self):
         # harmonic mean requires data > 0
         self.cube.data *= self.cube.data
-        self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', decimal=1)
+        self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', , rtol=1e-05)
 
     def test_gmean(self):
-        self._common('gmean', iris.analysis.GMEAN, decimal=1)
+        self._common('gmean', iris.analysis.GMEAN, , rtol=1e-05)
 
     def test_variance(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('variance', iris.analysis.VARIANCE, decimal=1)
+        self._common('variance', iris.analysis.VARIANCE, , rtol=1e-05)
 
     def test_median(self):
         self._common('median', iris.analysis.MEDIAN)
 
     def test_sum(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('sum', iris.analysis.SUM, decimal=1)
+        self._common('sum', iris.analysis.SUM, , rtol=1e-05)
 
     def test_max(self):
         self._common('max', iris.analysis.MAX)
