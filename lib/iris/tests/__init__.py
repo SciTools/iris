@@ -183,7 +183,10 @@ def get_data_path(relative_path):
     """
     if not isinstance(relative_path, six.string_types):
         relative_path = os.path.join(*relative_path)
-    data_path = os.path.join(iris.config.TEST_DATA_DIR, relative_path)
+    test_data_dir = iris.config.TEST_DATA_DIR
+    if test_data_dir is None:
+        test_data_dir = ''
+    data_path = os.path.join(test_data_dir, relative_path)
 
     if _EXPORT_DATAPATHS_FILE is not None:
         _EXPORT_DATAPATHS_FILE.write(data_path + '\n')

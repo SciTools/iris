@@ -29,6 +29,7 @@ import iris.analysis.trajectory
 import iris.tests.stock
 
 
+@tests.skip_data
 class TestSimple(tests.IrisTest):
     def test_invalid_coord(self):
         cube = iris.tests.stock.realistic_4d()

@@ -656,6 +656,7 @@ class TestAreaWeights(tests.IrisTest):
         self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'),
                        checksum=False)
 
+@tests.skip_data
 class TestAreaWeightGeneration(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()

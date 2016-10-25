@@ -637,6 +637,7 @@ class TestSaveLBPROC(tests.IrisTest):
         self.assertEqual(int(field.lbproc), 192)
 
 
+@tests.skip_data
 class TestCallbackLoad(tests.IrisTest):
     def setUp(self):
         self.pass_name = 'air_potential_temperature'

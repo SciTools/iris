@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -106,6 +106,7 @@ class TestLazy(unittest.TestCase):
         self._check_shared_data(self.coord)
 
 
+@tests.skip_data
 class TestCoordSlicing(unittest.TestCase):
     def setUp(self):
         cube = iris.tests.stock.realistic_4d()
@@ -207,6 +208,7 @@ class TestCoordIntersection(tests.IrisTest):
         self.a.units = 'kilometer'
         self.assertRaises(ValueError, self.a.intersect, self.b)
 
+    @tests.skip_data
     def test_commutative(self):
         cube = iris.tests.stock.realistic_4d()
         coord = cube.coord('grid_longitude')
@@ -232,6 +234,7 @@ class TestXML(tests.IrisTest):
         self.assertXMLElement(coord, ('coord_api', 'complex.xml'))
 
 
+@tests.skip_data
 class TestCoord_ReprStr_nontime(tests.IrisTest):
     def setUp(self):
         self.lat = iris.tests.stock.realistic_4d().coord('grid_latitude')[:10]
@@ -253,6 +256,7 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
                           ('coord_api', 'str_repr', 'aux_nontime_str.txt'))
 
 
+@tests.skip_data
 class TestCoord_ReprStr_time(tests.IrisTest):
     def setUp(self):
         self.time = iris.tests.stock.realistic_4d().coord('time')
@@ -596,6 +600,7 @@ class TestCoordCollapsed(tests.IrisTest):
         self.assertCML(pcube, ("coord_api", "nd_bounds.cml"))
 
 
+@tests.skip_data
 class TestGetterSetter(tests.IrisTest):
     def test_get_set_points_and_bounds(self):
         cube = iris.tests.stock.realistic_4d()

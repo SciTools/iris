@@ -47,8 +47,10 @@ _DEFAULT_GLOBE = ccrs.Globe(semimajor_axis=6371229.0,
 
 
 @tests.skip_plot
+@tests.skip_data
 class TestBasic(tests.GraphicsTest):
-    cube = iris.tests.stock.realistic_4d()
+    def setUp(self):
+        self.cube = iris.tests.stock.realistic_4d()
 
     def test_contourf(self):
         cube = self.cube[0, 0]
