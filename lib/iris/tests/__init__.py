@@ -405,6 +405,9 @@ class IrisTest(unittest.TestCase):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
             with open(reference_path, 'r') as reference_file:
                 stats = json.load(reference_file)
+                self.assertEqual(stats.get('shape', []), list(cube.shape))
+                self.assertEqual(stats.get('masked', False),
+                                       isinstance(cube.data, ma.MaskedArray))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
                                    stats.get('max', 0), stats.get('min', 0)))
                 if math.isnan(stats.get('mean', 0)):
@@ -413,11 +416,7 @@ class IrisTest(unittest.TestCase):
                 else:
                     cube_stats = np.array((cube.data.mean(), cube.data.std(),
                                            cube.data.max(), cube.data.min()))
-                    emsg = '{} comparison failed.'.format(reference_path)
-                    self.assertArrayAllClose(nstats, cube_stats, err_msg=emsg)
-                self.assertEqual(stats.get('shape', []), list(cube.shape))
-                self.assertEqual(stats.get('masked', False),
-                                       isinstance(cube.data, ma.MaskedArray))
+                    self.assertArrayAllClose(nstats, cube_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)

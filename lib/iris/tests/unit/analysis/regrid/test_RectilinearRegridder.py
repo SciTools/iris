@@ -1238,14 +1238,15 @@ class Test___call____circular(tests.IrisTest):
             cml = RESULT_DIR + ('{}_non_circular.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
-    def _check_circular_results(self, src_cube):
+    def _check_circular_results(self, src_cube, missingmask=''):
         results = []
         for method in self.methods:
             regridder = Regridder(src_cube, self.grid, method, self.mode)
             result = regridder(src_cube)
             results.append(result)
             self.assertFalse(result.coord('longitude').circular)
-            cml = RESULT_DIR + ('{}_circular_src.cml'.format(method),)
+            cml = RESULT_DIR + ('{}_circular_src{}.cml'.format(method,
+                                                               missingmask),)
             self.assertCMLApproxData(result, cml)
         return results
 
@@ -1262,7 +1263,7 @@ class Test___call____circular(tests.IrisTest):
         src.coord('longitude').circular = True
         src.data = np.ma.MaskedArray(src.data)
         self.assertEqual(src.data.mask, False)
-        method_results = self._check_circular_results(src)
+        method_results = self._check_circular_results(src, 'missingmask')
         for method_result in method_results:
             self.assertIsInstance(method_result.data.mask, np.ndarray)
             self.assertTrue(np.all(method_result.data.mask == np.array(False)))
