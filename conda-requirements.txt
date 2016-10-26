@@ -21,6 +21,7 @@ pep8
 sphinx
 iris_sample_data
 filelock
+imagehash
 
 # Optional iris dependencies
 nc_time_axis
