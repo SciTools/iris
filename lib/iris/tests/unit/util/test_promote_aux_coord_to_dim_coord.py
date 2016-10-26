@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -44,6 +44,7 @@ class Test(tests.IrisTest):
         promote_aux_coord_to_dim_coord(cube_b, 'model_level_number')
         self.assertTrue(cube_a.coord('level_height') in cube_b.aux_coords)
 
+    @tests.skip_data
     def test_argument_is_coord_instance(self):
         cube_a = stock.realistic_4d()
         cube_b = cube_a.copy()
@@ -53,6 +54,7 @@ class Test(tests.IrisTest):
                           cube_a.coord('grid_latitude'),
                           cube_a.coord('grid_longitude')))
 
+    @tests.skip_data
     def test_dimension_is_anonymous(self):
         cube_a = stock.realistic_4d()
         cube_b = cube_a.copy()

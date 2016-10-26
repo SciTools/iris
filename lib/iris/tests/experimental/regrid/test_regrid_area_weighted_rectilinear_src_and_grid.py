@@ -155,6 +155,7 @@ def _resampled_grid(cube, x_samplefactor, y_samplefactor):
     return new_cube
 
 
+@tests.skip_data
 class TestAreaWeightedRegrid(tests.IrisTest):
     def setUp(self):
         # A cube with a hybrid height derived coordinate.

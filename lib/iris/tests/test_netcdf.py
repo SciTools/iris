@@ -300,6 +300,7 @@ class SaverPermissions(tests.IrisTest):
             os.rmdir(dir_name)
 
 
+@tests.skip_data
 class TestSave(tests.IrisTest):
     def test_hybrid(self):
         cube = stock.realistic_4d()

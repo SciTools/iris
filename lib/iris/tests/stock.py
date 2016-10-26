@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -471,8 +471,9 @@ def realistic_4d():
 #    >>> arrays.append(theta.data)
 #    >>> arrays.append(theta.coord('sigma').coord_system.orography.data)
 #    >>> np.savez('stock_arrays.npz', *arrays)
-
-    data_path = os.path.join(os.path.dirname(__file__), 'stock_arrays.npz')
+    data_path = tests.get_data_path(('stock', 'stock_arrays.npz'))
+    if not os.path.isfile(data_path):
+        raise IOError('Test data is not available at {}.'.format(data_path))
     r = np.load(data_path)
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
     _, arrays =  zip(*sorted(six.iteritems(r), key=lambda item: int(item[0][4:])))
@@ -526,7 +527,9 @@ def realistic_4d_no_derived():
 
 
 def realistic_4d_w_missing_data():
-    data_path = os.path.join(os.path.dirname(__file__), 'stock_mdi_arrays.npz')
+    data_path = tests.get_data_path(('stock', 'stock_mdi_arrays.npz'))
+    if not os.path.isfile(data_path):
+        raise IOError('Test data is not available at {}.'.format(data_path))
     data_archive = np.load(data_path)
     data = ma.masked_array(data_archive['arr_0'], mask=data_archive['arr_1'])
 

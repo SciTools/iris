@@ -1188,6 +1188,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             self.assertCMLApproxData(result, cml)
 
 
+@tests.skip_data
 class Test___call____NOP(tests.IrisTest):
     def setUp(self):
         # The destination grid points are exactly the same as the

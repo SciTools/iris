@@ -44,6 +44,7 @@ from iris.tests import mock
 import iris.tests.stock as stock
 
 
+@tests.skip_data
 class TestHybridPressure(tests.IrisTest):
     def setUp(self):
         # Modify stock cube so it is suitable to have a
@@ -79,6 +80,7 @@ class TestHybridPressure(tests.IrisTest):
             self.assertEqual(cube, other_cube)
 
 
+@tests.skip_data
 class TestSaveMultipleAuxFactories(tests.IrisTest):
     def test_hybrid_height_and_pressure(self):
         cube = stock.realistic_4d()
@@ -306,6 +308,7 @@ class TestCellMethod_unknown(tests.IrisTest):
             shutil.rmtree(temp_dirpath)
 
 
+@tests.skip_data
 class TestCoordSystem(tests.IrisTest):
     def test_load_laea_grid(self):
         cube = iris.load_cube(

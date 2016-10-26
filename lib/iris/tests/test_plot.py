@@ -42,6 +42,7 @@ if tests.MPL_AVAILABLE:
     import iris.symbols
 
 
+@tests.skip_data
 def simple_cube():
     cube = iris.tests.stock.realistic_4d()
     cube = cube[:, 0, 0, :]
@@ -102,6 +103,7 @@ class TestMissingCS(tests.GraphicsTest):
 
 
 @tests.skip_plot
+@tests.skip_data
 class TestHybridHeight(tests.GraphicsTest):
     def setUp(self):
         super(TestHybridHeight, self).setUp()
@@ -151,6 +153,7 @@ class TestHybridHeight(tests.GraphicsTest):
 
 
 @tests.skip_plot
+@tests.skip_data
 class Test1dPlotMultiArgs(tests.GraphicsTest):
     # tests for iris.plot using multi-argument calling convention
 
@@ -367,6 +370,7 @@ def cache(fn, cache={}):
 
 
 @cache
+@tests.skip_data
 def _load_4d_testcube():
     # Load example 4d data (TZYX).
     test_cube = iris.tests.stock.realistic_4d()

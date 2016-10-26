@@ -70,28 +70,33 @@ class TestAll(tests.IrisTest):
         self.assertIsNot(res.coord('projection_x_coordinate').coord_system,
                          self.tcs)
 
+    @tests.skip_data
     def test_bad_resolution_negative(self):
         cube = low_res_4d()
         with self.assertRaises(ValueError):
             project(cube, ROBINSON, nx=-200, ny=200)
 
+    @tests.skip_data
     def test_bad_resolution_non_numeric(self):
         cube = low_res_4d()
         with self.assertRaises(ValueError):
             project(cube, ROBINSON, nx=200, ny='abc')
 
+    @tests.skip_data
     def test_missing_lat(self):
         cube = low_res_4d()
         cube.remove_coord('grid_latitude')
         with self.assertRaises(ValueError):
             project(cube, ROBINSON)
 
+    @tests.skip_data
     def test_missing_lon(self):
         cube = low_res_4d()
         cube.remove_coord('grid_longitude')
         with self.assertRaises(ValueError):
             project(cube, ROBINSON)
 
+    @tests.skip_data
     def test_missing_latlon(self):
         cube = low_res_4d()
         cube.remove_coord('grid_longitude')
@@ -99,40 +104,47 @@ class TestAll(tests.IrisTest):
         with self.assertRaises(ValueError):
             project(cube, ROBINSON)
 
+    @tests.skip_data
     def test_default_resolution(self):
         cube = low_res_4d()
         new_cube, extent = project(cube, ROBINSON)
         self.assertEqual(new_cube.shape, cube.shape)
 
+    @tests.skip_data
     def test_explicit_resolution(self):
         cube = low_res_4d()
         nx, ny = 5, 4
         new_cube, extent = project(cube, ROBINSON, nx=nx, ny=ny)
         self.assertEqual(new_cube.shape, cube.shape[:2] + (ny, nx))
 
+    @tests.skip_data
     def test_explicit_resolution_single_point(self):
         cube = low_res_4d()
         nx, ny = 1, 1
         new_cube, extent = project(cube, ROBINSON, nx=nx, ny=ny)
         self.assertEqual(new_cube.shape, cube.shape[:2] + (ny, nx))
 
+    @tests.skip_data
     def test_mismatched_coord_systems(self):
         cube = low_res_4d()
         cube.coord('grid_longitude').coord_system = None
         with self.assertRaises(ValueError):
             project(cube, ROBINSON)
 
+    @tests.skip_data
     def test_extent(self):
         cube = low_res_4d()
         _, extent = project(cube, ROBINSON)
         self.assertEqual(extent, [-17005833.33052523, 17005833.33052523,
                                   -8625155.12857459, 8625155.12857459])
 
+    @tests.skip_data
     def test_cube(self):
         cube = low_res_4d()
         new_cube, _ = project(cube, ROBINSON)
         self.assertCMLApproxData(new_cube)
 
+    @tests.skip_data
     def test_no_coord_system(self):
         cube = low_res_4d()
         cube.coord('grid_longitude').coord_system = None

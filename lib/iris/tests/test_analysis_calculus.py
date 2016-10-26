@@ -37,6 +37,7 @@ from iris.tests.test_interpolation import normalise_order
 
 
 class TestCubeDelta(tests.IrisTest):
+    @tests.skip_data
     def test_invalid(self):
         cube = iris.tests.stock.realistic_4d()
         with self.assertRaises(iris.exceptions.CoordinateMultiDimError):

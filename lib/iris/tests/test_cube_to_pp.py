@@ -297,7 +297,8 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             self.assertEqual(self.lbproc_from_pp(temp_filename), lbproc)
 
             os.remove(temp_filename)
-            
+
+    @tests.skip_data
     def test_lbvc(self):
         cube = stock.realistic_4d_no_derived()[0, :4, ...]
         

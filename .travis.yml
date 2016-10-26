@@ -22,7 +22,7 @@ git:
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="e8e62ab79a2f8789f01f8dfa9829915984a39b2a"
+  - export IRIS_TEST_DATA_REF="a754fc977d30fdcdacb820b5a5fabd91056afc7b"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
@@ -75,9 +75,11 @@ install:
   - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
 
 # iris test data
-  - wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip
-  - unzip -q iris-test-data.zip
-  - ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data
+  - if [[ "$TEST_MINIMAL" != true ]]; then
+      wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
+      unzip -q iris-test-data.zip;
+      ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data;
+    fi
 
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib

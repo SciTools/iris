@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
 
 
+@tests.skip_data
 class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):

@@ -78,6 +78,7 @@ class TestConcreteReferenceTarget(tests.IrisTest):
         dest.long_name = src.long_name
         self.assertEqual(dest, src)
 
+    @tests.skip_data
     def test_multiple_cubes_no_transform(self):
         target = ConcreteReferenceTarget('foo')
         src = stock.realistic_4d()
@@ -87,6 +88,7 @@ class TestConcreteReferenceTarget(tests.IrisTest):
         self.assertIsNot(dest, src)
         self.assertEqual(dest, src)
 
+    @tests.skip_data
     def test_multiple_cubes_with_transform(self):
         def transform(cube):
             return {'long_name': 'wibble'}
@@ -152,6 +154,7 @@ class TestLoadCubes(tests.IrisTest):
         self.assertTrue(hasattr(aux_factory, 'fake_args'))
         self.assertEqual(aux_factory.fake_args, ({'name': 'foo'},))
 
+    @tests.skip_data
     def test_cross_reference(self):
         # Test the creation process for a factory definition which uses
         # a cross-reference.

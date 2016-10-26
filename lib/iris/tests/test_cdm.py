@@ -214,6 +214,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
             dims[0] = 1
 
 
+@tests.skip_data
 class TestStockCubeStringRepresentations(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()
@@ -276,10 +277,12 @@ class TestCubeStringRepresentations(IrisDotTest):
         del cube.attributes['my_attribute']
        
     # TODO hybrid height and dot output - relatitionship links
+    @tests.skip_data
     def test_dot_4d(self):
         cube = iris.tests.stock.realistic_4d()
         self.check_dot(cube, ('file_load', '4d_pp.dot'))
 
+    @tests.skip_data
     def test_missing_coords(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord('time')
@@ -289,6 +292,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         self.assertString(str(cube),
                           ('cdm', 'str_repr', 'missing_coords_cube.str.txt'))
 
+    @tests.skip_data
     def test_cubelist_string(self):
         cube_list = iris.cube.CubeList([iris.tests.stock.realistic_4d(),
                                         iris.tests.stock.global_pp()])
@@ -1069,8 +1073,9 @@ class TestCubeCollapsed(tests.IrisTest):
 
         # Ensure no side effects
         self.assertCML(cube, ('cube_collapsed', 'original.cml'))
-        
-        
+
+
+@tests.skip_data
 class TestTrimAttributes(tests.IrisTest):
     def test_non_string_attributes(self):
         cube = iris.tests.stock.realistic_4d()
@@ -1155,6 +1160,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             self.assertEqual(merged_cube.data.fill_value, 123456)
 
 
+@tests.skip_data
 class TestConversionToCoordList(tests.IrisTest):
     def test_coord_conversion(self):
         cube = iris.tests.stock.realistic_4d()

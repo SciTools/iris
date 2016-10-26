@@ -37,6 +37,7 @@ import iris.tests.stock
 
 
 @tests.skip_plot
+@tests.skip_data
 class TestRealistic4d(tests.GraphicsTest):
     def setUp(self):
         super(TestRealistic4d, self).setUp()
@@ -160,6 +161,7 @@ class TestRealistic4d(tests.GraphicsTest):
             bounds = altitude.bounds
 
 
+@tests.skip_data
 class TestHybridPressure(tests.IrisTest):
     def setUp(self):
         # Convert the hybrid-height into hybrid-pressure...
