@@ -20,6 +20,7 @@ nose
 pep8
 sphinx
 filelock
+imagehash
 
 # Optional iris dependencies
 mo_pack
