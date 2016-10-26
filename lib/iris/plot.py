@@ -27,8 +27,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import collections
 import datetime
-from functools import wraps
-import threading
 
 import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes
@@ -55,26 +53,6 @@ import iris.palette
 BREWER_CITE = 'Colours based on ColorBrewer.org'
 
 PlotDefn = collections.namedtuple('PlotDefn', ('coords', 'transpose'))
-
-# Threading reentrant lock to ensure thread-safe plotting.
-_lock = threading.RLock()
-
-
-def _locker(func):
-    """
-    Decorator that ensures a thread-safe atomic operation is
-    performed by the decorated function.
-
-    Uses a shared threading reentrant lock to provide thread-safe
-    plotting by public API functions.
-
-    """
-    @wraps(func)
-    def decorated_func(*args, **kwargs):
-        with _lock:
-            result = func(*args, **kwargs)
-        return result
-    return decorated_func
 
 
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
@@ -686,7 +664,6 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
     return plotfn(*new_args, **kwargs)
 
 
-@_locker
 def contour(cube, *args, **kwargs):
     """
     Draws contour lines based on the given Cube.
@@ -711,7 +688,6 @@ def contour(cube, *args, **kwargs):
     return result
 
 
-@_locker
 def contourf(cube, *args, **kwargs):
     """
     Draws filled contours based on the given Cube.
@@ -838,7 +814,6 @@ def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
     return result
 
 
-@_locker
 def orography_at_bounds(cube, facecolor='#888888', coords=None, axes=None):
     """Plots orography defined at cell boundaries from the given Cube."""
 
@@ -869,7 +844,6 @@ def orography_at_bounds(cube, facecolor='#888888', coords=None, axes=None):
                            horiz_plot, style_args)
 
 
-@_locker
 def orography_at_points(cube, facecolor='#888888', coords=None, axes=None):
     """Plots orography defined at sample points from the given Cube."""
 
@@ -891,7 +865,6 @@ def orography_at_points(cube, facecolor='#888888', coords=None, axes=None):
                            horiz_plot, style_args)
 
 
-@_locker
 def outline(cube, coords=None, color='k', linewidth=None, axes=None):
     """
     Draws cell outlines based on the given Cube.
@@ -929,7 +902,6 @@ def outline(cube, coords=None, color='k', linewidth=None, axes=None):
     return result
 
 
-@_locker
 def pcolor(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
@@ -956,7 +928,6 @@ def pcolor(cube, *args, **kwargs):
     return result
 
 
-@_locker
 def pcolormesh(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
@@ -981,7 +952,6 @@ def pcolormesh(cube, *args, **kwargs):
     return result
 
 
-@_locker
 def points(cube, *args, **kwargs):
     """
     Draws sample point positions based on the given Cube.
@@ -1009,7 +979,6 @@ def points(cube, *args, **kwargs):
                                 *args, **kwargs)
 
 
-@_locker
 def plot(*args, **kwargs):
     """
     Draws a line plot based on the given cube(s) or coordinate(s).
@@ -1054,7 +1023,6 @@ def plot(*args, **kwargs):
     return _draw_1d_from_points('plot', _plot_args, *args, **kwargs)
 
 
-@_locker
 def scatter(x, y, *args, **kwargs):
     """
     Draws a scatter plot based on the given cube(s) or coordinate(s).
@@ -1090,7 +1058,6 @@ def scatter(x, y, *args, **kwargs):
 show = plt.show
 
 
-@_locker
 def symbols(x, y, symbols, size, axes=None, units='inches'):
     """
     Draws fixed-size symbols.
@@ -1154,7 +1121,6 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
     axes.autoscale_view()
 
 
-@_locker
 def citation(text, figure=None, axes=None):
     """
     Add a text citation to a plot.

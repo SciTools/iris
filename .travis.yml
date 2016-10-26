@@ -61,7 +61,6 @@ install:
     fi
 
   # Perceptual image hashing (TBD: push recipe to conda-forge!)
-  - conda install pip
   - pip install imagehash
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
