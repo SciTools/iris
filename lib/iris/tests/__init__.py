@@ -734,9 +734,14 @@ class IrisTest(unittest.TestCase):
                 figure.savefig(hash_fname)
                 msg = 'Creating imagerepo entry: {} -> {}'
                 print(msg.format(unique_id, uri))
-                with open(repo_fname, 'wb') as fo:
-                    json.dump(repo, codecs.getwriter('utf-8')(fo), indent=4,
-                              sort_keys=True)
+                lock = filelock.FileLock(repo_fname)
+                # The imagerepo.json file is a critical resource, so ensure
+                # thread safe read/write behaviour via platform independent
+                # file locking.
+                with lock.acquire(timeout=600):
+                    with open(repo_fname, 'wb') as fo:
+                        json.dump(repo, codecs.getwriter('utf-8')(fo),
+                                  indent=4, sort_keys=True)
 
             # TBD: Push this fix to imagehash (done!)
             # See https://github.com/JohannesBuchner/imagehash/pull/31
@@ -804,11 +809,7 @@ class IrisTest(unittest.TestCase):
 
         """
         fname = os.path.join(_RESULT_PATH, 'imagerepo.lock')
-        lock = filelock.FileLock(fname)
-        # The imagerepo.json file is a critical resource, so ensure thread
-        # safe read/write behaviour via platform independent file locking.
-        with lock.acquire(timeout=600):
-            self._assert_graphic()
+        self._assert_graphic()
 
     def _remove_testcase_patches(self):
         """Helper to remove per-testcase patches installed by :meth:`patch`."""
