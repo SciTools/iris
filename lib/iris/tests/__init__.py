@@ -675,7 +675,7 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def _assert_graphic(self, tol=_HAMMING_DISTANCE):
+    def check_graphic(self):
         """
         Check the hash of the current matplotlib figure matches the expected
         image hash for the current graphic test.
@@ -734,7 +734,8 @@ class IrisTest(unittest.TestCase):
                 figure.savefig(hash_fname)
                 msg = 'Creating imagerepo entry: {} -> {}'
                 print(msg.format(unique_id, uri))
-                lock = filelock.FileLock(repo_fname)
+                lock = filelock.FileLock(os.path.join(_RESULT_PATH,
+                                                      'imagerepo.lock'))
                 # The imagerepo.json file is a critical resource, so ensure
                 # thread safe read/write behaviour via platform independent
                 # file locking.
@@ -781,7 +782,7 @@ class IrisTest(unittest.TestCase):
                 # Calculate the hamming distance vector for the result hash.
                 distances = [e - phash for e in expected]
 
-                if np.all([hd > tol for hd in distances]):
+                if np.all([hd > _HAMMING_DISTANCE for hd in distances]):
                     if dev_mode:
                         _create_missing()
                     else:
@@ -801,15 +802,6 @@ class IrisTest(unittest.TestCase):
 
         finally:
             plt.close()
-
-    def check_graphic(self):
-        """
-        Checks that the image hash for the current matplotlib figure matches
-        the expected image hash for the current test.
-
-        """
-        fname = os.path.join(_RESULT_PATH, 'imagerepo.lock')
-        self._assert_graphic()
 
     def _remove_testcase_patches(self):
         """Helper to remove per-testcase patches installed by :meth:`patch`."""
