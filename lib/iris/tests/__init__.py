@@ -675,7 +675,7 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def check_graphic(self, tol=_HAMMING_DISTANCE):
+    def check_graphic(self):
         """
         Check the hash of the current matplotlib figure matches the expected
         image hash for the current graphic test.
@@ -782,7 +782,7 @@ class IrisTest(unittest.TestCase):
                 # Calculate the hamming distance vector for the result hash.
                 distances = [e - phash for e in expected]
 
-                if np.all([hd > tol for hd in distances]):
+                if np.all([hd > _HAMMING_DISTANCE for hd in distances]):
                     if dev_mode:
                         _create_missing()
                     else:
