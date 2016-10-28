@@ -41,6 +41,7 @@ import iris.analysis
 import iris.coords
 import iris.cube
 import iris.fileformats
+import iris.fileformats.dot
 import iris.tests.pp as pp
 import iris.tests.stock
 
