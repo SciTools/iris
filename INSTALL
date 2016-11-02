@@ -198,6 +198,6 @@ Packaged distributions
 ======================
 The Enthought Python Distribution (EPD)
 http://www.enthought.com/products/epd.php for Windows, OS X or
-Redhat provides some of the dependencies for Iris as does `Python (x, y)
-http://www.pythonxy.com/ which tends to be updated a
+Redhat provides some of the dependencies for Iris as does Python (x, y)
+https://python-xy.github.io/ which tends to be updated a
 bit more frequently.
