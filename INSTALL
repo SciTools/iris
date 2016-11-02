@@ -16,6 +16,12 @@ the following command::
 
   conda install -c scitools iris
 
+If you wish to run any of the code examples
+(see http://scitools.org.uk/iris/docs/latest/examples/index.html) you will also
+need the Iris sample data. This can also be installed using Conda::
+
+  conda install -c scitools iris_sample_data
+
 Further documentation on using conda and the features it provides can be found
 at http://conda.pydata.org/docs/intro.html.
 
