@@ -273,72 +273,79 @@ def convert(grib):
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 0):
+            (grib.productDefinitionTemplateNumber in [0, 1]):
         aux_coords_and_dims.append((DimCoord(points=Unit(grib._forecastTimeUnit).convert(np.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"), None))
         aux_coords_and_dims.append((DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', CALENDAR_GREGORIAN)), None))
-
+    
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber in (8, 9)):
+            (grib.productDefinitionTemplateNumber in (8, 9, 11)):
         add_bounded_time_coords(aux_coords_and_dims, grib)
+    
+    if \
+            (grib.edition == 2) and \
+            (grib.productDefinitionTemplateNumber in (1, 11)) and \
+            (grib.perturbationNumber is not None):
+        cell_methods.append(CellMethod('realization', coords=('realization',), 
+                           intervals=('1',), comments=(' ENS',)))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 0):
         cell_methods.append(CellMethod("mean", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 1):
         cell_methods.append(CellMethod("sum", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 2):
         cell_methods.append(CellMethod("maximum", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 3):
         cell_methods.append(CellMethod("minimum", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 4):
         cell_methods.append(CellMethod("_difference", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 5):
         cell_methods.append(CellMethod("_root_mean_square", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 6):
         cell_methods.append(CellMethod("standard_deviation", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 7):
         cell_methods.append(CellMethod("_convariance", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 8):
         cell_methods.append(CellMethod("_difference", coords="time"))
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 8) and \
+            (grib.productDefinitionTemplateNumber in (8, 11)) and \
             (grib.typeOfStatisticalProcessing == 9):
         cell_methods.append(CellMethod("_ratio", coords="time"))
 
@@ -395,6 +402,13 @@ def convert(grib):
             (grib.typeOfSecondFixedSurface != 255):
         aux_coords_and_dims.append((DimCoord(points=0.5*(grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface) + grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)), long_name="pressure", units="Pa", bounds=[grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface), grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)]), None))
 
+    # required for NCMRWF
+    if \
+            (grib.edition == 2) and \
+            (grib.typeOfFirstFixedSurface == 106) and \
+            (grib.typeOfSecondFixedSurface != 255):
+        aux_coords_and_dims.append((DimCoord(points=0.5*(grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface) + grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)), standard_name="depth", long_name="depth_below_land_surface", units="m", bounds=[grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface), grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)]), None))
+        
     if \
             (grib.edition == 2) and \
             (grib.typeOfFirstFixedSurface in [105, 119]) and \
@@ -409,12 +423,12 @@ def convert(grib):
 
     if \
             (grib.edition == 2) and \
-            (grib.productDefinitionTemplateNumber == 1):
-        aux_coords_and_dims.append((DimCoord(points=grib.perturbationNumber, long_name='ensemble_member', units='no_unit'), None))
+            (grib.productDefinitionTemplateNumber in [1, 11]):
+        aux_coords_and_dims.append((DimCoord(points=grib.perturbationNumber, standard_name='realization', long_name='ensemble_member', units='no_unit'), None))
 
     if \
             (grib.edition == 2) and \
-            grib.productDefinitionTemplateNumber not in (0, 8):
+            grib.productDefinitionTemplateNumber not in (0, 1, 8, 11):
         attributes["GRIB_LOAD_WARNING"] = ("unsupported GRIB%d ProductDefinitionTemplate: #4.%d" % (grib.edition, grib.productDefinitionTemplateNumber))
 
     if \
