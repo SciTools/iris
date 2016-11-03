@@ -99,7 +99,8 @@ _TIME_RANGE_UNITS = {
 # Reference Code Table 4.5.
 _FIXED_SURFACE = {
     100: FixedSurface(None, 'pressure', 'Pa'),  # Isobaric surface
-    103: FixedSurface(None, 'height', 'm')      # Height level above ground
+    103: FixedSurface(None, 'height', 'm'),     # Height level above ground
+    106: FixedSurface('depth', 'depth_below_land_surface', 'm') # depth_below_land_surface # required for NCMRWF
 }
 _TYPE_OF_FIXED_SURFACE_MISSING = 255
 
