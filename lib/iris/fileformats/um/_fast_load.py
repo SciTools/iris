@@ -97,8 +97,8 @@ def fast_load(uris, constraints=None, callback=None):
 
     Within a given input file, each phenomenon must occur as a set of fields
     repeating regularly over a set of dimensions, in which order within the
-    file is signficant.  Additionally, all combinations of 
-    In addition, all dimension combinations must be present.
+    file is signficant.  Additionally, all combinations of...
+    In addition, all dimension combinations must be present...
     The function will normally return a single cube for each phenomenon
     contained :  Within each source file, the fields of each different phenomon
     must be arranged in a regular repeating structure.
@@ -155,4 +155,3 @@ def fast_load_raw(uris, constraints=None, callback=None):
     """
     return _fast_load_common(iris.load_raw, uris, constraints, callback,
                              do_raw_load=True)
-
