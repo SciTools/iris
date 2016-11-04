@@ -30,20 +30,20 @@ import iris.tests as tests
 from iris.fileformats.um import fast_load as load
 
 
-#    @tests.skip_data
-#    class TestStructuredLoadFF(tests.IrisTest):
-#        def setUp(self):
-#            self.fname = tests.get_data_path(('FF', 'structured', 'small'))
-#
-#        def test_simple(self):
-#            cube, = load(self.fname)
-#            self.assertCML(cube)
-#
-#        def test_simple_callback(self):
-#            def callback(cube, field, filename):
-#                cube.attributes['processing'] = 'fast-ff'
-#            cube, = load(self.fname, callback=callback)
-#            self.assertCML(cube)
+@tests.skip_data
+class TestStructuredLoadFF(tests.IrisTest):
+    def setUp(self):
+        self.fname = tests.get_data_path(('FF', 'structured', 'small'))
+
+    def test_simple(self):
+        cube, = load(self.fname)
+        self.assertCML(cube)
+
+    def test_simple_callback(self):
+        def callback(cube, field, filename):
+            cube.attributes['processing'] = 'fast-ff'
+        cube, = load(self.fname, callback=callback)
+        self.assertCML(cube)
 
 
 @tests.skip_data
