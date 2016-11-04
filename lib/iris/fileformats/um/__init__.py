@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Provides iris loading support for UM file types, including FieldsFile.
+Provides iris loading support for UM file types, FieldsFile and PP.
 
 """
 
@@ -24,4 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Publish the FF-replacement features here, and include documentation.
 from ._ff_replacement import um_to_pp, load_cubes, load_cubes_32bit_ieee
-__all__ = ['um_to_pp', 'load_cubes', 'load_cubes_32bit_ieee']
+from ._fast_load import (fast_load, fast_load_cube, fast_load_cubes,
+                         fast_load_raw)
+__all__ = ['um_to_pp', 'load_cubes', 'load_cubes_32bit_ieee',
+           'fast_load', 'fast_load_cube', 'fast_load_cubes', 'fast_load_raw']
