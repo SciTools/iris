@@ -83,7 +83,7 @@ def _fast_load_common(iris_call, uris, constraints, callback,
         pp._STRUCTURED_LOAD_IS_RAW = do_raw_load
         result = iris_call(uris, constraints, callback)
     finally:
-        pp._PP_LOAD_VIA_STRUCTURED = old_structured_flag
+        pp._DO_STRUCTURED_LOAD = old_structured_flag
         pp._STRUCTURED_LOAD_IS_RAW = old_raw_flag
     return result
 
