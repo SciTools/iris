@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,34 +39,17 @@ class Test___init__(tests.IrisTest):
         self.assertIs(loader.field_generator_kwargs,
                       mock.sentinel.GEN_FUNC_KWARGS)
         self.assertIs(loader.converter, mock.sentinel.CONVERTER)
-        self.assertIs(loader.legacy_custom_rules, None)
 
     def test_normal_with_explicit_none(self):
         with mock.patch('warnings.warn') as warn:
             loader = Loader(mock.sentinel.GEN_FUNC,
                             mock.sentinel.GEN_FUNC_KWARGS,
-                            mock.sentinel.CONVERTER, None)
+                            mock.sentinel.CONVERTER)
         self.assertEqual(warn.call_count, 0)
         self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
         self.assertIs(loader.field_generator_kwargs,
                       mock.sentinel.GEN_FUNC_KWARGS)
         self.assertIs(loader.converter, mock.sentinel.CONVERTER)
-        self.assertIs(loader.legacy_custom_rules, None)
-
-    def test_deprecated_custom_rules(self):
-        with mock.patch('warnings.warn') as warn:
-            loader = Loader(mock.sentinel.GEN_FUNC,
-                            mock.sentinel.GEN_FUNC_KWARGS,
-                            mock.sentinel.CONVERTER,
-                            mock.sentinel.CUSTOM_RULES)
-        self.assertEqual(warn.call_count, 1)
-        self.assertEqual(warn.call_args[0][0],
-                         'The `legacy_custom_rules` attribute is deprecated.')
-        self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
-        self.assertIs(loader.field_generator_kwargs,
-                      mock.sentinel.GEN_FUNC_KWARGS)
-        self.assertIs(loader.converter, mock.sentinel.CONVERTER)
-        self.assertIs(loader.legacy_custom_rules, mock.sentinel.CUSTOM_RULES)
 
 
 if __name__ == '__main__':

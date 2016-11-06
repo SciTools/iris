@@ -128,7 +128,7 @@ class TestLoadCubes(tests.IrisTest):
             return ConversionMetadata([factory], [], '', '', '', {}, [], [],
                                       [])
         # Finish by making a fake Loader
-        fake_loader = Loader(field_generator, {}, converter, None)
+        fake_loader = Loader(field_generator, {}, converter)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
 
         # Check the result is a generator with a single entry.
@@ -206,7 +206,7 @@ class TestLoadCubes(tests.IrisTest):
                                       src.cell_methods, dim_coords_and_dims,
                                       aux_coords_and_dims)
         # Finish by making a fake Loader
-        fake_loader = Loader(field_generator, {}, converter, None)
+        fake_loader = Loader(field_generator, {}, converter)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
 
         # Check the result is a generator containing two Cubes.

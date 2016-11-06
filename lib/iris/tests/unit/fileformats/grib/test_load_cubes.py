@@ -45,9 +45,8 @@ class TestToggle(tests.IrisTest):
                     kw_args = {}
                 else:
                     kw_args = {'auto_regularise': mock.sentinel.REGULARISE}
-                loader = iris.fileformats.rules.Loader(
-                    generator, kw_args,
-                    converter, None)
+                loader = iris.fileformats.rules.Loader(generator, kw_args,
+                                                       converter)
                 rules_load.assert_called_once_with(mock.sentinel.FILES,
                                                    mock.sentinel.CALLBACK,
                                                    loader)
