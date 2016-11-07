@@ -231,14 +231,14 @@ class TestBasic(Mixin_FieldTest):
     def test_basic(self):
         flds = self.fields(c_t='123', cft='000', ctp='123', c_p=0)
         file = self.save_fieldcubes(flds)
-        results = fast_load(file)
+        results = self.load_function(file)
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
     def test_phenomena(self):
         flds = self.fields(c_t='1122', phn='0101')
         file = self.save_fieldcubes(flds)
-        results = fast_load(file)
+        results = self.load_function(file)
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
@@ -247,7 +247,7 @@ class TestBasic(Mixin_FieldTest):
                           for times in ('12', '34')]
         files = [self.save_fieldcubes(flds)
                  for flds in per_file_cubes]
-        results = iris.load(files)
+        results = self.load_function(files)
         expected = CubeList(fld_cube
                             for cubes in per_file_cubes
                             for fld_cube in cubes).merge()
