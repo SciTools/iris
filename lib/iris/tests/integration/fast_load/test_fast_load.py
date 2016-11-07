@@ -40,7 +40,7 @@ from iris.coord_systems import GeogCS
 from iris.cube import Cube, CubeList
 from iris.fileformats.pp import EARTH_RADIUS, STASH
 
-#from iris import load as fast_load
+# from iris import load as fast_load
 from iris.fileformats.um import fast_load
 
 
@@ -53,7 +53,7 @@ class Mixin_FieldTest(object):
         # Note: these are used to keep the files in a definite order,
         # otherwise random filenames --> random load results !!
         self.tempfile_count = 0
-        self.tempfile_prefix_fmt='_{:06d}_'
+        self.tempfile_prefix_fmt = '_{:06d}_'
 
     def tearDown(self):
         # Delete temporary directory.
@@ -73,9 +73,9 @@ class Mixin_FieldTest(object):
     time_values = 24.0 * np.arange(5)
     height_values = [100.0, 200.0, 300.0, 400.0]
     pressure_values = [300.0, 500.0, 850.0, 1000.0]
-    # NOTE: to write/readback as identical, these test phenomena definitions
-    # must translate to and from LBFC, so we don't need a STASH attribute.
-    # These ones have been tested!
+    # NOTE: in order to write/readback as identical, these test phenomena
+    # settings also provide the canonical unit and a matching STASH attribute.
+    # These could in principle be looked up, but it's a bit awkward.
     phenomena = [('air_temperature', 'K'),
                  ('air_density', 'kg m-3'),
                  ('air_pressure', 'm s-1'),
@@ -87,6 +87,7 @@ class Mixin_FieldTest(object):
         ('y_wind', 'm s-1', 'm01s00i003'),
         ('specific_humidity', 'kg kg-1', 'm01s00i010'),
         ]
+
     def fields(self, c_t=None, cft=None, ctp=None,
                c_h=None, c_p=None, mmm=None, phn=0):
         # Return a list of 2d cubes representing raw PPFields, from args
@@ -119,7 +120,7 @@ class Mixin_FieldTest(object):
         def arg_inds(arg):
             # Return an argument decoded as an array of n_flds integers.
             if (isinstance(arg, Iterable) and
-                not isinstance(arg, six.string_types)):
+                    not isinstance(arg, six.string_types)):
                 # Can also just pass a simple iterable of values.
                 inds = [int(val) for val in arg]
             else:
@@ -209,7 +210,7 @@ class TestBasic(Mixin_FieldTest, tests.IrisTest):
     def _debug(self, expected, results):
         def pcubes(name, cubes):
             print('\n\n{}:\n'.format(name), cubes)
-            for i ,cube in enumerate(cubes):
+            for i, cube in enumerate(cubes):
                 print('@{}'.format(i))
                 print(cube)
         pcubes('expected', expected)
@@ -252,7 +253,7 @@ class TestBasic(Mixin_FieldTest, tests.IrisTest):
 #              sorted([file_single, file_multi]))
         print('TEMPDIR LISTING: ')
         for filename in os.listdir(self.temp_dir_path):
-            print( '  ', filename )
+            print('  ', filename)
         results = fast_load((file_single, file_multi))
         print('RESULT SHAPES: ', [cube.shape for cube in results])
         # This is what we'd LIKE to get (which is what iris.load gives)
