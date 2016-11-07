@@ -35,7 +35,7 @@ import numpy as np
 import six
 
 import iris.coords
-from iris.coords import DimCoord
+from iris.coords import DimCoord, AuxCoord
 from iris.coord_systems import GeogCS
 from iris.cube import Cube, CubeList
 from iris.fileformats.pp import EARTH_RADIUS, STASH
@@ -90,7 +90,7 @@ class Mixin_FieldTest(object):
                  ('wind_speed', 'm s-1'),
                  ]
     phenomena = [
-        ('air_potential_temperature', 'K', 'm01s00i004'),
+        ('air_temperature', 'K', 'm01s01i004'),
         ('x_wind', 'm s-1', 'm01s00i002'),
         ('y_wind', 'm s-1', 'm01s00i003'),
         ('specific_humidity', 'kg kg-1', 'm01s00i010'),
@@ -242,6 +242,44 @@ class MixinBasic(Mixin_FieldTest):
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
+    def test_FAIL_phenomena_nostash(self):
+        # If we remove the 'STASH' attributes, certain phenomena can still be
+        # successfully encoded+decoded by standard load using LBFC values.
+        # Structured loading gets this wrong, because it does not use LBFC in
+        # characterising phenomena.
+        flds = self.fields(c_t='1122', phn='0101')
+        for fld in flds:
+            del fld.attributes['STASH']
+        file = self.save_fieldcubes(flds)
+        results = self.load_function(file)
+        if self.load_type == 'iris':
+            # This is what we'd LIKE to get (what iris.load gives).
+            expected = CubeList(flds).merge()
+        else:
+            # At present, we get a cube incorrectly combined together over all
+            # 4 timepoints, with the same phenomenon for all (!wrong!).
+            # It's a bit tricky to arrange the existing data like that.
+            # Do it by hacking the time values to allow merge, and then fixing
+            # up the time
+            old_t1, old_t2 = (fld.coord('time').points[0]
+                              for fld in (flds[0], flds[2]))
+            for i_fld, fld in enumerate(flds):
+                # Hack the phenomena to all look like the first one.
+                fld.rename('air_temperature')
+                fld.units = 'K'
+                # Hack the time points so the 4 cube can merge into one.
+                fld.coord('time').points = [old_t1 + i_fld]
+            one_cube = CubeList(flds).merge_cube()
+            # Replace time dim with an anonymous dim.
+            co_t_fake = one_cube.coord('time')
+            one_cube.remove_coord(co_t_fake)
+            # Reconstruct + add back the expected auxiliary time coord.
+            co_t_new = AuxCoord([old_t1, old_t1, old_t2, old_t2],
+                                standard_name='time', units=co_t_fake.units)
+            one_cube.add_aux_coord(co_t_new, 0)
+            expected = [one_cube]
+        self.assertEqual(results, expected)
+
     def test_cross_file_concatenate(self):
         per_file_cubes = [self.fields(c_t=times)
                           for times in ('12', '34')]
@@ -264,7 +302,7 @@ class MixinBasic(Mixin_FieldTest):
 
         results = self.load_function((file_single, file_multi))
         if self.load_type == 'iris':
-            # This is what we'd LIKE to get (which is what iris.load gives)
+            # This is what we'd LIKE to get (what iris.load gives).
             expected = CubeList(multi_timepoint_flds +
                                 [single_timepoint_fld]).merge()
         else:
