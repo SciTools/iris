@@ -214,7 +214,7 @@ class Mixin_FieldTest(object):
         return file_path
 
 
-class TestBasic(Mixin_FieldTest):
+class MixinBasic(Mixin_FieldTest):
     # A set of tests that can be applied to *either* standard iris load
     # functions, for confirmation of test results, or to fast-load.
     # "Real" tests for each interface inherit this.
@@ -281,11 +281,11 @@ class TestBasic(Mixin_FieldTest):
         self.assertEqual(results, expected)
 
 
-class TestBasicIris(TestBasic, tests.IrisTest):
+class TestBasicIris(MixinBasic, tests.IrisTest):
     load_type = 'iris'
 
 
-class TestBasicFast(TestBasic, tests.IrisTest):
+class TestBasicFast(MixinBasic, tests.IrisTest):
     load_type = 'fast'
 
 
