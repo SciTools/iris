@@ -40,7 +40,7 @@ from iris.coord_systems import GeogCS
 from iris.cube import Cube, CubeList
 from iris.fileformats.pp import EARTH_RADIUS, STASH
 
-# from iris import load as fast_load
+from iris import load as iris_load
 from iris.fileformats.um import fast_load
 
 
@@ -53,19 +53,27 @@ class Mixin_FieldTest(object):
         # Note: these are used to keep the files in a definite order,
         # otherwise random filenames --> random load results !!
         self.tempfile_count = 0
-        self.tempfile_prefix_fmt = '_{:06d}_'
+        self.tempfile_path_fmt = \
+            '{dir_path}/tempfile_{prefix}_{file_number:06d}{suffix}'
 
     def tearDown(self):
         # Delete temporary directory.
         shutil.rmtree(self.temp_dir_path)
 
-    def temp_filepath(self, suffix='', prefix='A'):
+    def temp_filepath(self, user_name='', suffix='.pp'):
         self.tempfile_count += 1
-        standard_prefix = self.tempfile_prefix_fmt.format(self.tempfile_count)
-        prefix = prefix + standard_prefix
-        file_path = tempfile.mktemp(suffix=suffix, prefix=prefix,
-                                    dir=self.temp_dir_path)
+        file_path = self.tempfile_path_fmt.format(
+            dir_path=self.temp_dir_path,
+            prefix=user_name,
+            file_number=self.tempfile_count,
+            suffix=suffix)
         return file_path
+
+    def load_function(self, *args, **kwargs):
+        if self.load_type == 'iris':
+            return iris_load(*args, **kwargs)
+        elif self.load_type == 'fast':
+            return fast_load(*args, **kwargs)
 
     # Reference values for making coordinate contents.
     time_unit = 'hours since 1970-01-01'
@@ -200,13 +208,17 @@ class Mixin_FieldTest(object):
         add_arg_coords(c_p, 'pressure', 'hPa', self.pressure_values)
         return cubes
 
-    def save_fieldcubes(self, cubes, basename='a'):
-        file_path = self.temp_filepath(suffix='.pp', prefix=basename)
+    def save_fieldcubes(self, cubes, basename=''):
+        file_path = self.temp_filepath(user_name=basename, suffix='.pp')
         iris.save(cubes, file_path)
         return file_path
 
 
-class TestBasic(Mixin_FieldTest, tests.IrisTest):
+class TestBasic(Mixin_FieldTest):
+    # A set of tests that can be applied to *either* standard iris load
+    # functions, for confirmation of test results, or to fast-load.
+    # "Real" tests for each interface inherit this.
+
     def _debug(self, expected, results):
         def pcubes(name, cubes):
             print('\n\n{}:\n'.format(name), cubes)
@@ -249,22 +261,32 @@ class TestBasic(Mixin_FieldTest, tests.IrisTest):
                                            basename='single')
         file_multi = self.save_fieldcubes(multi_timepoint_flds,
                                           basename='multi')
-#        print('FILENAMES:', file_single, file_multi,
-#              sorted([file_single, file_multi]))
-        print('TEMPDIR LISTING: ')
-        for filename in os.listdir(self.temp_dir_path):
-            print('  ', filename)
-        results = fast_load((file_single, file_multi))
-        print('RESULT SHAPES: ', [cube.shape for cube in results])
-        # This is what we'd LIKE to get (which is what iris.load gives)
-        expected = CubeList(multi_timepoint_flds +
-                            [single_timepoint_fld]).merge()
-        # This is what we ACTUALLY get at present.
-        # It can't combine the scalar and vector time coords.
-        expected = CubeList([CubeList(multi_timepoint_flds).merge_cube(),
-                             single_timepoint_fld])
+
+        results = self.load_function((file_single, file_multi))
+        if self.load_type == 'iris':
+            # This is what we'd LIKE to get (which is what iris.load gives)
+            expected = CubeList(multi_timepoint_flds +
+                                [single_timepoint_fld]).merge()
+        else:
+            # NOTE: in this case, we need to sort the results to ensure a
+            # repeatable ordering, because ??somehow?? the random temporary
+            # directory name affects the ordering of the cubes in the result !
+            results = CubeList(sorted(results,
+                                      key=lambda cube: cube.shape))
+            # This is what we ACTUALLY get at present.
+            # It can't combine the scalar and vector time coords.
+            expected = CubeList([CubeList(multi_timepoint_flds).merge_cube(),
+                                 single_timepoint_fld])
 
         self.assertEqual(results, expected)
+
+
+class TestBasicIris(TestBasic, tests.IrisTest):
+    load_type = 'iris'
+
+
+class TestBasicFast(TestBasic, tests.IrisTest):
+    load_type = 'fast'
 
 
 if __name__ == '__main__':
