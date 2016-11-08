@@ -24,7 +24,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Publish the FF-replacement features here, and include documentation.
 from ._ff_replacement import um_to_pp, load_cubes, load_cubes_32bit_ieee
-from ._fast_load import (fast_load, fast_load_cube, fast_load_cubes,
-                         fast_load_raw)
+from ._fast_load import structured_um_loading
 __all__ = ['um_to_pp', 'load_cubes', 'load_cubes_32bit_ieee',
-           'fast_load', 'fast_load_cube', 'fast_load_cubes', 'fast_load_raw']
+           'structured_um_loading']

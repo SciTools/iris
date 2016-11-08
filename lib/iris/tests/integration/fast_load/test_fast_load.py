@@ -41,7 +41,7 @@ from iris.cube import Cube, CubeList
 from iris.fileformats.pp import EARTH_RADIUS, STASH
 
 from iris import load as iris_load
-from iris.fileformats.um import fast_load
+from iris.fileformats.um import structured_um_loading
 
 
 class Mixin_FieldTest(object):
@@ -73,7 +73,8 @@ class Mixin_FieldTest(object):
         if self.load_type == 'iris':
             return iris_load(*args, **kwargs)
         elif self.load_type == 'fast':
-            return fast_load(*args, **kwargs)
+            with structured_um_loading():
+                return iris_load(*args, **kwargs)
 
     # Reference values for making coordinate contents.
     time_unit = 'hours since 1970-01-01'
