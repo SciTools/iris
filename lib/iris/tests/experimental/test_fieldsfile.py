@@ -26,8 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-# from iris.experimental.fieldsfile import load
-from iris.fileformats.um import fast_load as load
+from iris.experimental.fieldsfile import load
 
 
 @tests.skip_data
