@@ -50,8 +50,7 @@ class Mixin_FieldTest(object):
     def setUp(self):
         # Create a private temporary directory.
         self.temp_dir_path = tempfile.mkdtemp()
-        # Note: these are used to keep the files in a definite order,
-        # otherwise random filenames --> random load results !!
+        # Initialise temporary filename generation.
         self.tempfile_count = 0
         self.tempfile_path_fmt = \
             '{dir_path}/tempfile_{prefix}_{file_number:06d}{suffix}'
@@ -61,6 +60,7 @@ class Mixin_FieldTest(object):
         shutil.rmtree(self.temp_dir_path)
 
     def temp_filepath(self, user_name='', suffix='.pp'):
+        # Return the filepath for a new temporary file.
         self.tempfile_count += 1
         file_path = self.tempfile_path_fmt.format(
             dir_path=self.temp_dir_path,
@@ -69,7 +69,15 @@ class Mixin_FieldTest(object):
             suffix=suffix)
         return file_path
 
+    def save_fieldcubes(self, cubes, basename=''):
+        # Save cubes to a temporary file, and return its filepath.
+        file_path = self.temp_filepath(user_name=basename, suffix='.pp')
+        iris.save(cubes, file_path)
+        return file_path
+
     def load_function(self, *args, **kwargs):
+        # Return data from "iris.load", using either 'normal' or 'fast' method
+        # as selected by the test class.
         if self.load_type == 'iris':
             return iris_load(*args, **kwargs)
         elif self.load_type == 'fast':
@@ -85,11 +93,6 @@ class Mixin_FieldTest(object):
     # NOTE: in order to write/readback as identical, these test phenomena
     # settings also provide the canonical unit and a matching STASH attribute.
     # These could in principle be looked up, but it's a bit awkward.
-    phenomena = [('air_temperature', 'K'),
-                 ('air_density', 'kg m-3'),
-                 ('air_pressure', 'm s-1'),
-                 ('wind_speed', 'm s-1'),
-                 ]
     phenomena = [
         ('air_temperature', 'K', 'm01s01i004'),
         ('x_wind', 'm s-1', 'm01s00i002'),
@@ -98,23 +101,27 @@ class Mixin_FieldTest(object):
         ]
 
     def fields(self, c_t=None, cft=None, ctp=None,
-               c_h=None, c_p=None, mmm=None, phn=0):
+               c_h=None, c_p=None, phn=0, mmm=None):
         # Return a list of 2d cubes representing raw PPFields, from args
         # specifying sequences of (scalar) coordinate values.
         # TODO? : add bounds somehow ?
         #
         # Arguments 'c<xx>' are either a single int value, making a scalar
-        # coord, or a string of characters 0-9 (value) or '-' (missing).
-        #
-        # Argument 'mmm' denotes existence (or not) of a cell method of type
-        # 'average' or 'min' or 'max' (values '012' respectively), applying to
-        # the time values -- ultimately, this controls LBTIM.
+        # coord, or a string of characters : '0'-'9' (index) or '-' (missing).
+        # The indexes select point values from fixed list of possibles.
         #
         # Argument 'c_h' and 'c_p' represent height or pressure values, so
         # ought to be mutually exclusive -- these control LBVC.
         #
         # Argument 'phn' indexes phenomenon types.
+        #
+        # Argument 'mmm' denotes existence (or not) of a cell method of type
+        # 'average' or 'min' or 'max' (values '012' respectively), applying to
+        # the time values -- ultimately, this controls LBTIM.
+
+        # Get the number of result cubes, defined by the 'longest' arg.
         def arglen(arg):
+            # Get the 'length' of a control argument.
             if arg is None:
                 result = 0
             elif isinstance(arg, six.string_types):
@@ -126,8 +133,19 @@ class Mixin_FieldTest(object):
         n_flds = max(arglen(x)
                      for x in (c_t, cft, ctp, c_h, c_p, mmm))
 
-        def arg_inds(arg):
-            # Return an argument decoded as an array of n_flds integers.
+        # Make basic anonymous test cubes.
+        ny, nx = 3, 5
+        data = np.arange(n_flds * ny * nx, dtype=np.float32)
+        data = data.reshape((n_flds, ny, nx))
+        cubes = [Cube(data[i]) for i in range(n_flds)]
+
+        # Apply phenomena definitions.
+        def arg_vals(arg, vals):
+            # Decode an argument to a list of 'n_flds' coordinate point values.
+            # (or 'None' where missing)
+
+            # First get a list of value indices from the argument.
+            # Can be: a single index value; a list of indices; or a string.
             if (isinstance(arg, Iterable) and
                     not isinstance(arg, six.string_types)):
                 # Can also just pass a simple iterable of values.
@@ -142,32 +160,13 @@ class Mixin_FieldTest(object):
                     assert isinstance(arg, six.string_types)
                     inds = [None if char == '-' else int(char)
                             for char in arg]
-            return inds
 
-        def arg_vals(arg, vals):
-            return [None if ind is None else vals[int(ind)]
-                    for ind in arg_inds(arg)]
+            # Convert indices to selected point values.
+            values = [None if ind is None else vals[int(ind)]
+                      for ind in inds]
 
-        def arg_coords(arg, name, unit, vals=None):
-            if vals is None:
-                vals = np.arange(n_flds + 2)  # Note allowance
-            vals = arg_vals(arg, vals)
-            coords = [None if val is None else DimCoord([val], units=unit)
-                      for val in vals]
-            # Apply names separately, as 'pressure' is not a standard name.
-            for coord in coords:
-                if coord:
-                    coord.rename(name)
-            return coords
+            return values
 
-        ny, nx = 3, 5
-        data = np.arange(n_flds * ny * nx, dtype=np.float32)
-        data = data.reshape((n_flds, ny, nx))
-
-        # Make basic anonymous test cubes.
-        cubes = [Cube(data[i]) for i in range(n_flds)]
-
-        # Apply phenomena definitions.
         phenomena = arg_vals(phn, self.phenomena)
         for cube, (name, units, stash) in zip(cubes, phenomena):
             cube.rename(name)
@@ -192,27 +191,34 @@ class Mixin_FieldTest(object):
             cube.add_dim_coord(co_y, 0)
             cube.add_dim_coord(co_x, 1)
 
-        # Add multiple scalar coordinates as requested.
+        # Add multiple scalar coordinates as defined by the arguments.
+        def arg_coords(arg, name, unit, vals=None):
+            # Decode an argument to a list of scalar coordinates.
+            if vals is None:
+                vals = np.arange(n_flds + 2)  # Note allowance
+            vals = arg_vals(arg, vals)
+            coords = [None if val is None else DimCoord([val], units=unit)
+                      for val in vals]
+            # Apply names separately, as 'pressure' is not a standard name.
+            for coord in coords:
+                if coord:
+                    coord.rename(name)
+            return coords
+
         def add_arg_coords(arg, name, unit, vals=None):
+            # Add scalar coordinates to each cube, for one argument.
             coords = arg_coords(arg, name, unit, vals)
             for cube, coord in zip(cubes, coords):
                 if coord:
                     cube.add_aux_coord(coord)
-
-# ? DON'T have a model_level_number coord ?
-#        add_arg_coords(np.arange(1, n_flds+1), 'model_level_number', '1')
 
         add_arg_coords(c_t, 'time', self.time_unit, self.time_values)
         add_arg_coords(cft, 'forecast_reference_time', self.time_unit)
         add_arg_coords(ctp, 'forecast_period', 'hours', self.time_values)
         add_arg_coords(c_h, 'height', 'm', self.height_values)
         add_arg_coords(c_p, 'pressure', 'hPa', self.pressure_values)
-        return cubes
 
-    def save_fieldcubes(self, cubes, basename=''):
-        file_path = self.temp_filepath(user_name=basename, suffix='.pp')
-        iris.save(cubes, file_path)
-        return file_path
+        return cubes
 
 
 class MixinBasic(Mixin_FieldTest):
