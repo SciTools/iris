@@ -38,6 +38,7 @@ import iris.coords
 from iris.coords import DimCoord, AuxCoord
 from iris.coord_systems import GeogCS
 from iris.cube import Cube, CubeList
+from iris.exceptions import IgnoreCubeException
 from iris.fileformats.pp import EARTH_RADIUS, STASH
 
 from iris import load as iris_load
@@ -203,6 +204,9 @@ class Mixin_FieldTest(object):
             for coord in coords:
                 if coord:
                     coord.rename(name)
+                    # Also fix heights to match what comes from a PP file.
+                    if name == 'height':
+                        coord.attributes['positive'] = 'up'
             return coords
 
         def add_arg_coords(arg, name, unit, vals=None):
@@ -288,6 +292,7 @@ class MixinBasic(Mixin_FieldTest):
         self.assertEqual(results, expected)
 
     def test_cross_file_concatenate(self):
+        # Combine vector dimensions (i.e. concatenate) across multiple files.
         per_file_cubes = [self.fields(c_t=times)
                           for times in ('12', '34')]
         files = [self.save_fieldcubes(flds)
@@ -299,6 +304,8 @@ class MixinBasic(Mixin_FieldTest):
         self.assertEqual(results, expected)
 
     def test_FAIL_scalar_vector_concatenate(self):
+        # Structured load can produce a scalar coordinate from one file, and a
+        # matching vector one from another file, but these won't "combine".
         # We'd really like to fix this one...
         single_timepoint_fld, = self.fields(c_t='1')
         multi_timepoint_flds = self.fields(c_t='23')
@@ -313,15 +320,81 @@ class MixinBasic(Mixin_FieldTest):
             expected = CubeList(multi_timepoint_flds +
                                 [single_timepoint_fld]).merge()
         else:
+            # This is what we ACTUALLY get at present.
+            # It can't combine the scalar and vector time coords.
+            expected = CubeList([CubeList(multi_timepoint_flds).merge_cube(),
+                                 single_timepoint_fld])
             # NOTE: in this case, we need to sort the results to ensure a
             # repeatable ordering, because ??somehow?? the random temporary
             # directory name affects the ordering of the cubes in the result !
             results = CubeList(sorted(results,
                                       key=lambda cube: cube.shape))
-            # This is what we ACTUALLY get at present.
-            # It can't combine the scalar and vector time coords.
-            expected = CubeList([CubeList(multi_timepoint_flds).merge_cube(),
-                                 single_timepoint_fld])
+
+        self.assertEqual(results, expected)
+
+    def test_stash_constraint(self):
+        # Check that an attribute constraint functions correctly.
+        # Note: this is a special case in "fileformats.pp".
+        flds = self.fields(c_t='1122', phn='0101')
+        file = self.save_fieldcubes(flds)
+        airtemp_flds = [fld for fld in flds
+                        if fld.name() == 'air_temperature']
+        stash_attribute = airtemp_flds[0].attributes['STASH']
+        results = self.load_function(
+            file,
+            iris.AttributeConstraint(STASH=stash_attribute))
+        expected = CubeList(airtemp_flds).merge()
+        self.assertEqual(results, expected)
+
+    def test_ordinary_constraint(self):
+        # Check that a 'normal' constraint functions correctly.
+        # Note: *should* be independent of structured loading.
+        flds = self.fields(c_h='0123')
+        file = self.save_fieldcubes(flds)
+        height_constraint = iris.Constraint(
+            height=lambda h: 150.0 < h < 350.0)
+        results = self.load_function(file, height_constraint)
+        expected = CubeList(flds[1:3]).merge()
+        self.assertEqual(results, expected)
+
+    def test_callback(self):
+        # Use 2 timesteps each of (air-temp on height) and (rh on pressure).
+        flds = self.fields(c_t='0011',
+                           phn='0303',
+                           c_h='0-1-',
+                           c_p='-2-3')
+        file = self.save_fieldcubes(flds)
+
+        if self.load_type == 'iris':
+            def callback(cube, field, filename):
+                self.assertEqual(filename, file)
+                lbvc = field.lbvc
+                if lbvc == 1:
+                    # reject the height level data (accept only pressure).
+                    raise IgnoreCubeException()
+                else:
+                    # Record the LBVC value.
+                    cube.attributes['LBVC'] = lbvc
+        else:
+            def callback(cube, collation, filename):
+                self.assertEqual(filename, file)
+                lbvcs = [fld.lbvc
+                         for fld in collation.fields]
+                if lbvcs[0] == 1:
+                    # reject the height level data (accept only pressure).
+                    raise IgnoreCubeException()
+                else:
+                    # Record the LBVC values.
+                    cube.attributes['A_LBVC'] = lbvcs
+
+        results = self.load_function(file, callback=callback)
+
+        # Make an 'expected' from selected fields, with the expected attribute.
+        expected = CubeList([flds[1], flds[3]]).merge()
+        if self.load_type == 'iris':
+            expected[0].attributes['LBVC'] = 8
+        else:
+            expected[0].attributes['A_LBVC'] = [8, 8]
 
         self.assertEqual(results, expected)
 
