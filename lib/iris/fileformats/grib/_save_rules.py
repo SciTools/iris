@@ -572,7 +572,7 @@ def _non_missing_forecast_period(cube):
     if fp - int(fp):
         warnings.warn("forecast_period encoding problem: "
                       "scaling required.")
-    fp = int(fp)
+    fp = round(fp) # required for NCMRWF
 
     # Turn negative forecast times into grib negative numbers?
     from iris.fileformats.grib import hindcast_workaround
@@ -608,7 +608,7 @@ def _missing_forecast_period(cube):
         rt = frt_coord.units.num2date(frt)
         rt_meaning = 1  # Forecast reference time.
         fp = t - frt
-        integer_fp = int(fp)
+        integer_fp = round(fp) # required for NCMRWF
         if integer_fp != fp:
             msg = 'Truncating floating point forecast period {} to ' \
                   'integer value {}'
@@ -768,7 +768,7 @@ def set_time_range(time_coord, grib):
     # point value. The grib_api will do the cast from float to int, but it
     # cannot handle numpy floats.
     time_range_in_hours = end_hours - start_hours
-    integer_hours = int(time_range_in_hours)
+    integer_hours = round(time_range_in_hours) # required for NCMRWF
     if integer_hours != time_range_in_hours:
         msg = 'Truncating floating point lengthOfTimeRange {} to ' \
               'integer value {}'
@@ -807,7 +807,7 @@ def set_time_increment(cell_method, grib):
             units_type = 255
         else:
             # Cast to int as timeIncrement key is a 4 byte integer.
-            integer_inc = int(inc)
+            integer_inc = round(inc) # required for NCMRWF
             if integer_inc != inc:
                 warnings.warn('Truncating floating point timeIncrement {} to '
                               'integer value {}'.format(inc, integer_inc))
