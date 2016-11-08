@@ -77,7 +77,7 @@ class Mixin_FieldTest(object):
             self.load_context.__exit__(None, None, None)
 
     def _temp_filepath(self, user_name='', suffix='.pp'):
-        # Return a filepath for a new temporary file.
+        # Return the filepath for a new temporary file.
         self.tempfile_count += 1
         file_path = self.tempfile_path_fmt.format(
             dir_path=self.temp_dir_path,

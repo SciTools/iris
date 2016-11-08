@@ -25,5 +25,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Publish the FF-replacement features here, and include documentation.
 from ._ff_replacement import um_to_pp, load_cubes, load_cubes_32bit_ieee
 from ._fast_load import structured_um_loading
+from ._fast_load_structured_fields import FieldCollation
 __all__ = ['um_to_pp', 'load_cubes', 'load_cubes_32bit_ieee',
-           'structured_um_loading']
+           'structured_um_loading', 'FieldCollation']

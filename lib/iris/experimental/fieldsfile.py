@@ -17,12 +17,23 @@
 """
 High-speed loading of structured FieldsFiles.
 
-"""
+.. deprecated:: 1.10
 
+    This module has now been *deprecated*.
+    Please use :mod:`iris.fileformats.um.structured_um_loading` instead.
+
+"""
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 import os
+
+from iris._deprecation import warn_deprecated
+
+# Issue a deprecation message when the module is loaded.
+warn_deprecated("The module 'iris.experimental.fieldsfile' is deprecated. "
+                "Please use iris.fileformats.um.structured_um_loading"
+                "as a replacement.")
 
 from iris.coords import DimCoord
 from iris.cube import CubeList
@@ -144,7 +155,14 @@ def load(filenames, callback=None):
         avoided, as not all irregularities are detected, which can cause
         erroneous results.
 
+
     """
+    warn_deprecated(
+        "The module 'iris.experimental.fieldsfile' is deprecated. "
+        "Please use the 'iris.fileformats.um.structured_um_loading' facility "
+        "as a replacement."
+        "\nA call to 'iris.experimental.fieldsfile.load' can be replaced with "
+        "'iris.load_raw', within a 'structured_um_loading' context.")
     loader = Loader(_collations_from_filename, {}, _convert_collation, None)
     return CubeList(load_cubes(filenames, callback, loader, None))
 

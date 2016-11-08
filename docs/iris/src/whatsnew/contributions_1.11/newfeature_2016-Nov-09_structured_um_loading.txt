@@ -1,0 +1,50 @@
+* Support for "fast" loading of UM files has been added.
+  This can dramatically accelerate loading speeds of fieldsfiles and PP files,
+  if they meet certain common structural requirements, typical for these types
+  of datafile.
+
+  See : :meth:`iris.fileformats.um.structured_um_loading`.
+
+  .. Note:
+
+    This updates and replaces the experimental code in
+    :mod:`iris.experimental.fieldsfile`, which is now deprecated in favour of
+    the new, supported facility.
+
+  [[
+  **NOTE TO RELEASE COMPILER**
+  This needs highlighting, and a better explanation than the plain reference
+  documentation.  We probably want a "featured item" section in the whatsnew,
+  along the following lines ...
+  ]]
+  Fast UM file loading:
+  ---------------------
+  Support has been added for accelerated loading of UM files (PP and
+  Fieldsfile), when these have a suitable regular 'structured' form.
+  Normal Fieldsfiles are generally suitable, and many PP files also.
+
+  A context manager is used to enable fast um loading in all the regular iris
+  load functions, such as :meth:`iris.load` and :meth:`iris.load_cube`,
+  when loading data from UM file types.
+
+  For full details, see : :meth:`iris.fileformats.um.structured_um_loading`.
+
+  Not all input files will be suitable for structured loading:  Each file
+  must have a regular repeating order of time and vertical levels, as described
+  in the detail documentation.  
+  This is generally the case for most ordinary (model output) fieldsfiles, but
+  not necessarily for PP files.
+  It is the user's responsibility to use structured loading only with suitable
+  inputs.  Otherwise, odd behaviour and even incorrect loading can result, as
+  input files are not checked as fully as in a normal load.
+
+  Even where applicable, structured loading is not an *identical* replacement
+  for normal loading, even though the load call is generally the same and the
+  returned results may be the same in many cases.
+
+  *  results are often somewhat different, especially regarding the order of
+     dimensions and the choice of dimension coordinates.
+
+  *  although both constraints and user callbacks are supported, callback
+     routines will generally need to be re-written.
+
