@@ -35,7 +35,7 @@ import numpy as np
 import six
 
 import iris.coords
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import DimCoord, AuxCoord, CellMethod
 from iris.coord_systems import GeogCS
 from iris.cube import Cube, CubeList
 from iris.exceptions import IgnoreCubeException
@@ -88,7 +88,7 @@ class Mixin_FieldTest(object):
     # Reference values for making coordinate contents.
     time_unit = 'hours since 1970-01-01'
     period_unit = 'hours'
-    time_values = 24.0 * np.arange(5)
+    time_values = 24.0 * np.arange(10)
     height_values = [100.0, 200.0, 300.0, 400.0]
     pressure_values = [300.0, 500.0, 850.0, 1000.0]
     # NOTE: in order to write/readback as identical, these test phenomena
@@ -99,6 +99,14 @@ class Mixin_FieldTest(object):
         ('x_wind', 'm s-1', 'm01s00i002'),
         ('y_wind', 'm s-1', 'm01s00i003'),
         ('specific_humidity', 'kg kg-1', 'm01s00i010'),
+        ]
+    cell_method_values = [
+        CellMethod('mean', 'time'),
+            # NOTE: if you add an *interval* to any of these, it is not saved
+            # in the PP file (or loaded back again).
+            # Could be a PP save/load bug, but could be because no bounds ??
+        CellMethod('maximum', 'time'),
+        CellMethod('minimum', 'time'),
         ]
 
     def fields(self, c_t=None, cft=None, ctp=None,
@@ -221,6 +229,12 @@ class Mixin_FieldTest(object):
         add_arg_coords(ctp, 'forecast_period', 'hours', self.time_values)
         add_arg_coords(c_h, 'height', 'm', self.height_values)
         add_arg_coords(c_p, 'pressure', 'hPa', self.pressure_values)
+
+        # Add cell methods as required.
+        methods = arg_vals(mmm, self.cell_method_values)
+        for cube, method in zip(cubes, methods):
+            if method:
+                cube.add_cell_method(method)
 
         return cubes
 
@@ -396,6 +410,16 @@ class MixinBasic(Mixin_FieldTest):
         else:
             expected[0].attributes['A_LBVC'] = [8, 8]
 
+        self.assertEqual(results, expected)
+
+    def test_cell_methods(self):
+        # Check that cell methods (i.e. LBPROC values) produce distinct
+        # phenomena.
+        flds = self.fields(mmm='-01-01-01', c_t=range(9))
+        file = self.save_fieldcubes(flds)
+        results = self.load_function(file)
+        expected = CubeList(CubeList(flds[i_start::3]).merge_cube()
+                            for i_start in range(3))
         self.assertEqual(results, expected)
 
 
