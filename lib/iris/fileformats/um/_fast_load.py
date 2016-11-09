@@ -26,6 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from contextlib import contextmanager
+import threading
 
 import iris
 from iris.cube import CubeList
@@ -72,7 +73,50 @@ def _combine_structured_cubes(cubes):
     # merge/concatenate.
     #
     # Because standard Cube.merge employed in loading can't do this.
-    return iter(CubeList(cubes).concatenate())
+    if STRUCTURED_LOAD_CONTROLS.structured_load_is_raw:
+        # Cross-file concatenate is disabled, during a "load_raw" call.
+        result = cubes
+    else:
+        result = iter(CubeList(cubes).concatenate())
+    return result
+
+
+class StructuredLoadFlags(threading.local):
+    # A thread-safe object to control structured loading operations.
+    # The object properties are the control flags.
+    #
+    # Inheriting from 'threading.local' provides a *separate* set of the
+    # object properties for each thread.
+    def __init__(self):
+        # Control whether iris load functions do structured loads.
+        self.loads_use_structured = False
+        # Control whether structured load 'combine' is enabled.
+        self.structured_load_is_raw = False
+
+    @contextmanager
+    def context(self,
+                loads_use_structured=None,
+                structured_load_is_raw=None):
+        # Snapshot current states, for restoration afterwards.
+        old_structured = self.loads_use_structured
+        old_raw_load = self.structured_load_is_raw
+        try:
+            # Set flags for duration, as requested.
+            if loads_use_structured is not None:
+                self.loads_use_structured = loads_use_structured
+            if structured_load_is_raw is not None:
+                self.structured_load_is_raw = structured_load_is_raw
+            # Yield to caller operation.
+            yield
+        finally:
+            # Restore entry state of flags.
+            self.loads_use_structured = old_structured
+            self.structured_load_is_raw = old_raw_load
+
+
+# A singleton structured-load-control object.
+# Used in :meth:`iris.fileformats.pp._load_cubes_variable_loader`.
+STRUCTURED_LOAD_CONTROLS = StructuredLoadFlags()
 
 
 @contextmanager
@@ -150,13 +194,8 @@ def structured_um_loading():
         erroneous results.
 
     """
-    import iris.fileformats.pp as pp
-    try:
-        old_structured_flag = pp._DO_STRUCTURED_LOAD
-        pp._DO_STRUCTURED_LOAD = True
+    with STRUCTURED_LOAD_CONTROLS.context(loads_use_structured=True):
         yield
-    finally:
-        pp._DO_STRUCTURED_LOAD = old_structured_flag
 
 
 @contextmanager
@@ -166,10 +205,5 @@ def _raw_structured_loading():
     structured loading from concatenating its result cubes in that case.
 
     """
-    import iris.fileformats.pp as pp
-    try:
-        old_raw_flag = pp._STRUCTURED_LOAD_IS_RAW
-        pp._STRUCTURED_LOAD_IS_RAW = True
+    with STRUCTURED_LOAD_CONTROLS.context(structured_load_is_raw=True):
         yield
-    finally:
-        pp._STRUCTURED_LOAD_IS_RAW = old_raw_flag

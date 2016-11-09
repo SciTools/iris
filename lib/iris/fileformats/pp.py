@@ -2238,10 +2238,6 @@ def load_pairs_from_fields(pp_fields):
     return load_pairs_from_fields(pp_fields, iris.fileformats.pp_rules.convert)
 
 
-_DO_STRUCTURED_LOAD = False
-_STRUCTURED_LOAD_IS_RAW = False
-
-
 def _load_cubes_variable_loader(filenames, callback, loading_function,
                                 loading_function_kwargs=None,
                                 constraints=None):
@@ -2249,7 +2245,7 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
     pp_filter = None
     if constraints is not None:
         pp_filter = _convert_constraints(constraints)
-    if _DO_STRUCTURED_LOAD:
+    if um_fast_load.STRUCTURED_LOAD_CONTROLS.loads_use_structured:
         # For structured loads, pass down the pp_filter function as an extra
         # keyword to the low-level generator function.
         loading_function_kwargs = loading_function_kwargs or {}
@@ -2270,7 +2266,7 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
     result = iris.fileformats.rules.load_cubes(filenames, callback, loader,
                                                pp_filter)
 
-    if _DO_STRUCTURED_LOAD and not _STRUCTURED_LOAD_IS_RAW:
+    if um_fast_load.STRUCTURED_LOAD_CONTROLS.loads_use_structured:
         # We need an additional concatenate-like operation to combine cubes
         # from different files.  Unfortunately, the 'merge' call provided in
         # the iris_load_xx functions cannot do this.
