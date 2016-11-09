@@ -18,7 +18,7 @@ the following command::
 
 If you wish to run any of the code examples
 (see http://scitools.org.uk/iris/docs/latest/examples/index.html) you will also
-need the Iris sample data. This can also be installed using Conda::
+need the Iris sample data. This can also be installed using conda::
 
   conda install -c scitools iris_sample_data
 
