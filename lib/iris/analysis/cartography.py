@@ -162,7 +162,7 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     return rotated_lon, rotated_lat
 
 
-def _get_lat_lon_coords(cube):
+def _get_lon_lat_coords(cube):
     lat_coords = [coord for coord in cube.coords()
                   if "latitude" in coord.name()]
     lon_coords = [coord for coord in cube.coords()
@@ -173,7 +173,7 @@ def _get_lat_lon_coords(cube):
             " is currently disallowed")
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
-    return (lat_coord, lon_coord)
+    return (lon_coord, lat_coord)
 
 
 def _xy_range(cube, mode=None):
@@ -575,7 +575,7 @@ def project(cube, target_proj, nx=None, ny=None):
 
     """
     try:
-        lat_coord, lon_coord = _get_lat_lon_coords(cube)
+        lon_coord, lat_coord = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError('Cannot get latitude/longitude '
                          'coordinates from cube {!r}.'.format(cube.name()))
