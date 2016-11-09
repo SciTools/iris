@@ -15,9 +15,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Support for fast matrix loading of structured UM files.
+Support for "fast" loading of structured UM files in iris load functions,
+i.e. :meth:`iris.load` and its associates.
+
+This provides a context manager to enable structured loading via all the iris
+load function variants.  It is made public in :mod:`iris.fileformats.um`.
 
 This works with either PP or Fieldsfiles.
+The various existing PP and FF format loaders all call into
+:meth:`iris.fileformats.pp._load_cubes_variable_loader`.
+When enabled, that function calls private functions in this module, to replace
+the 'normal' calls with 'structured' loading.
+
+At present, there is *no* public low-level fields-to-cube interface, equivalent
+to the pp or iris_grib "as_pairs" functions.
 
 """
 
@@ -27,45 +38,229 @@ import six
 
 from contextlib import contextmanager
 import threading
+import os.path
 
+# Be minimal about what we import from iris, to avoid circular imports.
+# Below, other parts of iris.fileformats are accessed via deferred imports.
 import iris
+from iris.coords import DimCoord
 from iris.cube import CubeList
+from iris.exceptions import TranslationError
+
+
+# Strings to identify the PP and FF file format handler specs.
+_FF_SPEC_NAME = 'UM Fieldsfile'
+_PP_SPEC_NAME = 'UM Post Processing file'
 
 
 def _basic_load_function(filename, pp_filter=None, **kwargs):
     # The low-level 'fields from filename' loader.
-    # Referred to in generic rules processing as the 'generator' function.
     #
-    # Called by generic rules code.
-    # replaces pp.load (and the like)
+    # This is the 'loader.generator' in the control structure passed to the
+    # generic rules code, :meth:`iris.fileformats.rules.load_cubes`.
     #
-    # It yields a sequence of "fields".
+    # As called by generic rules code, this replaces pp.load (and the like).
+    # It yields a sequence of "fields", but in this case the 'fields' are
+    # :class:`iris.fileformats.um._fast_load_structured_fields.FieldCollation`
+    # objects.
     #
-    # In this case our 'fields' are :
-    # iris.fileformats.um._fast_load_structured_fields.FieldCollation
+    # NOTE: so, a FieldCollation is passed as the 'field' in user callbacks.
     #
-    # Also in our case, we need to apply the basic single-field filtering
+    # Also in our case, we need to support the basic single-field filtering
     # operation that speeds up phenomenon selection.
-    # Therefore, the actual loader will pass us this as a keyword, if it is
-    # needed.
-    # The remaining keywords are 'passed on' to the lower-level function.
-    #
-    # NOTE: so, this is what is passed as the 'field' to user callbacks.
-    from iris.experimental.fieldsfile import _structured_loader
+    # Therefore, the actual loader will pass this as the 'pp_filter' keyword,
+    # when it is present.
+    # Additional load keywords are 'passed on' to the lower-level function.
     from iris.fileformats.um._fast_load_structured_fields import \
         group_structured_fields
-    loader = _structured_loader(filename)
+
+    # Helper function to select the correct fields loader call.
+    def _select_raw_fields_loader(fname):
+        # Return the PPfield loading function for a file name.
+        #
+        # This decides whether the underlying file is an FF or PP file.
+        # Because it would be too awkward to modify the whole iris loading
+        # callchain to "pass down" the file format, this function instead
+        # 'recreates' that information by calling the format picker again.
+        # NOTE: this may be inefficient, especially for web resources.
+        from iris.fileformats import FORMAT_AGENT
+        from iris.fileformats.pp import load as pp_load
+        from iris.fileformats.um import um_to_pp
+        with open(fname, 'rb') as fh:
+            spec = FORMAT_AGENT.get_spec(os.path.basename(fname), fh)
+        if spec.name.startswith(_FF_SPEC_NAME):
+            loader = um_to_pp
+        elif spec.name.startswith(_PP_SPEC_NAME):
+            loader = pp_load
+        else:
+            emsg = 'Require {!r} to be a structured FieldsFile or a PP file.'
+            raise ValueError(emsg.format(fname))
+        return loader
+
+    loader = _select_raw_fields_loader(filename)
     fields = iter(field
                   for field in loader(filename, **kwargs)
                   if pp_filter is None or pp_filter(field))
     return group_structured_fields(fields)
 
 
-def _convert(collation):
-    # The call recorded in the 'loader' structure of the the generic rules
-    # code (iris.fileformats.rules), that converts a 'field' into a 'raw cube'.
-    from iris.experimental.fieldsfile import _convert_collation
-    return _convert_collation(collation)
+# Define the preferred order of candidate dimension coordinates, as used by
+# _convert_collation.
+_HINT_COORDS = ['time', 'forecast_reference_time', 'model_level_number']
+_HINTS = {name: i for i, name in zip(range(len(_HINT_COORDS)), _HINT_COORDS)}
+
+
+def _convert_collation(collation):
+    """
+    Converts a FieldCollation into the corresponding items of Cube
+    metadata.
+
+    Args:
+
+    * collation:
+        A FieldCollation object.
+
+    Returns:
+        A :class:`iris.fileformats.rules.ConversionMetadata` object.
+
+    .. note:
+        This is the 'loader.converter', in the control structure passed to the
+        generic rules code, :meth:`iris.fileformats.rules.load_cubes`.
+
+    """
+    from iris.fileformats.rules import ConversionMetadata
+    from iris.fileformats.pp_rules import (_convert_time_coords,
+                                           _convert_vertical_coords,
+                                           _convert_scalar_realization_coords,
+                                           _convert_scalar_pseudo_level_coords,
+                                           _all_other_rules)
+
+    # For all the scalar conversions, all fields in the collation will
+    # give the same result, so the choice is arbitrary.
+    field = collation.fields[0]
+
+    # Call "all other" rules.
+    (references, standard_name, long_name, units, attributes, cell_methods,
+     dim_coords_and_dims, aux_coords_and_dims) = _all_other_rules(field)
+
+    # Adjust any dimension bindings to account for the extra leading
+    # dimensions added by the collation.
+    if collation.vector_dims_shape:
+        def _adjust_dims(coords_and_dims, n_dims):
+            def adjust(dims):
+                if dims is not None:
+                    dims += n_dims
+                return dims
+            return [(coord, adjust(dims)) for coord, dims in coords_and_dims]
+
+        n_collation_dims = len(collation.vector_dims_shape)
+        dim_coords_and_dims = _adjust_dims(dim_coords_and_dims,
+                                           n_collation_dims)
+        aux_coords_and_dims = _adjust_dims(aux_coords_and_dims,
+                                           n_collation_dims)
+
+    # Dimensions to which we've already assigned dimension coordinates.
+    dim_coord_dims = set()
+
+    # Helper call to choose which coords are dimensions and which auxiliary.
+    def _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
+                     aux_coords_and_dims):
+        def key_func(item):
+            return _HINTS.get(item[0].name(), len(_HINTS))
+        # Target the first DimCoord for a dimension at dim_coords,
+        # and target everything else at aux_coords.
+        for coord, dims in sorted(coords_and_dims, key=key_func):
+            if (isinstance(coord, DimCoord) and dims is not None and
+                    len(dims) == 1 and dims[0] not in dim_coord_dims):
+                dim_coords_and_dims.append((coord, dims))
+                dim_coord_dims.add(dims[0])
+            else:
+                aux_coords_and_dims.append((coord, dims))
+
+    # Call "time" rules.
+    #
+    # For "normal" (non-cross-sectional) time values.
+    vector_headers = collation.element_arrays_and_dims
+    # If the collation doesn't define a vector of values for a
+    # particular header then it must be constant over all fields in the
+    # collation. In which case it's safe to get the value from any field.
+    t1, t1_dims = vector_headers.get('t1', (field.t1, ()))
+    t2, t2_dims = vector_headers.get('t2', (field.t2, ()))
+    lbft, lbft_dims = vector_headers.get('lbft', (field.lbft, ()))
+    coords_and_dims = _convert_time_coords(field.lbcode, field.lbtim,
+                                           field.time_unit('hours'),
+                                           t1, t2, lbft,
+                                           t1_dims, t2_dims, lbft_dims)
+    # Bind resulting coordinates to dimensions, where suitable.
+    _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
+                 aux_coords_and_dims)
+
+    # Call "vertical" rules.
+    #
+    # "Normal" (non-cross-sectional) vertical levels
+    blev, blev_dims = vector_headers.get('blev', (field.blev, ()))
+    lblev, lblev_dims = vector_headers.get('lblev', (field.lblev, ()))
+    bhlev, bhlev_dims = vector_headers.get('bhlev', (field.bhlev, ()))
+    bhrlev, bhrlev_dims = vector_headers.get('bhrlev', (field.bhrlev, ()))
+    brsvd1, brsvd1_dims = vector_headers.get('brsvd1', (field.brsvd[0], ()))
+    brsvd2, brsvd2_dims = vector_headers.get('brsvd2', (field.brsvd[1], ()))
+    brlev, brlev_dims = vector_headers.get('brlev', (field.brlev, ()))
+    # Find all the non-trivial dimension values
+    dims = set(filter(None, [blev_dims, lblev_dims, bhlev_dims, bhrlev_dims,
+                             brsvd1_dims, brsvd2_dims, brlev_dims]))
+    if len(dims) > 1:
+        raise TranslationError('Unsupported multiple values for vertical '
+                               'dimension.')
+    if dims:
+        v_dims = dims.pop()
+        if len(v_dims) > 1:
+            raise TranslationError('Unsupported multi-dimension vertical '
+                                   'headers.')
+    else:
+        v_dims = ()
+    coords_and_dims, factories = _convert_vertical_coords(field.lbcode,
+                                                          field.lbvc,
+                                                          blev, lblev,
+                                                          field.stash,
+                                                          bhlev, bhrlev,
+                                                          brsvd1, brsvd2,
+                                                          brlev, v_dims)
+    # Bind resulting coordinates to dimensions, where suitable.
+    _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
+                 aux_coords_and_dims)
+
+    # Realization (aka ensemble) (--> scalar coordinates)
+    aux_coords_and_dims.extend(_convert_scalar_realization_coords(
+        lbrsvd4=field.lbrsvd[3]))
+
+    # Pseudo-level coordinate (--> scalar coordinates)
+    aux_coords_and_dims.extend(_convert_scalar_pseudo_level_coords(
+        lbuser5=field.lbuser[4]))
+
+    return ConversionMetadata(factories, references, standard_name, long_name,
+                              units, attributes, cell_methods,
+                              dim_coords_and_dims, aux_coords_and_dims)
+
+
+# Control to enable/disable the "_combine_structured_cubes" call.
+_STRUCTURED_LOAD_IS_RAW = False
+
+
+@contextmanager
+def _raw_structured_loading():
+    """
+    A private context manager called specifically by :func:`iris.load_raw`, to
+    stop the loader from concatenating its result cubes in that case.
+
+    """
+    import iris.fileformats.pp as pp
+    global _STRUCTURED_LOAD_IS_RAW
+    try:
+        old_raw_flag = _STRUCTURED_LOAD_IS_RAW
+        _STRUCTURED_LOAD_IS_RAW = True
+        yield
+    finally:
+        _STRUCTURED_LOAD_IS_RAW = old_raw_flag
 
 
 def _combine_structured_cubes(cubes):

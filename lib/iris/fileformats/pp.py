@@ -2254,10 +2254,11 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
         # structured loading, the 'field' of rules processing is no longer a
         # PPField but a FieldCollation.
         pp_filter = None
+        # Make a loader object for the generic rules code.
         loader = iris.fileformats.rules.Loader(
             um_fast_load._basic_load_function,
             loading_function_kwargs,
-            um_fast_load._convert)
+            um_fast_load._convert_collation)
     else:
         loader = iris.fileformats.rules.Loader(
             loading_function, loading_function_kwargs or {},
