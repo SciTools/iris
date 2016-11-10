@@ -46,7 +46,10 @@ from iris.fileformats.um import structured_um_loading
 
 
 class Mixin_FieldTest(object):
-    # A mixin for tests making temporary PP files for fast-load testing.
+    # A mixin providing common facilities for fast-load testing :
+    #   * create 'raw' cubes to produce the desired PP fields in a testfile
+    #   * save 'raw' cubes to temporary PP files that are deleted afterward.
+    #   * wrap load functions so we can switch between 'normal' + 'fast'
 
     def setUp(self):
         # Create a private temporary directory.
@@ -60,8 +63,8 @@ class Mixin_FieldTest(object):
         # Delete temporary directory.
         shutil.rmtree(self.temp_dir_path)
 
-    def temp_filepath(self, user_name='', suffix='.pp'):
-        # Return the filepath for a new temporary file.
+    def _temp_filepath(self, user_name='', suffix='.pp'):
+        # Return a filepath for a new temporary file.
         self.tempfile_count += 1
         file_path = self.tempfile_path_fmt.format(
             dir_path=self.temp_dir_path,
@@ -72,7 +75,7 @@ class Mixin_FieldTest(object):
 
     def save_fieldcubes(self, cubes, basename=''):
         # Save cubes to a temporary file, and return its filepath.
-        file_path = self.temp_filepath(user_name=basename, suffix='.pp')
+        file_path = self._temp_filepath(user_name=basename, suffix='.pp')
         iris.save(cubes, file_path)
         return file_path
 
@@ -108,34 +111,6 @@ class Mixin_FieldTest(object):
         elif self.load_type == 'fast':
             with structured_um_loading():
                 return iris.load_raw(*args, **kwargs)
-
-    # Reference values for making coordinate contents.
-    time_unit = 'hours since 1970-01-01'
-    period_unit = 'hours'
-    time_values = 24.0 * np.arange(10)
-    height_values = 100.0 * np.arange(1, 11)
-    pressure_values = [100.0, 150.0, 200.0, 250.0, 300.0, 500.0, 850.0, 1000.0]
-
-    # Phenomenon test values.
-    # NOTE: in order to write/readback as identical, these include the
-    # canonical unit and a matching STASH attribute.
-    # These could in principle be looked up, but it's a bit awkward.
-    phenomena = [
-        ('air_temperature', 'K', 'm01s01i004'),
-        ('x_wind', 'm s-1', 'm01s00i002'),
-        ('y_wind', 'm s-1', 'm01s00i003'),
-        ('specific_humidity', 'kg kg-1', 'm01s00i010'),
-        ]
-
-    # Cell method test values.
-    # NOTE: if you add an *interval* to any of these cell-methods, it is not
-    # saved into the PP file (?? or maybe not loaded back again ??).
-    # This could be a PP save/load bug, or maybe just because no bounds ??
-    cell_method_values = [
-        CellMethod('mean', 'time'),
-        CellMethod('maximum', 'time'),
-        CellMethod('minimum', 'time'),
-        ]
 
     def fields(self, c_t=None, cft=None, ctp=None,
                c_h=None, c_p=None, phn=0, mmm=None):
@@ -176,7 +151,38 @@ class Mixin_FieldTest(object):
         data = data.reshape((n_flds, ny, nx))
         cubes = [Cube(data[i]) for i in range(n_flds)]
 
-        # Apply phenomena definitions.
+        # Define test point values for making coordinates.
+        time_unit = 'hours since 1970-01-01'
+        period_unit = 'hours'
+        height_unit = 'm'
+        pressure_unit = 'hPa'
+        time_values = 24.0 * np.arange(10)
+        height_values = 100.0 * np.arange(1, 11)
+        pressure_values = [100.0, 150.0, 200.0, 250.0,
+                           300.0, 500.0, 850.0, 1000.0]
+
+        # Test phenomenon details.
+        # NOTE: in order to write/readback as identical, these also contain a
+        # canonical unit and matching STASH attribute.
+        # Those could in principle be looked up, but it's a bit awkward.
+        phenomenon_values = [
+            ('air_temperature', 'K', 'm01s01i004'),
+            ('x_wind', 'm s-1', 'm01s00i002'),
+            ('y_wind', 'm s-1', 'm01s00i003'),
+            ('specific_humidity', 'kg kg-1', 'm01s00i010'),
+            ]
+
+        # Test cell-methods.
+        # NOTE: if you add an *interval* to any of these cell-methods, it is
+        # not saved into the PP file (?? or maybe not loaded back again ??).
+        # This could be a PP save/load bug, or maybe just because no bounds ?
+        cell_method_values = [
+            CellMethod('mean', 'time'),
+            CellMethod('maximum', 'time'),
+            CellMethod('minimum', 'time'),
+            ]
+
+        # Define helper to decode an argument as a list of test values.
         def arg_vals(arg, vals):
             # Decode an argument to a list of 'n_flds' coordinate point values.
             # (or 'None' where missing)
@@ -204,7 +210,8 @@ class Mixin_FieldTest(object):
 
             return values
 
-        phenomena = arg_vals(phn, self.phenomena)
+        # Apply phenomenon_values definitions.
+        phenomena = arg_vals(phn, phenomenon_values)
         for cube, (name, units, stash) in zip(cubes, phenomena):
             cube.rename(name)
             # NOTE: in order to get a cube that will write+readback the same,
@@ -252,14 +259,14 @@ class Mixin_FieldTest(object):
                 if coord:
                     cube.add_aux_coord(coord)
 
-        add_arg_coords(c_t, 'time', self.time_unit, self.time_values)
-        add_arg_coords(cft, 'forecast_reference_time', self.time_unit)
-        add_arg_coords(ctp, 'forecast_period', 'hours', self.time_values)
-        add_arg_coords(c_h, 'height', 'm', self.height_values)
-        add_arg_coords(c_p, 'pressure', 'hPa', self.pressure_values)
+        add_arg_coords(c_t, 'time', time_unit, time_values)
+        add_arg_coords(cft, 'forecast_reference_time', time_unit)
+        add_arg_coords(ctp, 'forecast_period', period_unit, time_values)
+        add_arg_coords(c_h, 'height', height_unit, height_values)
+        add_arg_coords(c_p, 'pressure', pressure_unit, pressure_values)
 
         # Add cell methods as required.
-        methods = arg_vals(mmm, self.cell_method_values)
+        methods = arg_vals(mmm, cell_method_values)
         for cube, method in zip(cubes, methods):
             if method:
                 cube.add_cell_method(method)
@@ -267,9 +274,10 @@ class Mixin_FieldTest(object):
         return cubes
 
 
-class MixinBasic(Mixin_FieldTest):
+class MixinBasic(object):
     # A mixin of tests that can be applied to *either* standard or fast load.
-    # "Real" test classes inherit this + define 'self.load_type'.
+    # The "real" test classes must inherit this, and Mixin_FieldTest,
+    # and define 'self.load_type', set to 'iris' or 'fast'.
     #
     # Basic functional tests.
 
@@ -378,9 +386,10 @@ class MixinBasic(Mixin_FieldTest):
         self.assertEqual(results, expected)
 
 
-class MixinCallDetails(Mixin_FieldTest):
+class MixinCallDetails(object):
     # A mixin of tests that can be applied to *either* standard or fast load.
-    # "Real" test classes inherit this + define 'self.load_type'.
+    # The "real" test classes must inherit this, and Mixin_FieldTest,
+    # and define 'self.load_type', set to 'iris' or 'fast'.
     #
     # Tests for different load calls and load-call arguments.
 
@@ -510,9 +519,10 @@ class MixinCallDetails(Mixin_FieldTest):
         self.assertEqual(results, expected)
 
 
-class MixinDimsAndOrdering(Mixin_FieldTest):
+class MixinDimsAndOrdering(object):
     # A mixin of tests that can be applied to *either* standard or fast load.
-    # "Real" test classes inherit this + define 'self.load_type'.
+    # The "real" test classes must inherit this, and Mixin_FieldTest,
+    # and define 'self.load_type', set to 'iris' or 'fast'.
     #
     # Tests for multidimensional results and dimension orderings.
 
@@ -589,27 +599,41 @@ class MixinDimsAndOrdering(Mixin_FieldTest):
         self.assertEqual(results, expected)
 
 
-class TestBasic__Iris(MixinBasic, tests.IrisTest):
+class TestBasic__Iris(Mixin_FieldTest, MixinBasic, tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'basic' tests with *normal* loading.
     load_type = 'iris'
 
 
-class TestBasic__Fast(MixinBasic, tests.IrisTest):
+class TestBasic__Fast(Mixin_FieldTest, MixinBasic, tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'basic' tests with *FAST* loading.
     load_type = 'fast'
 
 
-class TestCallDetails__Iris(MixinCallDetails, tests.IrisTest):
+class TestCallDetails__Iris(Mixin_FieldTest, MixinCallDetails, tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'call details' tests with *normal* loading.
     load_type = 'iris'
 
 
-class TestCallDetails__Fast(MixinCallDetails, tests.IrisTest):
+class TestCallDetails__Fast(Mixin_FieldTest, MixinCallDetails, tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'call details' tests with *FAST* loading.
     load_type = 'fast'
 
 
-class TestDimsAndOrdering__Iris(MixinDimsAndOrdering, tests.IrisTest):
+class TestDimsAndOrdering__Iris(Mixin_FieldTest, MixinDimsAndOrdering,
+                                tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'dimensions and ordering' tests with *normal* loading.
     load_type = 'iris'
 
 
-class TestDimsAndOrdering__Fast(MixinDimsAndOrdering, tests.IrisTest):
+class TestDimsAndOrdering__Fast(Mixin_FieldTest, MixinDimsAndOrdering,
+                                tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'dimensions and ordering' tests with *FAST* loading.
     load_type = 'fast'
 
 
