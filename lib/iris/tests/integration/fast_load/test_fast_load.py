@@ -40,6 +40,7 @@ from iris.coord_systems import GeogCS
 from iris.cube import Cube, CubeList
 from iris.exceptions import IgnoreCubeException
 from iris.fileformats.pp import EARTH_RADIUS, STASH
+from iris.fileformats.um._fast_load import STRUCTURED_LOAD_CONTROLS
 
 import iris
 from iris.fileformats.um import structured_um_loading
@@ -47,9 +48,9 @@ from iris.fileformats.um import structured_um_loading
 
 class Mixin_FieldTest(object):
     # A mixin providing common facilities for fast-load testing :
-    #   * create 'raw' cubes to produce the desired PP fields in a testfile
-    #   * save 'raw' cubes to temporary PP files that are deleted afterward.
-    #   * wrap load functions so we can switch between 'normal' + 'fast'
+    #   * create 'raw' cubes to produce the desired PP fields in a test file.
+    #   * save 'raw' cubes to temporary PP files that get deleted afterwards.
+    #   * control whether tests run with 'normal' or 'fast' loading.
 
     def setUp(self):
         # Create a private temporary directory.
@@ -58,10 +59,22 @@ class Mixin_FieldTest(object):
         self.tempfile_count = 0
         self.tempfile_path_fmt = \
             '{dir_path}/tempfile_{prefix}_{file_number:06d}{suffix}'
+        # Enable fast loading, if the inheritor enables it.
+        # N.B. *requires* the user to define "self.do_fast_loads" (no default).
+        if self.do_fast_loads:
+            # Enter a 'structured load' context.
+            self.load_context = STRUCTURED_LOAD_CONTROLS.context(
+                loads_use_structured=True)
+            # N.B. we can't use a 'with', so issue separate 'enter' and 'exit'
+            # calls instead.
+            self.load_context.__enter__()
 
     def tearDown(self):
         # Delete temporary directory.
         shutil.rmtree(self.temp_dir_path)
+        if self.do_fast_loads:
+            # End the 'fast loading' context.
+            self.load_context.__exit__(None, None, None)
 
     def _temp_filepath(self, user_name='', suffix='.pp'):
         # Return a filepath for a new temporary file.
@@ -78,39 +91,6 @@ class Mixin_FieldTest(object):
         file_path = self._temp_filepath(user_name=basename, suffix='.pp')
         iris.save(cubes, file_path)
         return file_path
-
-    def load_function(self, *args, **kwargs):
-        # Return data from "iris.load", using either 'normal' or 'fast' method
-        # as selected by the test class.
-        if self.load_type == 'iris':
-            return iris.load(*args, **kwargs)
-        elif self.load_type == 'fast':
-            with structured_um_loading():
-                return iris.load(*args, **kwargs)
-
-    def load_cube_function(self, *args, **kwargs):
-        # Return data from "iris.load_cube".
-        if self.load_type == 'iris':
-            return iris.load_cube(*args, **kwargs)
-        elif self.load_type == 'fast':
-            with structured_um_loading():
-                return iris.load_cube(*args, **kwargs)
-
-    def load_cubes_function(self, *args, **kwargs):
-        # Return data from "iris.load_cubes".
-        if self.load_type == 'iris':
-            return iris.load_cubes(*args, **kwargs)
-        elif self.load_type == 'fast':
-            with structured_um_loading():
-                return iris.load_cubes(*args, **kwargs)
-
-    def load_raw_function(self, *args, **kwargs):
-        # Return data from "iris.load_raw".
-        if self.load_type == 'iris':
-            return iris.load_raw(*args, **kwargs)
-        elif self.load_type == 'fast':
-            with structured_um_loading():
-                return iris.load_raw(*args, **kwargs)
 
     def fields(self, c_t=None, cft=None, ctp=None,
                c_h=None, c_p=None, phn=0, mmm=None):
@@ -277,7 +257,7 @@ class Mixin_FieldTest(object):
 class MixinBasic(object):
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
-    # and define 'self.load_type', set to 'iris' or 'fast'.
+    # and define 'self.do_fast_loads' as True or False.
     #
     # Basic functional tests.
 
@@ -285,7 +265,7 @@ class MixinBasic(object):
         # Show that basic load merging works.
         flds = self.fields(c_t='123', cft='000', ctp='123', c_p=0)
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
@@ -293,7 +273,7 @@ class MixinBasic(object):
         # Show that different phenomena are merged into distinct cubes.
         flds = self.fields(c_t='1122', phn='0101')
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
@@ -306,8 +286,8 @@ class MixinBasic(object):
         for fld in flds:
             del fld.attributes['STASH']
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
-        if self.load_type == 'iris':
+        results = iris.load(file)
+        if not self.do_fast_loads:
             # This is what we'd LIKE to get (what iris.load gives).
             expected = CubeList(flds).merge()
         else:
@@ -341,7 +321,7 @@ class MixinBasic(object):
         fldset_2 = self.fields(c_t='34')
         file_1 = self.save_fieldcubes(fldset_1)
         file_2 = self.save_fieldcubes(fldset_2)
-        results = self.load_function((file_1, file_2))
+        results = iris.load((file_1, file_2))
         expected = CubeList(fldset_1 + fldset_2).merge()
         self.assertEqual(results, expected)
 
@@ -356,8 +336,8 @@ class MixinBasic(object):
         file_multi = self.save_fieldcubes(multi_timepoint_flds,
                                           basename='multi')
 
-        results = self.load_function((file_single, file_multi))
-        if self.load_type == 'iris':
+        results = iris.load((file_single, file_multi))
+        if not self.do_fast_loads:
             # This is what we'd LIKE to get (what iris.load gives).
             expected = CubeList(multi_timepoint_flds +
                                 [single_timepoint_fld]).merge()
@@ -380,7 +360,7 @@ class MixinBasic(object):
         flds = self.fields(c_t='000111222',
                            mmm='-01-01-01')
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(CubeList(flds[i_start::3]).merge_cube()
                             for i_start in range(3))
         self.assertEqual(results, expected)
@@ -389,7 +369,7 @@ class MixinBasic(object):
 class MixinCallDetails(object):
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
-    # and define 'self.load_type', set to 'iris' or 'fast'.
+    # and define 'self.do_fast_loads' as True or False.
     #
     # Tests for different load calls and load-call arguments.
 
@@ -401,7 +381,7 @@ class MixinCallDetails(object):
         airtemp_flds = [fld for fld in flds
                         if fld.name() == 'air_temperature']
         stash_attribute = airtemp_flds[0].attributes['STASH']
-        results = self.load_function(
+        results = iris.load(
             file,
             iris.AttributeConstraint(STASH=stash_attribute))
         expected = CubeList(airtemp_flds).merge()
@@ -414,7 +394,7 @@ class MixinCallDetails(object):
         file = self.save_fieldcubes(flds)
         height_constraint = iris.Constraint(
             height=lambda h: 150.0 < h < 350.0)
-        results = self.load_function(file, height_constraint)
+        results = iris.load(file, height_constraint)
         expected = CubeList(flds[1:3]).merge()
         self.assertEqual(results, expected)
 
@@ -426,7 +406,7 @@ class MixinCallDetails(object):
                            c_p='-2-3')
         file = self.save_fieldcubes(flds)
 
-        if self.load_type == 'iris':
+        if not self.do_fast_loads:
             def callback(cube, field, filename):
                 self.assertEqual(filename, file)
                 lbvc = field.lbvc
@@ -448,11 +428,11 @@ class MixinCallDetails(object):
                     # Record the LBVC values.
                     cube.attributes['A_LBVC'] = lbvcs
 
-        results = self.load_function(file, callback=callback)
+        results = iris.load(file, callback=callback)
 
         # Make an 'expected' from selected fields, with the expected attribute.
         expected = CubeList([flds[1], flds[3]]).merge()
-        if self.load_type == 'iris':
+        if not self.do_fast_loads:
             expected[0].attributes['LBVC'] = 8
         else:
             expected[0].attributes['A_LBVC'] = [8, 8]
@@ -462,7 +442,7 @@ class MixinCallDetails(object):
     def test_load_cube(self):
         flds = self.fields(c_t='123', cft='000', ctp='123', c_p=0)
         file = self.save_fieldcubes(flds)
-        results = self.load_cube_function(file)
+        results = iris.load_cube(file)
         expected = CubeList(flds).merge_cube()
         self.assertEqual(results, expected)
 
@@ -473,7 +453,7 @@ class MixinCallDetails(object):
             iris.Constraint(height=300.0),
             iris.Constraint(height=lambda h: 150.0 < h < 350.0),
             iris.Constraint('air_temperature')]
-        results = self.load_cubes_function(file, height_constraints)
+        results = iris.load_cubes(file, height_constraints)
         expected = CubeList([flds[2],
                              CubeList(flds[1:3]).merge_cube(),
                              CubeList(flds).merge_cube()])
@@ -484,8 +464,8 @@ class MixinCallDetails(object):
         fldset_2 = self.fields(c_t='234')
         file_1 = self.save_fieldcubes(fldset_1)
         file_2 = self.save_fieldcubes(fldset_2)
-        results = self.load_raw_function((file_1, file_2))
-        if self.load_type == 'iris':
+        results = iris.load_raw((file_1, file_2))
+        if not self.do_fast_loads:
             # Each 'raw' cube is just one field.
             expected = CubeList(fldset_1 + fldset_2)
         else:
@@ -522,7 +502,7 @@ class MixinCallDetails(object):
 class MixinDimsAndOrdering(object):
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
-    # and define 'self.load_type', set to 'iris' or 'fast'.
+    # and define 'self.do_fast_loads' as True or False.
     #
     # Tests for multidimensional results and dimension orderings.
 
@@ -532,7 +512,7 @@ class MixinDimsAndOrdering(object):
                            c_h='00110011',
                            phn='01010101')
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
@@ -543,7 +523,7 @@ class MixinDimsAndOrdering(object):
                            c_h='00101101',
                            phn='01001011')
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
@@ -553,7 +533,7 @@ class MixinDimsAndOrdering(object):
         flds = self.fields(c_t='000111',
                            c_h='012012')
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(flds).merge()
         # Order is (t, h, y, x), which is "standard".
         self.assertEqual(expected[0].coord_dims('time'), (0,))
@@ -566,9 +546,9 @@ class MixinDimsAndOrdering(object):
         flds = self.fields(c_t='010101',
                            c_h='001122')
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(flds).merge()
-        if self.load_type == 'iris':
+        if not self.do_fast_loads:
             # Order is (t, h, y, x), which is "standard".
             self.assertEqual(results[0].coord_dims('time'), (0,))
             self.assertEqual(results[0].coord_dims('height'), (1,))
@@ -584,11 +564,11 @@ class MixinDimsAndOrdering(object):
         flds = self.fields(c_t='00011',
                            c_h='01202')
         file = self.save_fieldcubes(flds)
-        results = self.load_function(file)
+        results = iris.load(file)
         expected = CubeList(flds).merge()
         self.assertEqual(expected[0].coord_dims('time'), (0,))
         self.assertEqual(expected[0].coord_dims('height'), (0,))
-        if self.load_type == 'fast':
+        if self.do_fast_loads:
             # Something a bit weird happens to the 'height' coordinate in this
             # case (and not for standard load).
             for cube in expected:
@@ -602,39 +582,39 @@ class MixinDimsAndOrdering(object):
 class TestBasic__Iris(Mixin_FieldTest, MixinBasic, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'basic' tests with *normal* loading.
-    load_type = 'iris'
+    do_fast_loads = False
 
 
 class TestBasic__Fast(Mixin_FieldTest, MixinBasic, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'basic' tests with *FAST* loading.
-    load_type = 'fast'
+    do_fast_loads = True
 
 
 class TestCallDetails__Iris(Mixin_FieldTest, MixinCallDetails, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'call details' tests with *normal* loading.
-    load_type = 'iris'
+    do_fast_loads = False
 
 
 class TestCallDetails__Fast(Mixin_FieldTest, MixinCallDetails, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'call details' tests with *FAST* loading.
-    load_type = 'fast'
+    do_fast_loads = True
 
 
 class TestDimsAndOrdering__Iris(Mixin_FieldTest, MixinDimsAndOrdering,
                                 tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'dimensions and ordering' tests with *normal* loading.
-    load_type = 'iris'
+    do_fast_loads = False
 
 
 class TestDimsAndOrdering__Fast(Mixin_FieldTest, MixinDimsAndOrdering,
                                 tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'dimensions and ordering' tests with *FAST* loading.
-    load_type = 'fast'
+    do_fast_loads = True
 
 
 if __name__ == '__main__':
