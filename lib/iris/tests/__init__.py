@@ -744,21 +744,6 @@ class IrisTest(unittest.TestCase):
                         json.dump(repo, codecs.getwriter('utf-8')(fo),
                                   indent=4, sort_keys=True)
 
-            # TBD: Push this fix to imagehash (done!)
-            # See https://github.com/JohannesBuchner/imagehash/pull/31
-            # Now need this imagehash/master pushed to pypi ...
-            def _hex_to_hash(hexstr, hash_size=_HASH_SIZE):
-                l = []
-                count = hash_size * (hash_size // 4)
-                if len(hexstr) != count:
-                    emsg = 'Expected hex string size of {}.'
-                    raise ValueError(emsg.format(count))
-                for i in range(count // 2):
-                    h = hexstr[i*2:i*2+2]
-                    v = int("0x" + h, 16)
-                    l.append([v & 2**i > 0 for i in range(8)])
-                return imagehash.ImageHash(np.array(l))
-
             # Calculate the test result perceptual image hash.
             buffer = io.BytesIO()
             figure = plt.gcf()
@@ -776,7 +761,9 @@ class IrisTest(unittest.TestCase):
             else:
                 uris = repo[unique_id]
                 # Create the expected perceptual image hashes from the uris.
-                expected = [_hex_to_hash(os.path.splitext(os.path.basename(uri))[0])
+                to_hash = imagehash.hex_to_hash
+                expected = [to_hash(os.path.splitext(os.path.basename(uri))[0],
+                                    hash_size=_HASH_SIZE)
                             for uri in uris]
 
                 # Calculate the hamming distance vector for the result hash.
