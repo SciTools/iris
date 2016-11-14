@@ -45,6 +45,7 @@ import inspect
 import json
 import io
 import logging
+import math
 import os
 import os.path
 import shutil
@@ -284,12 +285,11 @@ class IrisTest(unittest.TestCase):
             reference_filename = [self.get_result_path(reference_filename)]
         for i, cube in enumerate(cubes):
             fname = list(reference_filename)
-            # don't want the ".cml" for the numpy data file
+            # don't want the ".cml" for the json stats file
             if fname[-1].endswith(".cml"):
                 fname[-1] = fname[-1][:-4]
-            fname[-1] += '.data.%d.npy' % i
+            fname[-1] += '.data.%d.json' % i
             self.assertCubeDataAlmostEqual(cube, fname, *args, **kwargs)
-
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags='-h'):
@@ -401,32 +401,38 @@ class IrisTest(unittest.TestCase):
             diff = ''.join(difflib.unified_diff(reference_text, source_text, 'Reference', 'Test result', '', '', 0))
             self.fail("%s does not match reference file: %s\n%s" % (desc, reference_filename, diff))
 
-    def assertCubeDataAlmostEqual(self, cube, reference_filename, *args, **kwargs):
+    def assertCubeDataAlmostEqual(self, cube, reference_filename, *args,
+                                  **kwargs):
         reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
-
-            result = np.load(reference_path)
-            if isinstance(result, np.lib.npyio.NpzFile):
-                self.assertIsInstance(cube.data, ma.MaskedArray, 'Cube data was not a masked array.')
-                # Avoid comparing any non-initialised array data.
-                data = cube.data.filled()
-                np.testing.assert_array_almost_equal(data, result['data'],
-                                                     *args, **kwargs)
-                np.testing.assert_array_equal(cube.data.mask, result['mask'])
-            else:
-                np.testing.assert_array_almost_equal(cube.data, result, *args, **kwargs)
+            with open(reference_path, 'r') as reference_file:
+                stats = json.load(reference_file)
+                self.assertEqual(stats.get('shape', []), list(cube.shape))
+                self.assertEqual(stats.get('masked', False),
+                                       isinstance(cube.data, ma.MaskedArray))
+                nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
+                                   stats.get('max', 0), stats.get('min', 0)))
+                if math.isnan(stats.get('mean', 0)):
+                    self.assertEqual(math.isnan(stats.get('mean', 0)),
+                                     math.isnan(cube.data.mean()))
+                else:
+                    cube_stats = np.array((cube.data.mean(), cube.data.std(),
+                                           cube.data.max(), cube.data.min()))
+                    self.assertArrayAllClose(nstats, cube_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
+            masked = False
             if isinstance(cube.data, ma.MaskedArray):
-                # Avoid recording any non-initialised array data.
-                data = cube.data.filled()
-                with open(reference_path, 'wb') as reference_file:
-                    np.savez(reference_file, data=data, mask=cube.data.mask)
-            else:
-                with open(reference_path, 'wb') as reference_file:
-                    np.save(reference_file, cube.data)
+                masked = True
+            stats = {'mean': np.float_(cube.data.mean()),
+                     'std': np.float_(cube.data.std()),
+                     'max': np.float_(cube.data.max()),
+                     'min': np.float_(cube.data.min()),
+                     'shape': cube.shape, 'masked': masked}
+            with open(reference_path, 'w') as reference_file:
+                reference_file.write(json.dumps(stats))
 
     def assertFilesEqual(self, test_filename, reference_filename):
         reference_path = self.get_result_path(reference_filename)
@@ -669,7 +675,7 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
-    def _assert_graphic(self, tol=_HAMMING_DISTANCE):
+    def check_graphic(self):
         """
         Check the hash of the current matplotlib figure matches the expected
         image hash for the current graphic test.
@@ -728,24 +734,15 @@ class IrisTest(unittest.TestCase):
                 figure.savefig(hash_fname)
                 msg = 'Creating imagerepo entry: {} -> {}'
                 print(msg.format(unique_id, uri))
-                with open(repo_fname, 'wb') as fo:
-                    json.dump(repo, codecs.getwriter('utf-8')(fo), indent=4,
-                              sort_keys=True)
-
-            # TBD: Push this fix to imagehash (done!)
-            # See https://github.com/JohannesBuchner/imagehash/pull/31
-            # Now need this imagehash/master pushed to pypi ...
-            def _hex_to_hash(hexstr, hash_size=_HASH_SIZE):
-                l = []
-                count = hash_size * (hash_size // 4)
-                if len(hexstr) != count:
-                    emsg = 'Expected hex string size of {}.'
-                    raise ValueError(emsg.format(count))
-                for i in range(count // 2):
-                    h = hexstr[i*2:i*2+2]
-                    v = int("0x" + h, 16)
-                    l.append([v & 2**i > 0 for i in range(8)])
-                return imagehash.ImageHash(np.array(l))
+                lock = filelock.FileLock(os.path.join(_RESULT_PATH,
+                                                      'imagerepo.lock'))
+                # The imagerepo.json file is a critical resource, so ensure
+                # thread safe read/write behaviour via platform independent
+                # file locking.
+                with lock.acquire(timeout=600):
+                    with open(repo_fname, 'wb') as fo:
+                        json.dump(repo, codecs.getwriter('utf-8')(fo),
+                                  indent=4, sort_keys=True)
 
             # Calculate the test result perceptual image hash.
             buffer = io.BytesIO()
@@ -764,13 +761,15 @@ class IrisTest(unittest.TestCase):
             else:
                 uris = repo[unique_id]
                 # Create the expected perceptual image hashes from the uris.
-                expected = [_hex_to_hash(os.path.splitext(os.path.basename(uri))[0])
+                to_hash = imagehash.hex_to_hash
+                expected = [to_hash(os.path.splitext(os.path.basename(uri))[0],
+                                    hash_size=_HASH_SIZE)
                             for uri in uris]
 
                 # Calculate the hamming distance vector for the result hash.
                 distances = [e - phash for e in expected]
 
-                if np.all([hd > tol for hd in distances]):
+                if np.all([hd > _HAMMING_DISTANCE for hd in distances]):
                     if dev_mode:
                         _create_missing()
                     else:
@@ -790,19 +789,6 @@ class IrisTest(unittest.TestCase):
 
         finally:
             plt.close()
-
-    def check_graphic(self):
-        """
-        Checks that the image hash for the current matplotlib figure matches
-        the expected image hash for the current test.
-
-        """
-        fname = os.path.join(_RESULT_PATH, 'imagerepo.lock')
-        lock = filelock.FileLock(fname)
-        # The imagerepo.json file is a critical resource, so ensure thread
-        # safe read/write behaviour via platform independent file locking.
-        with lock.acquire(timeout=600):
-            self._assert_graphic()
 
     def _remove_testcase_patches(self):
         """Helper to remove per-testcase patches installed by :meth:`patch`."""
