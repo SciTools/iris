@@ -1057,24 +1057,24 @@ class TestCubeCollapsed(tests.IrisTest):
         self.collapse_test_common(cube, 'grid_longitude', 'time', rtol=1e-05)
 
         self.collapse_test_common(cube, 'grid_latitude', 'model_level_number',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
         self.collapse_test_common(cube, 'model_level_number', 'grid_latitude',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
 
         self.collapse_test_common(cube, 'grid_longitude', 'model_level_number',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
         self.collapse_test_common(cube, 'model_level_number', 'grid_longitude',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
 
         self.collapse_test_common(cube, 'time', 'model_level_number',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
         self.collapse_test_common(cube, 'model_level_number', 'time',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
 
         self.collapse_test_common(cube, 'model_level_number', 'time',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
         self.collapse_test_common(cube, 'time', 'model_level_number',
-                                  rtol=1e-03)
+                                  rtol=5e-04)
 
         # Collapse 3 things at once.
         triple_collapse = cube.collapsed(['model_level_number',
@@ -1083,7 +1083,7 @@ class TestCubeCollapsed(tests.IrisTest):
         self.assertCMLApproxData(triple_collapse, ('cube_collapsed',
                                                    ('triple_collapse_ml_pt_'
                                                     'lon.cml')),
-                                                   rtol=1e-03)
+                                                   rtol=5e-04)
 
         triple_collapse = cube.collapsed(['grid_latitude',
                                           'model_level_number', 'time'],
@@ -1091,7 +1091,12 @@ class TestCubeCollapsed(tests.IrisTest):
         self.assertCMLApproxData(triple_collapse, ('cube_collapsed',
                                                    ('triple_collapse_lat_ml'
                                                    '_pt.cml')),
-                                                   rtol=1)
+                                                   rtol=0.05)
+        # KNOWN PROBLEM: the previous 'rtol' is very large.
+        # Numpy 1.10 and 1.11 give significantly different results here.
+        # This may relate to known problems with summing over large arrays,
+        # which were largely fixed in numpy 1.9 but still occur in some cases,
+        # as-of numpy 1.11.
 
         # Ensure no side effects
         self.assertCML(cube, ('cube_collapsed', 'original.cml'))
