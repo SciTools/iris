@@ -421,7 +421,11 @@ class MixinCallDetails(object):
                 self.assertEqual(filename, file)
                 lbvcs = [fld.lbvc
                          for fld in collation.fields]
-                if lbvcs[0] == 1:
+                lbvc0 = lbvcs[0]
+                if not np.all(lbvcs == lbvc0):
+                    msg = 'Fields have different LBVCs : {}'
+                    raise ValueError(msg.format(set(lbvcs)))
+                if lbvc0 == 1:
                     # reject the height level data (accept only pressure).
                     raise IgnoreCubeException()
                 else:

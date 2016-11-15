@@ -369,6 +369,25 @@ def structured_um_loading():
         fields of each phenomenon, such that different phenomena may have
         different field structures, and can be interleaved in any way at all.
 
+    Known current shortcomings:
+
+        * orography fields may be returned with extra dimensions, e.g. time,
+          where multiple fields exist in an input file.
+
+        * varying values of LBUSER5, representing a 'pseudo-level' coordinate,
+          are not currently supported.
+
+          * Unfortunately, there is no good workaround for this at present.
+
+        * if some input files contain a *single* coordinate value while others
+          contain *multiple* values, these will not be merged into a single
+          cube over all input files :  Instead, the single- and multiple-valued
+          sets will typically produce two separate cubes with overlapping
+          coordinates.
+
+          * this can be worked around by loading files individually, or with
+            :meth:`~iris.load_raw`, and merging/concatenating explicitly.
+
     .. note::
 
         The resulting time-related coordinates ('time', 'forecast_time' and
@@ -399,25 +418,6 @@ def structured_um_loading():
         checked, and can lead to erroneous results if it is not the case.
         Header elements of potential concern include LBTIM, LBCODE, LBVC,
         LBRSVD4 (ensemble number) and LBUSER5 (pseudo-level).
-
-        Known current shortcomings:
-
-        * orography fields may be returned with extra dimensions, e.g. time,
-          where multiple fields exist in an input file.
-
-        * varying values of LBUSER5, representing a 'pseudo-level' coordinate,
-          are not currently supported.
-
-          * Unfortunately, there is no good workaround for this at present.
-
-        * if some input files contain a single coordinate value while other
-          contain multiple values, these will not be merged into a single cube
-          over all input files :  Instead, the single- and multiple-valued sets
-          will typically merge into two separate cubes with overlapping
-          coordinates.
-
-          * this can be worked around by loading files individually, or with
-            :meth:`~iris.load_raw`, and merging/concatenating explicitly.
 
     """
     with STRUCTURED_LOAD_CONTROLS.context(loads_use_structured=True):
