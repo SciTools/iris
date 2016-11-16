@@ -107,7 +107,8 @@ class TestRunner():
         # processes that nose.run creates.
         if self.no_data:
             print('Running tests in no-data mode...')
-            os.environ['override_test_data_repository'] = 'true'
+            import iris.config
+            iris.config.TEST_DATA_DIR = None
         if self.create_missing:
             os.environ['IRIS_TEST_CREATE_MISSING'] = 'true'
 
