@@ -521,7 +521,7 @@ class MixinDimsAndOrdering(object):
         self.assertEqual(results, expected)
 
 
-class MixinFailCases(object):
+class MixinProblemCases(object):
     def test_FAIL_scalar_vector_concatenate(self):
         # Structured load can produce a scalar coordinate from one file, and a
         # matching vector one from another file, but these won't "combine".
@@ -595,26 +595,31 @@ class MixinFailCases(object):
                            pse='123123123')
         file = self.save_fieldcubes(flds)
         results = iris.load(file)
-        if not self.do_fast_loads:
-            expected = CubeList(flds).merge()
-        else:
-            # Structured loading doesn't understand pseudo-level.
-            # The result is rather horrible...
+        expected = CubeList(flds).merge()
 
-            # First get a cube over 9 timepoints.
-            flds = self.fields(c_t='012345678',
-                               pse=1)  # result gets level==2, not clear why.
-
-            # Replace the time coord with an AUX coord.
-            nine_timepoints_cube = CubeList(flds).merge_cube()
-            co_time = nine_timepoints_cube.coord('time')
-            nine_timepoints_cube.remove_coord(co_time)
-            nine_timepoints_cube.add_aux_coord(AuxCoord.from_coord(co_time), 0)
-            # Set the expected timepoints equivalent to '000111222'.
-            nine_timepoints_cube.coord('time').points = \
-                np.array([0.0, 0.0, 0.0, 24.0, 24.0, 24.0, 48.0, 48.0, 48.0])
-            # Make a cubelist with this single cube.
-            expected = CubeList([nine_timepoints_cube])
+# NOTE: this problem is now fixed : Structured load gives the same answer.
+#
+#        if not self.do_fast_loads:
+#            expected = CubeList(flds).merge()
+#        else:
+#            # Structured loading doesn't understand pseudo-level.
+#            # The result is rather horrible...
+#
+#            # First get a cube over 9 timepoints.
+#            flds = self.fields(c_t='012345678',
+#                               pse=1)  # result gets level==2, not clear why.
+#
+#            # Replace the time coord with an AUX coord.
+#            nine_timepoints_cube = CubeList(flds).merge_cube()
+#            co_time = nine_timepoints_cube.coord('time')
+#            nine_timepoints_cube.remove_coord(co_time)
+#            nine_timepoints_cube.add_aux_coord(AuxCoord.from_coord(co_time),
+#                                               0)
+#            # Set the expected timepoints equivalent to '000111222'.
+#            nine_timepoints_cube.coord('time').points = \
+#                np.array([0.0, 0.0, 0.0, 24.0, 24.0, 24.0, 48.0, 48.0, 48.0])
+#            # Make a cubelist with this single cube.
+#            expected = CubeList([nine_timepoints_cube])
 
         self.assertEqual(results, expected)
 
@@ -657,15 +662,15 @@ class TestDimsAndOrdering__Fast(Mixin_FieldTest, MixinDimsAndOrdering,
     do_fast_loads = True
 
 
-class TestFails__Iris(Mixin_FieldTest, MixinFailCases, tests.IrisTest):
+class TestProblems__Iris(Mixin_FieldTest, MixinProblemCases, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'failure cases' tests with *normal* loading.
     do_fast_loads = False
 
 
-class TestFails__Fast(Mixin_FieldTest, MixinFailCases, tests.IrisTest):
+class TestProblems__Fast(Mixin_FieldTest, MixinProblemCases, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
-    # run the 'failure cases' tests with *normal* loading.
+    # run the 'failure cases' tests with *FAST* loading.
     do_fast_loads = True
 
 

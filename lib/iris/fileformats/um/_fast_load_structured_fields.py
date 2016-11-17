@@ -221,7 +221,22 @@ def _um_collation_key_function(field):
     'phenomenon', as described for :meth:`group_structured_fields`.
 
     """
-    return (field.lbuser[3], field.lbproc, field.lbuser[6])
+    return (field.lbuser[3],  # stashcode first
+            field.lbproc,  # then stats processing
+            field.lbuser[6],  # then model
+            field.lbuser[4]  # then pseudo-level : this one is a KLUDGE.
+            )
+    # NOTE: including pseudo-level here makes it treat different pseudo-levels
+    # as different phenomena.  These will later be merged in the "ordinary"
+    # post-load merge.
+    # The current structured-load code fails to handle multiple pseudo-levels
+    # correctly :  As pseudo-level is not on in its list of "things that may
+    # vary within a phenomenon", it will create a scalar pseudo-level
+    # coordinate when it should have been a vector of values.
+    # This kludge fixes the error, but it is inefficient because it bypasses
+    # the structured load, producing n-levels times more 'raw' cubes.
+    # TODO: it should be fairly easy to do this properly -- i.e. create a
+    # vector pseudo-level coordinate directly in the structured load analysis.
 
 
 def group_structured_fields(field_iterator):
