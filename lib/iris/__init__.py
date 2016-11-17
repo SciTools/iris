@@ -446,7 +446,9 @@ def load_raw(uris, constraints=None, callback=None):
         An :class:`iris.cube.CubeList`.
 
     """
-    return _load_collection(uris, constraints, callback).cubes()
+    from iris.fileformats.um._fast_load import _raw_structured_loading
+    with _raw_structured_loading():
+        return _load_collection(uris, constraints, callback).cubes()
 
 
 save = iris.io.save

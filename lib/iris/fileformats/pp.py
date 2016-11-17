@@ -2241,14 +2241,39 @@ def load_pairs_from_fields(pp_fields):
 def _load_cubes_variable_loader(filenames, callback, loading_function,
                                 loading_function_kwargs=None,
                                 constraints=None):
+    import iris.fileformats.um._fast_load as um_fast_load
     pp_filter = None
     if constraints is not None:
         pp_filter = _convert_constraints(constraints)
-    pp_loader = iris.fileformats.rules.Loader(
-        loading_function, loading_function_kwargs or {},
-        iris.fileformats.pp_rules.convert)
-    return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader,
-                                             pp_filter)
+    if um_fast_load.STRUCTURED_LOAD_CONTROLS.loads_use_structured:
+        # For structured loads, pass down the pp_filter function as an extra
+        # keyword to the low-level generator function.
+        loading_function_kwargs = loading_function_kwargs or {}
+        loading_function_kwargs['pp_filter'] = pp_filter
+        # Also do *not* use this filter in generic rules processing, as for
+        # structured loading, the 'field' of rules processing is no longer a
+        # PPField but a FieldCollation.
+        pp_filter = None
+        # Make a loader object for the generic rules code.
+        loader = iris.fileformats.rules.Loader(
+            um_fast_load._basic_load_function,
+            loading_function_kwargs,
+            um_fast_load._convert_collation)
+    else:
+        loader = iris.fileformats.rules.Loader(
+            loading_function, loading_function_kwargs or {},
+            iris.fileformats.pp_rules.convert)
+
+    result = iris.fileformats.rules.load_cubes(filenames, callback, loader,
+                                               pp_filter)
+
+    if um_fast_load.STRUCTURED_LOAD_CONTROLS.loads_use_structured:
+        # We need an additional concatenate-like operation to combine cubes
+        # from different files.  Unfortunately, the 'merge' call provided in
+        # the iris_load_xx functions cannot do this.
+        result = um_fast_load._combine_structured_cubes(result)
+
+    return result
 
 
 def save(cube, target, append=False, field_coords=None):

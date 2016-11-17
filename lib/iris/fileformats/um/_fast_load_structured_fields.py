@@ -14,7 +14,14 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Code for fast loading of structured UM data."""
+"""
+Code for fast loading of structured UM data.
+
+This module defines which pp-field elements take part in structured loading,
+and provides creation of :class:`FieldCollation` objects from lists of
+:class:`iris.fileformats.pp.PPField`.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
