@@ -93,7 +93,7 @@ class Mixin_FieldTest(object):
         return file_path
 
     def fields(self, c_t=None, cft=None, ctp=None,
-               c_h=None, c_p=None, phn=0, mmm=None):
+               c_h=None, c_p=None, phn=0, mmm=None, pse=None):
         # Return a list of 2d cubes representing raw PPFields, from args
         # specifying sequences of (scalar) coordinate values.
         # TODO? : add bounds somehow ?
@@ -110,6 +110,9 @@ class Mixin_FieldTest(object):
         # Argument 'mmm' denotes existence (or not) of a cell method of type
         # 'average' or 'min' or 'max' (values '012' respectively), applying to
         # the time values -- ultimately, this controls LBTIM.
+        #
+        # Argument 'pse' denotes pseudo-level numbers.
+        # These translate into 'LBUSER5' values.
 
         # Get the number of result cubes, defined by the 'longest' arg.
         def arglen(arg):
@@ -140,6 +143,7 @@ class Mixin_FieldTest(object):
         height_values = 100.0 * np.arange(1, 11)
         pressure_values = [100.0, 150.0, 200.0, 250.0,
                            300.0, 500.0, 850.0, 1000.0]
+        pseudolevel_values = range(1, 11)  # A valid value is >= 1.
 
         # Test phenomenon details.
         # NOTE: in order to write/readback as identical, these also contain a
@@ -244,6 +248,7 @@ class Mixin_FieldTest(object):
         add_arg_coords(ctp, 'forecast_period', period_unit, time_values)
         add_arg_coords(c_h, 'height', height_unit, height_values)
         add_arg_coords(c_p, 'pressure', pressure_unit, pressure_values)
+        add_arg_coords(pse, 'pseudo_level', '1', pseudolevel_values)
 
         # Add cell methods as required.
         methods = arg_vals(mmm, cell_method_values)
@@ -582,6 +587,35 @@ class MixinFailCases(object):
                                 standard_name='time', units=co_t_fake.units)
             one_cube.add_aux_coord(co_t_new, 0)
             expected = [one_cube]
+        self.assertEqual(results, expected)
+
+    def test_FAIL_pseudo_levels(self):
+        # Show how pseudo levels are handled.
+        flds = self.fields(c_t='000111222',
+                           pse='123123123')
+        file = self.save_fieldcubes(flds)
+        results = iris.load(file)
+        if not self.do_fast_loads:
+            expected = CubeList(flds).merge()
+        else:
+            # Structured loading doesn't understand pseudo-level.
+            # The result is rather horrible...
+
+            # First get a cube over 9 timepoints.
+            flds = self.fields(c_t='012345678',
+                               pse=1)  # result gets level==2, not clear why.
+
+            # Replace the time coord with an AUX coord.
+            nine_timepoints_cube = CubeList(flds).merge_cube()
+            co_time = nine_timepoints_cube.coord('time')
+            nine_timepoints_cube.remove_coord(co_time)
+            nine_timepoints_cube.add_aux_coord(AuxCoord.from_coord(co_time), 0)
+            # Set the expected timepoints equivalent to '000111222'.
+            nine_timepoints_cube.coord('time').points = \
+                np.array([0.0, 0.0, 0.0, 24.0, 24.0, 24.0, 48.0, 48.0, 48.0])
+            # Make a cubelist with this single cube.
+            expected = CubeList([nine_timepoints_cube])
+
         self.assertEqual(results, expected)
 
 
