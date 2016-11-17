@@ -4,7 +4,7 @@ Installing using conda
 ----------------------
 
 Iris is available using conda for the following platforms:
- * Linux 32-bit and 64-bit,
+ * Linux 64-bit,
  * Mac OSX 64-bit, and
  * Windows 32-bit and 64-bit.
 
@@ -15,6 +15,12 @@ Once conda is installed, you can install Iris using conda on any platform with
 the following command::
 
   conda install -c scitools iris
+
+If you wish to run any of the code examples
+(see http://scitools.org.uk/iris/docs/latest/examples/index.html) you will also
+need the Iris sample data. This can also be installed using conda::
+
+  conda install -c scitools iris_sample_data
 
 Further documentation on using conda and the features it provides can be found
 at http://conda.pydata.org/docs/intro.html.
