@@ -30,7 +30,10 @@ from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.tests.stock import global_pp
+from iris.tests.stock import global_pp, simple_3d
+from iris.analysis import UnstructuredNearest
+
+iris.FUTURE.netcdf_promote = True
 
 
 @tests.skip_data
@@ -93,6 +96,17 @@ class TestGlobalSubsample(tests.IrisTest):
     def test_nearest(self):
         res = self._regrid('nearest')
         self.assertArrayShapeStats(res, (36, 32), 280.33726, 16.064001)
+
+
+class TestUnstructured(tests.IrisTest):
+    def setUp(self):
+        path = tests.get_data_path('NetCDF/gungho/theta_nodal_xios.nc')
+        self.src = iris.load_cube(path, 'Potential Temperature')
+        self.grid = simple_3d()[0, :, :]
+
+    def test_nearest(self):
+        res = self.src.regrid(self.grid, UnstructuredNearest())
+        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.88846, 11.00072)
 
 
 if __name__ == "__main__":
