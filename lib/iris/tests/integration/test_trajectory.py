@@ -62,9 +62,9 @@ class TestTrajectory(tests.IrisTest):
         self.assertEqual(trajectory.sampled_points[31],
                          {'lat': 0.12499999999999989, 'lon': 3.875})
 
-    @tests.skip_data
-    def test_trajectory_extraction(self):
-
+@tests.skip_data
+class TestColpex(tests.IrisTest):
+    def setUp(self):
         # Load the COLPEX data => TZYX
         path = tests.get_data_path(['PP', 'COLPEX',
                                     'theta_and_orog_subset.pp'])
@@ -74,23 +74,25 @@ class TestTrajectory(tests.IrisTest):
         # TODO: Workaround until regrid can handle factories
         cube.remove_aux_factory(cube.aux_factories[0])
         cube.remove_coord('surface_altitude')
-        self.assertCML(cube, ('trajectory', 'big_cube.cml'))
-
+        self.cube = cube
+        
+    def test_trajectory_extraction(self):
         # Pull out a single point - no interpolation required
         single_point = iris.analysis.trajectory.interpolate(
-            cube, [('grid_latitude', [-0.1188]),
+            self.cube, [('grid_latitude', [-0.1188]),
                    ('grid_longitude', [359.57958984])])
-        expected = cube[..., 10, 0].data
+        expected = self.cube[..., 10, 0].data
 
         self.assertArrayAllClose(single_point[..., 0].data,
                                  expected, rtol=2.0e-7)
         self.assertCML(single_point, ('trajectory', 'single_point.cml'),
                        checksum=False)
 
+    def test_trajectory_extraction_calc(self):
         # Pull out another point and test against a manually calculated result.
         single_point = [['grid_latitude', [-0.1188]],
                         ['grid_longitude', [359.584090412]]]
-        scube = cube[0, 0, 10:11, 4:6]
+        scube = self.cube[0, 0, 10:11, 4:6]
         x0 = scube.coord('grid_longitude')[0].points
         x1 = scube.coord('grid_longitude')[1].points
         y0 = scube.data[0, 0]
@@ -100,6 +102,16 @@ class TestTrajectory(tests.IrisTest):
                                                                single_point)
         self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
 
+    def _traj_to_sample_points(self, trajectory):
+        sample_points = []
+        src_points = trajectory.sampled_points
+        for name in six.iterkeys(src_points[0]):
+            values = [point[name] for point in src_points]
+            sample_points.append((name, values))
+        return sample_points
+
+
+    def test_trajectory_extraction_axis_aligned(self):
         # Extract a simple, axis-aligned trajectory that is similar to an
         # indexing operation.
         # (It's not exactly the same because the source cube doesn't have
@@ -110,20 +122,14 @@ class TestTrajectory(tests.IrisTest):
         ]
         trajectory = iris.analysis.trajectory.Trajectory(waypoints,
                                                          sample_count=100)
-
-        def traj_to_sample_points(trajectory):
-            sample_points = []
-            src_points = trajectory.sampled_points
-            for name in six.iterkeys(src_points[0]):
-                values = [point[name] for point in src_points]
-                sample_points.append((name, values))
-            return sample_points
-        sample_points = traj_to_sample_points(trajectory)
-        trajectory_cube = iris.analysis.trajectory.interpolate(cube,
+        
+        sample_points = self._traj_to_sample_points(trajectory)
+        trajectory_cube = iris.analysis.trajectory.interpolate(self.cube,
                                                                sample_points)
         self.assertCML(trajectory_cube, ('trajectory',
                                          'constant_latitude.cml'))
 
+    def test_trajectory_extraction_zigzag(self):
         # Extract a zig-zag trajectory
         waypoints = [
             {'grid_latitude': -0.1188, 'grid_longitude': 359.5886},
@@ -132,9 +138,9 @@ class TestTrajectory(tests.IrisTest):
         ]
         trajectory = iris.analysis.trajectory.Trajectory(waypoints,
                                                          sample_count=20)
-        sample_points = traj_to_sample_points(trajectory)
+        sample_points = self._traj_to_sample_points(trajectory)
         trajectory_cube = iris.analysis.trajectory.interpolate(
-            cube[0, 0], sample_points)
+            self.cube[0, 0], sample_points)
         expected = np.array([287.95953369, 287.9190979, 287.95550537,
                              287.93240356, 287.83850098, 287.87869263,
                              287.90942383, 287.9463501, 287.74365234,
@@ -147,8 +153,9 @@ class TestTrajectory(tests.IrisTest):
                        checksum=False)
         self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
 
-    @tests.skip_data
-    def test_tri_polar(self):
+@tests.skip_data
+class TestTriPolar(tests.IrisTest):
+    def setUp(self):
         # load data
         cubes = iris.load(tests.get_data_path(['NetCDF', 'ORCA2',
                                                'votemper.nc']))
@@ -158,29 +165,34 @@ class TestTrajectory(tests.IrisTest):
         # emulate that old behaviour.
         b32 = cube.coord('depth').bounds.astype(np.float32)
         cube.coord('depth').bounds = b32
-
+        self.cube = cube
         # define a latitude trajectory (put coords in a different order
         # to the cube, just to be awkward)
         latitudes = list(range(-90, 90, 2))
         longitudes = [-90]*len(latitudes)
-        sample_points = [('longitude', longitudes), ('latitude', latitudes)]
+        self.sample_points = [('longitude', longitudes), ('latitude', latitudes)]
+
+        
+    def test_tri_polar(self):
 
         # extract
-        sampled_cube = iris.analysis.trajectory.interpolate(cube,
-                                                            sample_points)
+        sampled_cube = iris.analysis.trajectory.interpolate(self.cube,
+                                                            self.sample_points)
         self.assertCML(sampled_cube, ('trajectory',
                                       'tri_polar_latitude_slice.cml'))
 
+    def test_tri_polar_exceptions(self):
         # Try to request linear interpolation.
         # Not allowed, as we have multi-dimensional coords.
         self.assertRaises(iris.exceptions.CoordinateMultiDimError,
-                          iris.analysis.trajectory.interpolate, cube,
-                          sample_points, method="linear")
+                          iris.analysis.trajectory.interpolate, self.cube,
+                          self.sample_points, method="linear")
 
         # Try to request unknown interpolation.
         self.assertRaises(ValueError, iris.analysis.trajectory.interpolate,
-                          cube, sample_points, method="linekar")
+                          self.cube, self.sample_points, method="linekar")
 
+class TestHybridHeight(tests.IrisTest):
     def test_hybrid_height(self):
         cube = tests.stock.simple_4d_with_hybrid_height()
         # Put a biggus array on the cube so we can test deferred loading.
