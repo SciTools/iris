@@ -53,6 +53,7 @@ import six
 import collections
 
 import biggus
+import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
@@ -61,7 +62,8 @@ import scipy.stats.mstats
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
-from iris.analysis._regrid import RectilinearRegridder
+from iris.analysis._regrid import (RectilinearRegridder,
+                                   UnstructuredProjectedRegridder)
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -2344,16 +2346,13 @@ class UnstructuredNearest(object):
     This is a nearest-neighbour interpolation and regridding scheme for
     regridding cubes whose latitude and longitude coordinates are mapped to the
     same dimensions, rather than being orthogonal on independent dimensions.
-
     Currently only supports regridding, not interpolation.
-
     """
     def __init__(self):
         """
         Nearest-neighbour interpolation and regridding scheme suitable for
         interpolating or regridding from un-gridded data such as trajectories
         or other data where the X and Y coordinates share the same dimensions.
-
         """
         pass
 
@@ -2407,39 +2406,64 @@ class UnstructuredNearest(object):
         """
         Creates a nearest-neighbour regridder to perform regridding from the
         source grid to the target grid.
-
         This can then be applied to any source data with the same structure as
         the original 'src_cube'.
-
         Typically you should use :meth:`iris.cube.Cube.regrid` for
         regridding a cube. There are, however, some situations when
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
-
         Args:
-
         * src_cube:
             The :class:`~iris.cube.Cube` defining the source grid.
             The X and Y coordinates must be mapped over the same dimensions.
-
         * target_grid:
             The :class:`~iris.cube.Cube` defining the target grid.
             It must have only 2 dimensions.
             The X and Y coordinates must be one-dimensional and mapped to
             different dimensions.
-
         Returns:
             A callable with the interface:
-
                 `callable(cube)`
-
             where `cube` is a cube with the same grid as `src_cube`
             that is to be regridded to the `target_grid`.
-
         """
         from iris.analysis.trajectory import \
             UnstructuredNearestNeigbourRegridder
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
+
+
+class UnstructuredProjectedNearest(object):
+    """TODO: Docstrings
+    """
+    def __init__(self, projection=None):
+        self.projection = ''
+
+    def __repr__(self):
+        projection = self.projection if self.projection is not None or \
+            ccrs.Sinusoidal()
+        return 'UnstructuredProjectedNearest({!r})'.format(projection)
+
+    def regridder(self, src_grid, target_grid):
+        """
+        Creates a nearest-neighbour regridder to perform regridding from the
+        source grid to the target grid.
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+        Args:
+        * src_grid:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+        Returns:
+            A callable with the interface:
+                `callable(cube)`
+            where `cube` is a cube with the same grid as `src_grid`
+            that is to be regridded to the `target_grid`.
+        """
+        return UnstructuredProjectedRegridder(src_grid, target_grid, 'nearest',
+                                    self.projection)
 
 
 # Import "iris.analysis.interpolate" to replicate older automatic imports.
