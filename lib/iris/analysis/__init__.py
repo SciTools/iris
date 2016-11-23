@@ -61,7 +61,9 @@ import scipy.stats.mstats
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
+
 from iris.analysis._regrid import RectilinearRegridder
+
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -2337,6 +2339,109 @@ class Nearest(object):
         """
         return RectilinearRegridder(src_grid, target_grid, 'nearest',
                                     self.extrapolation_mode)
+
+class UnstructuredNearest(object):
+    """
+    This is a nearest-neighbour interpolation and regridding scheme for
+    regridding cubes whose latitude and longitude coordinates are mapped to the
+    same dimensions, rather than being orthogonal on independent dimensions.
+
+    Currently only supports regridding, not interpolation.
+
+    """
+    def __init__(self):
+        """
+        Nearest-neighbour interpolation and regridding scheme suitable for
+        interpolating or regridding from un-gridded data such as trajectories
+        or other data where the X and Y coordinates share the same dimensions.
+
+        """
+        pass
+
+    def __repr__(self):
+        return 'UnstructuredNearest()'
+
+#    def interpolator(self, cube, coords):
+#        """
+#        Creates a nearest-neighbour interpolator to perform
+#        interpolation over the given :class:`~iris.cube.Cube` specified
+#        by the dimensions of the specified coordinates.
+#
+#        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+#        interpolating a cube. There are, however, some situations when
+#        constructing your own interpolator is preferable. These are detailed
+#        in the :ref:`user guide <caching_an_interpolator>`.
+#
+#        Args:
+#
+#        * cube:
+#            The source :class:`iris.cube.Cube` to be interpolated.
+#        * coords:
+#            The names or coordinate instances that are to be
+#            interpolated over.
+#
+#        Returns:
+#            A callable with the interface:
+#
+#                `callable(sample_points, collapse_scalar=True)`
+#
+#            where `sample_points` is a sequence containing an array of values
+#            for each of the coordinates passed to this method, and
+#            `collapse_scalar` determines whether to remove length one
+#            dimensions in the result cube caused by scalar values in
+#            `sample_points`.
+#
+#            The values for coordinates that correspond to date/times
+#            may optionally be supplied as datetime.datetime or
+#            netcdftime.datetime instances.
+#
+#            For example, for the callable returned by:
+#            `Nearest().interpolator(cube, ['latitude', 'longitude'])`,
+#            sample_points must have the form
+#            `[new_lat_values, new_lon_values]`.
+#
+#        """
+#        return RectilinearInterpolator(cube, coords, 'nearest',
+#                                       self.extrapolation_mode)
+
+    def regridder(self, src_cube, target_grid):
+        """
+        Creates a nearest-neighbour regridder to perform regridding from the
+        source grid to the target grid.
+
+        This can then be applied to any source data with the same structure as
+        the original 'src_cube'.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_cube:
+            The :class:`~iris.cube.Cube` defining the source grid.
+            The X and Y coordinates must be mapped over the same dimensions.
+
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+            It must have only 2 dimensions.
+            The X and Y coordinates must be one-dimensional and mapped to
+            different dimensions.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_cube`
+            that is to be regridded to the `target_grid`.
+
+        """
+        from iris.analysis.trajectory import \
+            UnstructuredNearestNeigbourRegridder
+        return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
+
 
 # Import "iris.analysis.interpolate" to replicate older automatic imports.
 # NOTE: do this at end, as otherwise its import of 'Linear' will fail.
