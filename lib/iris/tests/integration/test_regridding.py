@@ -66,7 +66,7 @@ class TestOSGBToLatLon(tests.IrisTest):
 
     def test_nearest(self):
         res = self._regrid('nearest')
-        self.assertArrayShapeStats(res, (1, 6, 73, 96), -16095.965585, 5612.657155)
+        self.assertArrayShapeStats(res, (73, 96), -16095.965585, 5612.657155)
 
 
 @tests.skip_data
