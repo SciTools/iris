@@ -128,12 +128,13 @@ def get_xy_dim_coords(cube):
     """
     return get_xy_coords(cube, dim_coords=True)
 
+
 def get_xy_coords(cube, dim_coords=False):
     """
-    Return the x and y dimension coordinates from a cube.
+    Return the x and y coordinates from a cube.
 
     This function raises a ValueError if the cube does not contain one and
-    only one set of x and y dimension coordinates. It also raises a ValueError
+    only one set of x and y coordinates. It also raises a ValueError
     if the identified x and y coordinates do not have coordinate systems that
     are equal.
 
@@ -141,6 +142,11 @@ def get_xy_coords(cube, dim_coords=False):
 
     * cube:
         An instance of :class:`iris.cube.Cube`.
+
+    Kwargs:
+
+    * dim_coords:
+        Defaults to False.
 
     Returns:
         A tuple containing the cube's x and y dimension coordinates.
