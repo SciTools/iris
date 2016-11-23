@@ -62,6 +62,7 @@ class TestTrajectory(tests.IrisTest):
         self.assertEqual(trajectory.sampled_points[31],
                          {'lat': 0.12499999999999989, 'lon': 3.875})
 
+
 @tests.skip_data
 class TestColpex(tests.IrisTest):
     def setUp(self):
@@ -75,12 +76,12 @@ class TestColpex(tests.IrisTest):
         cube.remove_aux_factory(cube.aux_factories[0])
         cube.remove_coord('surface_altitude')
         self.cube = cube
-        
+
     def test_trajectory_extraction(self):
         # Pull out a single point - no interpolation required
         single_point = iris.analysis.trajectory.interpolate(
             self.cube, [('grid_latitude', [-0.1188]),
-                   ('grid_longitude', [359.57958984])])
+                        ('grid_longitude', [359.57958984])])
         expected = self.cube[..., 10, 0].data
 
         self.assertArrayAllClose(single_point[..., 0].data,
@@ -110,7 +111,6 @@ class TestColpex(tests.IrisTest):
             sample_points.append((name, values))
         return sample_points
 
-
     def test_trajectory_extraction_axis_aligned(self):
         # Extract a simple, axis-aligned trajectory that is similar to an
         # indexing operation.
@@ -122,7 +122,7 @@ class TestColpex(tests.IrisTest):
         ]
         trajectory = iris.analysis.trajectory.Trajectory(waypoints,
                                                          sample_count=100)
-        
+
         sample_points = self._traj_to_sample_points(trajectory)
         trajectory_cube = iris.analysis.trajectory.interpolate(self.cube,
                                                                sample_points)
@@ -153,6 +153,7 @@ class TestColpex(tests.IrisTest):
                        checksum=False)
         self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
 
+
 @tests.skip_data
 class TestTriPolar(tests.IrisTest):
     def setUp(self):
@@ -170,9 +171,9 @@ class TestTriPolar(tests.IrisTest):
         # to the cube, just to be awkward)
         latitudes = list(range(-90, 90, 2))
         longitudes = [-90]*len(latitudes)
-        self.sample_points = [('longitude', longitudes), ('latitude', latitudes)]
+        self.sample_points = [('longitude', longitudes),
+                              ('latitude', latitudes)]
 
-        
     def test_tri_polar(self):
 
         # extract
@@ -191,6 +192,7 @@ class TestTriPolar(tests.IrisTest):
         # Try to request unknown interpolation.
         self.assertRaises(ValueError, iris.analysis.trajectory.interpolate,
                           self.cube, self.sample_points, method="linekar")
+
 
 class TestHybridHeight(tests.IrisTest):
     def test_hybrid_height(self):
