@@ -634,7 +634,7 @@ class TestLog(tests.IrisTest):
 
     def test_log10(self):
         e = iris.analysis.maths.log10(self.cube)
-        self.assertCMLApproxData(e, ('analysis', 'log10.cml'), rtol=1e-6))
+        self.assertCMLApproxData(e, ('analysis', 'log10.cml'), rtol=1e-6)
 
 
 class TestMaskedArrays(tests.IrisTest):
