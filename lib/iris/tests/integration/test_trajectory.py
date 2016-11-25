@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""Integration tests for :mod:`iris.analysis.trajectory`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -182,13 +183,14 @@ class TestTriPolar(tests.IrisTest):
         self.assertCML(sampled_cube, ('trajectory',
                                       'tri_polar_latitude_slice.cml'))
 
-    def test_tri_polar_exceptions(self):
+    def test_tri_polar_method_linear_fails(self):
         # Try to request linear interpolation.
         # Not allowed, as we have multi-dimensional coords.
         self.assertRaises(iris.exceptions.CoordinateMultiDimError,
                           iris.analysis.trajectory.interpolate, self.cube,
                           self.sample_points, method="linear")
 
+    def test_tri_polar_method_unknown_fails(self):
         # Try to request unknown interpolation.
         self.assertRaises(ValueError, iris.analysis.trajectory.interpolate,
                           self.cube, self.sample_points, method="linekar")
