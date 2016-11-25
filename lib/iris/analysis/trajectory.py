@@ -91,6 +91,7 @@ class Trajectory(object):
         self.length = sum([seg.length for seg in segments])
 
         # generate our sampled points
+        #: The trajectory points, as dictionaries of {coord_name: value}.
         self.sampled_points = []
         sample_step = self.length / (self.sample_count - 1)
 
