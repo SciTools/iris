@@ -65,6 +65,7 @@ except ImportError:
 import filelock
 import numpy as np
 import numpy.ma as ma
+import requests
 
 import iris.cube
 import iris.config
@@ -114,6 +115,11 @@ try:
 except ImportError:
     NC_TIME_AXIS_AVAILABLE = False
 
+try:
+    requests.get('https://github.com/SciTools/iris')
+    INET_AVAILABLE = True
+except requests.exceptions.ConnectionError:
+    INET_AVAILABLE = False
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
@@ -275,8 +281,7 @@ class IrisTest(unittest.TestCase):
                               filename)
         return result
 
-    def assertCMLApproxData(self, cubes, reference_filename=None, *args,
-                            **kwargs):
+    def assertCMLApproxData(self, cubes, reference_filename=None, **kwargs):
         # passes args and kwargs on to approx equal
         if isinstance(cubes, iris.cube.Cube):
             cubes = [cubes]
@@ -289,7 +294,7 @@ class IrisTest(unittest.TestCase):
             if fname[-1].endswith(".cml"):
                 fname[-1] = fname[-1][:-4]
             fname[-1] += '.data.%d.json' % i
-            self.assertCubeDataAlmostEqual(cube, fname, *args, **kwargs)
+            self.assertCubeDataAlmostEqual(cube, fname, **kwargs)
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags='-h'):
@@ -401,8 +406,7 @@ class IrisTest(unittest.TestCase):
             diff = ''.join(difflib.unified_diff(reference_text, source_text, 'Reference', 'Test result', '', '', 0))
             self.fail("%s does not match reference file: %s\n%s" % (desc, reference_filename, diff))
 
-    def assertCubeDataAlmostEqual(self, cube, reference_filename, *args,
-                                  **kwargs):
+    def assertCubeDataAlmostEqual(self, cube, reference_filename, **kwargs):
         reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
@@ -412,13 +416,14 @@ class IrisTest(unittest.TestCase):
                 self.assertEqual(stats.get('masked', False),
                                        isinstance(cube.data, ma.MaskedArray))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
-                                   stats.get('max', 0), stats.get('min', 0)))
-                if math.isnan(stats.get('mean', 0)):
-                    self.assertEqual(math.isnan(stats.get('mean', 0)),
-                                     math.isnan(cube.data.mean()))
+                                   stats.get('max', 0.), stats.get('min', 0.)),
+                                  dtype=np.float_)
+                if math.isnan(stats.get('mean', 0.)):
+                    self.assertTrue(math.isnan(cube.data.mean()))
                 else:
                     cube_stats = np.array((cube.data.mean(), cube.data.std(),
-                                           cube.data.max(), cube.data.min()))
+                                           cube.data.max(), cube.data.min()),
+                                          dtype=np.float_)
                     self.assertArrayAllClose(nstats, cube_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
@@ -1040,6 +1045,11 @@ skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,
 skip_nc_time_axis = unittest.skipIf(
     not NC_TIME_AXIS_AVAILABLE,
     'Test(s) require "nc_time_axis", which is not available.')
+
+
+skip_inet = unittest.skipIf(not INET_AVAILABLE,
+                            ('Test(s) require an "internet connection", '
+                             'which is not available.'))
 
 
 def no_warnings(func):

@@ -70,6 +70,7 @@ class _ResolveWorkerThread(Thread):
             self.queue.task_done()
 
 
+@tests.skip_inet
 class TestImageFile(tests.IrisTest):
     def test_resolve(self):
         repo_fname = os.path.join(os.path.dirname(__file__), 'results',

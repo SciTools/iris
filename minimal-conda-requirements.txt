@@ -21,6 +21,7 @@ pep8
 sphinx
 filelock
 imagehash
+requests
 
 # Optional iris dependencies
 mo_pack
