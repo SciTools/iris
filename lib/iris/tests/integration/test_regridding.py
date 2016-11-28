@@ -100,7 +100,7 @@ class TestGlobalSubsample(tests.IrisTest):
 
 class TestUnstructured(tests.IrisTest):
     def setUp(self):
-        path = tests.get_data_path('NetCDF/gungho/theta_nodal_xios.nc')
+        path = tests.get_data_path('NetCDF/unstructured_grid/theta_nodal_xios.nc')
         self.src = iris.load_cube(path, 'Potential Temperature')
         self.grid = simple_3d()[0, :, :]
 
