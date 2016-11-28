@@ -33,8 +33,6 @@ from iris.cube import Cube
 from iris.tests.stock import global_pp, simple_3d
 from iris.analysis import UnstructuredNearest
 
-iris.FUTURE.netcdf_promote = True
-
 
 @tests.skip_data
 class TestOSGBToLatLon(tests.IrisTest):
