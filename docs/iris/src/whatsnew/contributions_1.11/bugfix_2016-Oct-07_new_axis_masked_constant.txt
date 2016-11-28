@@ -1,2 +1,0 @@
-* Allow :func:`iris.util.new_axis` to promote the nominated scalar coordinate of a cube
-  with a scalar masked constant data payload.

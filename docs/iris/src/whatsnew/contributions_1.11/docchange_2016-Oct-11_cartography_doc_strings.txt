@@ -1,2 +1,0 @@
-* Fuller doc-string detail added to :func:`iris.analysis.cartography.unrotate_pole` and
-  :func:`iris.analysis.cartography.rotate_pole`.

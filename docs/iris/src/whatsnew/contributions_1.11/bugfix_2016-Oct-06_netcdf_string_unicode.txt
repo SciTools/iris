@@ -1,2 +1,0 @@
-* When saving to NetCDF, the existing behaviour of writing string attributes as ASCII has been
-  maintained across known versions of netCDF4-python.

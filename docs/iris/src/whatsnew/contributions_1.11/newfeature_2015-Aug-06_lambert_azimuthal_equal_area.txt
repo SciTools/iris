@@ -1,1 +1,0 @@
-* The coordinate system :class:`iris.coord_systems.LambertAzimuthalEqualArea` has been added with NetCDF saving support.
