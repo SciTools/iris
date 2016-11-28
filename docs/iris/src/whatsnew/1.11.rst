@@ -16,7 +16,7 @@ Iris 1.11 Features
 
 Bugs Fixed
 ==========
-* Fixed a floating point tolerance bug in :func:`iris.experimental.regrid_area_weighted_rectilinear_src_and_grid`
+* Fixed a floating point tolerance bug in :func:`iris.experimental.regrid.regrid_area_weighted_rectilinear_src_and_grid`
   for wrapped longitudes.
 * Allow :func:`iris.util.new_axis` to promote the nominated scalar coordinate of a cube
   with a scalar masked constant data payload.
