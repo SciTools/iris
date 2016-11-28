@@ -1,0 +1,2 @@
+* If available, display the ``STASH`` code instead of ``unknown / (unknown)`` when printing cubes
+  with no ``standard_name`` and no ``units``.
