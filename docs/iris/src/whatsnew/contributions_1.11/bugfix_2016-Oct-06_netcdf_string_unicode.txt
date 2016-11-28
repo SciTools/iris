@@ -1,5 +1,2 @@
 * When saving to NetCDF, the existing behaviour of writing string attributes as ASCII has been
-  maintained across all versions of netCDF4-python. Where an attribute can not be encoded as ASCII
-  it will be passed through to the underlying netCDF4-python as unicode, and the behaviour will be
-  netCDF4-python version dependent (since v1.2 unicode are written as a NC_STRING rather than NC_CHAR type).
-  https://github.com/SciTools/iris/pull/2158 refers.
+  maintained across known versions of netCDF4-python.
