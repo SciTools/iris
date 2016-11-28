@@ -1,0 +1,31 @@
+What's New in Iris 1.11
+***********************
+
+:Release: 1.11
+:Date: 2016-11-28
+
+This document explains the new/changed features of Iris in version 1.11
+(:doc:`View all changes <index>`.)
+
+Iris 1.11 Features
+==================
+* If available, display the ``STASH`` code instead of ``unknown / (unknown)`` when printing cubes
+  with no ``standard_name`` and no ``units``.
+* Support for saving to netCDF with data packing has been added.
+* The coordinate system :class:`iris.coord_systems.LambertAzimuthalEqualArea` has been added with NetCDF saving support.
+
+Bugs Fixed
+==========
+* Fixed a floating point tolerance bug in :func:`iris.experimental.regrid.regrid_area_weighted_rectilinear_src_and_grid`
+  for wrapped longitudes.
+* Allow :func:`iris.util.new_axis` to promote the nominated scalar coordinate of a cube
+  with a scalar masked constant data payload.
+* Fixed a bug where :func:`iris.util._is_circular` would erroneously return false
+  when coordinate values are decreasing.
+* When saving to NetCDF, the existing behaviour of writing string attributes as ASCII has been
+  maintained across known versions of netCDF4-python.
+
+Documentation Changes
+=====================
+* Fuller doc-string detail added to :func:`iris.analysis.cartography.unrotate_pole` and
+  :func:`iris.analysis.cartography.rotate_pole`.
