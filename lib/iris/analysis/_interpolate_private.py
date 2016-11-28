@@ -193,9 +193,12 @@ def nearest_neighbour_indices(cube, sample_points):
     return tuple(indices)
 
 
-def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
+def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     """
     See documentation for :func:`iris.analysis.interpolate.nearest_neighbour_indices`.
+
+    'sample_points' is of the form [[coord-or-coord-name, point-value(s)]*].
+    The numbers of all the point-values sequences must be equal.
 
     This function is adapted for points sampling a multi-dimensional coord,
     and can currently only do nearest neighbour interpolation.
@@ -209,17 +212,17 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     # A "sample space cube" is made which only has the coords and dims we are sampling on.
     # We get the nearest neighbour using this sample space cube.
 
-    if isinstance(sample_point, dict):
+    if isinstance(sample_points, dict):
         msg = ('Providing a dictionary to specify points is deprecated. '
                'Please provide a list of (coordinate, values) pairs.')
         warn_deprecated(msg)
-        sample_point = list(sample_point.items())
+        sample_points = list(sample_points.items())
 
-    if sample_point:
+    if sample_points:
         try:
-            coord, value = sample_point[0]
+            coord, value = sample_points[0]
         except ValueError:
-            raise ValueError('Sample points must be a list of (coordinate, value) pairs. Got %r.' % sample_point)
+            raise ValueError('Sample points must be a list of (coordinate, value) pairs. Got %r.' % sample_points)
 
     # Convert names to coords in sample_point
     # Reformat sample point values for use in _cartesian_sample_points(), below.
@@ -227,7 +230,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     sample_point_coords = []
     sample_point_coord_names = []
     ok_coord_ids = set(map(id, cube.dim_coords + cube.aux_coords))
-    for coord, value in sample_point:
+    for coord, value in sample_points:
         coord = cube.coord(coord)
         if id(coord) not in ok_coord_ids:
             msg = ('Invalid sample coordinate {!r}: derived coordinates are'
@@ -235,7 +238,13 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
             raise ValueError(msg)
         sample_point_coords.append(coord)
         sample_point_coord_names.append(coord.name())
-        coord_values.append([value])
+        value = np.array(value, ndmin=1)
+        coord_values.append(value)
+
+    coord_point_lens = np.array([len(value) for value in coord_values])
+    if not np.all(coord_point_lens == coord_point_lens[0]):
+        msg = 'All coordinates must have the same number of sample points.'
+        raise ValueError(msg)
 
     coord_values = np.array(coord_values)
 
@@ -264,11 +273,6 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     coord_values = np.array([coord_values[i] for i in new_order])
     sample_point_coord_names = [sample_point_coord_names[i] for i in new_order]
 
-    # Convert the sample point to cartesian coords.
-    # If there is no latlon within the coordinate there will be no change.
-    # Otherwise, geographic latlon is replaced with cartesian xyz.
-    cartesian_sample_point = _cartesian_sample_points(coord_values, sample_point_coord_names)[0]
-
     sample_space_coords = sample_space_cube.dim_coords + sample_space_cube.aux_coords
     sample_space_coords_and_dims = [(coord, sample_space_cube.coord_dims(coord)) for coord in sample_space_coords]
 
@@ -290,26 +294,36 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
         # Get the nearest datum index to the sample point. This is the goal of the function.
         kdtree = scipy.spatial.cKDTree(cartesian_space_data_coords)
 
-    cartesian_distance, datum_index = kdtree.query(cartesian_sample_point)
-    sample_space_ndi = np.unravel_index(datum_index, sample_space_cube.data.shape)
+    n_coords, n_points = coord_values.shape
+    main_cube_slices = []
+    for i_point in range(n_points):
+        single_point_coord_values = coord_values[..., i_point:i_point + 1]
+        # Convert the sample point to cartesian coords.
+        # If there is no latlon within the coordinate there will be no change.
+        # Otherwise, geographic latlon is replaced with cartesian xyz.
+        cartesian_sample_point = _cartesian_sample_points(
+            single_point_coord_values, sample_point_coord_names)[0]
 
-    # Turn sample_space_ndi into a main cube slice.
-    # Map sample cube to main cube dims and leave the rest as a full slice.
-    main_cube_slice = [slice(None, None)] * cube.ndim
-    for sample_coord, sample_coord_dims in sample_space_coords_and_dims:
-        # Find the coord in the main cube
-        main_coord = cube.coord(sample_coord.name())
-        main_coord_dims = cube.coord_dims(main_coord)
-        # Mark the nearest data index/indices with respect to this coord
-        for sample_i, main_i in zip(sample_coord_dims, main_coord_dims):
-            main_cube_slice[main_i] = sample_space_ndi[sample_i]
+        cartesian_distance, datum_index = kdtree.query(cartesian_sample_point)
+        sample_space_ndi = np.unravel_index(datum_index, sample_space_cube.data.shape)
 
+        # Turn sample_space_ndi into a main cube slice.
+        # Map sample cube to main cube dims and leave the rest as a full slice.
+        main_cube_slice = [slice(None, None)] * cube.ndim
+        for sample_coord, sample_coord_dims in sample_space_coords_and_dims:
+            # Find the coord in the main cube
+            main_coord = cube.coord(sample_coord.name())
+            main_coord_dims = cube.coord_dims(main_coord)
+            # Mark the nearest data index/indices with respect to this coord
+            for sample_i, main_i in zip(sample_coord_dims, main_coord_dims):
+                main_cube_slice[main_i] = sample_space_ndi[sample_i]
+        main_cube_slices.append(tuple(main_cube_slice))
 
     # Update cache
     if cache is not None:
         cache[cube] = kdtree
 
-    return tuple(main_cube_slice)
+    return main_cube_slices
 
 
 def extract_nearest_neighbour(cube, sample_points):
