@@ -225,10 +225,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     point = []
     ok_coord_ids = set(map(id, cube.dim_coords + cube.aux_coords))
     for coord, value in sample_point:
-        if isinstance(coord, six.string_types):
-            coord = cube.coord(coord)
-        else:
-            coord = cube.coord(coord)
+        coord = cube.coord(coord)
         if id(coord) not in ok_coord_ids:
             msg = ('Invalid sample coordinate {!r}: derived coordinates are'
                    ' not allowed.'.format(coord.name()))
