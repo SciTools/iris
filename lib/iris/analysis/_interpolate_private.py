@@ -222,7 +222,10 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
             raise ValueError('Sample points must be a list of (coordinate, value) pairs. Got %r.' % sample_point)
 
     # Convert names to coords in sample_point
-    point = []
+    # Reformat sample point values for use in _cartesian_sample_points(), below.
+    coord_values = []
+    sample_point_coords = []
+    sample_point_coord_names = []
     ok_coord_ids = set(map(id, cube.dim_coords + cube.aux_coords))
     for coord, value in sample_point:
         coord = cube.coord(coord)
@@ -230,12 +233,11 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
             msg = ('Invalid sample coordinate {!r}: derived coordinates are'
                    ' not allowed.'.format(coord.name()))
             raise ValueError(msg)
-        point.append((coord, value))
+        sample_point_coords.append(coord)
+        sample_point_coord_names.append(coord.name())
+        coord_values.append([value])
 
-    # Reformat sample_point for use in _cartesian_sample_points(), below.
-    sample_point = np.array([[value] for coord, value in point])
-    sample_point_coords = [coord for coord, value in point]
-    sample_point_coord_names = [coord.name() for coord, value in point]
+    coord_values = np.array(coord_values)
 
     # Which dims are we sampling?
     sample_dims = set()
@@ -259,13 +261,13 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     # Order the sample point coords according to the sample space cube coords
     sample_space_coord_names = [coord.name() for coord in sample_space_cube.coords()]
     new_order = [sample_space_coord_names.index(name) for name in sample_point_coord_names]
-    sample_point = np.array([sample_point[i] for i in new_order])
+    coord_values = np.array([coord_values[i] for i in new_order])
     sample_point_coord_names = [sample_point_coord_names[i] for i in new_order]
 
     # Convert the sample point to cartesian coords.
     # If there is no latlon within the coordinate there will be no change.
     # Otherwise, geographic latlon is replaced with cartesian xyz.
-    cartesian_sample_point = _cartesian_sample_points(sample_point, sample_point_coord_names)[0]
+    cartesian_sample_point = _cartesian_sample_points(coord_values, sample_point_coord_names)[0]
 
     sample_space_coords = sample_space_cube.dim_coords + sample_space_cube.aux_coords
     sample_space_coords_and_dims = [(coord, sample_space_cube.coord_dims(coord)) for coord in sample_space_coords]
