@@ -349,8 +349,8 @@ class UnstructuredNearestNeigbourRegridder(object):
         x_vals = target_grid.coord('longitude').points
         y_vals = target_grid.coord('latitude').points
         x_2d, y_2d = np.meshgrid(x_vals, y_vals)
-        self.trajectory = (('latitude', x_2d.flatten()),
-                           ('longitude', y_2d.flatten()))
+        self.trajectory = (('longitude', x_2d.flatten()),
+                           ('latitude', y_2d.flatten()))
 
     def __call__(self, src_cube):
         # Check source cube matches original.
