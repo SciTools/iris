@@ -95,7 +95,7 @@ class TestGlobalSubsample(tests.IrisTest):
         res = self._regrid('nearest')
         self.assertArrayShapeStats(res, (36, 32), 280.33726, 16.064001)
 
-
+@tests.skip_data
 class TestUnstructured(tests.IrisTest):
     def setUp(self):
         path = tests.get_data_path(('NetCDF', 'unstructured_grid',
