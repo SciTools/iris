@@ -150,7 +150,7 @@ def interpolate(cube, sample_points, method=None):
 
 
     For example::
-    
+
         sample_points = [('latitude', [45, 45, 45]),
         ('longitude', [-60, -50, -40])]
         interpolated_cube = interpolate(cube, sample_points)
@@ -352,7 +352,6 @@ class UnstructuredNearestNeigbourRegridder(object):
         self.trajectory = (('latitude', x_2d.flatten()),
                            ('longitude', y_2d.flatten()))
 
-
     def __call__(self, src_cube):
         # Check source cube matches original.
         # For now, just a shape match will do.
@@ -362,7 +361,7 @@ class UnstructuredNearestNeigbourRegridder(object):
 
         # Get the basic interpolated results.
         result_trajectory_cube = interpolate(src_cube, self.trajectory,
-                                       method='nearest')
+                                             method='nearest')
 
         # Reconstruct this as a cube "like" the source data.
         # TODO: sort out aux-coords, cell methods, cell measures ??
