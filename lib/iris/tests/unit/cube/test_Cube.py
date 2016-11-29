@@ -1409,5 +1409,31 @@ class TestCellMeasures(tests.IrisTest):
             cm_dims = self.cube.cell_measure_dims(a_cell_measure)
 
 
+class Test___getitem__(tests.IrisTest):
+    def slicing_on_views(self, container):
+        # Check whether we are subject to the issues of
+        # https://github.com/numpy/numpy/issues/8264
+        data = arro = np.zeros((4, 4))
+        cube = Cube(data)
+        cube.data = data[::-1, ::-1]
+
+        slices = [slice(None), [0, 1]]
+        slices = container(slices)
+        cube.data[slices] = 10
+
+        target = [[10., 10., 0., 0.],
+                  [10., 10., 0., 0.],
+                  [10., 10., 0., 0.],
+                  [10., 10., 0., 0.]]
+
+        self.assertArrayEqual(cube.data, target)
+
+    def test_list_slicing_on_views(self):
+        self.slicing_on_views(list)
+
+    def test_tuple_slicing_on_views(self):
+        self.slicing_on_views(tuple)
+
+
 if __name__ == '__main__':
     tests.main()
