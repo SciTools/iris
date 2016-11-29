@@ -106,8 +106,7 @@ class TestUnstructured(tests.IrisTest):
 
     def test_nearest(self):
         res = self.src.regrid(self.grid, UnstructuredNearest())
-        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.88846, 11.00072)
-
+        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.888737, 11.000729)
 
 if __name__ == "__main__":
     tests.main()
