@@ -259,8 +259,10 @@ def interpolate(cube, sample_points, method=None):
                 src_dims = cube.coord_dims(column_coord)
                 if not squish_my_dims.isdisjoint(src_dims):
                     if len(column_coord.points) != 1:
-                        raise Exception("Expected to find exactly one point. Found %d" % len(column_coord.points))
-                    new_cube.coord(column_coord.name()).points[i] = column_coord.points[0]
+                        msg = "Expected to find exactly one point. Found {}."
+                        raise Exception(msg.format(column_coord.points))
+                    new_cube.coord(column_coord.name()).points[i] = \
+                        column_coord.points[0]
 
     elif method == "nearest":
         # Use a cache with _nearest_neighbour_indices_ndcoords()
