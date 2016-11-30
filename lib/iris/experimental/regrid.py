@@ -24,18 +24,23 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
 import copy
+import functools
 import warnings
 
+import cartopy.crs as ccrs
 import cf_units
 import numpy as np
 import numpy.ma as ma
+import scipy.interpolate
 from scipy.sparse import csc_matrix, diags as sparse_diags
 
 import iris.analysis.cartography
-from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
+from iris.analysis._interpolation import (get_xy_dim_coords, get_xy_coords,
+                                          snapshot_grid)
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
+from iris.util import promote_aux_coord_to_dim_coord
 
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))
@@ -746,14 +751,10 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
                                            grid_y_decreasing,
                                            area_func, circular, mdtol)
 
-    # Wrap up the data as a Cube.
-    # Create 2d meshgrids as required by _create_cube func.
-    meshgrid_x, meshgrid_y = np.meshgrid(grid_x.points, grid_y.points)
     regrid_callback = RectilinearRegridder._regrid
     new_cube = RectilinearRegridder._create_cube(new_data, src_cube,
                                                  src_x_dim, src_y_dim,
                                                  src_x, src_y, grid_x, grid_y,
-                                                 meshgrid_x, meshgrid_y,
                                                  regrid_callback)
 
     # Slice out any length 1 dimensions.
@@ -1312,3 +1313,295 @@ class PointInCell(object):
 
         """
         return _CurvilinearRegridder(src_grid, target_grid, self.weights)
+
+
+class _ProjectedUnstructuredRegridder(object):
+    """
+    This class provides a wrapper for the calculation of
+    scipy.interpolate.griddata.
+
+    """
+    def __init__(self, src_cube, tgt_grid_cube, method,
+                 projection=None):
+        """
+        Create a regridder for conversions between the source
+        and target grids.
+
+        Args:
+
+        * src_cube:
+            The :class:`~iris.cube.Cube` providing the source points.
+        * tgt_grid_cube:
+            The :class:`~iris.cube.Cube` providing the target grid.
+        * method:
+            Either 'linear' or 'nearest'.
+        * projection:
+            The projection in which the interpolation is performed, or None. If
+            None, a XXX projection is used.
+
+        """
+        # Validity checks.
+        if not isinstance(src_cube, iris.cube.Cube):
+            raise TypeError("'src_cube' must be a Cube")
+        if not isinstance(tgt_grid_cube, iris.cube.Cube):
+            raise TypeError("'tgt_grid_cube' must be a Cube")
+
+        # Snapshot the state of the target cube to ensure that the regridder
+        # is impervious to external changes to the original source cubes.
+        self._tgt_grid = snapshot_grid(tgt_grid_cube)
+
+        # Check the target grid units.
+        for coord in self._tgt_grid:
+            RectilinearRegridder._check_units(coord)
+
+        # Whether to use linear or nearest-neighbour interpolation.
+        if method not in ('linear', 'nearest'):
+            msg = 'Regridding method {!r} not supported.'.format(method)
+            raise ValueError(msg)
+        self._method = method
+
+        src_x_coord, src_y_coord = get_xy_coords(src_cube)
+        if src_x_coord.coord_system != src_y_coord.coord_system:
+            raise ValueError("'src_cube' lateral geographic coordinates have "
+                             "differing coordinate sytems.")
+        if src_x_coord.coord_system is None:
+            raise ValueError("'src_cube' lateral geographic coordinates have "
+                             "no coordinate sytem.")
+        tgt_x_coord, tgt_y_coord = get_xy_dim_coords(tgt_grid_cube)
+        if tgt_x_coord.coord_system != tgt_y_coord.coord_system:
+            raise ValueError("'tgt_grid_cube' lateral geographic coordinates "
+                             "have differing coordinate sytems.")
+        if tgt_x_coord.coord_system is None:
+            raise ValueError("'tgt_grid_cube' lateral geographic coordinates "
+                             "have no coordinate sytem.")
+
+        if projection is None:
+            globe = src_x_coord.coord_system.as_cartopy_globe()
+            projection = ccrs.Sinusoidal(globe=globe)
+        self._projection = projection
+
+    @staticmethod
+    def _regrid(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
+                tgt_x_coord, tgt_y_coord,
+                projection, method='nearest'):
+        """
+        Regrids input data from the source to the target. Calculation is.
+
+        """
+
+        if x_dim != y_dim:
+            raise ValueError("'src' lateral geographic coordinates should map "
+                             "the same dimension.")
+        xy_dim = x_dim
+
+        # Transform coordinates into the projection the interpolation will be
+        # performed in.
+        src_projection = src_x_coord.coord_system.as_cartopy_projection()
+        projected_src_points = projection.transform_points(
+            src_projection, src_x_coord.points, src_y_coord.points)
+
+        tgt_projection = tgt_x_coord.coord_system.as_cartopy_projection()
+        tgt_x, tgt_y = np.meshgrid(tgt_x_coord.points, tgt_y_coord.points)
+        projected_tgt_grid = projection.transform_points(
+            tgt_projection, tgt_x, tgt_y)
+
+        # Prepare the result data array.
+        # XXX TODO: Deal with masked src_data
+        tgt_y_shape, = tgt_y_coord.shape
+        tgt_x_shape, = tgt_x_coord.shape
+        tgt_shape = src_data.shape[:xy_dim] + (tgt_y_shape,) + (tgt_x_shape,) \
+            + src_data.shape[xy_dim+1:]
+        data = np.empty(tgt_shape, dtype=src_data.dtype)
+
+        iter_shape = list(src_data.shape)
+        iter_shape[xy_dim] = 1
+
+        for index in np.ndindex(tuple(iter_shape)):
+            src_index = list(index)
+            src_index[xy_dim] = slice(None)
+            src_subset = src_data[tuple(src_index)]
+            tgt_index = index[:xy_dim] + (slice(None), slice(None)) \
+                + index[xy_dim+1:]
+            data[tgt_index] = scipy.interpolate.griddata(
+                projected_src_points[..., :2], src_subset,
+                (projected_tgt_grid[..., 0], projected_tgt_grid[..., 1]),
+                method=method)
+        data = np.ma.array(data, mask=np.isnan(data))
+        return data
+
+    def __call__(self, src_cube):
+        """
+        Regrid this :class:`~iris.cube.Cube` on to the target grid of
+        this :class:`UnstructuredProjectedRegridder`.
+
+        The given cube must be defined with the same grid as the source
+        grid used to create this :class:`UnstructuredProjectedRegridder`.
+
+        Args:
+
+        * src_cube:
+            A :class:`~iris.cube.Cube` to be regridded.
+
+        Returns:
+            A cube defined with the horizontal dimensions of the target
+            and the other dimensions from this cube. The data values of
+            this cube will be converted to values on the new grid using
+            either nearest-neighbour or linear interpolation.
+
+        """
+        # Validity checks.
+        if not isinstance(src_cube, iris.cube.Cube):
+            raise TypeError("'src' must be a Cube")
+
+        src_x_coord, src_y_coord = get_xy_coords(src_cube)
+        tgt_x_coord, tgt_y_coord = self._tgt_grid
+        src_cs = src_x_coord.coord_system
+        tgt_cs = tgt_x_coord.coord_system
+
+        if src_x_coord.coord_system != src_y_coord.coord_system:
+            raise ValueError("'src' lateral geographic coordinates have "
+                             "differing coordinate sytems.")
+        if src_cs is None:
+            raise ValueError("'src' lateral geographic coordinates have "
+                             "no coordinate sytem.")
+
+        # Check the source grid units.
+        for coord in (src_x_coord, src_y_coord):
+            RectilinearRegridder._check_units(coord)
+
+        src_x_dim, = src_cube.coord_dims(src_x_coord)
+        src_y_dim, = src_cube.coord_dims(src_y_coord)
+
+        # Compute the interpolated data values.
+        data = self._regrid(src_cube.data, src_x_dim, src_y_dim,
+                            src_x_coord, src_y_coord,
+                            tgt_x_coord, tgt_y_coord,
+                            self._projection, method=self._method)
+
+        # Wrap up the data as a Cube.
+        regrid_callback = functools.partial(self._regrid,
+                                            method=self._method,
+                                            projection=self._projection)
+
+        new_cube = RectilinearRegridder._create_cube(data, src_cube,
+                                                     src_x_dim, src_y_dim,
+                                                     src_x_coord, src_y_coord,
+                                                     tgt_x_coord, tgt_y_coord,
+                                                     regrid_callback)
+
+        promote_aux_coord_to_dim_coord(new_cube, 'latitude')
+        promote_aux_coord_to_dim_coord(new_cube, 'longitude')
+
+        return new_cube
+
+
+class ProjectedUnstructuredNearest(object):
+    """
+    This class describes the nearest regridding scheme which uses the
+    scipy.interpolate.griddata to regrid unstructured data on to a grid.
+
+    The source cube and the target cube will be projected into a common
+    projection for the scipy calculation to be performed.
+
+    """
+    def __init__(self, projection=None):
+        """
+        Nearest regridding scheme that uses scipy.interpolate.griddata on
+        projected unstructured data.
+
+        Optional Args:
+
+        * projection: `cartopy.crs instance`
+            The projection that the scipy calculation is performed in.
+            Defaults to ccrs.Sinusoidal
+
+        """
+        self.projection = projection
+
+    def regridder(self, src_cube, target_grid):
+        """
+        Creates a nearest-neighbour regridder to perform regridding, using
+        scipy.interpolate.griddata from unstructured source points to the
+        target grid projected into a specified projection (defaults to
+        sinusoidal).
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_cube:
+            The :class:`~iris.cube.Cube` defining the unstructured source
+            points.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_cube`
+            that is to be regridded to the `target_grid`.
+
+        """
+        return _ProjectedUnstructuredRegridder(src_cube, target_grid,
+                                               'nearest', self.projection)
+
+
+class ProjectedUnstructuredLinear(object):
+    """
+    This class describes the linear regridding scheme which uses the
+    scipy.interpolate.griddata to regrid unstructured data on to a grid.
+
+    The source cube and the target cube will be projected into a common
+    projection for the scipy calculation to be performed.
+
+    """
+    def __init__(self, projection=None):
+        """
+        Nearest regridding scheme that uses scipy.interpolate.griddata on
+        projected unstructured data.
+
+        Optional Args:
+
+        * projection: `cartopy.crs instance`
+            The projection that the scipy calculation is performed in.
+            Defaults to ccrs.Sinusoidal
+
+        """
+        self.projection = projection
+
+    def regridder(self, src_cube, target_grid):
+        """
+        Creates a linear regridder to perform regridding, using
+        scipy.interpolate.griddata from unstructured source points to the
+        target grid projected into a specified projection (defaults to
+        sinusoidal).
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_cube:
+            The :class:`~iris.cube.Cube` defining the unstructured source
+            points.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_cube`
+            that is to be regridded to the `target_grid`.
+
+        """
+        return _ProjectedUnstructuredRegridder(src_cube, target_grid, 'linear',
+                                               self.projection)

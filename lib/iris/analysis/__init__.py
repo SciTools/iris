@@ -62,8 +62,7 @@ import scipy.stats.mstats
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
-from iris.analysis._regrid import (RectilinearRegridder,
-                                   ProjectedUnstructuredRegridder)
+from iris.analysis._regrid import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -2430,85 +2429,6 @@ class UnstructuredNearest(object):
         from iris.analysis.trajectory import \
             UnstructuredNearestNeigbourRegridder
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
-
-
-class ProjectedUnstructuredNearest(object):
-    """TODO: Docstrings
-    """
-    def __init__(self, projection=None):
-        self.projection = projection
-
-    def __repr__(self):
-        projection = self.projection if self.projection is not None else ''
-        return 'ProjectedUnstructuredNearest({!r})'.format(projection)
-
-    def regridder(self, src_cube, target_grid):
-        """
-        Creates a nearest-neighbour regridder to perform regridding, using
-        scipy.interpolate.griddata from unstructured source points to the
-        target grid projected into a specified projection (defaults to
-        sinusoidal).
-        Typically you should use :meth:`iris.cube.Cube.regrid` for
-        regridding a cube. There are, however, some situations when
-        constructing your own regridder is preferable. These are detailed in
-        the :ref:`user guide <caching_a_regridder>`.
-        Args:
-        * src_cube:
-            The :class:`~iris.cube.Cube` defining the unstructured source
-            points.
-        * target_grid:
-            The :class:`~iris.cube.Cube` defining the target grid.
-        Returns:
-            A callable with the interface:
-                `callable(cube)`
-            where `cube` is a cube with the same grid as `src_cube`
-            that is to be regridded to the `target_grid`.
-        """
-        return ProjectedUnstructuredRegridder(src_cube, target_grid, 'nearest',
-                                              self.projection)
-
-
-class ProjectedUnstructuredLinear(object):
-    """TODO: Docstrings
-    """
-    def __init__(self, projection=None):
-        self.projection = projection
-
-    def __repr__(self):
-        projection = self.projection if self.projection is not None else ''
-        return 'ProjectedUnstructuredLinear({!r})'.format(projection)
-
-    def regridder(self, src_cube, target_grid):
-        """
-        Creates a linear regridder to perform regridding, using
-        scipy.interpolate.griddata from unstructured source points to the
-        target grid projected into a specified projection (defaults to
-        sinusoidal).
-
-        Typically you should use :meth:`iris.cube.Cube.regrid` for
-        regridding a cube. There are, however, some situations when
-        constructing your own regridder is preferable. These are detailed in
-        the :ref:`user guide <caching_a_regridder>`.
-
-        Args:
-
-        * src_cube:
-            The :class:`~iris.cube.Cube` defining the unstructured source
-            points.
-        * target_grid:
-            The :class:`~iris.cube.Cube` defining the target grid.
-
-        Returns:
-            A callable with the interface:
-
-                `callable(cube)`
-
-            where `cube` is a cube with the same grid as `src_cube`
-            that is to be regridded to the `target_grid`.
-
-        """
-        return ProjectedUnstructuredRegridder(src_cube, target_grid, 'linear',
-                                              self.projection)
 
 
 # Import "iris.analysis.interpolate" to replicate older automatic imports.
