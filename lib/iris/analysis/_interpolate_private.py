@@ -291,39 +291,53 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
         # Convert to cartesian coordinates. Flatten for kdtree compatibility.
         cartesian_space_data_coords = _cartesian_sample_points(sample_space_data_positions, sample_point_coord_names)
 
-        # Get the nearest datum index to the sample point. This is the goal of the function.
+        # Create a kdtree for the nearest-distance lookup to these 3d points.
         kdtree = scipy.spatial.cKDTree(cartesian_space_data_coords)
-
-    n_coords, n_points = coord_values.shape
-    main_cube_slices = []
-    for i_point in range(n_points):
-        single_point_coord_values = coord_values[..., i_point:i_point + 1]
-        # Convert the sample point to cartesian coords.
-        # If there is no latlon within the coordinate there will be no change.
-        # Otherwise, geographic latlon is replaced with cartesian xyz.
-        cartesian_sample_point = _cartesian_sample_points(
-            single_point_coord_values, sample_point_coord_names)[0]
-
-        cartesian_distance, datum_index = kdtree.query(cartesian_sample_point)
-        sample_space_ndi = np.unravel_index(datum_index, sample_space_cube.data.shape)
-
-        # Turn sample_space_ndi into a main cube slice.
-        # Map sample cube to main cube dims and leave the rest as a full slice.
-        main_cube_slice = [slice(None, None)] * cube.ndim
-        for sample_coord, sample_coord_dims in sample_space_coords_and_dims:
-            # Find the coord in the main cube
-            main_coord = cube.coord(sample_coord.name())
-            main_coord_dims = cube.coord_dims(main_coord)
-            # Mark the nearest data index/indices with respect to this coord
-            for sample_i, main_i in zip(sample_coord_dims, main_coord_dims):
-                main_cube_slice[main_i] = sample_space_ndi[sample_i]
-        main_cube_slices.append(tuple(main_cube_slice))
+        # This can find the nearest datum point to any given target point,
+        # which is the goal of this function.
 
     # Update cache
     if cache is not None:
         cache[cube] = kdtree
 
-    return main_cube_slices
+    # Convert the sample points to cartesian (3d) coords.
+    # If there is no latlon within the coordinate there will be no change.
+    # Otherwise, geographic latlon is replaced with cartesian xyz.
+    cartesian_sample_points = _cartesian_sample_points(
+        coord_values, sample_point_coord_names)
+
+    # Use kdtree to get the nearest sourcepoint index for each target point.
+    _, datum_index_lists = kdtree.query(cartesian_sample_points)
+
+    # Convert flat indices back into multidimensional sample-space indices.
+    sample_space_dimension_indices = np.unravel_index(
+        datum_index_lists, sample_space_cube.data.shape)
+    # Convert this from "pointwise list of index arrays for each dimension",
+    # to "list of cube indices for each point".
+    sample_space_ndis = np.array(sample_space_dimension_indices).transpose()
+
+    # For the returned result, we must convert these indices into the source
+    # (sample-space) cube, to equivalent indices into the target 'cube'.
+
+    # Make a result array: (cube.ndim * <index>), per sample point.
+    n_points = coord_values.shape[-1]
+    main_cube_slices = np.empty((n_points, cube.ndim), dtype=object)
+    # Initialise so all unused indices are ":".
+    main_cube_slices[:] = slice(None)
+
+    # Move result indices according to the source (sample) and target (cube)
+    # dimension mappings.
+    for sample_coord, sample_coord_dims in sample_space_coords_and_dims:
+        # Find the coord in the main cube
+        main_coord = cube.coord(sample_coord.name())
+        main_coord_dims = cube.coord_dims(main_coord)
+        # Fill nearest-point data indices for each coord dimension.
+        for sample_i, main_i in zip(sample_coord_dims, main_coord_dims):
+            main_cube_slices[:, main_i] = sample_space_ndis[:, sample_i]
+
+    # Return as a list of **tuples** : required for correct indexing usage.
+    result = [tuple(inds) for inds in main_cube_slices]
+    return result
 
 
 def extract_nearest_neighbour(cube, sample_points):
