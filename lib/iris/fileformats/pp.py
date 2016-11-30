@@ -2030,16 +2030,16 @@ def add_save_rules(filename):
     .. deprecated:: 1.10
 
         If you need to customise pp field saving, please refer to the functions
-        :func:`as_fields`, :func:`as_pairs` and :func:`save_fields` for an
-        alternative solution.
+        :func:`as_fields`, :func:`save_pairs_from_cube` and :func:`save_fields`
+        for an alternative solution.
 
     """
     warn_deprecated(
         'custom pp save rules are deprecated from v1.10.\n'
         'If you need to customise pp field saving, please refer to the '
         'functions iris.fileformats.pp.as_fields, '
-        'iris.fileformats.pp.as_pairs and iris.fileformats.pp.save_fields '
-        'for an alternative solution.')
+        'iris.fileformats.pp.save_pairs_from_cube and '
+        'iris.fileformats.pp.save_fields for an alternative solution.')
     _ensure_save_rules_loaded()
     _save_rules.import_rules(filename)
 
@@ -2051,16 +2051,16 @@ def reset_save_rules():
     .. deprecated:: 1.10
 
         If you need to customise pp field saving, please refer to the functions
-        :func:`as_fields`, :func:`as_pairs` and :func:`save_fields` for an
-        alternative solution.
+        :func:`as_fields`, :func:`save_pairs_from_cube` and :func:`save_fields`
+        for an alternative solution.
 
     """
     warn_deprecated(
         'custom pp save rules are deprecated from v1.10.\n'
         'If you need to customise pp field saving, please refer to the '
         'functions iris.fileformats.pp.as_fields, '
-        'iris.fileformats.pp.as_pairs and iris.fileformats.pp.save_fields '
-        'for an alternative solution.')
+        'iris.fileformats.pp.save_pairs_from_cube and '
+        'iris.fileformats.pp.save_fields for an alternative solution.')
     # Uses this module-level variable
     global _save_rules
 
