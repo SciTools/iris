@@ -36,43 +36,6 @@ from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.cube
 
 
-def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
-    """
-    Convert the rectilinear grid coordinates to a curvilinear grid in
-    the source coordinate system.
-
-    The `grid_x_coord` and `grid_y_coord` must share a common coordinate
-    system.
-
-    Args:
-
-    * src_coord_system:
-        The :class:`iris.coord_system.CoordSystem` for the grid of the
-        source Cube.
-    * grid_x_coord:
-        The :class:`iris.coords.DimCoord` for the X coordinate.
-    * grid_y_coord:
-        The :class:`iris.coords.DimCoord` for the Y coordinate.
-
-    Returns:
-        A tuple of the X and Y coordinate values as 2-dimensional
-        arrays.
-
-    """
-    grid_x, grid_y = np.meshgrid(grid_x_coord.points, grid_y_coord.points)
-    # Skip the CRS transform if we can to avoid precision problems.
-    if src_coord_system == grid_x_coord.coord_system:
-        sample_grid_x = grid_x
-        sample_grid_y = grid_y
-    else:
-        src_crs = src_coord_system.as_cartopy_crs()
-        grid_crs = grid_x_coord.coord_system.as_cartopy_crs()
-        sample_xyz = src_crs.transform_points(grid_crs, grid_x, grid_y)
-        sample_grid_x = sample_xyz[..., 0]
-        sample_grid_y = sample_xyz[..., 1]
-    return sample_grid_x, sample_grid_y
-
-
 class RectilinearRegridder(object):
     """
     This class provides support for performing nearest-neighbour or
@@ -141,9 +104,46 @@ class RectilinearRegridder(object):
         return self._extrapolation_mode
 
     @staticmethod
+    def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
+        """
+        Convert the rectilinear grid coordinates to a curvilinear grid in
+        the source coordinate system.
+
+        The `grid_x_coord` and `grid_y_coord` must share a common coordinate
+        system.
+
+        Args:
+
+        * src_coord_system:
+            The :class:`iris.coord_system.CoordSystem` for the grid of the
+            source Cube.
+        * grid_x_coord:
+            The :class:`iris.coords.DimCoord` for the X coordinate.
+        * grid_y_coord:
+            The :class:`iris.coords.DimCoord` for the Y coordinate.
+
+        Returns:
+            A tuple of the X and Y coordinate values as 2-dimensional
+            arrays.
+
+        """
+        grid_x, grid_y = np.meshgrid(grid_x_coord.points, grid_y_coord.points)
+        # Skip the CRS transform if we can to avoid precision problems.
+        if src_coord_system == grid_x_coord.coord_system:
+            sample_grid_x = grid_x
+            sample_grid_y = grid_y
+        else:
+            src_crs = src_coord_system.as_cartopy_crs()
+            grid_crs = grid_x_coord.coord_system.as_cartopy_crs()
+            sample_xyz = src_crs.transform_points(grid_crs, grid_x, grid_y)
+            sample_grid_x = sample_xyz[..., 0]
+            sample_grid_y = sample_xyz[..., 1]
+        return sample_grid_x, sample_grid_y
+
+    @staticmethod
     def _regrid(src_data, x_dim, y_dim,
                 src_x_coord, src_y_coord,
-                grid_x_coord, grid_y_coord,
+                sample_grid_x, sample_grid_y,
                 method='linear', extrapolation_mode='nanmask'):
         """
         Regrid the given data from the src grid to the sample grid.
@@ -171,10 +171,10 @@ class RectilinearRegridder(object):
             The X :class:`iris.coords.DimCoord`.
         * src_y_coord:
             The Y :class:`iris.coords.DimCoord`.
-        * grid_x_coord:
-            The target X :class:`iris.coords.DimCoord`.
-        * grid_y_coord:
-            The target Y :class:`iris.coords.DimCoord`.
+        * sample_grid_x:
+            A 2-dimensional array of sample X values.
+        * sample_grid_y:
+            A 2-dimensional array of sample Y values.
 
         Kwargs:
 
@@ -206,11 +206,6 @@ class RectilinearRegridder(object):
         # XXX: At the moment requires to be a static method as used by
         # experimental regrid_area_weighted_rectilinear_src_and_grid
         #
-
-        # Convert the grid to a 2D sample grid in the src CRS.
-        sample_grid_x, sample_grid_y = _sample_grid(src_x_coord.coord_system,
-                                                    grid_x_coord, grid_y_coord)
-
         if sample_grid_x.shape != sample_grid_y.shape:
             raise ValueError('Inconsistent sample grid shapes.')
         if sample_grid_x.ndim != 2:
@@ -346,7 +341,8 @@ class RectilinearRegridder(object):
 
     @staticmethod
     def _create_cube(data, src, x_dim, y_dim, src_x_coord, src_y_coord,
-                     grid_x_coord, grid_y_coord, regrid_callback):
+                     grid_x_coord, grid_y_coord, sample_grid_x, sample_grid_y,
+                     regrid_callback):
         """
         Return a new Cube for the result of regridding the source Cube onto
         the new grid.
@@ -378,6 +374,10 @@ class RectilinearRegridder(object):
         * grid_y_coord:
             The :class:`iris.coords.DimCoord` for the new grid's Y
             coordinate.
+        * sample_grid_x:
+            A 2-dimensional array of sample X values.
+        * sample_grid_y:
+            A 2-dimensional array of sample Y values.
         * regrid_callback:
             The routine that will be used to calculate the interpolated
             values of any reference surfaces.
@@ -388,8 +388,7 @@ class RectilinearRegridder(object):
         """
         #
         # XXX: At the moment requires to be a static method as used by
-        # experimental regrid_area_weighted_rectilinear_src_and_grid and
-        # _ProjectedUnstructuredRegridder.
+        # experimental regrid_area_weighted_rectilinear_src_and_grid
         #
         # Create a result cube with the appropriate metadata
         result = iris.cube.Cube(data)
@@ -405,10 +404,6 @@ class RectilinearRegridder(object):
                 dims = src.coord_dims(coord)
                 if coord is src_x_coord:
                     coord = grid_x_coord
-                    if x_dim == y_dim:
-                        dims = list(dims)
-                        dims[0] += 1
-                        dims = tuple(dims)
                 elif coord is src_y_coord:
                     coord = grid_y_coord
                 elif x_dim in dims or y_dim in dims:
@@ -422,6 +417,7 @@ class RectilinearRegridder(object):
 
         def regrid_reference_surface(src_surface_coord, surface_dims,
                                      x_dim, y_dim, src_x_coord, src_y_coord,
+                                     sample_grid_x, sample_grid_y,
                                      regrid_callback):
             # Determine which of the reference surface's dimensions span the X
             # and Y dimensions of the source cube.
@@ -430,7 +426,7 @@ class RectilinearRegridder(object):
             surface = regrid_callback(src_surface_coord.points,
                                       surface_x_dim, surface_y_dim,
                                       src_x_coord, src_y_coord,
-                                      grid_x_coord, grid_y_coord)
+                                      sample_grid_x, sample_grid_y)
             surface_coord = src_surface_coord.copy(surface)
             return surface_coord
 
@@ -446,8 +442,8 @@ class RectilinearRegridder(object):
                                                             x_dim, y_dim,
                                                             src_x_coord,
                                                             src_y_coord,
-                                                            grid_x_coord,
-                                                            grid_y_coord,
+                                                            sample_grid_x,
+                                                            sample_grid_y,
                                                             regrid_callback)
                     result.add_aux_coord(result_coord, dims)
                     coord_mapping[id(coord)] = result_coord
@@ -463,8 +459,9 @@ class RectilinearRegridder(object):
     def _check_units(coord):
         #
         # XXX: At the moment requires to be a static method as used by
-        # experimental _ProjectedUnstructuredRegridder.
+        # experimental _ProjectedUnstructuredRegridder
         #
+
         if coord.coord_system is None:
             # No restriction on units.
             pass
@@ -533,12 +530,16 @@ class RectilinearRegridder(object):
         for coord in (src_x_coord, src_y_coord):
             self._check_units(coord)
 
+        # Convert the grid to a 2D sample grid in the src CRS.
+        sample_grid = self._sample_grid(src_cs, grid_x_coord, grid_y_coord)
+        sample_grid_x, sample_grid_y = sample_grid
+
         # Compute the interpolated data values.
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
         data = self._regrid(src.data, x_dim, y_dim,
                             src_x_coord, src_y_coord,
-                            grid_x_coord, grid_y_coord,
+                            sample_grid_x, sample_grid_y,
                             self._method, self._extrapolation_mode)
 
         # Wrap up the data as a Cube.
@@ -548,5 +549,6 @@ class RectilinearRegridder(object):
         result = self._create_cube(data, src, x_dim, y_dim,
                                    src_x_coord, src_y_coord,
                                    grid_x_coord, grid_y_coord,
+                                   sample_grid_x, sample_grid_y,
                                    regrid_callback)
         return result

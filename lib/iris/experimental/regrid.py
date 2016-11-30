@@ -1381,19 +1381,13 @@ class _ProjectedUnstructuredRegridder(object):
         self._projection = projection
 
     @staticmethod
-    def _regrid(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
+    def _regrid(src_data, xy_dim, src_x_coord, src_y_coord,
                 tgt_x_coord, tgt_y_coord,
                 projection, method='nearest'):
         """
         Regrids input data from the source to the target. Calculation is.
 
         """
-
-        if x_dim != y_dim:
-            raise ValueError("'src' lateral geographic coordinates should map "
-                             "the same dimension.")
-        xy_dim = x_dim
-
         # Transform coordinates into the projection the interpolation will be
         # performed in.
         src_projection = src_x_coord.coord_system.as_cartopy_projection()
@@ -1428,6 +1422,114 @@ class _ProjectedUnstructuredRegridder(object):
                 method=method)
         data = np.ma.array(data, mask=np.isnan(data))
         return data
+
+    def _create_cube(self, data, src, src_xy_dim, src_x_coord, src_y_coord,
+                     grid_x_coord, grid_y_coord,
+                     regrid_callback):
+        """
+        Return a new Cube for the result of regridding the source Cube onto
+        the new grid.
+
+        All the metadata and coordinates of the result Cube are copied from
+        the source Cube, with two exceptions:
+            - Grid dimension coordinates are copied from the grid Cube.
+            - Auxiliary coordinates which span the grid dimensions are
+              ignored, except where they provide a reference surface for an
+              :class:`iris.aux_factory.AuxCoordFactory`.
+
+        Args:
+
+        * data:
+            The regridded data as an N-dimensional NumPy array.
+        * src:
+            The source Cube.
+        * src_xy_dim:
+            The X and Y dimension within the source Cube.
+        * src_x_coord:
+            The X :class:`iris.coords.DimCoord`.
+        * src_y_coord:
+            The Y :class:`iris.coords.DimCoord`.
+        * grid_x_coord:
+            The :class:`iris.coords.DimCoord` for the new grid's X
+            coordinate.
+        * grid_y_coord:
+            The :class:`iris.coords.DimCoord` for the new grid's Y
+            coordinate.
+        * regrid_callback:
+            The routine that will be used to calculate the interpolated
+            values of any reference surfaces.
+
+        Returns:
+            The new, regridded Cube.
+
+        """
+        # Create a result cube with the appropriate metadata
+        result = iris.cube.Cube(data)
+        result.metadata = copy.deepcopy(src.metadata)
+
+        # Copy across all the coordinates which don't span the grid.
+        # Record a mapping from old coordinate IDs to new coordinates,
+        # for subsequent use in creating updated aux_factories.
+        coord_mapping = {}
+
+        def copy_coords(src_coords, add_method):
+            for coord in src_coords:
+                dims = src.coord_dims(coord)
+                if coord is src_x_coord:
+                    coord = grid_x_coord
+                    # Increase dimensionality to account for 1D coord being
+                    # regridded onto 2D grid
+                    dims = list(dims)
+                    dims[0] += 1
+                    dims = tuple(dims)
+                elif coord is src_y_coord:
+                    coord = grid_y_coord
+                elif src_xy_dim in dims:
+                    continue
+                result_coord = coord.copy()
+                add_method(result_coord, dims)
+                coord_mapping[id(coord)] = result_coord
+
+        copy_coords(src.dim_coords, result.add_dim_coord)
+        copy_coords(src.aux_coords, result.add_aux_coord)
+
+        def regrid_reference_surface(src_surface_coord, surface_dims,
+                                     src_xy_dim, src_x_coord, src_y_coord,
+                                     grid_x_coord, grid_y_coord,
+                                     regrid_callback):
+            # Determine which of the reference surface's dimensions span the X
+            # and Y dimensions of the source cube.
+            surface_xy_dim = surface_dims.index(src_xy_dim)
+            surface = regrid_callback(src_surface_coord.points, surface_xy_dim,
+                                      src_x_coord, src_y_coord,
+                                      grid_x_coord, grid_y_coord)
+            surface_coord = src_surface_coord.copy(surface)
+            return surface_coord
+
+        # Copy across any AuxFactory instances, and regrid their reference
+        # surfaces where required.
+        for factory in src.aux_factories:
+            for coord in six.itervalues(factory.dependencies):
+                if coord is None:
+                    continue
+                dims = src.coord_dims(coord)
+                if src_xy_dim in dims:
+                    result_coord = regrid_reference_surface(coord, dims,
+                                                            src_xy_dim,
+                                                            src_x_coord,
+                                                            src_y_coord,
+                                                            grid_x_coord,
+                                                            grid_y_coord,
+                                                            regrid_callback)
+                    result.add_aux_coord(result_coord, dims)
+                    coord_mapping[id(coord)] = result_coord
+            try:
+                result.add_aux_factory(factory.updated(coord_mapping))
+            except KeyError:
+                msg = 'Cannot update aux_factory {!r} because of dropped' \
+                      ' coordinates.'.format(factory.name())
+                warnings.warn(msg)
+        return result
 
     def __call__(self, src_cube):
         """
@@ -1472,8 +1574,13 @@ class _ProjectedUnstructuredRegridder(object):
         src_x_dim, = src_cube.coord_dims(src_x_coord)
         src_y_dim, = src_cube.coord_dims(src_y_coord)
 
+        if src_x_dim != src_y_dim:
+            raise ValueError("'src' lateral geographic coordinates should map "
+                             "the same dimension.")
+        src_xy_dim = src_x_dim
+
         # Compute the interpolated data values.
-        data = self._regrid(src_cube.data, src_x_dim, src_y_dim,
+        data = self._regrid(src_cube.data, src_xy_dim,
                             src_x_coord, src_y_coord,
                             tgt_x_coord, tgt_y_coord,
                             self._projection, method=self._method)
@@ -1483,11 +1590,10 @@ class _ProjectedUnstructuredRegridder(object):
                                             method=self._method,
                                             projection=self._projection)
 
-        new_cube = RectilinearRegridder._create_cube(data, src_cube,
-                                                     src_x_dim, src_y_dim,
-                                                     src_x_coord, src_y_coord,
-                                                     tgt_x_coord, tgt_y_coord,
-                                                     regrid_callback)
+        new_cube = self._create_cube(data, src_cube, src_xy_dim,
+                                     src_x_coord, src_y_coord,
+                                     tgt_x_coord, tgt_y_coord,
+                                     regrid_callback)
 
         promote_aux_coord_to_dim_coord(new_cube, 'latitude')
         promote_aux_coord_to_dim_coord(new_cube, 'longitude')
@@ -1567,7 +1673,7 @@ class ProjectedUnstructuredLinear(object):
 
         Optional Args:
 
-        * projection: `cartopy.crs instance`
+        * projection: cartopy.crs
             The projection that the scipy calculation is performed in.
             Defaults to ccrs.Sinusoidal
 
