@@ -132,12 +132,11 @@ TEST_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'test_data_dir',
 # Override the data repository if the appropriate environment variable
 # has been set.  This is used in setup.py in the TestRunner command to
 # enable us to simulate the absence of external data.
-override = os.environ.get("override_test_data_repository")
+override = os.environ.get("OVERRIDE_TEST_DATA_REPOSITORY")
 if override:
-    if override == '1':
-        TEST_DATA_DIR = None
-    else:
-        TEST_DATA_DIR = override
+    TEST_DATA_DIR = None
+    if os.path.isdir(os.path.expanduser(override)):
+        TEST_DATA_DIR = os.path.abspath(override)
 
 PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
                               os.path.join(CONFIG_PATH, 'palette'))

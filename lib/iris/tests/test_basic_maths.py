@@ -567,6 +567,7 @@ class TestApplyUfunc(tests.IrisTest):
 
         self.assertArrayAlmostEqual(b2.data, ans)
 
+
 class TestIFunc(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.simple_2d()
@@ -617,6 +618,7 @@ class TestIFunc(tests.IrisTest):
 
         self.assertArrayAlmostEqual(b.data, ans)
 
+
 @tests.skip_data
 class TestLog(tests.IrisTest):
     def setUp(self):
@@ -632,7 +634,7 @@ class TestLog(tests.IrisTest):
 
     def test_log10(self):
         e = iris.analysis.maths.log10(self.cube)
-        self.assertCMLApproxData(e, ('analysis', 'log10.cml'))
+        self.assertCMLApproxData(e, ('analysis', 'log10.cml'), rtol=1e-6)
 
 
 class TestMaskedArrays(tests.IrisTest):
