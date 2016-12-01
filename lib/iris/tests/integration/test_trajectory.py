@@ -27,41 +27,11 @@ import iris.tests as tests
 import biggus
 import numpy as np
 
-import iris.analysis.trajectory
-import iris.tests.stock
+import iris
+import iris.tests.stock as istk
 
-
-@tests.skip_data
-class TestSimple(tests.IrisTest):
-    def test_invalid_coord(self):
-        cube = iris.tests.stock.realistic_4d()
-        sample_pts = [('altitude', [0, 10, 50])]
-        with self.assertRaises(ValueError):
-            iris.analysis.trajectory.interpolate(cube, sample_pts, 'nearest')
-
-
-class TestTrajectory(tests.IrisTest):
-    def test_trajectory_definition(self):
-        # basic 2-seg line along x
-        waypoints = [{'lat': 0, 'lon': 0}, {'lat': 0, 'lon': 1},
-                     {'lat': 0, 'lon': 2}]
-        trajectory = iris.analysis.trajectory.Trajectory(waypoints,
-                                                         sample_count=21)
-
-        self.assertEqual(trajectory.length, 2.0)
-        self.assertEqual(trajectory.sampled_points[19],
-                         {'lat': 0.0, 'lon': 1.9000000000000001})
-
-        # 4-seg m-shape
-        waypoints = [{'lat': 0, 'lon': 0}, {'lat': 1, 'lon': 1},
-                     {'lat': 0, 'lon': 2}, {'lat': 1, 'lon': 3},
-                     {'lat': 0, 'lon': 4}]
-        trajectory = iris.analysis.trajectory.Trajectory(waypoints,
-                                                         sample_count=33)
-
-        self.assertEqual(trajectory.length, 5.6568542494923806)
-        self.assertEqual(trajectory.sampled_points[31],
-                         {'lat': 0.12499999999999989, 'lon': 3.875})
+from iris.analysis.trajectory import (Trajectory,
+                                      interpolate as traj_interpolate)
 
 
 @tests.skip_data
@@ -80,11 +50,10 @@ class TestColpex(tests.IrisTest):
 
     def test_trajectory_extraction(self):
         # Pull out a single point - no interpolation required
-        single_point = iris.analysis.trajectory.interpolate(
-            self.cube, [('grid_latitude', [-0.1188]),
-                        ('grid_longitude', [359.57958984])])
+        single_point = traj_interpolate(self.cube,
+                                        [('grid_latitude', [-0.1188]),
+                                         ('grid_longitude', [359.57958984])])
         expected = self.cube[..., 10, 0].data
-
         self.assertArrayAllClose(single_point[..., 0].data,
                                  expected, rtol=2.0e-7)
         self.assertCML(single_point, ('trajectory', 'single_point.cml'),
@@ -100,8 +69,7 @@ class TestColpex(tests.IrisTest):
         y0 = scube.data[0, 0]
         y1 = scube.data[0, 1]
         expected = y0 + ((y1 - y0) * ((359.584090412 - x0)/(x1 - x0)))
-        trajectory_cube = iris.analysis.trajectory.interpolate(scube,
-                                                               single_point)
+        trajectory_cube = traj_interpolate(scube, single_point)
         self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
 
     def _traj_to_sample_points(self, trajectory):
@@ -121,12 +89,9 @@ class TestColpex(tests.IrisTest):
             {'grid_latitude': -0.1188, 'grid_longitude': 359.57958984},
             {'grid_latitude': -0.1188, 'grid_longitude': 359.66870117}
         ]
-        trajectory = iris.analysis.trajectory.Trajectory(waypoints,
-                                                         sample_count=100)
-
+        trajectory = Trajectory(waypoints, sample_count=100)
         sample_points = self._traj_to_sample_points(trajectory)
-        trajectory_cube = iris.analysis.trajectory.interpolate(self.cube,
-                                                               sample_points)
+        trajectory_cube = traj_interpolate(self.cube, sample_points)
         self.assertCML(trajectory_cube, ('trajectory',
                                          'constant_latitude.cml'))
 
@@ -137,10 +102,9 @@ class TestColpex(tests.IrisTest):
             {'grid_latitude': -0.0828, 'grid_longitude': 359.6606},
             {'grid_latitude': -0.0468, 'grid_longitude': 359.6246},
         ]
-        trajectory = iris.analysis.trajectory.Trajectory(waypoints,
-                                                         sample_count=20)
+        trajectory = Trajectory(waypoints, sample_count=20)
         sample_points = self._traj_to_sample_points(trajectory)
-        trajectory_cube = iris.analysis.trajectory.interpolate(
+        trajectory_cube = traj_interpolate(
             self.cube[0, 0], sample_points)
         expected = np.array([287.95953369, 287.9190979, 287.95550537,
                              287.93240356, 287.83850098, 287.87869263,
@@ -153,6 +117,39 @@ class TestColpex(tests.IrisTest):
         self.assertCML(trajectory_cube, ('trajectory', 'zigzag.cml'),
                        checksum=False)
         self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
+
+    def test_colpex__nearest(self):
+        # Check a smallish nearest-neighbour interpolation against a result
+        # snapshot.
+        test_cube = self.cube[0][0]
+        # Test points on a regular grid, a bit larger than the source region.
+        xmin, xmax = [fn(test_cube.coord(axis='x').points)
+                      for fn in (np.min, np.max)]
+        ymin, ymax = [fn(test_cube.coord(axis='x').points)
+                      for fn in (np.min, np.max)]
+        fractions = [-0.23, -0.01, 0.27, 0.624, 0.983, 1.052, 1.43]
+        x_points = [xmin + frac * (xmax - xmin) for frac in fractions]
+        y_points = [ymin + frac * (ymax - ymin) for frac in fractions]
+        x_points, y_points = np.meshgrid(x_points, y_points)
+        sample_points = [('grid_longitude', x_points.flatten()),
+                         ('grid_latitude', y_points.flatten())]
+        result = traj_interpolate(test_cube, sample_points,
+                                  method='nearest')
+        expected = [
+            288.07168579, 288.07168579, 287.9367981, 287.82736206,
+            287.78564453, 287.8374939, 287.8374939, 288.07168579,
+            288.07168579, 287.9367981, 287.82736206, 287.78564453,
+            287.8374939, 287.8374939, 288.07168579, 288.07168579,
+            287.9367981, 287.82736206, 287.78564453, 287.8374939,
+            287.8374939, 288.07168579, 288.07168579, 287.9367981,
+            287.82736206, 287.78564453, 287.8374939, 287.8374939,
+            288.07168579, 288.07168579, 287.9367981, 287.82736206,
+            287.78564453, 287.8374939, 287.8374939, 288.07168579,
+            288.07168579, 287.9367981, 287.82736206, 287.78564453,
+            287.8374939, 287.8374939, 288.07168579, 288.07168579,
+            287.9367981, 287.82736206, 287.78564453, 287.8374939,
+            287.8374939]
+        self.assertArrayAllClose(result.data, expected)
 
 
 @tests.skip_data
@@ -176,10 +173,8 @@ class TestTriPolar(tests.IrisTest):
                               ('latitude', latitudes)]
 
     def test_tri_polar(self):
-
         # extract
-        sampled_cube = iris.analysis.trajectory.interpolate(self.cube,
-                                                            self.sample_points)
+        sampled_cube = traj_interpolate(self.cube, self.sample_points)
         self.assertCML(sampled_cube, ('trajectory',
                                       'tri_polar_latitude_slice.cml'))
 
@@ -187,25 +182,62 @@ class TestTriPolar(tests.IrisTest):
         # Try to request linear interpolation.
         # Not allowed, as we have multi-dimensional coords.
         self.assertRaises(iris.exceptions.CoordinateMultiDimError,
-                          iris.analysis.trajectory.interpolate, self.cube,
+                          traj_interpolate, self.cube,
                           self.sample_points, method="linear")
 
     def test_tri_polar_method_unknown_fails(self):
         # Try to request unknown interpolation.
-        self.assertRaises(ValueError, iris.analysis.trajectory.interpolate,
+        self.assertRaises(ValueError, traj_interpolate,
                           self.cube, self.sample_points, method="linekar")
+
+    def test_tri_polar__nearest(self):
+        # Check a smallish nearest-neighbour interpolation against a result
+        # snapshot.
+        test_cube = self.cube
+        # Use just one 2d layer, just to be faster.
+        test_cube = test_cube[0][0]
+        # Fix the fill value of the data to zero, just so that we get the same
+        # result under numpy < 1.11 as with 1.11.
+        # NOTE: numpy<1.11 *used* to assign missing data points into an
+        # unmasked array as =0.0, now =fill-value.
+        # TODO: arguably, we should support masked data properly in the
+        # interpolation routine.  In the legacy code, that is unfortunately
+        # just not the case.
+        test_cube.data.set_fill_value(0.0)
+
+        # Test points on a regular global grid, with unrelated steps + offsets
+        # and an extended range of longitude values.
+        x_points = np.arange(-185.23, +360.0, 73.123)
+        y_points = np.arange(-89.12, +90.0, 42.847)
+        x_points, y_points = np.meshgrid(x_points, y_points)
+        sample_points = [('longitude', x_points.flatten()),
+                         ('latitude', y_points.flatten())]
+        result = traj_interpolate(test_cube, sample_points,
+                                  method='nearest')
+        expected = [
+            0., 0., 0., 0.,
+            0., 0., 0., 0.,
+            12.13186264, 10.69991493, 9.86881161, 7.08723927,
+            9.04308414, 12.56258678, 10.63761806, 9.19426727,
+            28.93525505, 23.85289955, 26.94649506, 0.,
+            27.88831711, 28.65439224, 23.39414215, 26.78363228,
+            13.53453922, 0., 17.41485596, 0.,
+            0., 13.0413475, 0., 17.10849571,
+            -1.67040622, -1.64783156, 0., -1.97898054,
+            -1.67642927, -1.65173221, -1.623945, 0.]
+
+        self.assertArrayAllClose(result.data, expected)
 
 
 class TestHybridHeight(tests.IrisTest):
     def test_hybrid_height(self):
-        cube = tests.stock.simple_4d_with_hybrid_height()
+        cube = istk.simple_4d_with_hybrid_height()
         # Put a biggus array on the cube so we can test deferred loading.
         cube.lazy_data(biggus.NumpyArrayAdapter(cube.data))
 
         traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude', [31, 32, 33, 34]))
-        xsec = iris.analysis.trajectory.interpolate(cube, traj,
-                                                    method='nearest')
+        xsec = traj_interpolate(cube, traj, method='nearest')
 
         # Check that creating the trajectory hasn't led to the original
         # data being loaded.
