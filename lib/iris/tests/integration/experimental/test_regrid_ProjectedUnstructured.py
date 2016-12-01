@@ -50,16 +50,15 @@ class TestProjectedUnstructured(tests.IrisTest):
 
     def test_nearest(self):
         res = self.src.regrid(self.global_grid, ProjectedUnstructuredNearest())
-        print(res)
         self.assertArrayShapeStats(res, (1, 6, 73, 96),
-                                   315.891358296, 11.000639227)
+                                   315.8913582, 11.00063766248)
 
-    def test_nearest_platecarree(self):
-        crs = ccrs.PlateCarree()
+    def test_nearest_sinusoidal(self):
+        crs = ccrs.Sinusoidal()
         res = self.src.regrid(self.global_grid,
                               ProjectedUnstructuredNearest(crs))
         self.assertArrayShapeStats(res, (1, 6, 73, 96),
-                                   315.8913833, 11.00063766248)
+                                   315.891358296, 11.000639227)
 
     def test_nearest_gnomonic_uk_domain(self):
         crs = ccrs.Gnomonic(central_latitude=60.0)

@@ -1321,8 +1321,7 @@ class PointInCell(object):
 
 class _ProjectedUnstructuredRegridder(object):
     """
-    This class provides a wrapper for the calculation of
-    scipy.interpolate.griddata.
+    This class provides regridding that uses scipy.interpolate.griddata.
 
     """
     def __init__(self, src_cube, tgt_grid_cube, method,
@@ -1340,8 +1339,8 @@ class _ProjectedUnstructuredRegridder(object):
         * method:
             Either 'linear' or 'nearest'.
         * projection:
-            The projection in which the interpolation is performed, or None. If
-            None, a XXX projection is used.
+            The projection in which the interpolation is performed. If None, a
+            PlateCarree projection is used. Defaults to None.
 
         """
         # Validity checks.
@@ -1407,7 +1406,7 @@ class _ProjectedUnstructuredRegridder(object):
     @staticmethod
     def _regrid(src_data, xy_dim, src_x_coord, src_y_coord,
                 tgt_x_coord, tgt_y_coord,
-                projection, method='nearest'):
+                projection, method):
         """
         Regrids input data from the source to the target. Calculation is.
 
@@ -1468,7 +1467,7 @@ class _ProjectedUnstructuredRegridder(object):
         * src:
             The source Cube.
         * src_xy_dim:
-            The X and Y dimension within the source Cube.
+            The dimension the X and Y coord span within the source Cube.
         * src_x_coord:
             The X coordinate (either :class:`iris.coords.AuxCoord` or
             :class:`iris.coords.DimCoord`).
@@ -1644,7 +1643,8 @@ class ProjectedUnstructuredNearest(object):
 
         * projection: `cartopy.crs instance`
             The projection that the scipy calculation is performed in.
-            Defaults to ccrs.Sinusoidal
+            If None is given, a PlateCarree projection is used. Defaults to
+            None.
 
         """
         self.projection = projection
@@ -1653,8 +1653,8 @@ class ProjectedUnstructuredNearest(object):
         """
         Creates a nearest-neighbour regridder to perform regridding, using
         scipy.interpolate.griddata from unstructured source points to the
-        target grid projected into a specified projection (defaults to
-        sinusoidal).
+        target grid. The regridding calculation is performed in the given
+        projection.
 
         Typically you should use :meth:`iris.cube.Cube.regrid` for
         regridding a cube. There are, however, some situations when
