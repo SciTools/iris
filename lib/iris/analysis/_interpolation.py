@@ -146,7 +146,8 @@ def get_xy_coords(cube, dim_coords=False):
     Kwargs:
 
     * dim_coords:
-        Defaults to False.
+        Set this to True to only return dimension coordinates. Defaults to
+        False.
 
     Returns:
         A tuple containing the cube's x and y dimension coordinates.

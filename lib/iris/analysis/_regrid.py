@@ -23,15 +23,12 @@ import copy
 import functools
 import warnings
 
-import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
-import scipy.interpolate
 
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           extend_circular_coord_and_data,
-                                          get_xy_dim_coords, get_xy_coords,
-                                          snapshot_grid)
+                                          get_xy_dim_coords, snapshot_grid)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.cube
 
@@ -455,13 +452,7 @@ class RectilinearRegridder(object):
                 warnings.warn(msg)
         return result
 
-    @staticmethod
-    def _check_units(coord):
-        #
-        # XXX: At the moment requires to be a static method as used by
-        # experimental _ProjectedUnstructuredRegridder
-        #
-
+    def _check_units(self, coord):
         if coord.coord_system is None:
             # No restriction on units.
             pass

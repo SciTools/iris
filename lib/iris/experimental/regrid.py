@@ -751,10 +751,14 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
                                            grid_y_decreasing,
                                            area_func, circular, mdtol)
 
+    # Wrap up the data as a Cube.
+    # Create 2d meshgrids as required by _create_cube func.
+    meshgrid_x, meshgrid_y = np.meshgrid(grid_x.points, grid_y.points)
     regrid_callback = RectilinearRegridder._regrid
     new_cube = RectilinearRegridder._create_cube(new_data, src_cube,
                                                  src_x_dim, src_y_dim,
                                                  src_x, src_y, grid_x, grid_y,
+                                                 meshgrid_x, meshgrid_y,
                                                  regrid_callback)
 
     # Slice out any length 1 dimensions.
@@ -1352,7 +1356,7 @@ class _ProjectedUnstructuredRegridder(object):
 
         # Check the target grid units.
         for coord in self._tgt_grid:
-            RectilinearRegridder._check_units(coord)
+            self._check_units(coord)
 
         # Whether to use linear or nearest-neighbour interpolation.
         if method not in ('linear', 'nearest'):
@@ -1379,6 +1383,26 @@ class _ProjectedUnstructuredRegridder(object):
             globe = src_x_coord.coord_system.as_cartopy_globe()
             projection = ccrs.Sinusoidal(globe=globe)
         self._projection = projection
+
+    def _check_units(self, coord):
+        if coord.coord_system is None:
+            # No restriction on units.
+            pass
+        elif isinstance(coord.coord_system,
+                        (iris.coord_systems.GeogCS,
+                         iris.coord_systems.RotatedGeogCS)):
+            # Units for lat-lon or rotated pole must be 'degrees'. Note
+            # that 'degrees_east' etc. are equal to 'degrees'.
+            if coord.units != 'degrees':
+                msg = "Unsupported units for coordinate system. " \
+                      "Expected 'degrees' got {!r}.".format(coord.units)
+                raise ValueError(msg)
+        else:
+            # Units for other coord systems must be equal to metres.
+            if coord.units != 'm':
+                msg = "Unsupported units for coordinate system. " \
+                      "Expected 'metres' got {!r}.".format(coord.units)
+                raise ValueError(msg)
 
     @staticmethod
     def _regrid(src_data, xy_dim, src_x_coord, src_y_coord,
@@ -1446,9 +1470,11 @@ class _ProjectedUnstructuredRegridder(object):
         * src_xy_dim:
             The X and Y dimension within the source Cube.
         * src_x_coord:
-            The X :class:`iris.coords.DimCoord`.
+            The X coordinate (either :class:`iris.coords.AuxCoord` or
+            :class:`iris.coords.DimCoord`).
         * src_y_coord:
-            The Y :class:`iris.coords.DimCoord`.
+            The Y coordinate (either :class:`iris.coords.AuxCoord` or
+            :class:`iris.coords.DimCoord`).
         * grid_x_coord:
             The :class:`iris.coords.DimCoord` for the new grid's X
             coordinate.
@@ -1482,8 +1508,10 @@ class _ProjectedUnstructuredRegridder(object):
                     dims = list(dims)
                     dims[0] += 1
                     dims = tuple(dims)
+                    add_method = result.add_dim_coord
                 elif coord is src_y_coord:
                     coord = grid_y_coord
+                    add_method = result.add_dim_coord
                 elif src_xy_dim in dims:
                     continue
                 result_coord = coord.copy()
@@ -1569,7 +1597,7 @@ class _ProjectedUnstructuredRegridder(object):
 
         # Check the source grid units.
         for coord in (src_x_coord, src_y_coord):
-            RectilinearRegridder._check_units(coord)
+            self._check_units(coord)
 
         src_x_dim, = src_cube.coord_dims(src_x_coord)
         src_y_dim, = src_cube.coord_dims(src_y_coord)
@@ -1594,9 +1622,6 @@ class _ProjectedUnstructuredRegridder(object):
                                      src_x_coord, src_y_coord,
                                      tgt_x_coord, tgt_y_coord,
                                      regrid_callback)
-
-        promote_aux_coord_to_dim_coord(new_cube, 'latitude')
-        promote_aux_coord_to_dim_coord(new_cube, 'longitude')
 
         return new_cube
 
@@ -1655,59 +1680,3 @@ class ProjectedUnstructuredNearest(object):
         """
         return _ProjectedUnstructuredRegridder(src_cube, target_grid,
                                                'nearest', self.projection)
-
-
-class ProjectedUnstructuredLinear(object):
-    """
-    This class describes the linear regridding scheme which uses the
-    scipy.interpolate.griddata to regrid unstructured data on to a grid.
-
-    The source cube and the target cube will be projected into a common
-    projection for the scipy calculation to be performed.
-
-    """
-    def __init__(self, projection=None):
-        """
-        Nearest regridding scheme that uses scipy.interpolate.griddata on
-        projected unstructured data.
-
-        Optional Args:
-
-        * projection: cartopy.crs
-            The projection that the scipy calculation is performed in.
-            Defaults to ccrs.Sinusoidal
-
-        """
-        self.projection = projection
-
-    def regridder(self, src_cube, target_grid):
-        """
-        Creates a linear regridder to perform regridding, using
-        scipy.interpolate.griddata from unstructured source points to the
-        target grid projected into a specified projection (defaults to
-        sinusoidal).
-
-        Typically you should use :meth:`iris.cube.Cube.regrid` for
-        regridding a cube. There are, however, some situations when
-        constructing your own regridder is preferable. These are detailed in
-        the :ref:`user guide <caching_a_regridder>`.
-
-        Args:
-
-        * src_cube:
-            The :class:`~iris.cube.Cube` defining the unstructured source
-            points.
-        * target_grid:
-            The :class:`~iris.cube.Cube` defining the target grid.
-
-        Returns:
-            A callable with the interface:
-
-                `callable(cube)`
-
-            where `cube` is a cube with the same grid as `src_cube`
-            that is to be regridded to the `target_grid`.
-
-        """
-        return _ProjectedUnstructuredRegridder(src_cube, target_grid, 'linear',
-                                               self.projection)

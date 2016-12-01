@@ -29,9 +29,8 @@ import numpy as np
 
 import iris
 from iris.coord_systems import GeogCS
-from iris.tests.stock import global_pp, simple_3d
-from iris.experimental.regrid import (ProjectedUnstructuredNearest,
-                                      ProjectedUnstructuredLinear)
+from iris.tests.stock import global_pp
+from iris.experimental.regrid import ProjectedUnstructuredNearest
 
 
 @tests.skip_data
@@ -47,22 +46,28 @@ class TestProjectedUnstructured(tests.IrisTest):
         src_lat.convert_units(Unit('degrees'))
         src_lon.convert_units(Unit('degrees'))
 
-        self.grid = simple_3d()[0, :, :]
-        self.grid.coord('latitude').coord_system = GeogCS(6370000)
-        self.grid.coord('longitude').coord_system = GeogCS(6370000)
+        self.global_grid = global_pp()
 
     def test_nearest(self):
-        res = self.src.regrid(self.grid, ProjectedUnstructuredNearest())
-        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.8906568, 11.00072015)
+        res = self.src.regrid(self.global_grid, ProjectedUnstructuredNearest())
+        print(res)
+        self.assertArrayShapeStats(res, (1, 6, 73, 96),
+                                   315.891358296, 11.000639227)
 
     def test_nearest_platecarree(self):
         crs = ccrs.PlateCarree()
-        res = self.src.regrid(self.grid, ProjectedUnstructuredNearest(crs))
-        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.8906481, 11.00072015)
+        res = self.src.regrid(self.global_grid,
+                              ProjectedUnstructuredNearest(crs))
+        self.assertArrayShapeStats(res, (1, 6, 73, 96),
+                                   315.8913833, 11.00063766248)
 
-    def test_linear(self):
-        res = self.src.regrid(self.grid, ProjectedUnstructuredLinear())
-        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.890713787, 11.000729)
+    def test_nearest_gnomonic_uk_domain(self):
+        crs = ccrs.Gnomonic(central_latitude=60.0)
+        uk_grid = self.global_grid.intersection(longitude=(-20, 20),
+                                                latitude=(40, 80))
+        res = self.src.regrid(uk_grid, ProjectedUnstructuredNearest(crs))
+        self.assertArrayShapeStats(res, (1, 6, 17, 11),
+                                   315.8873266, 11.0006664668)
 
 
 if __name__ == "__main__":
