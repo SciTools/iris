@@ -465,7 +465,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
 
     """
     if mode == 'bilinear':
-        scheme = iris.analysis.Linear(**kwargs)
+        scheme = Linear(**kwargs)
         return source_cube.regrid(grid_cube, scheme)
 
     # Condition 1
