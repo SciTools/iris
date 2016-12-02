@@ -1950,10 +1950,12 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 '%cL' % dtype_endian_char,
                 pp_file_read(PP_WORD_DEPTH))[0]
             if len_of_data_plus_extra != pp_field.lblrec * PP_WORD_DEPTH:
-                raise ValueError('LBLREC has a different value to the integer '
-                                 'recorded after the header in the file (%s '
-                                 'and %s).' % (pp_field.lblrec * PP_WORD_DEPTH,
-                                               len_of_data_plus_extra))
+                wmsg = ('LBLREC has a different value to the integer recorded '
+                        'after the header in the file (%s and %s).'
+                        'Skipping the remainder of the file.')
+                warnings.warn(wmsg.format(pp_field.lblrec * PP_WORD_DEPTH,
+                                          len_of_data_plus_extra))
+                break
 
             # calculate the extra length in bytes
             extra_len = pp_field.lbext * PP_WORD_DEPTH
