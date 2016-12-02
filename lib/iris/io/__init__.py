@@ -323,9 +323,9 @@ def save(source, target, saver=None, **kwargs):
 
         * netCDF - the Unidata network Common Data Format:
             * see :func:`iris.fileformats.netcdf.save`
-        * GRIB2  - the WMO GRIdded Binary data format;
-            * see <http://https://github.com/SciTools/iris-grib>.
-        * PP     - the Met Office UM Post Processing Format.
+        * GRIB2 - the WMO GRIdded Binary data format:
+            * see :func:`iris-grib.save_grib2`.
+        * PP - the Met Office UM Post Processing Format:
             * see :func:`iris.fileformats.pp.save`
 
     A custom saver can be provided to the function to write to a different
