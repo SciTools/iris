@@ -108,5 +108,6 @@ class TestUnstructured(tests.IrisTest):
         res = self.src.regrid(self.grid, UnstructuredNearest())
         self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.888737, 11.000729)
 
+
 if __name__ == "__main__":
     tests.main()
