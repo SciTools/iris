@@ -28,9 +28,10 @@ import math
 
 import numpy as np
 
+import iris.analysis
 import iris.coord_systems
 import iris.coords
-import iris.analysis
+
 from iris.analysis._interpolate_private import \
     _nearest_neighbour_indices_ndcoords, linear as linear_regrid
 
@@ -312,7 +313,15 @@ def interpolate(cube, sample_points, method=None):
         source_data = cube[source_area_indices].data
 
         # Apply fancy indexing to get all the result data points.
-        new_cube.data[:] = source_data[fancy_source_indices]
+        source_data = source_data[fancy_source_indices]
+        # "Fix" problems with missing datapoints producing odd values
+        # when copied from a masked into an unmasked array.
+        if np.ma.isMaskedArray(source_data):
+            # This is **not** proper mask handling, because we cannot produce a
+            # masked result, but it ensures we use a "filled" version of the
+            # input in this case.
+            source_data = source_data.filled()
+        new_cube.data[:] = source_data
         # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
         # because the existing code produces a default dtype from 'np.empty'
         # instead of preserving the input dtype.
@@ -333,7 +342,7 @@ def interpolate(cube, sample_points, method=None):
             if len(point_coord.points) != 1:
                 msg = ('Coord {} at one x-y position has the shape {}, '
                        'instead of being a single point. ')
-                raise Exception(msg.format(src_coord.name(), src_coord.shape))
+                raise ValueError(msg.format(src_coord.name(), src_coord.shape))
 
             # Work out which indices apply to the input coord.
             # NOTE: we know how to index the source cube to get a cube with a

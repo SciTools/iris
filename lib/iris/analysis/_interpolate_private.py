@@ -198,7 +198,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     See documentation for :func:`iris.analysis.interpolate.nearest_neighbour_indices`.
 
     'sample_points' is of the form [[coord-or-coord-name, point-value(s)]*].
-    The numbers of all the point-values sequences must be equal.
+    The lengths of all the point-values sequences must be equal.
 
     This function is adapted for points sampling a multi-dimensional coord,
     and can currently only do nearest neighbour interpolation.

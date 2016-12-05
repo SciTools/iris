@@ -196,6 +196,8 @@ class TestTriPolar(tests.IrisTest):
         test_cube = self.cube
         # Use just one 2d layer, just to be faster.
         test_cube = test_cube[0][0]
+        # Fetch all the data, so we can control the fill value.
+        test_cube.data
         # Fix the fill value of the data to zero, just so that we get the same
         # result under numpy < 1.11 as with 1.11.
         # NOTE: numpy<1.11 *used* to assign missing data points into an

@@ -161,8 +161,9 @@ class TestNearest(tests.IrisTest):
                                      [211, 212, 213, 214]],
                                     long_name='aux_0x'),
                            (0, 2))
-        msg = 'Expected to find exactly one point.*Found 2'
-        with self.assertRaisesRegexp(Exception, msg):
+        msg = ('Coord aux_0x at one x-y position has the shape.*'
+               'instead of being a single point')
+        with self.assertRaisesRegexp(ValueError, msg):
             interpolate(cube, self.single_sample_point, method='nearest')
 
     def test_metadata(self):
