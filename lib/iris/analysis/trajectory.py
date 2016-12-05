@@ -298,9 +298,9 @@ def interpolate(cube, sample_points, method=None):
                 fancy_index = list(np.array(contents) - start_ind)
             else:
                 # Should really never happen, if _ndcoords is right.
-                msg = ('Error trajectory interpolation: point selection '
-                       'indices do not all have the same form.')
-                raise ValueError()
+                msg = ('Internal error in trajectory interpolation : point '
+                       'selection indices should all have the same form.')
+                raise ValueError(msg)
 
             fancy_source_indices.append(fancy_index)
             region_slices.append(region_slice)
