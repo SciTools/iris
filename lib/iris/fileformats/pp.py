@@ -1951,7 +1951,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 pp_file_read(PP_WORD_DEPTH))[0]
             if len_of_data_plus_extra != pp_field.lblrec * PP_WORD_DEPTH:
                 wmsg = ('LBLREC has a different value to the integer recorded '
-                        'after the header in the file (%s and %s).'
+                        'after the header in the file ({} and {}). '
                         'Skipping the remainder of the file.')
                 warnings.warn(wmsg.format(pp_field.lblrec * PP_WORD_DEPTH,
                                           len_of_data_plus_extra))
