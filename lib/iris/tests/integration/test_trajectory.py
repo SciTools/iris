@@ -229,7 +229,7 @@ class TestTriPolar(tests.IrisTest):
         self.assertArrayAllClose(result.data, expected)
 
 
-class TestHybridHeight(tests.IrisTest):
+class TestLazyData(tests.IrisTest):
     def test_hybrid_height(self):
         cube = istk.simple_4d_with_hybrid_height()
         # Put a biggus array on the cube so we can test deferred loading.
