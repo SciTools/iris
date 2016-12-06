@@ -46,7 +46,17 @@ class Test2d(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [('x', 2.8), ('y', 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (1, 2))
+        self.assertEqual(result, [(1, 2)])
+
+    def test_nonlatlon_multiple_2d(self):
+        co_y = DimCoord([10.0, 20.0], long_name='y')
+        co_x = DimCoord([1.0, 2.0, 3.0], long_name='x')
+        cube = Cube(np.zeros((2, 3)))
+        cube.add_dim_coord(co_y, 0)
+        cube.add_dim_coord(co_x, 1)
+        sample_points = [('x', [2.8, -350.0, 1.7]), ('y', [18.5, 8.7, 12.2])]
+        result = nn_ndinds(cube, sample_points)
+        self.assertEqual(result, [(1, 2), (0, 0), (0, 1)])
 
     def test_latlon_simple_2d(self):
         co_y = DimCoord([10.0, 20.0],
@@ -58,7 +68,21 @@ class Test2d(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [('longitude', 2.8), ('latitude', 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (1, 2))
+        self.assertEqual(result, [(1, 2)])
+
+    def test_latlon_multiple_2d(self):
+        co_y = DimCoord([10.0, 20.0],
+                        standard_name='latitude', units='degrees')
+        co_x = DimCoord([1.0, 2.0, 3.0],
+                        standard_name='longitude', units='degrees')
+        cube = Cube(np.zeros((2, 3)))
+        cube.add_dim_coord(co_y, 0)
+        cube.add_dim_coord(co_x, 1)
+        sample_points = [('longitude', [2.8, -350.0, 1.7]),
+                         ('latitude', [18.5, 8.7, 12.2])]
+        result = nn_ndinds(cube, sample_points)
+        # Note slight difference from non-latlon version.
+        self.assertEqual(result, [(1, 2), (0, 2), (0, 1)])
 
 
 class Test1d(tests.IrisTest):
@@ -70,7 +94,7 @@ class Test1d(tests.IrisTest):
         cube.add_aux_coord(co_x, 0)
         sample_point = [('x', 2.8), ('y', 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (5,))
+        self.assertEqual(result, [(5,)])
 
     def test_latlon_simple_1d(self):
         cube = Cube([11.0, 12.0, 13.0, 21.0, 22.0, 23.0])
@@ -82,7 +106,7 @@ class Test1d(tests.IrisTest):
         cube.add_aux_coord(co_x, 0)
         sample_point = [('longitude', 2.8), ('latitude', 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (5,))
+        self.assertEqual(result, [(5,)])
 
 
 class TestApiExtras(tests.IrisTest):
@@ -96,7 +120,7 @@ class TestApiExtras(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [('x', 2.8)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (slice(None), 2))
+        self.assertEqual(result, [(slice(None), 2)])
 
     def test_no_x_dim(self):
         # Operate in Y only, returned slice should be [iy, :].
@@ -107,7 +131,7 @@ class TestApiExtras(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [('y', 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (1, slice(None)))
+        self.assertEqual(result, [(1, slice(None))])
 
     def test_sample_dictionary(self):
         # Pass sample_point arg as a dictionary: this usage mode is deprecated.
@@ -120,7 +144,7 @@ class TestApiExtras(tests.IrisTest):
         warn_call = self.patch(
             'iris.analysis._interpolate_private.warn_deprecated')
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (1, 2))
+        self.assertEqual(result, [(1, 2)])
         self.assertEqual(warn_call.call_count, 1)
         self.assertIn('dictionary to specify points is deprecated',
                       warn_call.call_args[0][0])
@@ -139,7 +163,7 @@ class TestLatlon(tests.IrisTest):
     def _check_latlon_1d(self, lats, lons, sample_point, expect):
         cube = self._testcube_latlon_1d(lats, lons)
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (expect,))
+        self.assertEqual(result, [(expect,)])
 
     def test_lat_scaling(self):
         # Check that (88, 25) is closer to (88, 0) than to (87, 25)
@@ -158,7 +182,7 @@ class TestLatlon(tests.IrisTest):
         cube.coord('longitude').rename('x_longitude_x')
         sample_point = [('y_latitude_y', 88), ('x_longitude_x', 25)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (0,))
+        self.assertEqual(result, [(0,)])
 
     def test_alternate_nonlatlon_names_different(self):
         # Check that (88, 25) is **NOT** closer to (88, 0) than to (87, 25)
@@ -169,7 +193,7 @@ class TestLatlon(tests.IrisTest):
         cube.coord('longitude').rename('x')
         sample_point = [('y', 88), ('x', 25)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, (1,))
+        self.assertEqual(result, [(1,)])
 
     def test_lons_wrap_359_0(self):
         # Check that (0, 359) is closer to (0, 0) than to (0, 350)
