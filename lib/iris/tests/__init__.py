@@ -848,8 +848,8 @@ class IrisTest(unittest.TestCase):
 
         """
         self.assertEqual(result.shape, shape)
-        self.assertAlmostEqual(result.data.mean(), mean, places=5)
-        self.assertAlmostEqual(result.data.std(), std_dev, places=5)
+        self.assertArrayAllClose(result.data.mean(), mean, rtol=1e-6)
+        self.assertArrayAllClose(result.data.std(), std_dev, rtol=1e-6)
 
 
 get_result_path = IrisTest.get_result_path
