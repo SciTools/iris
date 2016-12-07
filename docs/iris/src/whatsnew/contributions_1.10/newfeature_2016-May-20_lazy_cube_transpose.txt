@@ -1,0 +1,1 @@
+* The transpose method of a Cube now results in a lazy transposed view of the original rather than realising the data then transposing it.
