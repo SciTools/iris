@@ -298,6 +298,9 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                     values = np.arange(data.shape[data_dim] + 1) - 0.5
                 else:
                     values = coord.contiguous_bounds()
+                    values = _fixup_dates(coord, values)
+                    if (isinstance(values.ravel()[0], datetime.datetime)):
+                        values = mpl_dates.date2num(values)
 
             plot_arrays.append(values)
 
@@ -402,11 +405,12 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
 
 def _fixup_dates(coord, values):
-    if coord.units.calendar is not None and values.ndim == 1:
+    if coord.units.calendar is not None:
+        shape = values.shape
         # Convert coordinate values into tuples of
         # (year, month, day, hour, min, sec)
         dates = [coord.units.num2date(val).timetuple()[0:6]
-                 for val in values]
+                 for val in values.flat]
         if coord.units.calendar == 'gregorian':
             r = [datetime.datetime(*date) for date in dates]
         else:
@@ -425,6 +429,7 @@ def _fixup_dates(coord, values):
                  for date in dates]
         values = np.empty(len(r), dtype=object)
         values[:] = r
+        values = values.reshape(shape)
     return values
 
 
