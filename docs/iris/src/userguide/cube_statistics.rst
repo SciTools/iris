@@ -35,7 +35,7 @@ For instance, suppose we have a cube:
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube = iris.load_cube(filename, 'air_potential_temperature')
-    >>> print cube
+    >>> print(cube)
     air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
@@ -64,7 +64,7 @@ we can pass the coordinate name and the aggregation definition to the
 
     >>> import iris.analysis
     >>> vertical_mean = cube.collapsed('model_level_number', iris.analysis.MEAN)
-    >>> print vertical_mean
+    >>> print(vertical_mean)
     air_potential_temperature / (K)     (time: 3; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                 -                    -
@@ -93,10 +93,13 @@ can be used instead of ``MEAN``, see :mod:`iris.analysis` for a full list
 of currently supported operators.
 
 For an example of using this functionality, the
-:ref:`Hovmoller diagram <graphics-hovmoller>` example found
+:ref:`Hovmoller diagram <Meteorology-hovmoller>` example found
 in the gallery takes a zonal mean of an ``XYT`` cube by using the
 ``collapsed`` method with ``latitude`` and ``iris.analysis.MEAN`` as arguments.
 
+You cannot partially collapse a multi-dimensional coordinate. See
+:ref:`cube.collapsed <partially_collapse_multi-dim_coord>` for more
+information.
 
 .. _cube-statistics-collapsing-average:
 
@@ -123,7 +126,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
 .. doctest::
 
     >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
-    >>> print new_cube
+    >>> print(new_cube)
     air_potential_temperature / (K)     (time: 3; model_level_number: 7)
          Dimension coordinates:
               time                           x                      -
@@ -147,7 +150,8 @@ These areas can now be passed to the ``collapsed`` method as weights:
               mean: grid_longitude, grid_latitude
 
 Several examples of area averaging exist in the gallery which may be of interest,
-including an example on taking a :ref:`global area-weighted mean <graphics-COP_1d_plot>`.
+including an example on taking a :ref:`global area-weighted mean
+<Meteorology-COP_1d_plot>`.
 
 .. _cube-statistics-aggregated-by:
 
@@ -212,7 +216,7 @@ Printing this cube now shows that two extra coordinates exist on the cube:
 
 .. doctest:: aggregation
 
-    >>> print cube
+    >>> print(cube)
     surface_temperature / (K)           (time: 54; latitude: 18; longitude: 432)
          Dimension coordinates:
               time                           x             -              -
@@ -238,7 +242,7 @@ These two coordinates can now be used to aggregate by season and climate-year:
     >>> annual_seasonal_mean = cube.aggregated_by(
     ...     ['clim_season', 'season_year'], 
     ...     iris.analysis.MEAN)
-    >>> print repr(annual_seasonal_mean)
+    >>> print(repr(annual_seasonal_mean))
     <iris 'Cube' of surface_temperature / (K) (time: 19; latitude: 18; longitude: 432)>
     
 The primary change in the cube is that the cube's data has been 
@@ -255,11 +259,19 @@ so adjacent ones are often in the same season:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print zip(
-    ...     cube.coord('clim_season')[:10].points, 
-    ...     cube.coord('season_year')[:10].points)
-    [('mam', 2006), ('mam', 2006), ('jja', 2006), ('jja', 2006), ('jja', 2006), ('son', 2006),
-     ('son', 2006), ('son', 2006), ('djf', 2007), ('djf', 2007)]
+    >>> for season, year in zip(cube.coord('clim_season')[:10].points,
+    ...                         cube.coord('season_year')[:10].points):
+    ...     print(season + ' ' + str(year))
+    mam 2006
+    mam 2006
+    jja 2006
+    jja 2006
+    jja 2006
+    son 2006
+    son 2006
+    son 2006
+    djf 2007
+    djf 2007
 
 Compare this with the first 10 values of the new cube's coordinates:  
 All the points now have distinct season+year values:
@@ -267,11 +279,20 @@ All the points now have distinct season+year values:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print zip(
-    ...     annual_seasonal_mean.coord('clim_season')[:10].points, 
-    ...     annual_seasonal_mean.coord('season_year')[:10].points)
-    [('mam', 2006), ('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007),
-     ('son', 2007), ('djf', 2008), ('mam', 2008), ('jja', 2008)]
+    >>> for season, year in zip(
+    ...         annual_seasonal_mean.coord('clim_season')[:10].points,
+    ...         annual_seasonal_mean.coord('season_year')[:10].points):
+    ...     print(season + ' ' + str(year))
+    mam 2006
+    jja 2006
+    son 2006
+    djf 2007
+    mam 2007
+    jja 2007
+    son 2007
+    djf 2008
+    mam 2008
+    jja 2008
 
 Because the original data started in April 2006 we have some incomplete seasons
 (e.g. there were only two months worth of data for 'mam-2006').
@@ -292,10 +313,24 @@ from jja-2006 to jja-2010:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> print zip(
-    ...     full_season_means.coord('clim_season').points, 
-    ...     full_season_means.coord('season_year').points)
-    [('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007), ('son', 2007), ('djf', 2008),
-     ('mam', 2008), ('jja', 2008), ('son', 2008), ('djf', 2009), ('mam', 2009), ('jja', 2009), ('son', 2009),
-     ('djf', 2010), ('mam', 2010), ('jja', 2010)]
+    >>> for season, year in zip(full_season_means.coord('clim_season').points,
+    ...                         full_season_means.coord('season_year').points):
+    ...     print(season + ' ' + str(year))
+    jja 2006
+    son 2006
+    djf 2007
+    mam 2007
+    jja 2007
+    son 2007
+    djf 2008
+    mam 2008
+    jja 2008
+    son 2008
+    djf 2009
+    mam 2009
+    jja 2009
+    son 2009
+    djf 2010
+    mam 2010
+    jja 2010
 

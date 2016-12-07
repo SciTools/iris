@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,20 +21,26 @@ to run the example tests.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import contextlib
 import os.path
+import warnings
 import sys
 
 import matplotlib.pyplot as plt
 
+import iris
+from iris._deprecation import IrisDeprecation
 import iris.plot as iplt
 import iris.quickplot as qplt
-from iris.tests import _DEFAULT_IMAGE_TOLERANCE
 
 
 EXAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                 'example_code', 'graphics')
+                                 'example_code')
+EXAMPLE_DIRECTORIES = [os.path.join(EXAMPLE_DIRECTORY, the_dir)
+                       for the_dir in os.listdir(EXAMPLE_DIRECTORY)]
 
 
 @contextlib.contextmanager
@@ -47,13 +53,13 @@ def add_examples_to_path():
     """
     orig_sys_path = sys.path
     sys.path = sys.path[:]
-    sys.path.append(EXAMPLE_DIRECTORY)
+    sys.path += EXAMPLE_DIRECTORIES
     yield
     sys.path = orig_sys_path
 
 
 @contextlib.contextmanager
-def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
+def show_replaced_by_check_graphic(test_case):
     """
     Creates a context manager which can be used to replace the functionality
     of matplotlib.pyplot.show with a function which calls the check_graphic
@@ -62,9 +68,30 @@ def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
     """
     def replacement_show():
         # form a closure on test_case and tolerance
-        test_case.check_graphic(tol=tol)
+        test_case.check_graphic()
 
     orig_show = plt.show
     plt.show = iplt.show = qplt.show = replacement_show
     yield
     plt.show = iplt.show = qplt.show = orig_show
+
+
+@contextlib.contextmanager
+def fail_any_deprecation_warnings():
+    """
+    Create a context in which any deprecation warning will cause an error.
+
+    The context also resets all the iris.FUTURE settings to the defaults, as
+    otherwise changes made in one test can affect subsequent ones.
+
+    """
+    with warnings.catch_warnings():
+        # Detect and error all and any Iris deprecation warnings.
+        warnings.simplefilter("error", IrisDeprecation)
+        # Run with all default settings in iris.FUTURE.
+        default_future_kwargs = iris.Future().__dict__.copy()
+        for dead_option in iris.Future.deprecated_options:
+            # Avoid a warning when setting these !
+            del default_future_kwargs[dead_option]
+        with iris.FUTURE.context(**default_future_kwargs):
+            yield

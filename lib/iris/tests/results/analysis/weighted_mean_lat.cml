@@ -3,15 +3,15 @@
   <cube long_name="test_data" units="1">
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="506cfa9f" long_name="dummy" points="[0.0, 1.0, 2.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="9010c8c9" long_name="dummy" points="[0.0, 1.0, 2.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[1.0, 3.0]]" id="2a449552" long_name="lat" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
+        <dimCoord bounds="[[1.0, 3.0]]" id="a1029661" long_name="lat" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="62feb6b6" long_name="lon" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32">
+        <dimCoord id="729502fc" long_name="lon" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

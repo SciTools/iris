@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,12 +24,17 @@ TODO: If this module graduates from experimental the (optional) GDAL
       dependency should be added to INSTALL
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 import numpy as np
 from osgeo import gdal, osr
 
+import cf_units
+
 import iris
 import iris.coord_systems
-import iris.unit
 
 
 _GDAL_DATATYPES = {
@@ -138,7 +143,7 @@ def export_geotiff(cube, fname):
             msg = 'Coordinate {!r} must have two bounds ' \
                 'per point.'.format(name)
             raise ValueError(msg)
-        if not (coord.units == iris.unit.Unit('degrees') or
+        if not (coord.units == cf_units.Unit('degrees') or
                 coord.units.is_convertible('meters')):
             raise ValueError('Coordinate {!r} units must be either degrees or '
                              'convertible to meters.'.format(name))

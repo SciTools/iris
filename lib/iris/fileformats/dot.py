@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,6 +19,10 @@ Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import os
 import subprocess
 
@@ -29,20 +33,35 @@ import iris.util
 _GRAPH_INDENT = ' ' * 4
 _SUBGRAPH_INDENT = ' ' * 8
 
-_DOT_EXECUTABLE_PATH = iris.config.get_option('System', 'dot_path',
-                                              default='dot')
-if not os.path.exists(_DOT_EXECUTABLE_PATH):
-    if not os.path.isabs(_DOT_EXECUTABLE_PATH):
-        try:
-            # Check PATH
-            subprocess.check_output([_DOT_EXECUTABLE_PATH, '-V'],
-                                    stderr=subprocess.STDOUT)
-        except OSError:
-            _DOT_EXECUTABLE_PATH = None
+
+_DOT_CHECKED = False
+_DOT_EXECUTABLE_PATH = None
+
+
+def _dot_path():
+    global _DOT_CHECKED, _DOT_EXECUTABLE_PATH
+
+    if _DOT_CHECKED:
+        path = _DOT_EXECUTABLE_PATH
     else:
-        _DOT_EXECUTABLE_PATH = None
+        path = iris.config.get_option('System', 'dot_path', default='dot')
+        if not os.path.exists(path):
+            if not os.path.isabs(path):
+                try:
+                    # Check PATH
+                    subprocess.check_output([path, '-V'],
+                                            stderr=subprocess.STDOUT)
+                except (OSError, subprocess.CalledProcessError):
+                    path = None
+            else:
+                path = None
+        _DOT_EXECUTABLE_PATH = path
+        _DOT_CHECKED = True
+    return path
+
+
 #: Whether the 'dot' program is present (required for "dotpng" output).
-DOT_AVAILABLE = _DOT_EXECUTABLE_PATH is not None
+DOT_AVAILABLE = _dot_path() is not None
 
 
 def save(cube, target):
@@ -56,7 +75,7 @@ def save(cube, target):
     See also :func:`iris.io.save`.
 
     """
-    if isinstance(target, basestring):
+    if isinstance(target, six.string_types):
         dot_file = open(target, "wt")
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" in target.mode:
@@ -65,10 +84,11 @@ def save(cube, target):
     else:
         raise ValueError("Can only save dot to filename or filehandle")
 
-    dot_file.write(cube_text(cube))
-
-    if isinstance(target, basestring):
-        dot_file.close()
+    try:
+        dot_file.write(cube_text(cube))
+    finally:
+        if isinstance(target, six.string_types):
+            dot_file.close()
 
 
 def save_png(source, target, launch=False):
@@ -93,23 +113,23 @@ def save_png(source, target, launch=False):
         # Create dot file
         dot_file_path = iris.util.create_temp_filename(".dot")
         save(source, dot_file_path)
-    elif isinstance(source, basestring):
+    elif isinstance(source, six.string_types):
         dot_file_path = source
     else:
         raise ValueError("Can only write dot png for a Cube or DOT file")
 
     # Create png data
-    if not _DOT_EXECUTABLE_PATH:
+    if not _dot_path():
         raise ValueError('Executable "dot" not found: '
                          'Review dot_path setting in site.cfg.')
     # To filename or open file handle?
-    if isinstance(target, basestring):
-        subprocess.call([_DOT_EXECUTABLE_PATH, '-T', 'png', '-o', target,
+    if isinstance(target, six.string_types):
+        subprocess.call([_dot_path(), '-T', 'png', '-o', target,
                          dot_file_path])
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
-        subprocess.call([_DOT_EXECUTABLE_PATH, '-T', 'png', dot_file_path],
+        subprocess.call([_dot_path(), '-T', 'png', dot_file_path],
                         stdout=target)
     else:
         raise ValueError("Can only write dot png for a filename or writable")
@@ -235,7 +255,8 @@ digraph CubeGraph{
     %(associations)s
 }
     '''
-    cube_attributes = [(name, value) for name, value in sorted(cube.attributes.iteritems(), key=lambda item: item[0])]
+    cube_attributes = list(sorted(six.iteritems(cube.attributes),
+                                  key=lambda item: item[0]))
     cube_node = _dot_node(_GRAPH_INDENT, ':Cube', 'Cube', cube_attributes)
     res_string = template % {
                         'cube_node': cube_node,
@@ -271,7 +292,7 @@ def _coord_text(label, coord):
     attrs = [(name, getattr(coord, name)) for name in _dot_attrs]
 
     if coord.attributes:
-        custom_attrs = sorted(coord.attributes.iteritems(), key=lambda item: item[0])
+        custom_attrs = sorted(six.iteritems(coord.attributes), key=lambda item: item[0])
         attrs.extend(custom_attrs)
 
     node = _dot_node(_SUBGRAPH_INDENT, label, coord.__class__.__name__, attrs)
@@ -291,7 +312,7 @@ def _coord_system_text(cs, uid):
 
     """
     attrs = []
-    for k, v in cs.__dict__.iteritems():
+    for k, v in six.iteritems(cs.__dict__):
         if isinstance(v, iris.cube.Cube):
             attrs.append((k, 'defined'))
         else:

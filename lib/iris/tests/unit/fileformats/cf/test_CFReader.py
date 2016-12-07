@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,17 +19,18 @@ Unit tests for the `iris.fileformats.cf.CFReader` class.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import mock
-import warnings
 
 import numpy as np
 
 import iris
 from iris.fileformats.cf import CFReader
+from iris.tests import mock
 
 
 def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
@@ -128,30 +129,30 @@ class Test_translate__formula_terms(tests.IrisTest):
             # Check there is a singular data variable.
             group = cf_group.data_variables
             self.assertEqual(len(group), 1)
-            self.assertEqual(group.keys(), ['temp'])
+            self.assertEqual(list(group.keys()), ['temp'])
             self.assertIs(group['temp'].cf_data, self.temp)
             # Check there are three coordinates.
             group = cf_group.coordinates
             self.assertEqual(len(group), 3)
             coordinates = ['height', 'lat', 'lon']
-            self.assertEqual(group.viewkeys(), set(coordinates))
+            self.assertEqual(set(group.keys()), set(coordinates))
             for name in coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check there are three auxiliary coordinates.
             group = cf_group.auxiliary_coordinates
             self.assertEqual(len(group), 3)
             aux_coordinates = ['delta', 'sigma', 'orography']
-            self.assertEqual(group.viewkeys(), set(aux_coordinates))
+            self.assertEqual(set(group.keys()), set(aux_coordinates))
             for name in aux_coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check all the auxiliary coordinates are formula terms.
             formula_terms = cf_group.formula_terms
-            self.assertEqual(group.viewitems(), formula_terms.viewitems())
+            self.assertEqual(set(group.items()), set(formula_terms.items()))
             # Check there are three bounds.
             group = cf_group.bounds
             self.assertEqual(len(group), 3)
             bounds = ['height_bnds', 'delta_bnds', 'sigma_bnds']
-            self.assertEqual(group.viewkeys(), set(bounds))
+            self.assertEqual(set(group.keys()), set(bounds))
             for name in bounds:
                 self.assertEqual(group[name].cf_data, getattr(self, name))
 
@@ -216,7 +217,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             group = temp_cf_group.coordinates
             self.assertEqual(len(group), 3)
             coordinates = ['height', 'lat', 'lon']
-            self.assertEqual(group.viewkeys(), set(coordinates))
+            self.assertEqual(set(group.keys()), set(coordinates))
             for name in coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check the height coordinate is bounded.
@@ -228,12 +229,13 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             group = temp_cf_group.auxiliary_coordinates
             self.assertEqual(len(group), 5)
             aux_coordinates = ['delta', 'sigma', 'orography', 'x', 'y']
-            self.assertEqual(group.viewkeys(), set(aux_coordinates))
+            self.assertEqual(set(group.keys()), set(aux_coordinates))
             for name in aux_coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check all the auxiliary coordinates are formula terms.
             formula_terms = cf_group.formula_terms
-            self.assertTrue(set(formula_terms.items()).issubset(group.items()))
+            self.assertTrue(
+                set(formula_terms.items()).issubset(list(group.items())))
             # Check the terms by root.
             for name, term in zip(aux_coordinates, ['a', 'b', 'orog']):
                 self.assertEqual(formula_terms[name].cf_terms_by_root,
@@ -254,15 +256,15 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             self.assertEqual(len(cf_group), len(self.variables))
             # Check the number of data variables.
             self.assertEqual(len(cf_group.data_variables), 1)
-            self.assertEqual(cf_group.data_variables.keys(), ['temp'])
+            self.assertEqual(list(cf_group.data_variables.keys()), ['temp'])
             # Check the number of promoted variables.
             self.assertEqual(len(cf_group.promoted), 1)
-            self.assertEqual(cf_group.promoted.keys(), ['orography'])
+            self.assertEqual(list(cf_group.promoted.keys()), ['orography'])
             # Check the promoted variable dependencies.
             group = cf_group.promoted['orography'].cf_group.coordinates
             self.assertEqual(len(group), 2)
             coordinates = ('lat', 'lon')
-            self.assertEqual(group.viewkeys(), set(coordinates))
+            self.assertEqual(set(group.keys()), set(coordinates))
             for name in coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
 
@@ -275,11 +277,12 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 cf_group = CFReader('dummy').cf_group
                 if state:
                     group = cf_group.promoted
-                    self.assertEqual(group.keys(), ['orography'])
+                    self.assertEqual(list(group.keys()), ['orography'])
                     self.assertIs(group['orography'].cf_data, self.orography)
+                    self.assertEqual(warn.call_count, 1)
                 else:
                     self.assertEqual(len(cf_group.promoted), 0)
-            self.assertEqual(warn.call_count, 1)
+                    self.assertEqual(warn.call_count, 2)
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ['lat', 'wibble']
@@ -291,12 +294,13 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 if state:
                     promoted = ['x', 'orography']
                     group = cf_group.promoted
-                    self.assertEqual(group.viewkeys(), set(promoted))
+                    self.assertEqual(set(group.keys()), set(promoted))
                     for name in promoted:
                         self.assertIs(group[name].cf_data, getattr(self, name))
+                    self.assertEqual(warn.call_count, 1)
                 else:
                     self.assertEqual(len(cf_group.promoted), 0)
-            self.assertEqual(warn.call_count, 1)
+                    self.assertEqual(warn.call_count, 2)
 
     def test_promoted_auxiliary_ignore(self):
         self.wibble = netcdf_variable('wibble', 'lat wibble', np.float)
@@ -307,7 +311,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 mock.patch('warnings.warn') as warn:
             cf_group = CFReader('dummy').cf_group.promoted
             promoted = ['wibble', 'orography']
-            self.assertEqual(cf_group.viewkeys(), set(promoted))
+            self.assertEqual(set(cf_group.keys()), set(promoted))
             for name in promoted:
                 self.assertIs(cf_group[name].cf_data, getattr(self, name))
             self.assertEqual(warn.call_count, 2)

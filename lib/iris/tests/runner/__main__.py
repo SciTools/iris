@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,11 +18,13 @@
 Provides testing capabilities for installed copies of Iris.
 
 """
-from __future__ import print_function
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import argparse
 
-from _runner import TestRunner
+from ._runner import TestRunner
 
 
 parser = argparse.ArgumentParser('iris.tests',

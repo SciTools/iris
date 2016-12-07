@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,14 +38,17 @@ in that dimension.
 The gallery contains several interesting worked examples of how an
 :class:`~iris.analysis.Aggregator` may be used, including:
 
- * :ref:`graphics-COP_1d_plot`
- * :ref:`graphics-SOI_filtering`
- * :ref:`graphics-hovmoller`
- * :ref:`graphics-lagged_ensemble`
- * :ref:`graphics-custom_aggregation`
+ * :ref:`Meteorology-COP_1d_plot`
+ * :ref:`General-SOI_filtering`
+ * :ref:`Meteorology-hovmoller`
+ * :ref:`Meteorology-lagged_ensemble`
+ * :ref:`General-custom_aggregation`
 
 """
-from __future__ import division
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import collections
 
@@ -56,16 +59,17 @@ import scipy.interpolate
 import scipy.stats.mstats
 
 from iris.analysis._area_weighted import AreaWeightedRegridder
-from iris.analysis._linear import (_LINEAR_EXTRAPOLATION_MODES,
-                                   LinearInterpolator, LinearRegridder)
+from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
+                                          RectilinearInterpolator)
+from iris.analysis._regrid import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
-
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
-           'VARIANCE', 'coord_comparison', 'Aggregator', 'WeightedAggregator',
-           'clear_phenomenon_identity', 'Linear', 'AreaWeighted')
+           'VARIANCE', 'WPERCENTILE', 'coord_comparison', 'Aggregator',
+           'WeightedAggregator', 'clear_phenomenon_identity', 'Linear',
+           'AreaWeighted', 'Nearest')
 
 
 class _CoordGroup(object):
@@ -90,8 +94,8 @@ class _CoordGroup(object):
         as (cube, coord).
 
         """
-        return filter(lambda cube_coord: cube_coord[1] is not None,
-                      zip(self.cubes, self.coords))[0]
+        return next(filter(lambda cube_coord: cube_coord[1] is not None,
+                           zip(self.cubes, self.coords)))
 
     def __repr__(self):
         # No exact repr, so a helpful string is given instead
@@ -210,7 +214,7 @@ def coord_comparison(*cubes):
     Example usage::
 
         result = coord_comparison(cube1, cube2)
-        print 'All equal coordinates: ', result['equal']
+        print('All equal coordinates: ', result['equal'])
 
     """
     all_coords = [cube.coords() for cube in cubes]
@@ -279,39 +283,50 @@ def coord_comparison(*cubes):
 
         # Get all coordinate groups which aren't complete (i.e. there is a
         # None in the group)
-        coord_is_None_fn = lambda cube, coord: coord is None
+        def coord_is_None_fn(cube, coord):
+            return coord is None
+
         if coord_group.matches_any(coord_is_None_fn):
             ungroupable.add(coord_group)
 
         # Get all coordinate groups which don't all equal one another
         # (None -> group not all equal)
-        not_equal_fn = lambda cube, coord: coord != first_coord
+        def not_equal_fn(cube, coord):
+            return coord != first_coord
+
         if coord_group.matches_any(not_equal_fn):
             not_equal.add(coord_group)
 
         # Get all coordinate groups which don't all share the same shape
         # (None -> group has different shapes)
-        diff_shape_fn = lambda cube, coord: coord.shape != first_coord.shape
+        def diff_shape_fn(cube, coord):
+            return coord.shape != first_coord.shape
+
         if coord_group.matches_any(diff_shape_fn):
             different_shaped_coords.add(coord_group)
 
         # Get all coordinate groups which don't all share the same data
         # dimension on their respective cubes
         # (None -> group describes a different dimension)
-        diff_data_dim_fn = lambda cube, coord: \
-            cube.coord_dims(coord) != first_cube.coord_dims(first_coord)
+        def diff_data_dim_fn(cube, coord):
+            return cube.coord_dims(coord) != first_cube.coord_dims(first_coord)
+
         if coord_group.matches_any(diff_data_dim_fn):
             different_data_dimension.add(coord_group)
 
         # get all coordinate groups which don't describe a dimension
         # (None -> doesn't describe a dimension)
-        no_data_dim_fn = lambda cube, coord: cube.coord_dims(coord) == ()
+        def no_data_dim_fn(cube, coord):
+            return cube.coord_dims(coord) == ()
+
         if coord_group.matches_all(no_data_dim_fn):
             no_data_dimension.add(coord_group)
 
         # get all coordinate groups which don't describe a dimension
         # (None -> not a scalar coordinate)
-        no_data_dim_fn = lambda cube, coord: coord.shape == (1, )
+        def no_data_dim_fn(cube, coord):
+            return coord.shape == (1, )
+
         if coord_group.matches_all(no_data_dim_fn):
             scalar_coords.add(coord_group)
 
@@ -340,18 +355,18 @@ def coord_comparison(*cubes):
 
     # for convenience, turn all of the sets in the dictionary into lists,
     # sorted by the name of the group
-    for key, groups in result.iteritems():
+    for key, groups in six.iteritems(result):
         result[key] = sorted(groups, key=lambda group: group.name())
 
     return result
 
 
-class Aggregator(object):
+class _Aggregator(object):
     """
-    The :class:`Aggregator` class provides common aggregation functionality.
+    The :class:`_Aggregator` base class provides common aggregation
+    functionality.
 
     """
-
     def __init__(self, cell_method, call_func, units_func=None,
                  lazy_func=None, **kwargs):
         """
@@ -377,7 +392,7 @@ class Aggregator(object):
             | *Call signature*: (units)
 
             If provided, called to convert a cube's units.
-            Returns an :class:`iris.units.Unit`, or a
+            Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
 
         * lazy_func (callable or None):
@@ -397,7 +412,7 @@ class Aggregator(object):
         A variety of ready-made aggregators are provided in this module, such
         as :data:`~iris.analysis.MEAN` and :data:`~iris.analysis.MAX`.  Custom
         aggregators can also be created for special purposes, see
-        :ref:`graphics-custom_aggregation` for a worked example.
+        :ref:`General-custom_aggregation` for a worked example.
 
         """
         #: Cube cell method string.
@@ -444,13 +459,12 @@ class Aggregator(object):
 
         """
         if self.lazy_func is None:
-            raise LazyAggregatorError(
-                '{} aggregator does not support lazy operation.'.format(
-                    self.cell_method))
+            msg = '{} aggregator does not support lazy operation.'
+            raise LazyAggregatorError(msg.format(self.name()))
 
         # Combine keyword args with `kwargs` taking priority over those
         # provided to __init__.
-        kwargs = dict(self._kwargs.items() + kwargs.items())
+        kwargs = dict(list(self._kwargs.items()) + list(kwargs.items()))
 
         return self.lazy_func(data, axis, **kwargs)
 
@@ -488,7 +502,7 @@ class Aggregator(object):
             The aggregated data.
 
         """
-        kwargs = dict(self._kwargs.items() + kwargs.items())
+        kwargs = dict(list(self._kwargs.items()) + list(kwargs.items()))
         mdtol = kwargs.pop('mdtol', None)
 
         result = self.call_func(data, axis=axis, **kwargs)
@@ -504,6 +518,371 @@ class Aggregator(object):
 
     def update_metadata(self, cube, coords, **kwargs):
         """
+        Update common cube metadata w.r.t the aggregation function.
+
+        Args:
+
+        * cube (:class:`iris.cube.Cube`):
+            Source cube that requires metadata update.
+        * coords (:class:`iris.coords.Coord`):
+            The one or more coordinates that were aggregated.
+
+        Kwargs:
+
+        * This function is intended to be used in conjuction with aggregate()
+          and should be passed the same keywords (for example, the "ddof"
+          keyword for a standard deviation aggregator).
+
+        """
+        # Update the units if required.
+        if self.units_func is not None:
+            cube.units = self.units_func(cube.units)
+
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+        """
+        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Args:
+
+        * collapsed_cube:
+            A :class:`iris.cube.Cube`.
+        * data_result:
+            Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "ddof"
+          keyword from a standard deviation aggregator).
+
+        Returns:
+            The collapsed cube with its aggregated data payload.
+
+        """
+        if isinstance(data_result, biggus.Array):
+            collapsed_cube.lazy_data(data_result)
+        else:
+            collapsed_cube.data = data_result
+
+        return collapsed_cube
+
+    def aggregate_shape(self, **kwargs):
+        """
+        The shape of the new dimension/s created by the aggregator.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords.
+
+        Returns:
+            A tuple of the aggregate shape.
+
+        """
+        return ()
+
+    def name(self):
+        """
+        Returns the name of the aggregator.
+
+        """
+        try:
+            name = '_'.join(self.cell_method.split())
+        except AttributeError:
+            name = 'unknown'
+        return name
+
+
+class PercentileAggregator(_Aggregator):
+    """
+    The :class:`PercentileAggregator` class provides percentile aggregation
+    functionality.
+
+    This aggregator *may* introduce a new dimension to the data for the
+    statistic being calculated, but only if more than one quantile is required.
+    For example, calculating the 50th and 90th percentile will result in a new
+    data dimension with an extent of 2, for each of the quantiles calculated.
+
+    """
+    def __init__(self, units_func=None, lazy_func=None, **kwargs):
+        """
+        Create a percentile aggregator.
+
+        Kwargs:
+
+        * units_func (callable):
+            | *Call signature*: (units)
+
+            If provided, called to convert a cube's units.
+            Returns an :class:`cf_units.Unit`, or a
+            value that can be made into one.
+
+        * lazy_func (callable or None):
+            An alternative to :data:`call_func` implementing a lazy
+            aggregation. Note that, it need not support all features of the
+            main operation, but should raise an error in unhandled cases.
+
+        Additional kwargs::
+            Passed through to :data:`call_func` and :data:`lazy_func`.
+
+        This aggregator can used by cube aggregation methods such as
+        :meth:`~iris.cube.Cube.collapsed` and
+        :meth:`~iris.cube.Cube.aggregated_by`.  For example::
+
+            cube.collapsed('longitude', iris.analysis.PERCENTILE, percent=50)
+
+        """
+        self._name = 'percentile'
+        self._args = ['percent']
+        _Aggregator.__init__(self, None, _percentile,
+                             units_func=units_func, lazy_func=lazy_func,
+                             **kwargs)
+
+    def aggregate(self, data, axis, **kwargs):
+        """
+        Perform the percentile aggregation over the given data.
+
+        Keyword arguments are passed through to the data aggregation function
+        (for example, the "percent" keyword for a percentile aggregator).
+        This function is usually used in conjunction with update_metadata(),
+        which should be passed the same keyword arguments.
+
+        Args:
+
+        * data (array):
+            Data array.
+
+        * axis (int):
+            Axis to aggregate over.
+
+        Kwargs:
+
+        * mdtol (float):
+            Tolerance of missing data. The value returned will be masked if
+            the fraction of data to missing data is less than or equal to
+            mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
+            will return the resulting value from the aggregation function.
+            Defaults to 1.
+
+        * kwargs:
+            All keyword arguments apart from those specified above, are
+            passed through to the data aggregation function.
+
+        Returns:
+            The aggregated data.
+
+        """
+
+        msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+        for arg in self._args:
+            if arg not in kwargs:
+                raise ValueError(msg.format(self.name(), arg))
+
+        return _Aggregator.aggregate(self, data, axis, **kwargs)
+
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+        """
+        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Args:
+
+        * collapsed_cube:
+            A :class:`iris.cube.Cube`.
+        * data_result:
+            Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "percent"
+          keywords from a percentile aggregator).
+
+        Returns:
+            The collapsed cube with it's aggregated data payload.
+
+        """
+        cubes = iris.cube.CubeList()
+        # The additive aggregator requires a mandatory keyword.
+        msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+        for arg in self._args:
+            if arg not in kwargs:
+                raise ValueError(msg.format(self.name(), arg))
+
+        points = kwargs[self._args[0]]
+        # Derive the name of the additive coordinate.
+        names = [coord.name() for coord in coords]
+        coord_name = '{}_over_{}'.format(self.name(), '_'.join(names))
+
+        if not isinstance(points, collections.Iterable):
+            points = [points]
+
+        # Decorate a collapsed cube with a scalar additive coordinate
+        # for each of the additive points, to result in a possibly higher
+        # order cube.
+        for point in points:
+            cube = collapsed_cube.copy()
+            coord = iris.coords.AuxCoord(point, long_name=coord_name)
+            cube.add_aux_coord(coord)
+            cubes.append(cube)
+
+        collapsed_cube = cubes.merge_cube()
+
+        # Ensure to roll the data payload additive dimension, which should
+        # be the last dimension for an additive operation with more than
+        # one point, to be the first dimension, thus matching the collapsed
+        # cube.
+        if self.aggregate_shape(**kwargs):
+            # Roll the last additive dimension to be the first.
+            data_result = np.rollaxis(data_result, -1)
+
+        # Marry the collapsed cube and the data payload together.
+        result = _Aggregator.post_process(self, collapsed_cube, data_result,
+                                          coords, **kwargs)
+        return result
+
+    def aggregate_shape(self, **kwargs):
+        """
+        The shape of the additive dimension created by the aggregator.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords.
+
+        Returns:
+            A tuple of the additive dimension shape.
+
+        """
+
+        msg = '{} aggregator requires the mandatory keyword argument {!r}.'
+        for arg in self._args:
+            if arg not in kwargs:
+                raise ValueError(msg.format(self.name(), arg))
+
+        points = kwargs[self._args[0]]
+        shape = ()
+
+        if not isinstance(points, collections.Iterable):
+            points = [points]
+
+        points = np.array(points)
+
+        if points.shape > (1,):
+            shape = points.shape
+
+        return shape
+
+    def name(self):
+        """
+        Returns the name of the aggregator.
+
+        """
+        return self._name
+
+
+class WeightedPercentileAggregator(PercentileAggregator):
+    """
+    The :class:`WeightedPercentileAggregator` class provides percentile
+    aggregation functionality.
+
+    This aggregator *may* introduce a new dimension to the data for the
+    statistic being calculated, but only if more than one quantile is required.
+    For example, calculating the 50th and 90th percentile will result in a new
+    data dimension with an extent of 2, for each of the quantiles calculated.
+
+    """
+    def __init__(self, units_func=None, lazy_func=None, **kwargs):
+        """
+        Create a weighted percentile aggregator.
+
+        Kwargs:
+
+        * units_func (callable):
+            | *Call signature*: (units)
+
+            If provided, called to convert a cube's units.
+            Returns an :class:`cf_units.Unit`, or a
+            value that can be made into one.
+
+        * lazy_func (callable or None):
+            An alternative to :data:`call_func` implementing a lazy
+            aggregation. Note that, it need not support all features of the
+            main operation, but should raise an error in unhandled cases.
+
+        Additional kwargs::
+            Passed through to :data:`call_func` and :data:`lazy_func`.
+
+        This aggregator can used by cube aggregation methods such as
+        :meth:`~iris.cube.Cube.collapsed` and
+        :meth:`~iris.cube.Cube.aggregated_by`.  For example::
+
+            cube.collapsed('longitude', iris.analysis.WPERCENTILE, percent=50,
+                             weights=iris.analysis.cartography.area_weights(cube))
+
+        """
+        _Aggregator.__init__(self, None, _weighted_percentile,
+                             units_func=units_func, lazy_func=lazy_func,
+                             **kwargs)
+
+        self._name = "weighted_percentile"
+        self._args = ["percent", "weights"]
+
+        #: A list of keywords associated with weighted behaviour.
+        self._weighting_keywords = ["returned", "weights"]
+
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+        """
+        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Returns a tuple(cube, weights) if a tuple(data, weights) was returned
+        from :func:`iris.analysis.Aggregator.aggregate`.
+
+        Args:
+
+        * collapsed_cube:
+            A :class:`iris.cube.Cube`.
+        * data_result:
+            Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "weights"
+          keyword).
+
+        Returns:
+            The collapsed cube with it's aggregated data payload. Or a tuple
+            pair of (cube, weights) if the keyword "returned" is specified
+            and True.
+
+        """
+        if kwargs.get('returned', False):
+            # Package the data into the cube and return a tuple
+            collapsed_cube = PercentileAggregator.post_process(
+                self, collapsed_cube, data_result[0], coords, **kwargs)
+
+            result = (collapsed_cube, data_result[1])
+        else:
+            result = PercentileAggregator.post_process(self, collapsed_cube,
+                                                       data_result, coords,
+                                                       **kwargs)
+
+        return result
+
+
+class Aggregator(_Aggregator):
+    """
+    The :class:`Aggregator` class provides common aggregation functionality.
+
+    """
+    def update_metadata(self, cube, coords, **kwargs):
+        """
         Update cube cell method metadata w.r.t the aggregation function.
 
         Args:
@@ -511,16 +890,18 @@ class Aggregator(object):
         * cube (:class:`iris.cube.Cube`):
             Source cube that requires metadata update.
         * coords (:class:`iris.coords.Coord`):
-            The coords that were aggregated.
+            The one or more coordinates that were aggregated.
 
         Kwargs:
 
         * This function is intended to be used in conjuction with aggregate()
-          and should be passed the same keywords (for example, the "percent"
-          keyword for a percentile aggregator).
+          and should be passed the same keywords (for example, the "ddof"
+          keyword for a standard deviation aggregator).
 
         """
-        kwargs = dict(self._kwargs.items() + kwargs.items())
+        _Aggregator.update_metadata(self, cube, coords, **kwargs)
+
+        kwargs = dict(list(self._kwargs.items()) + list(kwargs.items()))
 
         if not isinstance(coords, (list, tuple)):
             coords = [coords]
@@ -537,29 +918,6 @@ class Aggregator(object):
         cell_method = iris.coords.CellMethod(method_name, coord_names)
         cube.add_cell_method(cell_method)
 
-        # Update the units if required.
-        if self.units_func is not None:
-            cube.units = self.units_func(cube.units)
-
-    def post_process(self, collapsed_cube, data_result, **kwargs):
-        """
-        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
-
-        Args:
-
-        * collapsed_cube
-            A :class:`iris.cube.Cube`.
-        * data_result
-            Result from :func:`iris.analysis.Aggregator.aggregate`
-
-        """
-        if isinstance(data_result, biggus.Array):
-            collapsed_cube.lazy_data(data_result)
-        else:
-            collapsed_cube.data = data_result
-
-        return collapsed_cube
-
 
 class WeightedAggregator(Aggregator):
     """
@@ -575,6 +933,7 @@ class WeightedAggregator(Aggregator):
 
         * cell_method (string):
             Cell method string that supports string format substitution.
+
         * call_func (callable):
             Data aggregation function. Call signature `(data, axis, **kwargs)`.
 
@@ -582,12 +941,14 @@ class WeightedAggregator(Aggregator):
 
         * units_func (callable):
             Units conversion function.
+
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
-        * kwargs:
-            Passed through to :data:`call_func`.
+
+        Additional kwargs:
+            Passed through to :data:`call_func` and :data:`lazy_func`.
 
         """
         Aggregator.__init__(self, cell_method, call_func,
@@ -617,7 +978,7 @@ class WeightedAggregator(Aggregator):
                 break
         return result
 
-    def post_process(self, collapsed_cube, data_result, **kwargs):
+    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
         Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
@@ -626,10 +987,23 @@ class WeightedAggregator(Aggregator):
 
         Args:
 
-        * collapsed_cube
+        * collapsed_cube:
             A :class:`iris.cube.Cube`.
-        * data_result
+        * data_result:
             Result from :func:`iris.analysis.Aggregator.aggregate`
+        * coords:
+            The one or more coordinates that were aggregated over.
+
+        Kwargs:
+
+        * This function is intended to be used in conjunction with aggregate()
+          and should be passed the same keywords (for example, the "weights"
+          keywords from a mean aggregator).
+
+        Returns:
+            The collapsed cube with it's aggregated data payload. Or a tuple
+            pair of (cube, weights) if the keyword "returned" is specified
+            and True.
 
         """
         if kwargs.get('returned', False):
@@ -638,26 +1012,168 @@ class WeightedAggregator(Aggregator):
             result = (collapsed_cube, collapsed_weights)
         else:
             result = Aggregator.post_process(self, collapsed_cube,
-                                             data_result, **kwargs)
+                                             data_result, coords, **kwargs)
 
         return result
 
 
 def _percentile(data, axis, percent, **kwargs):
-    # NB. scipy.stats.mstats.scoreatpercentile always works across just the
-    # first dimension of its input data, and  returns a result that has one
-    # fewer dimension than the input.
-    # So shape=(3, 4, 5) -> shape(4, 5)
-    data = np.rollaxis(data, axis)
-    shape = data.shape[1:]
+    """
+    The percentile aggregator is an additive operation. This means that
+    it *may* introduce a new dimension to the data for the statistic being
+    calculated, but only if more than one percentile point is requested.
+
+    If a new additive dimension is formed, then it will always be the last
+    dimension of the resulting percentile data payload.
+
+    """
+    # Ensure that the target axis is the last dimension.
+    data = np.rollaxis(data, axis, start=data.ndim)
+    quantiles = np.array(percent) / 100.
+    shape = data.shape[:-1]
+    # Flatten any leading dimensions.
     if shape:
-        data = data.reshape([data.shape[0], np.prod(shape)])
-    result = scipy.stats.mstats.scoreatpercentile(data, percent, **kwargs)
+        data = data.reshape([np.prod(shape), data.shape[-1]])
+    # Perform the percentile calculation.
+    result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1, **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
+    # Ensure to unflatten any leading dimensions.
     if shape:
+        if not isinstance(percent, collections.Iterable):
+            percent = [percent]
+        percent = np.array(percent)
+        # Account for the additive dimension.
+        if percent.shape > (1,):
+            shape += percent.shape
         result = result.reshape(shape)
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,) and quantiles.ndim == 0:
+        result = result[0]
+
     return result
+
+
+def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
+    """
+    Compute the weighted quantile of a 1D numpy array.
+
+    Adapted from `wquantiles <https://github.com/nudomarinero/wquantiles/>`_
+
+    Args:
+
+    * data (array)
+        One dimensional data array
+    * weights (array)
+        Array of the same size of `data`.  If data is masked, weights must have
+        matching mask.
+    * quantiles : (float or sequence of floats)
+        Quantile(s) to compute. Must have a value between 0 and 1.
+
+    **kwargs
+        passed to `scipy.interpolate.interp1d`
+
+    Returns:
+        array or float.  Calculated quantile values (set to np.nan wherever sum
+        of weights is zero or masked)
+    """
+    # Return np.nan if no useable points found
+    if np.isclose(weights.sum(), 0.) or weights.sum() is ma.masked:
+        return np.resize(np.array(np.nan), len(quantiles))
+    # Sort the data
+    ind_sorted = ma.argsort(data)
+    sorted_data = data[ind_sorted]
+    sorted_weights = weights[ind_sorted]
+    # Compute the auxiliary arrays
+    Sn = np.cumsum(sorted_weights)
+    Pn = (Sn-0.5*sorted_weights)/np.sum(sorted_weights)
+    # Get the value of the weighted quantiles
+    interpolator = scipy.interpolate.interp1d(Pn, sorted_data,
+                                              bounds_error=False, **kwargs)
+    result = interpolator(quantiles)
+    # Set cases where quantile falls outside data range to min or max
+    np.place(result, Pn.min() > quantiles, sorted_data.min())
+    np.place(result, Pn.max() < quantiles, sorted_data.max())
+
+    return result
+
+
+def _weighted_percentile(data, axis, weights, percent, returned=False,
+                         **kwargs):
+    """
+    The weighted_percentile aggregator is an additive operation. This means
+    that it *may* introduce a new dimension to the data for the statistic being
+    calculated, but only if more than one percentile point is requested.
+
+    If a new additive dimension is formed, then it will always be the last
+    dimension of the resulting percentile data payload.
+
+    Args:
+
+    * data: ndarray or masked array
+
+    * axis: int
+         axis to calculate percentiles over
+
+    * weights: ndarray
+         array with the weights.  Must have same shape as data
+
+    * percent: float or sequence of floats
+         Percentile rank/s at which to extract value/s.
+
+    * returned: bool, optional
+         Default False.  If True, returns a tuple with the percentiles as the
+         first element and the sum of the weights as the second element.
+
+    """
+    # Ensure that data and weights arrays are same shape.
+    if data.shape != weights.shape:
+        raise ValueError('_weighted_percentile: weights wrong shape.')
+    # Ensure that the target axis is the last dimension.
+    data = np.rollaxis(data, axis, start=data.ndim)
+    weights = np.rollaxis(weights, axis, start=data.ndim)
+    quantiles = np.array(percent) / 100.
+    # Add data mask to weights if necessary.
+    if ma.isMaskedArray(data):
+        weights = ma.array(weights, mask=data.mask)
+    shape = data.shape[:-1]
+    # Flatten any leading dimensions and loop over them
+    if shape:
+        data = data.reshape([np.prod(shape), data.shape[-1]])
+        weights = weights.reshape([np.prod(shape), data.shape[-1]])
+        result = np.empty((np.prod(shape), quantiles.size))
+        # Perform the percentile calculation.
+        for res, dat, wt in zip(result, data, weights):
+            res[:] = _weighted_quantile_1D(dat, wt, quantiles, **kwargs)
+    else:
+        # Data is 1D
+        result = _weighted_quantile_1D(data, weights, quantiles, **kwargs)
+
+    if np.any(np.isnan(result)):
+        result = ma.masked_invalid(result)
+
+    if not ma.isMaskedArray(data) and not ma.is_masked(result):
+        result = np.asarray(result)
+
+    # Ensure to unflatten any leading dimensions.
+    if shape:
+        if not isinstance(percent, collections.Iterable):
+            percent = [percent]
+        percent = np.array(percent)
+        # Account for the additive dimension.
+        if percent.shape > (1,):
+            shape += percent.shape
+        result = result.reshape(shape)
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,) and quantiles.ndim == 0:
+        result = result[0]
+
+    if returned:
+        return result, weights.sum(axis=-1)
+    else:
+        return result
 
 
 def _count(array, function, axis, **kwargs):
@@ -790,7 +1306,7 @@ def _peak(array, **kwargs):
                 column_peaks.append(column[0])
                 continue
 
-            tck = scipy.interpolate.splrep(range(column.size), column, k=k)
+            tck = scipy.interpolate.splrep(np.arange(column.size), column, k=k)
             npoints = column.size * 100
             points = np.linspace(0, column.size - 1, npoints)
             spline = scipy.interpolate.splev(points, tck)
@@ -812,7 +1328,8 @@ def _peak(array, **kwargs):
 #
 # Common partial Aggregation class constructors.
 #
-COUNT = Aggregator('count', _count, lambda units: 1)
+COUNT = Aggregator('count', _count,
+                   units_func=lambda units: 1)
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
 of :class:`~iris.cube.Cube` data occurrences that satisfy a particular
@@ -1002,19 +1519,16 @@ This aggregator handles masked data.
 """
 
 
-PERCENTILE = Aggregator('percentile ({percent}%)',
-                        _percentile,
-                        alphap=1,
-                        betap=1)
+PERCENTILE = PercentileAggregator(alphap=1, betap=1)
 """
-An :class:`~iris.analysis.Aggregator` instance that calculates the
+An :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
-:func:`scipy.stats.mstats.scoreatpercentile`.
+:func:`scipy.stats.mstats.mquantiles`.
 
 **Required** kwargs associated with the use of this aggregator:
 
-* percent (float):
-    Percentile rank at which to extract value.
+* percent (float or sequence of floats):
+    Percentile rank/s at which to extract value/s.
 
 Additional kwargs associated with the use of this aggregator:
 
@@ -1027,16 +1541,18 @@ Additional kwargs associated with the use of this aggregator:
 
 **For example**:
 
-To compute the 90th percentile over *time*::
+To compute the 10th and 90th percentile over *time*::
 
-    result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=90)
+    result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=[10, 90])
 
 This aggregator handles masked data.
 
 """
 
 
-PROPORTION = Aggregator('proportion', _proportion, lambda units: 1)
+PROPORTION = Aggregator('proportion',
+                        _proportion,
+                        units_func=lambda units: 1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 proportion, as a fraction, of :class:`~iris.cube.Cube` data occurrences
@@ -1135,7 +1651,9 @@ Additional kwargs associated with the use of this aggregator:
 
 * weights (float ndarray):
     Weights matching the shape of the cube, or the length of
-    the window for rolling window operations.
+    the window for rolling window operations. Weights should be
+    normalized before using them with this aggregator if scaling
+    is not intended.
 * returned (boolean):
     Set this to True to indicate the collapsed weights are to be returned
     along with the collapsed data. Defaults to False.
@@ -1157,7 +1675,9 @@ This aggregator handles masked data.
 """
 
 
-VARIANCE = Aggregator('variance', ma.var, lambda units: units * units,
+VARIANCE = Aggregator('variance',
+                      ma.var,
+                      units_func=lambda units: units * units,
                       lazy_func=biggus.var, ddof=1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
@@ -1185,6 +1705,36 @@ To obtain the biased variance::
     Lazy operation is supported, via :func:`biggus.var`.
 
 This aggregator handles masked data.
+
+"""
+
+
+WPERCENTILE = WeightedPercentileAggregator()
+"""
+An :class:`~iris.analysis.WeightedPercentileAggregator` instance that
+calculates the weighted percentile over a :class:`~iris.cube.Cube`.
+
+**Required** kwargs associated with the use of this aggregator:
+
+* percent (float or sequence of floats):
+    Percentile rank/s at which to extract value/s.
+
+* weights (float ndarray):
+    Weights matching the shape of the cube or the length of the window
+    for rolling window operations. Note that, latitude/longitude area
+    weights can be calculated using
+    :func:`iris.analysis.cartography.area_weights`.
+
+Additional kwargs associated with the use of this aggregator:
+
+* returned (boolean):
+    Set this to True to indicate that the collapsed weights are to be
+    returned along with the collapsed data. Defaults to False.
+
+* kind (string or int):
+    Specifies the kind of interpolation used, see
+    :func:`scipy.interpolate.interp1d` Defaults to "linear", which is
+    equivalent to alphap=0.5, betap=0.5 in `iris.analysis.PERCENTILE`
 
 """
 
@@ -1332,7 +1882,7 @@ class _Groupby(object):
                 # Calculate the new shared coordinates.
                 self._compute_shared_coords()
             # Generate the group-by slices/groups.
-            for groupby_slice in self._slices_by_key.itervalues():
+            for groupby_slice in six.itervalues(self._slices_by_key):
                 yield groupby_slice
 
         return
@@ -1346,7 +1896,7 @@ class _Groupby(object):
         # Iterate over the ordered dictionary in order to reduce
         # multiple slices into a single tuple and collapse
         # all items from containing list.
-        for key, groupby_slices in self._slices_by_key.iteritems():
+        for key, groupby_slices in six.iteritems(self._slices_by_key):
             if len(groupby_slices) > 1:
                 # Compress multiple slices into tuple representation.
                 groupby_indicies = []
@@ -1367,7 +1917,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a group-by slice that samples the first element from each group.
-        for key_slice in self._slices_by_key.itervalues():
+        for key_slice in six.itervalues(self._slices_by_key):
             if isinstance(key_slice, tuple):
                 groupby_slice.append(key_slice[0])
             else:
@@ -1385,7 +1935,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a list of tuple group boundary indexes.
-        for key_slice in self._slices_by_key.itervalues():
+        for key_slice in six.itervalues(self._slices_by_key):
             if isinstance(key_slice, tuple):
                 groupby_bounds.append((key_slice[0], key_slice[-1]))
             else:
@@ -1393,11 +1943,11 @@ class _Groupby(object):
 
         # Create new shared bounded coordinates.
         for coord in self._shared_coords:
-            if coord.points.dtype.kind == 'S':
+            if coord.points.dtype.kind in 'SU':
                 if coord.bounds is None:
                     new_points = []
                     new_bounds = None
-                    for key_slice in self._slices_by_key.itervalues():
+                    for key_slice in six.itervalues(self._slices_by_key):
                         if isinstance(key_slice, slice):
                             indices = key_slice.indices(coord.points.shape[0])
                             key_slice = range(*indices)
@@ -1492,23 +2042,28 @@ def clear_phenomenon_identity(cube):
 
 class Linear(object):
     """
-    This class describes the linear interpolation scheme for interpolating over
-    one or more orthogonal coordinates, typically for use with
-    :meth:`iris.cube.Cube.interpolate()` or :meth:`iris.cube.Cube.regrid()`.
+    This class describes the linear interpolation and regridding scheme for
+    interpolating or regridding over one or more orthogonal coordinates,
+    typically for use with :meth:`iris.cube.Cube.interpolate()` or
+    :meth:`iris.cube.Cube.regrid()`.
 
     """
+
+    LINEAR_EXTRAPOLATION_MODES = list(EXTRAPOLATION_MODES.keys()) + ['linear']
+
     def __init__(self, extrapolation_mode='linear'):
         """
-        Linear interpolation scheme suitable for interpolating over one or
-        more orthogonal coordinates.
+        Linear interpolation and regridding scheme suitable for interpolating
+        or regridding over one or more orthogonal coordinates.
 
         Kwargs:
 
         * extrapolation_mode:
             Must be one of the following strings:
 
-              * 'linear' - The extrapolation points will be calculated by
-                extending the gradient of the closest two points.
+              * 'extrapolate' or 'linear' - The extrapolation points
+                will be calculated by extending the gradient of the
+                closest two points.
               * 'nan' - The extrapolation points will be be set to NaN.
               * 'error' - A ValueError exception will be raised, notifying an
                 attempt to extrapolate.
@@ -1518,10 +2073,10 @@ class Linear(object):
                 extrapolation points will be masked. Otherwise they will be
                 set to NaN.
 
-            Default mode of extrapolation is 'linear'.
+            The default mode of extrapolation is 'linear'.
 
         """
-        if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
+        if extrapolation_mode not in self.LINEAR_EXTRAPOLATION_MODES:
             msg = 'Extrapolation mode {!r} not supported.'
             raise ValueError(msg.format(extrapolation_mode))
         self.extrapolation_mode = extrapolation_mode
@@ -1529,18 +2084,29 @@ class Linear(object):
     def __repr__(self):
         return 'Linear({!r})'.format(self.extrapolation_mode)
 
+    def _normalised_extrapolation_mode(self):
+        mode = self.extrapolation_mode
+        if mode == 'linear':
+            mode = 'extrapolate'
+        return mode
+
     def interpolator(self, cube, coords):
         """
         Creates a linear interpolator to perform interpolation over the
         given :class:`~iris.cube.Cube` specified by the dimensions of
-        the specified coordinates.
+        the given coordinates.
+
+        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+        interpolating a cube. There are, however, some situations when
+        constructing your own interpolator is preferable. These are detailed
+        in the :ref:`user guide <caching_an_interpolator>`.
 
         Args:
 
         * cube:
             The source :class:`iris.cube.Cube` to be interpolated.
         * coords:
-            The names or coordinate instances which are to be
+            The names or coordinate instances that are to be
             interpolated over.
 
         Returns:
@@ -1554,7 +2120,7 @@ class Linear(object):
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
-            The values for coordinates which correspond to date/times
+            The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
             netcdftime.datetime instances.
 
@@ -1564,13 +2130,18 @@ class Linear(object):
             `[new_lat_values, new_lon_values]`.
 
         """
-        return LinearInterpolator(cube, coords,
-                                  extrapolation_mode=self.extrapolation_mode)
+        return RectilinearInterpolator(cube, coords, 'linear',
+                                       self._normalised_extrapolation_mode())
 
     def regridder(self, src_grid, target_grid):
         """
         Creates a linear regridder to perform regridding from the source
         grid to the target grid.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
 
         Args:
 
@@ -1585,11 +2156,11 @@ class Linear(object):
                 `callable(cube)`
 
             where `cube` is a cube with the same grid as `src_grid`
-            which is to be regridded to the `target_grid`.
+            that is to be regridded to the `target_grid`.
 
         """
-        return LinearRegridder(src_grid, target_grid,
-                               extrapolation_mode=self.extrapolation_mode)
+        return RectilinearRegridder(src_grid, target_grid, 'linear',
+                                    self._normalised_extrapolation_mode())
 
 
 class AreaWeighted(object):
@@ -1630,6 +2201,11 @@ class AreaWeighted(object):
         Creates an area-weighted regridder to perform regridding from the
         source grid to the target grid.
 
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
         Args:
 
         * src_grid_cube:
@@ -1642,9 +2218,230 @@ class AreaWeighted(object):
 
                 `callable(cube)`
 
-            where `cube` is a cube with the same grid as `src_grid_cube`, which
-            is to be regridded to the grid of `target_grid_cube`.
+            where `cube` is a cube with the same grid as `src_grid_cube`
+            that is to be regridded to the grid of `target_grid_cube`.
 
         """
         return AreaWeightedRegridder(src_grid_cube, target_grid_cube,
                                      mdtol=self.mdtol)
+
+
+class Nearest(object):
+    """
+    This class describes the nearest-neighbour interpolation and regridding
+    scheme for interpolating or regridding over one or more orthogonal
+    coordinates, typically for use with :meth:`iris.cube.Cube.interpolate()`
+    or :meth:`iris.cube.Cube.regrid()`.
+
+    """
+    def __init__(self, extrapolation_mode='extrapolate'):
+        """
+        Nearest-neighbour interpolation and regridding scheme suitable for
+        interpolating or regridding over one or more orthogonal coordinates.
+
+        Kwargs:
+
+        * extrapolation_mode:
+            Must be one of the following strings:
+
+              * 'extrapolate' - The extrapolation points will take their
+                value from the nearest source point.
+              * 'nan' - The extrapolation points will be be set to NaN.
+              * 'error' - A ValueError exception will be raised, notifying an
+                attempt to extrapolate.
+              * 'mask' - The extrapolation points will always be masked, even
+                if the source data is not a MaskedArray.
+              * 'nanmask' - If the source data is a MaskedArray the
+                extrapolation points will be masked. Otherwise they will be
+                set to NaN.
+
+            The default mode of extrapolation is 'extrapolate'.
+
+        """
+        if extrapolation_mode not in EXTRAPOLATION_MODES:
+            msg = 'Extrapolation mode {!r} not supported.'
+            raise ValueError(msg.format(extrapolation_mode))
+        self.extrapolation_mode = extrapolation_mode
+
+    def __repr__(self):
+        return 'Nearest({!r})'.format(self.extrapolation_mode)
+
+    def interpolator(self, cube, coords):
+        """
+        Creates a nearest-neighbour interpolator to perform
+        interpolation over the given :class:`~iris.cube.Cube` specified
+        by the dimensions of the specified coordinates.
+
+        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+        interpolating a cube. There are, however, some situations when
+        constructing your own interpolator is preferable. These are detailed
+        in the :ref:`user guide <caching_an_interpolator>`.
+
+        Args:
+
+        * cube:
+            The source :class:`iris.cube.Cube` to be interpolated.
+        * coords:
+            The names or coordinate instances that are to be
+            interpolated over.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(sample_points, collapse_scalar=True)`
+
+            where `sample_points` is a sequence containing an array of values
+            for each of the coordinates passed to this method, and
+            `collapse_scalar` determines whether to remove length one
+            dimensions in the result cube caused by scalar values in
+            `sample_points`.
+
+            The values for coordinates that correspond to date/times
+            may optionally be supplied as datetime.datetime or
+            netcdftime.datetime instances.
+
+            For example, for the callable returned by:
+            `Nearest().interpolator(cube, ['latitude', 'longitude'])`,
+            sample_points must have the form
+            `[new_lat_values, new_lon_values]`.
+
+        """
+        return RectilinearInterpolator(cube, coords, 'nearest',
+                                       self.extrapolation_mode)
+
+    def regridder(self, src_grid, target_grid):
+        """
+        Creates a nearest-neighbour regridder to perform regridding from the
+        source grid to the target grid.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_grid:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_grid`
+            that is to be regridded to the `target_grid`.
+
+        """
+        return RectilinearRegridder(src_grid, target_grid, 'nearest',
+                                    self.extrapolation_mode)
+
+
+class UnstructuredNearest(object):
+    """
+    This is a nearest-neighbour interpolation and regridding scheme for
+    regridding cubes whose latitude and longitude coordinates are mapped to the
+    same dimensions, rather than being orthogonal on independent dimensions.
+
+    Currently only supports regridding, not interpolation.
+
+    """
+    def __init__(self):
+        """
+        Nearest-neighbour interpolation and regridding scheme suitable for
+        interpolating or regridding from un-gridded data such as trajectories
+        or other data where the X and Y coordinates share the same dimensions.
+
+        """
+        pass
+
+    def __repr__(self):
+        return 'UnstructuredNearest()'
+
+#    def interpolator(self, cube, coords):
+#        """
+#        Creates a nearest-neighbour interpolator to perform
+#        interpolation over the given :class:`~iris.cube.Cube` specified
+#        by the dimensions of the specified coordinates.
+#
+#        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+#        interpolating a cube. There are, however, some situations when
+#        constructing your own interpolator is preferable. These are detailed
+#        in the :ref:`user guide <caching_an_interpolator>`.
+#
+#        Args:
+#
+#        * cube:
+#            The source :class:`iris.cube.Cube` to be interpolated.
+#        * coords:
+#            The names or coordinate instances that are to be
+#            interpolated over.
+#
+#        Returns:
+#            A callable with the interface:
+#
+#                `callable(sample_points, collapse_scalar=True)`
+#
+#            where `sample_points` is a sequence containing an array of values
+#            for each of the coordinates passed to this method, and
+#            `collapse_scalar` determines whether to remove length one
+#            dimensions in the result cube caused by scalar values in
+#            `sample_points`.
+#
+#            The values for coordinates that correspond to date/times
+#            may optionally be supplied as datetime.datetime or
+#            netcdftime.datetime instances.
+#
+#            For example, for the callable returned by:
+#            `Nearest().interpolator(cube, ['latitude', 'longitude'])`,
+#            sample_points must have the form
+#            `[new_lat_values, new_lon_values]`.
+#
+#        """
+#        return RectilinearInterpolator(cube, coords, 'nearest',
+#                                       self.extrapolation_mode)
+
+    def regridder(self, src_cube, target_grid):
+        """
+        Creates a nearest-neighbour regridder to perform regridding from the
+        source grid to the target grid.
+
+        This can then be applied to any source data with the same structure as
+        the original 'src_cube'.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_cube:
+            The :class:`~iris.cube.Cube` defining the source grid.
+            The X and Y coordinates must be mapped over the same dimensions.
+
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+            It must have only 2 dimensions.
+            The X and Y coordinates must be one-dimensional and mapped to
+            different dimensions.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_cube`
+            that is to be regridded to the `target_grid`.
+
+        """
+        from iris.analysis.trajectory import \
+            UnstructuredNearestNeigbourRegridder
+        return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
+
+
+# Import "iris.analysis.interpolate" to replicate older automatic imports.
+# NOTE: do this at end, as otherwise its import of 'Linear' will fail.
+from . import _interpolate_backdoor as interpolate

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,11 +16,12 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :data:`iris.analysis.VARIANCE` aggregator."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import mock
 
 import biggus
 import numpy as np
@@ -29,6 +30,7 @@ import numpy.ma as ma
 from iris.analysis import VARIANCE
 import iris.cube
 from iris.coords import DimCoord
+from iris.tests import mock
 
 
 class Test_units_func(tests.IrisTest):
@@ -84,6 +86,20 @@ class Test_lazy_aggregate(tests.IrisTest):
         array = biggus.NumpyArrayAdapter(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=0)
         self.assertArrayAlmostEqual(var.ndarray(), np.array(5.25))
+
+
+class Test_name(tests.IrisTest):
+    def test(self):
+        self.assertEqual(VARIANCE.name(), 'variance')
+
+
+class Test_aggregate_shape(tests.IrisTest):
+    def test(self):
+        shape = ()
+        kwargs = dict()
+        self.assertTupleEqual(VARIANCE.aggregate_shape(**kwargs), shape)
+        kwargs = dict(bat='man', wonder='woman')
+        self.assertTupleEqual(VARIANCE.aggregate_shape(**kwargs), shape)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,11 @@
 Test function :func:`iris.util.test_file_is_newer`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -62,7 +67,7 @@ class TestFileIsNewer(tests.IrisTest):
         """Test expected result of executing with given args."""
         # Make args into full paths
         result_path = self._name2path(result_name)
-        if isinstance(source_names, basestring):
+        if isinstance(source_names, six.string_types):
             source_paths = self._name2path(source_names)
         else:
             source_paths = [self._name2path(name)
@@ -116,14 +121,14 @@ class TestFileIsNewer(tests.IrisTest):
     def test_error_missing_source(self):
         with self.assertRaises(IOError) as error_trap:
             self._test(False, 'example_result', ['older_sour*', 'non_exist'])
-        self.assertTrue(error_trap.exception.message.startswith(
-            'One or more of the files specified did not exist'))
+        self.assertIn('One or more of the files specified did not exist',
+                      str(error_trap.exception))
 
     def test_error_missing_wild(self):
         with self.assertRaises(IOError) as error_trap:
             self._test(False, 'example_result', ['older_sour*', 'unknown_*'])
-        self.assertTrue(error_trap.exception.message.startswith(
-            'One or more of the files specified did not exist'))
+        self.assertIn('One or more of the files specified did not exist',
+                      str(error_trap.exception))
 
 
 if __name__ == '__main__':

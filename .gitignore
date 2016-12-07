@@ -33,10 +33,17 @@ lib/iris/std_names.py
 lib/iris/tests/result_image_comparison/
 iris_image_test_output/
 
+# Iris test lock file
+lib/iris/tests/results/imagerepo.lock
+
 # Pydev/Eclipse files
 .project
 .pydevproject
 .settings
+
+# PyCharm files
+/.idea
+*.cover
 
 # Auto generated documentation files
 docs/iris/src/_static/random_image.js

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,9 @@ Test function
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -27,10 +30,9 @@ import iris.tests as tests
 from copy import deepcopy
 import warnings
 
-import mock
-
 from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import product_definition_template_1
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
@@ -39,8 +41,11 @@ class Test(tests.IrisTest):
         self.patch('warnings.warn')
         this = '{}.product_definition_template_0'.format(module)
         self.cell_method = mock.sentinel.cell_method
-        func = lambda s, m, f: m['cell_methods'].append(self.cell_method)
+
+        def func(s, m, f):
+            return m['cell_methods'].append(self.cell_method)
         self.patch(this, side_effect=func)
+
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
                          'long_name': None, 'units': None, 'attributes': {},

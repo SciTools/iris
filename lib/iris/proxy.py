@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,13 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
+.. deprecated:: 1.9
+    This module has been deprecated. Please use lazy imports instead.
+
 Provision of a service to handle missing packages at runtime.
 Current just a very thin layer but gives the option to extend
 handling as much as needed
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 import sys
+
+from iris._deprecation import warn_deprecated
+
+
+warn_deprecated('iris.proxy is deprecated in Iris v1.9. Please use lazy '
+                'imports instead.')
 
 
 class FakeModule(object):

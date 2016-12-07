@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,15 +18,17 @@
 Test pickling of Iris objects.
 
 """
-from __future__ import with_statement
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import cPickle
-import StringIO
+import six.moves.cPickle as pickle
+import io
 
-import biggus
+import cf_units
 import numpy as np
 
 import iris
@@ -35,13 +37,13 @@ import iris
 class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
         """Returns a generator of ("cpickle protocol number", object) tuples."""
-        for protocol in xrange(1 + cPickle.HIGHEST_PROTOCOL):
-            str_buffer = StringIO.StringIO()
-            cPickle.dump(obj, str_buffer, protocol)
+        for protocol in range(1 + pickle.HIGHEST_PROTOCOL):
+            bio = io.BytesIO()
+            pickle.dump(obj, bio, protocol)
 
-            # move the str_buffer back to the start and reconstruct
-            str_buffer.seek(0)
-            reconstructed_obj = cPickle.load(str_buffer)
+            # move the bio back to the start and reconstruct
+            bio.seek(0)
+            reconstructed_obj = pickle.load(bio)
 
             yield protocol, reconstructed_obj
 
@@ -92,11 +94,11 @@ class TestPickle(tests.IrisTest):
 
     def test_picking_equality_misc(self):
         items_to_test = [
-                        iris.unit.Unit("hours since 2007-01-15 12:06:00", calendar=iris.unit.CALENDAR_STANDARD),
-                        iris.unit.as_unit('1'),
-                        iris.unit.as_unit('meters'),
-                        iris.unit.as_unit('no-unit'),
-                        iris.unit.as_unit('unknown')
+                        cf_units.Unit("hours since 2007-01-15 12:06:00", calendar=cf_units.CALENDAR_STANDARD),
+                        cf_units.as_unit('1'),
+                        cf_units.as_unit('meters'),
+                        cf_units.as_unit('no-unit'),
+                        cf_units.as_unit('unknown')
                         ]
 
         for orig_item in items_to_test:

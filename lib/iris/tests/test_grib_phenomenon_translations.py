@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,15 +19,23 @@ Created on Apr 26, 2013
 
 @author: itpp
 '''
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as itests
+import iris.tests as tests
 
-import iris.fileformats.grib.grib_phenom_translation as gptx
-import iris.unit
+import cf_units
+
+if tests.GRIB_AVAILABLE:
+    import gribapi
+    import iris.fileformats.grib.grib_phenom_translation as gptx
 
 
-class TestGribLookupTableType(itests.IrisTest):
+@tests.skip_grib
+class TestGribLookupTableType(tests.IrisTest):
     def test_lookuptable_type(self):
         ll = gptx.LookupTable([('a', 1), ('b', 2)])
         assert ll['a'] == 1
@@ -43,13 +51,14 @@ class TestGribLookupTableType(itests.IrisTest):
         assert ll['q'] == 7
 
 
-class TestGribPhenomenonLookup(itests.IrisTest):
+@tests.skip_grib
+class TestGribPhenomenonLookup(tests.IrisTest):
     def test_grib1_cf_lookup(self):
         def check_grib1_cf(param,
                            standard_name, long_name, units,
                            height=None,
                            t2version=128, centre=98, expect_none=False):
-            iris_units = iris.unit.Unit(units)
+            a_cf_unit = cf_units.Unit(units)
             cfdata = gptx.grib1_phenom_to_cf_info(param_number=param,
                                                   table2_version=t2version,
                                                   centre_number=centre)
@@ -58,7 +67,7 @@ class TestGribPhenomenonLookup(itests.IrisTest):
             else:
                 self.assertEqual(cfdata.standard_name, standard_name)
                 self.assertEqual(cfdata.long_name, long_name)
-                self.assertEqual(cfdata.units, iris_units)
+                self.assertEqual(cfdata.units, a_cf_unit)
                 if height is None:
                     self.assertIsNone(cfdata.set_height)
                 else:
@@ -79,7 +88,7 @@ class TestGribPhenomenonLookup(itests.IrisTest):
         def check_grib2_cf(discipline, category, number,
                            standard_name, long_name, units,
                            expect_none=False):
-            iris_units = iris.unit.Unit(units)
+            a_cf_unit = cf_units.Unit(units)
             cfdata = gptx.grib2_phenom_to_cf_info(param_discipline=discipline,
                                                   param_category=category,
                                                   param_number=number)
@@ -88,7 +97,7 @@ class TestGribPhenomenonLookup(itests.IrisTest):
             else:
                 self.assertEqual(cfdata.standard_name, standard_name)
                 self.assertEqual(cfdata.long_name, long_name)
-                self.assertEqual(cfdata.units, iris_units)
+                self.assertEqual(cfdata.units, a_cf_unit)
 
         # These should work
         check_grib2_cf(0, 0, 2, "air_potential_temperature", None, "K")
@@ -114,7 +123,7 @@ class TestGribPhenomenonLookup(itests.IrisTest):
         def check_cf_grib2(standard_name, long_name,
                            discipline, category, number, units,
                            expect_none=False):
-            iris_units = iris.unit.Unit(units)
+            a_cf_unit = cf_units.Unit(units)
             gribdata = gptx.cf_phenom_to_grib2_info(standard_name, long_name)
             if expect_none:
                 self.assertIsNone(gribdata)
@@ -122,7 +131,7 @@ class TestGribPhenomenonLookup(itests.IrisTest):
                 self.assertEqual(gribdata.discipline, discipline)
                 self.assertEqual(gribdata.category, category)
                 self.assertEqual(gribdata.number, number)
-                self.assertEqual(gribdata.units, iris_units)
+                self.assertEqual(gribdata.units, a_cf_unit)
 
         # These should work
         check_cf_grib2("sea_surface_temperature", None,
@@ -159,4 +168,4 @@ class TestGribPhenomenonLookup(itests.IrisTest):
 
 
 if __name__ == '__main__':
-    itests.main()
+    tests.main()

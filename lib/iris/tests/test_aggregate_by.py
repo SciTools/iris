@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -62,7 +64,7 @@ class TestAggregateBy(tests.IrisTest):
                                                    long_name='height',
                                                    units='m')
 
-        model_level = iris.coords.DimCoord(range(z_points.size),
+        model_level = iris.coords.DimCoord(np.arange(z_points.size),
                                            standard_name='model_level_number')
 
         self.cube_single.add_aux_coord(self.coord_z_single, 0)
@@ -93,7 +95,7 @@ class TestAggregateBy(tests.IrisTest):
                                                    long_name='level',
                                                    units='1')
 
-        model_level = iris.coords.DimCoord(range(z1_points.size),
+        model_level = iris.coords.DimCoord(np.arange(z1_points.size),
                                            standard_name='model_level_number')
 
         self.cube_multi.add_aux_coord(self.coord_z1_multi, 0)

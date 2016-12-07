@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,24 +20,26 @@ color map meta-data mappings.
 
 """
 
-from __future__ import with_statement
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from functools import wraps
 import os
 import os.path
 import re
 
+import cf_units
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
 import numpy as np
 
 import iris.cube
 import iris.config
-import iris.unit
 
 
 # Symmetric normalization function pivot points by SI unit.
-PIVOT_BY_UNIT = {iris.unit.Unit('K'): 273.15}
+PIVOT_BY_UNIT = {cf_units.Unit('K'): 273.15}
 
 # Color map names by palette file metadata field value.
 CMAP_BREWER = set()
@@ -99,7 +101,7 @@ def _default_cmap_norm(args, kwargs):
 
             if len(cmaps) == 0:
                 # Check for a fuzzy match against a keyword.
-                for keyword in _CMAP_BY_KEYWORD.iterkeys():
+                for keyword in six.iterkeys(_CMAP_BY_KEYWORD):
                     if keyword in std_name:
                         cmaps.update(_CMAP_BY_KEYWORD[keyword])
 

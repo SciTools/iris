@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.fileformats` package."""
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import iris.tests as tests
 
@@ -50,6 +53,7 @@ class TestField(tests.IrisTest):
         The arguments are lists of pairs of (coordinate, dimensions).
         The elements are compared one-to-one, by coordinate name (so the order
         of the lists is _not_ significant).
+        It also checks that the coordinate types (DimCoord/AuxCoord) match.
 
         """
         def sorted_by_coordname(list):
@@ -59,3 +63,7 @@ class TestField(tests.IrisTest):
         coords_and_dims_expected = sorted_by_coordname(
             coords_and_dims_expected)
         self.assertEqual(coords_and_dims_got, coords_and_dims_expected)
+        # Also check coordinate type equivalences (as Coord.__eq__ does not).
+        self.assertEqual(
+            [type(coord) for coord, dims in coords_and_dims_got],
+            [type(coord) for coord, dims in coords_and_dims_expected])

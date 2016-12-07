@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2013, Met Office
+# (C) British Crown Copyright 2012 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,10 @@ The documentation for this file format can be found
 `here <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import calendar
 import datetime
@@ -190,7 +194,7 @@ def load_cubes(filespecs, callback=None):
         The resultant cubes may not be in the same order as in the file.
 
     """
-    if isinstance(filespecs, basestring):
+    if isinstance(filespecs, six.string_types):
         filespecs = [filespecs]
 
     for filespec in filespecs:

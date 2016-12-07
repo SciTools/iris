@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,17 +20,17 @@ Test function
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from copy import deepcopy
 
-import mock
-import numpy as np
-
-from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import grid_definition_template_5
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
@@ -50,8 +50,11 @@ class Test(tests.IrisTest):
         self.coord = mock.sentinel.coord
         self.dim = mock.sentinel.dim
         item = (self.coord, self.dim)
-        func = lambda s, m, y, x, c: m['dim_coords_and_dims'].append(item)
+
+        def func(s, m, y, x, c):
+            return m['dim_coords_and_dims'].append(item)
         patch.append(mock.patch(this, side_effect=func))
+
         this = 'iris.coord_systems.RotatedGeogCS'
         self.cs = mock.sentinel.cs
         patch.append(mock.patch(this, return_value=self.cs))

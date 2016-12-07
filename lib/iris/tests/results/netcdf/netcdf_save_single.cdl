@@ -4,6 +4,7 @@ dimensions:
 	longitude = 96 ;
 variables:
 	float air_temperature(latitude, longitude) ;
+		air_temperature:_FillValue = -1.e+30f ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
 		air_temperature:um_stash_source = "m01s03i236" ;

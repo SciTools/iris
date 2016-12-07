@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -35,6 +37,7 @@ from iris.tests.test_interpolation import normalise_order
 
 
 class TestCubeDelta(tests.IrisTest):
+    @tests.skip_data
     def test_invalid(self):
         cube = iris.tests.stock.realistic_4d()
         with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
@@ -310,9 +313,14 @@ def build_cube(data, spherical=False):
     dimz = data.ndim - 3  if data.ndim > 2 else None
 
     if spherical:
-        hcs = iris.coord_systems.GeogCS(6321)
-        cube.add_dim_coord(DimCoord(np.arange(-180, 180, 360./nx, dtype=np.float32), 'longitude', units='degrees', coord_system=hcs, circular=True), dimx)
-        cube.add_dim_coord(DimCoord(np.arange(-90, 90, 180./ny, dtype=np.float32), 'latitude', units='degrees', coord_system=hcs), dimy)
+        if spherical == 'rotated':
+            hcs = iris.coord_systems.RotatedGeogCS(10, 20)
+            lon_name, lat_name = 'grid_longitude', 'grid_latitude'
+        else:
+            hcs = iris.coord_systems.GeogCS(6321)
+            lon_name, lat_name = 'longitude', 'latitude'
+        cube.add_dim_coord(DimCoord(np.arange(-180, 180, 360./nx, dtype=np.float32), lon_name, units='degrees', coord_system=hcs, circular=True), dimx)
+        cube.add_dim_coord(DimCoord(np.arange(-90, 90, 180./ny, dtype=np.float32), lat_name, units='degrees', coord_system=hcs), dimy)
 
     else:
         cube.add_dim_coord(DimCoord(np.arange(nx, dtype=np.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters'), dimx)
@@ -463,8 +471,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
 #        result = r[0].copy(data=True)
 #        x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(result)
 #        result.data = y_pts * 2. * x_ones * z_ones
-#        print repr(r[0].data[0:1, 0:5, 0:25:5])
-#        print repr(result.data[0:1, 0:5, 0:25:5])
+#        print(repr(r[0].data[0:1, 0:5, 0:25:5]))
+#        print(repr(result.data[0:1, 0:5, 0:25:5]))
 #        np.testing.assert_array_almost_equal(result.data, r[0].data, decimal=2)
 #
 #        result = r[1].copy(data=True)
@@ -508,7 +516,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         np.testing.assert_array_almost_equal(result.data[5:-5], r.data[5:-5]/1000.0, decimal=1)
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived1.cml'), checksum=False)
 
-    def test_contrived_sphrical_curl2(self):
+    def test_contrived_spherical_curl2(self):
         # testing:
         # F(lon, lat, r) = (r sin(lat) cos(lon), -r sin(lon), 0)
         # curl( F(x, y, z) ) = (0, 0, -2 cos(lon) cos(lat) )
@@ -546,7 +554,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
         cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
 
-        result = r.copy(data=2*cos_x_pts*cos_y_pts)
+        # Expected r-component value: -2 cos(lon) cos(lat)
+        result = r.copy(data=-2*cos_x_pts*cos_y_pts)
 
         # Note: This numerical comparison was created when the radius was 1000 times smaller
         np.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :]/1000.0, decimal=1)
@@ -559,7 +568,7 @@ class TestCurlInterface(tests.IrisTest):
 
         v = u.copy()
         y = v.coord('latitude')
-        y.points += 5
+        y.points = y.points + 5
         self.assertRaises(ValueError, iris.analysis.calculus.curl, u, v)
 
     def test_standard_name(self):
@@ -609,6 +618,15 @@ class TestCurlInterface(tests.IrisTest):
         # Change it to have an inconsistent phenomenon
         v.rename('northward_foobar2')
         self.assertRaises(ValueError, iris.analysis.calculus.spatial_vectors_with_phenom_name, u, v)
+
+    def test_rotated_pole(self):
+        u = build_cube(np.empty((30, 20)), spherical='rotated')
+        v = u.copy()
+        u.rename('u_wind')       
+        v.rename('v_wind')
+        
+        x, y, z = iris.analysis.calculus.curl(u, v)
+        self.assertEqual(z.coord_system(), u.coord_system())
 
 
 if __name__ == "__main__":

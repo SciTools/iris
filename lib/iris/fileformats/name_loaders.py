@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,19 +16,23 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """NAME file format loading functions."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import collections
 import datetime
-from itertools import izip
 import re
 import warnings
 
+import cf_units
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord, CellMethod
 import iris.coord_systems
 import iris.cube
 from iris.exceptions import TranslationError
-import iris.unit
+import iris.util
 
 
 EARTH_RADIUS = 6371229.0
@@ -48,7 +52,7 @@ def _split_name_and_units(name):
         split = name.rsplit("(", 1)
         try_units = split[1].replace(")", "").strip()
         try:
-            try_units = iris.unit.Unit(try_units)
+            try_units = cf_units.Unit(try_units)
         except ValueError:
             pass
         else:
@@ -72,7 +76,7 @@ def read_header(file_handle):
 
     """
     header = {}
-    header['NAME Version'] = file_handle.next().strip()
+    header['NAME Version'] = next(file_handle).strip()
     for line in file_handle:
         words = line.split(':', 1)
         if len(words) != 2:
@@ -128,25 +132,29 @@ def _read_data_arrays(file_handle, n_arrays, shape):
     return data_arrays
 
 
-def _build_lat_lon_for_NAME_field(header):
+def _build_lat_lon_for_NAME_field(header, dimindex, x_or_y,
+                                  coord_names=['longitude', 'latitude']):
     """
     Return regular latitude and longitude coordinates extracted from
     the provided header dictionary.
-
     """
-    start = header['X grid origin']
-    step = header['X grid resolution']
-    count = header['X grid size']
-    pts = start + np.arange(count, dtype=np.float64) * step
-    lon = NAMECoord(name='longitude', dimension=1, values=pts)
 
-    start = header['Y grid origin']
-    step = header['Y grid resolution']
-    count = header['Y grid size']
-    pts = start + np.arange(count, dtype=np.float64) * step
-    lat = NAMECoord(name='latitude', dimension=0, values=pts)
+    if x_or_y == 'X':
+        start = header['X grid origin']
+        step = header['X grid resolution']
+        count = header['X grid size']
+        pts = start + np.arange(count, dtype=np.float64) * step
+        lat_lon = NAMECoord(name=coord_names[0],
+                            dimension=dimindex, values=pts)
+    else:
+        start = header['Y grid origin']
+        step = header['Y grid resolution']
+        count = header['Y grid size']
+        pts = start + np.arange(count, dtype=np.float64) * step
+        lat_lon = NAMECoord(name=coord_names[1],
+                            dimension=dimindex, values=pts)
 
-    return lat, lon
+    return lat_lon
 
 
 def _build_lat_lon_for_NAME_timeseries(column_headings):
@@ -189,19 +197,22 @@ def _calc_integration_period(time_avgs):
     """
     integration_periods = []
     pattern = re.compile(
-        r'(\d{0,2})(day)?\s*(\d{1,2})(hr)?\s*(\d{1,2})(min)?\s*(\w*)')
+        r'\s*(\d{1,2}day)?\s*(\d{1,2}hr)?\s*(\d{1,2}min)?\s*(\w*)\s*')
     for time_str in time_avgs:
         days = 0
         hours = 0
         minutes = 0
         matches = pattern.search(time_str)
         if matches:
-            if len(matches.group(1)) > 0:
-                days = float(matches.group(1))
-            if len(matches.group(3)) > 0:
-                hours = float(matches.group(3))
-            if len(matches.group(1)) > 0:
-                minutes = float(matches.group(5))
+            _days = matches.group(1)
+            if _days is not None and len(_days) > 0:
+                days = float(_days.rstrip('day'))
+            _hours = matches.group(2)
+            if _hours is not None and len(_hours) > 0:
+                hours = float(_hours.rstrip('hr'))
+            _minutes = matches.group(3)
+            if _minutes is not None and len(_minutes) > 0:
+                minutes = float(_minutes.rstrip('min'))
         total_hours = days * 24.0 + hours + minutes / 60.0
         integration_periods.append(datetime.timedelta(hours=total_hours))
     return integration_periods
@@ -209,7 +220,7 @@ def _calc_integration_period(time_avgs):
 
 def _parse_units(units):
     """
-    Return a known :class:`iris.unit.Unit` given a NAME unit
+    Return a known :class:`cf_units.Unit` given a NAME unit
 
     .. note::
 
@@ -225,7 +236,7 @@ def _parse_units(units):
         NAME units.
 
     Returns:
-        An instance of :class:`iris.unit.Unit`.
+        An instance of :class:`cf_units.Unit`.
 
     """
 
@@ -249,15 +260,15 @@ def _parse_units(units):
     units = units.replace('mcBq', 'uBq')
     units = units.replace('mcg', 'ug')
     try:
-        units = iris.unit.Unit(units)
+        units = cf_units.Unit(units)
     except ValueError:
         warnings.warn('Unknown units: {!r}'.format(units))
-        units = iris.unit.Unit(None)
+        units = cf_units.Unit(None)
 
     return units
 
 
-def _cf_height_from_name(z_coord):
+def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
     """
     Parser for the z component of field headings.
 
@@ -297,7 +308,7 @@ def _cf_height_from_name(z_coord):
     # NAMEIII - integer/float support.
     # Match scalar against height agl, asl, Pa, FL
     pattern_scalar = re.compile(r'Z\s*=\s*'
-                                '(?P<point>[0-9]+(\.[0-9]+)?)'
+                                '(?P<point>[0-9]+(\.[0-9]+)?([eE][+-]?\d+)?)'
                                 '\s*(?P<type>m\s*agl|m\s*asl|FL|Pa)'
                                 '(?P<extra>.*)')
 
@@ -310,6 +321,11 @@ def _cf_height_from_name(z_coord):
     bounds = None
     standard_name = None
     long_name = 'z'
+
+    if upper_bound is not None and lower_bound is not None:
+        match_ub = pattern_scalar.match(upper_bound)
+        match_lb = pattern_scalar.match(lower_bound)
+
     for pattern in patterns:
         match = pattern.match(z_coord)
         if match:
@@ -323,6 +339,9 @@ def _cf_height_from_name(z_coord):
             # Interpret points if present.
             if 'point' in match:
                 points = float(match['point'])
+                if upper_bound is not None and lower_bound is not None:
+                    bounds = np.array([float(match_lb.groupdict()['point']),
+                                       float(match_ub.groupdict()['point'])])
             # Interpret points from bounds.
             else:
                 bounds = np.array([float(match['lower_bound']),
@@ -364,8 +383,7 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
         # Turn the dictionary of column headings with a list of header
         # information for each field into a dictionary of headings for
         # just this field.
-        field_headings = {k: v[i] for k, v in
-                          column_headings.iteritems()}
+        field_headings = {k: v[i] for k, v in six.iteritems(column_headings)}
 
         # Make a cube.
         cube = iris.cube.Cube(data_array)
@@ -379,34 +397,72 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
         # Some units are not in SI units, are missing spaces or typed
         # in the wrong case. _parse_units returns units that are
         # recognised by Iris.
-        cube.units = _parse_units(field_headings['Unit'])
+        cube.units = _parse_units(field_headings['Units'])
 
         # Define and add the singular coordinates of the field (flight
         # level, time etc.)
-        z_coord = _cf_height_from_name(field_headings['Z'])
-        cube.add_aux_coord(z_coord)
+        if 'Z' in field_headings:
+            upper_bound, = [field_headings['... to [Z]']
+                            if '... to [Z]' in field_headings else None]
+            lower_bound, = [field_headings['... from [Z]']
+                            if '... from [Z]' in field_headings else None]
+            z_coord = _cf_height_from_name(field_headings['Z'],
+                                           upper_bound=upper_bound,
+                                           lower_bound=lower_bound)
+            cube.add_aux_coord(z_coord)
 
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
-        time_unit = iris.unit.Unit(
-            'hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
+        time_unit = cf_units.Unit(
+            'hours since epoch', calendar=cf_units.CALENDAR_GREGORIAN)
 
-        # Build time, latitude and longitude coordinates.
+        # Build time, height, latitude and longitude coordinates.
         for coord in coords:
             pts = coord.values
             coord_sys = None
             if coord.name == 'latitude' or coord.name == 'longitude':
                 coord_units = 'degrees'
                 coord_sys = iris.coord_systems.GeogCS(EARTH_RADIUS)
+            if coord.name == 'projection_x_coordinate' \
+                    or coord.name == 'projection_y_coordinate':
+                coord_units = 'm'
+                coord_sys = iris.coord_systems.OSGB()
+            if coord.name == 'height':
+                coord_units = 'm'
+                long_name = 'height above ground level'
+                pts = coord.values
+            if coord.name == 'altitude':
+                coord_units = 'm'
+                long_name = 'altitude above sea level'
+                pts = coord.values
+            if coord.name == 'air_pressure':
+                coord_units = 'Pa'
+                pts = coord.values
+            if coord.name == 'flight_level':
+                pts = coord.values
+                long_name = 'flight_level'
+                coord_units = _parse_units('FL')
             if coord.name == 'time':
                 coord_units = time_unit
                 pts = time_unit.date2num(coord.values)
 
             if coord.dimension is not None:
-                icoord = DimCoord(points=pts,
-                                  standard_name=coord.name,
-                                  units=coord_units,
-                                  coord_system=coord_sys)
+                if coord.name == 'longitude':
+                    circular = iris.util._is_circular(pts, 360.0)
+                else:
+                    circular = False
+                if coord.name == 'flight_level':
+                    icoord = DimCoord(points=pts,
+                                      units=coord_units,
+                                      long_name=long_name,)
+                else:
+                    icoord = DimCoord(points=pts,
+                                      standard_name=coord.name,
+                                      units=coord_units,
+                                      coord_system=coord_sys,
+                                      circular=circular)
+                if coord.name == 'height' or coord.name == 'altitude':
+                    icoord.long_name = long_name
                 if coord.name == 'time' and 'Av or Int period' in \
                         field_headings:
                     dt = coord.values - \
@@ -432,19 +488,24 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
                 cube.add_aux_coord(icoord)
 
         # Headings/column headings which are encoded elsewhere.
-        headings = ['X', 'Y', 'Z', 'Time', 'Unit', 'Av or Int period',
+        headings = ['X', 'Y', 'Z', 'Time', 'T', 'Units',
+                    'Av or Int period',
+                    '... from [Z]', '... to [Z]',
                     'X grid origin', 'Y grid origin',
                     'X grid size', 'Y grid size',
-                    'X grid resolution', 'Y grid resolution', ]
+                    'X grid resolution', 'Y grid resolution',
+                    'Number of field cols', 'Number of preliminary cols',
+                    'Number of fields', 'Number of series',
+                    'Output format', ]
 
         # Add the Main Headings as attributes.
-        for key, value in header.iteritems():
+        for key, value in six.iteritems(header):
             if value is not None and value != '' and \
                     key not in headings:
                 cube.attributes[key] = value
 
         # Add the Column Headings as attributes
-        for key, value in field_headings.iteritems():
+        for key, value in six.iteritems(field_headings):
             if value is not None and value != '' and \
                     key not in headings:
                 cube.attributes[key] = value
@@ -508,7 +569,7 @@ def load_NAMEIII_field(filename):
 
     """
     # Loading a file gives a generator of lines which can be progressed using
-    # the next() method. This will come in handy as we wish to progress
+    # the next() function. This will come in handy as we wish to progress
     # through the file line by line.
     with open(filename, 'r') as file_handle:
         # Create a dictionary which can hold the header metadata about this
@@ -523,13 +584,22 @@ def load_NAMEIII_field(filename):
         # first 4 columns are ignored).
         column_headings = {}
         for column_header_name in ['Species Category', 'Name', 'Quantity',
-                                   'Species', 'Unit', 'Sources', 'Ensemble Av',
+                                   'Species', 'Units', 'Sources',
+                                   'Ensemble Av',
                                    'Time Av or Int', 'Horizontal Av or Int',
                                    'Vertical Av or Int', 'Prob Perc',
                                    'Prob Perc Ens', 'Prob Perc Time',
                                    'Time', 'Z', 'D']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[4:-1]
+
+        # Read in the column titles to determine the coordinate system
+        col_titles = next(file_handle).split(',')
+        if 'National Grid' in col_titles[2]:
+            coord_names = ['projection_x_coordinate',
+                           'projection_y_coordinate']
+        else:
+            coord_names = ['longitude', 'latitude']
 
         # Convert the time to python datetimes.
         new_time_column_header = []
@@ -550,12 +620,12 @@ def load_NAMEIII_field(filename):
                                            tdim.name)
 
         # Build regular latitude and longitude coordinates.
-        lat, lon = _build_lat_lon_for_NAME_field(header)
+        lon = _build_lat_lon_for_NAME_field(header, 1, 'X',
+                                            coord_names=coord_names)
+        lat = _build_lat_lon_for_NAME_field(header, 0, 'Y',
+                                            coord_names=coord_names)
 
         coords = [lon, lat, tdim]
-
-        # Skip the line after the column headings.
-        next(file_handle)
 
         # Create data arrays to hold the data for each column.
         n_arrays = header['Number of field cols']
@@ -598,8 +668,8 @@ def load_NAMEII_field(filename):
         column_headings = {}
         for column_header_name in ['Species Category', 'Species',
                                    'Time Av or Int', 'Quantity',
-                                   'Unit', 'Z', 'Time']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+                                   'Units', 'Z', 'Time']:
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[4:-1]
 
         # Convert the time to python datetimes
@@ -629,7 +699,8 @@ def load_NAMEII_field(filename):
                                            tdim.name)
 
         # Build regular latitude and longitude coordinates.
-        lat, lon = _build_lat_lon_for_NAME_field(header)
+        lon = _build_lat_lon_for_NAME_field(header, 1, 'X')
+        lat = _build_lat_lon_for_NAME_field(header, 0, 'Y')
 
         coords = [lon, lat, tdim]
 
@@ -670,12 +741,12 @@ def load_NAMEIII_timeseries(filename):
         # Read the lines of column definitions - currently hardwired
         column_headings = {}
         for column_header_name in ['Species Category', 'Name', 'Quantity',
-                                   'Species', 'Unit', 'Sources', 'Ens Av',
+                                   'Species', 'Units', 'Sources', 'Ens Av',
                                    'Time Av or Int', 'Horizontal Av or Int',
                                    'Vertical Av or Int', 'Prob Perc',
                                    'Prob Perc Ens', 'Prob Perc Time',
                                    'Location', 'X', 'Y', 'Z', 'D']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[1:-1]
 
         # Determine the coordinates of the data and store in namedtuples.
@@ -742,8 +813,8 @@ def load_NAMEII_timeseries(filename):
         column_headings = {}
         for column_header_name in ['Y', 'X', 'Location',
                                    'Species Category', 'Species',
-                                   'Quantity', 'Z', 'Unit']:
-            cols = [col.strip() for col in file_handle.next().split(',')]
+                                   'Quantity', 'Z', 'Units']:
+            cols = [col.strip() for col in next(file_handle).split(',')]
             column_headings[column_header_name] = cols[1:-1]
 
         # Determine the coordinates of the data and store in namedtuples.
@@ -784,6 +855,218 @@ def load_NAMEII_timeseries(filename):
     return _generate_cubes(header, column_headings, coords, data_arrays)
 
 
+def load_NAMEIII_version2(filename):
+    """
+    Load a NAME III version 2 file returning a
+    generator of :class:`iris.cube.Cube` instances.
+    Args:
+    * filename (string):
+        Name of file to load.
+    Returns:
+        A generator :class:`iris.cube.Cube` instances.
+    """
+
+    # loading a file gives a generator of lines which can be progressed
+    # using the next() method. This will come in handy as we wish to
+    # progress through the file line by line.
+    with open(filename, 'r') as file_handle:
+
+        # define a dictionary to hold the header metadata about this file
+        header = read_header(file_handle)
+
+        # Skip next line which contains (Fields:)
+        next(file_handle)
+
+        # Now carry on and read column headers
+        column_headings = {}
+        datacol1 = header['Number of preliminary cols']
+        for line in file_handle:
+
+            data = [col.strip() for col in line.split(',')][:-1]
+
+            # If first column is not zero we have reached the end
+            #  of the headers
+            if data[0] != "":
+                break
+
+            column_key = data[datacol1 - 1].strip(':')
+
+            # This will filter out any zero columns
+            if filter(None, data[datacol1:]):
+                column_headings[column_key] = data[datacol1:]
+
+        # Some tidying up
+        if 'T' in column_headings:
+            new_time_column_header = []
+            for i, t in enumerate(column_headings['T']):
+                dt = datetime.datetime.strptime(t, NAMEIII_DATETIME_FORMAT)
+                new_time_column_header.append(dt)
+            column_headings['T'] = new_time_column_header
+
+        # Convert averaging/integrating period to timedeltas.
+        column_headings['Av or Int period'] = _calc_integration_period(
+            column_headings['Time av/int info'])
+
+        # Next we need to figure out what we have in the preliminary columns
+        # For X and Y we want the index
+        # And the values can be extracted from the header information
+        xindex = None
+        yindex = None
+        dim_coords = []
+
+        # First determine whether we are using National Grid or lat/lon
+        if 'X (UK National Grid (m))' in data:
+            coord_names = ['projection_x_coordinate',
+                           'projection_y_coordinate']
+        else:
+            coord_names = ['longitude', 'latitude']
+
+        if 'Y Index' in data:
+            yindex = data.index('Y Index')
+            dim_coords.append('Y')
+            lat = _build_lat_lon_for_NAME_field(header,
+                                                dim_coords.index('Y'),
+                                                'Y',
+                                                coord_names=coord_names)
+        if 'X Index' in data:
+            xindex = data.index('X Index')
+            dim_coords.append('X')
+            lon = _build_lat_lon_for_NAME_field(header,
+                                                dim_coords.index('X'),
+                                                'X',
+                                                coord_names=coord_names)
+
+        # For all other variables we need the values (note that for Z the units
+        # will also be given in the column header)
+        tindex = None
+        zindex = None
+        if 'T' in data:
+            tindex = data.index('T')
+            dim_coords.append('T')
+
+        if 'Z' in line:
+            zgrid = [item for item in data if item[0:3] == 'Z (']
+            zunits = zgrid[0].split('(')[1].strip(')')
+            if zunits == 'm asl':
+                z_name = 'altitude'
+            elif zunits == 'm agl':
+                z_name = 'height'
+            elif zunits == 'FL':
+                z_name = 'flight_level'
+            elif zunits == 'Pa':
+                z_name = 'air_pressure'
+            else:
+                ValueError('Vertical coordinate unkown')
+            zindex = data.index(zgrid[0])
+            dim_coords.append('Z')
+
+        # Make a list of data lists to hold the data
+        # for each column.(aimed at T-Z data)
+        data_lists = [[] for i in range(header['Number of field cols'])]
+        coord_lists = [[] for i in
+                       range(header['Number of preliminary cols']-1)]
+
+        # Iterate over the remaining lines which represent the data in a
+        # column form.
+        for line in file_handle:
+            # Split the line by comma, removing the last empty column caused
+            # by the trailing comma.
+            vals = line.split(',')[:-1]
+
+            # Time is stored in the column labelled T index
+            if tindex is not None:
+                t = vals[tindex].strip()
+                dt = datetime.datetime.strptime(t, NAMEIII_DATETIME_FORMAT)
+                coord_lists[dim_coords.index('T')].append(dt)
+
+            # Z is stored in the column labelled ZIndex
+            if zindex is not None:
+                z = vals[zindex].strip()
+                coord_lists[dim_coords.index('Z')].append(float(z))
+
+            # For X and Y we are extracting indices not values
+            if yindex is not None:
+                yind = vals[yindex].strip()
+                coord_lists[dim_coords.index('Y')].append(int(yind)-1)
+            if xindex is not None:
+                xind = vals[xindex].strip()
+                coord_lists[dim_coords.index('X')].append(int(xind)-1)
+
+            # Populate the data arrays.
+            for i, data_list in enumerate(data_lists):
+                data_list.append(float(vals[i + datacol1]))
+
+        data_arrays = [np.array(l) for l in data_lists]
+
+        # Convert Z and T arrays into arrays of indices
+        zind = []
+        if zindex is not None:
+            z_array = np.array(coord_lists[dim_coords.index('Z')])
+            z_unique = sorted(list(set(coord_lists[dim_coords.index('Z')])))
+            z_coord = NAMECoord(name=z_name, dimension=dim_coords.index('Z'),
+                                values=z_unique)
+            for z in z_array:
+                zind.append(z_unique.index(z))
+            coord_lists[dim_coords.index('Z')] = zind
+
+        tind = []
+        if tindex is not None:
+            time_array = np.array(coord_lists[dim_coords.index('T')])
+            t_unique = sorted(list(set(coord_lists[dim_coords.index('T')])))
+            time = NAMECoord(name='time', dimension=dim_coords.index('T'),
+                             values=np.array(t_unique))
+            for t in time_array:
+                tind.append(t_unique.index(t))
+            coord_lists[dim_coords.index('T')] = tind
+
+        # Now determine the shape of the multidimensional array to store
+        # the data in based on the length of the coordinates
+        array_shape_list = []
+        coords = []
+        for cname in dim_coords:
+            if cname == 'X':
+                coords.append(lon)
+                array_shape_list.append(len(lon.values))
+            elif cname == 'Y':
+                coords.append(lat)
+                array_shape_list.append(len(lat.values))
+            elif cname == 'Z':
+                coords.append(z_coord)
+                array_shape_list.append(len(z_coord.values))
+            elif cname == 'T':
+                coords.append(time)
+                array_shape_list.append(len(time.values))
+        array_shape = np.array(array_shape_list)
+
+        # Reshape the data to the new multidimensional shape
+        new_data_arrays = []
+        for data_array in data_arrays:
+            new_data_array = np.zeros(array_shape, dtype=np.float32)
+            for ind1, item in enumerate(data_array):
+                index_list = []
+                for column, dcoord in enumerate(dim_coords):
+                    index_list.append(coord_lists[column][ind1])
+                index_array = np.array(index_list)
+                mindex = np.ravel_multi_index(index_array, array_shape)
+                new_data_array[np.unravel_index(mindex, array_shape)] = item
+            new_data_arrays.append(new_data_array)
+
+    # If X and Y are in the column headings build coordinates
+    if 'X' in column_headings and 'Y' in column_headings:
+        lat, lon = _build_lat_lon_for_NAME_timeseries(column_headings)
+        coords.append(lat)
+        coords.append(lon)
+
+    # If time is in the column heading build a coordinate
+    if 'T' in column_headings:
+        tdim = NAMECoord(name='time', dimension=None,
+                         values=np.array(column_headings['T']))
+        coords.append(tdim)
+
+    return _generate_cubes(header, column_headings, coords, new_data_arrays,
+                           cell_methods=None)
+
+
 def load_NAMEIII_trajectory(filename):
     """
     Load a NAME III trajectory file returning a
@@ -798,8 +1081,8 @@ def load_NAMEIII_trajectory(filename):
         A generator :class:`iris.cube.Cube` instances.
 
     """
-    time_unit = iris.unit.Unit('hours since epoch',
-                               calendar=iris.unit.CALENDAR_GREGORIAN)
+    time_unit = cf_units.Unit('hours since epoch',
+                              calendar=cf_units.CALENDAR_GREGORIAN)
 
     with open(filename, 'r') as infile:
         header = read_header(infile)
@@ -832,11 +1115,11 @@ def load_NAMEIII_trajectory(filename):
             z_column = i
             break
     if z_column is None:
-        raise iris.exceptions.TranslationError("Expected a Z column")
+        raise TranslationError("Expected a Z column")
 
     # Every column up to Z becomes a coordinate.
     coords = []
-    for name, values in izip(headings[:z_column+1], columns[:z_column+1]):
+    for name, values in zip(headings[:z_column+1], columns[:z_column+1]):
         values = np.array(values)
         if np.all(np.array(values) == values[0]):
             values = [values[0]]
@@ -854,9 +1137,16 @@ def load_NAMEIII_trajectory(filename):
                 name = "latitude"
             units = "degrees"
         elif name == "Z (m asl)":
-            name = "height"
+            name = "altitude"
             units = "m"
-            long_name = "height above sea level"
+            long_name = "altitude above sea level"
+        elif name == "Z (m agl)":
+            name = 'height'
+            units = "m"
+            long_name = "height above ground level"
+        elif name == "Z (FL)":
+            name = "flight_level"
+            long_name = name
 
         try:
             coord = DimCoord(values, units=units)
@@ -868,7 +1158,7 @@ def load_NAMEIII_trajectory(filename):
         coords.append(coord)
 
     # Every numerical column after the Z becomes a cube.
-    for name, values in izip(headings[z_column+1:], columns[z_column+1:]):
+    for name, values in zip(headings[z_column+1:], columns[z_column+1:]):
         try:
             float(values[0])
         except ValueError:

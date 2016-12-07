@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,15 +19,19 @@ Tests for function
 :func:`iris.fileformats.grib._load_convert.translate_phenomenon`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from copy import deepcopy
-import mock
+
+from cf_units import Unit
 
 from iris.coords import DimCoord
-from iris.unit import Unit
 from iris.fileformats.grib._load_convert import Probability
 from iris.fileformats.grib.grib_phenom_translation import _GribToCfDataClass
 

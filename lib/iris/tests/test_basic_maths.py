@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,12 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
 import operator
+import math
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -120,8 +124,10 @@ class TestBasicMaths(tests.IrisTest):
 
         xdim = a.ndim-1
         ydim = a.ndim-2
-        c_x = iris.coords.DimCoord(points=range(a.shape[xdim]), long_name='x_coord', units=self.cube.units)
-        c_y = iris.coords.AuxCoord(points=range(a.shape[ydim]), long_name='y_coord', units=self.cube.units)
+        c_x = iris.coords.DimCoord(points=np.arange(a.shape[xdim]),
+                                   long_name='x_coord', units=self.cube.units)
+        c_y = iris.coords.AuxCoord(points=np.arange(a.shape[ydim]),
+                                   long_name='y_coord', units=self.cube.units)
 
         self.assertCML(a, ('analysis', 'maths_original.cml'))
 
@@ -150,8 +156,10 @@ class TestBasicMaths(tests.IrisTest):
 
         xdim = a.ndim-1
         ydim = a.ndim-2
-        c_x = iris.coords.DimCoord(points=range(a.shape[xdim]), long_name='x_coord', units=self.cube.units)
-        c_y = iris.coords.AuxCoord(points=range(a.shape[ydim]), long_name='y_coord', units=self.cube.units)
+        c_x = iris.coords.DimCoord(points=np.arange(a.shape[xdim]),
+                                   long_name='x_coord', units=self.cube.units)
+        c_y = iris.coords.AuxCoord(points=np.arange(a.shape[ydim]),
+                                   long_name='y_coord', units=self.cube.units)
 
         self.assertCML(a, ('analysis', 'maths_original.cml'))
 
@@ -185,8 +193,12 @@ class TestBasicMaths(tests.IrisTest):
 
         xdim = a.ndim-1
         ydim = a.ndim-2
-        c_axis_length_fail = iris.coords.DimCoord(points=range(a.shape[ydim]), long_name='x_coord', units=self.cube.units)
-        c_unit_fail = iris.coords.AuxCoord(points=range(a.shape[xdim]), long_name='x_coord', units='volts')
+        c_axis_length_fail = iris.coords.DimCoord(
+            points=np.arange(a.shape[ydim]),
+            long_name='x_coord',
+            units=self.cube.units)
+        c_unit_fail = iris.coords.AuxCoord(points=np.arange(a.shape[xdim]),
+                                           long_name='x_coord', units='volts')
 
         self.assertRaises(ValueError, iris.analysis.maths.add, a, c_axis_length_fail)
         self.assertRaises(iris.exceptions.NotYetImplementedError, iris.analysis.maths.add, a, c_unit_fail)
@@ -213,6 +225,131 @@ class TestBasicMaths(tests.IrisTest):
         c = a + b
         self.assertIsNone(c.standard_name)
         self.assertEqual(c.attributes, {})
+
+    def test_apply_ufunc(self):
+        a = self.cube
+
+        b = iris.analysis.maths.apply_ufunc(np.square, a,
+                   new_name='squared temperature', new_unit=a.units**2,
+                   in_place=False)
+        self.assertCMLApproxData(a, ('analysis', 'apply_ufunc_original.cml'))
+        self.assertCMLApproxData(b, ('analysis', 'apply_ufunc.cml'))
+
+        b = iris.analysis.maths.apply_ufunc(np.square, a,
+                   new_name='squared temperature', new_unit=a.units**2,
+                   in_place=True)
+        self.assertCMLApproxData(b, ('analysis', 'apply_ufunc.cml'))
+        self.assertCMLApproxData(a, ('analysis', 'apply_ufunc.cml'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
+        self.assertCMLApproxData(b, ('analysis', 'apply_ufunc_frompyfunc.cml'))
+
+    def test_apply_ufunc_fail(self):
+        a = self.cube
+
+        # should fail because 'blah' is a string, not a np.ufunc
+        self.assertRaises(TypeError, iris.analysis.maths.apply_ufunc, 'blah', a)
+
+        # should fail because math.sqrt is not a np.ufunc
+        self.assertRaises(TypeError, iris.analysis.maths.apply_ufunc, math.sqrt, a)
+
+        # should fail because np.frexp gives 2 arrays as output
+        self.assertRaises(ValueError, iris.analysis.maths.apply_ufunc, np.frexp, a)
+
+    def test_ifunc(self):
+        a = self.cube
+
+        my_ifunc = iris.analysis.maths.IFunc(np.square,
+                   lambda a: a.units**2
+                   )
+        b = my_ifunc(a, new_name='squared temperature', in_place=False)
+
+        self.assertCMLApproxData(a, ('analysis', 'apply_ifunc_original.cml'))
+        self.assertCMLApproxData(b, ('analysis', 'apply_ifunc.cml'))
+
+        b = my_ifunc(a, new_name='squared temperature', in_place=True)
+
+        self.assertCMLApproxData(b, ('analysis', 'apply_ifunc.cml'))
+        self.assertCMLApproxData(a, ('analysis', 'apply_ifunc.cml'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc,
+                   lambda a, b: (a + b).units)
+
+        b = my_ifunc(a, c)
+        self.assertCMLApproxData(b, ('analysis', 'apply_ifunc_frompyfunc.cml'))
+
+    def test_ifunc_init_fail(self):
+
+        # should fail because 'blah' is a string not a python function
+        self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah',
+                          lambda cube: cf_units.Unit('1'))
+
+        # should fail because math.sqrt is built-in function, which can not be
+        # used in inspect.getargspec
+        self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
+                          lambda cube: cf_units.Unit('1'))
+
+        # should fail because np.frexp gives 2 arrays as output
+        self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
+                          lambda cube: cf_units.Unit('1'))
+
+        # should fail because data function has 3 arguments
+        self.assertRaises(ValueError, iris.analysis.maths.IFunc,
+                   lambda a, b, c: a + b + c,
+                   lambda cube: cf_units.Unit('1')
+                   )
+
+    def test_ifunc_call_fail(self):
+        a = self.cube
+
+        my_ifunc = iris.analysis.maths.IFunc(np.square,
+                   lambda a: a.units**2
+                   )
+
+        # should fail because giving 2 arguments to an ifunc that expects
+        # only one
+        with self.assertRaises(ValueError):
+            my_ifunc(a, a)
+
+        my_ifunc = iris.analysis.maths.IFunc(np.multiply,
+                   lambda a: cf_units.Unit('1')
+                   )
+
+        # should fail because giving 1 arguments to an ifunc that expects
+        # 2
+        with self.assertRaises(ValueError):
+            my_ifunc(a)
+
+        my_ifunc = iris.analysis.maths.IFunc(
+                   lambda a: (a, a**2.0),
+                   lambda cube: cf_units.Unit('1')
+                   )
+
+        # should fail because data function returns a tuple
+        with self.assertRaises(ValueError):
+            my_ifunc(a)
+
+        my_ifunc = iris.analysis.maths.IFunc(
+                   lambda a: math.sqrt(a),
+                   lambda cube: cf_units.Unit('1')
+                   )
+
+        # should fail because data function does not work when its argument
+        # is a numpy array
+        with self.assertRaises(TypeError):
+            my_ifunc(a)
 
     def test_type_error(self):
         with self.assertRaises(TypeError):
@@ -400,6 +537,88 @@ class TestExponential(tests.IrisTest):
         self.assertCMLApproxData(e, ('analysis', 'exp.cml'))
 
 
+class TestApplyUfunc(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.simple_2d()
+
+    def test_apply_ufunc(self):
+        a = self.cube
+        a.units = cf_units.Unit('meters')
+
+        b = iris.analysis.maths.apply_ufunc(np.square, a,
+                new_name='more_thingness', new_unit=a.units**2, in_place=False)
+
+        ans = a.data**2
+
+        self.assertArrayEqual(b.data, ans)
+        self.assertEqual(b.name(), 'more_thingness')
+        self.assertEqual(b.units, cf_units.Unit('m^2'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
+
+        ans = a.data**2 + c.data**2
+        b2 = b**2
+
+        self.assertArrayAlmostEqual(b2.data, ans)
+
+
+class TestIFunc(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.simple_2d()
+
+    def test_ifunc(self):
+        a = self.cube
+        a.units = cf_units.Unit('meters')
+
+        my_ifunc = iris.analysis.maths.IFunc(np.square,
+                lambda x: x.units**2)
+        b = my_ifunc(a, new_name='more_thingness', in_place=False)
+
+        ans = a.data**2
+
+        self.assertArrayEqual(b.data, ans)
+        self.assertEqual(b.name(), 'more_thingness')
+        self.assertEqual(b.units, cf_units.Unit('m^2'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, 
+                   lambda x,y: (x + y).units)
+        b = my_ifunc(a, c)
+
+        ans = ( a.data**2 + c.data**2 ) ** 0.5
+
+        self.assertArrayAlmostEqual(b.data, ans)
+
+        def vec_mag_data_func(u_data, v_data):
+            return np.sqrt( u_data**2 + v_data**2 )
+
+        vec_mag_ifunc = iris.analysis.maths.IFunc(vec_mag_data_func, lambda a,b: (a + b).units)
+        b2 = vec_mag_ifunc(a, c)
+
+        self.assertArrayAlmostEqual(b.data, b2.data)
+
+        cs_ifunc = iris.analysis.maths.IFunc(np.cumsum,
+                   lambda a: a.units
+                   )
+
+        b = cs_ifunc(a, axis=1)
+        ans = a.data.copy()
+        ans = np.cumsum(ans, axis=1) 
+
+        self.assertArrayAlmostEqual(b.data, ans)
+
+
 @tests.skip_data
 class TestLog(tests.IrisTest):
     def setUp(self):
@@ -415,16 +634,26 @@ class TestLog(tests.IrisTest):
 
     def test_log10(self):
         e = iris.analysis.maths.log10(self.cube)
-        self.assertCMLApproxData(e, ('analysis', 'log10.cml'))
+        self.assertCMLApproxData(e, ('analysis', 'log10.cml'), rtol=1e-6)
 
 
 class TestMaskedArrays(tests.IrisTest):
-    ops = (operator.add, operator.sub, operator.mul, operator.div)
-    iops = (operator.iadd, operator.isub, operator.imul, operator.idiv)
+    ops = (operator.add, operator.sub, operator.mul)
+    iops = (operator.iadd, operator.isub, operator.imul)
+    # This is to ensure compatibility for both Python2 (which uses div and
+    # idiv) and Python3 (which uses truediv and itruediv).
+    try:
+        ops = ops + (operator.div, )
+        iops = iops + (operator.idiv, )
+    except AttributeError:
+        ops = ops + (operator.truediv, )
+        iops = iops + (operator.itruediv, )
 
     def setUp(self):
-        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8,]], mask=[[0, 1, 0], [0, 0, 1]])
-        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2,]], mask=[[0, 1, 0], [0, 1, 1]])
+        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8,]],
+                                    mask=[[0, 1, 0], [0, 0, 1]])
+        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2,]],
+                                    mask=[[0, 1, 0], [0, 1, 1]])
 
         self.cube1 = iris.cube.Cube(self.data1)
         self.cube2 = iris.cube.Cube(self.data2)
@@ -439,7 +668,14 @@ class TestMaskedArrays(tests.IrisTest):
     def test_operator_in_place(self):
         for test_op in self.iops:
             test_op(self.cube1, self.cube2)
-            test_op(self.data1, self.data2)
+            if test_op == operator.itruediv:
+                # Python3 itruediv requires floats to return floats, numpy1.10:
+                # "TypeError: ufunc 'true_divide' output (typecode 'd') could
+                # not be coerced to provided output parameter (typecode 'l')
+                # according to the casting rule ''same_kind''"
+                test_op(self.data1.astype('float'), self.data2.astype('float'))
+            else:
+                test_op(self.data1, self.data2)
 
             np.testing.assert_array_equal(self.cube1.data, self.data1)
 

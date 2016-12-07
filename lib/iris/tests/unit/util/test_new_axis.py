@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,9 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris.util.new_axis`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -24,6 +27,7 @@ import copy
 import numpy as np
 import unittest
 
+from biggus import NumpyArrayAdapter
 import iris
 from iris.util import new_axis
 
@@ -130,6 +134,23 @@ class Test(tests.IrisTest):
 
         self.assertEqual(res, com)
         self._assert_cube_notis(res, cube)
+
+    def test_lazy_data(self):
+        cube = iris.cube.Cube(NumpyArrayAdapter(self.data))
+        cube.add_aux_coord(iris.coords.DimCoord([1], standard_name='time'))
+        res = new_axis(cube, 'time')
+        self.assertTrue(cube.has_lazy_data())
+        self.assertTrue(res.has_lazy_data())
+        self.assertEqual(res.shape, (1,) + cube.shape)
+
+    def test_masked_unit_array(self):
+        cube = tests.stock.simple_3d_mask()
+        test_cube = cube[0, 0, 0]
+        test_cube = new_axis(test_cube, 'longitude')
+        test_cube = new_axis(test_cube, 'latitude')
+        data_shape = test_cube.data.shape
+        mask_shape = test_cube.data.mask.shape
+        self.assertEqual(data_shape, mask_shape)
 
 
 if __name__ == '__main__':

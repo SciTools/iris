@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,16 +20,19 @@ fc_rules_cf_fc.reorder_bounds_data`.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import numpy as np
-import mock
 
-from iris.aux_factory import LazyArray
+from iris.aux_factory import _LazyArray
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     reorder_bounds_data
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
@@ -55,8 +58,8 @@ class Test(tests.IrisTest):
 
     def test_slowest_varying_lazy(self):
         bounds_data = np.arange(24).reshape(4, 2, 3)
-        func = lambda: bounds_data
-        lazy_bounds_data = LazyArray(bounds_data.shape, func)
+        lazy_bounds_data = _LazyArray(bounds_data.shape, lambda: bounds_data,
+                                      bounds_data.dtype)
         cf_bounds_var = mock.Mock(dimensions=('nv', 'foo', 'bar'))
         cf_coord_var = mock.Mock(dimensions=('foo', 'bar'))
 

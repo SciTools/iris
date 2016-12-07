@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,15 +16,16 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.cube.Cube` class."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import itertools
-
 import biggus
-import mock
 import numpy as np
+import numpy.ma as ma
 
 import iris.aux_factory
 import iris.coords
@@ -33,8 +34,9 @@ from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.cube import Cube
-from iris.coords import AuxCoord, DimCoord
-from iris.exceptions import CoordinateNotFoundError, LazyAggregatorError
+from iris.coords import AuxCoord, DimCoord, CellMeasure
+from iris.exceptions import CoordinateNotFoundError, CellMeasureNotFoundError
+from iris.tests import mock
 import iris.tests.stock as stock
 
 
@@ -234,7 +236,7 @@ class Test_collapsed__warning(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator)
 
-        coords = filter(lambda coord: 'latitude' in coord, coords)
+        coords = [coord for coord in coords if 'latitude' in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
 
     def test_lat_lon_weighted_aggregator_with_weights(self):
@@ -258,7 +260,7 @@ class Test_collapsed__warning(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator)
 
-        coords = filter(lambda coord: 'latitude' in coord, coords)
+        coords = [coord for coord in coords if 'latitude' in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
 
     def test_no_lat_weighted_aggregator_mixed(self):
@@ -321,8 +323,11 @@ class Test_aggregated_by(tests.IrisTest):
         self.cube.add_aux_coord(val_coord, 0)
         self.cube.add_aux_coord(label_coord, 0)
         self.mock_agg = mock.Mock(spec=Aggregator)
+        self.mock_agg.cell_method = []
         self.mock_agg.aggregate = mock.Mock(
             return_value=mock.Mock(dtype='object'))
+        self.mock_agg.aggregate_shape = mock.Mock(return_value=())
+        self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
     def test_string_coord_agg_by_label(self):
         # Aggregate a cube on a string coordinate label where label
@@ -373,6 +378,7 @@ class Test_rolling_window(tests.IrisTest):
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.aggregate = mock.Mock(
             return_value=np.empty([4]))
+        self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
     def test_string_coord(self):
         # Rolling window on a cube that contains a string coordinate.
@@ -389,12 +395,26 @@ class Test_rolling_window(tests.IrisTest):
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('month'), month_coord)
 
+    def test_kwargs(self):
+        # Rolling window with missing data not tolerated
+        window = 2
+        self.cube.data = np.ma.array(self.cube.data,
+                                     mask=([True, False, False,
+                                            False, True, False]))
+        res_cube = self.cube.rolling_window('val', iris.analysis.MEAN,
+                                            window, mdtol=0)
+        expected_result = np.ma.array([-99., 1.5, 2.5, -99., -99.],
+                                      mask=[True, False, False, True, True],
+                                      dtype=np.float64)
+        self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
+
+@tests.skip_data
 class Test_slices_over(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_4d()
         # Define expected iterators for 1D and 2D test cases.
-        self.exp_iter_1d = xrange(
+        self.exp_iter_1d = range(
             len(self.cube.coord('model_level_number').points))
         self.exp_iter_2d = np.ndindex(6, 70, 1, 1)
         # Define maximum number of interations for particularly long
@@ -403,7 +423,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_coord_given(self):
         res = self.cube.slices_over(self.cube.coord('model_level_number'))
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
@@ -413,7 +433,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_coord_name_given(self):
         res = self.cube.slices_over('model_level_number')
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
@@ -423,7 +443,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_dimension_given(self):
         res = self.cube.slices_over(1)
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
@@ -504,13 +524,13 @@ class Test_slices_over(tests.IrisTest):
 
     def test_duplicate_coordinate_given(self):
         res = self.cube.slices_over([1, 1])
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
     def test_non_orthogonal_coordinates_given(self):
         res = self.cube.slices_over(['model_level_number', 'sigma'])
-        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+        for i, res_cube in zip(self.exp_iter_1d, res):
             expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
@@ -625,7 +645,7 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertFalse(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 170)
         self.assertEqual(result.data[0, 0, -1], 190)
 
@@ -635,7 +655,7 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertFalse(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
 
@@ -644,7 +664,7 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertTrue(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 170)
         self.assertEqual(result.data[0, 0, -1], 190)
 
@@ -653,9 +673,21 @@ class Test_intersection__Lazy(tests.IrisTest):
         result = cube.intersection(longitude=(170, 190))
         self.assertTrue(result.has_lazy_data())
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(170, 191))
+                              np.arange(170, 191))
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
+
+
+class Test_intersection_Points(tests.IrisTest):
+    def test_ignore_bounds(self):
+        cube = create_cube(0, 30, bounds=True)
+        result = cube.intersection(longitude=(9.5, 12.5), ignore_bounds=True)
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(10, 13))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [9.5, 10.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [11.5, 12.5])
 
 
 # Check what happens with a regional, points-only circular intersection
@@ -664,54 +696,58 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
     def test_request_subset(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(45, 50))
-        self.assertArrayEqual(result.coord('longitude').points, range(45, 51))
-        self.assertArrayEqual(result.data[0, 0], range(5, 11))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(45, 51))
+        self.assertArrayEqual(result.data[0, 0], np.arange(5, 11))
 
     def test_request_left(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35, 45))
-        self.assertArrayEqual(result.coord('longitude').points, range(40, 46))
-        self.assertArrayEqual(result.data[0, 0], range(0, 6))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(40, 46))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 6))
 
     def test_request_right(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(55, 65))
-        self.assertArrayEqual(result.coord('longitude').points, range(55, 60))
-        self.assertArrayEqual(result.data[0, 0], range(15, 20))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(55, 60))
+        self.assertArrayEqual(result.data[0, 0], np.arange(15, 20))
 
     def test_request_superset(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35, 65))
-        self.assertArrayEqual(result.coord('longitude').points, range(40, 60))
-        self.assertArrayEqual(result.data[0, 0], range(0, 20))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              np.arange(40, 60))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 20))
 
     def test_request_subset_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(45 + 360, 50 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(45 + 360, 51 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(5, 11))
+                              np.arange(45 + 360, 51 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(5, 11))
 
     def test_request_left_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35 + 360, 45 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(40 + 360, 46 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(0, 6))
+                              np.arange(40 + 360, 46 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 6))
 
     def test_request_right_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(55 + 360, 65 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(55 + 360, 60 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(15, 20))
+                              np.arange(55 + 360, 60 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(15, 20))
 
     def test_request_superset_modulus(self):
         cube = create_cube(40, 60)
         result = cube.intersection(longitude=(35 + 360, 65 + 360))
         self.assertArrayEqual(result.coord('longitude').points,
-                              range(40 + 360, 60 + 360))
-        self.assertArrayEqual(result.data[0, 0], range(0, 20))
+                              np.arange(40 + 360, 60 + 360))
+        self.assertArrayEqual(result.data[0, 0], np.arange(0, 20))
 
     def test_tolerance_f4(self):
         cube = create_cube(0, 5)
@@ -731,6 +767,26 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
 # Check what happens with a global, points-only circular intersection
 # coordinate.
 class Test_intersection__GlobalSrcModulus(tests.IrisTest):
+    def test_global_wrapped_extreme_increasing_base_period(self):
+        # Ensure that we can correctly handle points defined at (base + period)
+        cube = create_cube(-180., 180.)
+        lons = cube.coord('longitude')
+        # Redefine longitude so that points at (base + period)
+        lons.points = np.linspace(-180., 180, lons.points.size)
+        result = cube.intersection(longitude=(lons.points.min(),
+                                              lons.points.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
+    def test_global_wrapped_extreme_decreasing_base_period(self):
+        # Ensure that we can correctly handle points defined at (base + period)
+        cube = create_cube(180., -180.)
+        lons = cube.coord('longitude')
+        # Redefine longitude so that points at (base + period)
+        lons.points = np.linspace(180., -180., lons.points.size)
+        result = cube.intersection(longitude=(lons.points.min(),
+                                              lons.points.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
     def test_global(self):
         cube = create_cube(0, 360)
         result = cube.intersection(longitude=(0, 360))
@@ -896,6 +952,22 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
 class Test_intersection__ModulusBounds(tests.IrisTest):
+    def test_global_wrapped_extreme_increasing_base_period(self):
+        # Ensure that we can correctly handle bounds defined at (base + period)
+        cube = create_cube(-180., 180., bounds=True)
+        lons = cube.coord('longitude')
+        result = cube.intersection(longitude=(lons.bounds.min(),
+                                              lons.bounds.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
+    def test_global_wrapped_extreme_decreasing_base_period(self):
+        # Ensure that we can correctly handle bounds defined at (base + period)
+        cube = create_cube(180., -180., bounds=True)
+        lons = cube.coord('longitude')
+        result = cube.intersection(longitude=(lons.bounds.min(),
+                                              lons.bounds.max()))
+        self.assertArrayEqual(result.data, cube.data)
+
     def test_misaligned_points_inside(self):
         cube = create_cube(0, 360, bounds=True)
         result = cube.intersection(longitude=(169.75, 190.25))
@@ -1017,6 +1089,14 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
 
+    def test_numerical_tolerance(self):
+        # test the tolerance on the coordinate value is not causing a
+        # modulus wrapping
+        cube = create_cube(28.5, 68.5, bounds=True)
+        result = cube.intersection(longitude=(27.74, 68.61))
+        self.assertAlmostEqual(result.coord('longitude').points[0], 28.5)
+        self.assertAlmostEqual(result.coord('longitude').points[-1], 67.5)
+
 
 def unrolled_cube():
     data = np.arange(5, dtype='f4')
@@ -1049,7 +1129,7 @@ class Test_intersection__ScatterModulus(tests.IrisTest):
         result = cube.intersection(longitude=(0, 15))
         self.assertArrayEqual(result.coord('longitude').points,
                               [5, 10, 8, 5, 3])
-        self.assertArrayEqual(result.data, range(5))
+        self.assertArrayEqual(result.data, np.arange(5))
 
 
 # Test the API of the cube interpolation method.
@@ -1100,12 +1180,250 @@ class Test_regrid(tests.IrisTest):
 
 
 class Test_copy(tests.IrisTest):
+    def _check_copy(self, cube, cube_copy):
+        self.assertIsNot(cube_copy, cube)
+        self.assertEqual(cube_copy, cube)
+        self.assertIsNot(cube_copy.data, cube.data)
+        if isinstance(cube.data, np.ma.MaskedArray):
+            self.assertMaskedArrayEqual(cube_copy.data, cube.data)
+            if cube.data.mask is not ma.nomask:
+                # "No mask" is a constant : all other cases must be distinct.
+                self.assertIsNot(cube_copy.data.mask, cube.data.mask)
+        else:
+            self.assertArrayEqual(cube_copy.data, cube.data)
+
     def test(self):
-        cube = stock.simple_3d_mask()
-        cube_copy = cube.copy()
-        self.assertNotEqual(id(cube), id(cube_copy))
-        self.assertNotEqual(id(cube.data), id(cube_copy.data))
-        self.assertNotEqual(id(cube.data.mask), id(cube_copy.data.mask))
+        cube = stock.simple_3d()
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_emptymask(self):
+        cube = Cube(np.ma.array([0, 1]))
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_arraymask(self):
+        cube = Cube(np.ma.array([0, 1], mask=[True, False]))
+        self._check_copy(cube, cube.copy())
+
+    def test__scalar(self):
+        cube = Cube(0)
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_scalar_emptymask(self):
+        cube = Cube(np.ma.array(0))
+        self._check_copy(cube, cube.copy())
+
+    def test__masked_scalar_arraymask(self):
+        cube = Cube(np.ma.array(0, mask=False))
+        self._check_copy(cube, cube.copy())
+
+    def test__lazy(self):
+        cube = Cube(biggus.NumpyArrayAdapter(np.array([1, 0])))
+        self._check_copy(cube, cube.copy())
+
+
+class Test_dtype(tests.IrisTest):
+    def test_int8(self):
+        cube = Cube(np.array([0, 1], dtype=np.int8))
+        self.assertEqual(cube.dtype, np.int8)
+
+    def test_float32(self):
+        cube = Cube(np.array([0, 1], dtype=np.float32))
+        self.assertEqual(cube.dtype, np.float32)
+
+    def test_lazy(self):
+        data = np.arange(6, dtype=np.float32).reshape(2, 3)
+        lazydata = biggus.NumpyArrayAdapter(data)
+        cube = Cube(lazydata)
+        self.assertEqual(cube.dtype, np.float32)
+        # Check that accessing the dtype does not trigger loading of the data.
+        self.assertTrue(cube.has_lazy_data())
+
+
+class TestSubset(tests.IrisTest):
+    def test_scalar_coordinate(self):
+        cube = Cube(0, long_name='apricot', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='banana', units='1'))
+        result = cube.subset(cube.coord('banana'))
+        self.assertEqual(cube, result)
+
+    def test_dimensional_coordinate(self):
+        cube = Cube(np.zeros((4)), long_name='tinned_peach', units='1')
+        cube.add_dim_coord(DimCoord([0, 1, 2, 3],
+                                    long_name='sixteen_ton_weight',
+                                    units='1'),
+                           0)
+        result = cube.subset(cube.coord('sixteen_ton_weight'))
+        self.assertEqual(cube, result)
+
+    def test_missing_coordinate(self):
+        cube = Cube(0, long_name='raspberry', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='loganberry', units='1'))
+        bad_coord = DimCoord([0], long_name='tiger', units='1')
+        self.assertRaises(CoordinateNotFoundError, cube.subset, bad_coord)
+
+    def test_different_coordinate(self):
+        cube = Cube(0, long_name='raspberry', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='loganberry', units='1'))
+        different_coord = DimCoord([2], long_name='loganberry', units='1')
+        result = cube.subset(different_coord)
+        self.assertEqual(result, None)
+
+    def test_not_coordinate(self):
+        cube = Cube(0, long_name='peach', units='1')
+        cube.add_aux_coord(DimCoord([0], long_name='crocodile', units='1'))
+        self.assertRaises(ValueError, cube.subset, 'Pointed Stick')
+
+
+class Test_add_metadata(tests.IrisTest):
+    def test_add_dim_coord(self):
+        cube = Cube(np.arange(3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]),
+                           long_name='x')
+        cube.add_dim_coord(x_coord, 0)
+        self.assertEqual(cube.coord('x'), x_coord)
+
+    def test_add_aux_coord(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = AuxCoord(points=np.arange(6).reshape(2, 3),
+                           long_name='x')
+        cube.add_aux_coord(x_coord, [0, 1])
+        self.assertEqual(cube.coord('x'), x_coord)
+
+    def test_add_cell_measure(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        a_cell_measure = CellMeasure(data=np.arange(6).reshape(2, 3),
+                                     long_name='area', measure='area')
+        cube.add_cell_measure(a_cell_measure, [0, 1])
+        self.assertEqual(cube.cell_measure('area'), a_cell_measure)
+
+
+class Test_remove_metadata(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]),
+                           long_name='x')
+        cube.add_dim_coord(x_coord, 1)
+        z_coord = AuxCoord(points=np.arange(6).reshape(2, 3),
+                           long_name='z')
+        cube.add_aux_coord(z_coord, [0, 1])
+        a_cell_measure = CellMeasure(data=np.arange(6).reshape(2, 3),
+                                     long_name='area', measure='area')
+        self.b_cell_measure = CellMeasure(data=np.arange(6).reshape(2, 3),
+                                          long_name='other_area',
+                                          measure='area')
+        cube.add_cell_measure(a_cell_measure, [0, 1])
+        cube.add_cell_measure(self.b_cell_measure, [0, 1])
+        self.cube = cube
+
+    def test_remove_dim_coord(self):
+        self.cube.remove_coord(self.cube.coord('x'))
+        self.assertEqual(self.cube.coords('x'), [])
+
+    def test_remove_aux_coord(self):
+        self.cube.remove_coord(self.cube.coord('z'))
+        self.assertEqual(self.cube.coords('z'), [])
+
+    def test_remove_cell_measure(self):
+        self.cube.remove_cell_measure(self.cube.cell_measure('area'))
+        self.assertEqual(self.cube._cell_measures_and_dims,
+                         [[self.b_cell_measure, (0, 1)]])
+
+
+class Test__getitem_CellMeasure(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]),
+                           long_name='x')
+        cube.add_dim_coord(x_coord, 1)
+        y_coord = DimCoord(points=np.array([5, 6]),
+                           long_name='y')
+        cube.add_dim_coord(y_coord, 0)
+        z_coord = AuxCoord(points=np.arange(6).reshape(2, 3),
+                           long_name='z')
+        cube.add_aux_coord(z_coord, [0, 1])
+        a_cell_measure = CellMeasure(data=np.arange(6).reshape(2, 3),
+                                     long_name='area', measure='area')
+        cube.add_cell_measure(a_cell_measure, [0, 1])
+        self.cube = cube
+
+    def test_cell_measure_2d(self):
+        result = self.cube[0:2, 0:2]
+        self.assertEqual(len(result.cell_measures()), 1)
+        self.assertEqual(result.shape,
+                         result.cell_measures()[0].data.shape)
+
+    def test_cell_measure_1d(self):
+        result = self.cube[0, 0:2]
+        self.assertEqual(len(result.cell_measures()), 1)
+        self.assertEqual(result.shape,
+                         result.cell_measures()[0].data.shape)
+
+
+class TestCellMeasures(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]),
+                           long_name='x')
+        cube.add_dim_coord(x_coord, 1)
+        z_coord = AuxCoord(points=np.arange(6).reshape(2, 3),
+                           long_name='z')
+        cube.add_aux_coord(z_coord, [0, 1])
+        self.a_cell_measure = CellMeasure(data=np.arange(6).reshape(2, 3),
+                                          long_name='area', measure='area',
+                                          units='m2')
+        cube.add_cell_measure(self.a_cell_measure, [0, 1])
+        self.cube = cube
+
+    def test_get_cell_measure(self):
+        cm = self.cube.cell_measure('area')
+        self.assertEqual(cm, self.a_cell_measure)
+
+    def test_get_cell_measures(self):
+        cms = self.cube.cell_measures()
+        self.assertEqual(len(cms), 1)
+        self.assertEqual(cms[0], self.a_cell_measure)
+
+    def test_get_cell_measures_obj(self):
+        cms = self.cube.cell_measures(self.a_cell_measure)
+        self.assertEqual(len(cms), 1)
+        self.assertEqual(cms[0], self.a_cell_measure)
+
+    def test_fail_get_cell_measure(self):
+        with self.assertRaises(CellMeasureNotFoundError):
+            cm = self.cube.cell_measure('notarea')
+
+    def test_fail_get_cell_measures_obj(self):
+        a_cell_measure = self.a_cell_measure.copy()
+        a_cell_measure.units = 'km2'
+        with self.assertRaises(CellMeasureNotFoundError):
+            cms = self.cube.cell_measure(a_cell_measure)
+
+    def test_cell_measure_dims(self):
+        cm_dims = self.cube.cell_measure_dims(self.a_cell_measure)
+        self.assertEqual(cm_dims, (0, 1))
+
+    def test_fail_cell_measure_dims(self):
+        a_cell_measure = self.a_cell_measure.copy()
+        a_cell_measure.units = 'km2'
+        with self.assertRaises(CellMeasureNotFoundError):
+            cm_dims = self.cube.cell_measure_dims(a_cell_measure)
+
+
+class Test_transpose(tests.IrisTest):
+    def test_lazy_data(self):
+        data = np.arange(12).reshape(3, 4)
+        cube = Cube(biggus.NumpyArrayAdapter(data))
+        cube.transpose()
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayEqual(data.T, cube.data)
+
+    def test_not_lazy_data(self):
+        data = np.arange(12).reshape(3, 4)
+        cube = Cube(data)
+        cube.transpose()
+        self.assertFalse(cube.has_lazy_data())
+        self.assertIs(data.base, cube.data.base)
+        self.assertArrayEqual(data.T, cube.data)
 
 
 if __name__ == '__main__':

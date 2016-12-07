@@ -7,3 +7,4 @@
 
    docstrings.rst
    rest_guide.rst
+   whats_new_contributions.rst

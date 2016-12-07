@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,13 +16,16 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.io.run_callback` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import iris.exceptions
 import iris.io
+from iris.tests import mock
 
 
 class Test_run_callback(tests.IrisTest):
@@ -68,7 +71,9 @@ class Test_run_callback(tests.IrisTest):
         def callback(cube):
             pass
         with self.assertRaisesRegexp(TypeError,
-                                     'takes exactly 1 argument '):
+                                     # exactly == Py2, positional == Py3
+                                     'takes (exactly )?1 (positional )?'
+                                     'argument '):
             iris.io.run_callback(callback, None, None, None)
 
     def test_callback_args(self):

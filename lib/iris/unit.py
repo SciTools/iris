@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
+.. deprecated:: 1.9
+    This module has been deprecated. Please use `cf_units
+    <https://github.com/SciTools/cf_units>`_ instead.
+
 Units of measure.
 
 Provision of a wrapper class to support Unidata/UCAR UDUNITS-2, and the
@@ -25,7 +29,9 @@ See also: `UDUNITS-2
 
 """
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from contextlib import contextmanager
 import copy
@@ -38,8 +44,13 @@ import warnings
 import netcdftime
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 import iris.config
 import iris.util
+
+
+warn_deprecated('iris.unit is deprecated in Iris v1.9. Please use cf_units '
+                '(https://github.com/SciTools/cf_units) instead.')
 
 
 __all__ = ['Unit', 'date2num', 'decode_time', 'encode_clock', 'encode_date',
@@ -173,7 +184,10 @@ _ut_set_error_message_handler = None
 # load the libc shared library
 #
 if _lib_c is None:
-    _lib_c = ctypes.CDLL(ctypes.util.find_library('libc'))
+    if sys.platform == 'win32':
+        _lib_c = ctypes.cdll.msvcrt
+    else:
+        _lib_c = ctypes.CDLL(ctypes.util.find_library('libc'))
 
     #
     # cache common shared library functions
@@ -308,7 +322,7 @@ if _lib_ud is None:
     _cv_convert_array = {FLOAT32: _cv_convert_floats,
                          FLOAT64: _cv_convert_doubles}
     _numpy2ctypes = {np.float32: FLOAT32, np.float64: FLOAT64}
-    _ctypes2numpy = {v: k for k, v in _numpy2ctypes.iteritems()}
+    _ctypes2numpy = {v: k for k, v in _numpy2ctypes.items()}
 #
 # load the UDUNITS-2 xml-formatted unit-database
 #
@@ -327,7 +341,7 @@ if not _ud_system:
     if _ud_system is None:
         _alt_xml_path = os.path.join(sys.prefix, 'share',
                                      'udunits', 'udunits2.xml')
-        _ud_system = _ut_read_xml(_alt_xml_path)
+        _ud_system = _ut_read_xml(_alt_xml_path.encode())
     # reinstate old error handler
     _ut_set_error_message_handler(_default_handler)
     del _func_type
@@ -382,7 +396,7 @@ def encode_time(year, month, day, hour, minute, second):
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> unit.encode_time(1970, 1, 1, 0, 0, 0)
         -978307200.0
 
@@ -416,7 +430,7 @@ def encode_date(year, month, day):
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> unit.encode_date(1970, 1, 1)
         -978307200.0
 
@@ -444,7 +458,7 @@ def encode_clock(hour, minute, second):
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> unit.encode_clock(0, 0, 0)
         0.0
 
@@ -472,7 +486,7 @@ def decode_time(time):
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> unit.decode_time(unit.encode_time(1970, 1, 1, 0, 0, 0))
         (1970, 1, 1, 0, 0, 0.0, 1.086139178596568e-07)
 
@@ -519,14 +533,14 @@ def julian_day2date(julian_day, calendar):
     * julian_day (float):
         Julian day with a resolution of 1 second.
     * calendar (string):
-        Name of the calendar, see iris.unit.CALENDARS.
+        Name of the calendar, see cf_units.CALENDARS.
 
     Returns:
         datetime or netcdftime.datetime.
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> import datetime
         >>> unit.julian_day2date(
         ...     unit.date2julian_day(datetime.datetime(1970, 1, 1, 0, 0, 0),
@@ -559,14 +573,14 @@ def date2julian_day(date, calendar):
     * date (netcdftime.date):
         Date and time representation.
     * calendar (string):
-        Name of the calendar, see iris.unit.CALENDARS.
+        Name of the calendar, see cf_units.CALENDARS.
 
     Returns:
         float.
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> import datetime
         >>> unit.date2julian_day(datetime.datetime(1970, 1, 1, 0, 0, 0),
         ...                      unit.CALENDAR_STANDARD)
@@ -603,14 +617,14 @@ def date2num(date, unit, calendar):
         The <time-origin> is a date/time reference point. A valid choice
         would be unit='hours since 1800-01-01 00:00:00 -6:00'.
     * calendar (string):
-        Name of the calendar, see iris.unit.CALENDARS.
+        Name of the calendar, see cf_units.CALENDARS.
 
     Returns:
         float, or numpy.ndarray of float.
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> import datetime
         >>> dt1 = datetime.datetime(1970, 1, 1, 6, 0, 0)
         >>> dt2 = datetime.datetime(1970, 1, 1, 7, 0, 0)
@@ -631,7 +645,8 @@ def date2num(date, unit, calendar):
     unit_string = unit.rstrip(" UTC")
     if unit_string.endswith(" since epoch"):
         unit_string = unit_string.replace("epoch", IRIS_EPOCH)
-    return netcdftime.date2num(date, unit_string, calendar)
+    cdftime = netcdftime.utime(unit_string, calendar=calendar)
+    return cdftime.date2num(date)
 
 
 def num2date(time_value, unit, calendar):
@@ -670,14 +685,14 @@ def num2date(time_value, unit, calendar):
         point. A valid choice would be
         unit='hours since 1800-01-01 00:00:00 -6:00'.
     * calendar (string):
-        Name of the calendar, see iris.unit.CALENDARS.
+        Name of the calendar, see cf_units.CALENDARS.
 
     Returns:
         datetime, or numpy.ndarray of datetime object.
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> import datetime
         >>> unit.num2date(6, 'hours since 1970-01-01 00:00:00',
         ...               unit.CALENDAR_STANDARD)
@@ -697,7 +712,8 @@ def num2date(time_value, unit, calendar):
     unit_string = unit.rstrip(" UTC")
     if unit_string.endswith(" since epoch"):
         unit_string = unit_string.replace("epoch", IRIS_EPOCH)
-    return netcdftime.num2date(time_value, unit_string, calendar)
+    cdftime = netcdftime.utime(unit_string, calendar=calendar)
+    return cdftime.num2date(time_value)
 
 
 def _handler(func):
@@ -754,7 +770,7 @@ def as_unit(unit):
         result = unit
     else:
         result = None
-        use_cache = isinstance(unit, basestring) or unit is None
+        use_cache = isinstance(unit, six.string_types) or unit is None
         if use_cache:
             result = _CACHE.get(unit)
         if result is None:
@@ -777,7 +793,7 @@ def is_time(unit):
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> unit.is_time('hours')
         True
         >>> unit.is_time('meters')
@@ -800,7 +816,7 @@ def is_vertical(unit):
 
     For example:
 
-        >>> import iris.unit as unit
+        >>> import cf_units as unit
         >>> unit.is_vertical('millibar')
         True
         >>> unit.is_vertical('km')
@@ -835,7 +851,7 @@ class Unit(iris.util._OrderedHashable):
     'Reference to the ctypes quantity defining the UDUNITS-2 unit.'
 
     calendar = None
-    'Represents the unit calendar name, see iris.unit.CALENDARS'
+    'Represents the unit calendar name, see cf_units.CALENDARS'
 
     origin = None
     'The original string used to create this unit.'
@@ -886,7 +902,7 @@ class Unit(iris.util._OrderedHashable):
         Units can also be set to "unknown" (or None).
         For example:
 
-            >>> from iris.unit import Unit
+            >>> from cf_units import Unit
             >>> volts = Unit('volts')
             >>> no_unit = Unit('no_unit')
             >>> unknown = Unit('unknown')
@@ -919,14 +935,14 @@ class Unit(iris.util._OrderedHashable):
             unit = _NO_UNIT_STRING
         else:
             category = _CATEGORY_UDUNIT
-            ut_unit = _ut_parse(_ud_system, unit, UT_ASCII)
+            ut_unit = _ut_parse(_ud_system, unit.encode('ascii'), UT_ASCII)
             # _ut_parse returns 0 on failure
             if ut_unit is None:
                 self._raise_error('Failed to parse unit "%s"' % unit)
             if _OP_SINCE in unit.lower():
                 if calendar is None:
                     calendar_ = CALENDAR_GREGORIAN
-                elif isinstance(calendar, basestring):
+                elif isinstance(calendar, six.string_types):
                     if calendar.lower() in CALENDARS:
                         calendar_ = calendar.lower()
                     else:
@@ -1001,7 +1017,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('hours')
             >>> u.is_time()
             True
@@ -1013,7 +1029,7 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            day = _ut_get_unit_by_name(_ud_system, 'day')
+            day = _ut_get_unit_by_name(_ud_system, b'day')
             result = _ut_are_convertible(self.ut_unit, day) != 0
         return result
 
@@ -1027,7 +1043,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('millibar')
             >>> u.is_vertical()
             True
@@ -1039,10 +1055,10 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            bar = _ut_get_unit_by_name(_ud_system, 'bar')
+            bar = _ut_get_unit_by_name(_ud_system, b'bar')
             result = _ut_are_convertible(self.ut_unit, bar) != 0
             if not result:
-                meter = _ut_get_unit_by_name(_ud_system, 'meter')
+                meter = _ut_get_unit_by_name(_ud_system, b'meter')
                 result = _ut_are_convertible(self.ut_unit, meter) != 0
         return result
 
@@ -1061,7 +1077,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('days since epoch')
             >>> u.is_time_reference()
             True
@@ -1082,7 +1098,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('hours since epoch',
             ...               calendar=unit.CALENDAR_STANDARD)
             >>> u.title(10)
@@ -1111,7 +1127,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('degrees')
             >>> u.modulus
             360.0
@@ -1139,7 +1155,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> v = unit.Unit('kilometers')
             >>> u.is_convertible(v)
@@ -1164,7 +1180,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> u.is_dimensionless()
             False
@@ -1185,7 +1201,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('unknown')
             >>> u.is_unknown()
             True
@@ -1209,7 +1225,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('no unit')
             >>> u.is_no_unit()
             True
@@ -1226,7 +1242,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * option (iris.unit.UT_FORMATS):
+        * option (cf_units.UT_FORMATS):
             Set the encoding option of the formatted string representation.
             Valid encoding options may be one of the following enumerations:
 
@@ -1238,14 +1254,14 @@ class Unit(iris.util._OrderedHashable):
             * Unit.UT_DEFINITION
 
             Multiple options may be combined within a list. The default
-            option is iris.unit.UT_ASCII.
+            option is cf_units.UT_ASCII.
 
         Returns:
             string.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> u.format()
             'm'
@@ -1271,7 +1287,7 @@ class Unit(iris.util._OrderedHashable):
                                ctypes.sizeof(string_buffer), bitmask)
             if depth < 0:
                 self._raise_error('Failed to format %r' % self)
-        return string_buffer.value
+        return str(string_buffer.value.decode('ascii'))
 
     @property
     def name(self):
@@ -1279,15 +1295,15 @@ class Unit(iris.util._OrderedHashable):
         *(read-only)* The full name of the unit.
 
         Formats the binary unit into a string representation using
-        method :func:`iris.unit.Unit.format` with keyword argument
-        option=iris.unit.UT_NAMES.
+        method :func:`cf_units.Unit.format` with keyword argument
+        option=cf_units.UT_NAMES.
 
         Returns:
             string.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('watts')
             >>> u.name
             'watt'
@@ -1301,14 +1317,14 @@ class Unit(iris.util._OrderedHashable):
         *(read-only)* The symbolic representation of the unit.
 
         Formats the binary unit into a string representation using
-        method :func:`iris.unit.Unit.format`.
+        method :func:`cf_units.Unit.format`.
 
         Returns:
             string.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('watts')
             >>> u.symbol
             'W'
@@ -1328,15 +1344,15 @@ class Unit(iris.util._OrderedHashable):
         *(read-only)* The symbolic decomposition of the unit.
 
         Formats the binary unit into a string representation using
-        method :func:`iris.unit.Unit.format` with keyword argument
-        option=iris.unit.UT_DEFINITION.
+        method :func:`cf_units.Unit.format` with keyword argument
+        option=cf_units.UT_DEFINITION.
 
         Returns:
             string.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('watts')
             >>> u.definition
             'm2.kg.s-3'
@@ -1357,21 +1373,21 @@ class Unit(iris.util._OrderedHashable):
         Args:
 
         * origin (float): Time origin as returned by the
-          :func:`iris.unit.encode_time` method.
+          :func:`cf_units.encode_time` method.
 
         Returns:
             None.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('hours')
             >>> u.offset_by_time(unit.encode_time(1970, 1, 1, 0, 0, 0))
             Unit('hour since 1970-01-01 00:00:00.0000000 UTC')
 
         """
 
-        if not isinstance(origin, (int, float, long)):
+        if not isinstance(origin, (float, six.integer_types)):
             raise TypeError('a numeric type for the origin argument is'
                             ' required')
         ut_unit = _ut_offset_by_time(self.ut_unit, ctypes.c_double(origin))
@@ -1390,7 +1406,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> u.invert()
             Unit('meter^-1')
@@ -1414,14 +1430,14 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * root (int/long): Value by which the unit root is taken.
+        * root (int): Value by which the unit root is taken.
 
         Returns:
             None.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters^2')
             >>> u.root(2)
             Unit('meter')
@@ -1434,7 +1450,7 @@ class Unit(iris.util._OrderedHashable):
         try:
             root = ctypes.c_int(root)
         except TypeError:
-            raise TypeError('An int or long type for the root argument'
+            raise TypeError('An int type for the root argument'
                             ' is required')
 
         if self.is_unknown():
@@ -1460,14 +1476,14 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * base (int/float/long): Value of the logorithmic base.
+        * base (int/float): Value of the logorithmic base.
 
         Returns:
             None.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> u.log(2)
             Unit('lb(re 1 meter)')
@@ -1500,7 +1516,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> str(u)
             'meters'
@@ -1517,7 +1533,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> repr(u)
             "Unit('meters')"
@@ -1599,7 +1615,7 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * other (int/float/long/string/Unit): Multiplication scale
+        * other (int/float/string/Unit): Multiplication scale
           factor or unit.
 
         Returns:
@@ -1607,7 +1623,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> v = unit.Unit('hertz')
             >>> u*v
@@ -1626,14 +1642,14 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * other (int/float/long/string/Unit): Division scale factor or unit.
+        * other (int/float/string/Unit): Division scale factor or unit.
 
         Returns:
             Unit.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('m.s-1')
             >>> v = unit.Unit('hertz')
             >>> u/v
@@ -1652,14 +1668,14 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * other (int/float/long/string/Unit): Division scale factor or unit.
+        * other (int/float/string/Unit): Division scale factor or unit.
 
         Returns:
             Unit.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('m.s-1')
             >>> v = unit.Unit('hertz')
             >>> u/v
@@ -1679,14 +1695,14 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * power (int/float/long): Value by which the unit power is raised.
+        * power (int/float): Value by which the unit power is raised.
 
         Returns:
             Unit.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> u = unit.Unit('meters')
             >>> u**2
             Unit('meter^2')
@@ -1734,6 +1750,8 @@ class Unit(iris.util._OrderedHashable):
         # iris.util._OrderedHashable.
         return (self.name, self.calendar)
 
+    __hash__ = iris.util._OrderedHashable.__hash__
+
     def __eq__(self, other):
         """
         Compare the two units for equality and return the boolean result.
@@ -1747,7 +1765,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> from iris.unit import Unit
+            >>> from cf_units import Unit
             >>> Unit('meters') == Unit('millimeters')
             False
             >>> Unit('meters') == 'm'
@@ -1781,7 +1799,7 @@ class Unit(iris.util._OrderedHashable):
 
         For example:
 
-            >>> from iris.unit import Unit
+            >>> from cf_units import Unit
             >>> Unit('meters') != Unit('millimeters')
             True
             >>> Unit('meters') != 'm'
@@ -1799,26 +1817,27 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * value (int/float/long/numpy.ndarray):
+        * value (int/float/numpy.ndarray):
             Value/s to be converted.
         * other (string/Unit):
             Target unit to convert to.
         * ctype (ctypes.c_float/ctypes.c_double):
-            Floating point 32-bit single-precision (iris.unit.FLOAT32) or
-            64-bit double-precision (iris.unit.FLOAT64) of conversion. The
-            default is 64-bit double-precision conversion.
+            Floating point 32-bit single-precision (cf_units.FLOAT32) or
+            64-bit double-precision (cf_units.FLOAT64) used for conversion
+            when `value` is not a NumPy array or is a NumPy array composed of
+            NumPy integers. The default is 64-bit double-precision conversion.
 
         Returns:
             float or numpy.ndarray of appropriate float type.
 
         For example:
 
-            >>> import iris.unit as unit
+            >>> import cf_units as unit
             >>> import numpy as np
             >>> c = unit.Unit('deg_c')
             >>> f = unit.Unit('deg_f')
-            >>> print c.convert(0, f)
-            32.0
+            >>> c.convert(0, f)
+            31.999999999999886
             >>> c.convert(0, f, unit.FLOAT32)
             32.0
             >>> a64 = np.arange(10, dtype=np.float64)
@@ -1833,8 +1852,7 @@ class Unit(iris.util._OrderedHashable):
 
         .. note::
 
-            Conversion is done *in-place* for numpy arrays. Also note that,
-            conversion between unit calendars is not permitted.
+            Conversion between unit calendars is not permitted.
 
         """
         result = None
@@ -1852,6 +1870,9 @@ class Unit(iris.util._OrderedHashable):
                 ut1 = self.utime()
                 ut2 = other.utime()
                 result = ut2.date2num(ut1.num2date(value_copy))
+                # Preserve the datatype of the input array if it was float32.
+                if isinstance(value, np.ndarray) and value.dtype == np.float32:
+                    result = result.astype(np.float32)
             else:
                 ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
                 if ut_converter:
@@ -1862,8 +1883,14 @@ class Unit(iris.util._OrderedHashable):
                         if issubclass(value_copy.dtype.type, np.integer):
                             value_copy = value_copy.astype(
                                 _ctypes2numpy[ctype])
+                        # Convert arrays with explicit endianness to native
+                        # endianness: udunits seems to be tripped up by arrays
+                        # with endianness other than native.
+                        if value_copy.dtype.byteorder != '=':
+                            value_copy = value_copy.astype(
+                                value_copy.dtype.type)
                         # strict type check of numpy array
-                        if value_copy.dtype.type not in _numpy2ctypes.keys():
+                        if value_copy.dtype.type not in _numpy2ctypes:
                             raise TypeError(
                                 "Expect a numpy array of '%s' or '%s'" %
                                 tuple(sorted(_numpy2ctypes.keys())))
@@ -1876,7 +1903,7 @@ class Unit(iris.util._OrderedHashable):
                                                  value_copy.size, pointer)
                         result = value_copy
                     else:
-                        if ctype not in _cv_convert_scalar.keys():
+                        if ctype not in _cv_convert_scalar:
                             raise ValueError('Invalid target type. Can only '
                                              'convert to float or double.')
                         # Utilise global convenience dictionary
@@ -1904,16 +1931,6 @@ class Unit(iris.util._OrderedHashable):
 
         Returns:
             netcdftime.utime.
-
-        For example:
-
-            >>> import iris.unit as unit
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00',
-            ...               calendar=unit.CALENDAR_STANDARD)
-            >>> ut = u.utime()
-            >>> ut.num2date(2)
-            datetime.datetime(1970, 1, 1, 2, 0)
-
         """
 
         #
@@ -1944,19 +1961,6 @@ class Unit(iris.util._OrderedHashable):
 
         Returns:
             float or numpy.ndarray of float.
-
-        For example:
-
-            >>> import iris.unit as unit
-            >>> import datetime
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00',
-            ...               calendar=unit.CALENDAR_STANDARD)
-            >>> u.date2num(datetime.datetime(1970, 1, 1, 5))
-            5.00000000372529
-            >>> u.date2num([datetime.datetime(1970, 1, 1, 5),
-            ...             datetime.datetime(1970, 1, 1, 6)])
-            array([ 5.,  6.])
-
         """
 
         cdf_utime = self.utime()
@@ -1988,18 +1992,6 @@ class Unit(iris.util._OrderedHashable):
 
         Returns:
             datetime, or numpy.ndarray of datetime object.
-
-        For example:
-
-            >>> import iris.unit as unit
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00',
-            ...               calendar=unit.CALENDAR_STANDARD)
-            >>> u.num2date(6)
-            datetime.datetime(1970, 1, 1, 6, 0)
-            >>> u.num2date([6, 7])
-            array([datetime.datetime(1970, 1, 1, 6, 0),
-                   datetime.datetime(1970, 1, 1, 7, 0)], dtype=object)
-
         """
         cdf_utime = self.utime()
         return cdf_utime.num2date(time_value)

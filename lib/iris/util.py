@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,20 +19,26 @@ Miscellaneous utility functions.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import abc
 import collections
 import copy
+import functools
 import inspect
 import os
 import os.path
 import sys
 import tempfile
 import time
-import warnings
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 import iris
 import iris.exceptions
 
@@ -69,10 +75,10 @@ def broadcast_weights(weights, array, dims):
         longitude dimension in *array*.
 
     """
-    warnings.warn('broadcast_weights() is deprecated and will be removed '
-                  'in a future release. Consider converting existing code '
-                  'to use broadcast_to_shape() as a replacement.',
-                  stacklevel=2)
+    warn_deprecated('broadcast_weights() is deprecated and will be removed '
+                    'in a future release. Consider converting existing code '
+                    'to use broadcast_to_shape() as a replacement.',
+                    stacklevel=2)
     # Create a shape array, which *weights* can be re-shaped to, allowing
     # them to be broadcast with *array*.
     weights_shape = np.ones(array.ndim)
@@ -280,7 +286,7 @@ def guess_coord_axis(coord):
     """
     Returns a "best guess" axis name of the coordinate.
 
-    Heuristic categoration of the coordinate into either label
+    Heuristic categorisation of the coordinate into either label
     'T', 'Z', 'Y', 'X' or None.
 
     Args:
@@ -300,8 +306,8 @@ def guess_coord_axis(coord):
     elif coord.standard_name in ('latitude', 'grid_latitude',
                                  'projection_y_coordinate'):
         axis = 'Y'
-    elif (coord.units.is_convertible('hPa')
-          or coord.attributes.get('positive') in ('up', 'down')):
+    elif (coord.units.is_convertible('hPa') or
+          coord.attributes.get('positive') in ('up', 'down')):
         axis = 'Z'
     elif coord.units.is_time_reference():
         axis = 'T'
@@ -355,7 +361,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
     if step < 1:
         raise ValueError("`step` must be at least 1.")
     axis = axis % a.ndim
-    num_windows = (a.shape[axis] - window + step) / step
+    num_windows = (a.shape[axis] - window + step) // step
     shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1:]
     strides = (a.strides[:axis] + (step * a.strides[axis], a.strides[axis]) +
                a.strides[axis + 1:])
@@ -428,12 +434,12 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
 
         between_3_and_6 = between(3, 6)
         for i in range(10):
-           print i, between_3_and_6(i)
+           print(i, between_3_and_6(i))
 
 
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
-           print i, between_3_and_6(i)
+           print(i, between_3_and_6(i))
 
     """
     if lh_inclusive and rh_inclusive:
@@ -461,7 +467,7 @@ def reverse(array, axes):
 
         >>> import numpy as np
         >>> a = np.arange(24).reshape(2, 3, 4)
-        >>> print a
+        >>> print(a)
         [[[ 0  1  2  3]
           [ 4  5  6  7]
           [ 8  9 10 11]]
@@ -469,7 +475,7 @@ def reverse(array, axes):
          [[12 13 14 15]
           [16 17 18 19]
           [20 21 22 23]]]
-        >>> print reverse(a, 1)
+        >>> print(reverse(a, 1))
         [[[ 8  9 10 11]
           [ 4  5  6  7]
           [ 0  1  2  3]]
@@ -477,7 +483,7 @@ def reverse(array, axes):
          [[20 21 22 23]
           [16 17 18 19]
           [12 13 14 15]]]
-        >>> print reverse(a, [1, 2])
+        >>> print(reverse(a, [1, 2]))
         [[[11 10  9  8]
           [ 7  6  5  4]
           [ 3  2  1  0]]
@@ -584,7 +590,7 @@ def column_slices_generator(full_slice, ndims):
     dimension_mapping = {None: None}
     _count_current_dim = 0
     for i, i_key in enumerate(full_slice):
-        if isinstance(i_key, int):
+        if isinstance(i_key, (int, np.integer)):
             dimension_mapping[i] = None
         else:
             dimension_mapping[i] = _count_current_dim
@@ -592,14 +598,15 @@ def column_slices_generator(full_slice, ndims):
 
     # Get all of the dimensions for which a tuple of indices were provided
     # (numpy.ndarrays are treated in the same way tuples in this case)
-    is_tuple_style_index = lambda key: isinstance(key, tuple) or \
-        (isinstance(key, np.ndarray) and key.ndim == 1)
+    def is_tuple_style_index(key):
+        return (isinstance(key, tuple) or
+                (isinstance(key, np.ndarray) and key.ndim == 1))
     tuple_indices = [i for i, key in enumerate(full_slice)
                      if is_tuple_style_index(key)]
 
     # stg1: Take a copy of the full_slice specification, turning all tuples
     # into a full slice
-    if tuple_indices != range(len(full_slice)):
+    if tuple_indices != list(range(len(full_slice))):
         first_slice = list(full_slice)
         for tuple_index in tuple_indices:
             first_slice[tuple_index] = slice(None, None)
@@ -608,15 +615,11 @@ def column_slices_generator(full_slice, ndims):
 
         list_of_slices.append(first_slice)
 
-    data_ndims = max(dimension_mapping.values())
-    if data_ndims is not None:
-        data_ndims += 1
-
     # stg2 iterate over each of the tuples
     for tuple_index in tuple_indices:
         # Create a list with the indices to span the whole data array that we
         # currently have
-        spanning_slice_with_tuple = [slice(None, None)] * data_ndims
+        spanning_slice_with_tuple = [slice(None, None)] * _count_current_dim
         # Replace the slice(None, None) with our current tuple
         spanning_slice_with_tuple[dimension_mapping[tuple_index]] = \
             full_slice[tuple_index]
@@ -728,7 +731,7 @@ def _wrap_function_for_method(function, docstring=None):
     # NB. There's an outstanding bug with "exec" where the locals and globals
     # dictionaries must be the same if we're to get closure behaviour.
     my_locals = {'function': function}
-    exec source in my_locals, my_locals
+    exec(source, my_locals, my_locals)
 
     # Update the docstring if required, and return the modified function
     wrapper = my_locals[function.__name__]
@@ -766,7 +769,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
                 # Create a default __init__ method for the class
                 method_source = ('def __init__(self, %s):\n '
                                  'self._init_from_tuple((%s,))' % (args, args))
-                exec method_source in namespace
+                exec(method_source, namespace)
 
             # Ensure the class has a "helper constructor" with explicit
             # arguments.
@@ -774,13 +777,15 @@ class _MetaOrderedHashable(abc.ABCMeta):
                 # Create a default _init method for the class
                 method_source = ('def _init(self, %s):\n '
                                  'self._init_from_tuple((%s,))' % (args, args))
-                exec method_source in namespace
+                exec(method_source, namespace)
 
         return super(_MetaOrderedHashable, cls).__new__(
             cls, name, bases, namespace)
 
 
-class _OrderedHashable(collections.Hashable):
+@functools.total_ordering
+class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
+                                          collections.Hashable)):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
 
@@ -798,9 +803,6 @@ class _OrderedHashable(collections.Hashable):
         its attributes are themselves hashable.
 
     """
-
-    # The metaclass adds default __init__ methods when appropriate.
-    __metaclass__ = _MetaOrderedHashable
 
     @abc.abstractproperty
     def _names(self):
@@ -853,12 +855,11 @@ class _OrderedHashable(collections.Hashable):
 
     # Provide default ordering semantics
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         if isinstance(other, _OrderedHashable):
-            result = cmp(self._identity(), other._identity())
+            return self._identity() < other._identity()
         else:
-            result = NotImplemented
-        return result
+            return NotImplemented
 
 
 def create_temp_filename(suffix=''):
@@ -928,8 +929,8 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
 def ensure_array(a):
     """.. deprecated:: 1.7"""
-    warnings.warn('ensure_array() is deprecated and will be removed '
-                  'in a future release.')
+    warn_deprecated('ensure_array() is deprecated and will be removed '
+                    'in a future release.')
     if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
         a = np.array([a])
     return a
@@ -948,16 +949,16 @@ class _Timers(object):
         self.timers = {}
 
     def start(self, name, step_name):
-        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
-                      'in future Iris releases.')
+        warn_deprecated('Timers was deprecated in v1.7.0 and will be removed '
+                        'in future Iris releases.')
         self.stop(name)
         timer = self.timers.setdefault(name, {})
         timer[step_name] = time.time()
         timer["active_timer_step"] = step_name
 
     def restart(self, name, step_name):
-        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
-                      'in future Iris releases.')
+        warn_deprecated('Timers was deprecated in v1.7.0 and will be removed '
+                        'in future Iris releases.')
         self.stop(name)
         timer = self.timers.setdefault(name, {})
         timer[step_name] = time.time() - timer.get(step_name, 0)
@@ -1021,9 +1022,9 @@ Example Usage::
         timers.start("big func", "output")
         output()
 
-        print timers.stop("big func")
+        print(timers.stop("big func"))
 
-        print timers.get("little func")
+        print(timers.get("little func"))
 """
 
 
@@ -1076,18 +1077,22 @@ def new_axis(src_cube, scalar_coord=None):
         >>> ncube.shape
         (1, 360, 360)
 
-    .. warning::
-
-        Calling this method will trigger any deferred loading, causing the
-        data array of the cube to be loaded into memory.
-
     """
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
 
     # Indexing numpy arrays requires loading deferred data here returning a
     # copy of the data with a new leading dimension.
-    new_cube = iris.cube.Cube(src_cube.data[None])
+    # If the source cube is a Masked Constant, it is changed here to a Masked
+    # Array to allow the mask to gain an extra dimension with the data.
+    if src_cube.has_lazy_data():
+        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+    else:
+        if isinstance(src_cube.data, ma.core.MaskedConstant):
+            new_data = ma.array([np.nan], mask=[True])
+        else:
+            new_data = src_cube.data[None]
+        new_cube = iris.cube.Cube(new_data)
     new_cube.metadata = src_cube.metadata
 
     for coord in src_cube.aux_coords:
@@ -1157,7 +1162,7 @@ def as_compatible_shape(src_cube, target_cube):
                          'to restore cube dimensions.')
 
     new_shape = [1] * target_cube.ndim
-    for dim_from, dim_to in dim_mapping.iteritems():
+    for dim_from, dim_to in six.iteritems(dim_mapping):
         if dim_to is not None:
             new_shape[dim_from] = src_cube.shape[dim_to]
 
@@ -1177,9 +1182,16 @@ def as_compatible_shape(src_cube, target_cube):
     # for subsequent use in creating updated aux_factories.
     coord_mapping = {}
 
+    reverse_mapping = {v: k for k, v in dim_mapping.items() if v is not None}
+
     def add_coord(coord):
         """Closure used to add a suitably reshaped coord to new_cube."""
-        dims = target_cube.coord_dims(coord)
+        all_dims = target_cube.coord_dims(coord)
+        src_dims = [dim for dim in src_cube.coord_dims(coord) if
+                    src_cube.shape[dim] > 1]
+        mapped_dims = [reverse_mapping[dim] for dim in src_dims]
+        length1_dims = [dim for dim in all_dims if new_cube.shape[dim] == 1]
+        dims = length1_dims + mapped_dims
         shape = [new_cube.shape[dim] for dim in dims]
         if not shape:
             shape = [1]
@@ -1207,6 +1219,38 @@ def as_compatible_shape(src_cube, target_cube):
         new_cube.add_aux_factory(factory.updated(coord_mapping))
 
     return new_cube
+
+
+def squeeze(cube):
+    """
+    Removes any dimension of length one. If it has an associated DimCoord or
+    AuxCoord, this becomes a scalar coord.
+
+    Args:
+
+    * cube (:class:`iris.cube.Cube`)
+        Source cube to remove length 1 dimension(s) from.
+
+    Returns:
+        A new :class:`iris.cube.Cube` instance without any dimensions of
+        length 1.
+
+    For example::
+
+        >>> cube.shape
+        (1, 360, 360)
+        >>> ncube = iris.util.squeeze(cube)
+        >>> ncube.shape
+        (360, 360)
+
+    """
+
+    slices = [0 if cube.shape[dim] == 1 else slice(None)
+              for dim in range(cube.ndim)]
+
+    squeezed = cube[tuple(slices)]
+
+    return squeezed
 
 
 def file_is_newer_than(result_path, source_paths):
@@ -1250,7 +1294,7 @@ def file_is_newer_than(result_path, source_paths):
 
     """
     # Accept a string as a single source path
-    if isinstance(source_paths, basestring):
+    if isinstance(source_paths, six.string_types):
         source_paths = [source_paths]
     # Fix our chosen timestamp function
     file_date = os.path.getmtime
@@ -1316,7 +1360,7 @@ def unify_time_units(cubes):
             if time_coord.units.is_time_reference():
                 epoch = epochs.setdefault(time_coord.units.calendar,
                                           time_coord.units.origin)
-                new_unit = iris.unit.Unit(epoch, time_coord.units.calendar)
+                new_unit = cf_units.Unit(epoch, time_coord.units.calendar)
                 time_coord.convert_units(new_unit)
 
 
@@ -1364,7 +1408,7 @@ def _is_circular(points, modulus, bounds=None):
         if len(points) > 1:
             diffs = list(set(np.diff(points)))
             diff = np.mean(diffs)
-            abs_tol = diff * 1.0e-4
+            abs_tol = np.abs(diff * 1.0e-4)
             diff_approx_equal = np.max(np.abs(diffs - diff)) < abs_tol
             if diff_approx_equal:
                 circular_value = (points[-1] + diff) % modulus
@@ -1387,3 +1431,171 @@ def _is_circular(points, modulus, bounds=None):
             # We need to decide whether this is valid!
             circular = points[0] >= modulus
     return circular
+
+
+def promote_aux_coord_to_dim_coord(cube, name_or_coord):
+    """
+    Promotes an AuxCoord on the cube to a DimCoord. This AuxCoord must be
+    associated with a single cube dimension. If the AuxCoord is associated
+    with a dimension that already has a DimCoord, that DimCoord gets
+    demoted to an AuxCoord.
+
+    Args:
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * name_or_coord:
+        Either
+
+        (a) An instance of :class:`iris.coords.AuxCoord`
+
+        or
+
+        (b) the :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name` of an instance of an instance of
+        :class:`iris.coords.AuxCoord`.
+
+    For example::
+
+        >>> print cube
+        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  time                    x      -              -
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  year                    x      -              -
+        >>> promote_aux_coord_to_dim_coord(cube, 'year')
+        >>> print cube
+        air_temperature / (K)       (year: 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  year                    x      -              -
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  time                    x      -              -
+
+    """
+
+    if isinstance(name_or_coord, six.string_types):
+        aux_coord = cube.coord(name_or_coord)
+    elif isinstance(name_or_coord, iris.coords.Coord):
+        aux_coord = name_or_coord
+    else:
+        # Don't know how to handle this type
+        msg = ("Don't know how to handle coordinate of type {}. "
+               "Ensure all coordinates are of type six.string_types or "
+               "iris.coords.Coord.")
+        msg = msg.format(type(name_or_coord))
+        raise TypeError(msg)
+
+    if aux_coord in cube.dim_coords:
+        # nothing to do
+        return
+
+    if aux_coord not in cube.aux_coords:
+        msg = ("Attempting to promote an AuxCoord ({}) "
+               "which does not exist in the cube.")
+        msg = msg.format(aux_coord.name())
+        raise ValueError(msg)
+
+    coord_dim = cube.coord_dims(aux_coord)
+
+    if len(coord_dim) != 1:
+        msg = ("Attempting to promote an AuxCoord ({}) "
+               "which is associated with {} dimensions.")
+        msg = msg.format(aux_coord.name(), len(coord_dim))
+        raise ValueError(msg)
+
+    try:
+        dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
+    except ValueError as valerr:
+        msg = ("Attempt to promote an AuxCoord ({}) fails "
+               "when attempting to create a DimCoord from the "
+               "AuxCoord because: {}")
+        msg = msg.format(aux_coord.name(), str(valerr))
+        raise ValueError(msg)
+
+    old_dim_coord = cube.coords(dim_coords=True,
+                                contains_dimension=coord_dim[0])
+
+    if len(old_dim_coord) == 1:
+        demote_dim_coord_to_aux_coord(cube, old_dim_coord[0])
+
+    # order matters here: don't want to remove
+    # the aux_coord before have tried to make
+    # dim_coord in case that fails
+    cube.remove_coord(aux_coord)
+
+    cube.add_dim_coord(dim_coord, coord_dim)
+
+
+def demote_dim_coord_to_aux_coord(cube, name_or_coord):
+    """
+    Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
+
+    The DimCoord is demoted to an auxiliary coordinate on the cube.
+    The dimension of the cube that was associated with the DimCoord becomes
+    anonymous.  The class of the coordinate is left as DimCoord, it is not
+    recast as an AuxCoord instance.
+
+    Args:
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * name_or_coord:
+        Either
+
+        (a) An instance of :class:`iris.coords.DimCoord`
+
+        or
+
+        (b) the :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name` of an instance of an instance of
+        :class:`iris.coords.DimCoord`.
+
+    For example::
+
+        >>> print cube
+        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  time                    x      -              -
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  year                    x      -              -
+        >>> demote_dim_coord_to_aux_coord(cube, 'time')
+        >>> print cube
+        air_temperature / (K)        (-- : 12; latitude: 73; longitude: 96)
+             Dimension coordinates:
+                  latitude                -      x              -
+                  longitude               -      -              x
+             Auxiliary coordinates:
+                  time                    x      -              -
+                  year                    x      -              -
+
+    """
+
+    if isinstance(name_or_coord, six.string_types):
+        dim_coord = cube.coord(name_or_coord)
+    elif isinstance(name_or_coord, iris.coords.Coord):
+        dim_coord = name_or_coord
+    else:
+        # Don't know how to handle this type
+        msg = ("Don't know how to handle coordinate of type {}. "
+               "Ensure all coordinates are of type six.string_types or "
+               "iris.coords.Coord.")
+        msg = msg.format(type(name_or_coord))
+        raise TypeError(msg)
+
+    if dim_coord not in cube.dim_coords:
+        # nothing to do
+        return
+
+    coord_dim = cube.coord_dims(dim_coord)
+
+    cube.remove_coord(dim_coord)
+
+    cube.add_aux_coord(dim_coord, coord_dim)

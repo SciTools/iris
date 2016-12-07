@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,9 @@ Test function
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -27,13 +30,13 @@ import iris.tests as tests
 from copy import deepcopy
 import warnings
 
-import mock
 import numpy as np
 
 from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import \
     grid_definition_template_4_and_5, \
     _MDI as MDI
+from iris.tests import mock
 
 
 RESOLUTION = 1e6
@@ -86,7 +89,7 @@ class Test(tests.IrisTest):
 
     def test_resolution_default_0(self):
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 0,
+            section = {'basicAngleOfTheInitialProductionDomain': 0,
                        'subdivisionsOfBasicAngle': 0,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * RESOLUTION,
@@ -96,7 +99,7 @@ class Test(tests.IrisTest):
 
     def test_resolution_default_mdi(self):
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': MDI,
+            section = {'basicAngleOfTheInitialProductionDomain': MDI,
                        'subdivisionsOfBasicAngle': MDI,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * RESOLUTION,
@@ -107,7 +110,7 @@ class Test(tests.IrisTest):
     def test_resolution(self):
         angle = 10
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 1,
+            section = {'basicAngleOfTheInitialProductionDomain': 1,
                        'subdivisionsOfBasicAngle': angle,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * angle,
@@ -118,7 +121,7 @@ class Test(tests.IrisTest):
     def test_uv_resolved_warn(self):
         angle = 100
         for warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 1,
+            section = {'basicAngleOfTheInitialProductionDomain': 1,
                        'subdivisionsOfBasicAngle': angle,
                        'resolutionAndComponentFlags': 0x08,
                        'longitudes': self.data * angle,
@@ -129,7 +132,7 @@ class Test(tests.IrisTest):
     def test_j_consecutive(self):
         angle = 1000
         for request_warn in [False, True]:
-            section = {'basicAngleOfTheInitialProductDomain': 1,
+            section = {'basicAngleOfTheInitialProductionDomain': 1,
                        'subdivisionsOfBasicAngle': angle,
                        'resolutionAndComponentFlags': 0,
                        'longitudes': self.data * angle,

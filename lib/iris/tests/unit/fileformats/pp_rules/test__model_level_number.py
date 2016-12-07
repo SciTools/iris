@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,9 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for :func:`iris.fileformats.pp_rules._model_level_number`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -30,7 +33,7 @@ class Test_9999(tests.IrisTest):
 
 class Test_lblev(tests.IrisTest):
     def test(self):
-        for val in xrange(9999):
+        for val in range(9999):
             self.assertEqual(_model_level_number(val), val)
 
 

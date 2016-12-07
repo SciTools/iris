@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,16 +19,19 @@ Test function :func:`iris.fileformats.grib._load_convert.validity_time_coord.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
-import mock
+from cf_units import Unit
 import numpy as np
 
 from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import validity_time_coord
-from iris.unit import Unit
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

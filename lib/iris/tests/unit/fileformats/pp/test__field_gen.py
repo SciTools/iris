@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,19 +16,24 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.pp._field_gen` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import contextlib
+import io
 
-import mock
 import numpy as np
 
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
-class Test__field_gen(tests.IrisTest):
+class Test(tests.IrisTest):
     @contextlib.contextmanager
     def mock_for_field_gen(self, fields):
         side_effect_fields = list(fields)[:]
@@ -43,8 +48,12 @@ class Test__field_gen(tests.IrisTest):
                 np.fromfile.return_value = []
             return result
 
+        if six.PY3:
+            open_func = 'builtins.open'
+        else:
+            open_func = '__builtin__.open'
         with mock.patch('numpy.fromfile', return_value=[0]), \
-                mock.patch('__builtin__.open'), \
+                mock.patch(open_func), \
                 mock.patch('struct.unpack_from', return_value=[4]), \
                 mock.patch('iris.fileformats.pp.make_pp_field',
                            side_effect=make_pp_field_override):
@@ -71,14 +80,16 @@ class Test__field_gen(tests.IrisTest):
                              lbext=0,
                              lbuser=[0])
         with self.mock_for_field_gen([pp_field]):
-            open_fh = mock.Mock()
+            open_fh = mock.MagicMock(spec=io.RawIOBase)
             open.return_value = open_fh
             next(pp._field_gen('mocked', read_data_bytes=False))
-            calls = [mock.call(open_fh, count=45, dtype='>i4'),
-                     mock.call(open_fh, count=19, dtype='>f4')]
+            with open_fh as open_fh_ctx:
+                calls = [mock.call(open_fh_ctx, count=45, dtype='>i4'),
+                         mock.call(open_fh_ctx, count=19, dtype='>f4')]
             np.fromfile.assert_has_calls(calls)
-        expected_deferred_bytes = ('mocked', open_fh.tell(),
-                                   4, np.dtype('>f4'))
+        with open_fh as open_fh_ctx:
+            expected_deferred_bytes = ('mocked', open_fh_ctx.tell(),
+                                       4, np.dtype('>f4'))
         self.assertEqual(pp_field._data, expected_deferred_bytes)
 
     def test_read_data_call(self):
@@ -87,12 +98,26 @@ class Test__field_gen(tests.IrisTest):
                              lbext=0,
                              lbuser=[0])
         with self.mock_for_field_gen([pp_field]):
-            open_fh = mock.Mock()
+            open_fh = mock.MagicMock(spec=io.RawIOBase)
             open.return_value = open_fh
             next(pp._field_gen('mocked', read_data_bytes=True))
-        expected_loaded_bytes = pp.LoadedArrayBytes(open_fh.read(),
-                                                    np.dtype('>f4'))
+        with open_fh as open_fh_ctx:
+            expected_loaded_bytes = pp.LoadedArrayBytes(open_fh_ctx.read(),
+                                                        np.dtype('>f4'))
         self.assertEqual(pp_field._data, expected_loaded_bytes)
+
+    def test_invalid_header_release(self):
+        # Check that an unknown LBREL value just results in a warning
+        # and the end of the file iteration instead of raising an error.
+        with self.temp_filename() as temp_path:
+            np.zeros(65, dtype='i4').tofile(temp_path)
+            generator = pp._field_gen(temp_path, False)
+            with mock.patch('warnings.warn') as warn:
+                with self.assertRaises(StopIteration):
+                    next(generator)
+            self.assertEqual(warn.call_count, 1)
+            self.assertIn('header release number', warn.call_args[0][0])
+
 
 if __name__ == "__main__":
     tests.main()

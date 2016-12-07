@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,10 +16,14 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.fileformats.grib` package."""
 
-import mock
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
-from iris.fileformats.grib._message import _GribMessage
+from iris.fileformats.grib.message import GribMessage
+from iris.tests import mock
 
 
 def _make_test_message(sections):
-    return _GribMessage(mock.Mock(sections=sections), None, None)
+    raw_message = mock.Mock(sections=sections)
+    recreate_raw = mock.Mock(return_value=raw_message)
+    return GribMessage(raw_message, recreate_raw)

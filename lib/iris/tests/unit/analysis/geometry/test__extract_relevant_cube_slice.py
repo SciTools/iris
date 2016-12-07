@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,23 +19,23 @@ Unit tests for :func:`iris.analysis.geometry._extract_relevant_cube_slice`.
 
 """
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 
 import iris.tests as tests
-import iris.tests.stock
+import iris.tests.stock as stock
 
-import numpy as np
 import shapely.geometry
 
-import iris
 from iris.analysis.geometry import _extract_relevant_cube_slice
 
 
 class Test(tests.IrisTest):
     def test_polygon_smaller_than_cube(self):
-        cube = tests.stock.lat_lon_cube()
+        cube = stock.lat_lon_cube()
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.box(-0.4, -0.4, 0.4, 0.4)
@@ -47,7 +47,7 @@ class Test(tests.IrisTest):
         self.assertEqual(target, actual)
 
     def test_polygon_larger_than_cube(self):
-        cube = tests.stock.lat_lon_cube()
+        cube = stock.lat_lon_cube()
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.box(-0.6, -0.6, 0.6, 0.6)
@@ -59,7 +59,7 @@ class Test(tests.IrisTest):
         self.assertEqual(target, actual)
 
     def test_polygon_on_cube_boundary(self):
-        cube = tests.stock.lat_lon_cube()
+        cube = stock.lat_lon_cube()
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.box(-0.5, -0.5, 0.5, 0.5)
@@ -71,7 +71,7 @@ class Test(tests.IrisTest):
         self.assertEqual(target, actual)
 
     def test_rotated_polygon_on_cube_boundary(self):
-        cube = tests.stock.lat_lon_cube()
+        cube = stock.lat_lon_cube()
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.Polygon(((0., -.5), (-.5, 0.), (0., .5),
@@ -84,7 +84,7 @@ class Test(tests.IrisTest):
         self.assertEqual(target, actual)
 
     def test_rotated_polygon_larger_than_cube_boundary(self):
-        cube = tests.stock.lat_lon_cube()
+        cube = stock.lat_lon_cube()
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.Polygon(((0., -.6), (-.6, 0.), (0., .6),

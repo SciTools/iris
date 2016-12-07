@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,14 +28,17 @@ Currently supports only these ones:
 
 '''
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import collections
 import warnings
 
-import numpy as np
+import cf_units
 
 from iris.fileformats.grib import _grib_cf_map as grcf
 import iris.std_names
-import iris.unit
 
 
 class LookupTable(dict):
@@ -101,15 +104,15 @@ def _make_grib1_cf_table():
                               '(skipping).'.format(standard_name))
                 return None
         # convert units string to iris Unit (i.e. mainly, check it is good)
-        iris_units = iris.unit.Unit(units)
+        a_cf_unit = cf_units.Unit(units)
         cf_data = _GribToCfDataClass(standard_name=standard_name,
                                      long_name=long_name,
-                                     units=iris_units,
+                                     units=a_cf_unit,
                                      set_height=set_height)
         return (grib1_key, cf_data)
 
     # Interpret the imported Grib1-to-CF table.
-    for (grib1data, cfdata) in grcf.GRIB1_LOCAL_TO_CF.iteritems():
+    for (grib1data, cfdata) in six.iteritems(grcf.GRIB1_LOCAL_TO_CF):
         assert grib1data.edition == 1
         association_entry = _make_grib1_cf_entry(
             table2_version=grib1data.t2version,
@@ -124,7 +127,7 @@ def _make_grib1_cf_table():
 
     # Do the same for special Grib1 codes that include an implied height level.
     for (grib1data, (cfdata, extra_dimcoord)) \
-            in grcf.GRIB1_LOCAL_TO_CF_CONSTRAINED.iteritems():
+            in six.iteritems(grcf.GRIB1_LOCAL_TO_CF_CONSTRAINED):
         assert grib1data.edition == 1
         if extra_dimcoord.standard_name != 'height':
             raise ValueError('Got implied dimension coord of "{}", '
@@ -188,15 +191,15 @@ def _make_grib2_to_cf_table():
                               '(skipping).'.format(standard_name))
                 return None
         # convert units string to iris Unit (i.e. mainly, check it is good)
-        iris_units = iris.unit.Unit(units)
+        a_cf_unit = cf_units.Unit(units)
         cf_data = _GribToCfDataClass(standard_name=standard_name,
                                      long_name=long_name,
-                                     units=iris_units,
+                                     units=a_cf_unit,
                                      set_height=None)
         return (grib2_key, cf_data)
 
     # Interpret the grib2 info from grib_cf_map
-    for grib2data, cfdata in grcf.GRIB2_TO_CF.iteritems():
+    for grib2data, cfdata in six.iteritems(grcf.GRIB2_TO_CF):
         assert grib2data.edition == 2
         association_entry = _make_grib2_cf_entry(
             param_discipline=grib2data.discipline,
@@ -248,24 +251,24 @@ def _make_cf_to_grib2_table():
                 return None
         cf_key = _CfToGrib2KeyClass(standard_name, long_name)
         # convert units string to iris Unit (i.e. mainly, check it is good)
-        iris_units = iris.unit.Unit(units)
+        a_cf_unit = cf_units.Unit(units)
         grib2_data = _CfToGrib2DataClass(discipline=int(param_discipline),
                                          category=int(param_category),
                                          number=int(param_number),
-                                         units=iris_units)
+                                         units=a_cf_unit)
         return (cf_key, grib2_data)
 
     # Interpret the imported CF-to-Grib2 table into a lookup table
-    for cfdata, grib2data in grcf.CF_TO_GRIB2.iteritems():
+    for cfdata, grib2data in six.iteritems(grcf.CF_TO_GRIB2):
         assert grib2data.edition == 2
-        iris_units = iris.unit.Unit(cfdata.units)
+        a_cf_unit = cf_units.Unit(cfdata.units)
         association_entry = _make_cf_grib2_entry(
             standard_name=cfdata.standard_name,
             long_name=cfdata.long_name,
             param_discipline=grib2data.discipline,
             param_category=grib2data.category,
             param_number=grib2data.number,
-            units=iris_units)
+            units=a_cf_unit)
         if association_entry is not None:
             key, value = association_entry
             table[key] = value
@@ -285,7 +288,7 @@ def grib1_phenom_to_cf_info(table2_version, centre_number, param_number):
 
     * standard_name
     * long_name
-    * units : a :class:`iris.unit.Unit`
+    * units : a :class:`cf_units.Unit`
     * set_height :  a scalar 'height' value , or None
 
     """
@@ -303,7 +306,7 @@ def grib2_phenom_to_cf_info(param_discipline, param_category, param_number):
 
     * standard_name
     * long_name
-    * units : a :class:`iris.unit.Unit`
+    * units : a :class:`cf_units.Unit`
 
     """
     grib2_key = _Grib2ToCfKeyClass(param_discipline=int(param_discipline),
@@ -321,7 +324,7 @@ def cf_phenom_to_grib2_info(standard_name, long_name=None):
     * discipline
     * category
     * number
-    * units : a :class:`iris.unit.Unit`
+    * units : a :class:`cf_units.Unit`
         The unit represents the defined reference units for the message data.
 
     """

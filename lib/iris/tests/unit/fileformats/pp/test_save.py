@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,14 +16,17 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
+from iris.coords import DimCoord, CellMethod
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
+from iris.tests import mock
 import iris.tests.stock as stock
 
 
@@ -44,6 +47,42 @@ def _pp_save_ppfield_values(cube):
         pp.save(cube, target_filelike)
     # Return pp-field mock with all the written properties
     return pp_field
+
+
+class TestVertical(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+
+    def test_pseudo_level(self):
+        pseudo_level = 123
+        coord = DimCoord(pseudo_level, long_name='pseudo_level', units='1')
+        self.cube.add_aux_coord(coord)
+        lbuser5_produced = _pp_save_ppfield_values(self.cube).lbuser[4]
+        self.assertEqual(pseudo_level, lbuser5_produced)
+
+    def test_soil_level(self):
+        soil_level = 314
+        coord = DimCoord(soil_level, long_name='soil_model_level_number')
+        self.cube.add_aux_coord(coord)
+        self.cube.standard_name = 'moisture_content_of_soil_layer'
+        field = _pp_save_ppfield_values(self.cube)
+        self.assertEqual(field.lbvc, 6)
+        self.assertEqual(field.lblev, soil_level)
+        self.assertEqual(field.blev, soil_level)
+        self.assertEqual(field.brsvd[0], 0)
+        self.assertEqual(field.brlev, 0)
+
+    def test_soil_depth(self):
+        lower, point, upper = 1, 2, 3
+        coord = DimCoord(point, standard_name='depth', bounds=[[lower, upper]])
+        self.cube.add_aux_coord(coord)
+        self.cube.standard_name = 'moisture_content_of_soil_layer'
+        field = _pp_save_ppfield_values(self.cube)
+        self.assertEqual(field.lbvc, 6)
+        self.assertEqual(field.lblev, 0)
+        self.assertEqual(field.blev, point)
+        self.assertEqual(field.brsvd[0], lower)
+        self.assertEqual(field.brlev, upper)
 
 
 class TestLbfcProduction(tests.IrisTest):
@@ -120,6 +159,30 @@ class TestLbsrceProduction(tests.IrisTest):
     def test_um_version(self):
         self.check_cube_um_source_yields_lbsrce(
             'Data from Met Office Unified Model 12.17', '25.36', 25361111)
+
+
+class Test_Save__LbprocProduction(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.realistic_3d()
+
+    def test_no_cell_methods(self):
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 0)
+
+    def test_mean(self):
+        self.cube.cell_methods = (CellMethod('mean', 'time', '1 hour'),)
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 128)
+
+    def test_minimum(self):
+        self.cube.cell_methods = (CellMethod('minimum', 'time', '1 hour'),)
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 4096)
+
+    def test_maximum(self):
+        self.cube.cell_methods = (CellMethod('maximum', 'time', '1 hour'),)
+        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        self.assertEqual(lbproc, 8192)
 
 
 if __name__ == "__main__":

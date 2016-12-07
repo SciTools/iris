@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,9 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.Future` class."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -24,6 +27,12 @@ from iris import Future
 
 
 class Test___setattr__(tests.IrisTest):
+    def test_valid_netcdf_no_unlimited(self):
+        future = Future()
+        new_value = not future.netcdf_no_unlimited
+        future.netcdf_no_unlimited = new_value
+        self.assertEqual(future.netcdf_no_unlimited, new_value)
+
     def test_valid_cell_datetime_objects(self):
         future = Future()
         new_value = not future.cell_datetime_objects
@@ -35,6 +44,12 @@ class Test___setattr__(tests.IrisTest):
         new_value = not future.strict_grib_load
         future.strict_grib_load = new_value
         self.assertEqual(future.strict_grib_load, new_value)
+
+    def test_valid_clip_latitudes(self):
+        future = Future()
+        new_value = not future.clip_latitudes
+        future.clip_latitudes = new_value
+        self.assertEqual(future.clip_latitudes, new_value)
 
     def test_invalid_attribute(self):
         future = Future()

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,10 @@ All the functions provided here add a new coordinate to a cube.
       "Time coordinates".
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import calendar
 import collections
@@ -61,7 +65,7 @@ def add_categorised_coord(cube, name, from_coord, category_function,
         units of the category value, typically 'no_unit' or '1'.
     """
     # Interpret coord, if given as a name
-    if isinstance(from_coord, basestring):
+    if isinstance(from_coord, six.string_types):
         from_coord = cube.coord(from_coord)
 
     if len(cube.coords(name)) > 0:
@@ -73,9 +77,14 @@ def add_categorised_coord(cube, name, from_coord, category_function,
     # Test whether the result contains strings. If it does we must manually
     # force the dtype because of a numpy bug (see numpy #3270 on GitHub).
     result = category_function(from_coord, from_coord.points.ravel()[0])
-    if isinstance(result, basestring):
+    if isinstance(result, six.string_types):
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
-        vectorised_fn = lambda *args: str_vectorised_fn(*args).astype('|S64')
+        # Use a common type for string arrays (N.B. limited to 64 chars)
+        all_cases_string_type = '|S64' if six.PY2 else '|U64'
+
+        def vectorised_fn(*args):
+            return str_vectorised_fn(*args).astype(all_cases_string_type)
+
     else:
         vectorised_fn = np.vectorize(category_function)
     new_coord = iris.coords.AuxCoord(vectorised_fn(from_coord,
@@ -199,6 +208,16 @@ def add_weekday(cube, coord, name='weekday'):
         units='no_unit')
 
 
+# --------------------------------------------
+# Time categorisations : hour of the day
+
+def add_hour(cube, coord, name='hour'):
+    """Add a categorical hour coordinate, values 0..23."""
+    add_categorised_coord(
+        cube, name, coord,
+        lambda coord, x: _pt_date(coord, x).hour)
+
+
 # ----------------------------------------------
 # Time categorisations : meteorological seasons
 
@@ -214,7 +233,7 @@ def _months_in_season(season):
         # Can't match the season, raise an error.
         raise ValueError('unrecognised season: {!s}'.format(season))
     m1 = m0 + len(season)
-    return map(lambda month: (month % 12) + 1, range(m0, m1))
+    return [(month % 12) + 1 for month in range(m0, m1)]
 
 
 def _validate_seasons(seasons):
@@ -231,13 +250,13 @@ def _validate_seasons(seasons):
     for season in seasons:
         c.update(_months_in_season(season))
     # Make a list of months that are not present...
-    not_present = [calendar.month_abbr[month] for month in xrange(1, 13)
-                   if month not in c.keys()]
+    not_present = [calendar.month_abbr[month] for month in range(1, 13)
+                   if month not in c]
     if not_present:
         raise ValueError('some months do not appear in any season: '
                          '{!s}'.format(', '.join(not_present)))
     # Make a list of months that appear multiple times...
-    multi_present = [calendar.month_abbr[month] for month in xrange(1, 13)
+    multi_present = [calendar.month_abbr[month] for month in range(1, 13)
                      if c[month] > 1]
     if multi_present:
         raise ValueError('some months appear in more than one season: '
@@ -256,8 +275,9 @@ def _month_year_adjusts(seasons):
     month_year_adjusts = [None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for season in seasons:
         months = _months_in_season(season)
-        for month in filter(lambda m: m > months[-1], months):
-            month_year_adjusts[month] = 1
+        for month in months:
+            if month > months[-1]:
+                month_year_adjusts[month] = 1
     return month_year_adjusts
 
 

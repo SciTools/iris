@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :data:`iris.analysis.STD_DEV` aggregator."""
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -42,6 +45,20 @@ class Test_lazy_aggregate(tests.IrisTest):
         array = biggus.NumpyArrayAdapter(np.arange(8))
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=0)
         self.assertArrayAlmostEqual(var.ndarray(), np.array(2.291287))
+
+
+class Test_name(tests.IrisTest):
+    def test(self):
+        self.assertEqual(STD_DEV.name(), 'standard_deviation')
+
+
+class Test_aggregate_shape(tests.IrisTest):
+    def test(self):
+        shape = ()
+        kwargs = dict()
+        self.assertTupleEqual(STD_DEV.aggregate_shape(**kwargs), shape)
+        kwargs = dict(forfar=5, fife=4)
+        self.assertTupleEqual(STD_DEV.aggregate_shape(**kwargs), shape)
 
 
 if __name__ == '__main__':

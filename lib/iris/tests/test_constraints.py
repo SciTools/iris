@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,10 +18,13 @@
 Test the constrained cube loading mechanism.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
-
-import biggus
 
 import iris
 import iris.tests.stock as stock
@@ -40,8 +43,11 @@ def workaround_pending_1262(cubes):
             cubes[i] = cube[::-1]
 
 
+@tests.skip_data
 class TestSimple(tests.IrisTest):
-    slices = iris.cube.CubeList(stock.realistic_4d().slices(['grid_latitude', 'grid_longitude']))
+    def setUp(self):
+        names = ['grid_latitude', 'grid_longitude']
+        self.slices = iris.cube.CubeList(stock.realistic_4d().slices(names))
 
     def test_constraints(self):
         constraint = iris.Constraint(model_level_number=10)
@@ -332,7 +338,9 @@ class TestConstraints(TestMixin, tests.IrisTest):
         rl10 = repr(self.level_10)
 
         rt_l10 = repr(self.theta & self.level_10)
-        self.assertEqual(rt_l10, "ConstraintCombination(%s, %s, <built-in function __and__>)" % (rt, rl10))
+        expr = 'ConstraintCombination(%s, %s, <built-in function %s>)' % (
+            rt, rl10, '__and__' if six.PY2 else 'and_')
+        self.assertEqual(expr, rt_l10)
 
     def test_string_repr(self):
         rt = repr(iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE))

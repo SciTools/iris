@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,20 +16,22 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris.coord_categorisation.add_categorised_coord`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
-import mock
+from cf_units import CALENDARS as calendars
+from cf_units import Unit
 import numpy as np
 
 from iris.coord_categorisation import add_categorised_coord
 from iris.coord_categorisation import add_day_of_year
 from iris.cube import Cube
 from iris.coords import DimCoord
-from iris.unit import CALENDARS as calendars
-from iris.unit import Unit
+from iris.tests import mock
 
 
 class Test_add_categorised_coord(tests.IrisTest):
@@ -47,7 +49,8 @@ class Test_add_categorised_coord(tests.IrisTest):
         # numpy.vectorize, before being applied to the points array.
         # The reason we use numpy.vectorize is to support multi-dimensional
         # coordinate points.
-        fn = lambda coord, v: v**2
+        def fn(coord, v):
+            return v**2
 
         with mock.patch('numpy.vectorize',
                         return_value=self.vectorised) as vectorise_patch:
@@ -73,7 +76,8 @@ class Test_add_categorised_coord(tests.IrisTest):
     def test_string_vectorised(self):
         # Check that special case handling of a vectorized string returning
         # function is taking place.
-        fn = lambda coord, v: '0123456789'[:v]
+        def fn(coord, v):
+            return '0123456789'[:v]
 
         with mock.patch('numpy.vectorize',
                         return_value=self.vectorised) as vectorise_patch:
@@ -90,15 +94,16 @@ class Test_add_categorised_coord(tests.IrisTest):
 class Test_add_day_of_year(tests.IrisTest):
     def setUp(self):
         self.expected = {
-            'standard': np.array(range(360, 367) + range(1, 4)),
-            'gregorian': np.array(range(360, 367) + range(1, 4)),
-            'proleptic_gregorian': np.array(range(360, 367) + range(1, 4)),
-            'noleap': np.array(range(359, 366) + range(1, 4)),
-            'julian': np.array(range(360, 367) + range(1, 4)),
-            'all_leap': np.array(range(360, 367) + range(1, 4)),
-            '365_day': np.array(range(359, 366) + range(1, 4)),
-            '366_day': np.array(range(360, 367) + range(1, 4)),
-            '360_day': np.array(range(355, 361) + range(1, 5))}
+            'standard': np.array(list(range(360, 367)) + list(range(1, 4))),
+            'gregorian': np.array(list(range(360, 367)) + list(range(1, 4))),
+            'proleptic_gregorian': np.array(list(range(360, 367)) +
+                                            list(range(1, 4))),
+            'noleap': np.array(list(range(359, 366)) + list(range(1, 4))),
+            'julian': np.array(list(range(360, 367)) + list(range(1, 4))),
+            'all_leap': np.array(list(range(360, 367)) + list(range(1, 4))),
+            '365_day': np.array(list(range(359, 366)) + list(range(1, 4))),
+            '366_day': np.array(list(range(360, 367)) + list(range(1, 4))),
+            '360_day': np.array(list(range(355, 361)) + list(range(1, 5)))}
 
     def make_cube(self, calendar):
         n_times = 10

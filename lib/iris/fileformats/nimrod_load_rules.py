@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,9 +16,13 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Rules for converting NIMROD fields into cubes."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 
 import warnings
 
+import cf_units
 import netcdftime
 import numpy as np
 
@@ -35,8 +39,8 @@ MERIDIAN_SCALING_BNG = 0.9996012717
 
 NIMROD_DEFAULT = -32767.0
 
-TIME_UNIT = iris.unit.Unit('hours since 1970-01-01 00:00:00',
-                           calendar=iris.unit.CALENDAR_STANDARD)
+TIME_UNIT = cf_units.Unit('hours since 1970-01-01 00:00:00',
+                          calendar=cf_units.CALENDAR_STANDARD)
 
 
 FIELD_CODES = {73: "orography"}
@@ -152,10 +156,10 @@ def british_national_grid_y(cube, field):
 
     """
     if field.origin_corner == 0:  # top left
-        y_coord = DimCoord(np.arange(field.num_rows)[::-1] *
-                           -field.row_step + field.y_origin,
-                           standard_name="projection_y_coordinate", units="m",
-                           coord_system=iris.coord_systems.OSGB())
+        y_coord = DimCoord(
+            np.arange(field.num_rows)[::-1] * -field.row_step + field.y_origin,
+            standard_name="projection_y_coordinate", units="m",
+            coord_system=iris.coord_systems.OSGB())
         cube.add_dim_coord(y_coord, 0)
     else:
         raise TranslationError("Corner {0} not yet implemented".

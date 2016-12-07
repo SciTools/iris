@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,9 +18,13 @@
 Provides objects for building up expressions useful for pattern matching.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import collections
 import operator
-import warnings
 
 import numpy as np
 
@@ -88,7 +92,7 @@ class Constraint(object):
         :class:`iris.coords.Cell`.
 
         """
-        if not (name is None or isinstance(name, basestring)):
+        if not (name is None or isinstance(name, six.string_types)):
             raise TypeError('name must be None or string, got %r' % name)
         if not (cube_func is None or callable(cube_func)):
             raise TypeError('cube_func must be None or callable, got %r'
@@ -99,7 +103,7 @@ class Constraint(object):
                             'collections.Mapping, got %r' % coord_values)
 
         coord_values = coord_values or {}
-        duplicate_keys = coord_values.viewkeys() & kwargs.viewkeys()
+        duplicate_keys = set(coord_values.keys()) & set(kwargs.keys())
         if duplicate_keys:
             raise ValueError('Duplicate coordinate conditions specified for: '
                              '%s' % list(duplicate_keys))
@@ -256,10 +260,19 @@ class _CoordConstraint(object):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, collections.Iterable) and
                 not isinstance(self._coord_thing,
-                               (basestring, iris.coords.Cell))):
-            call_func = lambda cell: cell in list(self._coord_thing)
+                               (six.string_types, iris.coords.Cell))):
+            desired_values = list(self._coord_thing)
+            # A dramatic speedup can be had if we don't have bounds.
+            if coord.has_bounds():
+                def call_func(cell):
+                    return cell in desired_values
+            else:
+                def call_func(cell):
+                    return cell.point in desired_values
         else:
-            call_func = lambda c: c == self._coord_thing
+            def call_func(c):
+                return c == self._coord_thing
+
             try_quick = (isinstance(coord, iris.coords.DimCoord) and
                          not isinstance(self._coord_thing, iris.coords.Cell))
 
@@ -293,7 +306,7 @@ class _ColumnIndexManager(object):
         import numpy as np
         cim = _ColumnIndexManager(4)
         cim[1] = np.array([3, 4, 5]) > 3
-        print cim.as_slice()
+        print(cim.as_slice())
 
     """
     def __init__(self, ndims):
@@ -417,7 +430,7 @@ def as_constraint(thing):
         return thing
     elif thing is None:
         return Constraint()
-    elif isinstance(thing, basestring):
+    elif isinstance(thing, six.string_types):
         return Constraint(thing)
     else:
         raise TypeError('%r cannot be cast to a constraint.' % thing)
@@ -442,7 +455,7 @@ class AttributeConstraint(Constraint):
 
     def _cube_func(self, cube):
         match = True
-        for name, value in self._attributes.iteritems():
+        for name, value in six.iteritems(self._attributes):
             if name in cube.attributes:
                 cube_attr = cube.attributes.get(name)
                 # if we have a callable, then call it with the value,

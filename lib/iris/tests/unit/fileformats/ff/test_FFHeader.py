@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,15 +16,18 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for :class:`iris.fileformat.ff.FFHeader`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import collections
+import numpy as np
 
-import mock
-
-from iris.fileformats.ff import FFHeader
+from iris.fileformats._ff import FFHeader
+from iris.tests import mock
 
 
 MyGrid = collections.namedtuple('MyGrid', 'column row real horiz_grid_type')
@@ -61,13 +64,21 @@ class Test_grid(tests.IrisTest):
 
     def test_unknown(self):
         header = self._header(0)
-        with mock.patch('iris.fileformats.ff.NewDynamics',
+        with mock.patch('iris.fileformats._ff.NewDynamics',
                         mock.Mock(return_value=mock.sentinel.grid)):
             with mock.patch('warnings.warn') as warn:
                 grid = header.grid()
         warn.assert_called_with('Staggered grid type: 0 not currently'
                                 ' interpreted, assuming standard C-grid')
         self.assertIs(grid, mock.sentinel.grid)
+
+
+@tests.skip_data
+class Test_integer_constants(tests.IrisTest):
+    def test_read_ints(self):
+        test_file_path = tests.get_data_path(('FF', 'structured', 'small'))
+        ff_header = FFHeader(test_file_path)
+        self.assertEqual(ff_header.integer_constants.dtype, np.dtype('>i8'))
 
 
 if __name__ == "__main__":

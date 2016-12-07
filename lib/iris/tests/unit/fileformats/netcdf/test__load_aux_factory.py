@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,18 +16,20 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.netcdf._load_aux_factory` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 import warnings
 
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.aux_factory import HybridPressureFactory
 from iris.fileformats.netcdf import _load_aux_factory
+from iris.tests import mock
 
 
 class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
@@ -60,7 +62,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
 
     def test_formula_terms_a_p0(self):
-        coord_a = DimCoord(range(5), units='Pa')
+        coord_a = DimCoord(np.arange(5), units='Pa')
         coord_p0 = DimCoord(10, units='1')
         coord_expected = DimCoord(np.arange(5) * 10, units='Pa',
                                   long_name='vertical pressure', var_name='ap')
@@ -88,14 +90,14 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
 
     def test_formula_terms_p0_non_scalar(self):
-        coord_p0 = DimCoord(range(5))
+        coord_p0 = DimCoord(np.arange(5))
         self.provides['coordinates'].append((coord_p0, 'p0'))
         self.requires['formula_terms'] = dict(p0='p0')
         with self.assertRaises(ValueError):
             _load_aux_factory(self.engine, self.cube)
 
     def test_formula_terms_p0_bounded(self):
-        coord_a = DimCoord(range(5))
+        coord_a = DimCoord(np.arange(5))
         coord_p0 = DimCoord(1, bounds=[0, 2], var_name='p0')
         self.provides['coordinates'].extend([(coord_a, 'a'), (coord_p0, 'p0')])
         self.requires['formula_terms'] = dict(a='a', b='b', ps='ps', p0='p0')
@@ -105,8 +107,16 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
             self.assertEqual(len(warn), 1)
             msg = 'Ignoring atmosphere hybrid sigma pressure scalar ' \
                 'coordinate {!r} bounds.'.format(coord_p0.name())
-            self.assertEqual(msg, warn[0].message.message)
+            self.assertEqual(msg, str(warn[0].message))
 
+    def test_formula_terms_ap_missing_coords(self):
+        coordinates = [(mock.sentinel.b, 'b'), (mock.sentinel.ps, 'ps')]
+        self.provides = dict(coordinates=coordinates)
+        self.requires['formula_terms'] = dict(ap='ap', b='b', ps='ps')
+        with mock.patch('warnings.warn') as warn:
+            _load_aux_factory(self.engine, self.cube)
+        warn.assert_called_once_with("Unable to find coordinate for variable "
+                                     "'ap'")
 
 if __name__ == '__main__':
     tests.main()

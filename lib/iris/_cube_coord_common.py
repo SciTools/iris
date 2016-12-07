@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,13 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # TODO: Is this a mixin or a base class?
 
 import string
 
+import cf_units
+
 import iris.std_names
-import iris.unit
 
 
 class LimitedAttributeDict(dict):
@@ -30,20 +34,20 @@ class LimitedAttributeDict(dict):
                        'coordinates', 'grid_mapping', 'climatology',
                        'cell_methods', 'formula_terms', 'compress',
                        'missing_value', 'add_offset', 'scale_factor',
-                       'valid_max', 'valid_min', 'valid_range', '_FillValue')
+                       '_FillValue')
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
-        for key in self.iterkeys():
+        for key in six.iterkeys(self):
             if key in self._forbidden_keys:
                 raise ValueError('%r is not a permitted attribute' % key)
 
     def __eq__(self, other):
         # Extend equality to allow for NumPy arrays.
-        match = self.viewkeys() == other.viewkeys()
+        match = set(self.keys()) == set(other.keys())
         if match:
-            for key, value in self.iteritems():
+            for key, value in six.iteritems(self):
                 match = value == other[key]
                 try:
                     match = bool(match)
@@ -65,11 +69,11 @@ class LimitedAttributeDict(dict):
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):
-            keys += other.keys()
+            keys += list(other.keys())
         else:
             keys += [k for k, v in other]
 
-        keys += kwargs.keys()
+        keys += list(kwargs.keys())
 
         # Check validity of keys
         for key in keys:
@@ -105,7 +109,7 @@ class CFVariableMixin(object):
             self.long_name = None
         except ValueError:
             self.standard_name = None
-            self.long_name = unicode(name)
+            self.long_name = six.text_type(name)
 
         # Always clear var_name when renaming.
         self.var_name = None
@@ -124,12 +128,12 @@ class CFVariableMixin(object):
 
     @property
     def units(self):
-        """The :mod:`~iris.unit.Unit` instance of the object."""
+        """The :mod:`~cf_units.Unit` instance of the object."""
         return self._units
 
     @units.setter
     def units(self, unit):
-        self._units = iris.unit.as_unit(unit)
+        self._units = cf_units.as_unit(unit)
 
     @property
     def var_name(self):

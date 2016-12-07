@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,10 @@
 Test the io/__init__.py module.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -25,7 +29,6 @@ import unittest
 from io import BytesIO
 
 import iris.fileformats as iff
-import iris.io.format_picker as fp
 import iris.io
 
 
@@ -53,6 +56,7 @@ class TestDecodeUri(unittest.TestCase):
 
 
 class TestFileFormatPicker(tests.IrisTest):
+    @tests.skip_grib
     def test_known_formats(self):
         self.assertString(str(iff.FORMAT_AGENT),
                           tests.get_result_path(('file_load',
@@ -78,6 +82,8 @@ class TestFileFormatPicker(tests.IrisTest):
                 ['GRIB', 'jpeg2000', 'file.grib2']),
             ('UM Post Processing file (PP)',
                 ['PP', 'simple_pp', 'global.pp']),
+            ('UM Post Processing file (PP) little-endian',
+                ['PP', 'little_endian', 'qrparm.orog.pp']),
             ('UM Fieldsfile (FF) ancillary',
                 ['FF', 'ancillary_fixed_length_header']),
 #            ('BUFR',
@@ -94,7 +100,7 @@ class TestFileFormatPicker(tests.IrisTest):
         # test that each filespec is identified as the expected format
         for (expected_format_name, file_spec) in test_specs:
             test_path = tests.get_data_path(file_spec)
-            with open(test_path, 'r') as test_file:
+            with open(test_path, 'rb') as test_file:
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
                 self.assertEqual(a.name, expected_format_name)
 
@@ -107,8 +113,8 @@ class TestFileFormatPicker(tests.IrisTest):
         # specific to WMO bulletin headers
         header_lengths = [21, 80, 41, 42]
         for header_length in header_lengths:
-            binary_string = header_length * '\x00' + 'GRIB' + '\x00' * 100
-            with BytesIO('rw') as bh:
+            binary_string = header_length * b'\x00' + b'GRIB' + b'\x00' * 100
+            with BytesIO(b'rw') as bh:
                 bh.write(binary_string)
                 bh.name = 'fake_file_handle'
                 a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
@@ -121,13 +127,6 @@ class TestFileFormatPicker(tests.IrisTest):
         DAP_URI = 'http://geoport.whoi.edu/thredds/dodsC/bathy/gom15'
         a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
         self.assertEqual(a.name, 'NetCDF OPeNDAP')
-
-
-@tests.skip_data
-class TestFileExceptions(tests.IrisTest):
-    def test_pp_little_endian(self):
-        filename = tests.get_data_path(('PP', 'aPPglob1', 'global_little_endian.pp'))
-        self.assertRaises(ValueError, iris.load_cube, filename)
 
 
 if __name__ == '__main__':

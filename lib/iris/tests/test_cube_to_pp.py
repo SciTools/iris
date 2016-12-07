@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -22,7 +25,7 @@ import iris.tests as tests
 import os
 import tempfile
 
-import mock
+import cf_units
 import numpy as np
 
 import iris
@@ -31,7 +34,7 @@ import iris.coord_systems
 import iris.fileformats.pp as ff_pp
 from iris.fileformats.pp import PPField3
 import iris.io
-import iris.unit
+from iris.tests import mock
 import iris.tests.pp as pp
 import iris.util
 import iris.tests.stock as stock
@@ -95,7 +98,8 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         try:
             with open(user_rules_filename, "wt") as user_rules_file:
                 user_rules_file.write("IF\ncm.standard_name == 'air_temperature'\nTHEN\npp.lbuser[3] = 9222")
-            iris.fileformats.pp.add_save_rules(user_rules_filename)
+            with iris.fileformats.rules._disable_deprecation_warnings():
+                iris.fileformats.pp.add_save_rules(user_rules_filename)
             try:
                 #read pp
                 in_filename = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
@@ -191,17 +195,17 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
             
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, long_name='air_pressure', units='hPa', bounds=f.z_bounds),
-            iris.coords.DimCoord(f.y, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.y_bounds))
+            iris.coords.DimCoord(f.y, standard_name='time', units=cf_units.Unit('days since 0000-01-01 00:00:00', calendar=cf_units.CALENDAR_360_DAY), bounds=f.y_bounds))
             
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, standard_name='depth', units='m', bounds=f.z_bounds),
-            iris.coords.DimCoord(f.y, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.y_bounds))
+            iris.coords.DimCoord(f.y, standard_name='time', units=cf_units.Unit('days since 0000-01-01 00:00:00', calendar=cf_units.CALENDAR_360_DAY), bounds=f.y_bounds))
 
     def test_365_calendar_export(self):
         # test for 365 day calendar export
         cube = stock.simple_pp()
-        new_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00',
-                                  calendar=iris.unit.CALENDAR_365_DAY)
+        new_unit = cf_units.Unit('hours since 1970-01-01 00:00:00',
+                                  calendar=cf_units.CALENDAR_365_DAY)
         cube.coord('time').units = new_unit
         pp_field = mock.MagicMock(spec=PPField3)
         iris.fileformats.pp._ensure_save_rules_loaded()
@@ -270,7 +274,8 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             iris.save(ll_cube, temp_filename)
      
             # Check the lbproc is what we expect
-            self.assertEquals(self.lbproc_from_pp(temp_filename), iris.fileformats.pp.lbproc_map[process_desc])
+            self.assertEqual(self.lbproc_from_pp(temp_filename),
+                             iris.fileformats.pp.lbproc_map[process_desc])
 
             os.remove(temp_filename)
 
@@ -280,7 +285,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
         # Maps lbproc value to the process flags that should be created
         multiple_map = {sum(bits) : [iris.fileformats.pp.lbproc_map[bit] for bit in bits] for bits in multiple_bit_values}
 
-        for lbproc, descriptions in multiple_map.iteritems():
+        for lbproc, descriptions in six.iteritems(multiple_map):
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = descriptions
             
@@ -289,10 +294,11 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             iris.save(ll_cube, temp_filename)
             
             # Check the lbproc is what we expect
-            self.assertEquals(self.lbproc_from_pp(temp_filename), lbproc)
+            self.assertEqual(self.lbproc_from_pp(temp_filename), lbproc)
 
             os.remove(temp_filename)
-            
+
+    @tests.skip_data
     def test_lbvc(self):
         cube = stock.realistic_4d_no_derived()[0, :4, ...]
         
@@ -321,7 +327,10 @@ def fields_from_cube(cubes):
     to a temporary file, and then subsequently loading them again 
     """
     with tempfile.NamedTemporaryFile('w+b', suffix='.pp') as tmp_file:
-        fh = tmp_file.file
+        if six.PY2:
+            fh = tmp_file.file
+        else:
+            fh = tmp_file
         iris.save(cubes, fh, saver='pp')
         
         # make sure the fh is written to disk, and move it back to the

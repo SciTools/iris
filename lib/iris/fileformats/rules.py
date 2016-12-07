@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,16 +15,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Processing of simple IF-THEN rules.
+Generalised mechanisms for metadata translation and cube construction.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import abc
 import collections
+from contextlib import contextmanager
 import getpass
 import logging
 import logging.handlers as handlers
-import operator
 import os
 import os.path
 import platform
@@ -32,14 +36,16 @@ import sys
 import types
 import warnings
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
+from iris.analysis._interpolate_private import linear as regrid_linear
 import iris.config as config
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
-import iris.unit
 from iris.util import is_regular, regular_step
 
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
@@ -79,7 +85,7 @@ class ConcreteReferenceTarget(object):
             else:
                 final_cube = src_cube.copy()
                 attributes = self.transform(final_cube)
-                for name, value in attributes.iteritems():
+                for name, value in six.iteritems(attributes):
                     setattr(final_cube, name, value)
                 self._final_cube = final_cube
 
@@ -87,8 +93,40 @@ class ConcreteReferenceTarget(object):
 
 
 # Controls the deferred import of all the symbols from iris.coords.
-# This import all is used as the rules file does not use fully qualified class names.
+# This "import all" is used as the rules file does not use fully qualified class names.
+_rules_globals = None
 _import_pending = True
+def _rules_execution_environment():
+    """
+    Return an environment with the globals needed for rules code execution.
+
+    This is needed as the rules file does not use fully qualified class names.
+    If something is needed for rules execution, it can be added here.
+
+    A master environment is built only when needed (the first call).
+    This allows the import of various modules to be deferred, so we don't load
+    all of those when we merely import this module.
+
+    """
+    global _import_pending, _rules_globals
+    if _import_pending:
+        # Get all module globals, and add other deferred imports.
+        import iris.aux_factory
+        import iris.coords
+        import iris.coord_systems
+        import iris.fileformats.um_cf_map
+        # Take a copy of all this module's globals.
+        _rules_globals = globals().copy()
+        # Add various other stuff.
+        # NOTE: these are equivalent to "from xx import *": not tidy !
+        _rules_globals.update(iris.aux_factory.__dict__)
+        _rules_globals.update(iris.coords.__dict__)
+        _rules_globals.update(iris.coord_systems.__dict__)
+        _rules_globals.update(iris.fileformats.um_cf_map.__dict__)
+        _rules_globals.update(cf_units.__dict__)
+        _import_pending = False
+
+    return _rules_globals.copy()
 
 
 # Dummy logging routine for when we don't want to do any logging.
@@ -111,12 +149,14 @@ def _verbose_log(format, filename, rules):
 
 
 # Prepares a logger for file-based logging of rule usage
-def _prepare_rule_logger(verbose=False):
+def _prepare_rule_logger(verbose=False, log_dir=None):
     # Default to the dummy logger that does nothing
     logger = _dummy_log
 
+    # read the log_dir from the config file unless the log_dir argument is set
+    if log_dir is None:
+        log_dir = config.RULE_LOG_DIR
     # Only do real logging if we've been told the directory to use ...
-    log_dir = config.RULE_LOG_DIR
     if log_dir is not None:
         user = getpass.getuser()
 
@@ -154,24 +194,58 @@ def _prepare_rule_logger(verbose=False):
     return logger
 
 
+# A flag to control all the text-rules and rules-logging deprecation warnings.
+_enable_rules_deprecations = True
+
+# A context manager to avoid the deprecation warnings for internal calls.
+@contextmanager
+def _disable_deprecation_warnings():
+    global _enable_rules_deprecations
+    old_flag_value = _enable_rules_deprecations
+    try:
+        _enable_rules_deprecations = False
+        yield
+    finally:
+        _enable_rules_deprecations = old_flag_value
+
+
 # Defines the "log" function for this module
-log = _prepare_rule_logger()
+# This is a 'private' version:  The public one is now deprecated (see on).
+_log_rules = _prepare_rule_logger()
+
+
+# Provide a public 'log' function, which issues a deprecation warning.
+def log(*args, **kwargs):
+    if _enable_rules_deprecations:
+        warn_deprecated(
+            "The `iris.fileformats.rules.log()` method is deprecated.")
+    return _log_rules(*args, **kwargs)
 
 
 class DebugString(str):
     """
     Used by the rules for debug purposes
 
+    .. deprecated:: 1.10
+
     """
+    def __init__(self, *args, **kwargs):
+        warn_deprecated(
+            "the `iris.fileformats.rules.DebugString class is deprecated.")
+        super(DebugString, self).__init__(*args, **kwargs)
 
 
 class CMAttribute(object):
     """
     Used by the rules for defining attributes on the Cube in a consistent manner.
 
+    .. deprecated:: 1.10
+
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
+        warn_deprecated(
+            "the `iris.fileformats.rules.CmAttribute class is deprecated.")
         self.name = name
         self.value = value
 
@@ -180,9 +254,14 @@ class CMCustomAttribute(object):
     """
     Used by the rules for defining custom attributes on the Cube in a consistent manner.
 
+    .. deprecated:: 1.10
+
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
+        warn_deprecated(
+            "the `iris.fileformats.rules.CmCustomAttribute class is "
+            "deprecated.")
         self.name = name
         self.value = value
 
@@ -191,8 +270,12 @@ class CoordAndDims(object):
     """
     Used within rules to represent a mapping of coordinate to data dimensions.
 
+    .. deprecated:: 1.10
+
     """
     def __init__(self, coord, dims=None):
+        warn_deprecated(
+            "the `iris.fileformats.rules.CoordAndDims class is deprecated.")
         self.coord = coord
         if dims is None:
             dims = []
@@ -240,7 +323,12 @@ def calculate_forecast_period(time, forecast_reference_time):
     Return the forecast period in hours derived from time and
     forecast_reference_time scalar coordinates.
 
+    .. deprecated:: 1.10
+
     """
+    warn_deprecated("the `iris.fileformats.rules.calculate_forecast_period "
+                    "method is deprecated.")
+
     if time.points.size != 1:
         raise ValueError('Expected a time coordinate with a single '
                          'point. {!r} has {} points.'.format(time.name(),
@@ -256,7 +344,7 @@ def calculate_forecast_period(time, forecast_reference_time):
                                           forecast_reference_time.points.size))
 
     origin = time.units.origin.replace(time.units.origin.split()[0], 'hours')
-    units = iris.unit.Unit(origin, calendar=time.units.calendar)
+    units = cf_units.Unit(origin, calendar=time.units.calendar)
 
     # Determine start and eof of period in hours since a common epoch.
     end = time.units.convert(time.bounds[0, 1], units)
@@ -280,9 +368,14 @@ class Rule(object):
             CMAttribute('standard_name', 'sea_water_potential_temperature')
             CMAttribute('units', 'Celsius')
 
+    .. deprecated:: 1.10
+
     """
     def __init__(self, conditions, actions):
         """Create instance methods from our conditions and actions."""
+        if _enable_rules_deprecations:
+            warn_deprecated(
+                "the `iris.fileformats.rules.Rule class is deprecated.")
         if not hasattr(conditions, '__iter__'):
             raise TypeError('Variable conditions should be iterable, got: '+ type(conditions))
         if not hasattr(actions, '__iter__'):
@@ -312,12 +405,15 @@ class Rule(object):
         if not conditions:
             conditions = 'None'
         # Create a method to evaluate the conditions.
-        # NB. This creates the name '_exec_conditions' in the local
-        # namespace, which is then used below.
-        code = 'def _exec_conditions(self, field, f, pp, grib, cm): return %s'
-        exec compile(code % conditions, '<string>', 'exec')
+        # NB. This creates the name '_f' in the 'compile_locals' namespace,
+        # which is then used below.
+        code = 'def _f(self, field, f, pp, grib, cm): return %s' % conditions
+        rules_globals = _rules_execution_environment()
+        compile_locals = {}
+        exec(compile(code, '<string>', 'exec'), rules_globals, compile_locals)
         # Make it a method of ours.
-        self._exec_conditions = types.MethodType(_exec_conditions, self, type(self))
+        _f = compile_locals['_f']
+        self._exec_conditions = six.create_bound_method(_f, self)
 
     @abc.abstractmethod
     def _create_action_method(self, i, action):
@@ -345,7 +441,7 @@ class Rule(object):
         try:
             result = self._exec_conditions(field, f, pp, grib, cm)
         except Exception as err:
-            print >> sys.stderr, 'Condition failed to run conditions: %s : %s' % (self._conditions, err)
+            print('Condition failed to run conditions: %s : %s' % (self._conditions, err), file=sys.stderr)
             raise err
 
         return result
@@ -359,17 +455,6 @@ class Rule(object):
         Adds to the given cube based on the return values of all the actions.
 
         """
-        # Deferred import of all the symbols from iris.coords.
-        # This import all is used as the rules file does not use fully qualified class names.
-        global _import_pending
-        if _import_pending:
-            globals().update(iris.aux_factory.__dict__)
-            globals().update(iris.coords.__dict__)
-            globals().update(iris.coord_systems.__dict__)
-            globals().update(iris.fileformats.um_cf_map.__dict__)
-            globals().update(iris.unit.__dict__)
-            _import_pending = False
-
         # Define the variables which the eval command should be able to see
         f = field
         pp = field
@@ -387,25 +472,40 @@ class Rule(object):
                     factories.append(action_factory)
 
             except iris.exceptions.CoordinateNotFoundError as err:
-                print >> sys.stderr, 'Failed (msg:%(error)s) to find coordinate, perhaps consider running last: %(command)s' % {'command':action, 'error': err}
+                print('Failed (msg:%(error)s) to find coordinate, perhaps consider running last: %(command)s' % {'command':action, 'error': err}, file=sys.stderr)
             except AttributeError as err:
-                print >> sys.stderr, 'Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}
+                print('Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}, file=sys.stderr)
             except Exception as err:
-                print >> sys.stderr, 'Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}
+                print('Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}, file=sys.stderr)
                 raise err
 
         return factories
 
 
 class FunctionRule(Rule):
-    """A Rule with values returned by its actions."""
+    """
+    A Rule with values returned by its actions.
+
+    .. deprecated:: 1.10
+
+    """
     def _create_action_method(self, i, action):
         # CM loading style action. Returns an object, such as a coord.
-        exec compile('def _exec_action_%d(self, field, f, pp, grib, cm): return %s' % (i, action), '<string>', 'exec')
+        # Compile a new method for the operation.
+        rules_globals = _rules_execution_environment()
+        compile_locals = {}
+        exec(
+            compile(
+                'def _f(self, field, f, pp, grib, cm): return %s' % (action, ),
+                '<string>',
+                'exec'),
+            rules_globals, compile_locals)
         # Make it a method of ours.
-        exec 'self._exec_action_%d = types.MethodType(_exec_action_%d, self, type(self))' % (i, i)
+        _f = compile_locals['_f']
+        method = six.create_bound_method(_f, self)
+        setattr(self, '_exec_action_%d' % (i, ), method)
         # Add to our list of actions.
-        exec 'self._exec_actions.append(self._exec_action_%d)' % i
+        self._exec_actions.append(method)
 
     def _process_action_result(self, obj, cube):
         """Process the result of an action."""
@@ -434,7 +534,7 @@ class FunctionRule(Rule):
                     msg = 'Ignoring PP invalid units {!r}'.format(obj.value)
                     warnings.warn(msg)
                     cube.attributes['invalid_units'] = obj.value
-                    cube.units = iris.unit._UNKNOWN_UNIT_STRING
+                    cube.units = cf_units._UNKNOWN_UNIT_STRING
             else:
                 setattr(cube, obj.name, obj.value)
 
@@ -445,7 +545,7 @@ class FunctionRule(Rule):
             factory = obj
 
         elif isinstance(obj, DebugString):
-            print obj
+            print(obj)
 
         # The function returned nothing, like the pp save actions, "lbft = 3"
         elif obj is None:
@@ -458,14 +558,26 @@ class FunctionRule(Rule):
 
 
 class ProcedureRule(Rule):
-    """A Rule with nothing returned by its actions."""
+    """
+    A Rule with nothing returned by its actions.
+
+    .. deprecated:: 1.10
+
+    """
     def _create_action_method(self, i, action):
         # PP saving style action. No return value, e.g. "pp.lbft = 3".
-        exec compile('def _exec_action_%d(self, field, f, pp, grib, cm): %s' % (i, action), '<string>', 'exec')
+        rules_globals = _rules_execution_environment()
+        compile_locals = {}
+        exec(compile('def _f(self, field, f, pp, grib, cm): %s' % (action, ),
+                     '<string>',
+                     'exec'),
+             rules_globals, compile_locals)
         # Make it a method of ours.
-        exec 'self._exec_action_%d = types.MethodType(_exec_action_%d, self, type(self))' % (i, i)
+        _f = compile_locals['_f']
+        method = six.create_bound_method(_f, self)
+        setattr(self, '_exec_action_%d' % (i, ), method)
         # Add to our list of actions.
-        exec 'self._exec_actions.append(self._exec_action_%d)' % i
+        self._exec_actions.append(method)
 
     def _process_action_result(self, obj, cube):
         # This should always be None, as our rules won't create anything.
@@ -482,6 +594,8 @@ class RulesContainer(object):
     A collection of :class:`Rule` instances, with the ability to read rule
     definitions from files and run the rules against given fields.
 
+    .. deprecated:: 1.10
+
     """
     def __init__(self, filepath=None, rule_type=FunctionRule):
         """Create a new rule set, optionally adding rules from the specified file.
@@ -492,6 +606,9 @@ class RulesContainer(object):
         rule_type can also be set to :class:`ProcedureRule`
         e.g for PP saving actions that do not return anything, such as *pp.lbuser[3] = 16203*
         """
+        if _enable_rules_deprecations:
+            warn_deprecated(
+                "the `iris.fileformats.rules.RulesContainer class is deprecated.")
         self._rules = []
         self.rule_type = rule_type
         if filepath is not None:
@@ -504,34 +621,34 @@ class RulesContainer(object):
         IN_ACTION = 2
 
         rule_file = os.path.expanduser(filepath)
-        file = open(rule_file, 'r')
-
         conditions = []
         actions = []
         state = None
-        for line in file:
-            line = line.rstrip()
-            if line == "IF":
-                if conditions and actions:
-                    self._rules.append(self.rule_type(conditions, actions))
-                conditions = []
-                actions = []
-                state = IN_CONDITION
-            elif line == "THEN":
-                state = IN_ACTION
-            elif len(line) == 0:
-                pass
-            elif line.strip().startswith('#'):
-                pass
-            elif state == IN_CONDITION:
-                conditions.append(line)
-            elif state == IN_ACTION:
-                actions.append(line)
-            else:
-                raise Exception('Rule file not read correctly at line: ' + line)
+
+        with open(rule_file, 'r') as file:
+            for line in file:
+                line = line.rstrip()
+                if line == "IF":
+                    if conditions and actions:
+                        self._rules.append(self.rule_type(conditions, actions))
+                    conditions = []
+                    actions = []
+                    state = IN_CONDITION
+                elif line == "THEN":
+                    state = IN_ACTION
+                elif len(line) == 0:
+                    pass
+                elif line.strip().startswith('#'):
+                    pass
+                elif state == IN_CONDITION:
+                    conditions.append(line)
+                elif state == IN_ACTION:
+                    actions.append(line)
+                else:
+                    raise Exception('Rule file not read correctly at line: ' +
+                                    line)
         if conditions and actions:
             self._rules.append(self.rule_type(conditions, actions))
-        file.close()
 
     def verify(self, cube, field):
         """
@@ -588,9 +705,10 @@ def scalar_cell_method(cube, method, coord_name):
     for cell_method in cube.cell_methods:
         if cell_method.method == method and len(cell_method.coord_names) == 1:
             name = cell_method.coord_names[0]
-            coords = cube.coords(name)
-            if len(coords) == 1:
-                found_cell_method = cell_method
+            if name == coord_name:
+                coords = cube.coords(name)
+                if len(coords) == 1:
+                    found_cell_method = cell_method
     return found_cell_method
 
 
@@ -653,8 +771,8 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                     raise _ReferenceError('Unable to regrid reference for'
                                           ' {!r}'.format(arg.name))
             else:
-                raise _ReferenceError("The file(s) {{filenames}} don't contain"
-                                      " field(s) for {!r}.".format(arg.name))
+                raise _ReferenceError("The source data contains no "
+                                      "field(s) for {!r}.".format(arg.name))
         else:
             # If it wasn't a Reference, then arg is a dictionary
             # of keyword arguments for cube.coord(...).
@@ -665,7 +783,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
 def _regrid_to_target(src_cube, target_coords, target_cube):
     # Interpolate onto the target grid.
     sample_points = [(coord, coord.points) for coord in target_coords]
-    result_cube = iris.analysis.interpolate.linear(src_cube, sample_points)
+    result_cube = regrid_linear(src_cube, sample_points)
 
     # Any scalar coords on the target_cube will have become vector
     # coords on the resample src_cube (i.e. result_cube).
@@ -703,7 +821,7 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
         # ensure each target coord is either a scalar or maps to a
         # single, distinct dimension.
         target_dims = [target_cube.coord_dims(coord) for coord in target_coords]
-        target_dims = filter(None, target_dims)
+        target_dims = list(filter(None, target_dims))
         unique_dims = set()
         for dims in target_dims:
             unique_dims.update(dims)
@@ -732,15 +850,55 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     return result_cube
 
 
-Loader = collections.namedtuple('Loader',
-                                ('field_generator', 'field_generator_kwargs',
-                                 'converter', 'legacy_custom_rules'))
+_loader_attrs = ('field_generator', 'field_generator_kwargs',
+                 'converter', 'legacy_custom_rules')
+class Loader(collections.namedtuple('Loader', _loader_attrs)):
+    def __new__(cls, field_generator, field_generator_kwargs, converter,
+                legacy_custom_rules=None):
+        """
+        Create a definition of a field-based Cube loader.
+
+        Args:
+
+        * field_generator
+            A callable that accepts a filename as its first argument and
+            returns an iterable of field objects.
+
+        * field_generator_kwargs
+            Additional arguments to be passed to the field_generator.
+
+        * converter
+            A callable that converts a field object into a Cube.
+
+        Kwargs:
+
+        * legacy_custom_rules
+            An object with a callable `verify` attribute with two
+            parameters: (cube, field). Legacy method for modifying
+            Cubes during the load process. Default is None.
+
+            .. deprecated:: 1.9
+
+        """
+        if legacy_custom_rules is not None:
+            warn_deprecated('The `legacy_custom_rules` attribute is '
+                            'deprecated.')
+        return tuple.__new__(cls, (field_generator, field_generator_kwargs,
+                                   converter, legacy_custom_rules))
+
+
+ConversionMetadata = collections.namedtuple('ConversionMetadata',
+                                            ('factories', 'references',
+                                             'standard_name', 'long_name',
+                                             'units', 'attributes',
+                                             'cell_methods',
+                                             'dim_coords_and_dims',
+                                             'aux_coords_and_dims'))
 
 
 def _make_cube(field, converter):
     # Convert the field to a Cube.
-    (factories, references, standard_name, long_name, units, attributes,
-     cell_methods, dim_coords_and_dims, aux_coords_and_dims) = converter(field)
+    metadata = converter(field)
 
     try:
         data = field._data
@@ -748,83 +906,144 @@ def _make_cube(field, converter):
         data = field.data
 
     cube = iris.cube.Cube(data,
-                          attributes=attributes,
-                          cell_methods=cell_methods,
-                          dim_coords_and_dims=dim_coords_and_dims,
-                          aux_coords_and_dims=aux_coords_and_dims)
+                          attributes=metadata.attributes,
+                          cell_methods=metadata.cell_methods,
+                          dim_coords_and_dims=metadata.dim_coords_and_dims,
+                          aux_coords_and_dims=metadata.aux_coords_and_dims)
 
     # Temporary code to deal with invalid standard names in the
     # translation table.
-    if standard_name is not None:
-        cube.rename(standard_name)
-    if long_name is not None:
-        cube.long_name = long_name
-    if units is not None:
+    if metadata.standard_name is not None:
+        cube.rename(metadata.standard_name)
+    if metadata.long_name is not None:
+        cube.long_name = metadata.long_name
+    if metadata.units is not None:
         # Temporary code to deal with invalid units in the translation
         # table.
         try:
-            cube.units = units
+            cube.units = metadata.units
         except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            msg = 'Ignoring PP invalid units {!r}'.format(metadata.units)
             warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
+            cube.attributes['invalid_units'] = metadata.units
+            cube.units = cf_units._UNKNOWN_UNIT_STRING
 
-    return cube, factories, references
+    return cube, metadata.factories, metadata.references
+
+
+def _resolve_factory_references(cube, factories, concrete_reference_targets,
+                                regrid_cache={}):
+    # Attach the factories for a cube, building them from references.
+    # Note: the regrid_cache argument lets us share and reuse regridded data
+    # across multiple result cubes.
+    for factory in factories:
+        try:
+            args = _dereference_args(factory, concrete_reference_targets,
+                                     regrid_cache, cube)
+        except _ReferenceError as e:
+            msg = 'Unable to create instance of {factory}. ' + str(e)
+            factory_name = factory.factory_class.__name__
+            warnings.warn(msg.format(factory=factory_name))
+        else:
+            aux_factory = factory.factory_class(*args)
+            cube.add_aux_factory(aux_factory)
+
+
+def _load_pairs_from_fields_and_filenames(fields_and_filenames, converter,
+                                          user_callback_wrapper=None):
+    # The underlying mechanism for the public 'load_pairs_from_fields' and
+    # 'load_cubes'.
+    # Slightly more complicated than 'load_pairs_from_fields', only because it
+    # needs a filename associated with each field to support the load callback.
+    concrete_reference_targets = {}
+    results_needing_reference = []
+    for field, filename in fields_and_filenames:
+        # Convert the field to a Cube, passing down the 'converter' function.
+        cube, factories, references = _make_cube(field, converter)
+
+        # Post modify the new cube with a user-callback.
+        # This is an ordinary Iris load callback, so it takes the filename.
+        cube = iris.io.run_callback(user_callback_wrapper,
+                                    cube, field, filename)
+        # Callback mechanism may return None, which must not be yielded.
+        if cube is None:
+            continue
+
+        # Cross referencing.
+        for reference in references:
+            name = reference.name
+            # Register this cube as a source cube for the named reference.
+            target = concrete_reference_targets.get(name)
+            if target is None:
+                target = ConcreteReferenceTarget(name, reference.transform)
+                concrete_reference_targets[name] = target
+            target.add_cube(cube)
+
+        if factories:
+            results_needing_reference.append((cube, factories, field))
+        else:
+            yield (cube, field)
+
+    regrid_cache = {}
+    for (cube, factories, field) in results_needing_reference:
+        _resolve_factory_references(
+            cube, factories, concrete_reference_targets, regrid_cache)
+        yield (cube, field)
+
+
+def load_pairs_from_fields(fields, converter):
+    """
+    Convert an iterable of fields into an iterable of Cubes using the
+    provided convertor.
+
+    Args:
+
+    * fields:
+        An iterable of fields.
+
+    * convertor:
+        An Iris convertor function, suitable for use with the supplied fields.
+        See the description in :class:`iris.fileformats.rules.Loader`.
+
+    Returns:
+        An iterable of (:class:`iris.cube.Cube`, field) pairs.
+
+    """
+    return _load_pairs_from_fields_and_filenames(
+        ((field, None) for field in fields),
+        converter)
 
 
 def load_cubes(filenames, user_callback, loader, filter_function=None):
-    concrete_reference_targets = {}
-    results_needing_reference = []
-
-    if isinstance(filenames, basestring):
+    if isinstance(filenames, six.string_types):
         filenames = [filenames]
 
-    for filename in filenames:
-        for field in loader.field_generator(filename, **loader.field_generator_kwargs):
-            # evaluate field against format specific desired attributes
-            # load if no format specific desired attributes are violated
-            if filter_function is not None and not filter_function(field):
-                continue
-            # Convert the field to a Cube.
-            cube, factories, references = _make_cube(field, loader.converter)
+    def _generate_all_fields_and_filenames():
+        for filename in filenames:
+            for field in loader.field_generator(
+                    filename, **loader.field_generator_kwargs):
+                # evaluate field against format specific desired attributes
+                # load if no format specific desired attributes are violated
+                if filter_function is None or filter_function(field):
+                    yield (field, filename)
 
-            # Run any custom user-provided rules.
-            if loader.legacy_custom_rules:
-                loader.legacy_custom_rules.verify(cube, field)
+    def loadcubes_user_callback_wrapper(cube, field, filename):
+        # First run any custom user-provided rules.
+        if loader.legacy_custom_rules:
+            warn_deprecated('The `legacy_custom_rules` attribute of '
+                            'the `loader` is deprecated.')
+            loader.legacy_custom_rules.verify(cube, field)
 
-            cube = iris.io.run_callback(user_callback, cube, field, filename)
+        # Then also run user-provided original callback function.
+        result = cube
+        if user_callback is not None:
+            result = user_callback(cube, field, filename)
+        return result
 
-            if cube is None:
-                continue
-            # Cross referencing
-            for reference in references:
-                name = reference.name
-                # Register this cube as a source cube for the named
-                # reference.
-                target = concrete_reference_targets.get(name)
-                if target is None:
-                    target = ConcreteReferenceTarget(name, reference.transform)
-                    concrete_reference_targets[name] = target
-                target.add_cube(cube)
-
-            if factories:
-                results_needing_reference.append((cube, factories))
-            else:
-                yield cube
-
-    regrid_cache = {}
-    for cube, factories in results_needing_reference:
-        for factory in factories:
-            try:
-                args = _dereference_args(factory, concrete_reference_targets,
-                                         regrid_cache, cube)
-            except _ReferenceError as e:
-                msg = 'Unable to create instance of {factory}. ' + e.message
-                factory_name = factory.factory_class.__name__
-                warnings.warn(msg.format(filenames=filenames,
-                                         factory=factory_name))
-            else:
-                aux_factory = factory.factory_class(*args)
-                cube.add_aux_factory(aux_factory)
+    all_fields_and_filenames = _generate_all_fields_and_filenames()
+    for cube, field in _load_pairs_from_fields_and_filenames(
+            all_fields_and_filenames,
+            converter=loader.converter,
+            user_callback_wrapper=loadcubes_user_callback_wrapper):
         yield cube
+

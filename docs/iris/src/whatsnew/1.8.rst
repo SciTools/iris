@@ -1,0 +1,177 @@
+What's new in Iris 1.8
+**********************
+
+:Release: 1.8.1
+:Date: 3rd June 2015
+
+This document explains the new/changed features of Iris in version 1.8.
+(:doc:`View all changes <index>`.)
+
+Iris 1.8 features
+=================
+
+.. _showcase:
+
+.. admonition:: Showcase: Rotate winds
+
+    Iris can now rotate and unrotate wind vector data by transforming the wind
+    vector data to another coordinate system.
+
+    For example::
+
+        >>> from iris.analysis.cartography import rotate_winds
+        >>> u_cube = iris.load_cube('my_rotated_u_wind_cube.pp')
+        >>> v_cube = iris.load_cube('my_rotated_v_wind_cube.pp')
+        >>> target_cs = iris.coord_systems.GeogCS(6371229.0)
+        >>> u_prime, v_prime = rotate_winds(u_cube, v_cube, target_cs)
+
+.. admonition:: Showcase: Nearest-neighbour scheme
+
+    A nearest-neighbour scheme for interpolation and regridding has been added
+    to Iris. This joins the existing :class:`~iris.analysis.Linear` and
+    :class:`~iris.analysis.AreaWeighted` interpolation and regridding schemes.
+
+    For example::
+
+        >>> result = cube.interpolate(sample_points, iris.analysis.Nearest())
+        >>> regridded_cube = cube.regrid(target_grid, iris.analysis.Nearest())
+
+.. admonition:: Showcase: Slices over a coordinate
+
+    You can slice over one or more dimensions of a cube using :meth:`iris.cube.Cube.slices_over`.
+    This provides similar functionality to :meth:`~iris.cube.Cube.slices` but with
+    almost the opposite outcome.
+    
+    Using :meth:`~iris.cube.Cube.slices` to slice a cube on a selected dimension returns
+    all possible slices of the cube with the selected dimension retaining its dimensionality.
+    Using :meth:`~iris.cube.Cube.slices_over` to slice a cube on a selected
+    dimension returns all possible slices of the cube over the selected dimension. 
+    
+    To demonstrate this::
+
+        >>> cube = iris.load(iris.sample_data_path('colpex.pp'))[0]
+        >>> print(cube.summary(shorten=True))
+        air_potential_temperature / (K)     (time: 6; model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
+        >>> my_slice = next(cube.slices('time'))
+        >>> my_slice_over = next(cube.slices_over('time'))
+        >>> print(my_slice.summary(shorten=True))
+        air_potential_temperature / (K)     (time: 6)
+        >>> print(my_slice_over.summary(shorten=True))
+        air_potential_temperature / (K)     (model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
+    
+
+* :func:`iris.cube.CubeList.concatenate` now works with `biggus <https://biggus.readthedocs.io/>`_ arrays and so
+  now supports concatenation of cubes with deferred data.
+* Improvements to NetCDF saving through using biggus:
+ * A cube's lazy data payload will still be lazy after saving; the data will not
+   be loaded into memory by the save operation.
+ * Cubes with data payloads larger than system memory can now be saved to NetCDF
+   through biggus streaming the data to disk.
+* :func:`iris.util.demote_dim_coord_to_aux_coord` and :func:`iris.util.promote_aux_coord_to_dim_coord`
+  allow a coordinate to be easily demoted or promoted within a cube.
+* :func:`iris.util.squeeze` removes all length 1 dimensions from a cube, and demotes
+  any associated squeeze dimension :class:`~iris.coords.DimCoord` to be a scalar coordinate.
+* :meth:`iris.cube.Cube.slices_over`, which returns an iterator of all sub-cubes along a given
+  coordinate or dimension index.
+* :meth:`iris.cube.Cube.interpolate` now accepts datetime.datetime and 
+  netcdftime.datetime instances for date or time coordinates.
+* Many new and updated translations between CF spec and STASH codes or GRIB2 parameter
+  codes.
+* PP/FF loader creates a height coordinate at 1.5m or 10m for certain relevant stash codes.
+* Lazy aggregator support for the :class:`standard deviation <iris.analysis.STD_DEV>`
+  aggregator has been added.
+* A speed improvement in calculation of :func:`iris.analysis.cartography.area_weights`.
+* Experimental support for unstructured grids has been added with :func:`iris.experimental.ugrid`.
+  This has been implemented using `UGRID <https://github.com/pyugrid/pyugrid>`_.
+* :meth:`iris.cube.CubeList.extract_overlapping` supports extraction of cubes over
+  regions where common coordinates overlap, over multiple coordinates.
+* Warnings raised due to invalid units in loaded data have been suppressed.
+* Experimental low-level read and write access for FieldsFile variants is now supported
+  via :class:`iris.experimental.um.FieldsFileVariant`.
+* PP loader will return cubes for all fields prior to a field with a problematic
+  header before raising an exception.
+* NetCDF loader skips invalid global attributes, raising a warning rather than raising an
+  exception.
+* A warning is now raised rather than an exception when constructing an
+  :class:`~iris.aux_factory.AuxCoordFactory` fails.
+* Supported :class:`aux coordinate factories <iris.aux_factory.AuxCoordFactory>`
+  have been extended to include:
+ * ``ocean sigma coordinate``,
+ * ``ocean s coordinate``,
+ * ``ocean s coordinate, generic form 1``, and
+ * ``ocean s coordinate, generic form 2``.
+* :meth:`iris.cube.Cube.intersection` now supports taking a points-only intersection.
+  Any bounds on intersected coordinates are ignored but retained.
+* The FF loader's known handled grids now includes ``Grid 21``.
+* A :class:`nearest neighbour <iris.analysis.Nearest>` scheme is now provided for
+  :meth:`iris.cube.Cube.interpolate` and :meth:`iris.cube.Cube.regrid`. 
+* :func:`iris.analysis.cartography.rotate_winds` supports transformation of wind vectors
+  to a different coordinate system.
+* NumPy universal functions can now be applied to cubes using
+  :func:`iris.analysis.maths.apply_ufunc`.
+* Generic functions can be applied to :class:`~iris.cube.Cube` instances using 
+  :class:`iris.analysis.maths.IFunc`. 
+* The :class:`iris.analysis.Linear` scheme now supports regridding as well as interpolation.
+  This enables :meth:`iris.cube.Cube.regrid` to perform bilinear regridding, which now
+  replaces the experimental routine "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid".
+
+Bugs fixed
+==========
+
+1.8.0
+------
+* Fix in netCDF loader to correctly determine whether the longitude coordinate
+  (including scalar coordinates) is circular.
+* :meth:`iris.cube.Cube.intersection` now supports bounds that extend slightly beyond 360
+  degrees.
+* Lateral Boundary Condition (LBC) type FieldFiles are now handled correctly by the FF loader.
+* Making a copy of a scalar cube with no data now correctly copies the data array.
+* Height coordinates in NAME trajectory output files have been changed to match other
+  NAME output file formats.
+* Fixed datatype when loading an ``integer_constants`` array from a FieldsFile.
+* FF/PP loader adds appropriate cell methods for ``lbtim.ib = 3`` intervals.
+* An exception is raised if the units of the latitude and longitude coordinates
+  of the cube passed into :func:`iris.analysis.cartography.area_weights` are not
+  convertible to radians.
+* GRIB1 loader now creates a time coordinate for a time range indicator of 2.
+* NetCDF loader now loads units that are empty strings as dimensionless.
+
+1.8.1
+------
+* The PP loader now carefully handles floating point errors in date time conversions to hours.
+* The handling fill values for lazy data loaded from NetCDF files is altered, such that the 
+  _FillValue set in the file is preserved through lazy operations.
+* The risk that cube intersections could return incorrect results due to floating point
+  tolerances is reduced.
+* The new GRIB2 loading code is altered to enable the loading of various data representation
+  templates; the data value unpacking is handled by the GRIB API.
+* Saving cube collections to NetCDF, where multiple similar aux-factories exist within the cubes, 
+  is now carefully handled such that extra file variables are created where required in some cases.
+
+1.8.2
+-----
+* A fix to prevent the error: *AttributeError: 'module' object has no attribute 'date2num'*.
+  This was caused by the function :func:`netcdftime.date2num` being removed from the netCDF4
+  package in recent versions.
+
+Deprecations
+============
+* The original GRIB loader has been deprecated and replaced with a new
+  template-based GRIB loader.
+* Deprecated default NetCDF save behaviour of assigning the outermost
+  dimension to be unlimited.  Switch to the new behaviour with no auto
+  assignment by setting :data:`iris.FUTURE.netcdf_no_unlimited` to True.
+* The former experimental method
+  "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid" has been removed, as
+  :class:`iris.analysis.Linear` now includes this functionality.
+
+Documentation Changes
+=====================
+* A chapter on :doc:`merge and concatenate </userguide/merge_and_concat>` has been
+  added to the :doc:`user guide </userguide/index>`.
+* A section on installing Iris using `conda <http://conda.pydata.org/>`_ has been
+  added to the :doc:`install guide </installing>`.
+* Updates to the chapter on
+  :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
+  have been added to the :doc:`user guide </userguide/index>`.
+

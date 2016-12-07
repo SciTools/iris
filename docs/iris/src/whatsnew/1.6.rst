@@ -26,7 +26,7 @@ Iris 1.6 features
         >>> from iris.coords import DimCoord
         >>> iris.FUTURE.cell_datetime_objects = True
         >>> coord = DimCoord([1, 2, 3], 'time', units='hours since epoch')
-        >>> print [str(cell) for cell in coord.cells()]
+        >>> print([str(cell) for cell in coord.cells()])
         ['1970-01-01 01:00:00', '1970-01-01 02:00:00', '1970-01-01 03:00:00']
 
     Note that, either a :class:`datetime.datetime` or :class:`netcdftime.datetime`
@@ -46,14 +46,14 @@ Iris 1.6 features
 
     .. code-block:: python
 
-        >>> print iris.FUTURE
+        >>> print(iris.FUTURE)
         Future(cell_datetime_objects=False)
         >>> with iris.FUTURE.context(cell_datetime_objects=True):
         ...     # Code that expects to deal with datetime-like objects.
-        ...     print iris.FUTURE
+        ...     print(iris.FUTURE)
         ...
         Future(cell_datetime_objects=True)
-        >>> print iris.FUTURE
+        >>> print(iris.FUTURE)
         Future(cell_datetime_objects=False)
 
 .. admonition:: Showcase Feature - Partial date/time ...

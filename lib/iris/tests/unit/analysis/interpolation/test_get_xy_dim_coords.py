@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,10 @@
 Unit tests for :func:`iris.analysis._interpolation.get_xy_dim_coords`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -34,6 +38,7 @@ import iris.tests.stock
 
 
 class TestGetXYCoords(tests.IrisTest):
+    @tests.skip_data
     def test_grid_lat_lon(self):
         cube = iris.tests.stock.realistic_4d()
         x, y = get_xy_dim_coords(cube)
@@ -54,18 +59,21 @@ class TestGetXYCoords(tests.IrisTest):
         self.assertIs(x, cube.coord('projection_x_coordinate'))
         self.assertIs(y, cube.coord('projection_y_coordinate'))
 
+    @tests.skip_data
     def test_missing_x_coord(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord('grid_longitude')
         with self.assertRaises(ValueError):
             get_xy_dim_coords(cube)
 
+    @tests.skip_data
     def test_missing_y_coord(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord('grid_latitude')
         with self.assertRaises(ValueError):
             get_xy_dim_coords(cube)
 
+    @tests.skip_data
     def test_multiple_coords(self):
         cube = iris.tests.stock.realistic_4d()
         cs = iris.coord_systems.GeogCS(6371229)

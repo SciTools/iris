@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,16 +16,20 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :func:`iris.analysis.interpolate.linear` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import mock
+from collections import OrderedDict
 
 import numpy as np
-import iris
 
-from iris.analysis.interpolate import linear
+import iris
+from iris.analysis._interpolate_private import linear
+from iris.tests import mock
 import iris.tests.stock as stock
 
 
@@ -35,7 +39,8 @@ class Test(tests.IrisTest):
         self.extrapolation = 'extrapolation_mode'
         self.scheme = mock.Mock(name='linear scheme')
 
-    @mock.patch('iris.analysis.interpolate.Linear', name='linear_patch')
+    @mock.patch('iris.analysis._interpolate_private.Linear',
+                name='linear_patch')
     @mock.patch('iris.cube.Cube.interpolate', name='cube_interp_patch')
     def _assert_expected_call(self, sample_points, sample_points_call,
                               cinterp_patch, linear_patch):
@@ -48,8 +53,8 @@ class Test(tests.IrisTest):
 
     def test_sample_point_dict(self):
         # Passing sample_points in the form of a dictionary.
-        sample_points = {'foo': 0.5, 'bar': 0.5}
         sample_points_call = [('foo', 0.5), ('bar', 0.5)]
+        sample_points = OrderedDict(sample_points_call)
         self._assert_expected_call(sample_points, sample_points_call)
 
     def test_sample_point_iterable(self):
@@ -59,6 +64,7 @@ class Test(tests.IrisTest):
         self._assert_expected_call(sample_points, sample_points_call)
 
 
+@tests.skip_data
 class Test_masks(tests.IrisTest):
     def test_mask_retention(self):
         cube = stock.realistic_4d_w_missing_data()
@@ -74,8 +80,8 @@ class Test_masks(tests.IrisTest):
 class TestNDCoords(tests.IrisTest):
     def setUp(self):
         cube = stock.simple_3d_w_multidim_coords()
-        cube.add_dim_coord(iris.coords.DimCoord(range(3), 'longitude'), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), 'latitude'), 2)
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(3), 'longitude'), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(4), 'latitude'), 2)
         cube.data = cube.data.astype(np.float32)
         self.cube = cube
 

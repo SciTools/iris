@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,17 +16,21 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris._concatenate.concatenate.py`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
+import biggus
+import cf_units
 import numpy as np
 
 import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
 from iris.exceptions import ConcatenateError
-import iris.unit
 
 
 class TestEpoch(tests.IrisTest):
@@ -37,7 +41,7 @@ class TestEpoch(tests.IrisTest):
             cube = iris.cube.Cube(np.array(data_points, dtype=np.float32),
                                   standard_name='air_temperature',
                                   units='K')
-            unit = iris.unit.Unit(reftime, calendar='gregorian')
+            unit = cf_units.Unit(reftime, calendar='gregorian')
             coord = iris.coords.DimCoord(points=np.array(coord_points,
                                                          dtype=np.float32),
                                          standard_name='time',
@@ -61,8 +65,8 @@ class TestMessages(tests.IrisTest):
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         # Time coord
-        t_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00',
-                                calendar='gregorian')
+        t_unit = cf_units.Unit('hours since 1970-01-01 00:00:00',
+                               calendar='gregorian')
         t_coord = iris.coords.DimCoord(points=np.arange(2, dtype=np.float32),
                                        standard_name='time',
                                        units=t_unit)
@@ -88,14 +92,6 @@ class TestMessages(tests.IrisTest):
                                                 units='1'),
                            data_dims=(1,))
         self.cube = cube
-
-    def test_anonymous_coord_message(self):
-        cube_1 = self.cube
-        cube_2 = cube_1.copy()
-        cube_2.remove_coord('latitude')
-        exc_regexp = 'one or both cubes have anonymous dimensions'
-        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
 
     def test_definition_difference_message(self):
         cube_1 = self.cube
@@ -181,7 +177,7 @@ class TestOrder(tests.IrisTest):
         data = np.arange(len(points) * nx).reshape(len(points), nx)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         lat = iris.coords.DimCoord(points, 'latitude', bounds=bounds)
-        lon = iris.coords.DimCoord(range(nx), 'longitude')
+        lon = iris.coords.DimCoord(np.arange(nx), 'longitude')
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
         return cube
@@ -198,6 +194,30 @@ class TestOrder(tests.IrisTest):
         result = concatenate([top, bottom])
         self.assertEqual(len(result), 1)
 
+    def test_asc_points_with_singleton_ordered(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([15, 25])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_points_with_singleton_unordered(self):
+        top = self._make_cube([25])
+        bottom = self._make_cube([5, 15])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_bounds_with_singleton_ordered(self):
+        top = self._make_cube([5], [[0, 10]])
+        bottom = self._make_cube([15, 25], [[10, 20], [20, 30]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_bounds_with_singleton_unordered(self):
+        top = self._make_cube([25], [[20, 30]])
+        bottom = self._make_cube([5, 15], [[0, 10], [10, 20]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
     def test_desc_points(self):
         top = self._make_cube([90, 70, 50, 30, 10])
         bottom = self._make_cube([-10, -30, -50, -70, -90])
@@ -209,6 +229,85 @@ class TestOrder(tests.IrisTest):
         bottom = self._make_cube([-22.5, -67.5], [[0, -45], [-45, -90]])
         result = concatenate([top, bottom])
         self.assertEqual(len(result), 1)
+
+    def test_desc_points_with_singleton_ordered(self):
+        top = self._make_cube([25])
+        bottom = self._make_cube([15, 5])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_points_with_singleton_unordered(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([25, 15])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_bounds_with_singleton_ordered(self):
+        top = self._make_cube([25], [[30, 20]])
+        bottom = self._make_cube([15, 5], [[20, 10], [10, 0]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_bounds_with_singleton_unordered(self):
+        top = self._make_cube([5], [[10, 0]])
+        bottom = self._make_cube([25, 15], [[30, 20], [20, 10]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_points_all_singleton(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([15])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+    def test_asc_bounds_all_singleton(self):
+        top = self._make_cube([5], [0, 10])
+        bottom = self._make_cube([15], [10, 20])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+    def test_desc_bounds_all_singleton(self):
+        top = self._make_cube([5], [10, 0])
+        bottom = self._make_cube([15], [20, 10])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+
+class TestConcatenateBiggus(tests.IrisTest):
+    def build_lazy_cube(self, points, bounds=None, nx=4):
+        data = np.arange(len(points) * nx).reshape(len(points), nx)
+        data = biggus.NumpyArrayAdapter(data)
+        cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
+        lat = iris.coords.DimCoord(points, 'latitude', bounds=bounds)
+        lon = iris.coords.DimCoord(np.arange(nx), 'longitude')
+        cube.add_dim_coord(lat, 0)
+        cube.add_dim_coord(lon, 1)
+        return cube
+
+    def test_lazy_biggus_concatenate(self):
+        c1 = self.build_lazy_cube([1, 2])
+        c2 = self.build_lazy_cube([3, 4, 5])
+        cube, = concatenate([c1, c2])
+        self.assertTrue(cube.has_lazy_data())
+        self.assertNotIsInstance(cube.data, np.ma.MaskedArray)
+
+    def test_lazy_biggus_concatenate_masked_array_mixed_deffered(self):
+        c1 = self.build_lazy_cube([1, 2])
+        c2 = self.build_lazy_cube([3, 4, 5])
+        c2.data = np.ma.masked_greater(c2.data, 3)
+        self.assertFalse(c2.has_lazy_data())
+        cube, = concatenate([c1, c2])
+        self.assertTrue(cube.has_lazy_data())
+        self.assertIsInstance(cube.data, np.ma.MaskedArray)
 
 
 if __name__ == '__main__':

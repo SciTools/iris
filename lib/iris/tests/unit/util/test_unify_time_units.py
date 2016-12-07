@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,12 +16,16 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris.util.array_equal`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import copy
 
+import cf_units
 import numpy as np
 
 import iris
@@ -40,7 +44,7 @@ class Test(tests.IrisTest):
             cube = iris.cube.Cube(np.array(data_points, dtype=np.float32),
                                   standard_name='air_temperature',
                                   units='K')
-            unit = iris.unit.Unit(reftime, calendar=calendar)
+            unit = cf_units.Unit(reftime, calendar=calendar)
             coord = iris.coords.DimCoord(points=np.array(coord_points,
                                                          dtype=np.float32),
                                          standard_name='time',
@@ -96,8 +100,8 @@ class Test(tests.IrisTest):
 
     def test_multiple_time_coords_in_cube(self):
         cube0, cube1 = self.simple_1d_time_cubes()
-        units = iris.unit.Unit('days since 1980-05-02 00:00:00',
-                               calendar='gregorian')
+        units = cf_units.Unit('days since 1980-05-02 00:00:00',
+                              calendar='gregorian')
         aux_coord = iris.coords.AuxCoord(
             72, standard_name='forecast_reference_time', units=units)
         cube1.add_aux_coord(aux_coord)

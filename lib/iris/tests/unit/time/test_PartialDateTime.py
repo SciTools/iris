@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,10 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.time.PartialDateTime` class."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -23,9 +27,9 @@ import iris.tests as tests
 import datetime
 import operator
 
-import mock
 import netcdftime
 
+from iris.tests import mock
 from iris.time import PartialDateTime
 
 
@@ -46,7 +50,7 @@ class Test___init__(tests.IrisTest):
 
 class Test___repr__(tests.IrisTest):
     def test_full(self):
-        pd = PartialDateTime(*range(7))
+        pd = PartialDateTime(*list(range(7)))
         result = repr(pd)
         self.assertEqual(result, 'PartialDateTime(year=0, month=1, day=2,'
                                  ' hour=3, minute=4, second=5,'
@@ -67,7 +71,7 @@ class Test_timetuple(tests.IrisTest):
     def test_exists(self):
         # Check that the PartialDateTime class implements a timetuple (needed
         # because of http://bugs.python.org/issue8005).
-        pd = PartialDateTime(*range(7))
+        pd = PartialDateTime(*list(range(7)))
         self.assertTrue(hasattr(pd, 'timetuple'))
 
 
@@ -155,7 +159,7 @@ def negate_expectations(expectations):
             expected = not expected
         return expected
 
-    return {name: negate(value) for name, value in expectations.iteritems()}
+    return {name: negate(value) for name, value in six.iteritems(expectations)}
 
 
 EQ_EXPECTATIONS = {'no_difference': True, 'item1_lo': False, 'item1_hi': False,

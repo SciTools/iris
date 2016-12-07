@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,13 +28,17 @@ as obtained from:
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import argparse
 import pprint
 import xml.etree.ElementTree as ET
 
 
 STD_VALUES_FILE_TEMPLATE = '''
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -69,6 +73,9 @@ Or for more control (e.g. to use an alternative XML file) via:
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 
 STD_NAMES = '''.lstrip()
 
@@ -100,7 +107,7 @@ def to_dict(infile, outfile):
     for section in process_name_table(tree, 'alias', 'entry_id'):
         aliases.update(section)
 
-    for key, valued in aliases.iteritems():
+    for key, valued in six.iteritems(aliases):
         values.update({
                 key : {'canonical_units' : values.get(valued['entry_id']).get('canonical_units')}
             })
@@ -111,11 +118,17 @@ def to_dict(infile, outfile):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Create Python code from CF standard name XML.')
-    parser.add_argument('input', type=argparse.FileType(),
-                        metavar='INPUT',
+    parser.add_argument('input', metavar='INPUT',
                         help='Path to CF standard name XML')
-    parser.add_argument('output', type=argparse.FileType('w'),
-                        metavar='OUTPUT',
+    parser.add_argument('output', metavar='OUTPUT',
                         help='Path to resulting Python code')
     args = parser.parse_args()
-    to_dict(args.input, args.output)
+
+    if six.PY2:
+        encoding = {}
+    else:
+        encoding  = {'encoding': 'utf-8'}
+
+    with open(args.input, 'r', **encoding) as in_fh:
+        with open(args.output, 'w', **encoding) as out_fh:
+            to_dict(in_fh, out_fh)

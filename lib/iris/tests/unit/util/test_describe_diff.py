@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,12 +16,15 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris.util.describe_diff`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import numpy as np
-import StringIO
 
 import iris.cube
 from iris.util import describe_diff
@@ -33,9 +36,9 @@ class Test(iris.tests.IrisTest):
         self.cube_b = self.cube_a.copy()
 
     def _compare_result(self, cube_a, cube_b):
-        result_strIO = StringIO.StringIO()
-        describe_diff(cube_a, cube_b, output_file=result_strIO)
-        return result_strIO.getvalue()
+        result_sio = six.StringIO()
+        describe_diff(cube_a, cube_b, output_file=result_sio)
+        return result_sio.getvalue()
 
     def test_noncommon_array_attributes(self):
         # test non-common array attribute

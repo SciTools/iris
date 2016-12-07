@@ -3,13 +3,13 @@
   <cube units="unknown">
     <coords>
       <coord>
-        <dimCoord bounds="[[-1.0, 2.0]]" id="a42bcac2" points="[-1]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
+        <dimCoord bounds="[[-1.0, 2.0]]" id="77a50eb5" points="[-1]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[-1.0, 1.0],
-		[1.0, 3.0]]" id="63128986" points="[-1, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
+		[1.0, 3.0]]" id="f913a8b3" points="[-1, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,9 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.plot.plot` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -30,6 +33,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
     def setUp(self):
         super(TestStringCoordPlot, self).setUp()
         self.cube = self.cube[0, :]
+        self.lat_lon_cube = self.lat_lon_cube[0, :]
 
     def test_yaxis_labels(self):
         iplt.plot(self.cube, self.cube.coord('str_coord'))
@@ -38,6 +42,30 @@ class TestStringCoordPlot(TestGraphicStringCoord):
     def test_xaxis_labels(self):
         iplt.plot(self.cube.coord('str_coord'), self.cube)
         self.assertPointsTickLabels('xaxis')
+
+    def test_yaxis_labels_with_axes(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        iplt.plot(self.cube, self.cube.coord('str_coord'), axes=ax)
+        plt.close(fig)
+        self.assertPointsTickLabels('yaxis', ax)
+
+    def test_xaxis_labels_with_axes(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        iplt.plot(self.cube.coord('str_coord'), self.cube, axes=ax)
+        plt.close(fig)
+        self.assertPointsTickLabels('xaxis', ax)
+
+    def test_plot_longitude(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        iplt.plot(self.lat_lon_cube.coord('longitude'),
+                  self.lat_lon_cube, axes=ax)
+        plt.close(fig)
 
 
 if __name__ == "__main__":

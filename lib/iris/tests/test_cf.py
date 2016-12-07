@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,15 +18,18 @@
 Test the cf module.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
 import unittest
 
-import mock
-
 import iris
 import iris.fileformats.cf as cf
+from iris.tests import mock
 
 
 class TestCaching(unittest.TestCase):
@@ -242,30 +245,34 @@ class TestLoad(tests.IrisTest):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                         'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(cube.coord('time').attributes, {})
+        self.assertEqual(cube.coord('time').attributes, {})
 
     def test_attributes_contain_positive(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                         'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(cube.coord('height').attributes['positive'], 'up')
+        self.assertEqual(cube.coord('height').attributes['positive'], 'up')
 
     def test_attributes_populated(self):
         filename = tests.get_data_path(
             ('NetCDF', 'label_and_climate', 'small_FC_167_mon_19601101.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(
+        self.assertEqual(
             sorted(cube.coord('longitude').attributes.items()), 
             [('data_type', 'float'), 
              ('modulo', 360), 
-             ('topology', 'circular')
-            ]
-        )
+             ('topology', 'circular'),
+             ('valid_max', 359.0),
+             ('valid_min', 0.0)])
 
     def test_cell_methods(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(cube.cell_methods, (iris.coords.CellMethod(method=u'mean', coords=(u'time',), intervals=(u'6 minutes',), comments=()),))
+        self.assertEqual(cube.cell_methods,
+                         (iris.coords.CellMethod(method=u'mean',
+                                                 coords=(u'time', ),
+                                                 intervals=(u'6 minutes', ),
+                                                 comments=()), ))
 
 
 @tests.skip_data
@@ -279,7 +286,7 @@ class TestClimatology(tests.IrisTest):
         time = self.cfr.cf_group['temp_dmax_tmean_abs'].cf_group.coordinates['time']
         climatology = time.cf_group.climatology
         self.assertEqual(len(climatology), 1)
-        self.assertEqual(climatology.keys(), ['climatology_bounds'])
+        self.assertEqual(list(climatology.keys()), ['climatology_bounds'])
 
         climatology_var = climatology['climatology_bounds']
         self.assertEqual(climatology_var.ndim, 2)

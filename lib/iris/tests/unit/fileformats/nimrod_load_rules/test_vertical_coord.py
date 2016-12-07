@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,16 +20,18 @@ function.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import mock
 
 from iris.fileformats.nimrod_load_rules import (vertical_coord,
                                                 NIMROD_DEFAULT,
                                                 TranslationWarning)
 from iris.fileformats.nimrod import NimrodField
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

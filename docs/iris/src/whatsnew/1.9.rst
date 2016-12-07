@@ -1,0 +1,129 @@
+What's New in Iris 1.9
+**********************
+
+:Release: 1.9.2
+:Date: 28th January 2016
+
+This document explains the new/changed features of Iris in version 1.9
+(:doc:`View all changes <index>`.)
+
+Iris 1.9 Features
+=================
+* Support for running on Python 3.4 has been added to the whole code base. Some features which
+  depend on external libraries will not be available until they also support Python 3, namely:
+
+   * gribapi does not yet provide a Python 3 interface
+
+* Added the UM pseudo level type to the information made available in the STASH_TRANS table in :mod:`iris.fileformats.um._ff_cross_references`
+* When reading "cell_methods" attributes from NetCDF files, allow optional whitespace before the colon.
+  This is not strictly in the CF spec, but is a common occurrence.
+* Basic cube arithemetic (plus, minus, times, divide) now supports lazy evaluation.
+* :meth:`iris.analysis.cartography.rotate_winds` can now operate much faster on multi-layer (i.e. > 2-dimensional) cubes,
+  as it calculates rotation coefficients only once and reuses them for additional layers.
+
+* Linear regridding of a multi-layer (i.e. > 2-dimensional) cube is now much faster,
+  as it calculates transform coefficients just once and reuses them for additional layers.
+* Ensemble statistics can now be saved to GRIB2, using Product Definition Template 4.11.
+
+* Loading of NetCDF data with ocean vertical coordinates now returns a 'depth' in addition to an 'eta' cube.
+  This operates on specific defined dimensionless coordinates : see CF spec version 1.6, Appendix D.
+
+* :func:`iris.analysis.stats.pearsonr` updates:
+
+  * Cubes can now be different shapes, provided one is broadcastable to the
+    other.
+  * Accepts weights keyword for weighted correlations.
+  * Accepts mdtol keyword for missing data tolerance level.
+  * Accepts common_mask keyword for restricting calculation to unmasked pairs of
+    cells.
+
+* Added a new point-in-cell regridding scheme, :class:`iris.experimental.regrid.PointInCell`.
+* Added :meth:`iris.analysis.WPERCENTILE` - a new weighted aggregator for calculating
+  percentiles.
+* Added cell-method translations for LBPROC=64 and 192 in UM files, encoding 'zonal mean' and 'zonal+time mean'.
+
+* Support for loading GRIB2 messages defined on a Lambert conformal grid has been added to
+  the GRIB2 loader.
+* Data on potential-temperature (theta) levels can now be saved to GRIB2, with a fixed surface type of 107.
+* Added several new helper functions for file-save customisation,
+  (see also : :doc:`Saving Iris Cubes </userguide/saving_iris_cubes>`):
+
+  * :meth:`iris.fileformats.grib.as_pairs`
+  * :meth:`iris.fileformats.grib.as_messages`
+  * :meth:`iris.fileformats.grib.save_messages`
+  * :meth:`iris.fileformats.pp.as_pairs`
+  * :meth:`iris.fileformats.pp.as_fields`
+  * :meth:`iris.fileformats.pp.save_fields`
+* Loading data from GRIB2 now supports most of the currently defined 'data representation templates' : 
+  code numbers 0, 1, 2, 3, 4, 40, 41, 50, 51 and 61.
+* When a Fieldsfile is opened for update as a :class:`iris.experimental.um.FieldsFileVariant`,
+  unmodified packed data in the file can now be retained in the original form.
+  Previously it could only be stored in an unpacked form.
+* When reading and writing NetCDF data, the CF 'flag' attributes,
+  "flag_masks", "flag_meanings" and "flag_values" are now preserved through Iris load and save.
+* `mo_pack <https://github.com/SciTools/mo_pack>`_ was added as an optional dependency.
+  It is used to encode and decode data in WGDOS packed form.
+* The :meth:`iris.experimental.um.Field.get_data` method can now be used to read Fieldsfile data
+  after the original :class:`iris.experimental.um.FieldsFileVariant` has been closed.
+
+Bugs Fixed
+==========
+* Fixed a bug in :meth:`iris.unit.Unit.convert`
+  (and the equivalent in `cf_units <https://github.com/SciTools/cf_units>`_)
+  so that it now converts data to the native endianness, without which udunits could not read it correctly.
+* Fixed a bug with loading WGDOS packed data in :mod:`iris.experimental.um`,
+  which could occasionally crash, with some data.
+* Ignore non-numeric suffices in the numpy version string, which would otherwise crash some regridding routines.
+* fixed a bug in :mod:`iris.fileformats.um_cf_map` where the standard name
+  for the stash code m01s12i187 was incorrectly set, such that it is inconsistent 
+  with the stated unit of measure, 'm s-1'.  The different name, a long_name
+  of 'change_over_time_in_upward_air_velocity_due_to_advection' with
+  units of 'm s-1' is now used instead.
+* Fixed a bug in :meth:`iris.cube.Cube.intersection`.
+  When edge points were at (base + period), intersection would unnecessarily wrap the data.
+* Fixed a bug in :mod:`iris.fileformats.pp`.
+  A previous release removed the ability to pass a partial constraint on STASH attribute.
+* :meth:`iris.plot.default_projection_extent` now correctly raises an exception if a cube has X bounds but no Y bounds, or vice versa.
+  Previously it never failed this, as the test was wrong.
+* When loading NetCDF data, a "units" attribute containing unicode characters is now transformed by backslash-replacement.
+  Previously this caused a crash.  Note: unicode units are *not supported in the CF conventions*.
+* When saving to NetCDF, factory-derived auxiliary coordinates are now correctly saved with different names when they are not identical.
+  Previously, such coordinates could be saved with the same name, leading to errors.
+* Fixed a bug in :meth:`iris.experimental.um.FieldsFileVariant.close`,
+  which now correctly allocates extra blocks for larger lookups when saving.
+  Previously, when larger files open for update were closed, they could be written out with data overlapping the lookup table.
+* Fixed a bug in :class:`iris.aux_factory.OceanSigmaZFactory`
+  which sometimes caused crashes when fetching the points of an "ocean sigma z" coordinate.
+
+Version 1.9.1
+-------------
+* Fixed a unicode bug preventing standard names from being built cleanly when installing in Python3
+
+Version 1.9.2
+-------------
+* New warning regarding data loss if writing to an open file which is also open to read, with lazy data.
+* Removal of a warning about data payload loading from concatenate.
+* Updates to concatenate documentation.
+* Fixed a bug with a name change in the netcdf4-python package.
+* Fixed a bug building the documentation examples.
+* Fixed a bug avoiding sorting classes directly when :meth:`iris.cube.Cube.coord_system` is used in Python3.
+* Fixed a bug regarding unsuccessful dot import.
+
+Incompatible Changes
+====================
+* GRIB message/file reading and writing may not be available for Python 3 due to GRIB API limitations. 
+
+Deprecations
+============
+* Deprecated :mod:`iris.unit`, with unit functionality provided by `cf_units <https://github.com/SciTools/cf_units>`_ instead.
+* When loading from NetCDF, a deprecation warning is emitted if there is vertical coordinate information
+  that *would* produce extra result cubes if :data:`iris.FUTURE.netcdf_promote` were set,
+  but it is *not* set.
+* Deprecated :class:`iris.aux_factory.LazyArray`
+
+Documentation Changes
+=====================
+* A chapter on :doc:`saving iris cubes </userguide/saving_iris_cubes>` has been
+  added to the :doc:`user guide </userguide/index>`.
+* Added script and documentation for building a what's new page from developer-submitted contributions.
+  See :doc:`Contributing a "What's New" entry </developers_guide/documenting/whats_new_contributions>`.

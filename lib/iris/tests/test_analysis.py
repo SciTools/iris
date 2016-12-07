@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,13 +16,15 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import itertools
-
 import cartopy.crs as ccrs
+import cf_units
 import numpy as np
 import numpy.ma as ma
 
@@ -41,11 +43,14 @@ if tests.MPL_AVAILABLE:
 
 
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
-    def assertComparisonDict(self, comarison_dict, reference_filename):
+    def assertComparisonDict(self, comparison_dict, reference_filename):
         string = ''
-        for key, coord_groups in comarison_dict.iteritems():
+        for key in sorted(comparison_dict):
+            coord_groups = comparison_dict[key]
             string += ('%40s  ' % key)
-            names = [[coord.name() if coord is not None else 'None' for coord in coords] for coords in coord_groups]
+            names = [[coord.name() if coord is not None else 'None'
+                      for coord in coords]
+                     for coords in coord_groups]
             string += str(sorted(names))
             string += '\n'
         self.assertString(string, reference_filename)
@@ -123,12 +128,12 @@ class TestAnalysisWeights(tests.IrisTest):
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
         b.data = np.asarray(b.data)
         self.assertCMLApproxData(b, ('analysis', 'weighted_mean_lon.cml'))
-        self.assertEquals(b.coord("dummy").shape, (1,))
+        self.assertEqual(b.coord('dummy').shape, (1, ))
 
         # test collapsing multiple coordinates (and the fact that one of the coordinates isn't the same coordinate instance as on the cube)
         c = cube.collapsed([lat_coord[:], lon_coord], iris.analysis.MEAN, weights=weights)
         self.assertCMLApproxData(c, ('analysis', 'weighted_mean_latlon.cml'))
-        self.assertEquals(c.coord("dummy").shape, (1,))
+        self.assertEqual(c.coord('dummy').shape, (1, ))
 
         # Check new coord bounds - made from points
         self.assertArrayEqual(c.coord('lat').bounds, [[1, 3]])
@@ -162,7 +167,7 @@ class TestAnalysisWeights(tests.IrisTest):
         f, collapsed_area_weights = e.collapsed('latitude', iris.analysis.MEAN, weights=area_weights, returned=True)
         g = f.collapsed('longitude', iris.analysis.MEAN, weights=collapsed_area_weights)
         # check it's a 0d, scalar cube
-        self.assertEquals(g.shape, ())
+        self.assertEqual(g.shape, ())
         # check the value - pp_area_avg's result of 287.927 differs by factor of 1.00002959
         np.testing.assert_approx_equal(g.data, 287.935, significant=5)
 
@@ -207,30 +212,30 @@ class TestAnalysisBasic(tests.IrisTest):
         self.assertCML(self.cube, ('analysis', original_name))
 
     def test_mean(self):
-        self._common('mean', iris.analysis.MEAN, decimal=1)
+        self._common('mean', iris.analysis.MEAN, rtol=1e-05)
 
     def test_std_dev(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('std_dev', iris.analysis.STD_DEV, decimal=1)
+        self._common('std_dev', iris.analysis.STD_DEV, rtol=1e-05)
 
     def test_hmean(self):
         # harmonic mean requires data > 0
         self.cube.data *= self.cube.data
-        self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', decimal=1)
+        self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', rtol=1e-05)
 
     def test_gmean(self):
-        self._common('gmean', iris.analysis.GMEAN, decimal=1)
+        self._common('gmean', iris.analysis.GMEAN, rtol=1e-05)
 
     def test_variance(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('variance', iris.analysis.VARIANCE, decimal=1)
+        self._common('variance', iris.analysis.VARIANCE, rtol=1e-05)
 
     def test_median(self):
         self._common('median', iris.analysis.MEDIAN)
 
     def test_sum(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('sum', iris.analysis.SUM, decimal=1)
+        self._common('sum', iris.analysis.SUM, rtol=1e-05)
 
     def test_max(self):
         self._common('max', iris.analysis.MAX)
@@ -243,27 +248,6 @@ class TestAnalysisBasic(tests.IrisTest):
 
     def test_duplicate_coords(self):
         self.assertRaises(ValueError, tests.stock.track_1d, duplicate_x=True)
-
-    def test_xy_range(self):
-        result_non_circ = iris.analysis.cartography._xy_range(self.cube)
-        self.assertEqual(self.cube.coord('grid_longitude').circular, False)
-        np.testing.assert_array_almost_equal(
-            result_non_circ, ((313.02, 392.11), (-22.49, 24.92)), decimal=0)
-
-    def test_xy_range_geog_cs(self):
-        cube = iris.tests.stock.global_pp()
-        self.assertTrue(cube.coord('longitude').circular)
-        result = iris.analysis.cartography._xy_range(cube)
-        np.testing.assert_array_almost_equal(
-            result, ((0, 360), (-90, 90)), decimal=0)
-
-    def test_xy_range_geog_cs_regional(self):
-        cube = iris.tests.stock.global_pp()
-        cube = cube[10:20, 20:30]
-        self.assertFalse(cube.coord('longitude').circular)
-        result = iris.analysis.cartography._xy_range(cube)
-        np.testing.assert_array_almost_equal(
-            result, ((75, 108.75), (42.5, 65)), decimal=0)
 
 
 class TestMissingData(tests.IrisTest):
@@ -672,6 +656,7 @@ class TestAreaWeights(tests.IrisTest):
         self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'),
                        checksum=False)
 
+@tests.skip_data
 class TestAreaWeightGeneration(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()
@@ -783,7 +768,7 @@ class TestLatitudeWeightGeneration(tests.IrisTest):
         # latitude range
         lat_coord = iris.coords.DimCoord(np.linspace(-90, 90, 73),
                                          standard_name='latitude',
-                                         units=iris.unit.Unit('degrees_north'))
+                                         units=cf_units.Unit('degrees_north'))
         cube = iris.cube.Cube(np.ones([73], dtype=np.float64),
                               long_name='test_cube', units='1')
         cube.add_dim_coord(lat_coord, 0)
@@ -1007,92 +992,6 @@ class TestRollingWindow(tests.IrisTest):
                                        [12.0, 9.0]], dtype=np.float64)
         # use almost equal to compare floats
         self.assertArrayAlmostEqual(expected_result, res_cube.data)
-
-
-class TestProject(tests.GraphicsTest):
-    def setUp(self):
-        cube = iris.tests.stock.realistic_4d_no_derived()
-        # Remove some slices to speed testing.
-        self.cube = cube[0:2, 0:3]
-        self.target_proj = ccrs.Robinson()
-
-    def test_bad_resolution(self):
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube,
-                                              self.target_proj,
-                                              nx=-200, ny=200)
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube,
-                                              self.target_proj,
-                                              nx=200, ny='abc')
-
-    def test_missing_latlon(self):
-        cube = self.cube.copy()
-        cube.remove_coord('grid_latitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(cube, self.target_proj)
-        cube = self.cube.copy()
-        cube.remove_coord('grid_longitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(cube, self.target_proj)
-        self.cube.remove_coord('grid_longitude')
-        self.cube.remove_coord('grid_latitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube, self.target_proj)
-
-    def test_default_resolution(self):
-        new_cube, extent = iris.analysis.cartography.project(self.cube,
-                                                             self.target_proj)
-        self.assertEqual(new_cube.shape, self.cube.shape)
-
-    @tests.skip_data
-    @tests.skip_plot
-    def test_cartopy_projection(self):
-        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
-                                                   'global.pp')))
-        projections = {}
-        projections['RotatedPole'] = ccrs.RotatedPole(pole_longitude=177.5,
-                                                      pole_latitude=37.5)
-        projections['Robinson'] = ccrs.Robinson()
-        projections['PlateCarree'] = ccrs.PlateCarree()
-        projections['NorthPolarStereo'] = ccrs.NorthPolarStereo()
-        projections['Orthographic'] = ccrs.Orthographic(central_longitude=-90,
-                                                        central_latitude=45)
-        projections['InterruptedGoodeHomolosine'] = ccrs.InterruptedGoodeHomolosine()
-        projections['LambertCylindrical'] = ccrs.LambertCylindrical()
-
-        # Set up figure
-        fig = plt.figure(figsize=(10, 10))
-        gs = matplotlib.gridspec.GridSpec(nrows=3, ncols=3, hspace=1.5, wspace=0.5)
-        for subplot_spec, (name, target_proj) in itertools.izip(gs, projections.iteritems()):
-            # Set up axes and title
-            ax = plt.subplot(subplot_spec, frameon=False, projection=target_proj)
-            ax.set_title(name)
-            # Transform cube to target projection
-            new_cube, extent = iris.analysis.cartography.project(cube, target_proj,
-                                                                 nx=150, ny=150)
-            # Plot
-            plt.pcolor(new_cube.coord('projection_x_coordinate').points,
-                       new_cube.coord('projection_y_coordinate').points,
-                       new_cube.data)
-            # Add coastlines
-            ax.coastlines()
-
-        # Tighten up layout
-        gs.tight_layout(plt.gcf())
-
-        # Verify resulting plot
-        self.check_graphic(tol=1.0)
-
-    @tests.skip_data
-    def test_no_coord_system(self):
-        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
-        cube.coord('longitude').coord_system = None
-        cube.coord('latitude').coord_system = None
-        new_cube, extent = iris.analysis.cartography.project(cube,
-                                                             self.target_proj)
-        self.assertCML(new_cube,
-                       ('analysis', 'project', 'default_source_cs.cml'))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,20 +19,22 @@ Unit tests for the `iris.fileformats.grib.message._MessageLocation` class.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
-from iris.fileformats.grib._message import _MessageLocation
+from iris.fileformats.grib.message import _MessageLocation
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
     def test(self):
         message_location = _MessageLocation(mock.sentinel.filename,
                                             mock.sentinel.location)
-        patch_target = 'iris.fileformats.grib._message._RawGribMessage.' \
+        patch_target = 'iris.fileformats.grib.message._RawGribMessage.' \
                        'from_file_offset'
         expected = mock.sentinel.message
         with mock.patch(patch_target, return_value=expected) as rgm:

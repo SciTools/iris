@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,11 +16,15 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.experimental.raster.export_geotiff` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import numpy as np
+import re
 try:
     from osgeo import gdal
     from iris.experimental.raster import export_geotiff
@@ -37,10 +41,10 @@ class TestDtypeAndValues(tests.IrisTest):
     def _cube(self, dtype):
         data = np.arange(12).reshape(3, 4).astype(dtype) + 20
         cube = Cube(data, 'air_pressure_anomaly')
-        coord = DimCoord(range(3), 'latitude', units='degrees')
+        coord = DimCoord(np.arange(3), 'latitude', units='degrees')
         coord.guess_bounds()
         cube.add_dim_coord(coord, 0)
-        coord = DimCoord(range(4), 'longitude', units='degrees')
+        coord = DimCoord(np.arange(4), 'longitude', units='degrees')
         coord.guess_bounds()
         cube.add_dim_coord(coord, 1)
         return cube
@@ -105,11 +109,11 @@ class TestProjection(tests.IrisTest):
     def _cube(self, ellipsoid=None):
         data = np.arange(12).reshape(3, 4).astype('u1')
         cube = Cube(data, 'air_pressure_anomaly')
-        coord = DimCoord(range(3), 'latitude', units='degrees',
+        coord = DimCoord(np.arange(3), 'latitude', units='degrees',
                          coord_system=ellipsoid)
         coord.guess_bounds()
         cube.add_dim_coord(coord, 0)
-        coord = DimCoord(range(4), 'longitude', units='degrees',
+        coord = DimCoord(np.arange(4), 'longitude', units='degrees',
                          coord_system=ellipsoid)
         coord.guess_bounds()
         cube.add_dim_coord(coord, 1)
@@ -127,22 +131,36 @@ class TestProjection(tests.IrisTest):
         with self.temp_filename('.tif') as temp_filename:
             export_geotiff(cube, temp_filename)
             dataset = gdal.Open(temp_filename, gdal.GA_ReadOnly)
-            self.assertEqual(
-                dataset.GetProjection(),
-                'GEOGCS["unnamed ellipse",DATUM["unknown",'
-                'SPHEROID["unnamed",6377000,0]],PRIMEM["Greenwich",0],'
-                'UNIT["degree",0.0174532925199433]]')
+            projection_string = dataset.GetProjection()
+            # String has embedded floating point values,
+            # Test with values to N decimal places, using a regular expression.
+            re_pattern = (
+                r'GEOGCS\["unnamed ellipse",DATUM\["unknown",'
+                r'SPHEROID\["unnamed",637....,0\]\],PRIMEM\["Greenwich",0\],'
+                r'UNIT\["degree",0.01745[0-9]*\]\]')
+            re_exp = re.compile(re_pattern)
+            self.assertIsNotNone(
+                re_exp.match(projection_string),
+                'projection string {!r} does not match {!r}'.format(
+                    projection_string, re_pattern))
 
     def test_ellipsoid(self):
         cube = self._cube(GeogCS(6377000, 6360000))
         with self.temp_filename('.tif') as temp_filename:
             export_geotiff(cube, temp_filename)
             dataset = gdal.Open(temp_filename, gdal.GA_ReadOnly)
-            self.assertEqual(
-                dataset.GetProjection(),
-                'GEOGCS["unnamed ellipse",DATUM["unknown",'
-                'SPHEROID["unnamed",6377000,375.117647058816]],'
-                'PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]')
+            projection_string = dataset.GetProjection()
+            # String has embedded floating point values,
+            # Test with values to N decimal places, using a regular expression.
+            re_pattern = (
+                r'GEOGCS\["unnamed ellipse",DATUM\["unknown",'
+                r'SPHEROID\["unnamed",637....,375.117[0-9]*\]\],'
+                r'PRIMEM\["Greenwich",0\],UNIT\["degree",0.01745[0-9]*\]\]')
+            re_exp = re.compile(re_pattern)
+            self.assertIsNotNone(
+                re_exp.match(projection_string),
+                'projection string {!r} does not match {!r}'.format(
+                    projection_string, re_pattern))
 
 
 @tests.skip_gdal

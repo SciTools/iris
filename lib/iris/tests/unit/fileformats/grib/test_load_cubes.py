@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.grib.load_cubes` function."""
-import iris.tests as tests
 
-import mock
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
+import iris.tests as tests
 
 import iris
 import iris.fileformats.grib
@@ -25,6 +27,7 @@ import iris.fileformats.grib.load_rules
 import iris.fileformats.rules
 
 from iris.fileformats.grib import load_cubes
+from iris.tests import mock
 
 
 class TestToggle(tests.IrisTest):
@@ -38,9 +41,12 @@ class TestToggle(tests.IrisTest):
                 result = load_cubes(mock.sentinel.FILES,
                                     mock.sentinel.CALLBACK,
                                     mock.sentinel.REGULARISE)
-                reg_kw = 'regularise' if mode else 'auto_regularise'
+                if mode:
+                    kw_args = {}
+                else:
+                    kw_args = {'auto_regularise': mock.sentinel.REGULARISE}
                 loader = iris.fileformats.rules.Loader(
-                    generator, {reg_kw: mock.sentinel.REGULARISE},
+                    generator, kw_args,
                     converter, None)
                 rules_load.assert_called_once_with(mock.sentinel.FILES,
                                                    mock.sentinel.CALLBACK,
@@ -56,11 +62,11 @@ class TestToggle(tests.IrisTest):
 
     def test_strict_mode(self):
         # Ensure that `load_cubes` uses:
-        #   iris.fileformats.grib._message._GribMessage.messages_from_filename
+        #   iris.fileformats.grib.message.GribMessage.messages_from_filename
         #   iris.fileformats.grib._load_convert.convert
         self._test(
             True,
-            iris.fileformats.grib._message._GribMessage.messages_from_filename,
+            iris.fileformats.grib.message.GribMessage.messages_from_filename,
             iris.fileformats.grib._load_convert.convert)
 
 

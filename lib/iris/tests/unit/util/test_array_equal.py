@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris.util.array_equal`."""
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -57,28 +60,28 @@ class Test(tests.IrisTest):
         self.assertFalse(array_equal(array_a, array_c))
 
     def test_masked_is_ignored(self):
-        array_a = np.ma.masked_array([1, 2, 3], mask=[1, 0, 1])
-        array_b = np.ma.masked_array([2, 2, 2], mask=[1, 0, 1])
+        array_a = ma.masked_array([1, 2, 3], mask=[1, 0, 1])
+        array_b = ma.masked_array([2, 2, 2], mask=[1, 0, 1])
         self.assertFalse(array_equal(array_a, array_b))
 
     def test_fully_masked_arrays(self):
-        array_a = np.ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
-        array_b = np.ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
+        array_a = ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
+        array_b = ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_fully_masked_0d_arrays(self):
-        array_a = np.ma.masked_array(3, mask=True)
-        array_b = np.ma.masked_array(3, mask=True)
+        array_a = ma.masked_array(3, mask=True)
+        array_b = ma.masked_array(3, mask=True)
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_fully_masked_string_arrays(self):
-        array_a = np.ma.masked_array(['a', 'b', 'c'], mask=True)
-        array_b = np.ma.masked_array(['a', 'b', 'c'], mask=[1, 1, 1])
+        array_a = ma.masked_array(['a', 'b', 'c'], mask=True)
+        array_b = ma.masked_array(['a', 'b', 'c'], mask=[1, 1, 1])
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_partially_masked_string_arrays(self):
-        array_a = np.ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
-        array_b = np.ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
+        array_a = ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
+        array_b = ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_string_arrays_equal(self):

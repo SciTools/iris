@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,10 @@
 Test area weighted regridding.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -32,12 +36,6 @@ from iris.experimental.regrid import \
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted
 import iris.analysis._interpolation
 import iris.tests.stock
-
-# Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
-    import matplotlib.pyplot as plt
-    import iris.quickplot as qplt
-
 
 RESULT_DIR = ('experimental', 'regrid',
               'regrid_area_weighted_rectilinear_src_and_grid')
@@ -157,7 +155,8 @@ def _resampled_grid(cube, x_samplefactor, y_samplefactor):
     return new_cube
 
 
-class TestAreaWeightedRegrid(tests.GraphicsTest):
+@tests.skip_data
+class TestAreaWeightedRegrid(tests.IrisTest):
     def setUp(self):
         # A cube with a hybrid height derived coordinate.
         self.realistic_cube = iris.tests.stock.realistic_4d()[:2, :5, :20, :30]
@@ -363,25 +362,11 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         res = regrid_area_weighted(src, dest)
         self.assertCMLApproxData(res, RESULT_DIR + ('higher.cml',))
 
-    @tests.skip_plot
     def test_hybrid_height(self):
         src = self.realistic_cube
         dest = _resampled_grid(src, 0.7, 0.8)
         res = regrid_area_weighted(src, dest)
         self.assertCMLApproxData(res, RESULT_DIR + ('hybridheight.cml',))
-        # Consider a single slice to allow visual tests of altitudes.
-        src = src[1, 2]
-        res = res[1, 2]
-        qplt.pcolormesh(res)
-        self.check_graphic()
-        plt.contourf(res.coord('grid_longitude').points,
-                     res.coord('grid_latitude').points,
-                     res.coord('altitude').points)
-        self.check_graphic()
-        plt.contourf(res.coord('grid_longitude').points,
-                     res.coord('grid_latitude').points,
-                     res.coord('surface_altitude').points)
-        self.check_graphic()
 
     def test_missing_data(self):
         src = self.simple_cube.copy()
@@ -439,7 +424,6 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
             res = regrid_area_weighted(src, dest)
             self.assertTrue(res, src[indices])
 
-    @tests.skip_plot
     def test_cross_section(self):
         # Slice to get a cross section.
         # Constant latitude
@@ -454,10 +438,6 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         res = regrid_area_weighted(src, dest)
         self.assertCMLApproxData(res, RESULT_DIR +
                                  ('const_lat_cross_section.cml',))
-        # Plot a single slice.
-        qplt.plot(res[0])
-        qplt.plot(src[0], 'r')
-        self.check_graphic()
 
         # Constant longitude
         src = self.realistic_cube[0, :, :, 10]
@@ -471,10 +451,6 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         res = regrid_area_weighted(src, dest)
         self.assertCMLApproxData(res, RESULT_DIR +
                                  ('const_lon_cross_section.cml',))
-        # Plot a single slice.
-        qplt.plot(res[0])
-        qplt.plot(src[0], 'r')
-        self.check_graphic()
 
     def test_scalar_source_cube(self):
         src = self.simple_cube[1, 2]
@@ -491,39 +467,32 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         self.assertEqual(res.data, src.data)
 
     @tests.skip_data
-    @tests.skip_plot
     def test_global_data_reduce_res(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
         src.coord('longitude').guess_bounds()
         dest = _resampled_grid(src, 0.4, 0.3)
         res = regrid_area_weighted(src, dest)
-        qplt.pcolormesh(res)
-        self.check_graphic()
+        self.assertArrayShapeStats(res, (21, 38), 280.137698, 15.998966)
 
     @tests.skip_data
-    @tests.skip_plot
     def test_global_data_increase_res(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
         src.coord('longitude').guess_bounds()
         dest = _resampled_grid(src, 1.5, 1.5)
         res = regrid_area_weighted(src, dest)
-        qplt.pcolormesh(res)
-        self.check_graphic()
+        self.assertArrayShapeStats(res, (109, 144), 279.955722, 16.313940)
 
     @tests.skip_data
-    @tests.skip_plot
     def test_global_data_same_res(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
         src.coord('longitude').guess_bounds()
         res = regrid_area_weighted(src, src)
-        qplt.pcolormesh(res)
-        self.check_graphic()
+        self.assertArrayShapeStats(res, (73, 96), 279.945167, 16.345842)
 
     @tests.skip_data
-    @tests.skip_plot
     def test_global_data_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -541,12 +510,9 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        qplt.pcolormesh(res)
-        plt.gca().coastlines()
-        self.check_graphic()
+        self.assertArrayShapeStats(res, (40, 30), 280.979336, 16.640421)
 
     @tests.skip_data
-    @tests.skip_plot
     def test_circular_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -564,12 +530,9 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        qplt.pcolormesh(res)
-        plt.gca().coastlines()
-        self.check_graphic()
+        self.assertArrayShapeStats(res, (40, 7), 285.653967, 15.212710)
 
     @tests.skip_data
-    @tests.skip_plot
     def test_non_circular_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -588,9 +551,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        qplt.pcolormesh(res)
-        plt.gca().coastlines()
-        self.check_graphic()
+        self.assertArrayShapeStats(res, (40, 7), 285.550800, 15.190245)
 
 
 if __name__ == "__main__":

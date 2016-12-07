@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :data:`iris.analysis.MEAN` aggregator."""
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -51,6 +54,20 @@ class Test_lazy_aggregate(tests.IrisTest):
         result = agg.masked_array()
         expected = ma.mean(self.data, axis=self.axis)
         self.assertMaskedArrayAlmostEqual(result, expected)
+
+
+class Test_name(tests.IrisTest):
+    def test(self):
+        self.assertEqual(MEAN.name(), 'mean')
+
+
+class Test_aggregate_shape(tests.IrisTest):
+    def test(self):
+        shape = ()
+        kwargs = dict()
+        self.assertTupleEqual(MEAN.aggregate_shape(**kwargs), shape)
+        kwargs = dict(one=1, two=2)
+        self.assertTupleEqual(MEAN.aggregate_shape(**kwargs), shape)
 
 
 if __name__ == "__main__":

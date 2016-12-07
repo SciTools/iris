@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,15 +18,19 @@
 Test iris.util
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import inspect
-import os
-import StringIO
 import unittest
 
+import cf_units
 import numpy as np
 
 import iris.analysis
@@ -76,7 +80,7 @@ class TestMonotonic(unittest.TestCase):
         b = np.array([3, 5.3, 5.3])
         self.assertNotMonotonic(b, strict=True)
         self.assertMonotonic(b, direction=1)
-        
+
         b = b[::-1]
         self.assertNotMonotonic(b, strict=True)
         self.assertMonotonic(b, direction=-1)
@@ -158,7 +162,8 @@ class TestClipString(unittest.TestCase):
         self.assertLess(len(result), len(self.test_string), "String was not clipped.")
 
         rider_returned = result[-len(arg_dict["rider"]):]
-        self.assertEquals(rider_returned, arg_dict["rider"], "Default rider was not applied.")
+        self.assertEqual(rider_returned, arg_dict['rider'],
+                         'Default rider was not applied.')
 
     def test_trim_string_with_no_spaces(self):
 
@@ -172,66 +177,70 @@ class TestClipString(unittest.TestCase):
         expected_length = clip_length + len(self.rider)
 
         # Check the length of the returned string is equal to clip length + length of rider
-        self.assertEquals(len(result), expected_length, "Mismatch in expected length of clipped string. Length was %s, expected value is %s" % (len(result), expected_length))
-        
+        self.assertEqual(
+            len(result),
+            expected_length,
+            'Mismatch in expected length of clipped string. Length was %s, '
+            'expected value is %s' % (len(result), expected_length))
 
+
+@tests.skip_data
 class TestDescribeDiff(iris.tests.IrisTest):
     def test_identical(self):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
 
-        return_str_IO = StringIO.StringIO()
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_sio = six.StringIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
+        return_str = return_sio.getvalue()
 
         self.assertString(return_str, 'compatible_cubes.str.txt')
 
     def test_different(self):
-        return_str_IO = StringIO.StringIO()
-        
         # test incompatible attributes
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
-        
+
         test_cube_a.attributes['Conventions'] = 'CF-1.5'
         test_cube_b.attributes['Conventions'] = 'CF-1.6'
-        
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
-        
+
+        return_sio = six.StringIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
+        return_str = return_sio.getvalue()
+
         self.assertString(return_str, 'incompatible_attr.str.txt')
-        
+
         # test incompatible names
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
 
         test_cube_a.standard_name = "relative_humidity"
 
-        return_str_IO.truncate(0)
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_sio = six.StringIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
+        return_str = return_sio.getvalue()
 
         self.assertString(return_str, 'incompatible_name.str.txt')
 
         # test incompatible unit
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
-        
-        test_cube_a.units = iris.unit.Unit('m')
 
-        return_str_IO.truncate(0)
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
-        
+        test_cube_a.units = cf_units.Unit('m')
+
+        return_sio = six.StringIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
+        return_str = return_sio.getvalue()
+
         self.assertString(return_str, 'incompatible_unit.str.txt')
-        
+
         # test incompatible methods
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
 
-        return_str_IO.truncate(0)
-        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
-        return_str = return_str_IO.getvalue()
+        return_sio = six.StringIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
+        return_str = return_sio.getvalue()
 
         self.assertString(return_str, 'incompatible_meth.str.txt')
 
@@ -243,7 +252,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.attributes['Conventions'] = 'CF-1.5'
         test_cube_b.attributes['Conventions'] = 'CF-1.6'
         test_cube_a.standard_name = "relative_humidity"
-        test_cube_a.units = iris.unit.Unit('m')
+        test_cube_a.units = cf_units.Unit('m')
 
         with self.temp_filename() as filename:
             with open(filename, 'w') as f:
@@ -254,6 +263,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
                               'incompatible_cubes.str.txt')
 
 
+@tests.skip_data
 class TestAsCompatibleShape(tests.IrisTest):
     def test_slice(self):
         cube = tests.stock.realistic_4d()
@@ -325,6 +335,25 @@ class TestAsCompatibleShape(tests.IrisTest):
         dim_to_aux(expected, 'grid_latitude')
         res = iris.util.as_compatible_shape(src, cube)
         self.assertEqual(res, expected)
+
+    def test_2d_auxcoord_transpose(self):
+        dim_coord1 = iris.coords.DimCoord(range(3), long_name='first_dim')
+        dim_coord2 = iris.coords.DimCoord(range(4), long_name='second_dim')
+        aux_coord_2d = iris.coords.AuxCoord(np.arange(12).reshape(3, 4),
+                                            long_name='spanning')
+        aux_coord_2d_T = iris.coords.AuxCoord(np.arange(12).reshape(3, 4).T,
+                                              long_name='spanning')
+        src = iris.cube.Cube(
+            np.ones((3, 4)),
+            dim_coords_and_dims=[(dim_coord1, 0), (dim_coord2, 1)],
+            aux_coords_and_dims=[(aux_coord_2d, (0, 1))])
+        target = iris.cube.Cube(
+            np.ones((4, 3)),
+            dim_coords_and_dims=[(dim_coord1, 1), (dim_coord2, 0)],
+            aux_coords_and_dims=[(aux_coord_2d_T, (0, 1))])
+
+        res = iris.util.as_compatible_shape(src, target)
+        self.assertEqual(res[0], target[0])
 
 
 if __name__ == '__main__':

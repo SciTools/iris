@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,18 +16,21 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for :func:`iris.fileformats.grib.load_rules.convert`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
+import cf_units
 import gribapi
-import mock
 
 import iris
 from iris.fileformats.rules import Reference
-from iris.tests.test_grib_load import TestGribSimple
+from iris.tests import mock
+from iris.tests.test_grib_load_translations import TestGribSimple
 from iris.tests.unit.fileformats import TestField
-import iris.unit
 
 from iris.fileformats.grib import GribWrapper
 from iris.fileformats.grib.load_rules import convert
@@ -93,7 +96,8 @@ class TestBoundedTime(TestField):
                       'edition': 1, '_forecastTime': 15,
                       '_forecastTimeUnit': 'hours',
                       'phenomenon_bounds': lambda u: (80, 120),
-                      '_phenomenonDateTime': -1}
+                      '_phenomenonDateTime': -1,
+                      'table2Version': 9999}
         attributes.update(kwargs)
         message = mock.Mock(**attributes)
         self._test_for_coord(message, convert, self.is_forecast_period,
@@ -102,6 +106,9 @@ class TestBoundedTime(TestField):
         self._test_for_coord(message, convert, self.is_time,
                              expected_points=[100],
                              expected_bounds=[[80, 120]])
+
+    def test_time_range_indicator_2(self):
+        self.assert_bounded_message(timeRangeIndicator=2)
 
     def test_time_range_indicator_3(self):
         self.assert_bounded_message(timeRangeIndicator=3)
@@ -166,13 +173,13 @@ class Test_GribLevels(tests.IrisTest):
         self.assertEqual(ref, Reference(name='surface_pressure'))
 
         ml_ref = iris.coords.CoordDefn('model_level_number', None, None,
-                                       iris.unit.Unit('1'),
+                                       cf_units.Unit('1'),
                                        {'positive': 'up'}, None)
         lp_ref = iris.coords.CoordDefn(None, 'level_pressure', None,
-                                       iris.unit.Unit('Pa'),
+                                       cf_units.Unit('Pa'),
                                        {}, None)
         s_ref = iris.coords.CoordDefn(None, 'sigma', None,
-                                      iris.unit.Unit('1'),
+                                      cf_units.Unit('1'),
                                       {}, None)
 
         aux_coord_defns = [coord._as_defn() for coord, dim in results[8]]

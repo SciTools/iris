@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,10 @@
 A collection of routines which create standard Cubes for test purposes.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import os.path
 
@@ -79,12 +83,12 @@ def simple_1d(with_bounds=True):
     """
     Returns an abstract, one-dimensional cube.
 
-    >>> print simple_1d()
+    >>> print(simple_1d())
     thingness                           (foo: 11)
          Dimension coordinates:
               foo                           x
 
-    >>> print repr(simple_1d().data)
+    >>> print(repr(simple_1d().data))
     [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
 
     """
@@ -102,13 +106,13 @@ def simple_2d(with_bounds=True):
     """
     Returns an abstract, two-dimensional, optionally bounded, cube.
 
-    >>> print simple_2d()
+    >>> print(simple_2d())
     thingness                           (bar: 3; foo: 4)
          Dimension coordinates:
               bar                           x       -
               foo                           -       x
 
-    >>> print repr(simple_2d().data)
+    >>> print(repr(simple_2d().data))
     [[ 0  1  2  3]
      [ 4  5  6  7]
      [ 8  9 10 11]]
@@ -134,13 +138,13 @@ def simple_2d_w_multidim_coords(with_bounds=True):
     """
     Returns an abstract, two-dimensional, optionally bounded, cube.
 
-    >>> print simple_2d_w_multidim_coords()
+    >>> print(simple_2d_w_multidim_coords())
     thingness                           (*ANONYMOUS*: 3; *ANONYMOUS*: 4)
          Auxiliary coordinates:
               bar                                   x               x
               foo                                   x               x
 
-    >>> print repr(simple_2d().data)
+    >>> print(repr(simple_2d().data))
     [[ 0,  1,  2,  3],
      [ 4,  5,  6,  7],
      [ 8,  9, 10, 11]]
@@ -156,7 +160,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
     """
     Returns an abstract, two-dimensional, optionally bounded, cube.
 
-    >>> print simple_3d_w_multidim_coords()
+    >>> print(simple_3d_w_multidim_coords())
     thingness                           (wibble: 2; *ANONYMOUS*: 3; *ANONYMOUS*: 4)
          Dimension coordinates:
               wibble                           x               -               -
@@ -164,7 +168,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
               bar                              -               x               x
               foo                              -               x               x
 
-    >>> print simple_3d_w_multidim_coords().data
+    >>> print(simple_3d_w_multidim_coords().data)
     [[[ 0  1  2  3]
       [ 4  5  6  7]
       [ 8  9 10 11]]
@@ -212,14 +216,14 @@ def simple_3d():
     """
     Returns an abstract three dimensional cube.
 
-    >>>print simple_3d()
+    >>> print(simple_3d())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
      Dimension coordinates:
           wibble                           x            -             -
           latitude                         -            x             -
           longitude                        -            -             x
 
-    >>> print simple_3d().data
+    >>> print(simple_3d().data)
     [[[ 0  1  2  3]
       [ 4  5  6  7]
       [ 8  9 10 11]]
@@ -250,14 +254,14 @@ def simple_3d_mask():
     """
     Returns an abstract three dimensional cube that has data masked.
 
-    >>>print simple_3d_mask()
+    >>> print(simple_3d_mask())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
      Dimension coordinates:
           wibble                           x            -             -
           latitude                         -            x             -
           longitude                        -            -             x
 
-    >>> print simple_3d_mask().data
+    >>> print(simple_3d_mask().data)
     [[[-- -- -- --]
       [-- -- -- --]
       [-- 9 10 11]]
@@ -277,14 +281,14 @@ def track_1d(duplicate_x=False):
     """
     Returns a one-dimensional track through two-dimensional space.
 
-    >>> print track_1d()
+    >>> print(track_1d())
     air_temperature                     (y, x: 11)
          Dimensioned coords:
               x -> x
               y -> y
          Single valued coords:
 
-    >>> print repr(track_1d().data)
+    >>> print(repr(track_1d().data))
     array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10])
 
     """
@@ -335,7 +339,7 @@ def hybrid_height():
     """
     Returns a two-dimensional (Z, X), hybrid-height cube.
 
-    >>> print hybrid_height()
+    >>> print(hybrid_height())
     TODO: Update!
     air_temperature                     (level_height: 3; *ANONYMOUS*: 4)
          Dimension coordinates:
@@ -347,7 +351,7 @@ def hybrid_height():
          Derived coordinates:
               altitude                               x               x
 
-    >>> print hybrid_height().data
+    >>> print(hybrid_height().data)
     [[[ 0  1  2  3]
       [ 4  5  6  7]
       [ 8  9 10 11]]
@@ -402,11 +406,47 @@ def simple_4d_with_hybrid_height():
     return cube
 
 
+def realistic_3d():
+    """
+    Returns a realistic 3d cube.
+
+    >>> print(repr(realistic_3d()))
+    <iris 'Cube' of air_potential_temperature (time: 7; grid_latitude: 9;
+    grid_longitude: 11)>
+
+    """
+    data = np.arange(7*9*11).reshape((7,9,11))
+    lat_pts = np.linspace(-4, 4, 9)
+    lon_pts = np.linspace(-5, 5, 11)
+    time_pts = np.linspace(394200, 394236, 7)
+    forecast_period_pts = np.linspace(0, 36, 7)
+    ll_cs = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
+
+    lat = icoords.DimCoord(lat_pts, standard_name='grid_latitude',
+                           units='degrees', coord_system=ll_cs)
+    lon = icoords.DimCoord(lon_pts, standard_name='grid_longitude',
+                           units='degrees', coord_system=ll_cs)
+    time = icoords.DimCoord(time_pts, standard_name='time',
+                            units='hours since 1970-01-01 00:00:00')
+    forecast_period = icoords.DimCoord(forecast_period_pts,
+                                       standard_name='forecast_period',
+                                       units='hours')
+    height = icoords.DimCoord(1000.0, standard_name='air_pressure',
+                              units='Pa')
+    cube = iris.cube.Cube(data, standard_name='air_potential_temperature',
+                          units='K',
+                          dim_coords_and_dims=[(time, 0), (lat, 1), (lon, 2)],
+                          aux_coords_and_dims=[(forecast_period, 0),
+                                               (height, None)],
+                          attributes={'source': 'Iris test case'})
+    return cube
+
+
 def realistic_4d():
     """
     Returns a realistic 4d cube.
 
-    >>> print repr(realistic_4d())
+    >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)>
 
     """
@@ -414,7 +454,7 @@ def realistic_4d():
 #    >>> fname = iris.sample_data_path('PP', 'COLPEX', 'theta_and_orog_subset.pp')
 #    >>> theta = iris.load_cube(fname, 'air_potential_temperature')
 #    >>> for coord in theta.coords():
-#    ...  print coord.name, coord.has_points(), coord.has_bounds(), coord.units
+#    ...  print(coord.name, coord.has_points(), coord.has_bounds(), coord.units)
 #    ...
 #    grid_latitude True True degrees
 #    grid_longitude True True degrees
@@ -431,11 +471,12 @@ def realistic_4d():
 #    >>> arrays.append(theta.data)
 #    >>> arrays.append(theta.coord('sigma').coord_system.orography.data)
 #    >>> np.savez('stock_arrays.npz', *arrays)
-
-    data_path = os.path.join(os.path.dirname(__file__), 'stock_arrays.npz')
+    data_path = tests.get_data_path(('stock', 'stock_arrays.npz'))
+    if not os.path.isfile(data_path):
+        raise IOError('Test data is not available at {}.'.format(data_path))
     r = np.load(data_path)
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
-    _, arrays =  zip(*sorted(r.iteritems(), key=lambda item: int(item[0][4:])))
+    _, arrays =  zip(*sorted(six.iteritems(r), key=lambda item: int(item[0][4:])))
 
     lat_pts, lat_bnds, lon_pts, lon_bnds, level_height_pts, \
     level_height_bnds, model_level_pts, sigma_pts, sigma_bnds, time_pts, \
@@ -473,7 +514,7 @@ def realistic_4d_no_derived():
     """
     Returns a realistic 4d cube without hybrid height
 
-    >>> print repr(realistic_4d())
+    >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)>
 
     """
@@ -486,7 +527,9 @@ def realistic_4d_no_derived():
 
 
 def realistic_4d_w_missing_data():
-    data_path = os.path.join(os.path.dirname(__file__), 'stock_mdi_arrays.npz')
+    data_path = tests.get_data_path(('stock', 'stock_mdi_arrays.npz'))
+    if not os.path.isfile(data_path):
+        raise IOError('Test data is not available at {}.'.format(data_path))
     data_archive = np.load(data_path)
     data = ma.masked_array(data_archive['arr_0'], mask=data_archive['arr_1'])
 

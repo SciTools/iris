@@ -23,7 +23,7 @@ We have already seen a basic string representation of a cube when printing:
     >>> import iris
     >>> filename = iris.sample_data_path('rotated_pole.nc')
     >>> cube = iris.load_cube(filename)
-    >>> print cube
+    >>> print(cube)
     air_pressure_at_sea_level / (Pa)    (grid_latitude: 22; grid_longitude: 36)
          Dimension coordinates:
               grid_latitude                           x                   -
@@ -42,9 +42,9 @@ This representation is equivalent to passing the cube to the :func:`str` functio
 any Python variable to get a string representation of that variable. 
 Similarly there exist other standard functions for interrogating your variable: :func:`repr`, :func:`type` for example::
 
-    print str(cube)
-    print repr(cube)
-    print type(cube)
+    print(str(cube))
+    print(repr(cube))
+    print(type(cube))
 
 Other, more verbose, functions also exist which give information on **what** you can do with *any* given 
 variable. In most cases it is reasonable to ignore anything starting with a "``_``" (underscore) or a "``__``" (double underscore)::
@@ -60,23 +60,23 @@ Every cube has a standard name, long name and units which are accessed with
 :attr:`Cube.long_name <iris.cube.Cube.long_name>` 
 and :attr:`Cube.units <iris.cube.Cube.units>` respectively::
 
-    print cube.standard_name
-    print cube.long_name
-    print cube.units
+    print(cube.standard_name)
+    print(cube.long_name)
+    print(cube.units)
     
 Interrogating these with the standard :func:`type` function will tell you that ``standard_name`` and ``long_name`` 
 are either a string or ``None``, and ``units`` is an instance of :class:`iris.unit.Unit`.
 
 You can access a string representing the "name" of a cube with the :meth:`Cube.name() <iris.cube.Cube.name>` method::
 
-    print cube.name()
+    print(cube.name())
     
 The result of which is **always** a string.
 
 Each cube also has a :mod:`numpy` array which represents the phenomenon of the cube which can be accessed with the 
 :attr:`Cube.data <iris.cube.Cube.data>` attribute. As you can see the type is a :class:`numpy n-dimensional array <numpy.ndarray>`::
 
-    print type(cube.data)
+    print(type(cube.data))
 
 .. note::
 
@@ -89,8 +89,8 @@ Each cube also has a :mod:`numpy` array which represents the phenomenon of the c
     For convenience :attr:`~iris.cube.Cube.shape` and :attr:`~iris.cube.Cube.ndim` attributes exists on a cube, which 
     can tell you the shape of the cube's data without loading it::
 
-       print cube.shape
-       print cube.ndim
+       print(cube.shape)
+       print(cube.ndim)
 
 You can change the units of a cube using the :meth:`~iris.cube.Cube.convert_units` method. For example::
 
@@ -103,7 +103,7 @@ As well as changing the value of the :attr:`~iris.cube.Cube.units` attribute thi
 Some cubes represent a processed phenomenon which are represented with cell methods, these can be accessed on a 
 cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute::
 
-    print cube.cell_methods
+    print(cube.cell_methods)
 
 
 Accessing coordinates on the cube
@@ -113,7 +113,7 @@ A cube's coordinates can be retrieved via :meth:`Cube.coords <iris.cube.Cube.coo
 A simple for loop over the coords can print a coordinate's :meth:`~iris.coords.Coord.name`::
 
      for coord in cube.coords():
-         print coord.name()
+         print(coord.name())
 
 Alternatively, we can use *list comprehension* to store the names in a list::
 
@@ -121,26 +121,26 @@ Alternatively, we can use *list comprehension* to store the names in a list::
 
 The result is a basic Python list which could be sorted alphabetically and joined together:
 
-     >>> print ', '.join(sorted(coord_names))
+     >>> print(', '.join(sorted(coord_names)))
      forecast_period, forecast_reference_time, grid_latitude, grid_longitude, time
 
 To get an individual coordinate given its name, the :meth:`Cube.coord <iris.cube.Cube.coord>` method can be used::
 
      coord = cube.coord('grid_latitude')
-     print type(coord)
+     print(type(coord))
 
 Every coordinate has a :attr:`Coord.standard_name <iris.coords.Coord.standard_name>`, 
 :attr:`Coord.long_name <iris.coords.Coord.long_name>`, and :attr:`Coord.units <iris.coords.Coord.units>` attribute::
 
-     print coord.standard_name
-     print coord.long_name
-     print coord.units
+     print(coord.standard_name)
+     print(coord.long_name)
+     print(coord.units)
 
 Additionally every coordinate can provide its :attr:`~iris.coords.Coord.points` and :attr:`~iris.coords.Coord.bounds` 
 numpy array. If the coordinate has no bounds ``None`` will be returned::
 
-     print type(coord.points)
-     print type(coord.bounds)
+     print(type(coord.points))
+     print(type(coord.bounds))
 
 
 Adding metadata to a cube
@@ -153,7 +153,7 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
     >>> import iris.coords
     >>> new_coord = iris.coords.AuxCoord(1, long_name='my_custom_coordinate', units='no_unit')
     >>> cube.add_aux_coord(new_coord)
-    >>> print cube
+    >>> print(cube)
     air_pressure_at_sea_level / (Pa)    (grid_latitude: 22; grid_longitude: 36)
          Dimension coordinates:
               grid_latitude                           x                   -
@@ -195,7 +195,7 @@ model mean that the run is spread over several days.
 If we try to load the data directly for ``surface_temperature``:
 
     >>> filename = iris.sample_data_path('GloSea4', '*.pp')
-    >>> print iris.load(filename, 'surface_temperature')
+    >>> print(iris.load(filename, 'surface_temperature'))
     0: surface_temperature / (K)           (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
     1: surface_temperature / (K)           (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
     2: surface_temperature / (K)           (realization: 9; time: 6; latitude: 145; longitude: 192)
@@ -210,7 +210,7 @@ which, given the filename, we could extract::
 
     filename = iris.sample_data_path('GloSea4', 'ensemble_001.pp')
     realization = int(filename[-6:-3])
-    print realization
+    print(realization)
 
 We can solve this problem by adding the appropriate metadata, on load, by using a callback function, which runs on a field
 by field basis *before* they are automatically merged together:
@@ -230,7 +230,7 @@ by field basis *before* they are automatically merged together:
 
     filename = iris.sample_data_path('GloSea4', '*.pp')
 
-    print iris.load(filename, 'surface_temperature', callback=lagged_ensemble_callback)
+    print(iris.load(filename, 'surface_temperature', callback=lagged_ensemble_callback))
 
 
 The result is a single cube which represents the data in a form that was expected:

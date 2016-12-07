@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -114,10 +116,10 @@ class TestPPStash(tests.IrisTest):
 
     def test_illegal_stash_type(self):
         with self.assertRaises(TypeError):
-            self.assertEqual(iris.fileformats.pp.STASH.from_msi(0102003), 'm01s02i003')
+            self.assertEqual(iris.fileformats.pp.STASH.from_msi(102003), 'm01s02i003')
 
         with self.assertRaises(TypeError):
-            self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi(0102003))
+            self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi(102003))
 
         with self.assertRaises(TypeError):
             self.assertEqual(iris.fileformats.pp.STASH.from_msi(['m01s02i003']), 'm01s02i003')

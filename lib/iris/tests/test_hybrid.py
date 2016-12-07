@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,6 +19,10 @@ Test the hybrid vertical coordinate representations.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -33,8 +37,10 @@ import iris.tests.stock
 
 
 @tests.skip_plot
+@tests.skip_data
 class TestRealistic4d(tests.GraphicsTest):
     def setUp(self):
+        super(TestRealistic4d, self).setUp()
         self.cube = iris.tests.stock.realistic_4d()
         self.altitude = self.cube.coord('altitude')
 
@@ -67,8 +73,10 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has surface_altitude and delta dependencies.
         factory = cube.aux_factory(name='altitude')
-        t = [key for key, coord in factory.dependencies.iteritems() if coord is not None]
-        self.assertItemsEqual(t, ['orography', 'delta'])
+        t = [key
+             for key, coord in six.iteritems(factory.dependencies)
+             if coord is not None]
+        six.assertCountEqual(self, t, ['orography', 'delta'])
 
     def test_removing_orography(self):
         # Check the cube remains OK when the orography is removed.
@@ -79,8 +87,10 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has sigma and delta dependencies.
         factory = cube.aux_factory(name='altitude')
-        t = [key for key, coord in factory.dependencies.iteritems() if coord is not None]
-        self.assertItemsEqual(t, ['sigma', 'delta'])
+        t = [key
+             for key, coord in six.iteritems(factory.dependencies)
+             if coord is not None]
+        six.assertCountEqual(self, t, ['sigma', 'delta'])
 
     def test_derived_coords(self):
         derived_coords = self.cube.derived_coords
@@ -151,6 +161,7 @@ class TestRealistic4d(tests.GraphicsTest):
             bounds = altitude.bounds
 
 
+@tests.skip_data
 class TestHybridPressure(tests.IrisTest):
     def setUp(self):
         # Convert the hybrid-height into hybrid-pressure...

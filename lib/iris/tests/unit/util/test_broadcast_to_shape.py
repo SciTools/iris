@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris.util.broadcast_to_shape`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -40,8 +42,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
         # the existing dimensions
         a = np.random.random([2, 3])
         b = broadcast_to_shape(a, (5, 2, 4, 3), (1, 3))
-        for i in xrange(5):
-            for j in xrange(4):
+        for i in range(5):
+            for j in range(4):
                 self.assertArrayEqual(b[i, :, j, :], a)
 
     def test_added_dimensions_transpose(self):
@@ -49,8 +51,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
         # transposed
         a = np.random.random([2, 3])
         b = broadcast_to_shape(a, (5, 3, 4, 2), (3, 1))
-        for i in xrange(5):
-            for j in xrange(4):
+        for i in range(5):
+            for j in range(4):
                 self.assertArrayEqual(b[i, :, j, :].T, a)
 
     def test_masked(self):
@@ -58,8 +60,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
         a = np.random.random([2, 3])
         m = ma.array(a, mask=[[0, 1, 0], [0, 1, 1]])
         b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
-        for i in xrange(5):
-            for j in xrange(4):
+        for i in range(5):
+            for j in range(4):
                 self.assertMaskedArrayEqual(b[i, :, j, :].T, m)
 
     def test_masked_degenerate(self):
@@ -67,8 +69,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
         a = np.random.random([2, 3])
         m = ma.array(a)
         b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
-        for i in xrange(5):
-            for j in xrange(4):
+        for i in range(5):
+            for j in range(4):
                 self.assertMaskedArrayEqual(b[i, :, j, :].T, m)
 
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,19 +17,17 @@
 """
 Automatic concatenation of multiple cubes over one or more existing dimensions.
 
-.. warning::
-
-    Currently, the :func:`concatenate` routine will load the data payload
-    of all cubes passed to it.
-
-    This restriction will be relaxed in a future release.
-
 """
 
-from collections import defaultdict, namedtuple
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
+from collections import defaultdict, namedtuple
+from copy import deepcopy
+
+import biggus
 import numpy as np
-import numpy.ma as ma
 
 import iris.coords
 import iris.cube
@@ -39,17 +37,7 @@ from iris.util import guess_coord_axis, array_equal, unify_time_units
 #
 # TODO:
 #
-#   * Deal with scalar coordinate promotion to a new dimension
-#     e.g. promote scalar z coordinate in 2D cube (y:m, x:n) to
-#     give the similar 3D cube (z:1, y:m, x:n). These two types
-#     of cubes are one and the same, and as such should concatenate
-#     together.
-#
 #   * Cope with auxiliary coordinate factories.
-#
-#   * Don't load the cube data payload.
-#
-#   * Deal with anonymous dimensions.
 #
 #   * Allow concatentation over a user specified dimension.
 #
@@ -80,6 +68,8 @@ class _CoordAndDims(namedtuple('CoordAndDims',
         A tuple of the data dimension(s) spanned by the coordinate.
 
     """
+
+    __slots__ = ()
 
 
 class _CoordMetaData(namedtuple('CoordMetaData',
@@ -129,6 +119,8 @@ class _CoordMetaData(namedtuple('CoordMetaData',
         bounds_dtype = coord.bounds.dtype if coord.bounds is not None \
             else None
         kwargs = {}
+        # Add scalar flag metadata.
+        kwargs['scalar'] = coord.points.size == 1
         # Add circular flag metadata for dimensional coordinates.
         if hasattr(coord, 'circular'):
             kwargs['circular'] = coord.circular
@@ -146,6 +138,38 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                                                       bounds_dtype,
                                                       kwargs)
         return metadata
+
+    __slots__ = ()
+
+    def __hash__(self):
+        return super(_CoordMetaData, self).__hash__()
+
+    def __eq__(self, other):
+        result = NotImplemented
+        if isinstance(other, _CoordMetaData):
+            sprops, oprops = self._asdict(), other._asdict()
+            # Ignore "kwargs" meta-data for the first comparison.
+            sprops['kwargs'] = oprops['kwargs'] = None
+            result = sprops == oprops
+            if result:
+                skwargs, okwargs = self.kwargs.copy(), other.kwargs.copy()
+                # Monotonic "order" only applies to DimCoord's.
+                # The monotonic "order" must be _INCREASING or _DECREASING if
+                # the DimCoord is NOT "scalar". Otherwise, if the DimCoord is
+                # "scalar" then the "order" must be _CONSTANT.
+                if skwargs['scalar'] or okwargs['scalar']:
+                    # We don't care about the monotonic "order" given that
+                    # at least one coordinate is a scalar coordinate.
+                    skwargs['scalar'] = okwargs['scalar'] = None
+                    skwargs['order'] = okwargs['order'] = None
+                result = skwargs == okwargs
+        return result
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def name(self):
         """Get the name from the coordinate definition."""
@@ -168,6 +192,8 @@ class _SkeletonCube(namedtuple('SkeletonCube',
 
     """
 
+    __slots__ = ()
+
 
 class _Extent(namedtuple('Extent',
                          ['min', 'max'])):
@@ -183,6 +209,8 @@ class _Extent(namedtuple('Extent',
         The maximum value of the extent.
 
     """
+
+    __slots__ = ()
 
 
 class _CoordExtent(namedtuple('CoordExtent',
@@ -203,8 +231,10 @@ class _CoordExtent(namedtuple('CoordExtent',
 
     """
 
+    __slots__ = ()
 
-def concatenate(cubes, error_on_mismatch=False):
+
+def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
     """
     Concatenate the provided cubes over common existing dimensions.
 
@@ -224,10 +254,6 @@ def concatenate(cubes, error_on_mismatch=False):
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube`
         instances.
 
-    .. warning::
-
-        This routine will load your data payload!
-
     """
     proto_cubes_by_name = defaultdict(list)
     # Initialise the nominated axis (dimension) of concatenation
@@ -236,17 +262,14 @@ def concatenate(cubes, error_on_mismatch=False):
 
     # Register each cube with its appropriate proto-cube.
     for cube in cubes:
-        # TODO: Remove this when new deferred data mechanism is available.
-        # Avoid deferred data/data manager issues, and load the cube data!
-        cube.data
-
         name = cube.standard_name or cube.long_name
         proto_cubes = proto_cubes_by_name[name]
         registered = False
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
-            registered = proto_cube.register(cube, axis, error_on_mismatch)
+            registered = proto_cube.register(cube, axis, error_on_mismatch,
+                                             check_aux_coords)
             if registered:
                 axis = proto_cube.axis
                 break
@@ -258,7 +281,11 @@ def concatenate(cubes, error_on_mismatch=False):
     # Construct a concatenated cube from each of the proto-cubes.
     concatenated_cubes = iris.cube.CubeList()
 
-    for name in sorted(proto_cubes_by_name):
+    # Emulate Python 2 behaviour.
+    def _none_sort(item):
+        return (item is not None, item)
+
+    for name in sorted(proto_cubes_by_name, key=_none_sort):
         for proto_cube in proto_cubes_by_name[name]:
             # Construct the concatenated cube.
             concatenated_cubes.append(proto_cube.concatenate())
@@ -274,7 +301,7 @@ def concatenate(cubes, error_on_mismatch=False):
 class _CubeSignature(object):
     """
     Template for identifying a specific type of :class:`iris.cube.Cube` based
-    on its metadata and coordinates.
+    on its metadata, coordinates and cell_measures.
 
     """
     def __init__(self, cube):
@@ -294,13 +321,14 @@ class _CubeSignature(object):
         self.dim_metadata = []
         self.ndim = cube.ndim
         self.scalar_coords = []
+        self.cell_measures_and_dims = cube._cell_measures_and_dims
 
         # Determine whether there are any anonymous cube dimensions.
         covered = set(cube.coord_dims(coord)[0] for coord in self.dim_coords)
         self.anonymous = covered != set(range(self.ndim))
 
         self.defn = cube.metadata
-        self.data_type = cube.data.dtype
+        self.data_type = cube.dtype
 
         #
         # Collate the dimension coordinate metadata.
@@ -313,12 +341,13 @@ class _CubeSignature(object):
         # Collate the auxiliary coordinate metadata and scalar coordinates.
         #
         axes = dict(T=0, Z=1, Y=2, X=3)
+
         # Coordinate sort function - by guessed coordinate axis, then
         # by coordinate definition, then by dimensions, in ascending order.
-        key_func = lambda coord: (axes.get(guess_coord_axis(coord),
-                                           len(axes) + 1),
-                                  coord._as_defn(),
-                                  cube.coord_dims(coord))
+        def key_func(coord):
+            return (axes.get(guess_coord_axis(coord), len(axes) + 1),
+                    coord._as_defn(),
+                    cube.coord_dims(coord))
 
         for coord in sorted(cube.aux_coords, key=key_func):
             dims = cube.coord_dims(coord)
@@ -352,9 +381,9 @@ class _CubeSignature(object):
         # Set up {name: coord_metadata} dictionaries.
         self_dict = {x.name(): x for x in getattr(self, attr)}
         other_dict = {x.name(): x for x in getattr(other, attr)}
-        if len(self_dict.keys()) == 0:
+        if len(self_dict) == 0:
             self_dict = {'< None >': None}
-        if len(other_dict.keys()) == 0:
+        if len(other_dict) == 0:
             other_dict = {'< None >': None}
         self_names = sorted(self_dict.keys())
         other_names = sorted(other_dict.keys())
@@ -364,7 +393,7 @@ class _CubeSignature(object):
             result = ('', ', '.join(self_names), ', '.join(other_names))
         else:
             diff_names = []
-            for self_key, self_value in self_dict.iteritems():
+            for self_key, self_value in six.iteritems(self_dict):
                 other_value = other_dict[self_key]
                 if self_value != other_value:
                     diff_names.append(self_key)
@@ -402,11 +431,6 @@ class _CubeSignature(object):
         msg_template = '{}{} differ: {} != {}'
         msgs = []
 
-        # Check if either cube is anonymous.
-        if self.anonymous or other.anonymous:
-            msg = ('Dimensions differ: one or both cubes have anonymous '
-                   'dimensions')
-            msgs.append(msg)
         # Check cube definitions.
         if self.defn != other.defn:
             # Note that the case of different phenomenon names is dealt with
@@ -436,6 +460,12 @@ class _CubeSignature(object):
         if self.data_type != other.data_type:
             msgs.append(msg_template.format('Datatypes', '',
                                             self.data_type, other.data_type))
+
+        # Check _cell_measures_and_dims
+        if self.cell_measures_and_dims != other.cell_measures_and_dims:
+            msgs.append(msg_template.format('CellMeasures', '',
+                                            self.cell_measures_and_dims,
+                                            other.cell_measures_and_dims))
 
         match = not bool(msgs)
         if error_on_mismatch and not match:
@@ -584,7 +614,6 @@ class _ProtoCube(object):
         # The cube signature is a combination of cube and coordinate
         # metadata that defines this proto-cube.
         self._cube_signature = _CubeSignature(cube)
-        self._data_is_masked = ma.isMaskedArray(cube.data)
 
         # The coordinate signature allows suitable non-overlapping
         # source-cubes to be identified.
@@ -592,7 +621,7 @@ class _ProtoCube(object):
 
         # The list of source-cubes relevant to this proto-cube.
         self._skeletons = []
-        self._add_skeleton(self._coord_signature, cube.data)
+        self._add_skeleton(self._coord_signature, cube.lazy_data())
 
         # The nominated axis of concatenation.
         self._axis = None
@@ -619,8 +648,7 @@ class _ProtoCube(object):
 
             # Sequence the skeleton segments into the correct order
             # pending concatenation.
-            key_func = lambda skeleton: skeleton.signature.dim_extents
-            skeletons.sort(key=key_func,
+            skeletons.sort(key=lambda skeleton: skeleton.signature.dim_extents,
                            reverse=(order == _DECREASING))
 
             # Concatenate the new dimension coordinate.
@@ -634,9 +662,12 @@ class _ProtoCube(object):
 
             # Build the new cube.
             kwargs = cube_signature.defn._asdict()
+            new_cm_and_dims = [(deepcopy(cm), dims) for cm, dims
+                               in self._cube._cell_measures_and_dims]
             cube = iris.cube.Cube(data,
                                   dim_coords_and_dims=dim_coords_and_dims,
                                   aux_coords_and_dims=aux_coords_and_dims,
+                                  cell_measures_and_dims=new_cm_and_dims,
                                   **kwargs)
         else:
             # There are no other source-cubes to concatenate
@@ -645,7 +676,8 @@ class _ProtoCube(object):
 
         return cube
 
-    def register(self, cube, axis=None, error_on_mismatch=False):
+    def register(self, cube, axis=None, error_on_mismatch=False,
+                 check_aux_coords=False):
         """
         Determine whether the given source-cube is suitable for concatenation
         with this :class:`_ProtoCube`.
@@ -692,12 +724,34 @@ class _ProtoCube(object):
             match = self._sequence(coord_signature.dim_extents[candidate_axis],
                                    candidate_axis)
 
+        # Check for compatible AuxCoords.
+        if match:
+            if check_aux_coords:
+                for coord_a, coord_b in zip(
+                        self._cube_signature.aux_coords_and_dims,
+                        cube_signature.aux_coords_and_dims):
+                    # AuxCoords that span the candidate axis can difffer
+                    if (candidate_axis not in coord_a.dims or
+                            candidate_axis not in coord_b.dims):
+                        if not coord_a == coord_b:
+                            match = False
+
         if match:
             # Register the cube as a source-cube for this proto-cube.
-            self._add_skeleton(coord_signature, cube.data)
-            self._data_is_masked |= ma.isMaskedArray(cube.data)
+            self._add_skeleton(coord_signature, cube.lazy_data())
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
+
+        if match:
+            # If the protocube dimension order is constant (indicating it was
+            # created from a cube with a length 1 dimension coordinate) but
+            # a subsequently registered cube has a non-constant dimension
+            # order we should use that instead of _CONSTANT to make sure all
+            # the ordering checks and sorts work as expected.
+            existing_order = self._coord_signature.dim_order[self.axis]
+            this_order = coord_signature.dim_order[self.axis]
+            if existing_order == _CONSTANT and this_order != _CONSTANT:
+                self._coord_signature.dim_order[self.axis] = this_order
 
         return match
 
@@ -788,10 +842,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        if self._data_is_masked:
-            data = ma.concatenate(tuple(data), axis=self.axis)
-        else:
-            data = np.concatenate(tuple(data), axis=self.axis)
+        data = biggus.LinearMosaic(tuple(data), axis=self.axis)
 
         return data
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,17 +16,22 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.cube.CubeList` class."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+import iris.tests.stock
 
+from cf_units import Unit
 import numpy as np
 
 from iris.cube import Cube, CubeList
 from iris.coords import AuxCoord, DimCoord
-from iris.unit import Unit
 import iris.coord_systems
 import iris.exceptions
+from iris.fileformats.pp import STASH
 
 
 class Test_concatenate_cube(tests.IrisTest):
@@ -84,32 +89,32 @@ class Test_extract_overlapping(tests.IrisTest):
     def test_extract_one_str_dim(self):
         cubes = iris.cube.CubeList([self.cube[2:], self.cube[:4]])
         a, b = cubes.extract_overlapping('time')
-        self.assertEquals(a.coord('time'), self.cube.coord('time')[2:4])
-        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
+        self.assertEqual(a.coord('time'), self.cube.coord('time')[2:4])
+        self.assertEqual(b.coord('time'), self.cube.coord('time')[2:4])
 
     def test_extract_one_list_dim(self):
         cubes = iris.cube.CubeList([self.cube[2:], self.cube[:4]])
         a, b = cubes.extract_overlapping(['time'])
-        self.assertEquals(a.coord('time'), self.cube.coord('time')[2:4])
-        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
+        self.assertEqual(a.coord('time'), self.cube.coord('time')[2:4])
+        self.assertEqual(b.coord('time'), self.cube.coord('time')[2:4])
 
     def test_extract_two_dims(self):
         cubes = iris.cube.CubeList([self.cube[2:, 5:], self.cube[:4, :10]])
         a, b = cubes.extract_overlapping(['time', 'latitude'])
-        self.assertEquals(a.coord('time'),
-                          self.cube.coord('time')[2:4])
-        self.assertEquals(a.coord('latitude'),
-                          self.cube.coord('latitude')[5:10])
-        self.assertEquals(b.coord('time'),
-                          self.cube.coord('time')[2:4])
-        self.assertEquals(b.coord('latitude'),
-                          self.cube.coord('latitude')[5:10])
+        self.assertEqual(a.coord('time'),
+                         self.cube.coord('time')[2:4])
+        self.assertEqual(a.coord('latitude'),
+                         self.cube.coord('latitude')[5:10])
+        self.assertEqual(b.coord('time'),
+                         self.cube.coord('time')[2:4])
+        self.assertEqual(b.coord('latitude'),
+                         self.cube.coord('latitude')[5:10])
 
     def test_different_orders(self):
         cubes = iris.cube.CubeList([self.cube[::-1][:4], self.cube[:4]])
         a, b = cubes.extract_overlapping('time')
-        self.assertEquals(a.coord('time'), self.cube[::-1].coord('time')[2:4])
-        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
+        self.assertEqual(a.coord('time'), self.cube[::-1].coord('time')[2:4])
+        self.assertEqual(b.coord('time'), self.cube.coord('time')[2:4])
 
 
 class Test_merge_cube(tests.IrisTest):
@@ -271,6 +276,29 @@ class Test_extract(tests.IrisTest):
         res = self.scalar_cubes.extract(constraint)
         expected = CubeList([Cube(val, long_name=letter) for letter in 'abcd'])
         self.assertEqual(res, expected)
+
+
+class TestPrint(tests.IrisTest):
+    def setUp(self):
+        self.cubes = CubeList([iris.tests.stock.lat_lon_cube()])
+
+    def test_summary(self):
+        expected = ('0: unknown / (unknown)       '
+                    '          (latitude: 3; longitude: 4)')
+        self.assertEqual(str(self.cubes), expected)
+
+    def test_summary_name_unit(self):
+        self.cubes[0].long_name = 'aname'
+        self.cubes[0].units = '1'
+        expected = ('0: aname / (1)       '
+                    '                  (latitude: 3; longitude: 4)')
+        self.assertEqual(str(self.cubes), expected)
+
+    def test_summary_stash(self):
+        self.cubes[0].attributes['STASH'] = STASH.from_msi('m01s00i004')
+        expected = ('0: m01s00i004       '
+                    '                   (latitude: 3; longitude: 4)')
+        self.assertEqual(str(self.cubes), expected)
 
 
 if __name__ == "__main__":

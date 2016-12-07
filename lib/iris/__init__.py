@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -57,9 +57,10 @@ All the load functions share very similar arguments:
 
     * constraints:
         Either a single constraint, or an iterable of constraints.
-        Each constraint can be either a CF standard name, an instance of
+        Each constraint can be either a string, an instance of
         :class:`iris.Constraint`, or an instance of
-        :class:`iris.AttributeConstraint`.
+        :class:`iris.AttributeConstraint`.  If the constraint is a string
+        it will be used to match against cube.name().
 
         .. _constraint_egs:
 
@@ -94,26 +95,40 @@ All the load functions share very similar arguments:
                 cube.add_aux_coord(experiment_coord)
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import contextlib
+import glob
 import itertools
 import logging
-import os
+import os.path
 import threading
 
 import iris.config
 import iris.cube
 import iris._constraints
+from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.fileformats
 import iris.io
 
 
+try:
+    import iris_sample_data
+except ImportError:
+    iris_sample_data = None
+
+
 # Iris revision.
-__version__ = '1.8.0-DEV'
+__version__ = '1.12.0-DEV'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
-           'site_configuration', 'Future', 'FUTURE']
+           'site_configuration', 'Future', 'FUTURE',
+           'IrisDeprecation']
 
 
 # When required, log the usage of Iris.
@@ -129,7 +144,8 @@ class Future(threading.local):
     """Run-time configuration controller."""
 
     def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
-                 strict_grib_load=False):
+                 strict_grib_load=False, netcdf_no_unlimited=False,
+                 clip_latitudes=False):
         """
         A container for run-time options controls.
 
@@ -167,18 +183,49 @@ class Future(threading.local):
         encounters a GRIB message which uses a template not supported
         by the conversion.
 
+        .. note::
+            .. deprecated:: 1.10
+            The 'strict_grib_load' option is now deprecated, as it affects
+            only the internal grib module :mod:`iris.fileformats.grib`,
+            which is now itself deprecated in favour of 'iris_grib'.
+            Please remove code which sets this, and instead install the
+            'iris_grib' package : <https://github.com/SciTools/iris-grib>.
+
+        The option `netcdf_no_unlimited`, when True, changes the
+        behaviour of the netCDF saver, such that no dimensions are set to
+        unlimited.  The current default is that the leading dimension is
+        unlimited unless otherwise specified.
+
+        The option `clip_latitudes` controls whether the
+        :meth:`iris.coords.Coord.guess_bounds()` method limits the
+        guessed bounds to [-90, 90] for latitudes.
+
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
         self.__dict__['netcdf_promote'] = netcdf_promote
         self.__dict__['strict_grib_load'] = strict_grib_load
+        self.__dict__['netcdf_no_unlimited'] = netcdf_no_unlimited
+        self.__dict__['clip_latitudes'] = clip_latitudes
 
     def __repr__(self):
-        return ('Future(cell_datetime_objects={}, netcdf_promote={}, '
-                'strict_grib_load={})'.format(self.cell_datetime_objects,
-                                              self.netcdf_promote,
-                                              self.strict_grib_load))
+        msg = ('Future(cell_datetime_objects={}, netcdf_promote={}, '
+               'strict_grib_load={}, netcdf_no_unlimited={}, '
+               'clip_latitudes={})')
+        return msg.format(self.cell_datetime_objects, self.netcdf_promote,
+                          self.strict_grib_load, self.netcdf_no_unlimited,
+                          self.clip_latitudes)
+
+    deprecated_options = {
+        'strict_grib_load': ('This is because "iris.fileformats.grib" is now '
+                             'deprecated :  Please install the "iris_grib" '
+                             'package instead.')}
 
     def __setattr__(self, name, value):
+        if name in self.deprecated_options:
+            reason = self.deprecated_options[name]
+            msg = ("the 'Future' object property {!r} is now deprecated. "
+                   "Please remove code which uses this.  {}")
+            warn_deprecated(msg.format(name, reason))
         if name not in self.__dict__:
             msg = "'Future' object has no attribute {!r}".format(name)
             raise AttributeError(msg)
@@ -209,7 +256,7 @@ class Future(threading.local):
         # Save the current context
         current_state = self.__dict__.copy()
         # Update the state
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             setattr(self, name, value)
         try:
             yield
@@ -237,7 +284,7 @@ else:
 
 def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, basestring):
+    if isinstance(uris, six.string_types):
         uris = [uris]
 
     # Group collections of uris by their iris handler
@@ -264,7 +311,7 @@ def _load_collection(uris, constraints=None, callback=None):
         result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(
-            "The file appears empty or incomplete: {!r}".format(e.message))
+            "The file appears empty or incomplete: {!r}".format(str(e)))
     return result
 
 
@@ -360,7 +407,7 @@ def load_cubes(uris, constraints=None, callback=None):
     collection = _load_collection(uris, constraints, callback).merged()
 
     # Make sure we have exactly one merged cube per constraint
-    bad_pairs = filter(lambda pair: len(pair) != 1, collection.pairs)
+    bad_pairs = [pair for pair in collection.pairs if len(pair) != 1]
     if bad_pairs:
         fmt = '   {} -> {} cubes'
         bits = [fmt.format(pair.constraint, len(pair)) for pair in bad_pairs]
@@ -399,12 +446,42 @@ def load_raw(uris, constraints=None, callback=None):
         An :class:`iris.cube.CubeList`.
 
     """
-    return _load_collection(uris, constraints, callback).cubes()
+    from iris.fileformats.um._fast_load import _raw_structured_loading
+    with _raw_structured_loading():
+        return _load_collection(uris, constraints, callback).cubes()
 
 
 save = iris.io.save
 
 
 def sample_data_path(*path_to_join):
-    """Given the sample data resource, returns the full path to the file."""
-    return os.path.join(iris.config.SAMPLE_DATA_DIR, *path_to_join)
+    """
+    Given the sample data resource, returns the full path to the file.
+
+    .. note::
+
+        This function is only for locating files in the iris sample data
+        collection (installed separately from iris). It is not needed or
+        appropriate for general file access.
+
+    """
+    target = os.path.join(*path_to_join)
+    if os.path.isabs(target):
+        raise ValueError('Absolute paths, such as {!r}, are not supported.\n'
+                         'NB. This function is only for locating files in the '
+                         'iris sample data collection. It is not needed or '
+                         'appropriate for general file access.'.format(target))
+    if iris_sample_data is not None:
+        target = os.path.join(iris_sample_data.path, target)
+    else:
+        wmsg = ("iris.config.SAMPLE_DATA_DIR was deprecated in v1.10.0 and "
+                "will be removed in a future Iris release. Install the "
+                "'iris_sample_data' package.")
+        warn_deprecated(wmsg)
+        target = os.path.join(iris.config.SAMPLE_DATA_DIR, target)
+    if not glob.glob(target):
+        raise ValueError('Sample data file(s) at {!r} not found.\n'
+                         'NB. This function is only for locating files in the '
+                         'iris sample data collection. It is not needed or '
+                         'appropriate for general file access.'.format(target))
+    return target

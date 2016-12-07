@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -150,11 +152,14 @@ class TestPPLoadRules(tests.IrisTest):
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
         # Values that result in cell methods being created
-        cell_method_values = {128 : "mean", 4096 : "minimum", 8192 : "maximum"}
+        cell_method_values = {64: "mean",
+                              128: "mean within years",
+                              4096: "minimum",
+                              8192: "maximum"}
 
         # Make test values as list of single bit values and some multiple bit values
         single_bit_values = list(iris.fileformats.pp.LBPROC_PAIRS)
-        multiple_bit_values = [(128 + 64, ""), (4096 + 2096, ""), (8192 + 1024, "")]
+        multiple_bit_values = [(128 + 32, ""), (4096 + 2096, ""), (8192 + 1024, "")]
         test_values = list(single_bit_values) + multiple_bit_values
 
         for value, _ in test_values:
@@ -163,7 +168,8 @@ class TestPPLoadRules(tests.IrisTest):
 
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
-            f.save(open(temp_filename, 'wb'))
+            with open(temp_filename, 'wb') as temp_fh:
+                f.save(temp_fh)
 
             # Load pp file
             cube = iris.load_cube(temp_filename)
@@ -183,7 +189,7 @@ class TestPPLoadRules(tests.IrisTest):
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
         # Values that result in process flags attribute NOT being created
-        omit_process_flags_values = (128, 4096, 8192)
+        omit_process_flags_values = (64, 128, 4096, 8192)
 
         # Test single flag values
         for value, _ in iris.fileformats.pp.LBPROC_PAIRS:
@@ -192,7 +198,8 @@ class TestPPLoadRules(tests.IrisTest):
 
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
-            f.save(open(temp_filename, 'wb'))
+            with open(temp_filename, 'wb') as temp_fh:
+                f.save(temp_fh)
 
             # Load pp file
             cube = iris.load_cube(temp_filename)
@@ -207,7 +214,7 @@ class TestPPLoadRules(tests.IrisTest):
             os.remove(temp_filename)
 
         # Test multiple flag values
-        multiple_bit_values = ((128, 64), (4096, 1024), (8192, 1024))
+        multiple_bit_values = ((128, 32), (4096, 1024), (8192, 1024))
 
         # Maps lbproc value to the process flags that should be created
         multiple_map = {sum(x) : [iris.fileformats.pp.lbproc_map[y] for y in x] for x in multiple_bit_values}
@@ -218,13 +225,17 @@ class TestPPLoadRules(tests.IrisTest):
 
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
-            f.save(open(temp_filename, 'wb'))
+            with open(temp_filename, 'wb') as temp_fh:
+                f.save(temp_fh)
 
             # Load pp file
             cube = iris.load_cube(temp_filename)
 
             # Check the process flags created
-            self.assertEquals(set(cube.attributes["ukmo__process_flags"]), set(multiple_map[sum(bit_values)]), "Mismatch between expected and actual process flags.")
+            self.assertEqual(set(cube.attributes['ukmo__process_flags']),
+                             set(multiple_map[sum(bit_values)]),
+                             'Mismatch between expected and actual process '
+                             'flags.')
 
             os.remove(temp_filename)
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,13 +16,18 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for :func:`iris.fileformats.pp_rules.convert`."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import types
+import netcdftime
 
-import mock
+import cf_units
 import numpy as np
 
 from iris.fileformats.pp_rules import convert
@@ -30,8 +35,8 @@ from iris.util import guess_coord_axis
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp import STASH
 from iris.fileformats.pp import PPField3
+from iris.tests import mock
 import iris.tests.unit.fileformats
-import iris.unit
 
 
 class TestLBCODE(iris.tests.unit.fileformats.TestField):
@@ -92,13 +97,28 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
                 coord.units.is_dimensionless() and
                 coord.attributes['positive'] == 'down')
 
+    @staticmethod
+    def _is_soil_depth_coord(coord):
+        return (coord.standard_name == 'depth' and
+                coord.units == 'm' and
+                coord.attributes['positive'] == 'down')
+
     def test_soil_levels(self):
         level = 1234
-        field = mock.MagicMock(lbvc=6, lblev=level)
+        field = mock.MagicMock(lbvc=6, lblev=level, brsvd=[0, 0], brlev=0)
         self._test_for_coord(field, convert,
-                             TestLBVC._is_soil_model_level_number_coord,
+                             self._is_soil_model_level_number_coord,
                              expected_points=[level],
                              expected_bounds=None)
+
+    def test_soil_depth(self):
+        lower, point, upper = 1.2, 3.4, 5.6
+        field = mock.MagicMock(lbvc=6, blev=point, brsvd=[lower, 0],
+                               brlev=upper)
+        self._test_for_coord(field, convert,
+                             self._is_soil_depth_coord,
+                             expected_points=[point],
+                             expected_bounds=[[lower, upper]])
 
     def test_hybrid_pressure_model_level_number(self):
         level = 5678
@@ -150,9 +170,11 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         f = mock.MagicMock(lbtim=SplittableInt(4, {'ia': 2, 'ib': 1, 'ic': 0}),
                            lbyr=2013, lbmon=1, lbdat=1, lbhr=12, lbmin=0,
                            lbsec=0,
+                           t1=netcdftime.datetime(2013, 1, 1, 12, 0, 0),
+                           t2=netcdftime.datetime(2013, 1, 2, 12, 0, 0),
                            spec=PPField3)
-        f.time_unit = types.MethodType(PPField3.time_unit, f)
-        f.calendar = iris.unit.CALENDAR_365_DAY
+        f.time_unit = six.create_bound_method(PPField3.time_unit, f)
+        f.calendar = cf_units.CALENDAR_365_DAY
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
          aux_coords_and_dims) = convert(f)
@@ -161,7 +183,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
             coord, dims = coord_and_dims
             return coord.standard_name == 'time'
 
-        coords_and_dims = filter(is_t_coord, aux_coords_and_dims)
+        coords_and_dims = list(filter(is_t_coord, aux_coords_and_dims))
         self.assertEqual(len(coords_and_dims), 1)
         coord, dims = coords_and_dims[0]
         self.assertEqual(guess_coord_axis(coord), 'T')
@@ -287,7 +309,7 @@ class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
     def test_stash_cf_air_temp(self):
         lbuser = [1, 0, 0, 16203, 0, 0, 1]
         lbfc = 16
-        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        stash = STASH(lbuser[6], lbuser[3] // 1000, lbuser[3] % 1000)
         field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
@@ -298,7 +320,7 @@ class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
     def test_no_std_name(self):
         lbuser = [1, 0, 0, 0, 0, 0, 0]
         lbfc = 0
-        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        stash = STASH(lbuser[6], lbuser[3] // 1000, lbuser[3] % 1000)
         field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
@@ -311,7 +333,7 @@ class Test_LBFC_CF(iris.tests.unit.fileformats.TestField):
     def test_fc_cf_air_temp(self):
         lbuser = [1, 0, 0, 0, 0, 0, 0]
         lbfc = 16
-        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        stash = STASH(lbuser[6], lbuser[3] // 1000, lbuser[3] % 1000)
         field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,

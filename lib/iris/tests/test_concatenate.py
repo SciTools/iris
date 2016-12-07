@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,6 +19,9 @@ Test the cube concatenate mechanism.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -26,7 +29,6 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
-from iris._concatenate import _CubeSignature as ConcatenateCubeSignature
 import iris.cube
 from iris.coords import DimCoord, AuxCoord
 import iris.tests.stock as stock
@@ -242,7 +244,7 @@ class TestSimple(tests.IrisTest):
 
 
 class TestNoConcat(tests.IrisTest):
-    def test_anonymous(self):
+    def test_one_cube_has_anon_dim(self):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))

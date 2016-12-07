@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,15 +16,17 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.pp._create_field_data` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import biggus
-import mock
-import numpy as np
 
 import iris.fileformats.pp as pp
+from iris.tests import mock
 
 
 class Test__create_field_data(tests.IrisTest):
@@ -42,7 +44,9 @@ class Test__create_field_data(tests.IrisTest):
 
         self.assertIs(field._data, mock.sentinel.array)
         convert_bytes.assert_called_once_with(mock_loaded_bytes.bytes,
-                                              field.lbpack, data_shape,
+                                              field.lbpack,
+                                              field.boundary_packing,
+                                              data_shape,
                                               mock_loaded_bytes.dtype,
                                               field.bmdi, land_mask)
 
@@ -56,7 +60,7 @@ class Test__create_field_data(tests.IrisTest):
         dtype = mock.Mock(newbyteorder=newbyteorder)
         deferred_bytes = (fname, position, n_bytes, dtype)
         field = mock.Mock(_data=deferred_bytes)
-        data_shape = (mock.sentinel.lat, mock.sentinel.lon)
+        data_shape = (100, 120)
         land_mask = mock.Mock()
         proxy = mock.Mock(dtype=mock.sentinel.dtype, shape=data_shape)
         # We can't directly inspect the concrete data source underlying
@@ -76,7 +80,9 @@ class Test__create_field_data(tests.IrisTest):
         PPDataProxy.assert_called_once_with((data_shape), dtype,
                                             fname, position,
                                             n_bytes,
-                                            field.raw_lbpack, field.bmdi,
+                                            field.raw_lbpack,
+                                            field.boundary_packing,
+                                            field.bmdi,
                                             land_mask)
 
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -22,6 +24,7 @@ import iris.coords
 
 import os
 import subprocess
+import tempfile
 import types
 import warnings
 
@@ -101,44 +104,12 @@ class TestAll(tests.IrisTest, pp.PPTest):
         nc_filenames = []
 
         for index, cube in enumerate(cubes):
-            # Write Cube to netCDF file - must be NETCDF3_CLASSIC format for the cfchecker.
-            file_nc = os.path.join(os.path.sep, 'var', 'tmp', '%s_%d.nc' % (fname_name, index))
-            #file_nc = tests.get_result_path(self._ref_dir + ('to_netcdf', '%s_%d.nc' % (fname_name, index)))
+            file_nc = tempfile.NamedTemporaryFile(suffix='.nc', delete=False).name
             iris.save(cube, file_nc, netcdf_format='NETCDF3_CLASSIC')
 
             # Check the netCDF file against CDL expected output.
             self.assertCDL(file_nc, self._ref_dir + ('to_netcdf', '%s_%d.cdl' % (fname_name, index)))
             nc_filenames.append(file_nc)
-
-            # Perform CF-netCDF conformance checking.
-            with open('/dev/null', 'w') as dev_null:
-                try:
-                    # Check for the availability of the "cfchecker" application
-                    subprocess.check_call(['which', 'cfchecker'], stderr=dev_null, stdout=dev_null)
-                except subprocess.CalledProcessError:
-                    warnings.warn('CF-netCDF "cfchecker" application not available. Skipping CF-netCDF compliance checking.')
-                else:
-                    file_checker = os.path.join(os.path.dirname(file_nc), '%s_%d.txt' % (fname_name, index))
-
-                    with open(file_checker, 'w') as report:
-                        # Generate cfchecker text report on the file.
-                        # Don't use check_call() here, as cfchecker returns a non-zero status code
-                        # for any non-compliant file, causing check_call() to raise an exception.
-                        subprocess.call(['cfchecker', file_nc], stderr=report, stdout=report)
-
-                    if not os.path.isfile(file_checker):
-                        os.remove(file_nc)
-                        self.fail('Failed to process %r with cfchecker' % file_nc)
-
-                    with open(file_checker, 'r') as report:
-                        # Get the cfchecker report and purge unwanted lines.
-                        lines = [line for line in report.readlines()
-                                 if not (line.startswith('Using') or
-                                         line.startswith('Checking against'))]
-                        checker_report = ''.join(lines)
-
-                    os.remove(file_checker)
-                    self.assertString(checker_report, self._ref_dir + ('to_netcdf', 'cf_checker', '%s_%d.txt' % (fname_name, index)))
 
         # 3) Load the netCDF and check the Cube
         for index, nc_filename in enumerate(nc_filenames):
@@ -206,8 +177,7 @@ def attach_tests():
     for file_name in TestAll.files_to_check:
         func_name = 'test_{}'.format(file_name.replace('.', '_'))
         test_func = make_test_function(func_name, file_name)
-        test_method = types.MethodType(test_func, None, TestAll)
-        setattr(TestAll, func_name, test_method)
+        setattr(TestAll, func_name, test_func)
 
 
 attach_tests()

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,22 +15,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import Iris tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import extest_util
-
-with extest_util.add_examples_to_path():
-    import custom_aggregation
+from .extest_util import (add_examples_to_path,
+                          show_replaced_by_check_graphic,
+                          fail_any_deprecation_warnings)
 
 
 class TestCustomAggregation(tests.GraphicsTest):
     """Test the custom aggregation example code."""
     def test_custom_aggregation(self):
-        with extest_util.show_replaced_by_check_graphic(self):
-            custom_aggregation.main()
+        with fail_any_deprecation_warnings():
+            with add_examples_to_path():
+                import custom_aggregation
+            with show_replaced_by_check_graphic(self):
+                custom_aggregation.main()
 
 
 if __name__ == '__main__':

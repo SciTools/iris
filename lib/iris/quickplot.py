@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,6 +23,11 @@ automatically add a plot title, axis titles, and a colour bar when appropriate.
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
+import cf_units
 import matplotlib.pyplot as plt
 
 import iris.config
@@ -40,14 +45,14 @@ def _use_symbol(units):
 
 
 def _title(cube_or_coord, with_units):
-    if cube_or_coord is None:
+    if cube_or_coord is None or isinstance(cube_or_coord, int):
         title = ''
     else:
         title = cube_or_coord.name().replace('_', ' ').capitalize()
         units = cube_or_coord.units
         if with_units and not (units.is_unknown() or
                                units.is_no_unit() or
-                               units == iris.unit.Unit('1')):
+                               units == cf_units.Unit('1')):
 
             if _use_symbol(units):
                 units = units.symbol
@@ -67,7 +72,7 @@ def _label(cube, mode, result=None, ndims=2, coords=None):
                            drawedges=draw_edges)
         has_known_units = not (cube.units.is_unknown() or
                                cube.units.is_no_unit())
-        if has_known_units and cube.units != iris.unit.Unit('1'):
+        if has_known_units and cube.units != cf_units.Unit('1'):
             # Use shortest unit representation for anything other than time
             if _use_symbol(cube.units):
                 bar.set_label(cube.units.symbol)
@@ -184,9 +189,30 @@ def contourf(cube, *args, **kwargs):
     return result
 
 
-def outline(cube, coords=None):
-    """Draws cell outlines on a labelled plot based on the given Cube."""
-    result = iplt.outline(cube, coords=coords)
+def outline(cube, coords=None, color='k', linewidth=None):
+    """
+    Draws cell outlines on a labelled plot based on the given Cube.
+
+    Kwargs:
+
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+        Use the given coordinates as the axes for the plot. The order of the
+        given coordinates indicates which axis to use for each, where the first
+        element is the horizontal axis of the plot and the second element is
+        the vertical axis of the plot.
+
+    * color: None or mpl color
+        The color of the cell outlines. If None, the matplotlibrc setting
+        patch.edgecolor is used by default.
+
+    * linewidth: None or number
+        The width of the lines showing the cell outlines. If None, the default
+        width in patch.linewidth in matplotlibrc is used.
+
+    """
+    result = iplt.outline(cube, color=color, linewidth=linewidth,
+                          coords=coords)
+
     _label_with_bounds(cube, coords=coords)
     return result
 

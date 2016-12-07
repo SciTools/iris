@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,19 +28,19 @@ An example using numpy arrays:
 
     >>> import numpy as np
     >>> orig_x, orig_y = np.arange(2), np.arange(3)
-    >>> x, y = np.meshgrid(range(2), range(3))
+    >>> x, y = np.meshgrid(orig_x, orig_y)
 
     >>> # Remove the dimensional structure from the arrays.
     >>> x, y = x.flatten(), y.flatten()
 
-    >>> print x
+    >>> print(x)
     [0 1 0 1 0 1]
-    >>> print y
+    >>> print(y)
     [0 0 1 1 2 2]
 
     >>> arrays = {'x': x, 'y': y}
     >>> group = GroupStructure.from_component_arrays(arrays)
-    >>> print group
+    >>> print(group)
     Group structure:
       Length: 6
       Element names: x, y
@@ -49,10 +49,14 @@ An example using numpy arrays:
 
     >>> built_arrays = group.build_arrays((3, 2), arrays)
     >>> y_array, y_axes = built_arrays['y']
-    >>> print y_array, y_axes
+    >>> print(y_array, y_axes)
     [0 1 2] (0,)
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 from collections import namedtuple
 
 import numpy as np
@@ -98,11 +102,24 @@ class ArrayStructure(namedtuple('ArrayStructure',
     2
 
     """
-    def __init__(self, *args, **kwargs):
-        #: The ``size`` attribute is the number of the unique values in
-        #: the original array. It is **not** the length of the original array.
-        self.size = len(self.unique_ordered_values)
-        super(ArrayStructure, self).__init__(self, *args, **kwargs)
+    def __new__(cls, stride, unique_ordered_values):
+        self = super(ArrayStructure, cls).__new__(cls, stride,
+                                                  unique_ordered_values)
+        return self
+
+    __slots__ = ()
+
+    @property
+    def size(self):
+        """
+        The ``size`` attribute is the number of the unique values in the
+        original array. It is **not** the length of the original array.
+
+        """
+        return len(self.unique_ordered_values)
+
+    def __hash__(self):
+        return super(ArrayStructure, self).__hash__()
 
     def __eq__(self, other):
         stride = getattr(other, 'stride', None)
@@ -125,7 +142,7 @@ class ArrayStructure(namedtuple('ArrayStructure',
 
         """
         return np.tile(np.repeat(self.unique_ordered_values, self.stride),
-                       size / (self.size * self.stride))
+                       size // (self.size * self.stride))
 
     def nd_array_and_dims(self, original_array, target_shape, order='c'):
         """
@@ -145,8 +162,8 @@ class ArrayStructure(namedtuple('ArrayStructure',
         array([1, 2, 3])
         >>> dims
         (2,)
-        >>> # Filling the array with dimensions of length one should impact \
-        ... dims but not the array which is returned.
+        >>> # Filling the array with dimensions of length one should impact
+        >>> # dims but not the array which is returned.
         >>> _, dims = structure.nd_array_and_dims(orig, (1, 2, 1, 3, 1))
         >>> dims
         (3,)
@@ -271,7 +288,7 @@ class ArrayStructure(namedtuple('ArrayStructure',
             try:
                 stride = np.diff(ind_diffs_which_changed[:2])[0]
             except IndexError:
-                stride = n_fields / u_len
+                stride = n_fields // u_len
 
             structure = cls(stride, unique)
 

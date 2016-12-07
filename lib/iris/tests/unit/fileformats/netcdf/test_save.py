@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,9 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.netcdf.save` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -23,8 +26,10 @@ import iris.tests as tests
 import netCDF4 as nc
 import numpy as np
 
+import iris
 from iris.cube import Cube
 from iris.fileformats.netcdf import save, CF_CONVENTIONS_VERSION
+from iris.tests.stock import lat_lon_cube
 
 
 class Test_attributes(tests.IrisTest):
@@ -53,6 +58,42 @@ class Test_attributes(tests.IrisTest):
             res = ds.getncattr('bar')
             ds.close()
         self.assertArrayEqual(res, np.arange(2))
+
+    def test_no_special_attribute_clash(self):
+        # Ensure that saving multiple cubes with netCDF4 protected attributes
+        # works as expected.
+        # Note that here we are testing variable attribute clashes only - by
+        # saving multiple cubes the attributes are saved as variable
+        # attributes rather than global attributes.
+        c1 = Cube([0], var_name='test', attributes={'name': 'bar'})
+        c2 = Cube([0], var_name='test_1', attributes={'name': 'bar_1'})
+
+        with self.temp_filename('foo.nc') as nc_out:
+            save([c1, c2], nc_out)
+            ds = nc.Dataset(nc_out)
+            res = ds.variables['test'].getncattr('name')
+            res_1 = ds.variables['test_1'].getncattr('name')
+            ds.close()
+        self.assertEqual(res, 'bar')
+        self.assertEqual(res_1, 'bar_1')
+
+
+class Test_unlimited_dims(tests.IrisTest):
+    def test_no_unlimited_default(self):
+        cube = lat_lon_cube()
+        with iris.FUTURE.context(netcdf_no_unlimited=False):
+            with self.temp_filename('foo.nc') as nc_out:
+                save(cube, nc_out)
+                ds = nc.Dataset(nc_out)
+                self.assertTrue(ds.dimensions['latitude'].isunlimited())
+
+    def test_no_unlimited_future_default(self):
+        cube = lat_lon_cube()
+        with iris.FUTURE.context(netcdf_no_unlimited=True):
+            with self.temp_filename('foo.nc') as nc_out:
+                save(cube, nc_out)
+                ds = nc.Dataset(nc_out)
+                self.assertFalse(ds.dimensions['latitude'].isunlimited())
 
 
 if __name__ == "__main__":

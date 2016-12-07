@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -24,6 +27,7 @@ from functools import wraps
 import types
 import warnings
 
+import cf_units
 import numpy as np
 
 import iris
@@ -36,9 +40,9 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
     import iris.quickplot as qplt
     import iris.symbols
-    import iris.tests.test_mapping as test_mapping
 
 
+@tests.skip_data
 def simple_cube():
     cube = iris.tests.stock.realistic_4d()
     cube = cube[:, 0, 0, :]
@@ -99,8 +103,10 @@ class TestMissingCS(tests.GraphicsTest):
 
 
 @tests.skip_plot
+@tests.skip_data
 class TestHybridHeight(tests.GraphicsTest):
     def setUp(self):
+        super(TestHybridHeight, self).setUp()
         self.cube = iris.tests.stock.realistic_4d()[0, :15, 0, :]
 
     def _check(self, plt_method, test_altitude=True):
@@ -147,10 +153,12 @@ class TestHybridHeight(tests.GraphicsTest):
 
 
 @tests.skip_plot
+@tests.skip_data
 class Test1dPlotMultiArgs(tests.GraphicsTest):
     # tests for iris.plot using multi-argument calling convention
 
     def setUp(self):
+        super(Test1dPlotMultiArgs, self).setUp()
         self.cube1d = _load_4d_testcube()[0, :, 0, 0]
         self.draw_method = iplt.plot
 
@@ -198,8 +206,8 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
         cube2 = self.cube1d.copy()
         cube1.rename('some phenomenon')
         cube2.rename('some other phenomenon')
-        cube1.units = iris.unit.Unit('no_unit')
-        cube2.units = iris.unit.Unit('no_unit')
+        cube1.units = cf_units.Unit('no_unit')
+        cube2.units = cf_units.Unit('no_unit')
         cube1.data[:] = np.linspace(0, 1, 7)
         cube2.data[:] = np.exp(cube1.data)
         self.draw_method(cube1, cube2)
@@ -236,6 +244,7 @@ class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
     # tests for iris.plot using multi-argument calling convention
 
     def setUp(self):
+        tests.GraphicsTest.setUp(self)
         self.cube1d = _load_4d_testcube()[0, :, 0, 0]
         self.draw_method = qplt.plot
 
@@ -243,8 +252,8 @@ class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
 @tests.skip_data
 @tests.skip_plot
 class Test1dScatter(tests.GraphicsTest):
-
     def setUp(self):
+        super(Test1dScatter, self).setUp()
         self.cube = iris.load_cube(
             tests.get_data_path(('NAME', 'NAMEIII_trajectory.txt')),
             'Temperature')
@@ -252,7 +261,7 @@ class Test1dScatter(tests.GraphicsTest):
 
     def test_coord_coord(self):
         x = self.cube.coord('longitude')
-        y = self.cube.coord('height')
+        y = self.cube.coord('altitude')
         c = self.cube.data
         self.draw_method(x, y, c=c, edgecolor='none')
         self.check_graphic()
@@ -274,7 +283,7 @@ class Test1dScatter(tests.GraphicsTest):
 
     def test_cube_coord(self):
         x = self.cube
-        y = self.cube.coord('height')
+        y = self.cube.coord('altitude')
         c = self.cube.coord('Travel Time').points
         self.draw_method(x, y, c=c, edgecolor='none')
         self.check_graphic()
@@ -291,7 +300,7 @@ class Test1dScatter(tests.GraphicsTest):
     def test_incompatible_objects(self):
         # cubes/coordinates of different sizes cannot be plotted
         x = self.cube
-        y = self.cube.coord('height')[:-1]
+        y = self.cube.coord('altitude')[:-1]
         with self.assertRaises(ValueError):
             self.draw_method(x, y)
 
@@ -313,8 +322,8 @@ class Test1dScatter(tests.GraphicsTest):
 @tests.skip_data
 @tests.skip_plot
 class Test1dQuickplotScatter(Test1dScatter):
-
     def setUp(self):
+        tests.GraphicsTest.setUp(self)
         self.cube = iris.load_cube(
             tests.get_data_path(('NAME', 'NAMEIII_trajectory.txt')),
             'Temperature')
@@ -361,6 +370,7 @@ def cache(fn, cache={}):
 
 
 @cache
+@tests.skip_data
 def _load_4d_testcube():
     # Load example 4d data (TZYX).
     test_cube = iris.tests.stock.realistic_4d()
@@ -379,7 +389,7 @@ def _load_4d_testcube():
         points=point_values,
         bounds=bound_values,
         standard_name='forecast_period',
-        units=iris.unit.Unit('hours')
+        units=cf_units.Unit('hours')
     )
     test_cube.add_aux_coord(new_forecast_coord, forecast_dims)
     # Heavily reduce dimensions for faster testing.
@@ -461,6 +471,7 @@ class SliceMixin(object):
 class TestContour(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contour routine."""
     def setUp(self):
+        super(TestContour, self).setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.contour
 
@@ -469,6 +480,7 @@ class TestContour(tests.GraphicsTest, SliceMixin):
 class TestContourf(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contourf routine."""
     def setUp(self):
+        super(TestContourf, self).setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.contourf
 
@@ -477,6 +489,7 @@ class TestContourf(tests.GraphicsTest, SliceMixin):
 class TestPcolor(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolor routine."""
     def setUp(self):
+        super(TestPcolor, self).setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.pcolor
 
@@ -485,6 +498,7 @@ class TestPcolor(tests.GraphicsTest, SliceMixin):
 class TestPcolormesh(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolormesh routine."""
     def setUp(self):
+        super(TestPcolormesh, self).setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.pcolormesh
 
@@ -567,29 +581,30 @@ class CheckForWarningsMetaclass(type):
 
 
 @tests.skip_data
-class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
+class TestPcolorNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
+                                            tests.GraphicsTest, SliceMixin)):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
     that have no bounds.
 
     """
-    __metaclass__ = CheckForWarningsMetaclass
-
     def setUp(self):
+        super(TestPcolorNoBounds, self).setUp()
         self.wind = _load_wind_no_bounds()
         self.draw_method = iplt.pcolor
 
 
 @tests.skip_data
-class TestPcolormeshNoBounds(tests.GraphicsTest, SliceMixin):
+class TestPcolormeshNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
+                                                tests.GraphicsTest,
+                                                SliceMixin)):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates
     that have no bounds.
 
     """
-    __metaclass__ = CheckForWarningsMetaclass
-
     def setUp(self):
+        super(TestPcolormeshNoBounds, self).setUp()
         self.wind = _load_wind_no_bounds()
         self.draw_method = iplt.pcolormesh
 
@@ -634,6 +649,7 @@ class Slice1dMixin(object):
 class TestPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.plot.plot routine."""
     def setUp(self):
+        super(TestPlot, self).setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.plot
 
@@ -642,6 +658,7 @@ class TestPlot(tests.GraphicsTest, Slice1dMixin):
 class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.quickplot.plot routine."""
     def setUp(self):
+        super(TestQuickplotPlot, self).setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = qplt.plot
 
@@ -683,6 +700,7 @@ class LambdaStr(object):
 @tests.skip_plot
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
+        super(TestPlotCoordinatesGiven, self).setUp()
         filename = tests.get_data_path(('PP', 'COLPEX',
                                         'theta_and_orog_subset.pp'))
         self.cube = load_cube_once(filename, 'air_potential_temperature')
@@ -812,6 +830,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
 @tests.skip_plot
 class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
     def setUp(self):
+        super(TestPlotDimAndAuxCoordsKwarg, self).setUp()
         filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
                                         'rotPole_landAreaFraction.nc'))
         self.cube = iris.load_cube(filename)
@@ -856,8 +875,10 @@ class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
 @tests.skip_plot
 class TestSymbols(tests.GraphicsTest):
     def test_cloud_cover(self):
-        iplt.symbols(range(10), [0] * 10, [iris.symbols.CLOUD_COVER[i]
-                                           for i in range(10)], 0.375)
+        iplt.symbols(list(range(10)),
+                     [0] * 10,
+                     [iris.symbols.CLOUD_COVER[i] for i in range(10)],
+                     0.375)
         iplt.plt.axis('off')
         self.check_graphic()
 

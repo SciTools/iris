@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,18 +14,21 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Classes for representing multi-dimensional data with metadata.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from xml.dom.minidom import Document
 import collections
 import copy
 import datetime
 import operator
-import re
-import UserDict
 import warnings
 import zlib
 
@@ -33,10 +36,11 @@ import biggus
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
-import iris.analysis.interpolate
+import iris.analysis._interpolate_private
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
@@ -64,6 +68,9 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
     Represents the phenomenon metadata for a single :class:`Cube`.
 
     """
+
+    __slots__ = ()
+
     def name(self, default='unknown'):
         """
         Returns a human-readable name.
@@ -280,13 +287,13 @@ class CubeList(list):
         constraint_groups = dict([(constraint, CubeList()) for constraint in
                                  constraints])
         for cube in cubes:
-            for constraint, cube_list in constraint_groups.iteritems():
+            for constraint, cube_list in six.iteritems(constraint_groups):
                 sub_cube = constraint.extract(cube)
                 if sub_cube is not None:
                     cube_list.append(sub_cube)
 
         if merge_unique is not None:
-            for constraint, cubelist in constraint_groups.iteritems():
+            for constraint, cubelist in six.iteritems(constraint_groups):
                 constraint_groups[constraint] = cubelist.merge(merge_unique)
 
         result = CubeList()
@@ -323,7 +330,7 @@ class CubeList(list):
            over which to perform the extraction.
 
         """
-        if isinstance(coord_names, basestring):
+        if isinstance(coord_names, six.string_types):
             coord_names = [coord_names]
 
         def make_overlap_fn(coord_name):
@@ -400,13 +407,13 @@ class CubeList(list):
 
         For example::
 
-            >>> print c1
+            >>> print(c1)
             some_parameter / (unknown)          (x_vals: 3)
                  Dimension coordinates:
                       x_vals                           x
                  Scalar coordinates:
                       y_vals: 100
-            >>> print c2
+            >>> print(c2)
             some_parameter / (unknown)          (x_vals: 3)
                  Dimension coordinates:
                       x_vals                           x
@@ -414,12 +421,12 @@ class CubeList(list):
                       y_vals: 200
             >>> cube_list = iris.cube.CubeList([c1, c2])
             >>> new_cube = cube_list.merge()[0]
-            >>> print new_cube
+            >>> print(new_cube)
             some_parameter / (unknown)          (y_vals: 2; x_vals: 3)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print new_cube.coord('y_vals').points
+            >>> print(new_cube.coord('y_vals').points)
             [100 200]
             >>>
 
@@ -450,15 +457,19 @@ class CubeList(list):
                 proto_cube = iris._merge.ProtoCube(cube)
                 proto_cubes.append(proto_cube)
 
+        # Emulate Python 2 behaviour.
+        def _none_sort(item):
+            return (item is not None, item)
+
         # Extract all the merged cubes from the ProtoCubes.
         merged_cubes = CubeList()
-        for name in sorted(proto_cubes_by_name):
+        for name in sorted(proto_cubes_by_name, key=_none_sort):
             for proto_cube in proto_cubes_by_name[name]:
                 merged_cubes.extend(proto_cube.merge(unique=unique, merge_duplicates=merge_duplicates))
 
         return merged_cubes
 
-    def concatenate_cube(self):
+    def concatenate_cube(self, check_aux_coords=True):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
         :class:`Cube`.
@@ -467,6 +478,17 @@ class CubeList(list):
         `Cube`, a :class:`~iris.exceptions.ConcatenateError` will be raised
         describing the reason for the failure.
 
+        Kwargs:
+
+        * check_aux_coords
+            Checks the auxilliary coordinates of the cubes match. This check
+            is not applied to auxilliary coordinates that span the dimension
+            the concatenation is occuring along. Defaults to True.
+
+        .. note::
+
+            Concatenation cannot occur along an anonymous dimension.
+
         """
         if not self:
             raise ValueError("can't concatenate an empty CubeList")
@@ -474,7 +496,9 @@ class CubeList(list):
         names = [cube.metadata.name() for cube in self]
         unique_names = list(collections.OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
-            res = iris._concatenate.concatenate(self, error_on_mismatch=True)
+            res = iris._concatenate.concatenate(
+                self, error_on_mismatch=True,
+                check_aux_coords=check_aux_coords)
             n_res_cubes = len(res)
             if n_res_cubes == 1:
                 return res[0]
@@ -490,9 +514,16 @@ class CubeList(list):
                                                              names[1]))
             raise iris.exceptions.ConcatenateError(msgs)
 
-    def concatenate(self):
+    def concatenate(self, check_aux_coords=True):
         """
         Concatenate the cubes over their common dimensions.
+
+        Kwargs:
+
+        * check_aux_coords
+            Checks the auxilliary coordinates of the cubes match. This check
+            is not applied to auxilliary coordinates that span the dimension
+            the concatenation is occuring along. Defaults to True.
 
         Returns:
             A new :class:`iris.cube.CubeList` of concatenated
@@ -518,28 +549,28 @@ class CubeList(list):
 
         For example::
 
-            >>> print c1
+            >>> print(c1)
             some_parameter / (unknown)          (y_vals: 2; x_vals: 4)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print c1.coord('y_vals').points
+            >>> print(c1.coord('y_vals').points)
             [4 5]
-            >>> print c2
+            >>> print(c2)
             some_parameter / (unknown)          (y_vals: 3; x_vals: 4)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print c2.coord('y_vals').points
+            >>> print(c2.coord('y_vals').points)
             [ 7  9 10]
             >>> cube_list = iris.cube.CubeList([c1, c2])
             >>> new_cube = cube_list.concatenate()[0]
-            >>> print new_cube
+            >>> print(new_cube)
             some_parameter / (unknown)          (y_vals: 5; x_vals: 4)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print new_cube.coord('y_vals').points
+            >>> print(new_cube.coord('y_vals').points)
             [ 4  5  7  9 10]
             >>>
 
@@ -553,12 +584,24 @@ class CubeList(list):
             :func:`iris.util.unify_time_units` to normalise the epochs of the
             time coordinates so that the cubes can be concatenated.
 
-        .. warning::
+        .. note::
 
-            This routine will load your data payload!
+            Concatenation cannot occur along an anonymous dimension.
 
         """
-        return iris._concatenate.concatenate(self)
+        return iris._concatenate.concatenate(self,
+                                             check_aux_coords=check_aux_coords)
+
+
+def _is_single_item(testee):
+    """
+    Return whether this is a single item, rather than an iterable.
+
+    We count string types as 'single', also.
+
+    """
+    return (isinstance(testee, six.string_types) or
+            not isinstance(testee, collections.Iterable))
 
 
 class Cube(CFVariableMixin):
@@ -571,7 +614,7 @@ class Cube(CFVariableMixin):
     For example:
 
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-        >>> print cube
+        >>> print(cube)
         air_temperature / (K)               (latitude: 73; longitude: 96)
              Dimension coordinates:
                   latitude                           x              -
@@ -586,16 +629,25 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                   STASH: m01s16i203
                   source: Data from Met Office Unified Model
              Cell methods:
-                  mean: time
+                  mean within years: time
+                  mean over years: time
 
 
     See the :doc:`user guide</userguide/index>` for more information.
 
     """
+
+    #: Indicates to client code that the object supports
+    #: "orthogonal indexing", which means that slices that are 1d arrays
+    #: or lists slice along each dimension independently. This behavior
+    #: is similar to Fortran or Matlab, but different than numpy.
+    __orthogonal_indexing__ = True
+
     def __init__(self, data, standard_name=None, long_name=None,
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
-                 aux_coords_and_dims=None, aux_factories=None):
+                 aux_coords_and_dims=None, aux_factories=None,
+                 cell_measures_and_dims=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -640,6 +692,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * aux_factories
             A list of auxiliary coordinate factories. See
             :mod:`iris.aux_factory`.
+        * cell_measures_and_dims
+            A list of CellMeasures with dimension mappings.
 
         For example::
             >>> from iris.coords import DimCoord
@@ -656,7 +710,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Temporary error while we transition the API.
-        if isinstance(data, basestring):
+        if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         if not isinstance(data, (biggus.Array, ma.MaskedArray)):
@@ -666,7 +720,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
 
-        #: An instance of :class:`iris.unit.Unit` describing the Cube's data.
+        #: An instance of :class:`cf_units.Unit` describing the Cube's data.
         self.units = units
 
         #: The "long name" for the Cube's phenomenon.
@@ -685,6 +739,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._dim_coords_and_dims = []
         self._aux_coords_and_dims = []
         self._aux_factories = []
+
+        # Cell Measures
+        self._cell_measures_and_dims = []
 
         identities = set()
         if dim_coords_and_dims:
@@ -711,6 +768,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for factory in aux_factories:
                 self.add_aux_factory(factory)
 
+        if cell_measures_and_dims:
+            for cell_measure, dims in cell_measures_and_dims:
+                self.add_cell_measure(cell_measure, dims)
+
     @property
     def metadata(self):
         """
@@ -734,8 +795,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             try:
                 value = CubeMetadata(*value)
             except TypeError:
-                attr_check = lambda name: not hasattr(value, name)
-                missing_attrs = filter(attr_check, CubeMetadata._fields)
+                missing_attrs = [field for field in CubeMetadata._fields
+                                 if not hasattr(value, field)]
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
@@ -781,7 +842,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
             if ignore is not None:
-                if isinstance(ignore, basestring):
+                if isinstance(ignore, six.string_types):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
@@ -844,7 +905,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('Duplicate coordinates are not permitted.')
         self._add_unique_aux_coord(coord, data_dims)
 
-    def _add_unique_aux_coord(self, coord, data_dims):
+    def _check_multi_dim_metadata(self, metadata, data_dims):
         # Convert to a tuple of integers
         if data_dims is None:
             data_dims = tuple()
@@ -854,22 +915,27 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_dims = (int(data_dims),)
 
         if data_dims:
-            if len(data_dims) != coord.ndim:
+            if len(data_dims) != metadata.ndim:
                 msg = 'Invalid data dimensions: {} given, {} expected for ' \
-                      '{!r}.'.format(len(data_dims), coord.ndim, coord.name())
+                      '{!r}.'.format(len(data_dims), metadata.ndim,
+                                     metadata.name())
                 raise ValueError(msg)
             # Check compatibility with the shape of the data
             for i, dim in enumerate(data_dims):
-                if coord.shape[i] != self.shape[dim]:
+                if metadata.shape[i] != self.shape[dim]:
                     msg = 'Unequal lengths. Cube dimension {} => {};' \
-                          ' coord {!r} dimension {} => {}.'
+                          ' metadata {!r} dimension {} => {}.'
                     raise ValueError(msg.format(dim, self.shape[dim],
-                                                coord.name(), i,
-                                                coord.shape[i]))
-        elif coord.shape != (1,):
-            raise ValueError('Missing data dimensions for multi-valued'
-                             ' coordinate {!r}'.format(coord.name()))
+                                                metadata.name(), i,
+                                                metadata.shape[i]))
+        elif metadata.shape != (1,):
+            msg = 'Missing data dimensions for multi-valued {} {!r}'
+            msg = msg.format(metadata.__class__.__name__, metadata.name())
+            raise ValueError(msg)
+        return data_dims
 
+    def _add_unique_aux_coord(self, coord, data_dims):
+        data_dims = self._check_multi_dim_metadata(coord, data_dims)
         self._aux_coords_and_dims.append([coord, data_dims])
 
     def add_aux_factory(self, aux_factory):
@@ -886,6 +952,36 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError('Factory must be a subclass of '
                             'iris.aux_factory.AuxCoordFactory.')
         self._aux_factories.append(aux_factory)
+
+    def add_cell_measure(self, cell_measure, data_dims=None):
+        """
+        Adds a CF cell measure to the cube.
+
+        Args:
+
+        * cell_measure
+            The :class:`iris.coords.CellMeasure`
+            instance to add to the cube.
+
+        Kwargs:
+
+        * data_dims
+            Integer or iterable of integers giving the data dimensions spanned
+            by the coordinate.
+
+        Raises a ValueError if a cell_measure with identical metadata already
+        exists on the cube.
+
+        See also
+        :meth:`Cube.remove_cell_measure()<iris.cube.Cube.remove_cell_measure>`.
+
+        """
+        if self.cell_measures(cell_measure):
+            raise ValueError('Duplicate cell_measures are not permitted.')
+        data_dims = self._check_multi_dim_metadata(cell_measure, data_dims)
+        self._cell_measures_and_dims.append([cell_measure, data_dims])
+        self._cell_measures_and_dims.sort(key=lambda cm_dims:
+                                          (cm_dims[0]._as_defn(), cm_dims[1]))
 
     def add_dim_coord(self, dim_coord, data_dim):
         """
@@ -972,6 +1068,23 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for factory in self.aux_factories:
             factory.update(coord)
 
+    def remove_cell_measure(self, cell_measure):
+        """
+        Removes a cell measure from the cube.
+
+        Args:
+
+        * cell_measure (CellMeasure)
+            The CellMeasure to remove from the cube.
+
+        See also
+        :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
+
+        """
+        self._cell_measures_and_dims = [[cell_measure_, dim] for cell_measure_,
+                                        dim in self._cell_measures_and_dims
+                                        if cell_measure_ is not cell_measure]
+
     def replace_coord(self, new_coord):
         """
         Replace the coordinate whose metadata matches the given coordinate.
@@ -1019,25 +1132,33 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Search derived aux coords
         target_defn = coord._as_defn()
         if not matches:
-            match = lambda factory: factory._as_defn() == target_defn
+            def match(factory):
+                return factory._as_defn() == target_defn
             factories = filter(match, self._aux_factories)
             matches = [factory.derived_dims(self.coord_dims) for factory in
                        factories]
 
-        # Deprecate name based searching
-        # -- Search by coord name, if have no match
-        # XXX Where did this come from? And why isn't it reflected in the
-        # docstring?
-        if not matches:
-            warnings.warn('name based coord matching is deprecated and will '
-                          'be removed in a future release.',
-                          stacklevel=2)
-            matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
-                       coord_.name() == coord.name()]
-        # Finish deprecate name based searching
-
         if not matches:
             raise iris.exceptions.CoordinateNotFoundError(coord.name())
+
+        return matches[0]
+
+    def cell_measure_dims(self, cell_measure):
+        """
+        Returns a tuple of the data dimensions relevant to the given
+        CellMeasure.
+
+        * cell_measure
+            The CellMeasure to look for.
+
+        """
+        # Search for existing cell measure (object) on the cube, faster lookup
+        # than equality - makes no functional difference.
+        matches = [dims for cm_, dims in self._cell_measures_and_dims if
+                   cm_ is cell_measure]
+
+        if not matches:
+            raise iris.exceptions.CellMeasureNotFoundError(cell_measure.name())
 
         return matches[0]
 
@@ -1163,24 +1284,24 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Handle deprecated kwargs
         if name is not None:
             name_or_coord = name
-            warnings.warn('the name kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the name kwarg is deprecated and will be removed '
+                            'in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         if coord is not None:
             name_or_coord = coord
-            warnings.warn('the coord kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the coord kwarg is deprecated and will be '
+                            'removed in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         # Finish handling deprecated kwargs
 
         name = None
         coord = None
 
-        if isinstance(name_or_coord, basestring):
+        if isinstance(name_or_coord, six.string_types):
             name = name_or_coord
         else:
             coord = name_or_coord
@@ -1221,9 +1342,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 msg = 'The attributes keyword was expecting a dictionary ' \
                       'type, but got a %s instead.' % type(attributes)
                 raise ValueError(msg)
-            attr_filter = lambda coord_: all(k in coord_.attributes and
-                                             coord_.attributes[k] == v for
-                                             k, v in attributes.iteritems())
+
+            def attr_filter(coord_):
+                return all(k in coord_.attributes and coord_.attributes[k] == v
+                           for k, v in six.iteritems(attributes))
+
             coords_and_factories = [coord_ for coord_ in coords_and_factories
                                     if attr_filter(coord_)]
 
@@ -1290,18 +1413,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Handle deprecated kwargs
         if name is not None:
             name_or_coord = name
-            warnings.warn('the name kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the name kwarg is deprecated and will be removed '
+                            'in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         if coord is not None:
             name_or_coord = coord
-            warnings.warn('the coord kwarg is deprecated and will be removed '
-                          'in a future release. Consider converting '
-                          'existing code to use the name_or_coord '
-                          'kwarg as a replacement.',
-                          stacklevel=2)
+            warn_deprecated('the coord kwarg is deprecated and will be '
+                            'removed in a future release. Consider converting '
+                            'existing code to use the name_or_coord '
+                            'kwarg as a replacement.',
+                            stacklevel=2)
         # Finish handling deprecated kwargs
 
         coords = self.coords(name_or_coord=name_or_coord,
@@ -1353,7 +1476,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The :class:`iris.coord_systems.CoordSystem` or None.
 
         """
-        if isinstance(spec, basestring) or spec is None:
+        if isinstance(spec, six.string_types) or spec is None:
             spec_name = spec
         else:
             msg = "type %s is not a subclass of CoordSystem" % spec
@@ -1368,13 +1491,89 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         result = None
         if spec_name is None:
-            for key in sorted(coord_systems.keys()):
+            for key in sorted(coord_systems.keys(),
+                              key=lambda class_: class_.__name__):
                 result = coord_systems[key]
                 break
         else:
             result = coord_systems.get(spec_name)
 
         return result
+
+    def cell_measures(self, name_or_cell_measure=None):
+        """
+        Return a list of cell measures in this cube fitting the given criteria.
+
+        Kwargs:
+
+        * name_or_cell_measure
+            Either
+
+            (a) a :attr:`standard_name`, :attr:`long_name`, or
+            :attr:`var_name`. Defaults to value of `default`
+            (which itself defaults to `unknown`) as defined in
+            :class:`iris._cube_coord_common.CFVariableMixin`.
+
+            (b) a cell_measure instance with metadata equal to that of
+            the desired cell_measures.
+
+        See also :meth:`Cube.cell_measure()<iris.cube.Cube.cell_measure>`.
+
+        """
+        name = None
+
+        if isinstance(name_or_cell_measure, six.string_types):
+            name = name_or_cell_measure
+        else:
+            cell_measure = name_or_cell_measure
+        cell_measures = []
+        for cm, _ in self._cell_measures_and_dims:
+            if name is not None:
+                if cm.name() == name:
+                    cell_measures.append(cm)
+            elif cell_measure is not None:
+                if cm == cell_measure:
+                    cell_measures.append(cm)
+            else:
+                cell_measures.append(cm)
+        return cell_measures
+
+    def cell_measure(self, name_or_cell_measure=None):
+        """
+        Return a single cell_measure given the same arguments as
+        :meth:`Cube.cell_measures`.
+
+        .. note::
+
+            If the arguments given do not result in precisely 1 cell_measure
+            being matched, an :class:`iris.exceptions.CellMeasureNotFoundError`
+            is raised.
+
+        .. seealso::
+
+            :meth:`Cube.cell_measures()<iris.cube.Cube.cell_measures>`
+            for full keyword documentation.
+
+        """
+        cell_measures = self.cell_measures(name_or_cell_measure)
+
+        if len(cell_measures) > 1:
+            msg = ('Expected to find exactly 1 cell_measure, but found {}. '
+                   'They were: {}.')
+            msg = msg.format(len(cell_measures),
+                             ', '.join(cm.name() for cm in cell_measures))
+            raise iris.exceptions.CellMeasureNotFoundError(msg)
+        elif len(cell_measures) == 0:
+            if isinstance(name_or_cell_measure, six.string_types):
+                bad_name = name_or_cell_measure
+            else:
+                bad_name = (name_or_cell_measure and
+                            name_or_cell_measure.name()) or ''
+            msg = 'Expected to find exactly 1 %s cell_measure, but found ' \
+                  'none.' % bad_name
+            raise iris.exceptions.CellMeasureNotFoundError(msg)
+
+        return cell_measures[0]
 
     @property
     def cell_methods(self):
@@ -1394,6 +1593,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """The shape of the data of this cube."""
         shape = self.lazy_data().shape
         return shape
+
+    @property
+    def dtype(self):
+        """The :class:`numpy.dtype` of the data of this cube."""
+        return self.lazy_data().dtype
 
     @property
     def ndim(self):
@@ -1462,7 +1666,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> cube = iris.load_cube(fname, 'air_temperature')
             >>> # cube.data does not yet have a value.
             ...
-            >>> print cube.shape
+            >>> print(cube.shape)
             (73, 96)
             >>> # cube.data still does not have a value.
             ...
@@ -1472,7 +1676,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> data = cube.data
             >>> # Only now is the data loaded.
             ...
-            >>> print data.shape
+            >>> print(data.shape)
             (10, 20)
 
         """
@@ -1490,10 +1694,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
             # Unmask the array only if it is filled.
-            if ma.count_masked(data) == 0:
+            if isinstance(data, np.ndarray) and ma.count_masked(data) == 0:
                 data = data.data
-            self._my_data = data
-        return data
+            # data may be a numeric type, so ensure an np.ndarray is returned
+            self._my_data = np.asanyarray(data)
+        return self._my_data
 
     @data.setter
     def data(self, value):
@@ -1567,7 +1772,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Find all the attribute keys
             keys = set()
             for similar_coord in similar_coords:
-                keys.update(similar_coord.attributes.iterkeys())
+                keys.update(six.iterkeys(similar_coord.attributes))
             # Look for any attributes that vary
             vary = set()
             attributes = {}
@@ -1580,7 +1785,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     if attributes.setdefault(key, value) != value:
                         vary.add(key)
                         break
-            keys = sorted(vary & coord.attributes.viewkeys())
+            keys = sorted(vary & set(coord.attributes.keys()))
             bits = ['{}={!r}'.format(key, coord.attributes[key]) for key in
                     keys]
             if bits:
@@ -1605,11 +1810,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Create a set to contain the axis names for each data dimension.
-        dim_names = [set() for dim in xrange(len(self.shape))]
+        dim_names = [set() for dim in range(len(self.shape))]
 
         # Add the dim_coord names that participate in the associated data
         # dimensions.
-        for dim in xrange(len(self.shape)):
+        for dim in range(len(self.shape)):
             dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
             if dim_coords:
                 dim_names[dim].add(dim_coords[0].name())
@@ -1630,6 +1835,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         nameunit = '{name} / ({units})'.format(name=self.name(),
                                                units=self.units)
+        # If all unknown and a STASH attribute exists, use it.
+        if nameunit == 'unknown / (unknown)' and 'STASH' in self.attributes:
+            nameunit = '{}'.format(self.attributes['STASH'])
         cube_header = '{nameunit!s:{length}} ({dimension})'.format(
             length=name_padding,
             nameunit=nameunit,
@@ -1661,6 +1869,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             vector_derived_coords = [coord for coord in derived_coords if
                                      id(coord) not in scalar_coord_ids]
 
+            # cell measures
+            vector_cell_measures = [cm for cm in self.cell_measures()
+                                    if cm.shape != (1,)]
+
             # Determine the cube coordinates that don't describe the cube and
             # are most likely erroneous.
             vector_coords = vector_dim_coords + vector_aux_coords + \
@@ -1684,7 +1896,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             # Generate textual summary of cube vector coordinates.
             #
-            def vector_summary(vector_coords, cube_header, max_line_offset):
+            def vector_summary(vector_coords, cube_header, max_line_offset,
+                               cell_measures=None):
                 """
                 Generates a list of suitably aligned strings containing coord
                 names and dimensions indicated by one or more 'x' symbols.
@@ -1695,45 +1908,65 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     returned with the list of strings.
 
                 """
+                if cell_measures is None:
+                    cell_measures = []
                 vector_summary = []
+                vectors = []
+
+                # Identify offsets for each dimension text marker.
+                alignment = np.array([index for index, value in
+                                      enumerate(cube_header) if
+                                      value == ':'])
+
+                # Generate basic textual summary for each vector coordinate
+                # - WITHOUT dimension markers.
+                for coord in vector_coords + cell_measures:
+                    vector_summary.append('%*s%s' % (
+                        indent, ' ', iris.util.clip_string(coord.name())))
+                min_alignment = min(alignment)
+
+                # Determine whether the cube header requires realignment
+                # due to one or more longer vector coordinate summaries.
+                if max_line_offset >= min_alignment:
+                    delta = max_line_offset - min_alignment + 5
+                    cube_header = '%-*s (%s)' % (int(name_padding + delta),
+                                                 self.name() or 'unknown',
+                                                 dimension_header)
+                    alignment += delta
+
                 if vector_coords:
-                    # Identify offsets for each dimension text marker.
-                    alignment = np.array([index for index, value in
-                                          enumerate(cube_header) if
-                                          value == ':'])
-
-                    # Generate basic textual summary for each vector coordinate
-                    # - WITHOUT dimension markers.
-                    for coord in vector_coords:
-                        vector_summary.append('%*s%s' % (
-                            indent, ' ', iris.util.clip_string(coord.name())))
-                    min_alignment = min(alignment)
-
-                    # Determine whether the cube header requires realignment
-                    # due to one or more longer vector coordinate summaries.
-                    if max_line_offset >= min_alignment:
-                        delta = max_line_offset - min_alignment + 5
-                        cube_header = '%-*s (%s)' % (int(name_padding + delta),
-                                                     self.name() or 'unknown',
-                                                     dimension_header)
-                        alignment += delta
-
                     # Generate full textual summary for each vector coordinate
                     # - WITH dimension markers.
                     for index, coord in enumerate(vector_coords):
                         dims = self.coord_dims(coord)
-                        for dim in xrange(len(self.shape)):
+
+                        for dim in range(len(self.shape)):
                             width = alignment[dim] - len(vector_summary[index])
                             char = 'x' if dim in dims else '-'
                             line = '{pad:{width}}{char}'.format(pad=' ',
                                                                 width=width,
                                                                 char=char)
                             vector_summary[index] += line
-                    # Interleave any extra lines that are needed to distinguish
-                    # the coordinates.
-                    vector_summary = self._summary_extra(vector_coords,
-                                                         vector_summary,
-                                                         extra_indent)
+                    vectors = vectors + vector_coords
+                if cell_measures:
+                    # Generate full textual summary for each vector coordinate
+                    # - WITH dimension markers.
+                    for index, coord in enumerate(cell_measures):
+                        dims = self.cell_measure_dims(coord)
+
+                        for dim in range(len(self.shape)):
+                            width = alignment[dim] - len(vector_summary[index])
+                            char = 'x' if dim in dims else '-'
+                            line = '{pad:{width}}{char}'.format(pad=' ',
+                                                                width=width,
+                                                                char=char)
+                            vector_summary[index] += line
+                    vectors = vectors + cell_measures
+                # Interleave any extra lines that are needed to distinguish
+                # the coordinates.
+                vector_summary = self._summary_extra(vectors,
+                                                     vector_summary,
+                                                     extra_indent)
 
                 return vector_summary, cube_header
 
@@ -1762,6 +1995,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     '\n'.join(derived_coord_summary)
 
             #
+            # Generate summary of cube cell measures attribute
+            #
+            if vector_cell_measures:
+                cell_measure_summary, cube_header = vector_summary(
+                    [], cube_header, max_line_offset,
+                    cell_measures=vector_cell_measures)
+                summary += '\n     Cell Measures:\n'
+                summary += '\n'.join(cell_measure_summary)
+
+            #
             # Generate textual summary of cube scalar coordinates.
             #
             scalar_summary = []
@@ -1778,7 +2021,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     # has a bound
                     with iris.FUTURE.context(cell_datetime_objects=False):
                         coord_cell = coord.cell(0)
-                    if isinstance(coord_cell.point, basestring):
+                    if isinstance(coord_cell.point, six.string_types):
                         # Indent string type coordinates
                         coord_cell_split = [iris.util.clip_string(str(item))
                                             for item in
@@ -1837,13 +2080,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 summary += '\n     Invalid coordinates:\n' + \
                     '\n'.join(invalid_summary)
 
+            # cell measures
+            scalar_cell_measures = [cm for cm in self.cell_measures()
+                                    if cm.shape == (1,)]
+            if scalar_cell_measures:
+                summary += '\n    Scalar cell measures:\n'
+                scalar_cms = ['          {}'.format(cm.name())
+                              for cm in scalar_cell_measures]
+                summary += '\n'.join(scalar_cms)
+
             #
             # Generate summary of cube attributes.
             #
             if self.attributes:
                 attribute_lines = []
-                for name, value in sorted(self.attributes.iteritems()):
-                    value = iris.util.clip_string(unicode(value))
+                for name, value in sorted(six.iteritems(self.attributes)):
+                    value = iris.util.clip_string(six.text_type(value))
                     line = u'{pad:{width}}{name}: {value}'.format(pad=' ',
                                                                   width=indent,
                                                                   name=name,
@@ -1868,12 +2120,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return summary
 
     def assert_valid(self):
-        """Raise an exception if the cube is invalid; otherwise return None."""
+        """
+        Does nothing and returns None.
 
-        warnings.warn('Cube.assert_valid() has been deprecated.')
+        .. deprecated:: 0.8
+
+        """
+        warn_deprecated('Cube.assert_valid() has been deprecated.')
 
     def __str__(self):
-        return self.summary().encode(errors='replace')
+        # six has a decorator for this bit, but it doesn't do errors='replace'.
+        if six.PY3:
+            return self.summary()
+        else:
+            return self.summary().encode(errors='replace')
 
     def __unicode__(self):
         return self.summary()
@@ -1903,9 +2163,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # multiple times)
         dimension_mapping, slice_gen = iris.util.column_slices_generator(
             full_slice, len(self.shape))
-        new_coord_dims = lambda coord_: [dimension_mapping[d] for d in
-                                         self.coord_dims(coord_) if
-                                         dimension_mapping[d] is not None]
+
+        def new_coord_dims(coord_):
+            return [dimension_mapping[d]
+                    for d in self.coord_dims(coord_)
+                    if dimension_mapping[d] is not None]
+
+        def new_cell_measure_dims(cm_):
+            return [dimension_mapping[d]
+                    for d in self.cell_measure_dims(cm_)
+                    if dimension_mapping[d] is not None]
 
         try:
             first_slice = next(slice_gen)
@@ -1975,11 +2242,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for factory in self.aux_factories:
             cube.add_aux_factory(factory.updated(coord_mapping))
 
+        # slice the cell measures and add them to the cube
+        for cellmeasure in self.cell_measures():
+            dims = self.cell_measure_dims(cellmeasure)
+            cm_keys = tuple([full_slice[dim] for dim in dims])
+            new_cm = cellmeasure[cm_keys]
+            cube.add_cell_measure(new_cm,
+                                  new_cell_measure_dims(cellmeasure))
+
         return cube
 
     def subset(self, coord):
         """
-        Get a subset of the cube by providing the desired resultant coordinate.
+        Get a subset of the cube by providing the desired resultant
+        coordinate. If the coordinate provided applies to the whole cube; the
+        whole cube is returned. As such, the operation is not strict.
 
         """
         if not isinstance(coord, iris.coords.Coord):
@@ -1987,24 +2264,42 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Get the coord to extract from the cube
         coord_to_extract = self.coord(coord)
-        if len(self.coord_dims(coord_to_extract)) > 1:
-            msg = "Currently, only 1D coords can be used to subset a cube"
-            raise iris.exceptions.CoordinateMultiDimError(msg)
-        # Identify the dimension of the cube which this coordinate references
-        coord_to_extract_dim = self.coord_dims(coord_to_extract)[0]
 
-        # Identify the indices which intersect the requested coord and
-        # coord_to_extract
-        coordinate_indices = coord_to_extract.intersect(coord,
-                                                        return_indices=True)
+        # If scalar, return the whole cube. Not possible to subset 1 point.
+        if coord_to_extract in self.aux_coords and\
+                len(coord_to_extract.points) == 1:
 
-        # Build up a slice which spans the whole of the cube
-        full_slice = [slice(None, None)] * len(self.shape)
-        # Update the full slice to only extract specific indices which were
-        # identified above
-        full_slice[coord_to_extract_dim] = coordinate_indices
-        full_slice = tuple(full_slice)
-        return self[full_slice]
+            # Default to returning None
+            result = None
+
+            indices = coord_to_extract.intersect(coord, return_indices=True)
+
+            # If there is an intersect between the two scalar coordinates;
+            # return the whole cube. Else, return None.
+            if len(indices):
+                result = self
+
+        else:
+            if len(self.coord_dims(coord_to_extract)) > 1:
+                msg = "Currently, only 1D coords can be used to subset a cube"
+                raise iris.exceptions.CoordinateMultiDimError(msg)
+            # Identify the dimension of the cube which this coordinate
+            # references
+            coord_to_extract_dim = self.coord_dims(coord_to_extract)[0]
+
+            # Identify the indices which intersect the requested coord and
+            # coord_to_extract
+            coord_indices = coord_to_extract.intersect(coord,
+                                                       return_indices=True)
+
+            # Build up a slice which spans the whole of the cube
+            full_slice = [slice(None, None)] * len(self.shape)
+            # Update the full slice to only extract specific indices which
+            # were identified above
+            full_slice[coord_to_extract_dim] = coord_indices
+            full_slice = tuple(full_slice)
+            result = self[full_slice]
+        return result
 
     def extract(self, constraint):
         """
@@ -2046,6 +2341,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 If True, coordinate values equal to `maximum` will be included
                 in the selection. Default is True.
 
+        To perform an intersection that ignores any bounds on the coordinates,
+        set the optional keyword argument *ignore_bounds* to True. Defaults to
+        False.
+
         .. note::
 
             For ranges defined over "circular" coordinates (i.e. those
@@ -2061,16 +2360,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             >>> import iris
             >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-            >>> print cube.coord('longitude').points[::10]
+            >>> print(cube.coord('longitude').points[::10])
             [   0.           37.49999237   74.99998474  112.49996948  \
 149.99996948
               187.49995422  224.99993896  262.49993896  299.99993896  \
 337.49990845]
             >>> subset = cube.intersection(longitude=(30, 50))
-            >>> print subset.coord('longitude').points
+            >>> print(subset.coord('longitude').points)
             [ 33.74999237  37.49999237  41.24998856  44.99998856  48.74998856]
             >>> subset = cube.intersection(longitude=(-10, 10))
-            >>> print subset.coord('longitude').points
+            >>> print(subset.coord('longitude').points)
             [-7.50012207 -3.75012207  0.          3.75        7.5       ]
 
         Returns:
@@ -2079,14 +2378,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         result = self
+        ignore_bounds = kwargs.pop('ignore_bounds', False)
         for arg in args:
-            result = result._intersect(*arg)
-        for name, value in kwargs.iteritems():
-            result = result._intersect(name, *value)
+            result = result._intersect(*arg, ignore_bounds=ignore_bounds)
+        for name, value in six.iteritems(kwargs):
+            result = result._intersect(name, *value,
+                                       ignore_bounds=ignore_bounds)
         return result
 
     def _intersect(self, name_or_coord, minimum, maximum,
-                   min_inclusive=True, max_inclusive=True):
+                   min_inclusive=True, max_inclusive=True,
+                   ignore_bounds=False):
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -2098,17 +2400,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if modulus is None:
             raise ValueError('coordinate units with no modulus are not yet'
                              ' supported')
-
         subsets, points, bounds = self._intersect_modulus(coord,
                                                           minimum, maximum,
                                                           min_inclusive,
-                                                          max_inclusive)
+                                                          max_inclusive,
+                                                          ignore_bounds)
 
         # By this point we have either one or two subsets along the relevant
         # dimension. If it's just one subset (which might be a slice or an
         # unordered collection of indices) we can simply index the cube
         # and we're done. If it's two subsets we need to stitch the two
         # pieces together.
+        # subsets provides a way of slicing the coordinates to ensure that
+        # they remain contiguous.  In doing so, this can mean
+        # transforming the data (this stitching together of two separate
+        # pieces).
         def make_chunk(key):
             chunk = self[key_tuple_prefix + (key,)]
             chunk_coord = chunk.coord(coord)
@@ -2175,8 +2481,92 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 result.add_aux_factory(factory.updated(coord_mapping))
         return result
 
+    def _intersect_derive_subset(self, coord, points, bounds, inside_indices):
+        # Return the subsets, i.e. the means to allow the slicing of
+        # coordinates to ensure that they remain contiguous.
+        modulus = coord.units.modulus
+        delta = coord.points[inside_indices] - points[inside_indices]
+        step = np.rint(np.diff(delta) / modulus)
+        non_zero_step_indices = np.nonzero(step)[0]
+
+        def dim_coord_subset():
+            """
+            Derive the subset for dimension coordinates.
+
+            Ensure that we do not wrap if blocks are at the very edge.  That
+            is, if the very edge is wrapped and corresponds to base + period,
+            stop this unnecessary wraparound.
+
+            """
+            # A contiguous block at the start and another at the end.
+            # (NB. We can't have more than two blocks because we've already
+            # restricted the coordinate's range to its modulus).
+            end_of_first_chunk = non_zero_step_indices[0]
+            index_of_second_chunk = inside_indices[end_of_first_chunk + 1]
+            final_index = points.size - 1
+
+            # Condition1: The two blocks don't themselves wrap
+            #             (inside_indices is contiguous).
+            # Condition2: Are we chunked at either extreme edge.
+            edge_wrap = ((index_of_second_chunk ==
+                          inside_indices[end_of_first_chunk] + 1) and
+                         index_of_second_chunk in (final_index, 1))
+            subsets = None
+            if edge_wrap:
+                # Increasing coord
+                if coord.points[-1] > coord.points[0]:
+                    index_end = -1
+                    index_start = 0
+                # Decreasing coord
+                else:
+                    index_end = 0
+                    index_start = -1
+
+                # Unwrap points and bounds (if present and equal base + period)
+                if bounds is not None:
+                    edge_equal_base_period = (
+                        np.isclose(coord.bounds[index_end, index_end],
+                                   coord.bounds[index_start, index_start] +
+                                   modulus))
+                    if edge_equal_base_period:
+                        bounds[index_end, :] = coord.bounds[index_end, :]
+                else:
+                    edge_equal_base_period = (
+                        np.isclose(coord.points[index_end],
+                                   coord.points[index_start] +
+                                   modulus))
+                if edge_equal_base_period:
+                    points[index_end] = coord.points[index_end]
+                    subsets = [slice(inside_indices[0],
+                                     inside_indices[-1] + 1)]
+
+            # Either no edge wrap or edge wrap != base + period
+            # i.e. derive subset without alteration
+            if subsets is None:
+                subsets = [
+                    slice(index_of_second_chunk, None),
+                    slice(None, inside_indices[end_of_first_chunk] + 1)
+                    ]
+
+            return subsets
+
+        if isinstance(coord, iris.coords.DimCoord):
+            if non_zero_step_indices.size:
+                subsets = dim_coord_subset()
+            else:
+                # A single, contiguous block.
+                subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
+        else:
+            # An AuxCoord could have its values in an arbitrary
+            # order, and hence a range of values can select an
+            # arbitrary subset. Also, we want to preserve the order
+            # from the original AuxCoord. So we just use the indices
+            # directly.
+            subsets = [inside_indices]
+        return subsets
+
     def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
-                           max_inclusive):
+                           max_inclusive, ignore_bounds):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError("requested range greater than coordinate's"
@@ -2193,9 +2583,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
-            inside = np.logical_and(min_comp(minimum, bounds),
-                                    max_comp(bounds, maximum))
-            inside_indices, = np.where(np.any(inside, axis=1))
+            if ignore_bounds:
+                points = wrap_lons(coord.points, minimum, modulus)
+                inside_indices, = np.where(
+                    np.logical_and(min_comp(minimum, points),
+                                   max_comp(points, maximum)))
+            else:
+                inside = np.logical_and(min_comp(minimum, bounds),
+                                        max_comp(bounds, maximum))
+                inside_indices, = np.where(np.any(inside, axis=1))
 
             # To ensure that bounds (and points) of matching cells aren't
             # "scrambled" by the wrap operation we detect split cells that
@@ -2205,15 +2601,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # become [349.875, -9.5625] which is no longer valid. The lower
             # cell bound value (and possibly associated point) are
             # recalculated so that they are consistent with the extended
-            # wapping scheme which moves the wrap point to the correct lower
+            # wrapping scheme which moves the wrap point to the correct lower
             # bound value (-10.125) thus resulting in the cell no longer
             # being split. For bounds which may extend exactly the length of
             # the modulus, we simply preserve the point to bound difference,
             # and call the new bounds = the new points + the difference.
             pre_wrap_delta = np.diff(coord.bounds[inside_indices])
             post_wrap_delta = np.diff(bounds[inside_indices])
-            split_cell_indices, _ = np.where(pre_wrap_delta != post_wrap_delta)
-            if split_cell_indices.size:
+            close_enough = np.allclose(pre_wrap_delta, post_wrap_delta)
+            if not close_enough:
+                split_cell_indices, _ = np.where(pre_wrap_delta !=
+                                                 post_wrap_delta)
+
                 # Recalculate the extended minimum.
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
@@ -2237,28 +2636,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             inside_indices, = np.where(
                 np.logical_and(min_comp(minimum, points),
                                max_comp(points, maximum)))
-        if isinstance(coord, iris.coords.DimCoord):
-            delta = coord.points[inside_indices] - points[inside_indices]
-            step = np.rint(np.diff(delta) / modulus)
-            non_zero_step_indices = np.nonzero(step)[0]
-            if non_zero_step_indices.size:
-                # A contiguous block at the start and another at the
-                # end. (NB. We can't have more than two blocks
-                # because we've already restricted the coordinate's
-                # range to its modulus).
-                end_of_first_chunk = non_zero_step_indices[0]
-                subsets = [slice(inside_indices[end_of_first_chunk + 1], None),
-                           slice(None, inside_indices[end_of_first_chunk] + 1)]
-            else:
-                # A single, contiguous block.
-                subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
-        else:
-            # An AuxCoord could have its values in an arbitrary
-            # order, and hence a range of values can select an
-            # arbitrary subset. Also, we want to preserve the order
-            # from the original AuxCoord. So we just use the indices
-            # directly.
-            subsets = [inside_indices]
+
+        # Determine the subsets
+        subsets = self._intersect_derive_subset(coord, points, bounds,
+                                                inside_indices)
         return subsets, points, bounds
 
     def _as_list_of_coords(self, names_or_coords):
@@ -2266,19 +2647,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Convert a name, coord, or list of names/coords to a list of coords.
         """
         # If not iterable, convert to list of a single item
-        if not hasattr(names_or_coords, '__iter__'):
+        if _is_single_item(names_or_coords):
             names_or_coords = [names_or_coords]
 
         coords = []
         for name_or_coord in names_or_coords:
-            if (isinstance(name_or_coord, basestring) or
+            if (isinstance(name_or_coord, six.string_types) or
                     isinstance(name_or_coord, iris.coords.Coord)):
                 coords.append(self.coord(name_or_coord))
             else:
                 # Don't know how to handle this type
-                msg = "Don't know how to handle coordinate of type %s. " \
-                      "Ensure all coordinates are of type basestring or " \
-                      "iris.coords.Coord." % type(name_or_coord)
+                msg = ("Don't know how to handle coordinate of type %s. "
+                       "Ensure all coordinates are of type six.string_types "
+                       "or iris.coords.Coord.") % (type(name_or_coord), )
                 raise TypeError(msg)
         return coords
 
@@ -2300,7 +2681,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         For example, to get all subcubes along the time dimension::
 
             for sub_cube in cube.slices_over('time'):
-                print sub_cube
+                print(sub_cube)
 
         .. seealso:: :meth:`iris.cube.Cube.slices`.
 
@@ -2312,7 +2693,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Required to handle a mix between types.
-        if not hasattr(ref_to_slice, '__iter__'):
+        if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
 
         slice_dims = set()
@@ -2363,7 +2744,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         multi-dimensional cube::
 
             for sub_cube in cube.slices(['longitude', 'latitude']):
-                print sub_cube
+                print(sub_cube)
 
         .. seealso:: :meth:`iris.cube.Cube.slices_over`.
 
@@ -2372,7 +2753,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError("'ordered' argument to slices must be boolean.")
 
         # Required to handle a mix between types
-        if not hasattr(ref_to_slice, '__iter__'):
+        if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
 
         dim_to_slice = []
@@ -2431,28 +2812,28 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if new_order is None:
-            new_order = np.arange(self.data.ndim)[::-1]
-        elif len(new_order) != self.data.ndim:
+            new_order = np.arange(self.ndim)[::-1]
+        elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        # The data needs to be copied, otherwise this view of the transposed
-        # data will not be contiguous. Ensure not to assign via the cube.data
-        # setter property since we are reshaping the cube payload in-place.
-        self._my_data = np.transpose(self.data, new_order).copy()
+        if self.has_lazy_data():
+            self._my_data = self.lazy_data().transpose(new_order)
+        else:
+            self._my_data = self.data.transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
         def remap_dim_coord(coord_and_dim):
             coord, dim = coord_and_dim
             return coord, dim_mapping[dim]
-        self._dim_coords_and_dims = map(remap_dim_coord,
-                                        self._dim_coords_and_dims)
+        self._dim_coords_and_dims = list(map(remap_dim_coord,
+                                             self._dim_coords_and_dims))
 
         def remap_aux_coord(coord_and_dims):
             coord, dims = coord_and_dims
             return coord, tuple(dim_mapping[dim] for dim in dims)
-        self._aux_coords_and_dims = map(remap_aux_coord,
-                                        self._aux_coords_and_dims)
+        self._aux_coords_and_dims = list(map(remap_aux_coord,
+                                             self._aux_coords_and_dims))
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """
@@ -2483,12 +2864,24 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
-            for name in sorted(self.attributes.iterkeys()):
+            for name in sorted(six.iterkeys(self.attributes)):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
-                value = str(self.attributes[name])
+
+                value = self.attributes[name]
+                # Strict check because we don't want namedtuples.
+                if type(value) in (list, tuple):
+                    delimiter = '[]' if isinstance(value, list) else '()'
+                    value = ', '.join(("'%s'"
+                                       if isinstance(item, six.string_types)
+                                       else '%s') % (item, ) for item in value)
+                    value = delimiter[0] + value + delimiter[1]
+                else:
+                    value = str(value)
+
                 attribute_element.setAttribute('value', value)
                 attributes_element.appendChild(attribute_element)
+
             cube_xml_element.appendChild(attributes_element)
 
         coords_xml_element = doc.createElement("coords")
@@ -2537,17 +2930,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # sensitive to unused numbers. Use a fixed value so
                 # a change in fill_value doesn't affect the
                 # checksum.
-                crc = hex(zlib.crc32(normalise(data.filled(0))))
+                crc = '0x%08x' % (
+                    zlib.crc32(normalise(data.filled(0))) & 0xffffffff, )
                 data_xml_element.setAttribute("checksum", crc)
                 if ma.is_masked(data):
-                    crc = hex(zlib.crc32(normalise(data.mask)))
+                    crc = '0x%08x' % (
+                        zlib.crc32(normalise(data.mask)) & 0xffffffff, )
                 else:
                     crc = 'no-masked-elements'
                 data_xml_element.setAttribute("mask_checksum", crc)
                 data_xml_element.setAttribute('fill_value',
                                               str(data.fill_value))
             else:
-                crc = hex(zlib.crc32(normalise(data)))
+                crc = '0x%08x' % (zlib.crc32(normalise(data)) & 0xffffffff, )
                 data_xml_element.setAttribute("checksum", crc)
         elif self.has_lazy_data():
             data_xml_element.setAttribute("state", "deferred")
@@ -2614,16 +3009,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _deepcopy(self, memo, data=None):
         if data is None:
-            if not self.has_lazy_data() and self.ndim == 0:
-                # Cope with NumPy's asymmetric (aka. "annoying!") behaviour
-                # of deepcopy on 0-d arrays.
-                new_cube_data = np.asanyarray(self.data)
+            # Use a copy of the source cube data.
+            if self.has_lazy_data():
+                # Use copy.copy, as lazy arrays don't have a copy method.
+                new_cube_data = copy.copy(self.lazy_data())
             else:
-                try:
-                    new_cube_data = self._my_data.copy()
-                except AttributeError:
-                    new_cube_data = copy.copy(self._my_data)
+                # Do *not* use copy.copy, as NumPy 0-d arrays do that wrong.
+                new_cube_data = self.data.copy()
         else:
+            # Use the provided data (without copying it).
             if not isinstance(data, biggus.Array):
                 data = np.asanyarray(data)
 
@@ -2687,6 +3081,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = not result
         return result
 
+    # Must supply __hash__, Python 3 does not enable it if __eq__ is defined
+    # This is necessary for merging, but probably shouldn't be used otherwise.
+    # See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
+
     def __add__(self, other):
         return iris.analysis.maths.add(self, other, ignore=True)
     __radd__ = __add__
@@ -2711,9 +3111,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             attr:`~iris.cube.Cube.attributes` as needed.
 
         """
-        warnings.warn("Cube.add_history() has been deprecated - "
-                      "please modify/create cube.attributes['history'] "
-                      "as needed.")
+        warn_deprecated("Cube.add_history() has been deprecated - "
+                        "please modify/create cube.attributes['history'] "
+                        "as needed.")
 
         timestamp = datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")
         string = '%s Iris: %s' % (timestamp, string)
@@ -2727,10 +3127,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     # START ANALYSIS ROUTINES
 
     regridded = iris.util._wrap_function_for_method(
-        iris.analysis.interpolate.regrid,
+        iris.analysis._interpolate_private.regrid,
         """
         Returns a new cube with values derived from this cube on the
         horizontal grid specified by the grid_cube.
+
+        .. deprecated:: 1.10
+            Please replace usage of :meth:`~Cube.regridded` with
+            :meth:`~Cube.regrid`.  See :meth:`iris.analysis.interpolate.regrid`
+            for details of exact usage equivalents.
 
         """)
 
@@ -2784,7 +3189,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> path = iris.sample_data_path('ostia_monthly.nc')
             >>> cube = iris.load_cube(path)
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
-            >>> print new_cube
+            >>> print(new_cube)
             surface_temperature / (K)           (time: 54; latitude: 18)
                  Dimension coordinates:
                       time                           x             -
@@ -2829,6 +3234,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
 
+        .. _partially_collapse_multi-dim_coord:
+
+        .. note::
+            You cannot partially collapse a multi-dimensional coordinate. Doing
+            so would result in a partial collapse of the multi-dimensional
+            coordinate. Instead you must either:
+                 * collapse in a single operation all cube axes that the
+                   multi-dimensional coordinate spans,
+                 * remove the multi-dimensional coordinate from the cube before
+                   performing the collapse operation, or
+                 * not collapse the coordinate at all.
+
+            Multi-dimensional derived coordinates will not prevent a successful
+            collapse operation.
+
         """
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
@@ -2836,8 +3256,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
                 not aggregator.uses_weighting(**kwargs)):
             msg = "Collapsing spatial coordinate {!r} without weighting"
-            lat_match = filter(lambda coord: 'latitude' in coord.name(),
-                               coords)
+            lat_match = [coord for coord in coords
+                         if 'latitude' in coord.name()]
             if lat_match:
                 for coord in lat_match:
                     warnings.warn(msg.format(coord.name()))
@@ -2905,8 +3325,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_result = unrolled_data
 
         # Perform the aggregation in lazy form if possible.
-        elif (aggregator.lazy_func is not None
-                and len(dims_to_collapse) == 1 and self.has_lazy_data()):
+        elif (aggregator.lazy_func is not None and
+                len(dims_to_collapse) == 1 and self.has_lazy_data()):
             # Use a lazy operation separately defined by the aggregator, based
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
@@ -2945,10 +3365,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_result = aggregator.aggregate(unrolled_data,
                                                axis=-1,
                                                **kwargs)
-
         aggregator.update_metadata(collapsed_cube, coords, axis=collapse_axis,
                                    **kwargs)
-        result = aggregator.post_process(collapsed_cube, data_result, **kwargs)
+        result = aggregator.post_process(collapsed_cube, data_result, coords,
+                                         **kwargs)
         return result
 
     def aggregated_by(self, coords, aggregator, **kwargs):
@@ -2958,8 +3378,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         A "group coordinate" is a coordinate where repeating values represent a
         single group, such as a month coordinate on a daily time slice.
-        TODO: It is not clear if repeating values must be consecutive to form a
-        group.
+        Repeated values will form a group even if they are not consecutive.
 
         The group coordinates must all be over the same cube dimension. Each
         common value group identified over all the group-by coordinates is
@@ -2994,7 +3413,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> cube = iris.load_cube(fname, 'surface_temperature')
             >>> cat.add_year(cube, 'time', name='year')
             >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
-            >>> print new_cube
+            >>> print(new_cube)
             surface_temperature / (K)           \
 (time: 5; latitude: 18; longitude: 432)
                  Dimension coordinates:
@@ -3025,11 +3444,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # We can't handle weights
         if isinstance(aggregator, iris.analysis.WeightedAggregator) and \
                 aggregator.uses_weighting(**kwargs):
-            raise ValueError('Invalid Aggregation, aggergated_by() cannot use'
+            raise ValueError('Invalid Aggregation, aggregated_by() cannot use'
                              ' weights.')
 
-        for coord in sorted(self._as_list_of_coords(coords),
-                            key=lambda coord: coord._as_defn()):
+        coords = self._as_list_of_coords(coords)
+        for coord in sorted(coords, key=lambda coord: coord._as_defn()):
             if coord.ndim > 1:
                 msg = 'Cannot aggregate_by coord %s as it is ' \
                       'multidimensional.' % coord.name()
@@ -3048,14 +3467,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Determine the other coordinates that share the same group-by
         # coordinate dimension.
-        shared_coords = filter(lambda coord_: coord_ not in groupby_coords,
-                               self.coords(dimensions=dimension_to_groupby))
+        shared_coords = list(filter(
+            lambda coord_: coord_ not in groupby_coords,
+            self.coords(dimensions=dimension_to_groupby)))
 
         # Create the aggregation group-by instance.
         groupby = iris.analysis._Groupby(groupby_coords, shared_coords)
 
         # Create the resulting aggregate-by cube and remove the original
-        # coordinates which are going to be groupedby.
+        # coordinates that are going to be groupedby.
         key = [slice(None, None)] * self.ndim
         # Generate unique index tuple key to maintain monotonicity.
         key[dimension_to_groupby] = tuple(range(len(groupby)))
@@ -3065,7 +3485,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             aggregateby_cube.remove_coord(coord)
 
         # Determine the group-by cube data shape.
-        data_shape = list(self.shape)
+        data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
         data_shape[dimension_to_groupby] = len(groupby)
 
         # Aggregate the group-by data.
@@ -3109,8 +3529,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             else:
                 aggregateby_cube.add_aux_coord(coord.copy(),
                                                dimension_to_groupby)
-        # Attatch the aggregate-by data into the aggregate-by cube.
-        aggregateby_cube.data = aggregateby_data
+
+        # Attach the aggregate-by data into the aggregate-by cube.
+        aggregateby_cube = aggregator.post_process(aggregateby_cube,
+                                                   aggregateby_data,
+                                                   coords, **kwargs)
 
         return aggregateby_cube
 
@@ -3148,7 +3571,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> import iris, iris.analysis
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
             >>> air_press = iris.load_cube(fname, 'surface_temperature')
-            >>> print air_press
+            >>> print(air_press)
             surface_temperature / (K)           \
 (time: 6; latitude: 145; longitude: 192)
                  Dimension coordinates:
@@ -3172,7 +3595,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       mean: time (1 hour)
 
 
-            >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
+            >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
             surface_temperature / (K)           \
 (time: 4; latitude: 145; longitude: 192)
                  Dimension coordinates:
@@ -3278,49 +3701,54 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             **kwargs)
         # and perform the data transformation, generating weights first if
         # needed
-        newkwargs = {}
         if isinstance(aggregator, iris.analysis.WeightedAggregator) and \
                 aggregator.uses_weighting(**kwargs):
-            if 'weights' in kwargs.keys():
+            if 'weights' in kwargs:
                 weights = kwargs['weights']
                 if weights.ndim > 1 or weights.shape[0] != window:
                     raise ValueError('Weights for rolling window aggregation '
                                      'must be a 1d array with the same length '
                                      'as the window.')
-                newkwargs['weights'] = iris.util.broadcast_to_shape(
+                kwargs = dict(kwargs)
+                kwargs['weights'] = iris.util.broadcast_to_shape(
                     weights, rolling_window_data.shape, (dimension + 1,))
-        new_cube.data = aggregator.aggregate(rolling_window_data,
-                                             axis=dimension + 1,
-                                             **newkwargs)
-
-        return new_cube
+        data_result = aggregator.aggregate(rolling_window_data,
+                                           axis=dimension + 1,
+                                           **kwargs)
+        result = aggregator.post_process(new_cube, data_result, [coord],
+                                         **kwargs)
+        return result
 
     def interpolate(self, sample_points, scheme, collapse_scalar=True):
         """
-        Interpolate over the :class:`~iris.cube.Cube` using the specified
-        sample points and provided interpolation scheme.
+        Interpolate from this :class:`~iris.cube.Cube` to the given
+        sample points using the given interpolation scheme.
 
         Args:
 
         * sample_points:
             A sequence of (coordinate, points) pairs over which to
-            interpolate. The values for coordinates which correspond to
-            date/times may optionally be supplied as datetime.datetime or
+            interpolate. The values for coordinates that correspond to
+            dates or times may optionally be supplied as datetime.datetime or
             netcdftime.datetime instances.
         * scheme:
-            A :class:`~iris.analysis.Linear` instance, which defines the
-            interpolator scheme.
+            The type of interpolation to use to interpolate from this
+            :class:`~iris.cube.Cube` to the given sample points. The
+            interpolation schemes currently available in Iris are:
+                * :class:`iris.analysis.Linear`, and
+                * :class:`iris.analysis.Nearest`.
 
         Kwargs:
 
         * collapse_scalar:
-            Whether to collapse the dimension of the scalar sample points
+            Whether to collapse the dimension of scalar sample points
             in the resulting cube. Default is True.
 
         Returns:
-            A cube interpolated at the given sample points. The dimensionality
-            of the cube will be the number of original cube dimensions minus
-            the number of scalar coordinates, if collapse_scalar is True.
+            A cube interpolated at the given sample points.
+            If `collapse_scalar` is True then the dimensionality of the cube
+            will be the number of original cube dimensions minus
+            the number of scalar coordinates.
 
         For example:
 
@@ -3328,37 +3756,37 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> import iris
             >>> path = iris.sample_data_path('uk_hires.pp')
             >>> cube = iris.load_cube(path, 'air_potential_temperature')
-            >>> print cube.summary(shorten=True)
+            >>> print(cube.summary(shorten=True))
             air_potential_temperature / (K)     \
 (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-            >>> print cube.coord('time')
+            >>> print(cube.coord('time'))
             DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, \
 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
-            >>> print cube.coord('time').points
+            >>> print(cube.coord('time').points)
             [ 349618.  349619.  349620.]
             >>> samples = [('time', 349618.5)]
             >>> result = cube.interpolate(samples, iris.analysis.Linear())
-            >>> print result.summary(shorten=True)
+            >>> print(result.summary(shorten=True))
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-            >>> print result.coord('time')
+            >>> print(result.coord('time'))
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
-            >>> print result.coord('time').points
+            >>> print(result.coord('time').points)
             [ 349618.5]
             >>> # For datetime-like coordinates, we can also use
             >>> # datetime-like objects.
             >>> samples = [('time', datetime.datetime(2009, 11, 19, 10, 30))]
             >>> result2 = cube.interpolate(samples, iris.analysis.Linear())
-            >>> print result2.summary(shorten=True)
+            >>> print(result2.summary(shorten=True))
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-            >>> print result2.coord('time')
+            >>> print(result2.coord('time'))
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
-            >>> print result2.coord('time').points
+            >>> print(result2.coord('time').points)
             [ 349618.5]
-            >>> print result == result2
+            >>> print(result == result2)
             True
 
         """
@@ -3368,30 +3796,33 @@ calendar='gregorian')
 
     def regrid(self, grid, scheme):
         """
-        Regrid this :class:`~iris.cube.Cube` on to the given `grid`
-        using the provided regridding scheme.
+        Regrid this :class:`~iris.cube.Cube` on to the given target `grid`
+        using the given regridding `scheme`.
 
         Args:
 
         * grid:
-            A :class:`~iris.cube.Cube` which defines the target grid.
+            A :class:`~iris.cube.Cube` that defines the target grid.
         * scheme:
-            A :class:`~iris.analysis.Linear` or
-            :class:`~iris.analysis.AreaWeighted` instance, which defines
-            the interpolator scheme.
+            The type of regridding to use to regrid this cube onto the
+            target grid. The regridding schemes currently available
+            in Iris are:
+                * :class:`iris.analysis.Linear`,
+                * :class:`iris.analysis.Nearest`, and
+                * :class:`iris.analysis.AreaWeighted`.
 
         Returns:
-            A cube defined with the horizontal dimensions of the target
+            A cube defined with the horizontal dimensions of the target grid
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid
-            according to the given scheme.
+            according to the given regridding scheme.
 
         """
         regridder = scheme.regridder(self, grid)
         return regridder(self)
 
 
-class ClassDict(object, UserDict.DictMixin):
+class ClassDict(collections.MutableMapping, object):
     """
     A mapping that stores objects keyed on their superclasses and their names.
 
@@ -3441,13 +3872,23 @@ class ClassDict(object, UserDict.DictMixin):
         except KeyError:
             raise KeyError('Coordinate system %r does not exist.' % class_)
 
+    def __setitem__(self, key, value):
+        raise NotImplementedError('You must call the add method instead.')
+
     def __delitem__(self, class_):
         cs = self[class_]
-        keys = [k for k, v in self._retrieval_map.iteritems() if v == cs]
+        keys = [k for k, v in six.iteritems(self._retrieval_map) if v == cs]
         for key in keys:
             del self._retrieval_map[key]
         del self._basic_map[type(cs)]
         return cs
+
+    def __len__(self):
+        return len(self._basic_map)
+
+    def __iter__(self):
+        for item in self._basic_map:
+            yield item
 
     def keys(self):
         '''Return the keys of the dictionary mapping.'''
@@ -3482,7 +3923,7 @@ class _SliceIterator(collections.Iterator):
         self._mod_requested_dims = np.argsort(requested_dims)
         self._ordered = ordered
 
-    def next(self):
+    def __next__(self):
         # NB. When self._ndindex runs out it will raise StopIteration for us.
         index_tuple = next(self._ndindex)
 
@@ -3498,7 +3939,9 @@ class _SliceIterator(collections.Iterator):
         cube = self._cube[tuple(index_list)]
 
         if self._ordered:
-            if any(self._mod_requested_dims != range(len(cube.shape))):
+            if any(self._mod_requested_dims != list(range(len(cube.shape)))):
                 cube.transpose(self._mod_requested_dims)
 
         return cube
+
+    next = __next__

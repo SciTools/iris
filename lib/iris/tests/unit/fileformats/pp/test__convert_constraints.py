@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,15 +16,17 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.pp.load` function."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import iris
 from iris.fileformats.pp import _convert_constraints
 from iris.fileformats.pp import STASH
+from iris.tests import mock
 
 
 class Test_convert_constraints(tests.IrisTest):
@@ -66,6 +68,18 @@ class Test_convert_constraints(tests.IrisTest):
         self.assertTrue(pp_filter(stcube236))
         self.assertTrue(pp_filter(stcube4))
         self.assertFalse(pp_filter(stcube7))
+
+    def test_callable_stash(self):
+        stcube236 = mock.Mock(stash=STASH.from_msi('m01s03i236'))
+        stcube4 = mock.Mock(stash=STASH.from_msi('m01s00i004'))
+        stcube7 = mock.Mock(stash=STASH.from_msi('m01s00i007'))
+        con1 = iris.AttributeConstraint(STASH=lambda s: s.endswith("004"))
+        con2 = iris.AttributeConstraint(STASH=lambda s: s == "m01s00i007")
+        constraints = [con1, con2]
+        pp_filter = _convert_constraints(constraints)
+        self.assertFalse(pp_filter(stcube236))
+        self.assertTrue(pp_filter(stcube4))
+        self.assertTrue(pp_filter(stcube7))
 
     def test_multiple_with_stash(self):
         constraints = [iris.Constraint('air_potential_temperature'),

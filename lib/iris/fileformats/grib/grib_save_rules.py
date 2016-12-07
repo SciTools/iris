@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,17 +14,29 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Grib save implementation.
 
+..deprecated:: 1.8
+
+This module is for legacy requirements only.
+It has been superceded by :mod:`iris.fileformats.grib._save_rules', which has
+no public API.
+
+"""
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import warnings
 
+import cf_units
 import gribapi
 import numpy as np
 import numpy.ma as ma
 
 import iris
 import iris.exceptions
-import iris.unit
 from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
 
@@ -52,10 +64,59 @@ def gribbability_check(cube):
         raise iris.exceptions.TranslationError("time coord not found")
 
 
-# ###########################
-# ### grid template stuff ###
-# ###########################
+###############################################################################
+#
+# Identification Section 1
+#
+###############################################################################
 
+def centre(cube, grib):
+    # TODO: read centre from cube
+    gribapi.grib_set_long(grib, "centre", 74)  # UKMO
+    gribapi.grib_set_long(grib, "subCentre", 0)  # exeter is not in the spec
+
+
+def reference_time(cube, grib):
+    # Set the reference time.
+    # (analysis, forecast start, verify time, obs time, etc)
+    try:
+        fp_coord = cube.coord("forecast_period")
+    except iris.exceptions.CoordinateNotFoundError:
+        fp_coord = None
+
+    if fp_coord is not None:
+        rt, rt_meaning, _, _ = _non_missing_forecast_period(cube)
+    else:
+        rt, rt_meaning, _, _ = _missing_forecast_period(cube)
+
+    gribapi.grib_set_long(grib, "significanceOfReferenceTime", rt_meaning)
+    gribapi.grib_set_long(
+        grib, "dataDate", "%04d%02d%02d" % (rt.year, rt.month, rt.day))
+    gribapi.grib_set_long(
+        grib, "dataTime", "%02d%02d" % (rt.hour, rt.minute))
+
+    # TODO: Set the calendar, when we find out what happened to the proposal!
+    # http://tinyurl.com/oefqgv6
+    # I was sure it was approved for pre-operational use but it's not there.
+
+
+def identification(cube, grib):
+    centre(cube, grib)
+    reference_time(cube, grib)
+
+    # operational product, operational test, research product, etc
+    # (missing for now)
+    gribapi.grib_set_long(grib, "productionStatusOfProcessedData", 255)
+    # analysis, forecast, processed satellite, processed radar,
+    # (analysis and forecast products for now)
+    gribapi.grib_set_long(grib, "typeOfProcessedData", 2)
+
+
+###############################################################################
+#
+# Grid Definition Section 3
+#
+###############################################################################
 
 def shape_of_the_earth(cube, grib):
 
@@ -177,10 +238,11 @@ def grid_template(cube, grib):
         raise ValueError("Currently unhandled CoordSystem: %s" % cs)
 
 
-# ##############################
-# ### product template stuff ###
-# ##############################
-
+###############################################################################
+#
+# Product Definition Section 4
+#
+###############################################################################
 
 def param_code(cube, grib):
     # NOTE: for now, can match by *either* standard_name or long_name.
@@ -236,8 +298,8 @@ def _non_missing_forecast_period(cube):
     # Convert fp and t to hours so we can subtract to calculate R.
     cf_fp_hrs = fp_coord.units.convert(fp_coord.points[0], 'hours')
     t_coord = cube.coord("time").copy()
-    hours_since = iris.unit.Unit("hours since epoch",
-                                 calendar=t_coord.units.calendar)
+    hours_since = cf_units.Unit("hours since epoch",
+                                calendar=t_coord.units.calendar)
     t_coord.convert_units(hours_since)
 
     rt_num = t_coord.points[0] - cf_fp_hrs
@@ -245,11 +307,11 @@ def _non_missing_forecast_period(cube):
     rt_meaning = 1  # "start of forecast"
 
     # Forecast period
-    if fp_coord.units == iris.unit.Unit("hours"):
+    if fp_coord.units == cf_units.Unit("hours"):
         grib_time_code = 1
-    elif fp_coord.units == iris.unit.Unit("minutes"):
+    elif fp_coord.units == cf_units.Unit("minutes"):
         grib_time_code = 0
-    elif fp_coord.units == iris.unit.Unit("seconds"):
+    elif fp_coord.units == cf_units.Unit("seconds"):
         grib_time_code = 13
     else:
         raise iris.exceptions.TranslationError(
@@ -347,19 +409,19 @@ def non_hybrid_surfaces(cube, grib):
     # pressure
     if cube.coords("air_pressure") or cube.coords("pressure"):
         grib_v_code = 100
-        output_unit = iris.unit.Unit("Pa")
+        output_unit = cf_units.Unit("Pa")
         v_coord = (cube.coords("air_pressure") or cube.coords("pressure"))[0]
 
     # altitude
     elif cube.coords("altitude"):
         grib_v_code = 102
-        output_unit = iris.unit.Unit("m")
+        output_unit = cf_units.Unit("m")
         v_coord = cube.coord("altitude")
 
     # height
     elif cube.coords("height"):
         grib_v_code = 103
-        output_unit = iris.unit.Unit("m")
+        output_unit = cf_units.Unit("m")
         v_coord = cube.coord("height")
 
     # unknown / absent
@@ -463,8 +525,8 @@ def time_processing_period(cube, grib):
 
     # Can safely assume bounded pt.
     pt_coord = cube.coord("time")
-    end = iris.unit.num2date(pt_coord.bounds[0, 1], pt_coord.units.name,
-                             pt_coord.units.calendar)
+    end = cf_units.num2date(pt_coord.bounds[0, 1], pt_coord.units.name,
+                            pt_coord.units.calendar)
 
     gribapi.grib_set_long(grib, "yearOfEndOfOverallTimeInterval", end.year)
     gribapi.grib_set_long(grib, "monthOfEndOfOverallTimeInterval", end.month)
@@ -551,47 +613,11 @@ def product_template(cube, grib):
         'A suitable product template could not be deduced')
 
 
-def centre(cube, grib):
-    # TODO: read centre from cube
-    gribapi.grib_set_long(grib, "centre", 74)  # UKMO
-    gribapi.grib_set_long(grib, "subCentre", 0)  # exeter is not in the spec
-
-
-def reference_time(cube, grib):
-    # Set the reference time.
-    # (analysis, forecast start, verify time, obs time, etc)
-    try:
-        fp_coord = cube.coord("forecast_period")
-    except iris.exceptions.CoordinateNotFoundError:
-        fp_coord = None
-
-    if fp_coord is not None:
-        rt, rt_meaning, _, _ = _non_missing_forecast_period(cube)
-    else:
-        rt, rt_meaning, _, _ = _missing_forecast_period(cube)
-
-    gribapi.grib_set_long(grib, "significanceOfReferenceTime", rt_meaning)
-    gribapi.grib_set_long(
-        grib, "dataDate", "%04d%02d%02d" % (rt.year, rt.month, rt.day))
-    gribapi.grib_set_long(
-        grib, "dataTime", "%02d%02d" % (rt.hour, rt.minute))
-
-    # TODO: Set the calendar, when we find out what happened to the proposal!
-    # http://tinyurl.com/oefqgv6
-    # I was sure it was approved for pre-operational use but it's not there.
-
-
-def identification(cube, grib):
-    centre(cube, grib)
-    reference_time(cube, grib)
-
-    # operational product, operational test, research product, etc
-    # (missing for now)
-    gribapi.grib_set_long(grib, "productionStatusOfProcessedData", 255)
-    # analysis, forecast, processed satellite, processed radar,
-    # (analysis and forecast products for now)
-    gribapi.grib_set_long(grib, "typeOfProcessedData", 2)
-
+###############################################################################
+#
+# Data Representation Section 5
+#
+###############################################################################
 
 def data(cube, grib):
     # Masked data?
@@ -635,12 +661,35 @@ def data(cube, grib):
     gribapi.grib_set_double_array(grib, "values", data.flatten())
 
     # todo: check packing accuracy?
-#    print "packingError", gribapi.getb_get_double(grib, "packingError")
+#    print("packingError", gribapi.getb_get_double(grib, "packingError"))
 
+
+###############################################################################
 
 def run(cube, grib):
+    """
+    Sets the keys of the grib message based on the contents of the cube.
+
+    Args:
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`.
+
+    * grib_message_id:
+        ID of a grib message in memory. This is typically the return value of
+        :func:`gribapi.grib_new_from_samples`.
+
+    """
     gribbability_check(cube)
+
+    # Section 1 - Identification Section.
     identification(cube, grib)
+
+    # Section 3 - Grid Definition Section (Grid Definition Template)
     grid_template(cube, grib)
+
+    # Section 4 - Product Definition Section (Product Definition Template)
     product_template(cube, grib)
+
+    # Section 5 - Data Representation Section (Data Representation Template)
     data(cube, grib)

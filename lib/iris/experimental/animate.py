@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,9 @@
 Wrapper for animating iris cubes using iris or matplotlib plotting functions
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import warnings
 
@@ -117,7 +120,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     vmax = kwargs.pop('vmax', max([cc.data.max() for cc in cubes]))
 
     update = update_animation_iris
-    frames = xrange(len(cubes))
+    frames = range(len(cubes))
 
     return animation.FuncAnimation(fig, update,
                                    frames=frames,

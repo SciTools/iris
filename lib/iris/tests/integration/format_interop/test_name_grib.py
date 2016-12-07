@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,15 +16,23 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Integration tests for NAME to GRIB2 interoperability."""
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
+from distutils.version import StrictVersion
+
+import cf_units
 import numpy as np
+import warnings
 
 import iris
-from iris.coords import DimCoord
-import iris.unit
+
+if tests.GRIB_AVAILABLE:
+    import gribapi
 
 
 def name_cb(cube, field, filename):
@@ -39,12 +47,11 @@ def name_cb(cube, field, filename):
     # NAME contains extra vertical meta-data.
     z_coord = cube.coords('height')
     if z_coord:
+        z_coord[0].standard_name = 'height'
         z_coord[0].long_name = 'height above ground level'
-    z_coord = cube.coords('altitude')
-    if z_coord:
-        z_coord[0].long_name = 'altitude above sea level'
 
 
+@tests.skip_grib
 class TestNameToGRIB(tests.IrisTest):
 
     def check_common(self, name_cube, grib_cube):
@@ -65,7 +72,22 @@ class TestNameToGRIB(tests.IrisTest):
     def test_name2_field(self):
         filepath = tests.get_data_path(('NAME', 'NAMEII_field.txt'))
         name_cubes = iris.load(filepath)
+        # Check gribapi version, because we currently have a known load/save
+        # problem with gribapi 1v14 (at least).
+        gribapi_ver = gribapi.grib_get_api_version()
+        gribapi_fully_supported_version = \
+            (StrictVersion(gribapi.grib_get_api_version()) <
+             StrictVersion('1.13'))
         for i, name_cube in enumerate(name_cubes):
+            if not gribapi_fully_supported_version:
+                data = name_cube.data
+                if np.min(data) == np.max(data):
+                    msg = ('NAMEII cube #{}, "{}" has empty data : '
+                           'SKIPPING test for this cube, as save/load will '
+                           'not currently work with gribabi > 1v12.')
+                    warnings.warn(msg.format(i, name_cube.name()))
+                    continue
+
             with self.temp_filename('.grib2') as temp_filename:
                 iris.save(name_cube, temp_filename)
                 grib_cube = iris.load_cube(temp_filename, callback=name_cb)

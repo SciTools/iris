@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,10 @@
 Test the iteration of cubes in step.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -36,6 +40,7 @@ import iris.tests.stock
 from functools import reduce
 
 
+@tests.skip_data
 class TestIterateFunctions(tests.IrisTest):
 
     def setUp(self):
@@ -120,7 +125,7 @@ class TestIterateFunctions(tests.IrisTest):
         zip_iterator = iris.iterate.izip(self.cube_b, coords=[])
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue try to
@@ -132,7 +137,7 @@ class TestIterateFunctions(tests.IrisTest):
         zip_iterator = iris.iterate.izip(self.cube_b, coords=self.coord_names)
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try
@@ -144,7 +149,7 @@ class TestIterateFunctions(tests.IrisTest):
         zip_iterator = iris.iterate.izip(self.cube_b, coords='grid_latitude')
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try
@@ -159,7 +164,7 @@ class TestIterateFunctions(tests.IrisTest):
                                                               'grid_longitude'])
         for cube_slice in slice_iterator:
             # First element of tuple: (extractedcube, )
-            zip_slice = zip_iterator.next()[0]
+            zip_slice = next(zip_iterator)[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try
@@ -208,7 +213,7 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(count, nslices)
 
     def test_izip_subcube_of_same(self):
-        for _ in xrange(3):
+        for _ in range(3):
             super_cube = self.cube_a
             # Random int to pick coord value to calc subcube
             k = random.randint(0, super_cube.shape[0]-1)
@@ -234,7 +239,7 @@ class TestIterateFunctions(tests.IrisTest):
         nslices = reduce(operator.mul, self.cube_a.shape[1:])
         nslices_to_check = 20       # This is only approximate as we use random to select slices
         # Fraction of slices to check
-        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
+        check_eq_probability = max(0.0, min(1.0, nslices_to_check / nslices))
 
         ij_iterator = np.ndindex(self.cube_a.shape[1], self.cube_a.shape[2])
         count = 0
@@ -250,7 +255,7 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(count, nslices)
         # Two coords
         nslices = self.cube_a.shape[0]
-        i_iterator = iter(xrange(self.cube_a.shape[0]))
+        i_iterator = iter(range(self.cube_a.shape[0]))
         count = 0
         for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
                                                       coords=self.coord_names):
@@ -313,7 +318,7 @@ class TestIterateFunctions(tests.IrisTest):
         nslices = big_cube.shape[0]*big_cube.shape[2]
         nslices_to_check = 20   # This is only approximate as we use random to select slices
         # Fraction of slices to check
-        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
+        check_eq_probability = max(0.0, min(1.0, nslices_to_check / nslices))
         ij_iterator = np.ndindex(big_cube.shape[0], big_cube.shape[2])
         count = 0
         for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,

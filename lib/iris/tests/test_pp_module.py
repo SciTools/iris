@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -26,9 +28,11 @@ import unittest
 
 import biggus
 import netcdftime
+from numpy.testing import assert_array_equal
 
 import iris.fileformats
 import iris.fileformats.pp as pp
+from iris.tests import mock
 import iris.util
 
 
@@ -85,11 +89,13 @@ class IrisPPTest(tests.IrisTest):
         test_string = str(pp_fields)
         reference_path = tests.get_result_path(reference_filename)
         if os.path.isfile(reference_path):
-            reference = ''.join(open(reference_path, 'r').readlines())
+            with open(reference_path, 'r') as reference_fh:
+                reference = ''.join(reference_fh.readlines())
             self._assert_str_same(reference+'\n', test_string+'\n', reference_filename, type_comparison_name='PP files')
         else:
             tests.logger.warning('Creating result file: %s', reference_path)
-            open(reference_path, 'w').writelines(test_string)
+            with open(reference_path, 'w') as reference_fh:
+                reference_fh.writelines(test_string)
 
 
 class TestPPHeaderDerived(unittest.TestCase):
@@ -119,11 +125,13 @@ class TestPPHeaderDerived(unittest.TestCase):
         
     def test_lbproc_access(self):
         # lbproc == 65539
-        self.assertEqual(self.pp.lbproc[0], 9)
-        self.assertEqual(self.pp.lbproc[19], 0)
-        self.assertEqual(self.pp.lbproc.flag1, 1)
-        self.assertEqual(self.pp.lbproc.flag65536, 1)
-        self.assertEqual(self.pp.lbproc.flag131072, 0)
+        with mock.patch('warnings.warn') as warn:
+            self.assertEqual(self.pp.lbproc[0], 9)
+            self.assertEqual(self.pp.lbproc[19], 0)
+            self.assertEqual(self.pp.lbproc.flag1, 1)
+            self.assertEqual(self.pp.lbproc.flag65536, 1)
+            self.assertEqual(self.pp.lbproc.flag131072, 0)
+        self.assertEqual(warn.call_count, 5)
     
     def test_set_lbuser(self):
         self.pp.stash = 'm02s12i003'
@@ -147,7 +155,7 @@ class TestPPHeaderDerived(unittest.TestCase):
         
     def test_lbproc_bad_access(self):
         try:
-            print self.pp.lbproc.flag65537
+            print(self.pp.lbproc.flag65537)
         except AttributeError:
             pass
         except Exception as err:
@@ -168,18 +176,19 @@ class TestPPField_GlobalTemperature(IrisPPTest):
         self.assertEqual(self.r[0].lbtim.ic, 2)
     
     def test_lbproc_access(self):
-        self.assertEqual(self.r[0].lbproc[0], 8)
-        self.assertEqual(self.r[0].lbproc[19], 0)
-        self.assertEqual(self.r[0].lbproc.flag1, 0)
-        self.assertEqual(self.r[0].lbproc.flag65536, 0)
-        self.assertEqual(self.r[0].lbproc.flag131072, 0)
+        with mock.patch('warnings.warn') as warn:
+            self.assertEqual(self.r[0].lbproc.flag1, 0)
+            self.assertEqual(self.r[0].lbproc.flag65536, 0)
+            self.assertEqual(self.r[0].lbproc.flag131072, 0)
+        self.assertEqual(warn.call_count, 3)
 
     def test_t1_t2_access(self):
         self.assertEqual(self.r[0].t1.timetuple(), netcdftime.datetime(1994, 12, 1, 0, 0).timetuple())
 
     def test_save_single(self):
         temp_filename = iris.util.create_temp_filename(".pp")
-        self.r[0].save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            self.r[0].save(temp_fh)
         self.assertEqual(self.file_checksum(temp_filename), self.file_checksum(self.original_pp_filepath))
         os.remove(temp_filename)
            
@@ -190,33 +199,55 @@ class TestPPField_GlobalTemperature(IrisPPTest):
 
         temp_filename = iris.util.create_temp_filename(".pp")
         
-        f.save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            f.save(temp_fh)
         self.assertEqual(self.file_checksum(temp_filename), self.file_checksum(filepath))
-        
+
         os.remove(temp_filename)
-    
+
 
 @tests.skip_data
 class TestPackedPP(IrisPPTest):
     def test_wgdos(self):
-        r = pp.load(tests.get_data_path(('PP', 'wgdos_packed', 'nae.20100104-06_0001.pp')))
-        
-        # Check that the result is a generator and convert to a list so that we can index and get the first one
-        self.assertEqual( type(r), GeneratorType)
+        filepath = tests.get_data_path(('PP', 'wgdos_packed',
+                                        'nae.20100104-06_0001.pp'))
+        r = pp.load(filepath)
+
+        # Check that the result is a generator and convert to a list so that we
+        # can index and get the first one
+        self.assertEqual(type(r), GeneratorType)
         r = list(r)
-        
+
         self.check_pp(r, ('PP', 'nae_unpacked.pp.txt'))
-        
-        # check that trying to save this field again raises an error (we cannot currently write WGDOS packed fields)
+
+        # check that trying to save this field again raises an error
+        # (we cannot currently write WGDOS packed fields without mo_pack)
         temp_filename = iris.util.create_temp_filename(".pp")
-        self.assertRaises(NotImplementedError, r[0].save, open(temp_filename, 'wb'))
+        with mock.patch('iris.fileformats.pp.mo_pack', None):
+            with self.assertRaises(NotImplementedError):
+                with open(temp_filename, 'wb') as temp_fh:
+                    r[0].save(temp_fh)
         os.remove(temp_filename)
-        
+
+    @unittest.skipIf(pp.mo_pack is None, 'Requires mo_pack.')
+    def test_wgdos_mo_pack(self):
+        filepath = tests.get_data_path(('PP', 'wgdos_packed',
+                                        'nae.20100104-06_0001.pp'))
+        orig_fields = pp.load(filepath)
+        with self.temp_filename('.pp') as temp_filename:
+            with open(temp_filename, 'wb') as fh:
+                for field in orig_fields:
+                    field.save(fh)
+            saved_fields = pp.load(temp_filename)
+            for orig_field, saved_field in zip(orig_fields, saved_fields):
+                assert_array_equal(orig_field.data, saved_field.data)
+
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))
 
-        # Check that the result is a generator and convert to a list so that we can index and get the first one
-        self.assertEqual( type(r), GeneratorType)
+        # Check that the result is a generator and convert to a list so that we
+        # can index and get the first one
+        self.assertEqual(type(r), GeneratorType)
         r = list(r)
 
         self.check_pp(r, ('PP', 'rle_unpacked.pp.txt'))
@@ -225,7 +256,8 @@ class TestPackedPP(IrisPPTest):
         # (we cannot currently write RLE packed fields)
         with self.temp_filename('.pp') as temp_filename:
             with self.assertRaises(NotImplementedError):
-                r[0].save(open(temp_filename, 'wb'))
+                with open(temp_filename, 'wb') as temp_fh:
+                    r[0].save(temp_fh)
 
 
 @tests.skip_data
@@ -253,7 +285,8 @@ class TestPPFileExtraXData(IrisPPTest):
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
-        f.save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            f.save(temp_fh)
         
         s = next(pp.load(temp_filename))
         
@@ -292,7 +325,8 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
-        f.save(open(temp_filename, 'wb'))
+        with open(temp_filename, 'wb') as temp_fh:
+            f.save(temp_fh)
         
         s = next(pp.load(temp_filename))
         
@@ -307,14 +341,18 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
 class TestBitwiseInt(unittest.TestCase):
 
     def test_3(self):
-        t = pp.BitwiseInt(3)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(3)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t[0], 3)
         self.assertTrue(t.flag1)
         self.assertTrue(t.flag2)
         self.assertRaises(AttributeError, getattr, t, "flag1024")
         
     def test_setting_flags(self):
-        t = pp.BitwiseInt(3)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(3)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t._value, 3)
 
         t.flag1 = False
@@ -330,12 +368,16 @@ class TestBitwiseInt(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, t, "flag1024", True)
         self.assertRaises(TypeError, setattr, t, "flag2", 1)
 
-        t = pp.BitwiseInt(3, num_bits=11)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(3, num_bits=11)
+        self.assertEqual(warn.call_count, 1)
         t.flag1024 = True
         self.assertEqual(t._value, 1027)
 
     def test_standard_operators(self):
-        t = pp.BitwiseInt(323)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(323)
+        self.assertEqual(warn.call_count, 1)
         
         self.assertTrue(t == 323)
         self.assertFalse(t == 324)
@@ -359,7 +401,9 @@ class TestBitwiseInt(unittest.TestCase):
         self.assertFalse(t in [324])
 
     def test_323(self):
-        t = pp.BitwiseInt(323)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(323)
+        self.assertEqual(warn.call_count, 1)
         self.assertRaises(AttributeError, getattr, t, 'flag0')
         
         self.assertEqual(t.flag1, 1)
@@ -374,19 +418,25 @@ class TestBitwiseInt(unittest.TestCase):
 
 
     def test_33214(self):
-        t = pp.BitwiseInt(33214)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(33214)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t[0], 4)
         self.assertEqual(t.flag1, 0)
         self.assertEqual(t.flag2, 1)
 
     def test_negative_number(self):
-        try:
-            _ = pp.BitwiseInt(-5)
-        except ValueError as err:
-            self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
+        with mock.patch('warnings.warn') as warn:
+            try:
+                _ = pp.BitwiseInt(-5)
+            except ValueError as err:
+                self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
+        self.assertEqual(warn.call_count, 1)
 
     def test_128(self):
-        t = pp.BitwiseInt(128)
+        with mock.patch('warnings.warn') as warn:
+            t = pp.BitwiseInt(128)
+        self.assertEqual(warn.call_count, 1)
         self.assertEqual(t.flag1, 0)
         self.assertEqual(t.flag2, 0)
         self.assertEqual(t.flag4, 0)
@@ -508,7 +558,7 @@ class TestPPDataProxyEquality(unittest.TestCase):
     def test_not_implemented(self):
         class Terry(object): pass
         pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian",
-                             "spam", "beans", "eggs")
+                             "spam", "beans", "eggs", "parrot")
         self.assertIs(pox.__eq__(Terry()), NotImplemented)
         self.assertIs(pox.__ne__(Terry()), NotImplemented)
 

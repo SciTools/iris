@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import contextlib
 from distutils.command import build_ext, build_py
 from distutils.core import setup, Command
@@ -16,22 +18,25 @@ import setuptools
 sys.path.append('lib/iris/tests/runner')
 from _runner import TestRunner
 
-exclude_dirs = ['compiled_krb']
 
 # Returns the package and all its sub-packages
 def find_package_tree(root_path, root_package):
+    root_path = root_path.replace('/', os.path.sep)
     packages = [root_package]
-    root_count = len(root_path.split('/'))
+    root_count = len(root_path.split(os.path.sep))
     for (dir_path, dir_names, file_names) in os.walk(convert_path(root_path)):
         # Prune dir_names *in-place* to prevent unwanted directory recursion
         for dir_name in list(dir_names):
             contains_init_file = os.path.isfile(os.path.join(dir_path,
                                                              dir_name,
                                                              '__init__.py'))
-            if dir_name in exclude_dirs or not contains_init_file:
+            if not contains_init_file:
+                dir_names.remove(dir_name)
+            # Exclude compiled PyKE rules, but keep associated unit tests.
+            if dir_name == 'compiled_krb' and 'tests' not in dir_path:
                 dir_names.remove(dir_name)
         if dir_names:
-            prefix = dir_path.split('/')[root_count:]
+            prefix = dir_path.split(os.path.sep)[root_count:]
             packages.extend(['.'.join([root_package] + prefix + [dir_name])
                                 for dir_name in dir_names])
     return packages
@@ -43,6 +48,8 @@ def file_walk_relative(top, remove=''):
     the given prefix from the root/file result.
 
     """
+    top = top.replace('/', os.path.sep)
+    remove = remove.replace('/', os.path.sep)
     for root, dirs, files in os.walk(top):
         for file in files:
             yield os.path.join(root, file).replace(remove, '')
@@ -81,7 +88,7 @@ class CleanSource(Command):
                     compiled_path = os.path.join(root_path, file_name)
                     source_path = compiled_path[:-1]
                     if not os.path.exists(source_path):
-                        print 'Cleaning', compiled_path
+                        print('Cleaning', compiled_path)
                         os.remove(compiled_path)
 
 
@@ -173,9 +180,22 @@ class BuildPyWithExtras(build_py.build_py):
             MakePykeRules._pyke_rule_compile()
 
 
+def extract_version():
+    version = None
+    fdir = os.path.dirname(__file__)
+    fnme = os.path.join(fdir, 'lib', 'iris', '__init__.py')
+    with open(fnme) as fd:
+        for line in fd:
+            if (line.startswith('__version__')):
+                _, version = line.split('=')
+                version = version.strip()[1:-1]  # Remove quotation characters
+                break
+    return version
+
+
 setup(
     name='Iris',
-    version='1.8.0-DEV',
+    version=extract_version(),
     url='http://scitools.org.uk/iris/',
     author='UK Met Office',
 
@@ -196,7 +216,7 @@ setup(
             standard=False,
             ext_modules=[
                 setuptools.Extension(
-                    'iris.fileformats.pp_packing',
+                    'iris.fileformats._old_pp_packing',
                     ['src/iris/fileformats/pp_packing/pp_packing.c'],
                     libraries=['mo_unpack'],
                     include_dirs=[np.get_include()]

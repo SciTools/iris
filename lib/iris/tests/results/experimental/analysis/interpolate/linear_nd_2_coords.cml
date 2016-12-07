@@ -3,19 +3,19 @@
   <cube long_name="thingness" units="1">
     <coords>
       <coord>
-        <auxCoord id="7c9a33bf" long_name="bar" points="[25.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="434cbbd8" long_name="bar" points="[25.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="549be28b" long_name="foo" points="[20.25]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="b0d35dcf" long_name="foo" points="[20.25]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="a475d0a4" points="[1.5]" shape="(1,)" standard_name="latitude" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="d7a60179" points="[1.5]" shape="(1,)" standard_name="latitude" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="5d3b1011" points="[1.5]" shape="(1,)" standard_name="longitude" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="0a0f475b" points="[1.5]" shape="(1,)" standard_name="longitude" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a2260f1f" long_name="wibble" points="[10.0, 30.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="10b8e1fc" long_name="wibble" points="[10.0, 30.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

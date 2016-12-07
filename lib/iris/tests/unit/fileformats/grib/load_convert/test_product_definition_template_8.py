@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,13 +19,17 @@ Tests for function
 :func:`iris.fileformats.grib._load_convert.product_definition_template_8`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.fileformats.grib._load_convert import product_definition_template_8
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
@@ -68,11 +72,10 @@ class Test(tests.IrisTest):
                          ['aux_coords_and_dims', 'cell_methods'])
         self.assertEqual(self.metadata['cell_methods'],
                          [mock.sentinel.dummy_cell_method])
-        self.assertEqual(
-            sorted(self.metadata['aux_coords_and_dims']),
-            sorted([(self.frt_coord, None),
-                    (mock.sentinel.dummy_fp_coord, None),
-                    (mock.sentinel.dummy_time_coord, None)]))
+        six.assertCountEqual(self, self.metadata['aux_coords_and_dims'],
+                             [(self.frt_coord, None),
+                              (mock.sentinel.dummy_fp_coord, None),
+                              (mock.sentinel.dummy_time_coord, None)])
 
 
 if __name__ == '__main__':

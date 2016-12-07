@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,23 +18,27 @@
 Definitions of coordinates.
 
 """
-from __future__ import division
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from abc import ABCMeta, abstractproperty
 import collections
 import copy
-from itertools import chain, izip_longest
+from itertools import chain
+from six.moves import zip_longest
 import operator
 import warnings
 import zlib
 
+import biggus
 import netcdftime
 import numpy as np
 
 import iris.aux_factory
 import iris.exceptions
 import iris.time
-import iris.unit
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
@@ -50,6 +54,9 @@ class CoordDefn(collections.namedtuple('CoordDefn',
     :class:`AuxCoord` based on its metadata.
 
     """
+
+    __slots__ = ()
+
     def name(self, default='unknown'):
         """
         Returns a human-readable name.
@@ -60,6 +67,20 @@ class CoordDefn(collections.namedtuple('CoordDefn',
 
         """
         return self.standard_name or self.long_name or self.var_name or default
+
+    def __lt__(self, other):
+        if not isinstance(other, CoordDefn):
+            return NotImplemented
+
+        def _sort_key(defn):
+            # Emulate Python 2 behaviour with None
+            return (defn.standard_name is not None, defn.standard_name,
+                    defn.long_name is not None, defn.long_name,
+                    defn.var_name is not None, defn.var_name,
+                    defn.units is not None, defn.units,
+                    defn.coord_system is not None, defn.coord_system)
+
+        return _sort_key(self) < _sort_key(other)
 
 
 class CoordExtent(collections.namedtuple('_CoordExtent', ['name_or_coord',
@@ -101,6 +122,8 @@ class CoordExtent(collections.namedtuple('_CoordExtent', ['name_or_coord',
         return super(CoordExtent, cls).__new__(cls, name_or_coord, minimum,
                                                maximum, min_inclusive,
                                                max_inclusive)
+
+    __slots__ = ()
 
 
 # Coordinate cell styles. Used in plot and cartography.
@@ -191,6 +214,9 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
             bound = tuple([val + mod for val in bound])
         return Cell(point, bound)
 
+    def __hash__(self):
+        return super(Cell, self).__hash__()
+
     def __eq__(self, other):
         """
         Compares Cell equality depending on the type of the object to be
@@ -205,8 +231,8 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                 return self.point == other
         elif isinstance(other, Cell):
             return (self.point == other.point) and (self.bound == other.bound)
-        elif (isinstance(other, basestring) and self.bound is None and
-              isinstance(self.point, basestring)):
+        elif (isinstance(other, six.string_types) and self.bound is None and
+              isinstance(self.point, six.string_types)):
             return self.point == other
         else:
             return NotImplemented
@@ -344,12 +370,11 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         return np.min(self.bound) <= point <= np.max(self.bound)
 
 
-class Coord(CFVariableMixin):
+class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     """
     Abstract superclass for coordinates.
 
     """
-    __metaclass__ = ABCMeta
 
     _MODE_ADD = 1
     _MODE_SUB = 2
@@ -382,7 +407,7 @@ class Coord(CFVariableMixin):
         * var_name:
             CF variable name of coordinate
         * units
-            The :class:`~iris.unit.Unit` of the coordinate's values.
+            The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
         * bounds
             An array of values describing the bounds of each cell. Given n
@@ -445,8 +470,15 @@ class Coord(CFVariableMixin):
             points = self._points
             bounds = self._bounds
         else:
-            points = self.points
-            bounds = self.bounds
+            points = self._points
+            if isinstance(points, iris.aux_factory._LazyArray):
+                # This triggers the LazyArray to compute its values
+                # (if it hasn't already), which will also trigger any
+                # deferred loading of its dependencies.
+                points = points.view()
+            bounds = self._bounds
+            if isinstance(bounds, iris.aux_factory._LazyArray):
+                bounds = bounds.view()
 
             # Make indexing on the cube column based by using the
             # column_slices_generator (potentially requires slicing the
@@ -791,7 +823,7 @@ class Coord(CFVariableMixin):
                 return False
 
         if self.bounds is not None:
-            for b_index in xrange(self.nbounds):
+            for b_index in range(self.nbounds):
                 if not iris.util.monotonic(self.bounds[..., b_index],
                                            strict=True):
                     return False
@@ -828,7 +860,7 @@ class Coord(CFVariableMixin):
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
             if ignore is not None:
-                if isinstance(ignore, basestring):
+                if isinstance(ignore, six.string_types):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
@@ -910,10 +942,15 @@ class Coord(CFVariableMixin):
 
     def collapsed(self, dims_to_collapse=None):
         """
-        Returns a copy of this coordinate which has been collapsed along
+        Returns a copy of this coordinate, which has been collapsed along
         the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
+
+        .. note::
+            You cannot partially collapse a multi-dimensional coordinate. See
+            :ref:`cube.collapsed <partially_collapse_multi-dim_coord>` for more
+            information.
 
         """
         if isinstance(dims_to_collapse, (int, np.integer)):
@@ -927,18 +964,20 @@ class Coord(CFVariableMixin):
         if np.issubdtype(self.dtype, np.str):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
-            serialize = lambda x: '|'.join([str(i) for i in x.flatten()])
+            def serialize(x):
+                return '|'.join([str(i) for i in x.flatten()])
             bounds = None
+            string_type_fmt = 'S{}' if six.PY2 else 'U{}'
             if self.bounds is not None:
                 shape = self.bounds.shape[1:]
                 bounds = []
                 for index in np.ndindex(shape):
                     index_slice = (slice(None),) + tuple(index)
                     bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype('S{}'.format(max(map(len, bounds))))
+                dtype = np.dtype(string_type_fmt.format(max(map(len, bounds))))
                 bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
             points = serialize(self.points)
-            dtype = np.dtype('S{}'.format(len(points)))
+            dtype = np.dtype(string_type_fmt.format(len(points)))
             # Create the new collapsed coordinate.
             coord = self.copy(points=np.array(points, dtype=dtype),
                               bounds=bounds)
@@ -973,8 +1012,9 @@ class Coord(CFVariableMixin):
 
         Kwargs:
 
-        * bound_position - The desired position of the bounds relative to the
-                           position of the points.
+        * bound_position:
+            The desired position of the bounds relative to the position
+            of the points.
 
         Returns:
             A numpy array of shape (len(self.points), 2).
@@ -982,6 +1022,15 @@ class Coord(CFVariableMixin):
         .. note::
 
             This method only works for coordinates with ``coord.ndim == 1``.
+
+        .. note::
+
+            If `iris.FUTURE.clip_latitudes` is True, then this method
+            will clip the coordinate bounds to the range [-90, 90] when:
+
+            - it is a `latitude` or `grid_latitude` coordinate,
+            - the units are degrees,
+            - all the points are in the range [-90, 90].
 
         """
         # XXX Consider moving into DimCoord
@@ -1001,15 +1050,29 @@ class Coord(CFVariableMixin):
             raise ValueError('Coord already has bounds. Remove the bounds '
                              'before guessing new ones.')
 
-        diffs = np.diff(self.points)
-
-        diffs = np.insert(diffs, 0, diffs[0])
-        diffs = np.append(diffs, diffs[-1])
+        if getattr(self, 'circular', False):
+            points = np.empty(self.points.shape[0] + 2)
+            points[1:-1] = self.points
+            direction = 1 if self.points[-1] > self.points[0] else -1
+            points[0] = self.points[-1] - (self.units.modulus * direction)
+            points[-1] = self.points[0] + (self.units.modulus * direction)
+            diffs = np.diff(points)
+        else:
+            diffs = np.diff(self.points)
+            diffs = np.insert(diffs, 0, diffs[0])
+            diffs = np.append(diffs, diffs[-1])
 
         min_bounds = self.points - diffs[:-1] * bound_position
         max_bounds = self.points + diffs[1:] * (1 - bound_position)
 
         bounds = np.array([min_bounds, max_bounds]).transpose()
+
+        if (iris.FUTURE.clip_latitudes and
+                self.name() in ('latitude', 'grid_latitude') and
+                self.units == 'degree'):
+            points = self.points
+            if (points >= -90).all() and (points <= 90).all():
+                np.clip(bounds, -90, 90, out=bounds)
 
         return bounds
 
@@ -1028,8 +1091,9 @@ class Coord(CFVariableMixin):
 
         Kwargs:
 
-        * bound_position - The desired position of the bounds relative to the
-                           position of the points.
+        * bound_position:
+            The desired position of the bounds relative to the position
+            of the points.
 
         .. note::
 
@@ -1041,6 +1105,15 @@ class Coord(CFVariableMixin):
             Unevenly spaced values, such from a wrapped longitude range, can
             produce unexpected results :  In such cases you should assign
             suitable values directly to the bounds property, instead.
+
+        .. note::
+
+            If `iris.FUTURE.clip_latitudes` is True, then this method
+            will clip the coordinate bounds to the range [-90, 90] when:
+
+            - it is a `latitude` or `grid_latitude` coordinate,
+            - the units are degrees,
+            - all the points are in the range [-90, 90].
 
         """
         self.bounds = self._guess_bounds(bound_position)
@@ -1096,6 +1169,14 @@ class Coord(CFVariableMixin):
 
         Only works for one-dimensional coordinates.
 
+        For example:
+
+        >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
+        >>> cube.coord('latitude').nearest_neighbour_index(0)
+        9
+        >>> cube.coord('longitude').nearest_neighbour_index(10)
+        12
+
         .. note:: If the coordinate contains bounds, these will be used to
             determine the nearest neighbour instead of the point values.
 
@@ -1125,14 +1206,21 @@ class Coord(CFVariableMixin):
         #     or if two are equally close, return the lowest index
         if self.has_bounds():
             # make bounds ranges complete+separate, so point is in at least one
+            increasing = self.bounds[0, 1] > self.bounds[0, 0]
             bounds = bounds.copy()
             # sort the bounds cells by their centre values
             sort_inds = np.argsort(np.mean(bounds, axis=1))
             bounds = bounds[sort_inds]
             # replace all adjacent bounds with their averages
-            mid_bounds = 0.5 * (bounds[:-1, 1] + bounds[1:, 0])
-            bounds[:-1, 1] = mid_bounds
-            bounds[1:, 0] = mid_bounds
+            if increasing:
+                mid_bounds = 0.5 * (bounds[:-1, 1] + bounds[1:, 0])
+                bounds[:-1, 1] = mid_bounds
+                bounds[1:, 0] = mid_bounds
+            else:
+                mid_bounds = 0.5 * (bounds[:-1, 0] + bounds[1:, 1])
+                bounds[:-1, 0] = mid_bounds
+                bounds[1:, 1] = mid_bounds
+
             # if point lies beyond either end, fix the end cell to include it
             bounds[0, 0] = min(point, bounds[0, 0])
             bounds[-1, 1] = max(point, bounds[-1, 1])
@@ -1185,7 +1273,7 @@ class Coord(CFVariableMixin):
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
-            for name in sorted(self.attributes.iterkeys()):
+            for name in sorted(six.iterkeys(self.attributes)):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
                 attribute_element.setAttribute('value',
@@ -1216,13 +1304,20 @@ class Coord(CFVariableMixin):
 
     def _xml_id(self):
         # Returns a consistent, unique string identifier for this coordinate.
-        unique_value = (self.standard_name, self.long_name, self.units,
-                        tuple(sorted(self.attributes.items())),
-                        self.coord_system)
+        unique_value = b''
+        if self.standard_name:
+            unique_value += self.standard_name.encode('utf-8')
+        unique_value += b'\0'
+        if self.long_name:
+            unique_value += self.long_name.encode('utf-8')
+        unique_value += b'\0'
+        unique_value += str(self.units).encode('utf-8') + b'\0'
+        for k, v in sorted(self.attributes.items()):
+            unique_value += (str(k) + ':' + str(v)).encode('utf-8') + b'\0'
+        unique_value += str(self.coord_system).encode('utf-8') + b'\0'
         # Mask to ensure consistency across Python versions & platforms.
-        crc = zlib.crc32(str(unique_value)) & 0xffffffff
-        # 'L' added by 32-bit systems.
-        return hex(crc).lstrip('0x').rstrip('L')
+        crc = zlib.crc32(unique_value) & 0xffffffff
+        return '%08x' % (crc, )
 
     def _value_type_name(self):
         """
@@ -1231,11 +1326,23 @@ class Coord(CFVariableMixin):
 
         """
         values = self.points
-        value_type_name = values.dtype.name
-        if self.points.dtype.kind == 'S':
+        dtype = values.dtype
+        kind = dtype.kind
+        if kind in 'SU':
+            # Establish the basic type name for 'string' type data.
+            # N.B. this means "unicode" in Python3, and "str" in Python2.
             value_type_name = 'string'
-        elif self.points.dtype.kind == 'U':
-            value_type_name = 'unicode'
+
+            # Override this if not the 'native' string type.
+            if six.PY3:
+                if kind == 'S':
+                    value_type_name = 'bytes'
+            else:
+                if kind == 'U':
+                    value_type_name = 'unicode'
+        else:
+            value_type_name = dtype.name
+
         return value_type_name
 
 
@@ -1326,6 +1433,20 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
 
+    def __deepcopy__(self, memo):
+        """
+        coord.__deepcopy__() -> Deep copy of coordinate.
+
+        Used if copy.deepcopy is called on a coordinate.
+
+        """
+        new_coord = copy.deepcopy(super(Coord, self), memo)
+        # Ensure points and bounds arrays are read-only
+        new_coord._points.flags.writeable = False
+        if new_coord._bounds is not None:
+            new_coord._bounds.flags.writeable = False
+        return new_coord
+
     def copy(self, points=None, bounds=None):
         new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
         # Make the array read-only.
@@ -1344,6 +1465,11 @@ class DimCoord(Coord):
         return result
 
     # The __ne__ operator from Coord implements the not __eq__ method.
+
+    # This is necessary for merging, but probably shouldn't be used otherwise.
+    # See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
 
     def __getitem__(self, key):
         coord = super(DimCoord, self).__getitem__(key)
@@ -1426,7 +1552,7 @@ class DimCoord(Coord):
             if n_points > 1:
 
                 directions = set()
-                for b_index in xrange(n_bounds):
+                for b_index in range(n_bounds):
                     monotonic, direction = iris.util.monotonic(
                         bounds[:, b_index], strict=True, return_direction=True)
                     if not monotonic:
@@ -1483,18 +1609,25 @@ class AuxCoord(Coord):
     @property
     def points(self):
         """Property containing the points values as a numpy array"""
-        return self._points.view()
+        points = self._points
+        if isinstance(points, biggus.Array):
+            points = points.ndarray()
+            self._points = points
+        return points.view()
 
     @points.setter
     def points(self, points):
         # Set the points to a new array - as long as it's the same shape.
 
-        # With the exception of LazyArrays ensure points is a numpy array with
-        # ndmin of 1.
-        # This will avoid Scalar coords with points of shape () rather than the
-        # desired (1,)
-        #   ... could change to: points = lazy.array(points, ndmin=1)
-        if not isinstance(points, iris.aux_factory.LazyArray):
+        # With the exception of LazyArrays, ensure points has an ndmin
+        # of 1 and is either a numpy or biggus array.
+        # This will avoid Scalar coords with points of shape () rather
+        # than the desired (1,)
+        if isinstance(points, biggus.Array):
+            if points.shape == ():
+                points = biggus.ConstantArray((1,), points.ndarray(),
+                                              points.dtype)
+        elif not isinstance(points, iris.aux_factory._LazyArray):
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
         if hasattr(self, '_points') and self._points is not None:
@@ -1516,7 +1649,11 @@ class AuxCoord(Coord):
 
         """
         if self._bounds is not None:
-            bounds = self._bounds.view()
+            bounds = self._bounds
+            if isinstance(bounds, biggus.Array):
+                bounds = bounds.ndarray()
+                self._bounds = bounds
+            bounds = bounds.view()
         else:
             bounds = None
 
@@ -1526,13 +1663,226 @@ class AuxCoord(Coord):
     def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is not None:
-            if not isinstance(bounds, iris.aux_factory.LazyArray):
+            if not isinstance(bounds, (iris.aux_factory._LazyArray,
+                                       biggus.Array)):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
             if self._points.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
         self._bounds = bounds
+
+    # This is necessary for merging, but probably shouldn't be used otherwise.
+    # See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
+
+
+class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
+    """
+    A CF Cell Measure, providing area or volume properties of a cell
+    where these cannot be inferred from the Coordinates and
+    Coordinate Reference System.
+
+    """
+
+    def __init__(self, data, standard_name=None, long_name=None,
+                 var_name=None, units='1', attributes=None, measure=None):
+
+        """
+        Constructs a single cell measure.
+
+        Args:
+
+        * data:
+            The values of the measure for each cell.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of coordinate
+        * long_name:
+            Descriptive name of coordinate
+        * var_name:
+            CF variable name of coordinate
+        * units
+            The :class:`~cf_units.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
+        * attributes
+            A dictionary containing other CF and user-defined attributes.
+        * measure
+            A string describing the type of measure.  'area' and 'volume'
+            are the only valid entries.
+
+        """
+        #: CF standard name of the quantity that the coordinate represents.
+        self.standard_name = standard_name
+
+        #: Descriptive name of the coordinate.
+        self.long_name = long_name
+
+        #: The CF variable name for the coordinate.
+        self.var_name = var_name
+
+        #: Unit of the quantity that the coordinate represents.
+        self.units = units
+
+        #: Other attributes, including user specified attributes that
+        #: have no meaning to Iris.
+        self.attributes = attributes
+
+        self.data = data
+
+        self.measure = measure
+
+    @property
+    def measure(self):
+        return self._measure
+
+    @property
+    def data(self):
+        """Property containing the data values as a numpy array"""
+        data = self._data
+        if isinstance(data, biggus.Array):
+            data = data.ndarray()
+            self._data = data
+        return data.view()
+
+    @data.setter
+    def data(self, data):
+        # Set the data to a new array - as long as it's the same shape.
+        # If data are already defined for this CellMeasure,
+        if data is None:
+            raise ValueError('The data payload of a CellMeasure may not be '
+                             'None; it must be a numpy array or equivalent.')
+        if data.shape == ():
+            data = np.array(data, ndmin=1)
+        if hasattr(self, '_data') and self._data is not None:
+            # Check that setting these data wouldn't change self.shape
+            if data.shape != self.shape:
+                raise ValueError("New data shape must match existing data "
+                                 "shape.")
+
+        self._data = data
+
+    @property
+    def shape(self):
+        """The fundamental shape of the Cell Measure, expressed as a tuple."""
+        # Access the underlying _data attribute to avoid triggering
+        # a deferred load unnecessarily.
+        return self._data.shape
+
+    @property
+    def ndim(self):
+        """
+        Return the number of dimensions of the cell measure.
+
+        """
+        return self._data.ndim
+
+    @measure.setter
+    def measure(self, measure):
+        if measure not in ['area', 'volume']:
+            raise ValueError("measure must be 'area' or 'volume', "
+                             "not {}".format(measure))
+        self._measure = measure
+
+    def __getitem__(self, key):
+        """
+        Returns a new CellMeasure whose values are obtained by
+        conventional array indexing.
+
+        """
+        # Turn the key(s) into a full slice spec - i.e. one entry for
+        # each dimension of the cell_measure.
+        full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
+
+        # If it's a "null" indexing operation (e.g. cell_measure[:, :]) then
+        # we can preserve deferred loading by avoiding promoting _data
+        # and _bounds to full ndarray instances.
+        def is_full_slice(s):
+            return isinstance(s, slice) and s == slice(None, None)
+        data = self._data
+        if not all(is_full_slice(s) for s in full_slice):
+            data = self._data
+
+            # Make indexing on the cube column based by using the
+            # column_slices_generator (potentially requires slicing the
+            # data multiple times).
+            _, slice_gen = iris.util.column_slices_generator(full_slice,
+                                                             self.ndim)
+            for keys in slice_gen:
+                if data is not None:
+                    data = data[keys]
+                    if data.shape and min(data.shape) == 0:
+                        raise IndexError('Cannot index with zero length '
+                                         'slice.')
+
+        new_cell_measure = self.copy(data=data)
+        return new_cell_measure
+
+    def copy(self, data=None):
+        """
+        Returns a copy of this CellMeasure.
+
+        Kwargs:
+
+        * data: A data array for the new cell_measure.
+                This may be a different shape to the data of the
+                cell_measure being copied.
+
+        """
+        new_cell_measure = copy.deepcopy(self)
+        if data is not None:
+            # Explicitly not using the data property as we don't want the
+            # shape the new data to be constrained by the shape of
+            # self.data
+            new_cell_measure._data = None
+            new_cell_measure.data = data
+
+        return new_cell_measure
+
+    def _repr_other_metadata(self):
+        fmt = ''
+        if self.long_name:
+            fmt = ', long_name={self.long_name!r}'
+        if self.var_name:
+            fmt += ', var_name={self.var_name!r}'
+        if len(self.attributes) > 0:
+            fmt += ', attributes={self.attributes}'
+        result = fmt.format(self=self)
+        return result
+
+    def __str__(self):
+        result = repr(self)
+        return result
+
+    def __repr__(self):
+        fmt = ('{cls}({self.data!r}'
+               ', measure={self.measure}, standard_name={self.standard_name!r}'
+               ', units={self.units!r}{other_metadata})')
+        result = fmt.format(self=self, cls=type(self).__name__,
+                            other_metadata=self._repr_other_metadata())
+        return result
+
+    def _as_defn(self):
+        defn = (self.standard_name, self.long_name, self.var_name,
+                self.units, self.attributes, self.measure)
+        return defn
+
+    def __eq__(self, other):
+        eq = NotImplemented
+        if isinstance(other, CellMeasure):
+            eq = self._as_defn() == other._as_defn()
+            if eq:
+                eq = (self.data == other.data).all()
+        return eq
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
 
 class CellMethod(iris.util._OrderedHashable):
@@ -1579,7 +1929,7 @@ class CellMethod(iris.util._OrderedHashable):
             comments.
 
         """
-        if not isinstance(method, basestring):
+        if not isinstance(method, six.string_types):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
@@ -1588,7 +1938,7 @@ class CellMethod(iris.util._OrderedHashable):
             pass
         elif isinstance(coords, Coord):
             _coords.append(coords.name())
-        elif isinstance(coords, basestring):
+        elif isinstance(coords, six.string_types):
             _coords.append(coords)
         else:
             normalise = (lambda coord: coord.name() if
@@ -1598,7 +1948,7 @@ class CellMethod(iris.util._OrderedHashable):
         _intervals = []
         if intervals is None:
             pass
-        elif isinstance(intervals, basestring):
+        elif isinstance(intervals, six.string_types):
             _intervals = [intervals]
         else:
             _intervals.extend(intervals)
@@ -1606,7 +1956,7 @@ class CellMethod(iris.util._OrderedHashable):
         _comments = []
         if comments is None:
             pass
-        elif isinstance(comments, basestring):
+        elif isinstance(comments, six.string_types):
             _comments = [comments]
         else:
             _comments.extend(comments)
@@ -1616,8 +1966,8 @@ class CellMethod(iris.util._OrderedHashable):
     def __str__(self):
         """Return a custom string representation of CellMethod"""
         # Group related coord names intervals and comments together
-        cell_components = izip_longest(self.coord_names, self.intervals,
-                                       self.comments, fillvalue="")
+        cell_components = zip_longest(self.coord_names, self.intervals,
+                                      self.comments, fillvalue="")
 
         collection_summaries = []
         cm_summary = "%s: " % self.method
@@ -1645,9 +1995,9 @@ class CellMethod(iris.util._OrderedHashable):
         cellMethod_xml_element = doc.createElement('cellMethod')
         cellMethod_xml_element.setAttribute('method', self.method)
 
-        for coord_name, interval, comment in map(None, self.coord_names,
-                                                 self.intervals,
-                                                 self.comments):
+        for coord_name, interval, comment in zip_longest(self.coord_names,
+                                                         self.intervals,
+                                                         self.comments):
             coord_xml_element = doc.createElement('coord')
             if coord_name is not None:
                 coord_xml_element.setAttribute('name', coord_name)
@@ -1666,12 +2016,14 @@ class _CellIterator(collections.Iterator):
         self._coord = coord
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
-        self._indices = iter(xrange(coord.shape[0]))
+        self._indices = iter(range(coord.shape[0]))
 
-    def next(self):
+    def __next__(self):
         # NB. When self._indices runs out it will raise StopIteration for us.
         i = next(self._indices)
         return self._coord.cell(i)
+
+    next = __next__
 
 
 # See ExplicitCoord._group() for the description/context.
@@ -1680,7 +2032,7 @@ class _GroupIterator(collections.Iterator):
         self._points = points
         self._start = 0
 
-    def next(self):
+    def __next__(self):
         num_points = len(self._points)
         if self._start >= num_points:
             raise StopIteration
@@ -1693,3 +2045,5 @@ class _GroupIterator(collections.Iterator):
         group = _GroupbyItem(m, slice(self._start, stop))
         self._start = stop
         return group
+
+    next = __next__

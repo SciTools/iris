@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,8 @@ defined by :mod:`ConfigParser`.
     directory supports the Iris gallery. Directory contents accessed via
     :func:`iris.sample_data_path`.
 
+    .. deprecated:: 1.10
+
 .. py:data:: iris.config.TEST_DATA_DIR
 
     Local directory where test data exists.  Defaults to "test_data"
@@ -41,24 +43,31 @@ defined by :mod:`ConfigParser`.
 
     The full path to the Iris palette configuration directory
 
+.. py:data:: iris.config.IMPORT_LOGGER
+
+    The [optional] name of the logger to notify when first imported.
+
 .. py:data:: iris.config.RULE_LOG_DIR
 
     The [optional] full path to the rule logging directory used by
     :func:`iris.fileformats.pp.load()` and
     :func:`iris.fileformats.pp.save()`.
 
+    .. deprecated:: 1.10
+
 .. py:data:: iris.config.RULE_LOG_IGNORE
 
     The [optional] list of users to ignore when logging rules.
 
-.. py:data:: iris.config.IMPORT_LOGGER
-
-    The [optional] name of the logger to notify when first imported.
+    .. deprecated:: 1.10
 
 ----------
 """
 
-import ConfigParser
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
+from six.moves import configparser
 import os.path
 import warnings
 
@@ -103,7 +112,7 @@ ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 CONFIG_PATH = os.path.join(ROOT_PATH, 'etc')
 
 # Load the optional "site.cfg" file if it exists.
-config = ConfigParser.SafeConfigParser()
+config = configparser.SafeConfigParser()
 config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
 
 
@@ -123,8 +132,11 @@ TEST_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'test_data_dir',
 # Override the data repository if the appropriate environment variable
 # has been set.  This is used in setup.py in the TestRunner command to
 # enable us to simulate the absence of external data.
-if os.environ.get("override_test_data_repository"):
+override = os.environ.get("OVERRIDE_TEST_DATA_REPOSITORY")
+if override:
     TEST_DATA_DIR = None
+    if os.path.isdir(os.path.expanduser(override)):
+        TEST_DATA_DIR = os.path.abspath(override)
 
 PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
                               os.path.join(CONFIG_PATH, 'palette'))

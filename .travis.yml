@@ -1,5 +1,4 @@
-# Please update the cartopy, test data, and sample data git references
-# below if appropriate.
+# Please update the test data git references below if appropriate.
 #
 # Note: Contrary to the travis documentation,
 # http://about.travis-ci.org/docs/user/languages/python/#Travis-CI-Uses-Isolated-virtualenvs
@@ -9,30 +8,38 @@
 language: python
 python:
   - 2.7
+  - 3.4
+sudo: false
+
+env:
+  - TEST_TARGET=default
+  - TEST_TARGET=default TEST_MINIMAL=true
+  - TEST_TARGET=coding
+  - TEST_TARGET=example
+  - TEST_TARGET=doctest
 
 git:
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="cd1c5989f8020ddfaf031f6ff1ff578e278aad92"
+  - export IRIS_TEST_DATA_REF="9363e24a28b9bdd6658f8a8fbcdcd2743162d8f9"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
-
-  - export IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
-  - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
   # -----------------
-  - export CONDA_BASE=http://repo.continuum.io/miniconda/Miniconda
+  - export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda
   - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
-      wget ${CONDA_BASE}-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+      wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
-      wget ${CONDA_BASE}3-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+      wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
 
   # Create the basic testing environment
   # ------------------------------------
+  # Explicitly add defaults channel, see https://github.com/conda/conda/issues/2675
+  - conda config --add channels defaults
   - conda config --set always_yes yes --set changeps1 no
   - conda config --set show_channel_urls True
   - conda update --quiet conda
@@ -43,15 +50,17 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  - conda install --quiet --file conda-requirements.txt
+  - if [[ "$TEST_MINIMAL" == true ]]; then
+      conda install --quiet --file minimal-conda-requirements.txt;
+    else
+      if [[ "$TRAVIS_PYTHON_VERSION" == 3* ]]; then
+        sed -e '/ecmwf_grib/d' -e '/esmpy/d' -e '/iris_grib/d' -e 's/#.\+$//' conda-requirements.txt | xargs conda install --quiet;
+      else
+        conda install --quiet --file conda-requirements.txt;
+      fi
+    fi
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
-
-  # cfchecker
-  - echo '#!/usr/bin/env sh' > cfchecker
-  - echo "cfchecks -s `pwd`/etc/cf-standard-name-table.xml -a `pwd`/etc/area-type-table.xml -u $PREFIX/share/udunits/udunits2.xml -v auto \$1" >> cfchecker
-  - cp cfchecker $PREFIX/bin/cfchecker
-  - chmod a+x $PREFIX/bin/cfchecker
 
   # Output debug info
   - conda list
@@ -62,39 +71,62 @@ install:
   - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
 
 # iris test data
-  - wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip
-  - unzip -q iris-test-data.zip
-  - ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data
+  - if [[ "$TEST_MINIMAL" != true ]]; then
+      wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
+      unzip -q iris-test-data.zip;
+      ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data;
+    fi
 
-# iris sample data
-  - wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip
-  - unzip -q iris-sample-data.zip
-  - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
-  
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
-  - IRIS=$(ls -d1 build/lib*/iris)
-  - mkdir $IRIS/etc
+  - if [[ $TEST_TARGET -ne 'coding' ]]; then
+      IRIS=$(ls -d1 build/lib*/iris);
+      mkdir $IRIS/etc;
+    else
+      IRIS=lib/iris;
+    fi
 
 # set config paths
   - SITE_CFG=$IRIS/etc/site.cfg
   - echo "[Resources]" > $SITE_CFG
-  - echo "sample_data_dir = $(pwd)/iris-sample-data/sample_data" >> $SITE_CFG
   - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG
   - echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG
   - echo "[System]" >> $SITE_CFG
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
+
+  # The coding standards tests expect all the standard names and PyKE
+  # modules to be present.
+  - if [[ $TEST_TARGET == 'coding' ]]; then
+      python setup.py std_names;
+      PYTHONPATH=lib python setup.py pyke_rules;
+    fi
 
 # iris
   - python setup.py --quiet --with-unpack build
   - python setup.py --quiet --with-unpack install
 
 script:
-  - python -m iris.tests.runner --example-tests
-
-  - cd $(pwd)/docs/iris
-# Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
-# The following gets around this error, which should be investigated further in the future.
-  - echo `make clean html`
-
-  - make doctest
+  - if [[ $TEST_TARGET == 'default' ]]; then
+      python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+    fi
+  - if [[ $TEST_TARGET == 'example' ]]; then
+      python -m iris.tests.runner --example-tests --print-failed-images;
+    fi
+  # "make html" produces an error when run on Travis that does not
+  # affect any downstream functionality but causes the build to fail
+  # spuriously. The echo-backtick workaround gets around this error,
+  # which should be investigated further in the future.
+  - if [[ $TEST_TARGET == 'doctest' ]]; then
+      cd $(pwd)/docs/iris;
+      echo `make clean html`;
+      make doctest;
+    fi
+  # An extra call to check "whatsnew" contributions are valid, because the
+  # Iris test for it needs a *developer* install to be able to find the docs.
+  - if [[ $TEST_TARGET == 'doctest' ]]; then
+      cd ./src/whatsnew;
+      python aggregate_directory.py --checkonly;
+    fi
+  - if [[ $TEST_TARGET == 'coding' ]]; then
+      python setup.py test --coding-tests;
+    fi

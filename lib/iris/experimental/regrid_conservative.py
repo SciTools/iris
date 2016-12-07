@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,16 +19,15 @@ Support for conservative regridding via ESMPy.
 
 """
 
-# Import ESMF via iris.proxy, just so we can build the docs with no ESMF.
-import iris.proxy
-iris.proxy.apply_proxy('ESMF', globals())
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import cartopy.crs as ccrs
 import numpy as np
 
 from iris.analysis._interpolation import get_xy_dim_coords
 import iris
-import iris.experimental.regrid as i_regrid
+from iris.analysis._regrid import RectilinearRegridder
 
 
 #: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
@@ -73,6 +72,9 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
         Add a mask item to the grid, assigning it 0/1 where mask=False/True.
 
     """
+    # Lazy import so we can build the docs with no ESMF.
+    import ESMF
+
     # Create a Grid object describing the coordinate cells.
     dims = [len(coord.points) for coord in (x_coord, y_coord)]
     dims = np.array(dims, dtype=np.int32)  # specific type required by ESMF.
@@ -85,7 +87,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     lon_bounds, lat_bounds = _convert_latlons(grid_crs, x_bounds, y_bounds)
 
     # Add grid 'coord' element for corners, and fill with corner values.
-    grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CORNER])
+    grid.add_coords(staggerloc=ESMF.StaggerLoc.CORNER)
     grid_corners_x = grid.get_coords(0, ESMF.StaggerLoc.CORNER)
     grid_corners_x[:] = lon_bounds.T
     grid_corners_y = grid.get_coords(1, ESMF.StaggerLoc.CORNER)
@@ -115,7 +117,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     lon_points, lat_points = _convert_latlons(grid_crs, x_points, y_points)
 
     # Add grid 'coord' element for centres + fill with centre-points values.
-    grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CENTER])
+    grid.add_coords(staggerloc=ESMF.StaggerLoc.CENTER)
     grid_centers_x = grid.get_coords(0, ESMF.StaggerLoc.CENTER)
     grid_centers_x[:] = lon_points.T
     grid_centers_y = grid.get_coords(1, ESMF.StaggerLoc.CENTER)
@@ -180,6 +182,9 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         To alter this, make a prior call to ESMF.Manager().
 
     """
+    # Lazy import so we can build the docs with no ESMF.
+    import ESMF
+
     # Get source + target XY coordinate pairs and check they are suitable.
     src_coords = get_xy_dim_coords(source_cube)
     dst_coords = get_xy_dim_coords(grid_cube)
@@ -217,8 +222,8 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     fullcube_data = np.ma.zeros(dst_shape)
 
     # Iterate 2d slices over all possible indices of the 'other' dimensions
-    all_other_dims = filter(lambda i_dim: i_dim not in src_dims_xy,
-                            xrange(source_cube.ndim))
+    all_other_dims = [i_dim for i_dim in range(source_cube.ndim)
+                      if i_dim not in src_dims_xy]
     all_combinations_of_other_inds = np.ndindex(*dst_shape[all_other_dims])
     for other_indices in all_combinations_of_other_inds:
         # Construct a tuple of slices to address the 2d xy field
@@ -253,7 +258,7 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
                                     unmapped_action=ESMF.UnmappedAction.IGNORE,
                                     dst_frac_field=coverage_field)
         regrid_method(src_field, dst_field)
-        data = dst_field.data
+        data = np.ma.masked_array(dst_field.data)
 
         # Convert destination 'coverage fraction' into a missing-data mask.
         # Set = wherever part of cell goes outside source grid, or overlaps a
@@ -276,13 +281,12 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     # NOTE: as seen in "regrid_bilinear_rectilinear_src_and_grid"
     # TODO: can this not also be wound into the _create_cube method ?
     src_cs = src_coords[0].coord_system
-    sample_grid_x, sample_grid_y = i_regrid._sample_grid(src_cs,
-                                                         dst_coords[0],
-                                                         dst_coords[1])
+    sample_grid_x, sample_grid_y = RectilinearRegridder._sample_grid(
+        src_cs, dst_coords[0], dst_coords[1])
 
     # Return result as a new cube based on the source.
     # TODO: please tidy this interface !!!
-    return i_regrid._create_cube(
+    return RectilinearRegridder._create_cube(
         fullcube_data,
         src=source_cube,
         x_dim=src_dims_xy[0],
@@ -293,4 +297,4 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         grid_y_coord=dst_coords[1],
         sample_grid_x=sample_grid_x,
         sample_grid_y=sample_grid_y,
-        regrid_callback=i_regrid._regrid_bilinear_array)
+        regrid_callback=RectilinearRegridder._regrid)
