@@ -4,7 +4,7 @@
 Saving Iris cubes
 ==================
 
-Iris supports the saving of cubes and cube lists to:
+Iris supports the saving of :class:~`iris.cube.Cube` and :class:~`iris.cube.CubeList` objects to:
 
 * CF netCDF (1.5)
 * GRIB (edition 2)
@@ -110,7 +110,7 @@ Implementing a bespoke saver is out of scope for the user guide.
 Caching cubes and cube lists to pickle files
 --------------------------------------------
 
-It should always be possible to create a temporary cache file containing a cube or cube list using the Python `Pickle <https://docs.python.org/2/library/pickle.html>`_ functionality. This can be useful when the cube or cube list has been lazily loaded so the pickle file itself will contain only a reference to the data in the original files. In this state writing, and subsequently reading, a pickle file is very fast.
+It should always be possible to create a temporary cache file containing a:class:~`iris.cube.Cube` or :class:~`iris.cube.CubeList` objects using the Python `Pickle <https://docs.python.org/2/library/pickle.html>`_ functionality. This can be useful when the cube or cube list has been lazily loaded so the pickle file itself will contain only a reference to the data in the original files. In this state writing, and subsequently reading, a pickle file is very fast.
 
 .. warning::
 
@@ -123,8 +123,7 @@ The pickle file is especially useful for code development, where the same data f
 A quick example of saving and reading a pickle file is:
 
 .. code-block:: python
-    # import pickle: in python 2.7 cPickle is faster
-    import cPickle as pickle
+    import pickle
 
     cubelist = iris.load(['a.pp', 'list.pp', 'of.pp', 'many.pp', 'files.pp'])
     # save the cube to a pickle
@@ -135,4 +134,11 @@ A quick example of saving and reading a pickle file is:
     with open('filename.pickle', 'rb') as pfile:
         loaded_cubelist = pickle.load(pfile)
 
+.. tip::
+    In Python 2.7, the cPickle module is a faster implementation of the pickle functionality so this will speed up the reading/writing of pickle files:
 
+    .. code-block:: python
+        # for Python 2.7:
+        import cPickle as pickle
+
+    There is no difference in Python 3.
