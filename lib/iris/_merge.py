@@ -1075,7 +1075,7 @@ class ProtoCube(object):
 
     """
 
-    def __init__(self, cube, merge_duplicates=False):
+    def __init__(self, cube):
         """
         Create a new ProtoCube from the given cube and record the cube
         as a source-cube.
@@ -1125,9 +1125,6 @@ class ProtoCube(object):
         # Dims offset by merged space higher dimensionality.
         self._vector_dim_coords_dims = []
         self._vector_aux_coords_dims = []
-        
-        # controls on merging
-        self._merge_duplicates = merge_duplicates
 
         # cell measures are not merge candidates
         # they are checked and preserved through merge
@@ -1135,10 +1132,9 @@ class ProtoCube(object):
 
     def _report_duplicate(self, nd_indexes, group_by_nd_index):
         # Find the first offending source-cube with duplicate metadata.
-        indices = [group_by_nd_index[nd_index][1]
+        index = [group_by_nd_index[nd_index][1]
                  for nd_index in nd_indexes
-                 if len(group_by_nd_index[nd_index]) > 1]
-        index = indices[0]
+                 if len(group_by_nd_index[nd_index]) > 1][0]
         name = self._cube_signature.defn.name()
         scalars = []
         for defn, value in zip(self._coord_signature.scalar_defns,
@@ -1146,13 +1142,9 @@ class ProtoCube(object):
             scalars.append('%s=%r' % (defn.name(), value))
         msg = 'Duplicate %r cube, with scalar coordinates %s'
         msg = msg % (name, ', '.join(scalars))
-        if self._merge_duplicates:
-            print msg
-            return indices
-        else:
-            raise iris.exceptions.DuplicateDataError(msg)
+        raise iris.exceptions.DuplicateDataError(msg)
 
-    def merge(self, unique=True, merge_duplicates=False):
+    def merge(self, unique=True):
         """
         Returns the list of cubes resulting from merging the registered
         source-cubes.
@@ -1167,11 +1159,6 @@ class ProtoCube(object):
             A :class:`iris.cube.CubeList` of merged cubes.
 
         """
-        
-        if self._merge_duplicates:
-            # if supplied by the class init, pick this up:
-            merge_duplicates=True
-            
         positions = [{i: v for i, v in enumerate(skeleton.scalar_values)}
                      for skeleton in self._skeletons]
         indexes = build_indexes(positions)
@@ -1199,9 +1186,8 @@ class ProtoCube(object):
         nd_indexes = sorted(group_by_nd_index.keys())
 
         # Check for unique data.
-        if unique and group_depth > 1 and not merge_duplicates:
-            duplicate_indices = self._report_duplicate(nd_indexes, group_by_nd_index)
-            # could do something clever with theses indices, and thin them out prior to merging.
+        if unique and group_depth > 1:
+            self._report_duplicate(nd_indexes, group_by_nd_index)
 
         # Generate group-depth merged cubes from the source-cubes.
         for level in range(group_depth):
@@ -1235,17 +1221,6 @@ class ProtoCube(object):
                     merged_data = merged_data.data
             merged_cube = self._get_cube(merged_data)
             merged_cubes.append(merged_cube)
-
-        if unique and merge_duplicates:
-            test = merged_cubes.pop()
-            for cube in merged_cubes:
-                if cube.standard_name != test.standard_name:
-                    raise ValueError('non matching cubes, sname')
-                if cube.units != test.units:
-                    raise ValueError('non matching cubes, units')
-                if cube.shape != test.shape:
-                    raise ValueError('non matching cubes, shape')
-            merged_cubes = iris.cube.CubeList([test])
 
         return merged_cubes
 
