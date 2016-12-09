@@ -33,6 +33,7 @@ import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 from scipy.sparse import csc_matrix, diags as sparse_diags
+import six
 
 import iris.analysis.cartography
 from iris.analysis._interpolation import (get_xy_dim_coords, get_xy_coords,
