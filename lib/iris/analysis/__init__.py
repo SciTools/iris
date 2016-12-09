@@ -2165,16 +2165,17 @@ class Linear(object):
 
 class AreaWeighted(object):
     """
-    This class describes the area-weighted regridding scheme for regridding
-    over one or more orthogonal coordinates, typically for use with
-    :meth:`iris.cube.Cube.regrid()`.
+    This class describes an area-weighted regridding scheme for regridding
+    between 'ordinary' horizontal grids with separated X and Y coordinates in a
+    common coordinate system.
+    Typically for use with :meth:`iris.cube.Cube.regrid()`.
 
     """
 
     def __init__(self, mdtol=1):
         """
-        Area-weighted regridding scheme suitable for regridding one or more
-        orthogonal coordinates.
+        Area-weighted regridding scheme suitable for regridding between
+        different orthogonal XY grids in the same coordinate system.
 
         Kwargs:
 
@@ -2186,6 +2187,12 @@ class AreaWeighted(object):
             data is tolerated while mdtol=1 will mean the resulting element
             will be masked if and only if all the overlapping elements of the
             source grid are masked. Defaults to 1.
+
+        .. Note:
+            Both sourge and target cubes must have an XY grid defined by
+            separate X and Y dimensions with dimension coordinates.
+            All of the XY dimension coordinates must also be bounded, and have
+            the same cooordinate system.
 
         """
         if not (0 <= mdtol <= 1):
