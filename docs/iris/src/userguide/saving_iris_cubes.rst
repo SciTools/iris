@@ -126,9 +126,9 @@ A quick example of saving and reading a pickle file is:
     import pickle
 
     cubelist = iris.load(['a.pp', 'list.pp', 'of.pp', 'many.pp', 'files.pp'])
-    # save the cube to a pickle
+    # save cubelist to a pickle
     with open('filename.pickle', 'wb') as pfile:
-        pickle.dump(a, pfile)
+        pickle.dump(cubelist, pfile)
 
     # then to load:
     with open('filename.pickle', 'rb') as pfile:
