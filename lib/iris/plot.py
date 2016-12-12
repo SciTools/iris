@@ -406,7 +406,6 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
 def _fixup_dates(coord, values):
     if coord.units.calendar is not None:
-        shape = values.shape
         # Convert coordinate values into tuples of
         # (year, month, day, hour, min, sec)
         dates = [coord.units.num2date(val).timetuple()[0:6]
@@ -427,9 +426,8 @@ def _fixup_dates(coord, values):
             r = [nc_time_axis.CalendarDateTime(
                  netcdftime.datetime(*date), coord.units.calendar)
                  for date in dates]
-        values = np.empty(len(r), dtype=object)
-        values[:] = r
-        values = values.reshape(shape)
+        values = np.empty_like(values, dtype=object)
+        values.flat = r
     return values
 
 
