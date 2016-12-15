@@ -13,6 +13,7 @@ sudo: false
 
 env:
   - TEST_TARGET=default
+  - TEST_TARGET=default COVERAGE=true
   - TEST_TARGET=default TEST_MINIMAL=true
   - TEST_TARGET=coding
   - TEST_TARGET=example
@@ -59,6 +60,7 @@ install:
         conda install --quiet --file conda-requirements.txt;
       fi
     fi
+  - pip install coveralls
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
@@ -79,7 +81,7 @@ install:
 
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
-  - if [[ $TEST_TARGET -ne 'coding' ]]; then
+  - if [[ $TEST_TARGET != 'coding' &&  $COVERAGE != true ]]; then
       IRIS=$(ls -d1 build/lib*/iris);
       mkdir $IRIS/etc;
     else
@@ -96,7 +98,7 @@ install:
 
   # The coding standards tests expect all the standard names and PyKE
   # modules to be present.
-  - if [[ $TEST_TARGET == 'coding' ]]; then
+  - if [[ $TEST_TARGET == 'coding' || $COVERAGE == true ]]; then
       python setup.py std_names;
       PYTHONPATH=lib python setup.py pyke_rules;
     fi
@@ -107,7 +109,14 @@ install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+      if [[ $COVERAGE == true ]]; then
+        SITECUSTOMIZE=$PREFIX/lib/python$TRAVIS_PYTHON_VERSION/site-packages/sitecustomize.py;
+        echo 'import coverage; coverage.process_startup()' > "$SITECUSTOMIZE";
+        export COVERAGE_PROCESS_START="$PWD/.coveragerc";
+        coverage run --concurrency=multiprocessing -p setup.py test --default-tests --system-tests --print-failed-images;
+      else
+        python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+      fi
     fi
   - if [[ $TEST_TARGET == 'example' ]]; then
       python -m iris.tests.runner --example-tests --print-failed-images;
@@ -129,4 +138,9 @@ script:
     fi
   - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py test --coding-tests;
+    fi
+after_success:
+  - if [[ $COVERAGE == true ]]; then
+      coverage combine;
+      coveralls;
     fi

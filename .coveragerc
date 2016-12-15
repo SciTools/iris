@@ -1,0 +1,18 @@
+#
+# .coveragerc to control coverage.py
+#
+
+[run]
+branch = True
+omit =
+    lib/iris/fileformats/_pyke_rules/compiled_krb/*
+    lib/iris/tests/*
+    setup.py
+source = lib/iris
+
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.:

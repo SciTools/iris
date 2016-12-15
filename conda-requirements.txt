@@ -9,7 +9,7 @@ netcdf4
 numpy
 pyke
 udunits2
-cf_units
+cf_units<1.1.1
 
 # Iris build dependencies
 setuptools
