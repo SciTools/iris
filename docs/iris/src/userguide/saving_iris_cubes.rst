@@ -118,7 +118,7 @@ It should always be possible to create a temporary cache file containing a:class
 
     If a pickle file contains lazily loaded cubes then any changes to the files that contain the data will break the ability of the cubes to read its data.
 
-The pickle file is especially useful for code development, where the same data files might need to be loaded repeatedly. Another common use case is parent-child processes where a single process loads data and then a number of subsequent processes can quickly access the data in order to run parallel processing tasks.
+The pickle file is especially useful for code development, where the same data files might need to be loaded repeatedly. Another common use case is parent-child processes where a single process loads data and then a number of subsequent processes can quickly access the data in order to run parallel processing tasks. Similarly the ability to pickle cubes is also vital to the using cubes in `parallel processes https://docs.python.org/2/library/multiprocessing.html`_ so any cube which cannot be pickled should be raised as an `issue on the Iris github page https://github.com/SciTools/iris/issues/new`_.
 
 A quick example of saving and reading a pickle file is:
 
