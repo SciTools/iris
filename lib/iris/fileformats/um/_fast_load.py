@@ -343,6 +343,10 @@ def structured_um_loading():
         :class:`~iris.fileformats.um.FieldCollation`, from which "field.fields"
         gives a *list* of PPFields from which that cube was built.
         The code required is therefore different from a 'normal' callback.
+        For an example of this, see `this example in the Iris test code
+        <https://github.com/SciTools/iris/
+        blob/ddb46f78e54b6ef4110357dfe9cfcffa7d186d90/
+        lib/iris/tests/integration/fast_load/test_fast_load.py#L409>`_.
 
     Notes on applicability:
 
