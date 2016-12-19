@@ -28,12 +28,14 @@ import math
 
 import numpy as np
 
+from cf_units import Unit
 import iris.analysis
 import iris.coord_systems
 import iris.coords
 
 from iris.analysis._interpolate_private import \
     _nearest_neighbour_indices_ndcoords, linear as linear_regrid
+from iris.analysis._interpolation import snapshot_grid
 
 
 class _Segment(object):
@@ -364,11 +366,10 @@ class UnstructuredNearestNeigbourRegridder(object):
     Encapsulate the operation of :meth:`iris.analysis.trajectory.interpolate`
     with given source and target grids.
 
-    TODO: cache the necessary bits of the operation so re-use can actually
-    be more efficient.
-
     """
-    def __init__(self, src_cube, target_grid):
+    # TODO: cache the necessary bits of the operation so re-use can actually
+    # be more efficient.
+    def __init__(self, src_cube, target_grid_cube):
         """
         A nearest-neighbour regridder to perform regridding from the source
         grid to the target grid.
@@ -380,13 +381,14 @@ class UnstructuredNearestNeigbourRegridder(object):
 
         * src_cube:
             The :class:`~iris.cube.Cube` defining the source grid.
-            The X and Y coordinates must be mapped over the same dimensions.
+            The X and Y coordinates can have any shape, but must be mapped over
+            the same cube dimensions.
 
-        * target_grid:
-            The :class:`~iris.cube.Cube` defining the target grid.
-            It must have only 2 dimensions.
-            The X and Y coordinates must be one-dimensional and mapped to
-            different dimensions.
+        * target_grid_cube:
+            A :class:`~iris.cube.Cube`, whose X and Y coordinates specify a
+            desired target grid.
+            The X and Y coordinates must be one-dimensional dimension
+            coordinates, mapped to different dimensions.
 
         Returns:
             regridder : (object)
@@ -395,63 +397,120 @@ class UnstructuredNearestNeigbourRegridder(object):
                 `result_cube = regridder(data)`
 
             where `data` is a cube with the same grid as the original
-            `src_cube`, that is to be regridded to the `target_grid`.
+            `src_cube`, that is to be regridded to the `target_grid_cube`.
+
+        .. Note::
+
+            The source and target X and Y coordinates must all have the same
+            coordinate system, which may also be None. They must also have the
+            same units.
+            If any X and Y coordinates are latitudes or longitudes, they all
+            must be.
+            For latitude-longitude coordinates, the nearest-neighbour distances
+            are computed on the sphere, otherwise flat Euclidean distances are
+            used.
 
         """
-        # Store the essential stuff
-        self.src_cube = src_cube
-        self.grid_cube = target_grid
+        # Make a copy of the source cube, so we can convert coordinate units.
+        src_cube = src_cube.copy()
 
-        # Quickly check the source data structure.
-        # TODO: replace asserts with code to raise user-intelligible errors.
+        # Snapshot the target grid and check it is a "normal" grid.
+        tgt_x_coord, tgt_y_coord = snapshot_grid(target_grid_cube)
 
-        # Has unique X and Y coords.
-        x_co = src_cube.coord(axis='x')
-        y_co = src_cube.coord(axis='y')
-        # They have a single common dimension, WHICH IS THE LAST.
-        src_ndim = src_cube.ndim
-        assert src_cube.coord_dims(x_co) == (src_ndim - 1,)
-        assert src_cube.coord_dims(y_co) == (src_ndim - 1,)
+        # Check that the source has unique X and Y coords over common dims.
+        if (not src_cube.coords(axis='x') or not src_cube.coords(axis='y')):
+            msg = 'Source cube must have X- and Y-axis coordinates.'
+            raise ValueError(msg)
+        src_x_coord = src_cube.coord(axis='x')
+        src_y_coord = src_cube.coord(axis='y')
+        if (src_cube.coord_dims(src_x_coord) !=
+                src_cube.coord_dims(src_y_coord)):
+            msg = ('Source cube X and Y coordinates must have the same '
+                   'cube dimensions.')
+            raise ValueError(msg)
 
-        # Quickly check the target grid structure.
-        # TODO: ensure any errors are intelligible to the user.
-        # Has only 2 dims.
-        assert target_grid.ndim == 2
-        # Has unique X and Y coords.
-        x_co = target_grid.coord(axis='x')
-        y_co = target_grid.coord(axis='y')
-        # Each has a dimension to itself.
-        x_dims = target_grid.coord_dims(x_co)
-        y_dims = target_grid.coord_dims(y_co)
-        assert len(x_dims) == 1
-        assert len(y_dims) == 1
-        assert x_dims != y_dims
+        # Record *copies* of the original grid coords, in the desired
+        # dimension order.
+        # This lets us convert the actual ones in use to units of "degrees".
+        self.src_grid_coords = [src_y_coord.copy(), src_x_coord.copy()]
+        self.tgt_grid_coords = [tgt_y_coord.copy(), tgt_x_coord.copy()]
 
-        # Pre-calculate the sample points that will be needed.
-        # These are cast as a 'trajectory' to suit the method used.
-        x_vals = target_grid.coord('longitude').points
-        y_vals = target_grid.coord('latitude').points
-        x_2d, y_2d = np.meshgrid(x_vals, y_vals)
-        self.trajectory = (('longitude', x_2d.flatten()),
-                           ('latitude', y_2d.flatten()))
+        # Check that all XY coords have suitable coordinate systems and units.
+        coords_all = [src_x_coord, src_y_coord, tgt_x_coord, tgt_y_coord]
+        cs = coords_all[0].coord_system
+        if not all(coord.coord_system == cs for coord in coords_all):
+            msg = ('Source and target cube X and Y coordinates must all have '
+                   'the same coordinate system.')
+            raise ValueError(msg)
+
+        # Check *all* X and Y coords are lats+lons, if any are.
+        latlons = ['latitude' in coord.name() or 'longitude' in coord.name()
+                   for coord in coords_all]
+        if any(latlons) and not all(latlons):
+            msg = ('If any X and Y coordinates are latitudes/longitudes, '
+                   'then they all must be.')
+            raise ValueError(msg)
+
+        self.grid_is_latlon = any(latlons)
+        if self.grid_is_latlon:
+            # Convert all XY coordinates to units of "degrees".
+            # N.B. already copied the target grid, so the result matches that.
+            for coord in coords_all:
+                try:
+                    coord.convert_units('degrees')
+                except ValueError:
+                    msg = ('Coordinate {} has units of {}, which does not '
+                           'convert to "degrees".')
+                    raise ValueError(msg.format(coord.name(), coord.units))
+        else:
+            # Check that source and target have the same X and Y units.
+            if (src_x_coord.units != tgt_x_coord.units or
+                    src_y_coord.units != tgt_y_coord.units):
+                msg = ('Source and target cube X and Y coordinates must '
+                       'have the same units.')
+                raise ValueError(msg)
+
+        # Record the resulting grid shape.
+        self.tgt_grid_shape = tgt_y_coord.shape + tgt_x_coord.shape
+
+        # Calculate sample points as 2d arrays, like broadcast (NY,1)*(1,NX).
+        x_2d, y_2d = np.meshgrid(tgt_x_coord.points, tgt_y_coord.points)
+        # Cast as a "trajectory", to suit the method used.
+        self.trajectory = ((tgt_x_coord.name(), x_2d.flatten()),
+                           (tgt_y_coord.name(), y_2d.flatten()))
 
     def __call__(self, src_cube):
-        # Check source cube matches original.
-        # For now, just a shape match will do.
-        # TODO: implement a more intelligent equivalence check.
-        # TODO: replace asserts with code to raise user-intelligible errors.
-        assert src_cube.shape == self.src_cube.shape
+        # Check the source cube X and Y coords match the original.
+        # Note: for now, this is sufficient to ensure a valid trajectory
+        # interpolation, but if in future we save + re-use the cache context
+        # for the 'interpolate' call, we may need more checks here.
+
+        # Check the given cube against the original.
+        x_cos = src_cube.coords(axis='x')
+        y_cos = src_cube.coords(axis='y')
+        if (not x_cos or not y_cos or
+                y_cos != [self.src_grid_coords[0]] or
+                x_cos != [self.src_grid_coords[1]]):
+            msg = ('The given cube is not defined on the same source '
+                   'grid as this regridder.')
+            raise ValueError(msg)
+
+        # Convert source XY coordinates to degrees if required.
+        if self.grid_is_latlon:
+            src_cube = src_cube.copy()
+            src_cube.coord(axis='x').convert_units('degrees')
+            src_cube.coord(axis='y').convert_units('degrees')
 
         # Get the basic interpolated results.
         result_trajectory_cube = interpolate(src_cube, self.trajectory,
                                              method='nearest')
 
         # Reconstruct this as a cube "like" the source data.
-        # TODO: sort out aux-coords, cell methods, cell measures ??
+        # TODO: handle all aux-coords, cell measures ??
 
-        # The shape is that of source data, minus the last dim, plus the target
-        # grid dimensions.
-        target_shape = (list(src_cube.shape)[:-1] + list(self.grid_cube.shape))
+        # The shape is that of the basic result, minus the trajectory (last)
+        # dimension, plus the target grid dimensions.
+        target_shape = result_trajectory_cube.shape[:-1] + self.tgt_grid_shape
         data_2d_x_and_y = result_trajectory_cube.data.reshape(target_shape)
 
         # Make a new result cube with the reshaped data.
@@ -459,14 +518,14 @@ class UnstructuredNearestNeigbourRegridder(object):
         result_cube.metadata = src_cube.metadata
 
         # Copy the 'preceding' dim coords from the source cube.
-        n_other_dims = src_cube.ndim - 1
+        n_other_dims = result_trajectory_cube.ndim - 1
         for i_dim in range(n_other_dims):
-            co = src_cube.coord(dimensions=(i_dim,), dim_coords=True)
-            result_cube.add_dim_coord(co.copy(), i_dim)
+            coord = result_trajectory_cube.coord(dimensions=(i_dim,),
+                                                 dim_coords=True)
+            result_cube.add_dim_coord(coord.copy(), i_dim)
 
-        # Copy the 'trailing' lat+lon coords from the grid cube.
-        for i_dim in (0, 1):
-            co = self.grid_cube.coord(dimensions=(i_dim,))
-            result_cube.add_dim_coord(co.copy(), i_dim + n_other_dims)
+        # Copy the 'trailing' X+Y grid coords from the grid cube.
+        for i_dim, coord in enumerate(self.tgt_grid_coords):
+            result_cube.add_dim_coord(coord.copy(), i_dim + n_other_dims)
 
         return result_cube
