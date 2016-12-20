@@ -280,24 +280,26 @@ def interpolate(cube, sample_points, method=None):
         fancy_source_indices = []
         region_slices = []
         n_index_length = len(column_indexes[0])
+        dims_reduced = [False] * n_index_length
         for i_ind in range(n_index_length):
             contents = [column_index[i_ind]
                         for column_index in column_indexes]
             each_used = [content != slice(None) for content in contents]
-            if not np.any(each_used):
-                # This dimension is not addressed by the operation.
-                # Use a ":" as the index.
-                fancy_index = slice(None)
-                # No sub-region selection for this dimension.
-                region_slice = slice(None)
-            elif np.all(each_used):
+            if np.all(each_used):
                 # This dimension is addressed : use a list of indices.
+                dims_reduced[i_ind] = True
                 # Select the region by min+max indices.
                 start_ind = np.min(contents)
                 stop_ind = 1 + np.max(contents)
                 region_slice = slice(start_ind, stop_ind)
                 # Record point indices with start subtracted from all of them.
                 fancy_index = list(np.array(contents) - start_ind)
+            elif not np.any(each_used):
+                # This dimension is not addressed by the operation.
+                # Use a ":" as the index.
+                fancy_index = slice(None)
+                # No sub-region selection for this dimension.
+                region_slice = slice(None)
             else:
                 # Should really never happen, if _ndcoords is right.
                 msg = ('Internal error in trajectory interpolation : point '
@@ -307,17 +309,34 @@ def interpolate(cube, sample_points, method=None):
             fancy_source_indices.append(fancy_index)
             region_slices.append(region_slice)
 
-        # NOTE: fetch the required (square-section) region of the source data.
-        # This is not quite as good as only fetching the individual points
-        # which are used, but it avoids creating a sub-cube for each point,
+        # Fetch the required (square-section) region of the source data.
+        # NOTE: This is not quite as good as only fetching the individual
+        # points used, but it avoids creating a sub-cube for each point,
         # which is very slow, especially when points are re-used a lot ...
         source_area_indices = tuple(region_slices)
         source_data = cube[source_area_indices].data
 
-        # Apply fancy indexing to get all the result data points.
+        # Transpose source data before indexing it to get the final result.
+        # Because.. the fancy indexing will replace the indexed (horizontal)
+        # dimensions with a new single dimension over trajectory points.
+        # Move those dimensions to the end *first* : this ensures that the new
+        # dimension also appears at the end, which is where we want it.
+        # Make a list of dims with the reduced ones last.
+        dims_reduced = np.array(dims_reduced)
+        dims_order = np.arange(n_index_length)
+        dims_order = np.concatenate((dims_order[~dims_reduced],
+                                     dims_order[dims_reduced]))
+        # Rearrange the data dimensions and the fancy indices into that order.
+        source_data = source_data.transpose(dims_order)
+        fancy_source_indices = [fancy_source_indices[i_dim]
+                                for i_dim in dims_order]
+
+        # Apply the fancy indexing to get all the result data points.
         source_data = source_data[fancy_source_indices]
+
         # "Fix" problems with missing datapoints producing odd values
         # when copied from a masked into an unmasked array.
+        # TODO: proper masked data handling.
         if np.ma.isMaskedArray(source_data):
             # This is **not** proper mask handling, because we cannot produce a
             # masked result, but it ensures we use a "filled" version of the
