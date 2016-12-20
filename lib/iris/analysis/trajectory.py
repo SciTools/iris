@@ -517,15 +517,20 @@ class UnstructuredNearestNeigbourRegridder(object):
         result_cube = iris.cube.Cube(data_2d_x_and_y)
         result_cube.metadata = src_cube.metadata
 
-        # Copy the 'preceding' dim coords from the source cube.
-        n_other_dims = result_trajectory_cube.ndim - 1
-        for i_dim in range(n_other_dims):
-            coord = result_trajectory_cube.coord(dimensions=(i_dim,),
-                                                 dim_coords=True)
-            result_cube.add_dim_coord(coord.copy(), i_dim)
+        # Copy all the coords from the trajectory result.
+        i_trajectory_dim = result_trajectory_cube.ndim - 1
+        for coord in result_trajectory_cube.dim_coords:
+            dims = result_trajectory_cube.coord_dims(coord)
+            if i_trajectory_dim not in dims:
+                result_cube.add_dim_coord(coord.copy(), dims)
+        for coord in result_trajectory_cube.aux_coords:
+            dims = result_trajectory_cube.coord_dims(coord)
+            if i_trajectory_dim not in dims:
+                result_cube.add_aux_coord(coord.copy(), dims)
 
-        # Copy the 'trailing' X+Y grid coords from the grid cube.
+        # Add the X+Y grid coords from the grid cube, mapped to the new Y and X
+        # dimensions, i.e. the last 2.
         for i_dim, coord in enumerate(self.tgt_grid_coords):
-            result_cube.add_dim_coord(coord.copy(), i_dim + n_other_dims)
+            result_cube.add_dim_coord(coord.copy(), i_dim + i_trajectory_dim)
 
         return result_cube
