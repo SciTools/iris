@@ -34,9 +34,12 @@ import iris.cube
 from iris.exceptions import TranslationError
 import iris.util
 
+from operator import itemgetter
+
 
 EARTH_RADIUS = 6371229.0
 NAMEIII_DATETIME_FORMAT = '%d/%m/%Y  %H:%M %Z'
+NAMETRAJ_DATETIME_FORMAT = '%d/%m/%Y  %H:%M:%S %Z'
 NAMEII_FIELD_DATETIME_FORMAT = '%H%M%Z %d/%m/%Y'
 NAMEII_TIMESERIES_DATETIME_FORMAT = '%d/%m/%Y  %H:%M:%S'
 
@@ -1099,14 +1102,18 @@ def load_NAMEIII_trajectory(filename):
             values = [v.strip() for v in line.split(",")]
             for c, v in enumerate(values):
                 if "UTC" in v:
-                    v = v.replace(":00 ", " ")  # Strip out milliseconds.
-                    v = datetime.datetime.strptime(v, NAMEIII_DATETIME_FORMAT)
+                    v = datetime.datetime.strptime(v, NAMETRAJ_DATETIME_FORMAT)
                 else:
                     try:
                         v = float(v)
                     except ValueError:
                         pass
                 columns[c].append(v)
+
+    # Sort columns according to PP Index
+    columns_t = list(map(list, zip(*columns)))
+    columns_t.sort(key=itemgetter(1))
+    columns = list(map(list, zip(*columns_t)))
 
     # Where's the Z column?
     z_column = None
@@ -1169,7 +1176,9 @@ def load_NAMEIII_trajectory(filename):
         cube.rename(name)
         for coord in coords:
             dim = 0 if len(coord.points) > 1 else None
-            if isinstance(coord, DimCoord) and coord.name() == "time":
+            if dim == 0 and coord.name() == "time":
+                cube.add_dim_coord(coord.copy(), dim)
+            elif dim == 0 and coord.name() == 'PP Index':
                 cube.add_dim_coord(coord.copy(), dim)
             else:
                 cube.add_aux_coord(coord.copy(), dim)
