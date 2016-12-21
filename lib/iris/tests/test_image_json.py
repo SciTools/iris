@@ -52,8 +52,9 @@ class TestImageFile(tests.IrisTest):
             repo = json.load(codecs.getreader('utf-8')(fi))
         uris = set(itertools.chain.from_iterable(six.itervalues(repo)))
 
-        amsg = 'Images are referenced in imagerepo.json but not published:\n{}'
-        amsg = amsg.format(uris.difference(known_image_uris))
+        amsg = ('Images are referenced in imagerepo.json but not published in '
+                'https://scitools.github.io/test-iris-imagehash/images:\n{}')
+        amsg = amsg.format('\n'.join(list(uris.difference(known_image_uris))))
 
         self.assertTrue(uris.issubset(known_image_uris), msg=amsg)
 
