@@ -483,9 +483,10 @@ class UnstructuredNearestNeigbourRegridder(object):
                 try:
                     coord.convert_units('degrees')
                 except ValueError:
-                    msg = ('Coordinate {} has units of {}, which does not '
+                    msg = ('Coordinate {!r} has units of {!r}, which does not '
                            'convert to "degrees".')
-                    raise ValueError(msg.format(coord.name(), coord.units))
+                    raise ValueError(msg.format(coord.name(),
+                                                str(coord.units)))
         else:
             # Check that source and target have the same X and Y units.
             if (src_x_coord.units != tgt_x_coord.units or
