@@ -385,6 +385,9 @@ class UnstructuredNearestNeigbourRegridder(object):
     Encapsulate the operation of :meth:`iris.analysis.trajectory.interpolate`
     with given source and target grids.
 
+    This is the type used by the :class:`~iris.analysis.UnstructuredNearest`
+    regridding scheme.
+
     """
     # TODO: cache the necessary bits of the operation so re-use can actually
     # be more efficient.
@@ -408,6 +411,7 @@ class UnstructuredNearestNeigbourRegridder(object):
             desired target grid.
             The X and Y coordinates must be one-dimensional dimension
             coordinates, mapped to different dimensions.
+            All other cube components are ignored.
 
         Returns:
             regridder : (object)
@@ -420,14 +424,15 @@ class UnstructuredNearestNeigbourRegridder(object):
 
         .. Note::
 
-            The source and target X and Y coordinates must all have the same
-            coordinate system, which may also be None. They must also have the
-            same units.
-            If any X and Y coordinates are latitudes or longitudes, they all
-            must be.
             For latitude-longitude coordinates, the nearest-neighbour distances
             are computed on the sphere, otherwise flat Euclidean distances are
             used.
+
+            The source and target X and Y coordinates must all have the same
+            coordinate system, which may also be None.
+            If any X and Y coordinates are latitudes or longitudes, they *all*
+            must be.  Otherwise, the corresponding X and Y coordinates must
+            have the same units in the source and grid cubes.
 
         """
         # Make a copy of the source cube, so we can convert coordinate units.

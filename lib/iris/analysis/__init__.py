@@ -69,7 +69,7 @@ __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
            'VARIANCE', 'WPERCENTILE', 'coord_comparison', 'Aggregator',
            'WeightedAggregator', 'clear_phenomenon_identity', 'Linear',
-           'AreaWeighted', 'Nearest')
+           'AreaWeighted', 'Nearest', 'UnstructuredNearest')
 
 
 class _CoordGroup(object):
@@ -2348,19 +2348,26 @@ class Nearest(object):
 
 class UnstructuredNearest(object):
     """
-    This is a nearest-neighbour interpolation and regridding scheme for
-    regridding cubes whose horizontal coordinates are mapped to the *same*
-    dimensions, rather than being orthogonal on independent dimensions.
+    This is a nearest-neighbour regridding scheme for regridding data whose
+    horizontal (X- and Y-axis) coordinates are mapped to the *same* dimensions,
+    rather than being orthogonal on independent dimensions.
+
+    For latitude-longitude coordinates, the nearest-neighbour distances are
+    computed on the sphere, otherwise flat Euclidean distances are used.
 
     The source X and Y coordinates can have any shape.
 
-    The target grid must be of the "normal" kind, with separate 1-dimensional
-    X and Y coordinates.
+    The target grid must be of the "normal" kind, i.e. it has separate,
+    1-dimensional X and Y coordinates.
 
-    Source and target XY coordinates must have the same coordinate system.
-    If any coordinates are latitudes or longitudes, they all must be.
+    Source and target XY coordinates must have the same coordinate system,
+    which may also be None.
+    If any of the XY coordinates are latitudes or longitudes, then they *all*
+    must be.  Otherwise, the corresponding X and Y coordinates must have the
+    same units in the source and grid cubes.
 
-    Currently only supports regridding, not interpolation.
+    .. Note::
+        Currently only supports regridding, not interpolation.
 
     """
     # Note: the argument requirements are simply those of the underlying
@@ -2383,8 +2390,9 @@ class UnstructuredNearest(object):
 
     def regridder(self, src_cube, target_grid):
         """
-        Creates a nearest-neighbour regridder to perform regridding from the
-        source grid to the target grid.
+        Creates a nearest-neighbour regridder, of the
+        :class:`~iris.analysis.trajectory.UnstructuredNearestNeigbourRegridder`
+        type, to perform regridding from the source grid to the target grid.
 
         This can then be applied to any source data with the same structure as
         the original 'src_cube'.
@@ -2398,13 +2406,14 @@ class UnstructuredNearest(object):
 
         * src_cube:
             The :class:`~iris.cube.Cube` defining the source grid.
-            The X and Y coordinates must be mapped over the same dimensions.
+            The X and Y coordinates can have any shape, but must be mapped over
+            the same cube dimensions.
 
         * target_grid:
             The :class:`~iris.cube.Cube` defining the target grid.
-            It must have only 2 dimensions.
-            The X and Y coordinates must be one-dimensional and mapped to
-            different dimensions.
+            The X and Y coordinates must be one-dimensional dimension
+            coordinates, mapped to different dimensions.
+            All other cube components are ignored.
 
         Returns:
             A callable with the interface:
