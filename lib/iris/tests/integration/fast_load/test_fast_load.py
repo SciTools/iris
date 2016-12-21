@@ -93,7 +93,7 @@ class Mixin_FieldTest(object):
         return file_path
 
     def fields(self, c_t=None, cft=None, ctp=None,
-               c_h=None, c_p=None, phn=0, mmm=None):
+               c_h=None, c_p=None, phn=0, mmm=None, pse=None):
         # Return a list of 2d cubes representing raw PPFields, from args
         # specifying sequences of (scalar) coordinate values.
         # TODO? : add bounds somehow ?
@@ -110,6 +110,9 @@ class Mixin_FieldTest(object):
         # Argument 'mmm' denotes existence (or not) of a cell method of type
         # 'average' or 'min' or 'max' (values '012' respectively), applying to
         # the time values -- ultimately, this controls LBTIM.
+        #
+        # Argument 'pse' denotes pseudo-level numbers.
+        # These translate into 'LBUSER5' values.
 
         # Get the number of result cubes, defined by the 'longest' arg.
         def arglen(arg):
@@ -140,6 +143,7 @@ class Mixin_FieldTest(object):
         height_values = 100.0 * np.arange(1, 11)
         pressure_values = [100.0, 150.0, 200.0, 250.0,
                            300.0, 500.0, 850.0, 1000.0]
+        pseudolevel_values = range(1, 11)  # A valid value is >= 1.
 
         # Test phenomenon details.
         # NOTE: in order to write/readback as identical, these also contain a
@@ -244,6 +248,7 @@ class Mixin_FieldTest(object):
         add_arg_coords(ctp, 'forecast_period', period_unit, time_values)
         add_arg_coords(c_h, 'height', height_unit, height_values)
         add_arg_coords(c_p, 'pressure', pressure_unit, pressure_values)
+        add_arg_coords(pse, 'pseudo_level', '1', pseudolevel_values)
 
         # Add cell methods as required.
         methods = arg_vals(mmm, cell_method_values)
@@ -277,44 +282,6 @@ class MixinBasic(object):
         expected = CubeList(flds).merge()
         self.assertEqual(results, expected)
 
-    def test_FAIL_phenomena_nostash(self):
-        # If we remove the 'STASH' attributes, certain phenomena can still be
-        # successfully encoded+decoded by standard load using LBFC values.
-        # Structured loading gets this wrong, because it does not use LBFC in
-        # characterising phenomena.
-        flds = self.fields(c_t='1122', phn='0101')
-        for fld in flds:
-            del fld.attributes['STASH']
-        file = self.save_fieldcubes(flds)
-        results = iris.load(file)
-        if not self.do_fast_loads:
-            # This is what we'd LIKE to get (what iris.load gives).
-            expected = CubeList(flds).merge()
-        else:
-            # At present, we get a cube incorrectly combined together over all
-            # 4 timepoints, with the same phenomenon for all (!wrong!).
-            # It's a bit tricky to arrange the existing data like that.
-            # Do it by hacking the time values to allow merge, and then fixing
-            # up the time
-            old_t1, old_t2 = (fld.coord('time').points[0]
-                              for fld in (flds[0], flds[2]))
-            for i_fld, fld in enumerate(flds):
-                # Hack the phenomena to all look like the first one.
-                fld.rename('air_temperature')
-                fld.units = 'K'
-                # Hack the time points so the 4 cube can merge into one.
-                fld.coord('time').points = [old_t1 + i_fld]
-            one_cube = CubeList(flds).merge_cube()
-            # Replace time dim with an anonymous dim.
-            co_t_fake = one_cube.coord('time')
-            one_cube.remove_coord(co_t_fake)
-            # Reconstruct + add back the expected auxiliary time coord.
-            co_t_new = AuxCoord([old_t1, old_t1, old_t2, old_t2],
-                                standard_name='time', units=co_t_fake.units)
-            one_cube.add_aux_coord(co_t_new, 0)
-            expected = [one_cube]
-        self.assertEqual(results, expected)
-
     def test_cross_file_concatenate(self):
         # Combine vector dimensions (i.e. concatenate) across multiple files.
         fldset_1 = self.fields(c_t='12')
@@ -323,35 +290,6 @@ class MixinBasic(object):
         file_2 = self.save_fieldcubes(fldset_2)
         results = iris.load((file_1, file_2))
         expected = CubeList(fldset_1 + fldset_2).merge()
-        self.assertEqual(results, expected)
-
-    def test_FAIL_scalar_vector_concatenate(self):
-        # Structured load can produce a scalar coordinate from one file, and a
-        # matching vector one from another file, but these won't "combine".
-        # We'd really like to fix this one...
-        single_timepoint_fld, = self.fields(c_t='1')
-        multi_timepoint_flds = self.fields(c_t='23')
-        file_single = self.save_fieldcubes([single_timepoint_fld],
-                                           basename='single')
-        file_multi = self.save_fieldcubes(multi_timepoint_flds,
-                                          basename='multi')
-
-        results = iris.load((file_single, file_multi))
-        if not self.do_fast_loads:
-            # This is what we'd LIKE to get (what iris.load gives).
-            expected = CubeList(multi_timepoint_flds +
-                                [single_timepoint_fld]).merge()
-        else:
-            # This is what we ACTUALLY get at present.
-            # It can't combine the scalar and vector time coords.
-            expected = CubeList([CubeList(multi_timepoint_flds).merge_cube(),
-                                 single_timepoint_fld])
-            # NOTE: in this case, we need to sort the results to ensure a
-            # repeatable ordering, because ??somehow?? the random temporary
-            # directory name affects the ordering of the cubes in the result !
-            results = CubeList(sorted(results,
-                                      key=lambda cube: cube.shape))
-
         self.assertEqual(results, expected)
 
     def test_cell_method(self):
@@ -583,6 +521,109 @@ class MixinDimsAndOrdering(object):
         self.assertEqual(results, expected)
 
 
+class MixinProblemCases(object):
+    def test_FAIL_scalar_vector_concatenate(self):
+        # Structured load can produce a scalar coordinate from one file, and a
+        # matching vector one from another file, but these won't "combine".
+        # We'd really like to fix this one...
+        single_timepoint_fld, = self.fields(c_t='1')
+        multi_timepoint_flds = self.fields(c_t='23')
+        file_single = self.save_fieldcubes([single_timepoint_fld],
+                                           basename='single')
+        file_multi = self.save_fieldcubes(multi_timepoint_flds,
+                                          basename='multi')
+
+        results = iris.load((file_single, file_multi))
+        if not self.do_fast_loads:
+            # This is what we'd LIKE to get (what iris.load gives).
+            expected = CubeList(multi_timepoint_flds +
+                                [single_timepoint_fld]).merge()
+        else:
+            # This is what we ACTUALLY get at present.
+            # It can't combine the scalar and vector time coords.
+            expected = CubeList([CubeList(multi_timepoint_flds).merge_cube(),
+                                 single_timepoint_fld])
+            # NOTE: in this case, we need to sort the results to ensure a
+            # repeatable ordering, because ??somehow?? the random temporary
+            # directory name affects the ordering of the cubes in the result !
+            results = CubeList(sorted(results,
+                                      key=lambda cube: cube.shape))
+
+        self.assertEqual(results, expected)
+
+    def test_FAIL_phenomena_nostash(self):
+        # If we remove the 'STASH' attributes, certain phenomena can still be
+        # successfully encoded+decoded by standard load using LBFC values.
+        # Structured loading gets this wrong, because it does not use LBFC in
+        # characterising phenomena.
+        flds = self.fields(c_t='1122', phn='0101')
+        for fld in flds:
+            del fld.attributes['STASH']
+        file = self.save_fieldcubes(flds)
+        results = iris.load(file)
+        if not self.do_fast_loads:
+            # This is what we'd LIKE to get (what iris.load gives).
+            expected = CubeList(flds).merge()
+        else:
+            # At present, we get a cube incorrectly combined together over all
+            # 4 timepoints, with the same phenomenon for all (!wrong!).
+            # It's a bit tricky to arrange the existing data like that.
+            # Do it by hacking the time values to allow merge, and then fixing
+            # up the time
+            old_t1, old_t2 = (fld.coord('time').points[0]
+                              for fld in (flds[0], flds[2]))
+            for i_fld, fld in enumerate(flds):
+                # Hack the phenomena to all look like the first one.
+                fld.rename('air_temperature')
+                fld.units = 'K'
+                # Hack the time points so the 4 cube can merge into one.
+                fld.coord('time').points = [old_t1 + i_fld]
+            one_cube = CubeList(flds).merge_cube()
+            # Replace time dim with an anonymous dim.
+            co_t_fake = one_cube.coord('time')
+            one_cube.remove_coord(co_t_fake)
+            # Reconstruct + add back the expected auxiliary time coord.
+            co_t_new = AuxCoord([old_t1, old_t1, old_t2, old_t2],
+                                standard_name='time', units=co_t_fake.units)
+            one_cube.add_aux_coord(co_t_new, 0)
+            expected = [one_cube]
+        self.assertEqual(results, expected)
+
+    def test_FAIL_pseudo_levels(self):
+        # Show how pseudo levels are handled.
+        flds = self.fields(c_t='000111222',
+                           pse='123123123')
+        file = self.save_fieldcubes(flds)
+        results = iris.load(file)
+        expected = CubeList(flds).merge()
+
+# NOTE: this problem is now fixed : Structured load gives the same answer.
+#
+#        if not self.do_fast_loads:
+#            expected = CubeList(flds).merge()
+#        else:
+#            # Structured loading doesn't understand pseudo-level.
+#            # The result is rather horrible...
+#
+#            # First get a cube over 9 timepoints.
+#            flds = self.fields(c_t='012345678',
+#                               pse=1)  # result gets level==2, not clear why.
+#
+#            # Replace the time coord with an AUX coord.
+#            nine_timepoints_cube = CubeList(flds).merge_cube()
+#            co_time = nine_timepoints_cube.coord('time')
+#            nine_timepoints_cube.remove_coord(co_time)
+#            nine_timepoints_cube.add_aux_coord(AuxCoord.from_coord(co_time),
+#                                               0)
+#            # Set the expected timepoints equivalent to '000111222'.
+#            nine_timepoints_cube.coord('time').points = \
+#                np.array([0.0, 0.0, 0.0, 24.0, 24.0, 24.0, 48.0, 48.0, 48.0])
+#            # Make a cubelist with this single cube.
+#            expected = CubeList([nine_timepoints_cube])
+
+        self.assertEqual(results, expected)
+
+
 class TestBasic__Iris(Mixin_FieldTest, MixinBasic, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'basic' tests with *normal* loading.
@@ -618,6 +659,18 @@ class TestDimsAndOrdering__Fast(Mixin_FieldTest, MixinDimsAndOrdering,
                                 tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'dimensions and ordering' tests with *FAST* loading.
+    do_fast_loads = True
+
+
+class TestProblems__Iris(Mixin_FieldTest, MixinProblemCases, tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'failure cases' tests with *normal* loading.
+    do_fast_loads = False
+
+
+class TestProblems__Fast(Mixin_FieldTest, MixinProblemCases, tests.IrisTest):
+    # Finally, an actual test-class (unittest.TestCase) :
+    # run the 'failure cases' tests with *FAST* loading.
     do_fast_loads = True
 
 
