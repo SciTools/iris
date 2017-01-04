@@ -37,6 +37,7 @@ import iris.util
 
 EARTH_RADIUS = 6371229.0
 NAMEIII_DATETIME_FORMAT = '%d/%m/%Y  %H:%M %Z'
+NAMETRAJ_DATETIME_FORMAT = '%d/%m/%Y  %H:%M:%S %Z'
 NAMEII_FIELD_DATETIME_FORMAT = '%H%M%Z %d/%m/%Y'
 NAMEII_TIMESERIES_DATETIME_FORMAT = '%d/%m/%Y  %H:%M:%S'
 
@@ -1099,8 +1100,7 @@ def load_NAMEIII_trajectory(filename):
             values = [v.strip() for v in line.split(",")]
             for c, v in enumerate(values):
                 if "UTC" in v:
-                    v = v.replace(":00 ", " ")  # Strip out milliseconds.
-                    v = datetime.datetime.strptime(v, NAMEIII_DATETIME_FORMAT)
+                    v = datetime.datetime.strptime(v, NAMETRAJ_DATETIME_FORMAT)
                 else:
                     try:
                         v = float(v)
