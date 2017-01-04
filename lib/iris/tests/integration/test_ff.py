@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -110,7 +110,8 @@ class TestSkipField(tests.IrisTest):
         infile = tests.get_data_path(('FF', 'lbrel_missing'))
         with mock.patch('warnings.warn') as warn_fn:
             fields = iris.load(infile)
-        self.assertIn("Skipping field with unrecognised LBREL value.",
+        self.assertIn("Input field skipped as PPField creation failed : "
+                      "error = 'Unsupported header release number: -32768'",
                       warn_fn.call_args[0][0])
         self.assertEqual(len(fields), 2)
 

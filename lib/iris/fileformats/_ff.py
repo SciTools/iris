@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -794,8 +794,9 @@ class FF2PP(object):
 
                         yield result_field
                 except ValueError as valerr:
-                    warnings.warn('Skipping field with unrecognised LBREL '
-                                  'value.') 
+                    msg = ('Input field skipped as PPField creation failed :'
+                           ' error = {!r}')
+                    warnings.warn(msg.format(valerr.message))
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())
