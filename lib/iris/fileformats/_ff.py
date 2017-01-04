@@ -796,7 +796,7 @@ class FF2PP(object):
                 except ValueError as valerr:
                     msg = ('Input field skipped as PPField creation failed :'
                            ' error = {!r}')
-                    warnings.warn(msg.format(valerr.message))
+                    warnings.warn(msg.format(str(valerr)))
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())
