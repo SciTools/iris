@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -141,7 +141,7 @@ def _calculate_hit(uris, phash, action):
     # Create the expected perceptual image hashes from the uris.
     to_hash = imagehash.hex_to_hash
     expected = [to_hash(os.path.splitext(os.path.basename(uri))[0],
-                        hash_size=_HASH_SIZE)
+                        hash_size=iris.tests._HASH_SIZE)
                 for uri in uris]
     # Calculate the hamming distance vector for the result hash.
     distances = [e - phash for e in expected]
