@@ -839,7 +839,7 @@ class IrisTest(unittest.TestCase):
         # Return patch replacement object.
         return start_result
 
-    def assertArrayShapeStats(self, result, shape, mean, std_dev):
+    def assertArrayShapeStats(self, result, shape, mean, std_dev, rtol=1e-6):
         """
         Assert that the result, a cube, has the provided shape and that the
         mean and standard deviation of the data array are also as provided.
@@ -848,8 +848,8 @@ class IrisTest(unittest.TestCase):
 
         """
         self.assertEqual(result.shape, shape)
-        self.assertArrayAllClose(result.data.mean(), mean, rtol=1e-6)
-        self.assertArrayAllClose(result.data.std(), std_dev, rtol=1e-6)
+        self.assertArrayAllClose(result.data.mean(), mean, rtol=rtol)
+        self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
 
 
 get_result_path = IrisTest.get_result_path
