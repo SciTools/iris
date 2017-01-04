@@ -104,5 +104,16 @@ class TestFFGrid(tests.IrisTest):
                           warn_fn.call_args[0][0])
 
 
+@tests.skip_data
+class TestSkipField(tests.IrisTest):
+    def test_missing_lbrel(self):
+        infile = tests.get_data_path(('FF', 'lbrel_missing'))
+        with mock.patch('warnings.warn') as warn_fn:
+            fields = iris.load(infile)
+        self.assertIn("Skipping field with unrecognised LBREL value.",
+                      warn_fn.call_args[0][0])
+        self.assertEqual(len(fields), 2)
+
+
 if __name__ == '__main__':
     tests.main()
