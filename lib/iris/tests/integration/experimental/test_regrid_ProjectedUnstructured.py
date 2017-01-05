@@ -53,7 +53,9 @@ class TestProjectedUnstructured(tests.IrisTest):
     def test_nearest(self):
         res = self.src.regrid(self.global_grid, ProjectedUnstructuredNearest())
         self.assertArrayShapeStats(res, (1, 6, 73, 96),
-                                   315.8913582, 11.00063766248)
+                                   315.8913582, 11.00063922733, rtol=1e-8)
+        self.assertArrayShapeStats(res[:, 0], (1, 73, 96),
+                                   299.99993826, 3.9226378869e-5)
 
     def test_nearest_sinusoidal(self):
         crs = ccrs.Sinusoidal()
@@ -61,6 +63,8 @@ class TestProjectedUnstructured(tests.IrisTest):
                               ProjectedUnstructuredNearest(crs))
         self.assertArrayShapeStats(res, (1, 6, 73, 96),
                                    315.891358296, 11.000639227, rtol=1e-8)
+        self.assertArrayShapeStats(res[:, 0], (1, 73, 96),
+                                   299.99993826, 3.9223839688e-5)
 
     def test_nearest_gnomonic_uk_domain(self):
         crs = ccrs.Gnomonic(central_latitude=60.0)
@@ -70,6 +74,8 @@ class TestProjectedUnstructured(tests.IrisTest):
 
         self.assertArrayShapeStats(res, (1, 6, 17, 11),
                                    315.8873266, 11.0006664668, rtol=1e-8)
+        self.assertArrayShapeStats(res[:, 0], (1, 17, 11),
+                                   299.99993826, 4.1356150388e-5)
         expected_subset = np.array([[318.936829, 318.936829, 318.936829],
                                     [318.936829, 318.936829, 318.936829],
                                     [318.935163, 318.935163, 318.935163]])
@@ -98,30 +104,22 @@ class TestProjectedUnstructured(tests.IrisTest):
         res = src.regrid(self.global_grid, ProjectedUnstructuredNearest())
 
         self.assertArrayShapeStats(res, (1, 6, 73, 96),
-                                   315.8913582, 11.00063766248)
+                                   315.8913582, 11.000639227334, rtol=1e-8)
+        self.assertArrayShapeStats(res[:, 0], (1, 73, 96),
+                                   299.99993826, 3.9226378869e-5)
         self.assertEqual(res.coord('altitude').shape, (6, 73, 96))
 
     def test_linear_sinusoidal(self):
         res = self.src.regrid(self.global_grid, ProjectedUnstructuredLinear())
         self.assertArrayShapeStats(res, (1, 6, 73, 96),
                                    315.8914839, 11.0006338412, rtol=1e-8)
+        self.assertArrayShapeStats(res[:, 0], (1, 73, 96),
+                                   299.99993826, 3.775024069e-5)
         expected_subset = np.array([[299.999987, 299.999996, 299.999999],
                                     [299.999984, 299.999986, 299.999988],
                                     [299.999973, 299.999977, 299.999982]])
         self.assertArrayAlmostEqual(expected_subset,
                                     res.data[0, 0, 20:23, 40:43].data)
-
-    def test_use_default_rtol(self):
-        # TODO Remove before this change is merged in.
-        linear_res = self.src.regrid(self.global_grid,
-                                     ProjectedUnstructuredLinear())
-        nearest_res = self.src.regrid(self.global_grid,
-                                      ProjectedUnstructuredNearest())
-
-        self.assertArrayShapeStats(linear_res, (1, 6, 73, 96),
-                                   315.891483943, 11.0006338412)
-        self.assertArrayShapeStats(nearest_res, (1, 6, 73, 96),
-                                   315.891483943, 11.0006338412)
 
 
 if __name__ == "__main__":
