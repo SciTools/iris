@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import json
 import logging
 import os
 import requests
+import time
 
 
 @tests.skip_inet
@@ -40,7 +41,12 @@ class TestImageFile(tests.IrisTest):
                 'contents/images')
         r = requests.get(iuri)
         if r.status_code != 200:
-            raise ValueError('Github API get failed: {}'.format(iuri))
+            # Try again, in case github API has failed the download.
+            time.sleep(2)
+            r = requests.get(iuri)
+            if r.status_code != 200:
+                raise ValueError('Github API get failed: {}'.format(iuri))
+
         rj = r.json()
         prefix = 'https://scitools.github.io/test-iris-imagehash/images/'
 
