@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -373,15 +373,17 @@ def structured_um_loading():
         fields of each phenomenon, such that different phenomena may have
         different field structures, and can be interleaved in any way at all.
 
+        .. note::
+
+             At present, fields with different values of 'LBUSER5'
+             (pseudo-level) are *also* treated as different phenomena.
+             This is a temporary fix, standing in place for a more correct
+             handling of pseudo-levels.
+
     Known current shortcomings:
 
         * orography fields may be returned with extra dimensions, e.g. time,
           where multiple fields exist in an input file.
-
-        * varying values of LBUSER5, representing a 'pseudo-level' coordinate,
-          are not currently supported.
-
-          * Unfortunately, there is no good workaround for this at present.
 
         * if some input files contain a *single* coordinate value while others
           contain *multiple* values, these will not be merged into a single
@@ -420,8 +422,8 @@ def structured_um_loading():
         Various field header words which can in some cases vary are assumed to
         have a constant value throughout a given phenomenon.  This is **not**
         checked, and can lead to erroneous results if it is not the case.
-        Header elements of potential concern include LBTIM, LBCODE, LBVC,
-        LBRSVD4 (ensemble number) and LBUSER5 (pseudo-level).
+        Header elements of potential concern include LBTIM, LBCODE, LBVC and
+        LBRSVD4 (ensemble number).
 
     """
     with STRUCTURED_LOAD_CONTROLS.context(loads_use_structured=True):
