@@ -1,8 +1,8 @@
 Iris
 ====
 
-[![Build Status](https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master)](http://travis-ci.org/SciTools/iris/branches)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.51860.svg)](http://dx.doi.org/10.5281/zenodo.51860)
+[![Build Status](https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master)](https://travis-ci.org/SciTools/iris/branches)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.51860.svg)](https://dx.doi.org/10.5281/zenodo.51860)
 
 (C) British Crown Copyright 2010 - 2015, Met Office
 
