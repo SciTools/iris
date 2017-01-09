@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -50,6 +50,12 @@ class Test___setattr__(tests.IrisTest):
         new_value = not future.clip_latitudes
         future.clip_latitudes = new_value
         self.assertEqual(future.clip_latitudes, new_value)
+
+    def test_valid_share_data(self):
+        future = Future()
+        new_value = not future.share_data
+        future.share_data = new_value
+        self.assertEqual(future.share_data, new_value)
 
     def test_invalid_attribute(self):
         future = Future()

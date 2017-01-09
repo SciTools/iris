@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -522,8 +522,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        new_coord = copy.deepcopy(self)
         if points is not None:
+            # We do not perform a deepcopy when we supply new points so as to
+            # not unnecessarily copy the old points.
+            new_coord = copy.copy(self)
+            new_coord.attributes = copy.deepcopy(self.attributes)
+            new_coord.coord_system = copy.deepcopy(self.coord_system)
+
             # Explicitly not using the points property as we don't want the
             # shape the new points to be constrained by the shape of
             # self.points
@@ -533,6 +538,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             # points will result in new bounds, discarding those copied from
             # self.
             new_coord.bounds = bounds
+        else:
+            new_coord = copy.deepcopy(self)
 
         return new_coord
 
@@ -1502,7 +1509,7 @@ class DimCoord(Coord):
 
     @points.setter
     def points(self, points):
-        points = np.array(points, ndmin=1)
+        points = np.array(points, ndmin=1, copy=False)
         # If points are already defined for this coordinate,
         if hasattr(self, '_points') and self._points is not None:
             # Check that setting these points wouldn't change self.shape
@@ -1538,7 +1545,7 @@ class DimCoord(Coord):
     def bounds(self, bounds):
         if bounds is not None:
             # Ensure the bounds are a compatible shape.
-            bounds = np.array(bounds, ndmin=2)
+            bounds = np.array(bounds, ndmin=2, copy=False)
             if self.shape != bounds.shape[:-1]:
                 raise ValueError(
                     "The shape of the bounds array should be "
