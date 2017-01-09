@@ -2369,6 +2369,14 @@ class UnstructuredNearest(object):
     .. Note::
         Currently only supports regridding, not interpolation.
 
+    .. Note::
+          This scheme performs essentially the same job as
+          :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
+          That scheme is faster, but only works well on data in a limited
+          region of the globe, covered by a specified projection.
+          This approach is more rigorously correct and can be applied to global
+          datasets.
+
     """
     # Note: the argument requirements are simply those of the underlying
     # regridder class,

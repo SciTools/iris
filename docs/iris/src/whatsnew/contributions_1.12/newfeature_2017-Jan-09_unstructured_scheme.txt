@@ -1,0 +1,10 @@
+* a new regridding scheme, :class:`iris.analysis.UnstructuredNearest`,
+  performs nearest-neighbour regridding from unstructured onto "normal" grids.
+  Here, "unstructured" means that the data has X and Y coordinate values
+  defined at each horizontal location, instead of on independent X and Y
+  dimensions.
+  For example, data sampled on a trajectory or a tripolar ocean grid.
+
+  The essential purpose is the same as
+  :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
+  This scheme, by comparison, is generally more accurate, but slower.
