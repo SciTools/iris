@@ -1,3 +1,5 @@
+.. _whats_new_contributions:
+
 =================================
 Contributing a "What's New" entry
 =================================

@@ -1,3 +1,5 @@
+.. _developer_tests:
+
 Testing
 *******
 
@@ -125,3 +127,24 @@ developers locate relevant tests. It is recommended they are named
 according to the capabilities under test, e.g.
 `metadata/test_pp_preservation.py`, and not named according to the
 module(s) under test.
+
+
+Graphics tests
+=================
+Certain Iris tests rely on testing plotted results.
+This is required for testing the modules :mod:`iris.plot` and
+:mod:`iris.quickplot`, but is also used for some other legacy and integration
+tests.
+
+Prior to Iris version 1.10, a single reference image for each test was stored
+in the main Iris repository, and a 'tolerant' test was performed against this.
+
+From version 1.11 onwards, graphics test outputs are compared against possibly
+*multiple* known-good images, of which only a signature is stored.
+This uses a sophisticated perceptual "image hashing" scheme (see: 
+<https://github.com/JohannesBuchner/imagehash>).
+Only imagehash signatures are stored in the Iris repo itself, thus freeing up
+valuable space.  Meanwhile, the actual reference *images*, which are required
+for human-eyes evaluation of proposed new "good results", are all stored
+elsewhere in a separate public repository.
+See :ref:`developer_graphics_tests`.
