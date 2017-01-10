@@ -1692,6 +1692,12 @@ class ProjectedUnstructuredNearest(object):
     The source cube and the target cube will be projected into a common
     projection for the scipy calculation to be performed.
 
+    .. Note::
+          The :class:`iris.analysis.UnstructuredNearest` scheme performs
+          essentially the same job.  That calculation is more rigorously
+          correct and may be applied to larger data regions (including global).
+          This one however, where applicable, is substantially faster.
+
     """
     def __init__(self, projection=None):
         """
