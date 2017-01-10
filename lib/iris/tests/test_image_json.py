@@ -39,12 +39,11 @@ class TestImageFile(tests.IrisTest):
 
         iuri = ('https://api.github.com/repos/scitools/test-iris-imagehash/'
                 'contents/images')
-        r = requests.get(iuri)
+        # https://developer.github.com/v3/#user-agent-required
+        headers = {'User-Agent': 'SciTools'}
+        r = requests.get(iuri, headers=headers)
         if r.status_code != 200:
-            time.sleep(2)
-            r = requests.get(iuri)
-            if r.status_code != 200:
-                raise ValueError('Github API get failed: {}'.format(iuri))
+            raise ValueError('Github API get failed: {}'.format(iuri))
         rj = r.json()
         prefix = 'https://scitools.github.io/test-iris-imagehash/images/'
 
