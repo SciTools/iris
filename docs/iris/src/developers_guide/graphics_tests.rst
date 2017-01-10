@@ -54,8 +54,8 @@ This consists of :
  * storing the hashes of 'known accepted results' for each test in a
    database in the repo (which is actually stored in 
    ``lib/iris/tests/results/imagerepo.json``).
- * storing associated reference images for each hash value in a separate web
-   project, currently in https://github.com/SciTools/test-images-scitools ,
+ * storing associated reference images for each hash value in a separate public
+   repository, currently in https://github.com/SciTools/test-images-scitools ,
    allowing human-eye judgement of 'valid equivalent' results.
  * a new version of the 'iris/tests/idiff.py' assists in comparing proposed
    new 'correct' result images with the existing accepted ones.
