@@ -21,9 +21,10 @@ is practical.
 
 Testing actual plot results introduces some significant difficulties :
  * Graphics tests are inherently 'integration' style tests, so results will
-   often vary with the versions of key dependencies :  Obviously, results will
-   depend on the matplotlib version, but they can also depend on numpy and
-   other installed packages.
+   often vary with the versions of key dependencies, i.e. the exact versions of
+   third-party modules which are installed :  Obviously, results will depend on
+   the matplotlib version, but they can also depend on numpy and other
+   installed packages.
  * Although it seems possible in principle to accommodate 'small' result changes
    by distinguishing plots which are 'nearly the same' from those which are
    'significantly different', in practice no *automatic* scheme for this can be
@@ -38,17 +39,18 @@ Graphics Testing Strategy
 =========================
 
 Prior to Iris 1.10, all graphics tests compared against a stored reference
-image with a small allowed RMS tolerance, based on RGB values in each pixel.
+image with a small tolerance on pixel values.
 
 From Iris v1.11 onward, we want to support testing Iris against multiple
 versions of matplotlib (and some other dependencies).  
-To make these reasonable, we have now rewritten "check_graphic" to allow
+To make this manageable, we have now rewritten "check_graphic" to allow
 multiple alternative 'correct' results without including many more images in
 the Iris repository.  
 This consists of :
 
- * using a hash of image output pixels (the SHA of a PNG file) as the basis
-   for checking test results
+ * using a perceptual 'image hash' of the outputs (see
+   <<https://github.com/JohannesBuchner/imagehash>) as the basis for checking
+   test results.
  * storing the hashes of 'known accepted results' for each test in a
    database in the repo (which is actually stored in 
    ``lib/iris/tests/results/imagerepo.json``).
