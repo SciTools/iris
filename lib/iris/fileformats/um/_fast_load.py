@@ -376,9 +376,14 @@ def structured_um_loading():
         .. note::
 
              At present, fields with different values of 'LBUSER5'
-             (pseudo-level) are *also* treated as different phenomena.
-             This is a temporary fix, standing in place for a more correct
-             handling of pseudo-levels.
+             (pseudo-level) are *also* treated internally as different
+             phenomena, yielding a raw cube per level.
+             The effects of this are not normally noticed, as the resulting
+             multiple raw cubes merge together again in a 'normal' load.
+             However, it is not an ideal solution as operation is less
+             efficient (in particular, slower) :  it is done to avoid a
+             limitation in the underlying code which would otherwise load data
+             on pseudo-levels incorrectly.  In future, this may be corrected.
 
     Known current shortcomings:
 
