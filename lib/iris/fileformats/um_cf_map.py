@@ -16,11 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
-# Created on 12 January 2017 08:01 from 
+# Created on 12 January 2017 09:01 from 
 # http://www.metarelate.net/metOcean
-# at commit 970c944f7ff806ed313c312c731d5ac77bf7d8fe
+# at commit c8b9eaf6733843702297f9770e166bc9ad756235
 
-# https://github.com/metarelate/metOcean/commit/970c944f7ff806ed313c312c731d5ac77bf7d8fe
+# https://github.com/metarelate/metOcean/commit/c8b9eaf6733843702297f9770e166bc9ad756235
 
 """
 Provides UM/CF phenomenon translations.
@@ -389,7 +389,6 @@ STASH_TO_CF = {
     'm01s03i226': CFName('y_wind', None, 'm s-1'),
     'm01s03i227': CFName('wind_speed', None, 'm s-1'),
     'm01s03i228': CFName('surface_upward_sensible_heat_flux', None, 'W m-2'),
-    'm01s03i230': CFName('wind_speed', None, 'm s-1'),
     'm01s03i230': CFName('wind_speed', None, 'm s-1'),
     'm01s03i231': CFName(None, 'water_sublimation_flux_in_timestep', 'kg m-2'),
     'm01s03i232': CFName(None, 'Evaporation flux from open sea', 'kg/m^2/s'),
