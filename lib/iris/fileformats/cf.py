@@ -684,6 +684,9 @@ class CFLabelVariable(CFVariable):
         # Determine whether we have a string-valued scalar label
         # i.e. a character variable that only has one dimension (the length of the string).
         if self.ndim == 1:
+            if six.PY3:
+                label_data = label_data.astype(np.unicode_)
+
             data = np.array([''.join(label_data).strip()])
         else:
             # Determine the index of the string dimension.
