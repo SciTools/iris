@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -69,7 +69,7 @@ __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
            'VARIANCE', 'WPERCENTILE', 'coord_comparison', 'Aggregator',
            'WeightedAggregator', 'clear_phenomenon_identity', 'Linear',
-           'AreaWeighted', 'Nearest')
+           'AreaWeighted', 'Nearest', 'UnstructuredNearest')
 
 
 class _CoordGroup(object):
@@ -2348,13 +2348,39 @@ class Nearest(object):
 
 class UnstructuredNearest(object):
     """
-    This is a nearest-neighbour interpolation and regridding scheme for
-    regridding cubes whose latitude and longitude coordinates are mapped to the
-    same dimensions, rather than being orthogonal on independent dimensions.
+    This is a nearest-neighbour regridding scheme for regridding data whose
+    horizontal (X- and Y-axis) coordinates are mapped to the *same* dimensions,
+    rather than being orthogonal on independent dimensions.
 
-    Currently only supports regridding, not interpolation.
+    For latitude-longitude coordinates, the nearest-neighbour distances are
+    computed on the sphere, otherwise flat Euclidean distances are used.
+
+    The source X and Y coordinates can have any shape.
+
+    The target grid must be of the "normal" kind, i.e. it has separate,
+    1-dimensional X and Y coordinates.
+
+    Source and target XY coordinates must have the same coordinate system,
+    which may also be None.
+    If any of the XY coordinates are latitudes or longitudes, then they *all*
+    must be.  Otherwise, the corresponding X and Y coordinates must have the
+    same units in the source and grid cubes.
+
+    .. Note::
+        Currently only supports regridding, not interpolation.
+
+    .. Note::
+          This scheme performs essentially the same job as
+          :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
+          That scheme is faster, but only works well on data in a limited
+          region of the globe, covered by a specified projection.
+          This approach is more rigorously correct and can be applied to global
+          datasets.
 
     """
+    # Note: the argument requirements are simply those of the underlying
+    # regridder class,
+    # :class:`iris.analysis.trajectory.UnstructuredNearestNeigbourRegridder`.
     def __init__(self):
         """
         Nearest-neighbour interpolation and regridding scheme suitable for
@@ -2367,53 +2393,14 @@ class UnstructuredNearest(object):
     def __repr__(self):
         return 'UnstructuredNearest()'
 
-#    def interpolator(self, cube, coords):
-#        """
-#        Creates a nearest-neighbour interpolator to perform
-#        interpolation over the given :class:`~iris.cube.Cube` specified
-#        by the dimensions of the specified coordinates.
-#
-#        Typically you should use :meth:`iris.cube.Cube.interpolate` for
-#        interpolating a cube. There are, however, some situations when
-#        constructing your own interpolator is preferable. These are detailed
-#        in the :ref:`user guide <caching_an_interpolator>`.
-#
-#        Args:
-#
-#        * cube:
-#            The source :class:`iris.cube.Cube` to be interpolated.
-#        * coords:
-#            The names or coordinate instances that are to be
-#            interpolated over.
-#
-#        Returns:
-#            A callable with the interface:
-#
-#                `callable(sample_points, collapse_scalar=True)`
-#
-#            where `sample_points` is a sequence containing an array of values
-#            for each of the coordinates passed to this method, and
-#            `collapse_scalar` determines whether to remove length one
-#            dimensions in the result cube caused by scalar values in
-#            `sample_points`.
-#
-#            The values for coordinates that correspond to date/times
-#            may optionally be supplied as datetime.datetime or
-#            netcdftime.datetime instances.
-#
-#            For example, for the callable returned by:
-#            `Nearest().interpolator(cube, ['latitude', 'longitude'])`,
-#            sample_points must have the form
-#            `[new_lat_values, new_lon_values]`.
-#
-#        """
-#        return RectilinearInterpolator(cube, coords, 'nearest',
-#                                       self.extrapolation_mode)
+    # TODO: add interpolator usage
+    # def interpolator(self, cube):
 
     def regridder(self, src_cube, target_grid):
         """
-        Creates a nearest-neighbour regridder to perform regridding from the
-        source grid to the target grid.
+        Creates a nearest-neighbour regridder, of the
+        :class:`~iris.analysis.trajectory.UnstructuredNearestNeigbourRegridder`
+        type, to perform regridding from the source grid to the target grid.
 
         This can then be applied to any source data with the same structure as
         the original 'src_cube'.
@@ -2427,13 +2414,14 @@ class UnstructuredNearest(object):
 
         * src_cube:
             The :class:`~iris.cube.Cube` defining the source grid.
-            The X and Y coordinates must be mapped over the same dimensions.
+            The X and Y coordinates can have any shape, but must be mapped over
+            the same cube dimensions.
 
         * target_grid:
             The :class:`~iris.cube.Cube` defining the target grid.
-            It must have only 2 dimensions.
-            The X and Y coordinates must be one-dimensional and mapped to
-            different dimensions.
+            The X and Y coordinates must be one-dimensional dimension
+            coordinates, mapped to different dimensions.
+            All other cube components are ignored.
 
         Returns:
             A callable with the interface:

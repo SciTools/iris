@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -221,7 +221,24 @@ def _um_collation_key_function(field):
     'phenomenon', as described for :meth:`group_structured_fields`.
 
     """
-    return (field.lbuser[3], field.lbproc, field.lbuser[6])
+    return (field.lbuser[3],  # stashcode first
+            field.lbproc,  # then stats processing
+            field.lbuser[6],  # then model
+            field.lbuser[4]  # then pseudo-level : this one is a KLUDGE.
+            )
+    # NOTE: including pseudo-level here makes it treat different pseudo-levels
+    # as different phenomena.  These will later be merged in the "ordinary"
+    # post-load merge.
+    # The current structured-load code fails to handle multiple pseudo-levels
+    # correctly: because pseudo-level is not on in its list of "things that may
+    # vary within a phenomenon", it will create a scalar pseudo-level
+    # coordinate when it should have been a vector of values.
+    # This kludge fixes that error, but it is inefficient because it bypasses
+    # the structured load, producing n-levels times more 'raw' cubes.
+    # It will also fail if any phenomenon occurs with multiple 'normal' levels
+    # (i.e. lblev) *and* pseudo-levels (lbuser[4]).
+    # TODO: it should be fairly easy to do this properly -- i.e. create a
+    # vector pseudo-level coordinate directly in the structured load analysis.
 
 
 def group_structured_fields(field_iterator):
@@ -235,7 +252,8 @@ def group_structured_fields(field_iterator):
         A source of PP or FF fields.  N.B. order is significant.
 
     The function sorts and collates on phenomenon-relevant metadata only,
-    defined as the field components: 'lbuser[3]', 'lbuser[6]' and 'lbproc'.
+    defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
+    'lbuser[6]' (model).
     Each distinct combination of these defines a specific phenomenon (or
     statistical aggregation of one), and those fields appear as a single
     iteration result.
@@ -251,6 +269,12 @@ def group_structured_fields(field_iterator):
     Returns:
         A generator of FieldCollation objects, each of which contains a single
         collated group from the input fields.
+
+    .. note::
+
+         At present, fields with different values of 'lbuser[4]' (pseudo-level)
+         are *also* treated as different phenomena.  This is a temporary fix,
+         standing in place for a more correct handling of pseudo-levels.
 
     """
     _fields = sorted(field_iterator, key=_um_collation_key_function)

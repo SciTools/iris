@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,6 +21,7 @@ Regridding functions.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 from collections import namedtuple
 import copy
@@ -1549,7 +1550,7 @@ class _ProjectedUnstructuredRegridder(object):
                                                             grid_x_coord,
                                                             grid_y_coord,
                                                             regrid_callback)
-                    result.add_aux_coord(result_coord, dims)
+                    result.add_aux_coord(result_coord, (dims[0], dims[0]+1))
                     coord_mapping[id(coord)] = result_coord
             try:
                 result.add_aux_factory(factory.updated(coord_mapping))
@@ -1626,6 +1627,63 @@ class _ProjectedUnstructuredRegridder(object):
         return new_cube
 
 
+class ProjectedUnstructuredLinear(object):
+    """
+    This class describes the linear regridding scheme which uses the
+    scipy.interpolate.griddata to regrid unstructured data on to a grid.
+
+    The source cube and the target cube will be projected into a common
+    projection for the scipy calculation to be performed.
+
+    """
+    def __init__(self, projection=None):
+        """
+        Linear regridding scheme that uses scipy.interpolate.griddata on
+        projected unstructured data.
+
+        Optional Args:
+
+        * projection: `cartopy.crs instance`
+            The projection that the scipy calculation is performed in.
+            If None is given, a PlateCarree projection is used. Defaults to
+            None.
+
+        """
+        self.projection = projection
+
+    def regridder(self, src_cube, target_grid):
+        """
+        Creates a linear regridder to perform regridding, using
+        scipy.interpolate.griddata from unstructured source points to the
+        target grid. The regridding calculation is performed in the given
+        projection.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_cube:
+            The :class:`~iris.cube.Cube` defining the unstructured source
+            points.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_cube`
+            that is to be regridded to the `target_grid`.
+
+        """
+        return _ProjectedUnstructuredRegridder(src_cube, target_grid,
+                                               'linear', self.projection)
+
+
 class ProjectedUnstructuredNearest(object):
     """
     This class describes the nearest regridding scheme which uses the
@@ -1633,6 +1691,12 @@ class ProjectedUnstructuredNearest(object):
 
     The source cube and the target cube will be projected into a common
     projection for the scipy calculation to be performed.
+
+    .. Note::
+          The :class:`iris.analysis.UnstructuredNearest` scheme performs
+          essentially the same job.  That calculation is more rigorously
+          correct and may be applied to larger data regions (including global).
+          This one however, where applicable, is substantially faster.
 
     """
     def __init__(self, projection=None):

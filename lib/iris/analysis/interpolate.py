@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,6 +39,17 @@ import six
 
 from iris.analysis._interpolate_backdoor import *
 from iris.analysis._interpolate_backdoor import _warn_deprecated
+
+
+# List all the content exported from _interpolate_backdoor, to ensure we build
+# docs for them.
+__all__ = [
+    'nearest_neighbour_indices',
+    'extract_nearest_neighbour',
+    'nearest_neighbour_data_value',
+    'regrid',
+    'regrid_to_max_resolution',
+    'linear']
 
 # Issue a deprecation message when the module is loaded.
 _warn_deprecated()

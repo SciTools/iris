@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -51,7 +51,7 @@ import iris.cube
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from . import _interpolate_private as oldinterp
+from . import _interpolate_private as _interp
 
 
 _INTERPOLATE_DEPRECATION_WARNING = \
@@ -71,9 +71,9 @@ def nearest_neighbour_indices(cube, sample_points):
            'iris.analysis.interpolate.nearest_neighbour_indices() '
            'with iris.coords.Coord.nearest_neighbour_index()).')
     _warn_deprecated(msg)
-    return oldinterp.nearest_neighbour_indices(cube, sample_points)
+    return _interp.nearest_neighbour_indices(cube, sample_points)
 
-nearest_neighbour_indices.__doc__ = oldinterp.nearest_neighbour_indices.__doc__
+nearest_neighbour_indices.__doc__ = _interp.nearest_neighbour_indices.__doc__
 
 
 def extract_nearest_neighbour(cube, sample_points):
@@ -82,9 +82,9 @@ def extract_nearest_neighbour(cube, sample_points):
            'iris.analysis.interpolate.extract_nearest_neighbour() with '
            'iris.cube.Cube.interpolate(..., scheme=iris.analysis.Nearest()).')
     _warn_deprecated(msg)
-    return oldinterp.extract_nearest_neighbour(cube, sample_points)
+    return _interp.extract_nearest_neighbour(cube, sample_points)
 
-extract_nearest_neighbour.__doc__ = oldinterp.extract_nearest_neighbour.__doc__
+extract_nearest_neighbour.__doc__ = _interp.extract_nearest_neighbour.__doc__
 
 
 def nearest_neighbour_data_value(cube, sample_points):
@@ -93,10 +93,10 @@ def nearest_neighbour_data_value(cube, sample_points):
            'iris.analysis.interpolate.nearest_neighbour_data_value() with '
            'iris.cube.Cube.interpolate(..., scheme=iris.analysis.Nearest()).')
     _warn_deprecated(msg)
-    return oldinterp.nearest_neighbour_data_value(cube, sample_points)
+    return _interp.nearest_neighbour_data_value(cube, sample_points)
 
 nearest_neighbour_data_value.__doc__ = \
-    oldinterp.nearest_neighbour_data_value.__doc__
+    _interp.nearest_neighbour_data_value.__doc__
 
 
 def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
@@ -104,9 +104,9 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
            'Please replace usage of iris.analysis.interpolate.regrid() '
            'with iris.cube.Cube.regrid().')
     _warn_deprecated(msg)
-    return oldinterp.regrid(source_cube, grid_cube, mode=mode, **kwargs)
+    return _interp.regrid(source_cube, grid_cube, mode=mode, **kwargs)
 
-regrid.__doc__ = oldinterp.regrid.__doc__
+regrid.__doc__ = _interp.regrid.__doc__
 
 
 def regrid_to_max_resolution(cubes, **kwargs):
@@ -115,9 +115,9 @@ def regrid_to_max_resolution(cubes, **kwargs):
            'iris.analysis.interpolate.regrid_to_max_resolution() '
            'with iris.cube.Cube.regrid().')
     _warn_deprecated(msg)
-    return oldinterp.regrid_to_max_resolution(cubes, **kwargs)
+    return _interp.regrid_to_max_resolution(cubes, **kwargs)
 
-regrid_to_max_resolution.__doc__ = oldinterp.regrid_to_max_resolution.__doc__
+regrid_to_max_resolution.__doc__ = _interp.regrid_to_max_resolution.__doc__
 
 
 def linear(cube, sample_points, extrapolation_mode='linear'):
@@ -125,15 +125,15 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
            'Please replace usage of iris.analysis.interpolate.linear() with '
            'iris.cube.Cube.interpolate(..., scheme=iris.analysis.Linear()).')
     _warn_deprecated(msg)
-    return oldinterp.linear(cube, sample_points,
-                            extrapolation_mode=extrapolation_mode)
+    return _interp.linear(cube, sample_points,
+                          extrapolation_mode=extrapolation_mode)
 
-linear.__doc__ = oldinterp.linear.__doc__
+linear.__doc__ = _interp.linear.__doc__
 
 
 class Linear1dExtrapolator(six.with_metaclass(ClassWrapperSameDocstring,
-                                              oldinterp.Linear1dExtrapolator)):
-    @wraps(oldinterp.Linear1dExtrapolator.__init__)
+                                              _interp.Linear1dExtrapolator)):
+    @wraps(_interp.Linear1dExtrapolator.__init__)
     def __init__(self, interpolator):
         _warn_deprecated()
         super(Linear1dExtrapolator, self).__init__(interpolator)
