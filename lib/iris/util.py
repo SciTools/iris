@@ -35,6 +35,7 @@ import tempfile
 import time
 
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -1599,3 +1600,43 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.remove_coord(dim_coord)
 
     cube.add_aux_coord(dim_coord, coord_dim)
+
+
+def is_lazy_data(data):
+    """
+    Return whether the argument is an Iris 'lazy' data array.
+
+    At present, this means simply a Dask array.
+    We determine this by checking for a "compute" property.
+
+    """
+    return hasattr(data, 'compute')
+
+
+def data_as_real_array(data):
+    """
+    Returned the realised value of the argument, as a numpy array.
+
+    If lazy, fetch the data, otherwise do nothing.
+    """
+    if is_lazy_data(data):
+        data = data.compute()
+    return data
+
+
+# A magic value, borrowed from biggus
+_MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
+
+def data_as_lazy_array(data):
+    """
+    Return a lazy equivalent of the argument, as a dask array.
+
+    For an existing dask array, do nothing.
+    Otherwise, wrap with dask.array.from_array.
+    This assumes the underlying object support numpy-like indexing.
+
+    """
+    if not is_lazy_data(data):
+        data = da.from_array(data, chunks=_MAX_CHUNK_SIZE)
+    return data
+
