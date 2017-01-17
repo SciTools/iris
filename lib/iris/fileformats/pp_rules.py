@@ -1004,10 +1004,16 @@ def _all_other_rules(f):
     if zone_method is not None:
         if f.lbcode == 1:
             cell_methods.append(CellMethod(zone_method, coords='longitude'))
+            for coord, _dim in dim_coords_and_dims:
+                if coord.standard_name == 'longitude':
+                    coord.bounds = np.array([0. , 360.])
             unhandled_lbproc = False
         elif f.lbcode == 101:
             cell_methods.append(CellMethod(zone_method,
                                            coords='grid_longitude'))
+            for coord, _dim in dim_coords_and_dims:
+                if coord.standard_name == 'grid_longitude':
+                    coord.bounds = np.array([0. , 360.])
             unhandled_lbproc = False
         else:
             unhandled_lbproc = True
