@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -1695,7 +1695,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
             # Unmask the array only if it is filled.
-            if isinstance(data, np.ma.masked_array) and ma.count_masked(data) == 0:
+            if (isinstance(data, np.ma.masked_array) and
+                    ma.count_masked(data) == 0):
                 data = data.data
             # data may be a numeric type, so ensure an np.ndarray is returned
             self._my_data = np.asanyarray(data)

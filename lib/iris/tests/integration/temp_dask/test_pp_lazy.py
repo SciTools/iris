@@ -34,6 +34,7 @@ import numpy as np
 import iris
 
 
+@tests.skip_data
 class TestLazyLoad(tests.IrisTest):
     def setUp(self):
         path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
