@@ -34,7 +34,6 @@ import struct
 import warnings
 
 import cf_units
-import dask
 import numpy as np
 import numpy.ma as ma
 import netcdftime
@@ -44,7 +43,7 @@ import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-from iris.util import is_lazy_data, as_real_array, as_lazy_array
+from iris._lazy_data import is_lazy_data, as_concrete_data, as_lazy_data
 
 try:
     import mo_pack
@@ -1290,7 +1289,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # N.B. this throws away the original lazy object.
         if is_lazy_data(self._data):
             # Get the data as a numpy array.
-            self._data = self._data.compute()
+            self._data = as_concrete_data(self._data)
         return self._data
 
     @data.setter
@@ -1642,8 +1641,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
             for attr in self.__slots__:
                 attrs = [hasattr(self, attr), hasattr(other, attr)]
                 if all(attrs):
-                    self_attr = as_real_array(getattr(self, attr))
-                    other_attr = as_real_array(getattr(other, attr))
+                    self_attr = as_concrete_data(getattr(self, attr))
+                    other_attr = as_concrete_data(getattr(other, attr))
                     if not np.all(self_attr == other_attr):
                         result = False
                         break
@@ -1862,7 +1861,7 @@ def _interpret_fields(fields):
 def _create_field_data(field, data_shape, land_mask):
     """
     Modifies a field's ``_data`` attribute either by:
-     * converting DeferredArrayBytes into a dask array,
+     * converting DeferredArrayBytes into a lazy array,
      * converting LoadedArrayBytes into an actual numpy array.
 
     """
@@ -1883,7 +1882,7 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field._data = as_lazy_array(proxy)
+        field._data = as_lazy_data(proxy)
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):
