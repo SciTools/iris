@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,6 +21,7 @@ To avoid replicating implementation-dependent test and conversion code.
 
 """
 from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
 
 import dask.array as da
 
@@ -52,7 +53,7 @@ def as_concrete_data(data):
 _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
 
-def data_as_lazy_array(data):
+def as_lazy_data(data):
     """
     Return a lazy equivalent of the argument, as a lazy array.
 
