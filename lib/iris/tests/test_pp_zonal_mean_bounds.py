@@ -51,8 +51,8 @@ class TestZonalMeanBounds(tests.IrisTest):
         os.remove(temp_filename)
 
     def test_singular_longitude(self):
-        # test that bounds are set for a zonal mean file with a single longitude
-        # value
+        # test that bounds are set for a zonal mean file with a single
+        # longitude value
 
         pp_file = tests.get_data_path(('PP', 'zonal_mean', 'zonal_mean.pp'))
 
