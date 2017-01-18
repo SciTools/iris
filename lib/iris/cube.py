@@ -46,6 +46,7 @@ import iris.coord_systems
 import iris.coords
 import iris._concatenate
 import iris._constraints
+from iris._lazy_data import is_lazy_data, as_lazy_data, as_concrete_data
 import iris._merge
 import iris.exceptions
 import iris.util
@@ -713,7 +714,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if not isinstance(data, (biggus.Array, ma.MaskedArray)):
+        if not is_lazy_data(data):
             data = np.asarray(data)
         self._my_data = data
 
@@ -1630,8 +1631,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if array is not None:
-            if not isinstance(array, biggus.Array):
-                raise TypeError('new values must be a biggus.Array')
+            if not is_lazy_data(array):
+                raise TypeError('new values must be a lazy array')
             if self.shape != array.shape:
                 # The _ONLY_ data reshape permitted is converting a
                 # 0-dimensional array into a 1-dimensional array of
@@ -1643,8 +1644,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._my_data = array
         else:
             array = self._my_data
-            if not isinstance(array, biggus.Array):
-                array = biggus.NumpyArrayAdapter(array)
+            if not is_lazy_data(array):
+                array = as_lazy_data(array)
         return array
 
     @property
@@ -1681,9 +1682,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         data = self._my_data
-        if not isinstance(data, np.ndarray):
+        if is_lazy_data(data):
             try:
-                data = data.masked_array()
+                data = as_concrete_data(data)
             except MemoryError:
                 msg = "Failed to create the cube's data as there was not" \
                       " enough memory available.\n" \
@@ -1694,7 +1695,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
             # Unmask the array only if it is filled.
-            if isinstance(data, np.ndarray) and ma.count_masked(data) == 0:
+            if isinstance(data, np.ma.masked_array) and ma.count_masked(data) == 0:
                 data = data.data
             # data may be a numeric type, so ensure an np.ndarray is returned
             self._my_data = np.asanyarray(data)
@@ -1715,7 +1716,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._my_data = data
 
     def has_lazy_data(self):
-        return isinstance(self._my_data, biggus.Array)
+        return is_lazy_data(self._my_data)
 
     @property
     def dim_coords(self):
