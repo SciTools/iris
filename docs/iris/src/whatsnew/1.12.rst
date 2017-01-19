@@ -14,11 +14,11 @@ Iris 1.12 Features
 .. admonition:: Showcase Feature - New regridding schemes ...
 
   A new regridding scheme, :class:`iris.analysis.UnstructuredNearest`,
-  performs nearest-neighbour regridding from unstructured onto "normal" grids.
+  performs nearest-neighbour regridding from "unstructured" onto "structured" grids.
   Here, "unstructured" means that the data has X and Y coordinate values
-  defined at each horizontal location, instead of on independent X and Y
-  dimensions.
-  For example, data sampled on a trajectory or a tripolar ocean grid.
+  defined at each horizontal location, instead of the independent X and Y
+  dimensions that constitute a structured grid.
+  For example, data sampled on a trajectory or a tripolar ocean grid would be unstructured.
 
   The essential purpose is the same as
   :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
@@ -29,7 +29,7 @@ Iris 1.12 Features
 .. admonition:: Showcase Feature - Fast UM file loading
 
   Support has been added for accelerated loading of UM files (PP and
-  Fieldsfile), when these have a suitable regular 'structured' form.
+  Fieldsfile), when these have a suitable regular "structured" form.
 
   A context manager is used to enable fast um loading in all the regular iris
   load functions, such as :meth:`iris.load` and :meth:`iris.load_cube`,
@@ -82,7 +82,7 @@ Iris 1.12 Features
      routines will generally need to be re-written.  This is because a
      'raw' cube in structured loading generally covers *multiple* PPfields,
      which therefore need to be handled as a collection :  A grouping object
-     containing them is passed to the callback 'field' argument.  
+     containing them is passed to the callback 'field' argument.
      An example showing callbacks suitable for both normal and structured
      loading can be seen `here <https://github.com/pp-mo/iris/blob/9042b4217ab6dd78dcfccfec19584170a5a6250a/lib/iris/tests/integration/fast_load/test_fast_load.py#L409>`_.
 
@@ -101,19 +101,6 @@ Iris 1.12 Features
   A warning message is printed, and all fields up to the offending one are
   loaded and returned.
   Previously, this simply resulted in an unrecoverable error.
-
-* Support for "fast" loading of UM files has been added.
-  This can dramatically accelerate loading speeds of fieldsfiles and PP files,
-  if they meet certain common structural requirements, typical for these types
-  of datafile.
-
-  See : :meth:`iris.fileformats.um.structured_um_loading`.
-
-  .. Note:
-
-    This updates and replaces the experimental code in
-    :mod:`iris.experimental.fieldsfile`, which is now deprecated in favour of
-    the new, supported facility.
 
 * The transpose method of a Cube now results in a lazy transposed view of the original rather than realising the data then transposing it.
 
