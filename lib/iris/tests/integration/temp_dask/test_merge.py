@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test lazy data utility functions.
+Test data merging with dask.
 
-Note: really belongs in "tests/unit/lazy_data".
+Note: really belongs in main unit tests, somewhere ?
 
 """
 from __future__ import (absolute_import, division, print_function)
@@ -71,7 +71,17 @@ def sample_cube(shape=(2, 3), name='cube', units='1',
     return cube
 
 
-class TestMergeData(tests.IrisTest):
+def sample_multidim_merge_cubelist():
+    cubes = []
+    for i_y in range(6):
+        for i_x in range(4):
+            cube = sample_cube(z=i_y)
+            cube.add_aux_coord(DimCoord(i_x, long_name='aux'))
+            cubes.append(cube)
+    return CubeList(cubes)
+
+
+class TestMergeDataFunctional(tests.IrisTest):
     def test_single_lazy(self):
         cube = sample_cube()
         self.assertTrue(cube.has_lazy_data())
@@ -140,29 +150,22 @@ class TestMergeData(tests.IrisTest):
         self.assertTrue(merged[0].has_lazy_data())
         self._check_sample_merged_result(merged)
 
-    def _sample_multidim_merge_cubelist(self):
-        cubes = []
-        for i_y in range(6):
-            for i_x in range(4):
-                cube = sample_cube(z=i_y)
-                cube.add_aux_coord(DimCoord(i_x, long_name='aux'))
-                cubes.append(cube)
-        return CubeList(cubes)
-
     def test_multidim_merge(self):
         # Check an example that requires a multi-dimensional stack operation.
-        cubelist = self._sample_multidim_merge_cubelist()
+        cubelist = sample_multidim_merge_cubelist()
         merged = cubelist.merge()
         self.assertEqual(len(merged), 1)
         cube, = merged
         self.assertTrue(cube.has_lazy_data())
         self.assertEqual(cube.shape, (4, 6, 2, 3))
 
-    def test_multidim_merge__inner_call(self):
-        # Do that again, to make sure that an nd-array is passed.
-        cubelist = self._sample_multidim_merge_cubelist()
 
-        # Patch the inner call in _merge, to record call arguments.
+class TestMergeDataImplementation(tests.IrisTest):
+    def test_multidim_merge__inner_call(self):
+        # Check that merging the multidimensional testcase really does make
+        # merge use a multidimensional array of dask-arrays as expected.
+
+        # First patch the inner call in _merge, to record the call arguments.
         original_dasktack_call = iris._merge._multidim_daskstack
         global _global_call_args
         _global_call_args = []
@@ -175,7 +178,8 @@ class TestMergeData(tests.IrisTest):
         stack_patch = self.patch('iris._merge._multidim_daskstack',
                                  passthrough_daskstack_call)
 
-        # Do the merge.
+        # Perform merge on the standard 'multidimensional merge testcase'.
+        cubelist = sample_multidim_merge_cubelist()
         cubelist.merge()
 
         # Check the call sequence + what was passed.
