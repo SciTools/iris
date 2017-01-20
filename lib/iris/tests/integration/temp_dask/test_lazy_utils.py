@@ -35,7 +35,7 @@ import dask.array as da
 from iris._lazy_data import is_lazy_data, as_lazy_data, as_concrete_data
 
 
-class MixinLazyTests(object):
+class MixinLazyTestData(object):
     def setUp(self):
         # Create test real and dask arrays.
         self.real_array = np.arange(24).reshape((2, 3, 4))
@@ -43,7 +43,7 @@ class MixinLazyTests(object):
         self.lazy_array = da.from_array(self.lazy_values, 1e6)
 
 
-class Test_is_lazy_data(MixinLazyTests, tests.IrisTest):
+class Test_is_lazy_data(MixinLazyTestData, tests.IrisTest):
     def test_lazy(self):
         self.assertTrue(is_lazy_data(self.lazy_array))
 
@@ -51,7 +51,7 @@ class Test_is_lazy_data(MixinLazyTests, tests.IrisTest):
         self.assertFalse(is_lazy_data(self.real_array))
 
 
-class Test_as_lazy_data(MixinLazyTests, tests.IrisTest):
+class Test_as_lazy_data(MixinLazyTestData, tests.IrisTest):
     def test_lazy(self):
         result = as_lazy_data(self.lazy_array)
         self.assertTrue(is_lazy_data(result))
@@ -63,7 +63,7 @@ class Test_as_lazy_data(MixinLazyTests, tests.IrisTest):
         self.assertArrayAllClose(as_concrete_data(result), self.real_array)
 
 
-class Test_as_concrete_data(MixinLazyTests, tests.IrisTest):
+class Test_as_concrete_data(MixinLazyTestData, tests.IrisTest):
     def test_lazy(self):
         result = as_concrete_data(self.lazy_array)
         self.assertFalse(is_lazy_data(result))

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test lazy data handlingin iris.fileformats.pp.
+Test lazy data handling in :mod:`iris.fileformats.pp`.
 
 Note: probably belongs in "tests/unit/fileformats/pp", if a separate test is
 actually required.
@@ -34,8 +34,16 @@ import numpy as np
 import iris
 
 
+class MixinLazyCubeLoad(object):
+    def setUp(self):
+        path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+        self.cube, = iris.load_raw(path)
+        # This is the same as iris.tests.stock.global_pp(), but avoids the
+        # merge, which is presently not working.
+
+
 @tests.skip_data
-class TestLazyLoad(tests.IrisTest):
+class TestLazyCubeLoad(MixinLazyCubeLoad, tests.IrisTest):
     def setUp(self):
         path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         self.cube, = iris.load_raw(path)
@@ -43,56 +51,77 @@ class TestLazyLoad(tests.IrisTest):
         # merge, which is presently not working.
 
     def test_load(self):
-        # Check that a simple load gets us lazy data.
+        # Check that a simple load results in a cube with a lazy data array.
         cube = self.cube
         raw_data = cube._my_data
+        # It has loaded as a dask array.
         self.assertIsInstance(raw_data, DaskArray)
 
     def test_data(self):
-        # Check that data access realises.
+        # Check that .data returns a realised array with the expected values.
         cube = self.cube
         raw_data = cube._my_data
         data = cube.data
+        # "normal" .data is a numpy array.
         self.assertIsInstance(data, np.ndarray)
+        # values match the lazy original.
         self.assertArrayAllClose(data, raw_data.compute())
 
-    def test_has_lazy(self):
-        # Check cube.has_lazy_data().
+
+@tests.skip_data
+class Test_has_lazy_data(MixinLazyCubeLoad, tests.IrisTest):
+    def test(self):
+        # Check result before and after touching the data.
         cube = self.cube
+        # normal load yields lazy data.
         self.assertTrue(cube.has_lazy_data())
+        # touch data.
         cube.data
+        # cube has real data after .data access.
         self.assertFalse(cube.has_lazy_data())
 
-    def test_lazy_data(self):
-        # Check cube.lazy_data().
+
+@tests.skip_data
+class Test_lazy_data(MixinLazyCubeLoad, tests.IrisTest):
+    def test__before_and_after_realise(self):
+        # Check return values from cube.lazy_data().
         cube = self.cube
         raw_data = cube._my_data
-        lazy = cube.lazy_data()
-        self.assertIs(cube.lazy_data(), raw_data)
+        self.assertIsInstance(raw_data, DaskArray)
+        # before touching .data, lazy_data() returns the original raw data.
+        lazy_before = cube.lazy_data()
+        self.assertIs(lazy_before, raw_data)
+        # touch data.
         cube.data
-        lazy = cube.lazy_data()
-        self.assertIsNot(cube.lazy_data(), raw_data)
-        self.assertArrayAllClose(lazy.compute(), raw_data.compute())
+        # after touching .data, lazy_data() is not the original raw data, but
+        # it computes the same result.
+        lazy_after = cube.lazy_data()
+        self.assertIsInstance(lazy_after, DaskArray)
+        self.assertIsNot(lazy_after, lazy_before)
+        self.assertArrayAllClose(lazy_after.compute(),
+                                 lazy_before.compute())
 
-    def test_lazy_data__set(self):
+    def test__newdata(self):
         # Check cube.lazy_data(<new-data>).
         cube = self.cube
         raw_data = cube._my_data
-        cube.lazy_data(raw_data + 100.0)
         real_data = raw_data.compute()
-        self.assertArrayAllClose(cube.lazy_data(),
+        # set new lazy value.
+        cube.lazy_data(raw_data + 100.0)
+        # check that results are as expected.
+        self.assertArrayAllClose(cube.lazy_data().compute(),
                                  real_data + 100.0)
 
-    def test_lazy_data__fail_set_bad_shape(self):
-        # Check cube.lazy_data(<new-data>).
+    def test__newdata_fail_bad_shape(self):
+        # Check cube.lazy_data(<new-data>) with bad shape.
         cube = self.cube
         raw_data = cube.lazy_data()
         msg = 'cube data with shape \(73, 96\), got \(72, 96\)'
         with self.assertRaisesRegexp(ValueError, msg):
             cube.lazy_data(raw_data[1:])
 
-    def test_lazy_data__fail_set_not_lazy(self):
-        # Check cube.lazy_data(<new-data>).
+    def test__newdata_fail_not_lazy(self):
+        # Check cube.lazy_data(<new-data>) with non-lazy argument.
         cube = self.cube
         raw_data = cube.lazy_data()
         with self.assertRaisesRegexp(TypeError, 'must be a lazy array'):
