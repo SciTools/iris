@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -289,40 +289,40 @@ def get_xy_contiguous_bounded_grids(cube):
     return (x, y)
 
 
-def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
+def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     """Calculate spherical segment areas.
 
-    - radian_colat_bounds    -- [n,2] array of colatitude bounds (radians)
-    - radian_lon_bounds      -- [n,2] array of longitude bounds (radians)
-    - radius_of_earth        -- radius of the earth
-                                (currently assumed spherical)
+    - radian_lat_bounds    -- [n,2] array of latitude bounds (radians)
+    - radian_lon_bounds    -- [n,2] array of longitude bounds (radians)
+    - radius_of_earth      -- radius of the earth
+                              (currently assumed spherical)
 
     Area weights are calculated for each lat/lon cell as:
 
         .. math::
 
-            r^2 (lon_1 - lon_0) ( cos(colat_0) - cos(colat_1))
+            r^2 (lon_1 - lon_0) ( sin(lat_1) - sin(lat_0))
 
     The resulting array will have a shape of
-    *(radian_colat_bounds.shape[0], radian_lon_bounds.shape[0])*
+    *(radian_lat_bounds.shape[0], radian_lon_bounds.shape[0])*
 
     The calculations are done at 64 bit precision and the returned array
     will be of type numpy.float64.
 
     """
     # ensure pairs of bounds
-    if (radian_colat_bounds.shape[-1] != 2 or
+    if (radian_lat_bounds.shape[-1] != 2 or
             radian_lon_bounds.shape[-1] != 2 or
-            radian_colat_bounds.ndim != 2 or
+            radian_lat_bounds.ndim != 2 or
             radian_lon_bounds.ndim != 2):
         raise ValueError("Bounds must be [n,2] array")
 
     # fill in a new array of areas
     radius_sqr = radius_of_earth ** 2
-    radian_colat_64 = radian_colat_bounds.astype(np.float64)
+    radian_lat_64 = radian_lat_bounds.astype(np.float64)
     radian_lon_64 = radian_lon_bounds.astype(np.float64)
 
-    ylen = np.cos(radian_colat_64[:, 0]) - np.cos(radian_colat_64[:, 1])
+    ylen = np.sin(radian_lat_64[:, 1]) - np.sin(radian_lat_64[:, 0])
     xlen = radian_lon_64[:, 1] - radian_lon_64[:, 0]
     areas = radius_sqr * np.outer(ylen, xlen)
 
@@ -354,7 +354,7 @@ def area_weights(cube, normalize=False):
 
         .. math::
 
-            r^2 cos(lat_0) (lon_1 - lon_0) - r^2 cos(lat_1) (lon_1 - lon_0)
+            r^2 (lon_1 - lon_0) (\sin(lat_1) - \sin(lat_0))
 
     Currently, only supports a spherical datum.
     Uses earth radius from the cube, if present and spherical.
@@ -415,8 +415,7 @@ def area_weights(cube, normalize=False):
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
-    # Convert latitudes to co-latitude. I.e from -90 --> +90  to  0 --> pi
-    ll_weights = _quadrant_area(lat.bounds + np.pi / 2.,
+    ll_weights = _quadrant_area(lat.bounds,
                                 lon.bounds, radius_of_earth)
 
     # Normalize the weights if necessary.

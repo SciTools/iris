@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -642,11 +642,11 @@ class TestAreaWeights(tests.IrisTest):
         small_cube.coord('longitude').guess_bounds()
         area_weights = iris.analysis.cartography.area_weights(small_cube)
         expected_results = np.array(
-            [[3.11955916e+12, 3.11956058e+12, 3.11955916e+12, 3.11956058e+12],
-             [5.21950793e+12, 5.21951031e+12, 5.21950793e+12, 5.21951031e+12],
-             [6.68991432e+12, 6.68991737e+12, 6.68991432e+12, 6.68991737e+12],
-             [7.35341320e+12, 7.35341655e+12, 7.35341320e+12, 7.35341655e+12],
-             [7.12998265e+12, 7.12998589e+12, 7.12998265e+12, 7.12998589e+12]],
+            [[3.11955866e+12, 3.11956008e+12, 3.11955866e+12, 3.11956008e+12],
+             [5.21951065e+12, 5.21951303e+12, 5.21951065e+12, 5.21951303e+12],
+             [6.68991281e+12, 6.68991585e+12, 6.68991281e+12, 6.68991585e+12],
+             [7.35341305e+12, 7.35341640e+12, 7.35341305e+12, 7.35341640e+12],
+             [7.12998335e+12, 7.12998660e+12, 7.12998335e+12, 7.12998660e+12]],
             dtype=np.float64)
         self.assertArrayAllClose(area_weights, expected_results, rtol=1e-8)
 

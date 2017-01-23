@@ -340,7 +340,7 @@ def _spherical_area(y_bounds, x_bounds, radius=1.0):
 
     """
     return iris.analysis.cartography._quadrant_area(
-        y_bounds + np.pi / 2.0, x_bounds, radius)
+        y_bounds, x_bounds, radius)
 
 
 def _get_bounds_in_units(coord, units, dtype):
