@@ -23,6 +23,7 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
+from collections import OrderedDict
 import glob
 import os.path
 import re
@@ -147,28 +148,34 @@ def expand_filespecs(file_specs):
         File paths which may contain '~' elements or wildcards.
 
     Returns:
-        A list of matching absolute file paths.  If any of the file-specs matches no
-        existing files, an exception is raised.
+        A well-ordered list of matching absolute file paths.
+        If any of the file-specs match no existing files, an
+        exception is raised.
 
     """
-    # Remove any hostname component - currently unused - expand paths as absolutes
-    filenames = [os.path.abspath(os.path.expanduser(fn[2:] if fn.startswith('//') else fn))
+    # Remove any hostname component - currently unused
+    filenames = [os.path.abspath(os.path.expanduser(
+                    fn[2:] if fn.startswith('//') else fn))
                  for fn in file_specs]
 
     # Try to expand all filenames as globs
-    glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
+    glob_expanded = OrderedDict([[fn, sorted(glob.glob(fn))]
+                                 for fn in filenames])
 
     # If any of the specs expanded to an empty list then raise an error
-    value_list_raw = glob_expanded.values()
+    all_expanded = glob_expanded.values()
 
-    # Here is a term to sort value_lists alphabetically, for consistency
-    value_lists = sorted(value_list_raw)
-    if not all(value_lists):
-        raise IOError("One or more of the files specified did not exist %s." %
-        ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
-         for pattern, expanded in sorted(six.iteritems(glob_expanded))])
+    if not all(all_expanded):
+        msg = "One or more of the files specified did not exist:"
+        for pattern, expanded in six.iteritems(glob_expanded):
+            if expanded:
+                file_list = '\n       - {}'.format(', '.join(expanded))
+            else:
+                file_list = ''
+            msg += '\n    - "{}" matched {} file(s){}'.format(pattern, len(expanded), file_list)
+        raise IOError(msg)
 
-    return sum(value_lists, [])
+    return [fname for fnames in all_expanded for fname in fnames]
 
 
 def load_files(filenames, callback, constraints=None):

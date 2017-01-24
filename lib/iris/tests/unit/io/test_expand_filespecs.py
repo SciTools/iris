@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,12 +26,12 @@ import iris.tests as tests
 import os
 import tempfile
 import shutil
+import textwrap
 
 import iris.io as iio
 
 
 class TestExpandFilespecs(tests.IrisTest):
-
     def setUp(self):
         tests.IrisTest.setUp(self)
         self.tmpdir = tempfile.mkdtemp()
@@ -59,16 +59,38 @@ class TestExpandFilespecs(tests.IrisTest):
         item_in = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
         self.assertEqual(item_out, item_in)
 
+    def test_return_order(self):
+        # It is really quite important what order we return the
+        # files. They should be in the order that was provided,
+        # so that we can control the order of load (for instance,
+        # this can be used with PP files to ensure that there is
+        # a surface reference).
+        patterns = [os.path.join(self.tmpdir, 'a.*'),
+                    os.path.join(self.tmpdir, 'b.*')]
+        expected = [os.path.join(self.tmpdir, fname)
+                    for fname in ['a.foo', 'b.txt']]
+        result = iio.expand_filespecs(patterns)
+        self.assertEqual(result, expected)
+        result = iio.expand_filespecs(patterns[::-1])
+        self.assertEqual(result, expected[::-1])
+
     def test_no_files_found(self):
-        msg = 'b expanded to empty'
+        msg = r'_b\" matched 0 file\(s\)'
         with self.assertRaisesRegexp(IOError, msg):
             iio.expand_filespecs([self.tmpdir + '_b'])
 
     def test_files_and_none(self):
-        msg = 'b expanded to empty.*expanded to .*b.txt'
-        with self.assertRaisesRegexp(IOError, msg):
+        with self.assertRaises(IOError) as err:
             iio.expand_filespecs([self.tmpdir + '_b',
-                                 os.path.join(self.tmpdir, '*')])
+                                  os.path.join(self.tmpdir, '*')])
+        expected = textwrap.dedent("""
+            One or more of the files specified did not exist:
+                - "{0}_b" matched 0 file(s)
+                - "{0}/*" matched 2 file(s)
+                   - {0}/a.foo, {0}/b.txt
+            """).strip().format(self.tmpdir)
+
+        self.assertStringEqual(str(err.exception), expected)
 
 
 if __name__ == "__main__":
