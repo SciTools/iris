@@ -34,6 +34,7 @@ import time
 
 
 @tests.skip_inet
+@tests.skip_data
 class TestImageFile(tests.IrisTest):
     def test_resolve(self):
 
@@ -41,7 +42,7 @@ class TestImageFile(tests.IrisTest):
                 'contents/images')
         # https://developer.github.com/v3/#user-agent-required
         headers = {'User-Agent': 'SciTools'}
-        r = requests.get(iuri, headers=headers, auth=('SciTools', ''))
+        r = requests.get(iuri, headers=headers)
         if r.status_code != 200:
             raise ValueError('Github API get failed: {}\n{}'.format(iuri,
                                                                     r.text))
