@@ -34,6 +34,7 @@ import time
 
 
 @tests.skip_inet
+@tests.skip_data
 class TestImageFile(tests.IrisTest):
     def test_resolve(self):
 
@@ -43,7 +44,8 @@ class TestImageFile(tests.IrisTest):
         headers = {'User-Agent': 'SciTools'}
         r = requests.get(iuri, headers=headers)
         if r.status_code != 200:
-            raise ValueError('Github API get failed: {}'.format(iuri))
+            raise ValueError('Github API get failed: {}\n{}'.format(iuri,
+                                                                    r.text))
         rj = r.json()
         prefix = 'https://scitools.github.io/test-iris-imagehash/images/'
 
