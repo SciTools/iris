@@ -30,6 +30,7 @@ import json
 import logging
 import os
 import requests
+import unittest
 import time
 
 
@@ -45,36 +46,36 @@ class TestImageFile(tests.IrisTest):
         if rl.status_code == 200:
             rates = rl.json()
             remaining = rates.get('rate', {})
-            remaining = remaining.get('remaining')
-            if isinstance(remaining, int):
-                if remaining > 3:
-                    some_left = True
+            ghapi_remaining = remaining.get('remaining')
+
         # Only run this test if there are IP based rate limited calls left.
-        if some_left:
-            iuri = ('https://api.github.com/repos/scitools/'
-                    'test-iris-imagehash/contents/images')
-            r = requests.get(iuri, headers=headers)
-            if r.status_code != 200:
-                raise ValueError('Github API get failed: {}'.format(iuri,
-                                                                    r.text))
-            rj = r.json()
-            prefix = 'https://scitools.github.io/test-iris-imagehash/images/'
+        # 3 is an engineering tolerance, in case of race conditions.
+        if ghapi_remaining < 3:
+            return unittest.skip("Less than 3 anonymous calls to GH API left!")
+        iuri = ('https://api.github.com/repos/scitools/'
+                'test-iris-imagehash/contents/images')
+        r = requests.get(iuri, headers=headers)
+        if r.status_code != 200:
+            raise ValueError('Github API get failed: {}'.format(iuri,
+                                                                r.text))
+        rj = r.json()
+        prefix = 'https://scitools.github.io/test-iris-imagehash/images/'
 
-            known_image_uris = set([prefix + rji['name'] for rji in rj])
+        known_image_uris = set([prefix + rji['name'] for rji in rj])
 
-            repo_fname = os.path.join(os.path.dirname(__file__), 'results',
-                                      'imagerepo.json')
-            with open(repo_fname, 'rb') as fi:
-                repo = json.load(codecs.getreader('utf-8')(fi))
-            uris = set(itertools.chain.from_iterable(six.itervalues(repo)))
+        repo_fname = os.path.join(os.path.dirname(__file__), 'results',
+                                  'imagerepo.json')
+        with open(repo_fname, 'rb') as fi:
+            repo = json.load(codecs.getreader('utf-8')(fi))
+        uris = set(itertools.chain.from_iterable(six.itervalues(repo)))
 
-            amsg = ('Images are referenced in imagerepo.json but not published'
-                    ' in https://scitools.github.io/test-iris-imagehash/'
-                    'images:\n{}')
-            diffs = list(uris.difference(known_image_uris))
-            amsg = amsg.format('\n'.join(diffs))
+        amsg = ('Images are referenced in imagerepo.json but not published'
+                ' in https://scitools.github.io/test-iris-imagehash/'
+                'images:\n{}')
+        diffs = list(uris.difference(known_image_uris))
+        amsg = amsg.format('\n'.join(diffs))
 
-            self.assertTrue(uris.issubset(known_image_uris), msg=amsg)
+        self.assertTrue(uris.issubset(known_image_uris), msg=amsg)
 
 
 if __name__ == "__main__":
