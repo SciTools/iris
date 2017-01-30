@@ -47,11 +47,15 @@ class TestImageFile(tests.IrisTest):
             rates = rl.json()
             remaining = rates.get('rate', {})
             ghapi_remaining = remaining.get('remaining')
+        else:
+            ghapi_remaining = 0
 
         # Only run this test if there are IP based rate limited calls left.
         # 3 is an engineering tolerance, in case of race conditions.
-        if ghapi_remaining < 3:
-            return unittest.skip("Less than 3 anonymous calls to GH API left!")
+        amin = 3
+        if ghapi_remaining < amin:
+            return unittest.skip("Less than {} anonymous calls to "
+                                 "GH API left!".format(amin))
         iuri = ('https://api.github.com/repos/scitools/'
                 'test-iris-imagehash/contents/images')
         r = requests.get(iuri, headers=headers)
