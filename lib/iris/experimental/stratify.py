@@ -19,7 +19,9 @@ Routines for putting data on new strata (aka. isosurfaces), often in the
 Z direction.
 
 """
-import copy
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 from functools import partial
 
 import numpy as np
@@ -81,15 +83,15 @@ def relevel(phenom, level_data, target_levels, interp_direction=0,
 
     Parameters
     ----------
-    phenom
+    phenom : :class:`iris.cube.Cube`
         The data to be re-levelled.
-    
-    level_data : iris.cube.Cube or iris.coord.Coord
+
+    level_data : :class:`~iris.cube.Cube` or :class:`~iris.coord.Coord`
         The coordinate values (cube/coord) in the same system as
         ``target levels``.
         All dimensions of ``level_data`` must be broadcastable to ``phenom``
 
-    target_levels : array-like or iris.cube.Cube
+    target_levels : array-like
         The levels of ``level_data`` to pick from ``phenom``.
         For the default interpolator, this must be a 1d array.
         For a custom interpolator this may be multi-dimensional and must
@@ -127,7 +129,7 @@ def relevel(phenom, level_data, target_levels, interp_direction=0,
     if isinstance(level_data, Coord):
         source_data = level_data.points
     else:
-        source_data = level_data.data 
+        source_data = level_data.data
 
     # phenom and level_data must be broadcastable.
     phenom_data, source_data = np.broadcast_arrays(phenom.data,
@@ -145,12 +147,12 @@ def relevel(phenom, level_data, target_levels, interp_direction=0,
         target_shape = list(target_levels.shape)
         target_shape.pop(tl_axis)
         np.broadcast_arrays(np.empty(data_shape), np.empty(target_shape))
-        target_phenom_dim = range(phenom_data.ndim)[t_dim_delta:]
+        target_phenom_dim = list(range(phenom_data.ndim))[t_dim_delta:]
 
     if interpolator is None:
         interpolator = partial(stratify.interpolate,
-                               interpolation=stratify.INTERPOLATE_LINEAR,
-                               extrapolation=stratify.EXTRAPOLATE_NAN)
+                               interpolation='linear', extrapolation='nan')
+
     interpolated_phenom = interpolator(target_levels,
                                        source_data, phenom_data,
                                        axis=interp_dim)
@@ -170,9 +172,8 @@ def relevel(phenom, level_data, target_levels, interp_direction=0,
         result.add_dim_coord(DimCoord(target_levels, **coord_kwargs),
                              interp_dim)
     except ValueError:
-        # Attach the data to the last dimesions 
+        # Attach the data to the last dimesions.
         result.add_aux_coord(
             AuxCoord(target_levels, **coord_kwargs),
             target_phenom_dim)
     return result
-

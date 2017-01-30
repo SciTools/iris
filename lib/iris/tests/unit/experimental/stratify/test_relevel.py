@@ -50,12 +50,30 @@ class Test(tests.IrisTest):
         self.phenom.rename('foobar')
         self.phenom *= 10
 
-    def test(self):
+    def test_standard_input(self):
         result = relevel(self.phenom, self.level_data,
                           [-1, 0, 5.5],
                           self.level_data.coord('wibble'))
         assert_array_equal(result.data.flatten(),
                            np.array([np.nan, 0, 55]))
+        expected = iris.coords.DimCoord([-1, 0, 5.5], standard_name=None,
+                                        units=1, long_name='thingness')
+        self.assertEqual(expected, result.coord('thingness'))
+
+    def test_non_monotonic(self):
+        result = relevel(self.phenom, self.level_data,
+                          [2, 3, 2], self.level_data.coord('wibble'))
+        assert_array_equal(result.data.flatten(),
+                           np.array([20, 30, np.nan]))
+        expected = iris.coords.AuxCoord([2, 3, 2], units=1,
+                                        long_name='thingness')
+        self.assertEqual(result.coord('thingness'), expected)
+
+    def test_static_level(self):
+        result = relevel(self.phenom, self.level_data,
+                          [2, 2], self.level_data.coord('wibble'))
+        assert_array_equal(result.data.flatten(),
+                           np.array([20, 20]))
 
     def test_coord_input(self):
         source = iris.coords.AuxCoord(self.level_data.data)
@@ -69,7 +87,7 @@ class Test(tests.IrisTest):
  
     def test_custom_interpolator(self):
         interpolator = partial(stratify.interpolate,
-            interpolation=stratify.INTERPOLATE_NEAREST)
+                               interpolation='nearest')
         result = relevel(self.phenom, self.level_data,
                           [-1, 0, 6.5],
                           self.level_data.coord('wibble'),
@@ -78,13 +96,10 @@ class Test(tests.IrisTest):
                            np.array([np.nan, 0, 120]))
 
     def test_multi_dim_target_levels(self):
-        def interpolator(z_target, z_src, fz_src, axis):
-            # This is a private interface... we need to be careful here.
-            from stratify._vinterp import _Interpolator
-            interp = _Interpolator(z_target, z_src, fz_src, axis=axis,
-                               interpolation=stratify.INTERPOLATE_LINEAR,
-                               extrapolation=stratify.EXTRAPOLATE_LINEAR)
-            return interp.interpolate_z_target_nd()
+        interpolator = partial(stratify.interpolate,
+                               interpolation='linear',
+                               extrapolation='linear')
+
         result = relevel(self.phenom, self.level_data,
                          self.level_data.data,
                          self.level_data.coord('wibble'),
