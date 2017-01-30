@@ -1,5 +1,0 @@
-* Iris can now load PP files containing a PP field whose LBLREC value does not
-  match the field length recorded in the file.
-  A warning message is printed, and all fields up to the offending one are
-  loaded and returned.
-  Previously, this simply resulted in an unrecoverable error.

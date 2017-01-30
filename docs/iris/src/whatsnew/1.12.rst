@@ -2,7 +2,7 @@ What's New in Iris 1.12
 ***********************
 
 :Release: 1.12
-:Date: 2017-01-10
+:Date: 2017-01-30
 
 This document explains the new/changed features of Iris in version 1.12
 (:doc:`View all changes <index>`.)
@@ -11,27 +11,29 @@ Iris 1.12 Features
 ==================
 .. _showcase:
 
-.. admonition:: Showcase Feature - New regridding schemes ...
+.. admonition:: Showcase Feature: New regridding schemes
 
   A new regridding scheme, :class:`iris.analysis.UnstructuredNearest`,
-  performs nearest-neighbour regridding from "unstructured" onto "structured" grids.
-  Here, "unstructured" means that the data has X and Y coordinate values
+  performs nearest-neighbour regridding from "unstructured" onto "structured"
+  grids. Here, "unstructured" means that the data has X and Y coordinate values
   defined at each horizontal location, instead of the independent X and Y
   dimensions that constitute a structured grid.
-  For example, data sampled on a trajectory or a tripolar ocean grid would be unstructured.
+  For example, data sampled on a trajectory or a tripolar ocean grid would be
+  unstructured.
 
-  The essential purpose is the same as
-  :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
-  This scheme, by comparison, is generally more accurate, but slower.
+  In addition, added experimental ProjectedUnstructured regridders which use
+  scipy.interpolate.griddata to regrid unstructured data
+  (see :class:`iris.experimental.regrid.ProjectedUnstructuredLinear` and
+  :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`). The
+  essential purpose is the same as :class:`iris.analysis.UnstructuredNearest`.
+  This scheme, by comparison, is generally faster, but less accurate.
 
-  In addition : added experimental ProjectedUnstructured regridders which use scipy.interpolate.griddata to regrid unstructured data (see :class:`iris.experimental.regrid.ProjectedUnstructuredLinear` and :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`)
-
-.. admonition:: Showcase Feature - Fast UM file loading
+.. admonition:: Showcase Feature: Fast UM file loading
 
   Support has been added for accelerated loading of UM files (PP and
   Fieldsfile), when these have a suitable regular "structured" form.
 
-  A context manager is used to enable fast um loading in all the regular iris
+  A context manager is used to enable fast um loading in all the regular Iris
   load functions, such as :meth:`iris.load` and :meth:`iris.load_cube`,
   when loading data from UM file types.
   For example:
@@ -102,9 +104,20 @@ Iris 1.12 Features
   loaded and returned.
   Previously, this simply resulted in an unrecoverable error.
 
-* The transpose method of a Cube now results in a lazy transposed view of the original rather than realising the data then transposing it.
+* The transpose method of a Cube now results in a lazy transposed view of the
+  original rather than realising the data then transposing it.
 
-* The :func:`iris.analysis.cartography.area_weights` function is now more accurate for single precision input bounds.
+* The :func:`iris.analysis.cartography.area_weights` function is now more
+  accurate for single precision input bounds.
+
+* Iris is now able to read seconds in datetimes provided in NAME trajectory
+  files.
+
+* Optimisations to trajectory interpolations have resulted in a significant 
+  speed improvement.
+  
+* Many new and updated translations between CF spec and STASH codes.
+
 
 Deprecations
 ============
@@ -114,4 +127,5 @@ Deprecations
 
 Documentation Changes
 =====================
-* Corrected documentation of :class:`iris.analysis.AreaWeighted` scheme to make the usage scope clearer.
+* Corrected documentation of :class:`iris.analysis.AreaWeighted` scheme to make
+  the usage scope clearer.
