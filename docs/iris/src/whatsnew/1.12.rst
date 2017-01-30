@@ -2,7 +2,7 @@ What's New in Iris 1.12
 ***********************
 
 :Release: 1.12
-:Date: 2017-01-10
+:Date: 2017-01-30
 
 This document explains the new/changed features of Iris in version 1.12
 (:doc:`View all changes <index>`.)
