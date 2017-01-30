@@ -129,6 +129,3 @@ Documentation Changes
 =====================
 * Corrected documentation of :class:`iris.analysis.AreaWeighted` scheme to make
   the usage scope clearer.
-  
-* A chapter on :doc:`the new graphical testing technique </developers_guide/graphics_tests>`
-  has been added to the :doc:`developers guide </developers_guide/index>`.
