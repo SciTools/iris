@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,16 +35,16 @@ from iris.analysis.cartography import DEFAULT_SPHERICAL_EARTH_RADIUS
 
 class TestExampleCases(tests.IrisTest):
 
-    def _radian_bounds(self, coord_list, offset=0):
-        bound_deg = np.array(coord_list) + offset
+    def _radian_bounds(self, coord_list, dtype):
+        bound_deg = np.array(coord_list, dtype=dtype)
         bound_deg = np.atleast_2d(bound_deg)
         degrees = cf_units.Unit("degrees")
         radians = cf_units.Unit("radians")
         return degrees.convert(bound_deg, radians)
 
-    def _as_bounded_coords(self, lats, lons):
-        return (self._radian_bounds(lats, offset=90),
-                self._radian_bounds(lons))
+    def _as_bounded_coords(self, lats, lons, dtype=np.float64):
+        return (self._radian_bounds(lats, dtype=dtype),
+                self._radian_bounds(lons, dtype=dtype))
 
     def test_area_in_north(self):
         lats, lons = self._as_bounded_coords([0, 10], [0, 10])
@@ -83,6 +83,22 @@ class TestExampleCases(tests.IrisTest):
         self.assertArrayAllClose(area, [[3.19251846e+11, 6.38503692e+11],
                                         [1.22880059e+12, 2.45760119e+12],
                                         [3.19251846e+11, 6.38503692e+11]])
+
+    def test_symmetric_64_bit(self):
+        lats, lons = self._as_bounded_coords([[-90, -89.375],
+                                              [89.375, 90]],
+                                             [0, 10],
+                                             dtype=np.float64)
+        area = _quadrant_area(lats, lons, DEFAULT_SPHERICAL_EARTH_RADIUS)
+        self.assertArrayAllClose(area, area[::-1])
+
+    def test_symmetric_32_bit(self):
+        lats, lons = self._as_bounded_coords([[-90, -89.375],
+                                              [89.375, 90]],
+                                             [0, 10],
+                                             dtype=np.float32)
+        area = _quadrant_area(lats, lons, DEFAULT_SPHERICAL_EARTH_RADIUS)
+        self.assertArrayAllClose(area, area[::-1])
 
 
 class TestErrorHandling(tests.IrisTest):

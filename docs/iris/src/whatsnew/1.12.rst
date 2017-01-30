@@ -104,6 +104,8 @@ Iris 1.12 Features
 
 * The transpose method of a Cube now results in a lazy transposed view of the original rather than realising the data then transposing it.
 
+* The :func:`iris.analysis.cartography.area_weights` function is now more accurate for single precision input bounds.
+
 Deprecations
 ============
 * The module :mod:`iris.experimental.fieldsfile` has been deprecated, in favour
