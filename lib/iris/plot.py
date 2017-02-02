@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import datetime
 
 import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes
+from cartopy.geodesic import Geodesic
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
@@ -481,6 +482,62 @@ def _get_plot_objects(args):
     return u_object, v_object, u, v, args
 
 
+def _get_plot_sections(u_object, v_object, u, v):
+    """
+    Converts u, v into a sequence of overlapping subsections of the
+    points, divided at the points where the line should cross over the 0/360
+    degree longitude boundary.
+
+    """
+    # Convert coordinates to true lat-lon
+    src_crs = u_object.coord_system.as_cartopy_crs() \
+        if u_object.coord_system is not None else ccrs.Geodetic()
+    tgt_crs = ccrs.Geodetic(globe=src_crs.globe)
+    tgt_proj = ccrs.PlateCarree(globe=src_crs.globe)
+
+    points = tgt_crs.transform_points(src_crs, u, v)
+    startpoints = points[:-1, :2]
+    endpoints = points[1:, :2]
+    proj_x, proj_y, _ = tgt_proj.transform_points(src_crs, u, v).T
+
+    # Calculate the inverse geodesic for each pair of points in turn, and
+    # convert the start point's azimuth into a vector in the source coordinate
+    # system.
+    # TODO: Figure out what the parameters of the geodesic should be
+    geodesic = Geodesic()
+    dists, azms, _ = geodesic.inverse(startpoints, endpoints).T
+    azms_lon = np.sin(np.deg2rad(azms))
+    azms_lat = np.cos(np.deg2rad(azms))
+    azms_u, _ = src_crs.transform_vectors(tgt_proj, proj_x[:-1], proj_y[:-1],
+                                          azms_lon, azms_lat)
+
+    # Use the grid longitude values and the geodesic azimuth to determine
+    # the indices of the points where the line should cross the 0/360 degree
+    # boundary, and in which direction
+    lwraps = np.logical_and(u[1:] > u[:-1], azms_u < 0)
+    rwraps = np.logical_and(u[1:] < u[:-1], azms_u > 0)
+    indices, = np.where(np.logical_or(lwraps, rwraps))
+    signs = (np.where(lwraps, -1, 0) + np.where(rwraps, 1, 0))[indices]
+    indices += 1
+
+    us = np.empty(len(indices) + 1, dtype=object)
+    vs = np.empty(len(indices) + 1, dtype=object)
+    start_index = 0
+    for i, (index, sign) in enumerate(zip(indices, signs)):
+        vs[i] = v[start_index:index + 1].copy()
+        ui = u[start_index:index + 1].copy()
+        if len(ui) > 0:
+            # Shift the endpoint by the units' modulus, to ensure the final
+            # line segment is drawn in the correct direction
+            ui[-1] += u_object.units.modulus * sign
+        us[i] = ui
+        start_index = index
+    us[-1] = u[start_index:].copy()
+    vs[-1] = v[start_index:].copy()
+
+    return us, vs
+
+
 def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     # NB. In the interests of clarity we use "u" to refer to the horizontal
     # axes on the matplotlib plot and "v" for the vertical axes.
@@ -508,6 +565,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
             plot_arrays.append(values)
 
     u, v = plot_arrays
+    us, vs = [u], [v]
 
     # if both u_object and v_object are coordinates then check if a map
     # should be drawn
@@ -518,14 +576,20 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         # the transform keyword.
         kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object,
                                                            kwargs)
+        if draw_method_name == 'plot' and \
+                u_object.standard_name not in ('projection_x_coordinate',
+                                               'projection_y_coordinate'):
+            us, vs = _get_plot_sections(u_object, v_object, u, v)
 
     axes = kwargs.pop('axes', None)
     draw_method = getattr(axes if axes else plt, draw_method_name)
-    if arg_func is not None:
-        args, kwargs = arg_func(u, v, *args, **kwargs)
-        result = draw_method(*args, **kwargs)
-    else:
-        result = draw_method(u, v, *args, **kwargs)
+    result = []
+    for u, v in zip(us, vs):
+        if arg_func is not None:
+            args, kwargs = arg_func(u, v, *args, **kwargs)
+            result += draw_method(*args, **kwargs)
+        else:
+            result += draw_method(u, v, *args, **kwargs)
 
     # Apply tick labels for string coordinates.
     _string_coord_axis_tick_labels(string_axes, axes)
