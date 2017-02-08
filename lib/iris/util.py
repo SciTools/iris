@@ -1453,7 +1453,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         or
 
         (b) the :attr:`standard_name`, :attr:`long_name`, or
-        :attr:`var_name` of an instance of an instance of
+        :attr:`var_name` of an instance of
         :class:`iris.coords.AuxCoord`.
 
     For example::
@@ -1553,7 +1553,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
         or
 
         (b) the :attr:`standard_name`, :attr:`long_name`, or
-        :attr:`var_name` of an instance of an instance of
+        :attr:`var_name` of an instance of
         :class:`iris.coords.DimCoord`.
 
     For example::
@@ -1599,3 +1599,121 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.remove_coord(dim_coord)
 
     cube.add_aux_coord(dim_coord, coord_dim)
+
+
+def cube_rollaxis(cube, axis, start=0):
+    '''
+    Rolls the cube in an numpy.rollaxis-like way.
+    Uses cube.transpose() internally.
+
+    Args:
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * axis
+        The axis to roll backwards. The positions of the other axes do
+        not change relative to one another.
+
+    Kwargs:
+
+    * start
+        The axis is rolled until it lies before this position.
+        The default, 0, results in a "complete" roll.
+
+    For example::
+
+        >>> cube.shape
+        (3, 4, 5, 6)
+        >>> iris.util.cube_rollaxis(cube, 3, start=1)
+        >>> cube.shape
+        (3, 6, 4, 5)
+
+    '''
+
+    if axis < 0:
+        axis += cube.ndim
+
+    if start < 0:
+        start += cube.ndim
+
+    if axis < 0 or axis >= cube.ndim:
+        raise ValueError("Expected the value of start to be in the range "
+                         "-cube.ndim to (cube.ndim - 1) incl.")
+
+    if start < 0 or start > cube.ndim:
+        raise ValueError("Expected the value of start to be in the range "
+                         "-cube.ndim to cube.ndim incl.")
+
+    new_order = list(range(cube.ndim))
+
+    new_order[axis] = -1
+
+    new_order.insert(start, axis)
+
+    new_order.remove(-1)
+
+    cube.transpose(new_order)
+
+
+def cube_enforce_dim_position(cube, name_or_coord, start=0):
+    '''
+    Makes sure the data dimension of a specified coord
+    is in a certain position in the cube.
+
+    Args:
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * name_or_coord:
+        Either
+
+        (a) An instance of a 1D instance of
+        :class:`iris.coords.AuxCoord`
+
+        or
+
+        (b) the :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name` of a 1D instance of
+        :class:`iris.coords.AuxCoord`.
+
+    Kwargs:
+
+    * start
+        The axis is rolled until it lies before this position.
+        The default, 0, results in a "complete" roll.
+
+    For example::
+
+        >>> print cube
+        thingness / (1)                     (bar: 3; foo: 4)
+             Dimension coordinates:
+                  bar                           x       -
+                  foo                           -       x
+        >>> iris.util.cube_enforce_dim_position(cube, 'foo', 0)
+        >>> print cube
+        thingness / (1)                     (foo: 4; bar: 3)
+             Dimension coordinates:
+                  foo                           x       -
+                  bar                           -       x
+
+    '''
+
+    if isinstance(name_or_coord, six.string_types):
+        coord = cube.coord(name_or_coord)
+    elif isinstance(name_or_coord, iris.coords.Coord):
+        coord = name_or_coord
+    else:
+        msg = ("Don't know how to handle coordinate of type {}. "
+               "Ensure all coordinates are of type six.string_types or "
+               "iris.coords.Coord.")
+        msg = msg.format(type(name_or_coord))
+        raise TypeError(msg)
+
+    if coord.ndim != 1:
+        raise iris.exceptions.CoordinateMultiDimError("Expected 1D coord")
+
+    axis = cube.coord_dims(coord)[0]
+
+    cube_rollaxis(cube, axis, start)
