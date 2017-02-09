@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
+import os
 
 from cf_units import Unit
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -34,6 +35,7 @@ import iris.fileformats.pp_rules
 from iris.exceptions import IgnoreCubeException
 from iris.tests import mock
 from iris.fileformats.pp import load_pairs_from_fields
+import iris.util
 
 
 class TestVertical(tests.IrisTest):
@@ -658,6 +660,40 @@ class TestCallbackLoad(tests.IrisTest):
         # We ignore all but one cube (the `air_potential_temperature` cube).
         self.assertEqual(n_result_cubes, 1)
         self.assertEqual(result_cubes[0].name(), self.pass_name)
+
+
+@tests.skip_data
+class TestZonalMeanBounds(tests.IrisTest):
+    def test_mulitple_longitude(self):
+        # test that bounds are set for a zonal mean file with many longitude
+        # values
+        orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+
+        f = next(iris.fileformats.pp.load(orig_file))
+        f.lbproc = 192  # time and zonal mean
+
+        # Write out pp file
+        temp_filename = iris.util.create_temp_filename(".pp")
+        with open(temp_filename, 'wb') as temp_fh:
+            f.save(temp_fh)
+
+        # Load pp file
+        cube = iris.load_cube(temp_filename)
+
+        self.assertTrue(cube.coord('longitude').has_bounds())
+
+        os.remove(temp_filename)
+
+    def test_singular_longitude(self):
+        # test that bounds are set for a zonal mean file with a single
+        # longitude value
+
+        pp_file = tests.get_data_path(('PP', 'zonal_mean', 'zonal_mean.pp'))
+
+        # Load pp file
+        cube = iris.load_cube(pp_file)
+
+        self.assertTrue(cube.coord('longitude').has_bounds())
 
 
 if __name__ == "__main__":
