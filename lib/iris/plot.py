@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -249,25 +249,65 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
-def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
+def _check_cubes_for_consistency(cubes, mode):
+    """
+    Checks that shape and DimCoords for the first Cube are consistent with those
+    of all subsequent Cubes in the list.
+    """
+    msg = ''
+    for cube in cubes[1:]:
+        if cube.shape != cubes[0].shape:
+            msg += '\nCubes must be the same shape: %s != %s' % (cubes[0].shape,
+                                                                 cube.shape)
+        else:
+            for [coord0, coord1] in zip(cubes[0].dim_coords, cube.dim_coords):
+                name0 = coord0.name()
+                name1 = coord1.name()
+                if name0 != name1:
+                    msg += '\nDimCoord names must match: %s != %s' % (name0,
+                                                                      name1)
+                if mode == iris.coords.BOUND_MODE:
+                    if coord0.has_bounds() and coord1.has_bounds():
+                        if (coord0.bounds != coord1.bounds).any():
+                            msg += '\nBounds for DimCoord %s do not match' % name0
+                    elif coord0.has_bounds() or coord1.has_bounds():
+                        msg += '\nBounds for DimCoord %s do not match' % name0
+                elif mode == iris.coords.POINT_MODE:
+                    if (coord0.points != coord1.points).any():
+                        msg += '\nPoints for DimCoord %s do not match' % name0
+        if msg:
+            break
+    return msg
+
+
+def _draw_2d_from_bounds(draw_method_name, cubes, *args, **kwargs):
+    # If single Cube, make a CubeList.
+    if isinstance(cubes, iris.cube.Cube):
+        cubes = iris.cube.CubeList([cubes])
+
+    # Check Cubes are consistent before proceeding.
+    msg = _check_cubes_for_consistency(cubes, iris.coords.BOUND_MODE)
+    if msg:
+        raise iris.exceptions.InvalidCubeError(msg)
+
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
     mode = iris.coords.BOUND_MODE
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
+        plot_defn = _get_plot_defn_custom_coords_picked(cubes[0], coords, mode)
     else:
-        plot_defn = _get_plot_defn(cube, mode, ndims=2)
+        plot_defn = _get_plot_defn(cubes[0], mode, ndims=2)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
-                             cube, plot_defn, *args, **kwargs)
+                             cubes, plot_defn, *args, **kwargs)
     else:
         # Obtain data array.
-        data = cube.data
+        data = [cube.data for cube in cubes]
         if plot_defn.transpose:
-            data = data.T
+            data = [d.T for d in data]
 
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
@@ -282,10 +322,10 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                                               ['xaxis', 'yaxis'],
                                               [1, 0]):
             if coord is None:
-                values = np.arange(data.shape[data_dim] + 1)
+                values = np.arange(data[0].shape[data_dim] + 1)
             elif isinstance(coord, int):
                 dim = 1 - coord if plot_defn.transpose else coord
-                values = np.arange(data.shape[dim] + 1)
+                values = np.arange(data[0].shape[dim] + 1)
             else:
                 if coord.points.dtype.char in 'SU':
                     if coord.points.ndim != 1:
@@ -295,7 +335,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                         msg = 'Cannot plot bounded string coordinate.'
                         raise ValueError(msg)
                     string_axes[axis_name] = coord.points
-                    values = np.arange(data.shape[data_dim] + 1) - 0.5
+                    values = np.arange(data[0].shape[data_dim] + 1) - 0.5
                 else:
                     values = coord.contiguous_bounds()
 
@@ -305,7 +345,8 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         u, v = _broadcast_2d(u, v)
         axes = kwargs.pop('axes', None)
         draw_method = getattr(axes if axes else plt, draw_method_name)
-        result = draw_method(u, v, data, *args, **kwargs)
+        new_args = (u, v) + tuple(data) + args
+        result = draw_method(*new_args, **kwargs)
 
         # Apply tick labels for string coordinates.
         _string_coord_axis_tick_labels(string_axes, axes)
@@ -316,43 +357,52 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     return result
 
 
-def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
+def _draw_2d_from_points(draw_method_name, arg_func, cubes, *args, **kwargs):
+    # If single Cube, make a CubeList.
+    if isinstance(cubes, iris.cube.Cube):
+        cubes = iris.cube.CubeList([cubes])
+
+    # Check Cubes are consistent before proceeding
+    msg = _check_cubes_for_consistency(cubes, iris.coords.POINT_MODE)
+    if msg:
+        raise iris.exceptions.InvalidCubeError(msg)
+
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
     mode = iris.coords.POINT_MODE
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
+        plot_defn = _get_plot_defn_custom_coords_picked(cubes[0], coords, mode)
     else:
-        plot_defn = _get_plot_defn(cube, mode, ndims=2)
+        plot_defn = _get_plot_defn(cubes[0], mode, ndims=2)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, arg_func,
-                             iris.coords.POINT_MODE, cube, plot_defn,
+                             iris.coords.POINT_MODE, cubes, plot_defn,
                              *args, **kwargs)
     else:
         # Obtain data array.
-        data = cube.data
+        data = [cube.data for cube in cubes]
         if plot_defn.transpose:
-            data = data.T
+            data = [d.T for d in data]
 
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
         if u_coord is None:
-            u = np.arange(data.shape[1])
+            u = np.arange(data[0].shape[1])
         elif isinstance(u_coord, int):
             dim = 1 - u_coord if plot_defn.transpose else u_coord
-            u = np.arange(data.shape[dim])
+            u = np.arange(data[0].shape[dim])
         else:
             u = u_coord.points
             u = _fixup_dates(u_coord, u)
 
         if v_coord is None:
-            v = np.arange(data.shape[0])
+            v = np.arange(data[0].shape[0])
         elif isinstance(v_coord, int):
             dim = 1 - v_coord if plot_defn.transpose else v_coord
-            v = np.arange(data.shape[dim])
+            v = np.arange(data[0].shape[dim])
         else:
             v = v_coord.points
             v = _fixup_dates(v_coord, v)
@@ -390,7 +440,8 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             args, kwargs = arg_func(u, v, data, *args, **kwargs)
             result = draw_method(*args, **kwargs)
         else:
-            result = draw_method(u, v, data, *args, **kwargs)
+            new_args = (u, v) + tuple(data) + args
+            result = draw_method(*new_args, **kwargs)
 
         # Apply tick labels for string coordinates.
         _string_coord_axis_tick_labels(string_axes, axes)
@@ -600,7 +651,7 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     return new_kwargs
 
 
-def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
+def _map_common(draw_method_name, arg_func, mode, cubes, plot_defn,
                 *args, **kwargs):
     """
     Draw the given cube on a map using its points or bounds.
@@ -633,9 +684,9 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
                              "per point.")
 
     # Obtain the data array.
-    data = cube.data
+    data = [cube.data for cube in cubes]
     if plot_defn.transpose:
-        data = data.T
+        data = [d.T for d in data]
 
     # If we are global, then append the first column of data the array to the
     # last (and add 360 degrees) NOTE: if it is found that this block of code
@@ -646,7 +697,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
                                            return_direction=True)
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
-        data = ma.concatenate([data, data[:, 0:1]], axis=1)
+        data = [ma.concatenate([d, d[:, 0:1]], axis=1) for d in data]
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
@@ -656,7 +707,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
     if arg_func is not None:
         new_args, kwargs = arg_func(x, y, data, *args, **kwargs)
     else:
-        new_args = (x, y, data) + args
+        new_args = (x, y) + tuple(data) + args
 
     # Draw the contour lines/filled contours.
     axes = kwargs.pop('axes', None)
@@ -751,6 +802,32 @@ def contourf(cube, *args, **kwargs):
             else:
                 plt.sci(result)
 
+    return result
+
+
+def quiver(xcube, ycube, *args, **kwargs):
+    """
+    Draws vector arrows based on the given Cubes.  The two Cubes must be the
+    same shape and have matching DimCoords in the same order.
+
+    Kwargs:
+
+    * coords: list of :class:`~iris.coords.Coord` objects (from xcube) or
+        coordinate names. Use the given coordinates as the axes for the
+        plot. The order of the given coordinates indicates which axis
+        to use for each, where the first element is the horizontal
+        axis of the plot and the second element is the vertical axis
+        of the plot.
+
+    * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
+        Defaults to the current axes if none provided.
+
+    See :func:`matplotlib.pyplot.quiver` for details of other valid
+    keyword arguments.
+
+    """
+    cubes = iris.cube.CubeList([xcube, ycube])
+    result = _draw_2d_from_points('quiver', None, cubes, *args, **kwargs)
     return result
 
 
