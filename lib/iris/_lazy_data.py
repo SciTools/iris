@@ -23,7 +23,15 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+
+_SUPPORT_BIGGUS = True
+
+
+if _SUPPORT_BIGGUS:
+    import biggus
+
 import dask.array as da
+import numpy as np
 
 
 def is_lazy_data(data):
@@ -34,7 +42,10 @@ def is_lazy_data(data):
     We determine this by checking for a "compute" property.
 
     """
-    return hasattr(data, 'compute')
+    result = hasattr(data, 'compute')
+    if not result and _SUPPORT_BIGGUS:
+        result = isinstance(data, biggus.Array)
+    return result
 
 
 def as_concrete_data(data):
@@ -45,7 +56,17 @@ def as_concrete_data(data):
 
     """
     if is_lazy_data(data):
-        data = data.compute()
+        if _SUPPORT_BIGGUS and isinstance(data, biggus.Array):
+            # Realise biggus array.
+            # treat all as masked, for standard cube.data behaviour.
+            data = data.masked_array()
+        else:
+            # Realise dask array.
+            data = data.compute()
+            # Undo "horrid kludge".
+            if isinstance(data.flat[0], np.float):
+                mask = np.isnan(data)
+                data = np.ma.masked_array(data, mask=mask)
     return data
 
 
@@ -67,5 +88,13 @@ def as_lazy_data(data):
 
     """
     if not is_lazy_data(data):
+        if isinstance(data, np.ma.MaskedArray):
+            # Horrid kludge to replace masks with NaNs.
+            mask = np.ma.getmaskarray(data)
+            if isinstance(data.flat[0], np.float):
+                data[mask] = np.nan
+            else:
+                data[mask] = 0
+            data = data.data
         data = da.from_array(data, chunks=_MAX_CHUNK_SIZE)
     return data
