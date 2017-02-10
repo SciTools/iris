@@ -323,5 +323,29 @@ class Test_convert_units(tests.IrisTest):
         with self.assertRaisesRegexp(UnitConversionError, emsg):
             coord.convert_units('degrees')
 
+class Test___str__(tests.IrisTest):
+
+    def test_short_time_interval(self):
+        coord = DimCoord([5], standard_name='time',
+                         units='days since 1970-01-01')
+        expected = ("DimCoord([1970-01-06 00:00:00], standard_name='time', "
+                    "calendar='gregorian')")
+        result = coord.__str__()
+        self.assertEqual(expected, result)
+
+    def test_long_time_interval(self):
+        coord = DimCoord([5], standard_name='time',
+                         units='years since 1970-01-01')
+        expected = "DimCoord([5], standard_name='time', calendar='gregorian')"
+        result = coord.__str__()
+        self.assertEqual(expected, result)
+
+    def test_non_time_unit(self):
+        coord = DimCoord([1.])
+        expected = repr(coord)
+        result = coord.__str__()
+        self.assertEqual(expected, result)
+
+
 if __name__ == '__main__':
     tests.main()
