@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Provides the capability to load netCDF files and interprete them
+Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 References:
