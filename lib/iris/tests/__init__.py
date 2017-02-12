@@ -515,6 +515,7 @@ class IrisTest(unittest.TestCase):
         # Define helper function to extract unmasked values as a 1d
         # array.
         def unmasked_data_as_1d_array(array):
+            array = ma.asarray(array)
             if array.ndim == 0:
                 if array.mask:
                     data = np.array([])
