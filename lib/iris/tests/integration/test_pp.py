@@ -684,6 +684,7 @@ class TestZonalMeanBounds(tests.IrisTest):
 
         os.remove(temp_filename)
 
+    @tests.skip_biggus
     def test_singular_longitude(self):
         # test that bounds are set for a zonal mean file with a single
         # longitude value
