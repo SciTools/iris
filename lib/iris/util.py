@@ -1601,61 +1601,6 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.add_aux_coord(dim_coord, coord_dim)
 
 
-def _cube_rollaxis(cube, axis, start=0):
-    '''
-    Rolls the cube in an numpy.rollaxis-like way.
-    Uses cube.transpose() internally.
-
-    Args:
-
-    * cube
-        An instance of :class:`iris.cube.Cube`
-
-    * axis
-        The axis to roll backwards. The positions of the other axes do
-        not change relative to one another.
-
-    Kwargs:
-
-    * start
-        The axis is rolled until it lies before this position.
-        The default, 0, results in a "complete" roll.
-
-    For example::
-
-        >>> cube.shape
-        (3, 4, 5, 6)
-        >>> iris.util._cube_rollaxis(cube, 3, start=1)
-        >>> cube.shape
-        (3, 6, 4, 5)
-
-    '''
-
-    if axis < 0:
-        axis += cube.ndim
-
-    if start < 0:
-        start += cube.ndim
-
-    if axis < 0 or axis >= cube.ndim:
-        raise ValueError("Expected the value of start to be in the range "
-                         "-cube.ndim to (cube.ndim - 1) incl.")
-
-    if start < 0 or start > cube.ndim:
-        raise ValueError("Expected the value of start to be in the range "
-                         "-cube.ndim to cube.ndim incl.")
-
-    new_order = list(range(cube.ndim))
-
-    new_order[axis] = -1
-
-    new_order.insert(start, axis)
-
-    new_order.remove(-1)
-
-    cube.transpose(new_order)
-
-
 def move_dimension(cube, name_or_coord, position=0):
     '''
     Makes sure the data dimension of a specified coord
@@ -1681,8 +1626,7 @@ def move_dimension(cube, name_or_coord, position=0):
     Kwargs:
 
     * position
-        The axis is rolled until it lies before this position.
-        The default, 0, results in a "complete" roll.
+        Position of the data dimension that this coord describes.
 
     For example::
 
@@ -1714,6 +1658,21 @@ def move_dimension(cube, name_or_coord, position=0):
     if coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError("Expected 1D coord")
 
+    if position < -cube.ndim or position >= cube.ndim:
+        raise ValueError("Expected position to be in the range "
+                         "-cube.ndim to (cube.ndim - 1) incl.")
+
     axis = cube.coord_dims(coord)[0]
 
-    _cube_rollaxis(cube, axis, position)
+    if position < 0:
+        position = cube.ndim + position
+
+    new_order = list(range(cube.ndim))
+
+    if axis != position:
+        new_order[axis] = -1
+        new_order.remove(-1)
+
+        new_order.insert(position, axis)
+
+    cube.transpose(new_order)

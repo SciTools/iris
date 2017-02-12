@@ -34,10 +34,10 @@ from iris.util import move_dimension
 class Test(tests.IrisTest):
     def test_with_simple_1d_cube(self):
         cube = stock.simple_1d()
-        move_dimension(cube, 'foo', 0)
+        move_dimension(cube, 'foo', position=0)
         self.assertEqual(cube.shape, (11,))
 
-    def test_axis_already_in_first_position(self):
+    def test_axis_already_in_position(self):
         cube = stock.simple_3d()
         move_dimension(cube, 'wibble', 0)
         self.assertEqual(cube.shape, (2, 3, 4))
@@ -47,30 +47,89 @@ class Test(tests.IrisTest):
         self.assertEqual(cube.shape, (2, 3, 4))
 
         cube = stock.simple_3d()
-        move_dimension(cube, 'wibble', 1)
+        move_dimension(cube, 'wibble', -3)
         self.assertEqual(cube.shape, (2, 3, 4))
 
-    def test_first_axis_rolled_to_another_position(self):
+        cube = stock.simple_3d()
+        move_dimension(cube, cube.coord('latitude'), 1)
+        self.assertEqual(cube.shape, (2, 3, 4))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, cube.coord('latitude'), -2)
+        self.assertEqual(cube.shape, (2, 3, 4))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, cube.coord('longitude'), 2)
+        self.assertEqual(cube.shape, (2, 3, 4))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, cube.coord('longitude'), -1)
+        self.assertEqual(cube.shape, (2, 3, 4))
+
+    def test_axis0_rolled_to_another_position(self):
+        cube = stock.simple_3d()
+        move_dimension(cube, 'wibble', 1)
+        self.assertEqual(cube.shape, (3, 2, 4))
+
         cube = stock.simple_3d()
         move_dimension(cube, cube.coord('wibble'), 2)
-        self.assertEqual(cube.shape, (3, 2, 4))
-
-        cube = stock.simple_3d()
-        move_dimension(cube, 'wibble', position=2)
-        self.assertEqual(cube.shape, (3, 2, 4))
-
-        cube = stock.simple_3d()
-        move_dimension(cube, 'wibble', 3)
         self.assertEqual(cube.shape, (3, 4, 2))
 
         cube = stock.simple_3d()
         move_dimension(cube, 'wibble', -1)
+        self.assertEqual(cube.shape, (3, 4, 2))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, 'wibble', -2)
         self.assertEqual(cube.shape, (3, 2, 4))
+
+    def test_axis1_rolled_to_another_position(self):
+        cube = stock.simple_3d()
+        move_dimension(cube, 'latitude', 0)
+        self.assertEqual(cube.shape, (3, 2, 4))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, 'latitude', 2)
+        self.assertEqual(cube.shape, (2, 4, 3))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, 'latitude', -1)
+        self.assertEqual(cube.shape, (2, 4, 3))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, 'latitude', -3)
+        self.assertEqual(cube.shape, (3, 2, 4))
+
+    def test_axis2_rolled_to_another_position(self):
+        cube = stock.simple_3d()
+        move_dimension(cube, 'longitude', 0)
+        self.assertEqual(cube.shape, (4, 2, 3))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, 'longitude', 1)
+        self.assertEqual(cube.shape, (2, 4, 3))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, 'longitude', -2)
+        self.assertEqual(cube.shape, (2, 4, 3))
+
+        cube = stock.simple_3d()
+        move_dimension(cube, 'longitude', -3)
+        self.assertEqual(cube.shape, (4, 2, 3))
+
+    def test_position_not_in_data(self):
+
+        cube = stock.simple_3d()
+        self.assertRaises(ValueError,
+                          move_dimension, cube, 'wibble', 3)
+
+        self.assertRaises(ValueError,
+                          move_dimension, cube, 'wibble', -4)
 
     def test_roll_1d_coord_in_a_cube_with_some_multidim_coords(self):
         cube = stock.simple_3d_w_multidim_coords()
         move_dimension(cube, 'wibble', 2)
-        self.assertEqual(cube.shape, (3, 2, 4))
+        self.assertEqual(cube.shape, (3, 4, 2))
 
     def test_attempting_to_roll_a_multidim_coord(self):
         cube = stock.simple_3d_w_multidim_coords()
