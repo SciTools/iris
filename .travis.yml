@@ -78,7 +78,6 @@ install:
     fi
 
 # prepare iris build directory
-  - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
   - if [[ $TEST_TARGET -ne 'coding' ]]; then
       IRIS=$(ls -d1 build/lib*/iris);
       mkdir $IRIS/etc;
@@ -102,8 +101,7 @@ install:
     fi
 
 # iris
-  - python setup.py --quiet --with-unpack build
-  - python setup.py --quiet --with-unpack install
+  - python setup.py --quiet install
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then

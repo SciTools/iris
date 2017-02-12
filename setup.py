@@ -10,7 +10,6 @@ import multiprocessing
 import os
 import sys
 
-import numpy as np
 import setuptools
 
 # Add full path so Python doesn't load any __init__.py in the intervening
@@ -210,20 +209,6 @@ setup(
         },
     data_files=[('iris', ['CHANGES', 'COPYING', 'COPYING.LESSER'])],
     tests_require=['nose'],
-    features={
-        'unpack': setuptools.Feature(
-            "use of UKMO unpack library",
-            standard=False,
-            ext_modules=[
-                setuptools.Extension(
-                    'iris.fileformats._old_pp_packing',
-                    ['src/iris/fileformats/pp_packing/pp_packing.c'],
-                    libraries=['mo_unpack'],
-                    include_dirs=[np.get_include()]
-                )
-            ]
-        )
-    },
     cmdclass={'test': SetupTestRunner, 'build_py': BuildPyWithExtras,
               'std_names': MakeStdNames, 'pyke_rules': MakePykeRules,
               'clean_source': CleanSource},
