@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -368,6 +368,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         res = regrid_area_weighted(src, dest)
         self.assertCMLApproxData(res, RESULT_DIR + ('hybridheight.cml',))
 
+    @tests.skip_biggus
     def test_missing_data(self):
         src = self.simple_cube.copy()
         src.data = ma.masked_array(src.data)
@@ -378,6 +379,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         mask[slice(2, 5), slice(4, 7)] = True
         self.assertArrayEqual(res.data.mask, mask)
 
+    @tests.skip_biggus
     def test_no_x_overlap(self):
         src = self.simple_cube
         dest = _scaled_and_offset_grid(src, 1.0, 1.0,
@@ -387,6 +389,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         res = regrid_area_weighted(src, dest)
         self.assertTrue(res.data.mask.all())
 
+    @tests.skip_biggus
     def test_no_y_overlap(self):
         src = self.simple_cube
         dest = _scaled_and_offset_grid(src, 1.0, 1.0,
@@ -452,6 +455,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         self.assertCMLApproxData(res, RESULT_DIR +
                                  ('const_lon_cross_section.cml',))
 
+    @tests.skip_biggus
     def test_scalar_source_cube(self):
         src = self.simple_cube[1, 2]
         # Extend dest beyond src grid
@@ -532,6 +536,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         res = regrid_area_weighted(src, dest)
         self.assertArrayShapeStats(res, (40, 7), 285.653967, 15.212710)
 
+    @tests.skip_biggus
     @tests.skip_data
     def test_non_circular_subset(self):
         src = iris.tests.stock.global_pp()
