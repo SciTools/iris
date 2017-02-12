@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Test function :func:`iris.util.cube_rollaxis`."""
+"""Test function :func:`iris.util._cube_rollaxis`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -27,7 +27,7 @@ import numpy as np
 import unittest
 
 import iris
-from iris.util import cube_rollaxis
+from iris.util import _cube_rollaxis
 
 
 class Test(tests.IrisTest):
@@ -45,37 +45,37 @@ class Test(tests.IrisTest):
         '''
 
         cube = self.cube.copy()
-        cube_rollaxis(cube, 0, start=0)
+        _cube_rollaxis(cube, 0, start=0)
         self.assertEqual(cube.shape, self.cube.shape)
 
         cube = self.cube.copy()
-        cube_rollaxis(cube, 3, start=1)
+        _cube_rollaxis(cube, 3, start=1)
         self.assertEqual(cube.shape, (3, 6, 4, 5))
 
         cube = self.cube.copy()
-        cube_rollaxis(cube, 2)
+        _cube_rollaxis(cube, 2)
         self.assertEqual(cube.shape, (5, 3, 4, 6))
 
         cube = self.cube.copy()
-        cube_rollaxis(cube, 1, 4)
+        _cube_rollaxis(cube, 1, 4)
         self.assertEqual(cube.shape, (3, 5, 6, 4))
 
     def test_with_valid_negative_numbers_is_same_as_numpy_rollaxis(self):
 
         cube = self.cube.copy()
-        cube_rollaxis(cube, -1, 2)
+        _cube_rollaxis(cube, -1, 2)
         self.assertEqual(cube.shape, (3, 4, 6, 5))
 
         cube = self.cube.copy()
-        cube_rollaxis(cube, 0, -1)
+        _cube_rollaxis(cube, 0, -1)
         self.assertEqual(cube.shape, (4, 5, 3, 6))
 
     def test_incorrect_argument_values_is_same_as_numpy_rollaxis(self):
 
-        self.assertRaises(ValueError, cube_rollaxis, self.cube, -5)
-        self.assertRaises(ValueError, cube_rollaxis, self.cube, 5)
-        self.assertRaises(ValueError, cube_rollaxis, self.cube, 1, -5)
-        self.assertRaises(ValueError, cube_rollaxis, self.cube, 1, 5)
+        self.assertRaises(ValueError, _cube_rollaxis, self.cube, -5)
+        self.assertRaises(ValueError, _cube_rollaxis, self.cube, 5)
+        self.assertRaises(ValueError, _cube_rollaxis, self.cube, 1, -5)
+        self.assertRaises(ValueError, _cube_rollaxis, self.cube, 1, 5)
 
 
 if __name__ == '__main__':

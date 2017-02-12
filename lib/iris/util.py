@@ -1601,7 +1601,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.add_aux_coord(dim_coord, coord_dim)
 
 
-def cube_rollaxis(cube, axis, start=0):
+def _cube_rollaxis(cube, axis, start=0):
     '''
     Rolls the cube in an numpy.rollaxis-like way.
     Uses cube.transpose() internally.
@@ -1625,7 +1625,7 @@ def cube_rollaxis(cube, axis, start=0):
 
         >>> cube.shape
         (3, 4, 5, 6)
-        >>> iris.util.cube_rollaxis(cube, 3, start=1)
+        >>> iris.util._cube_rollaxis(cube, 3, start=1)
         >>> cube.shape
         (3, 6, 4, 5)
 
@@ -1656,7 +1656,7 @@ def cube_rollaxis(cube, axis, start=0):
     cube.transpose(new_order)
 
 
-def cube_enforce_dim_position(cube, name_or_coord, start=0):
+def move_dimension(cube, name_or_coord, position=0):
     '''
     Makes sure the data dimension of a specified coord
     is in a certain position in the cube.
@@ -1680,7 +1680,7 @@ def cube_enforce_dim_position(cube, name_or_coord, start=0):
 
     Kwargs:
 
-    * start
+    * position
         The axis is rolled until it lies before this position.
         The default, 0, results in a "complete" roll.
 
@@ -1691,7 +1691,7 @@ def cube_enforce_dim_position(cube, name_or_coord, start=0):
              Dimension coordinates:
                   bar                           x       -
                   foo                           -       x
-        >>> iris.util.cube_enforce_dim_position(cube, 'foo', 0)
+        >>> iris.util.move_dimension(cube, 'foo', 0)
         >>> print cube
         thingness / (1)                     (foo: 4; bar: 3)
              Dimension coordinates:
@@ -1716,4 +1716,4 @@ def cube_enforce_dim_position(cube, name_or_coord, start=0):
 
     axis = cube.coord_dims(coord)[0]
 
-    cube_rollaxis(cube, axis, start)
+    _cube_rollaxis(cube, axis, position)
