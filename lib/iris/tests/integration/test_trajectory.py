@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -190,6 +190,7 @@ class TestTriPolar(tests.IrisTest):
         self.assertRaises(ValueError, traj_interpolate,
                           self.cube, self.sample_points, method="linekar")
 
+    @tests.skip_biggus
     def test_tri_polar__nearest(self):
         # Check a smallish nearest-neighbour interpolation against a result
         # snapshot.

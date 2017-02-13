@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -210,6 +210,7 @@ class TestLazySave(tests.IrisTest):
                 saver.write(acube)
         self.assertTrue(acube.has_lazy_data())
 
+    @tests.skip_biggus
     def test_lazy_mask_preserve_fill_value(self):
         cube = iris.cube.Cube(np.ma.array([0, 1], mask=[False, True],
                                           fill_value=-1))

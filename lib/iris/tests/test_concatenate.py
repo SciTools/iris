@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -243,6 +243,7 @@ class TestSimple(tests.IrisTest):
         self.assertEqual(concatenate(cubes), cubes)
 
 
+@tests.skip_biggus
 class TestNoConcat(tests.IrisTest):
     def test_one_cube_has_anon_dim(self):
         cubes = []
@@ -342,6 +343,7 @@ class TestNoConcat(tests.IrisTest):
         self.assertEqual(len(result), 1)
 
 
+@tests.skip_biggus
 class Test2D(tests.IrisTest):
     def test_concat_masked_2x2d(self):
         cubes = []
@@ -582,6 +584,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (2, 4))
 
 
+@tests.skip_biggus
 class TestMulti2D(tests.IrisTest):
     def test_concat_4x2d_aux_xy(self):
         cubes = []
@@ -675,6 +678,7 @@ class TestMulti2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (6, 6))
 
 
+@tests.skip_biggus
 class TestMulti2DScalar(tests.IrisTest):
     def test_concat_scalar_4x2d_aux_xy(self):
         cubes = iris.cube.CubeList()
@@ -802,6 +806,7 @@ class TestMulti2DScalar(tests.IrisTest):
         self.assertEqual(result[0].shape, (2, 4, 4))
 
 
+@tests.skip_biggus
 class Test3D(tests.IrisTest):
     def _make_group(self, xoff=0, yoff=0, zoff=0, doff=0):
         xoff *= 4

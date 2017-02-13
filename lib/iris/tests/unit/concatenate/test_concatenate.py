@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,6 +33,7 @@ import iris.cube
 from iris.exceptions import ConcatenateError
 
 
+@tests.skip_biggus
 class TestEpoch(tests.IrisTest):
     def simple_1d_time_cubes(self, reftimes, coords_points):
         cubes = []
@@ -171,6 +172,7 @@ class TestMessages(tests.IrisTest):
             result = concatenate([cube_1, cube_2], True)
 
 
+@tests.skip_biggus
 class TestOrder(tests.IrisTest):
     def _make_cube(self, points, bounds=None):
         nx = 4
@@ -282,6 +284,7 @@ class TestOrder(tests.IrisTest):
         self.assertEqual(result1, result2)
 
 
+@tests.skip_biggus
 class TestConcatenateBiggus(tests.IrisTest):
     def build_lazy_cube(self, points, bounds=None, nx=4):
         data = np.arange(len(points) * nx).reshape(len(points), nx)

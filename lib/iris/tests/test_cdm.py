@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -959,7 +959,8 @@ class TestDataManagerIndexing(TestCube2d):
         lat_cube = next(self.cube.slices(['grid_latitude', ]))
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
- 
+
+    @tests.skip_biggus
     def test_cube_empty_indexing(self):
         test_filename = ('cube_slice', 'real_empty_data_indexing.cml')
         r = self.cube[:5, ::-1][3]
@@ -998,6 +999,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.assertRaises(IndexError, self.cube.__getitem__, ((0, 4, 5, 2), (3, 5, 5), 0, 0, 4) )
         self.assertRaises(IndexError, self.cube.__getitem__, (Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis) )
 
+    @tests.skip_biggus
     def test_fancy_indexing_bool_array(self):
         cube = self.cube
         cube.data = np.ma.masked_array(cube.data, mask=cube.data > 100000)
@@ -1164,6 +1166,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice.data), 25)
 
+    @tests.skip_biggus
     def test_save_and_merge(self):
         cube = self._load_3d_cube()
 
