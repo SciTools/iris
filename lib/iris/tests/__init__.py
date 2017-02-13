@@ -1118,6 +1118,13 @@ def skip_plot(fn):
     return skip(fn)
 
 
+# Control for @skip_biggus : Set to False to run the biggus-dependent tests.
+_SKIP_BIGGUS_DEPENDENT_TESTS = True
+
+skip_biggus = unittest.skipIf(_SKIP_BIGGUS_DEPENDENT_TESTS,
+                              reason='Test(s) assume biggus in place of dask.')
+
+
 skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
                                                 'which is not available.')
 
