@@ -10,6 +10,7 @@ numpy
 pyke
 udunits2
 cf_units
+dask
 
 # Iris build dependencies
 setuptools
