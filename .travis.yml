@@ -15,8 +15,6 @@ env:
   - TEST_TARGET=default
   - TEST_TARGET=default TEST_MINIMAL=true
   - TEST_TARGET=coding
-  - TEST_TARGET=example
-  - TEST_TARGET=doctest
 
 git:
   depth: 10000
