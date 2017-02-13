@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -305,12 +305,6 @@ class Test___call___1D_circular(ThreeDimCube):
         self.assertArrayEqual(expected.data, result.data)
 
     def test_fully_wrapped_twice_reversed_mainpoints(self):
-        points. _ = self.testpoints_fully_wrapped_twice
-        expected = self.interpolator(points)
-        result = self.interpolator_reverselons(points)
-        self.assertArrayEqual(expected.data, result.data)
-
-    def test_fully_wrapped_twice_reversed_mainpoints(self):
         _, points = self.testpoints_fully_wrapped_twice
         expected = self.interpolator(points)
         result = self.interpolator_reverselons(points)
@@ -367,6 +361,7 @@ class Test___call___1D_singlelendim(ThreeDimCube):
         self.assertArrayEqual(result.data, self.cube.data)
 
 
+@tests.skip_biggus
 class Test___call___masked(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_4d_with_hybrid_height()

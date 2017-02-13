@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -37,6 +37,7 @@ class Test_units_func(tests.IrisTest):
         self.assertEqual(new_units, 1)
 
 
+@tests.skip_biggus
 class Test_masked(tests.IrisTest):
     def setUp(self):
         self.cube = iris.cube.Cube(ma.masked_equal([1, 2, 3, 4, 5], 3))

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -675,6 +675,7 @@ class Test___call____bad_linear_units(tests.IrisTest):
             Regridder(ok, bad, 'linear', 'mask')
 
 
+@tests.skip_biggus
 class Test___call____no_coord_systems(tests.IrisTest):
     # Test behaviour in the absence of any coordinate systems.
 
@@ -757,6 +758,7 @@ class Test___call____no_coord_systems(tests.IrisTest):
                 regridder(uk)
 
 
+@tests.skip_biggus
 class Test___call____extrapolation_modes(tests.IrisTest):
     values = [[np.nan, 6, 7, np.nan],
               [9, 10, 11, np.nan],
@@ -1126,6 +1128,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             cml = RESULT_DIR + ('{}_subset_anon.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
+    @tests.skip_biggus
     def test_grid_subset_missing_data_1(self):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data.
@@ -1139,6 +1142,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             cml = RESULT_DIR + ('{}_subset_masked_1.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
+    @tests.skip_biggus
     def test_grid_subset_missing_data_2(self):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data.
@@ -1152,6 +1156,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             cml = RESULT_DIR + ('{}_subset_masked_2.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
+    @tests.skip_biggus
     def test_grid_partial_overlap(self):
         # The destination grid points are partially contained within the
         # src grid points.
@@ -1164,6 +1169,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             cml = RESULT_DIR + ('{}_partial_overlap.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
+    @tests.skip_biggus
     def test_grid_no_overlap(self):
         # The destination grid points are NOT contained within the
         # src grid points.
@@ -1207,6 +1213,7 @@ class Test___call____NOP(tests.IrisTest):
         self.assertEqual(result, self.src)
 
 
+@tests.skip_biggus
 @tests.skip_data
 class Test___call____circular(tests.IrisTest):
     def setUp(self):

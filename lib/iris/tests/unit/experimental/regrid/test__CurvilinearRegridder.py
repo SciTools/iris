@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -190,6 +190,7 @@ class Test___call____bad_src(tests.IrisTest):
             self.regridder(self.src_grid[::2, ::2])
 
 
+@tests.skip_biggus
 class Test__call__multidimensional(tests.IrisTest):
     def test_multidim(self):
         # Testing with >2D data to demonstrate correct operation over

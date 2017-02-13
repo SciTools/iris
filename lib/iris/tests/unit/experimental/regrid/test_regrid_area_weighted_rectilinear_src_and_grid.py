@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,6 +40,7 @@ from iris.tests.experimental.regrid.\
     _resampled_grid
 
 
+@tests.skip_biggus
 class TestMdtol(tests.IrisTest):
     # Tests to check the masking behaviour controlled by mdtol kwarg.
     def setUp(self):

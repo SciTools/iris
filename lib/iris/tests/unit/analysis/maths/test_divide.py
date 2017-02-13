@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -72,6 +72,7 @@ class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
 
         self.assertArrayEqual(com, res)
 
+    @tests.skip_biggus
     def test_masked_div_zero(self):
         # Ensure cube behaviour matches numpy operator behaviour for the
         # handling of arrays containing 0.
