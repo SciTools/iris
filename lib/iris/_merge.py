@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,13 +29,14 @@ import six
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
 import iris.cube
 import iris.coords
 import iris.exceptions
+from iris._lazy_data import is_lazy_data, as_concrete_data, as_lazy_data
 import iris.util
 
 
@@ -1068,6 +1069,27 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
     return space
 
 
+def _multidim_daskstack(stack):
+    """
+    Recursively build a multidensional stacked dask array.
+
+    The argument is an ndarray of dask arrays.
+    This is needed because dask.array.stack only accepts a 1-dimensional list.
+
+    """
+    if stack.ndim == 0:
+        # Handle array scalar inputs, as biggus does.
+        dask_components = stack[()]
+    elif stack.ndim == 1:
+        # 'Another' base case : simple 1-d goes direct in dask.
+        dask_components = list(stack)
+    else:
+        # Recurse because dask.stack does not do multi-dimensional.
+        dask_components = [_multidim_daskstack(subarray)
+                           for subarray in stack]
+    return da.stack(dask_components)
+
+
 class ProtoCube(object):
     """
     Framework for merging source-cubes into one or more higher
@@ -1192,10 +1214,10 @@ class ProtoCube(object):
         # Generate group-depth merged cubes from the source-cubes.
         for level in range(group_depth):
             # Stack up all the data from all of the relevant source
-            # cubes in a single biggus ArrayStack.
+            # cubes in a single dask "stacked" array.
             # If it turns out that all the source cubes already had
-            # their data loaded then at the end we can convert the
-            # ArrayStack back to a numpy array.
+            # their data loaded then at the end we convert the stack back
+            # into a plain numpy array.
             stack = np.empty(self._stack_shape, 'object')
             all_have_data = True
             for nd_index in nd_indexes:
@@ -1204,17 +1226,19 @@ class ProtoCube(object):
                 group = group_by_nd_index[nd_index]
                 offset = min(level, len(group) - 1)
                 data = self._skeletons[group[offset]].data
-                # Ensure the data is represented as a biggus.Array and
-                # slot that Array into the stack.
-                if isinstance(data, biggus.Array):
+                # Ensure the data is represented as a dask array and
+                # slot that array into the stack.
+                if is_lazy_data(data):
                     all_have_data = False
                 else:
-                    data = biggus.NumpyArrayAdapter(data)
+                    data = as_lazy_data(data)
                 stack[nd_index] = data
 
-            merged_data = biggus.ArrayStack(stack)
+            merged_data = _multidim_daskstack(stack)
             if all_have_data:
-                merged_data = merged_data.masked_array()
+                # All inputs were concrete, so turn the result back into a
+                # normal array.
+                merged_data = as_concrete_data(merged_data)
                 # Unmask the array only if it is filled.
                 if (ma.isMaskedArray(merged_data) and
                         ma.count_masked(merged_data) == 0):
