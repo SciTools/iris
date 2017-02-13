@@ -15,8 +15,6 @@ env:
   - TEST_TARGET=default
   - TEST_TARGET=default TEST_MINIMAL=true
   - TEST_TARGET=coding
-  - TEST_TARGET=example
-  - TEST_TARGET=doctest
 
 git:
   depth: 10000
@@ -107,7 +105,7 @@ install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+      python -m unittest discover -v lib/iris/tests/integration/temp_dask;
     fi
   - if [[ $TEST_TARGET == 'example' ]]; then
       python -m iris.tests.runner --example-tests --print-failed-images;
