@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -143,6 +143,7 @@ class Test(tests.IrisTest):
         self.assertTrue(res.has_lazy_data())
         self.assertEqual(res.shape, (1,) + cube.shape)
 
+    @tests.skip_biggus
     def test_masked_unit_array(self):
         cube = tests.stock.simple_3d_mask()
         test_cube = cube[0, 0, 0]

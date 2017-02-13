@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ import biggus
 import numpy as np
 import numpy.ma as ma
 
+import iris.analysis
 import iris.aux_factory
 import iris.coords
 import iris.exceptions
@@ -48,6 +49,7 @@ class Test___init___data(tests.IrisTest):
         self.assertEqual(type(cube.data), np.ndarray)
         self.assertArrayEqual(cube.data, data)
 
+    @tests.skip_biggus
     def test_masked(self):
         # np.ma.MaskedArray should be allowed through
         data = np.ma.masked_greater(np.arange(12).reshape(3, 4), 1)
@@ -115,6 +117,7 @@ class Test_extract(tests.IrisTest):
 
 
 class Test_xml(tests.IrisTest):
+    @tests.skip_biggus
     def test_checksum_ignores_masked_values(self):
         # Mask out an single element.
         data = np.ma.arange(12).reshape(3, 4)
