@@ -482,11 +482,13 @@ def _get_plot_objects(args):
     return u_object, v_object, u, v, args
 
 
-def _get_plot_sections(u_object, v_object, u, v):
+def _shift_plot_sections(u_object, u, v):
     """
-    Converts u, v into a sequence of overlapping subsections of the
-    points, divided at the points where the line should cross over the 0/360
-    degree longitude boundary.
+    Shifts subsections of u by multiples of 360 degrees within ranges
+    defined by the points where the line should cross over the 0/360 degree
+    longitude boundary.
+
+    e.g. [ 300, 100, 200, 300, 100, 300 ] => [ 300, 460, 560, 660, 820, 660 ]
 
     """
     # Convert coordinates to true lat-lon
@@ -512,30 +514,16 @@ def _get_plot_sections(u_object, v_object, u, v):
                                           azms_lon, azms_lat)
 
     # Use the grid longitude values and the geodesic azimuth to determine
-    # the indices of the points where the line should cross the 0/360 degree
-    # boundary, and in which direction
+    # the points where the line should cross the 0/360 degree boundary, and
+    # in which direction
     lwraps = np.logical_and(u[1:] > u[:-1], azms_u < 0)
     rwraps = np.logical_and(u[1:] < u[:-1], azms_u > 0)
-    indices, = np.where(np.logical_or(lwraps, rwraps))
-    signs = (np.where(lwraps, -1, 0) + np.where(rwraps, 1, 0))[indices]
-    indices += 1
-
-    us = np.empty(len(indices) + 1, dtype=object)
-    vs = np.empty(len(indices) + 1, dtype=object)
-    start_index = 0
-    for i, (index, sign) in enumerate(zip(indices, signs)):
-        vs[i] = v[start_index:index + 1].copy()
-        ui = u[start_index:index + 1].copy()
-        if len(ui) > 0:
-            # Shift the endpoint by the units' modulus, to ensure the final
-            # line segment is drawn in the correct direction
-            ui[-1] += u_object.units.modulus * sign
-        us[i] = ui
-        start_index = index
-    us[-1] = u[start_index:].copy()
-    vs[-1] = v[start_index:].copy()
-
-    return us, vs
+    shifts = rwraps.astype(np.int32) - lwraps.astype(np.int32)
+    shift_vals = shifts.cumsum() * u_object.units.modulus
+    new_u = np.empty_like(u)
+    new_u[0] = u[0]
+    new_u[1:] = u[1:] + shift_vals
+    return new_u
 
 
 def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
@@ -565,7 +553,6 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
             plot_arrays.append(values)
 
     u, v = plot_arrays
-    us, vs = [u], [v]
 
     # if both u_object and v_object are coordinates then check if a map
     # should be drawn
@@ -579,17 +566,15 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         if draw_method_name == 'plot' and \
                 u_object.standard_name not in ('projection_x_coordinate',
                                                'projection_y_coordinate'):
-            us, vs = _get_plot_sections(u_object, v_object, u, v)
+            u = _shift_plot_sections(u_object, u, v)
 
     axes = kwargs.pop('axes', None)
     draw_method = getattr(axes if axes else plt, draw_method_name)
-    result = []
-    for u, v in zip(us, vs):
-        if arg_func is not None:
-            args, kwargs = arg_func(u, v, *args, **kwargs)
-            result += draw_method(*args, **kwargs)
-        else:
-            result += draw_method(u, v, *args, **kwargs)
+    if arg_func is not None:
+        args, kwargs = arg_func(u, v, *args, **kwargs)
+        result = draw_method(*args, **kwargs)
+    else:
+        result = draw_method(u, v, *args, **kwargs)
 
     # Apply tick labels for string coordinates.
     _string_coord_axis_tick_labels(string_axes, axes)
