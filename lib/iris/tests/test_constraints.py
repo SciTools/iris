@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -75,6 +75,7 @@ class TestSimple(tests.IrisTest):
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 70 * 6)
 
+    @tests.skip_biggus
     def test_mismatched_type(self):
         constraint = iris.Constraint(model_level_number='aardvark')
         sub_list = self.slices.extract(constraint)

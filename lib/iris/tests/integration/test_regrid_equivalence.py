@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -120,6 +120,7 @@ class MixinCheckingCode(object):
         _debug_data(result_cube, "matching RESULt")
         self.assertArrayAllClose(result_cube.data, expected_result)
 
+    @tests.skip_biggus
     def test_source_mask(self):
         src_x = [40.0, 50.0, 60.0]
         src_y = [40.0, 50.0, 60.0]

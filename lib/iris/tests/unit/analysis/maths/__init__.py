@@ -29,6 +29,7 @@ from iris.coords import DimCoord
 from iris.cube import Cube
 import iris.tests as tests
 import iris.tests.stock as stock
+import iris.tests as tests
 
 
 class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
@@ -147,6 +148,7 @@ class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
 
         return com, res, cube_b
 
+    @tests.skip_biggus
     def test_partial_mask_in_place(self):
         # Cube in_place arithmetic operation.
         com, res, orig_cube = self._test_partial_mask(True)
@@ -154,6 +156,7 @@ class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
         self.assertMaskedArrayEqual(com, res.data, strict=True)
         self.assertIs(res, orig_cube)
 
+    @tests.skip_biggus
     def test_partial_mask_not_in_place(self):
         # Cube arithmetic not an in_place operation.
         com, res, orig_cube = self._test_partial_mask(False)
