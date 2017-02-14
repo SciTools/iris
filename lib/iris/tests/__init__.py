@@ -103,6 +103,9 @@ except ImportError:
     except ImportError:
         GRIB_AVAILABLE = False
 
+# skip all iris_grib tests until a new dask aware iris_grib is available
+GRIB_AVAILABLE = False
+
 try:
     import iris_sample_data
 except ImportError:
