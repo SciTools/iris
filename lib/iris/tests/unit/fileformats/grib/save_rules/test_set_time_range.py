@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -64,7 +64,7 @@ class Test(tests.IrisTest):
 
     @mock.patch.object(gribapi, 'grib_set')
     def test_hours(self, mock_set):
-        lower = 10
+        lower = -10
         upper = 20
         self.coord.bounds = [lower, upper]
         set_time_range(self.coord, mock.sentinel.grib)
@@ -75,7 +75,7 @@ class Test(tests.IrisTest):
 
     @mock.patch.object(gribapi, 'grib_set')
     def test_days(self, mock_set):
-        lower = 4
+        lower = -4
         upper = 6
         self.coord.bounds = [lower, upper]
         self.coord.units = Unit('days since epoch', calendar='standard')
@@ -88,15 +88,15 @@ class Test(tests.IrisTest):
 
     @mock.patch.object(gribapi, 'grib_set')
     def test_fractional_hours(self, mock_set_long):
-        lower = 10.0
+        lower = -10.0
         upper = 20.9
         self.coord.bounds = [lower, upper]
         with warnings.catch_warnings(record=True) as warn:
             warnings.simplefilter("always")
             set_time_range(self.coord, mock.sentinel.grib)
         self.assertEqual(len(warn), 1)
-        msg = 'Truncating floating point lengthOfTimeRange 10\.8?9+ ' \
-              'to integer value 10'
+        msg = 'Truncating floating point lengthOfTimeRange 30\.8?9+ ' \
+              'to integer value 30'
         six.assertRegex(self, str(warn[0].message), msg)
         mock_set_long.assert_any_call(mock.sentinel.grib,
                                       'indicatorOfUnitForTimeRange', 1)

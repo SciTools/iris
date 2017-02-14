@@ -461,8 +461,10 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         self.assertTrue(res.data.mask.all())
         # Shrink dest to 1/4 of src
         dest = src.copy()
-        dest.coord('latitude').bounds = np.array([[0.25, 0.75]])
-        dest.coord('longitude').bounds = np.array([[1.25, 1.75]])
+        dest.replace_coord(src.coord('latitude').copy(points=0.5,
+                                                      bounds=[0.25, 0.75]))
+        dest.replace_coord(src.coord('longitude').copy(points=1.5,
+                                                       bounds=[1.25, 1.75]))
         res = regrid_area_weighted(src, dest)
         self.assertEqual(res.data, src.data)
 

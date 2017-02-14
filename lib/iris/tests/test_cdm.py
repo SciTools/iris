@@ -689,7 +689,7 @@ class Test2dExtraction(TestCube2d):
 class Test2dExtractionByCoord(TestCube2d):
     def test_cube_extract_by_coord_advanced(self):
         # This test reverses the coordinate in the cube and also takes a subset of the original coordinate
-        points = np.array([9, 8, 7, 5, 4, 3, 2, 1, 0], dtype=np.int32)
+        points = np.array([9, 8, 7, 5, 4, 3, 2, 1, 0], dtype=np.int32) * 2
         bounds = np.array([[18, 19], [16, 17], [14, 15], [10, 11], [ 8,  9], [ 6,  7], [ 4,  5], [ 2,  3], [ 0,  1]], dtype=np.int32)
         c = iris.coords.DimCoord(points, long_name='dim2', units='meters', bounds=bounds)
         self.assertCML(self.t.subset(c), ('cube_slice', '2d_intersect_and_reverse.cml'))

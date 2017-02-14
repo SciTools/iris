@@ -18,7 +18,7 @@
 		[6, 7],
 		[4, 5],
 		[2, 3],
-		[0, 1]]" id="e4dc1958" long_name="dim2" points="[9, 8, 7, 6, 5, 4, 3, 2, 1, 0]" shape="(10,)" units="Unit('meters')" value_type="int32"/>
+		[0, 1]]" id="e4dc1958" long_name="dim2" points="[18, 16, 14, 12, 10, 8, 6, 4, 2, 0]" shape="(10,)" units="Unit('meters')" value_type="int32"/>
       </coord>
       <coord datadims="[0, 1]">
         <auxCoord bounds="[[[196, 197, 198, 199],

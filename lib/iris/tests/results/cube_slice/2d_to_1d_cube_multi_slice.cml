@@ -10,7 +10,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[0, 1],
-		[2, 3]]" id="e4dc1958" long_name="dim2" points="[0, 1]" shape="(2,)" units="Unit('meters')" value_type="int32"/>
+		[2, 3]]" id="e4dc1958" long_name="dim2" points="[0, 2]" shape="(2,)" units="Unit('meters')" value_type="int32"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord bounds="[[0, 1, 2, 3],

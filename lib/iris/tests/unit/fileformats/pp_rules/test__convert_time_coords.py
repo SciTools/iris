@@ -499,14 +499,14 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
         points = lbft - (48 - hours) / 2.0
         bounds = np.array([lbft - (48 - hours),
                            np.ones_like(hours) * lbft]).transpose()
-        fp_coord = AuxCoord(points,
+        fp_coord = DimCoord(points,
                             standard_name='forecast_period',
                             units='hours',
                             bounds=bounds)
         points = 9 * 24 + 9 + (hours / 2.0)
         bounds = np.array([8 * 24 + 9 + hours,
                            np.ones_like(hours) * 10 * 24 + 9]).transpose()
-        time_coord = AuxCoord(points,
+        time_coord = DimCoord(points,
                               standard_name='time',
                               units=_EPOCH_HOURS_UNIT,
                               bounds=bounds)

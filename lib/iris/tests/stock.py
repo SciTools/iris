@@ -311,8 +311,9 @@ def simple_2d_w_multidim_and_scalars():
 
     # DimCoords
     dim1 = iris.coords.DimCoord(np.arange(5, dtype=np.float32) * 5.1 + 3.0, long_name='dim1', units='meters')
-    dim2 = iris.coords.DimCoord(np.arange(10, dtype=np.int32), long_name='dim2', units='meters',
-                                bounds=np.arange(20, dtype=np.int32).reshape(10, 2))
+    dim2 = iris.coords.DimCoord(
+        np.arange(10, dtype=np.int32) * 2, long_name='dim2', units='meters',
+        bounds=np.arange(20, dtype=np.int32).reshape(10, 2))
 
     # Scalars
     an_other = iris.coords.AuxCoord(3.0, long_name='an_other', units='meters')

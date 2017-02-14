@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -95,7 +95,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             __getitem__=lambda self, key: points[key])
 
     def test_dim_coord_construction(self):
-        self._set_cf_coord_var(np.arange(6))
+        self._set_cf_coord_var(np.arange(6) * 2)
 
         expected_coord = DimCoord(
             self.cf_coord_var[:],
@@ -143,7 +143,7 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
         # Call parent setUp explicitly, because of how unittests work.
         RulesTestMixin.setUp(self)
         # Create test coordinate cf variable.
-        points = np.arange(6)
+        points = np.arange(6) * 2
         self.cf_coord_var = mock.Mock(
             dimensions=('foo',),
             cf_name='wibble',
