@@ -1002,7 +1002,6 @@ fc_extras
 
     import warnings
 
-    import biggus
     import cf_units
     import netCDF4
     import numpy as np
@@ -1018,6 +1017,7 @@ fc_extras
     import iris.exceptions
     import iris.std_names
     import iris.util
+    import iris._lazy_data
     
     
     #
@@ -1623,33 +1623,32 @@ fc_extras
         # Get units
         attr_units = get_attr_units(cf_coord_var, attributes)
 
-        def cf_var_as_biggus(cf_var):
+        def cf_var_as_array(cf_var):
             dtype = cf_var.dtype
             fill_value = getattr(cf_var.cf_data, '_FillValue',
                                  netCDF4.default_fillvals[dtype.str[1:]])
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
                 cf_var.shape, dtype, engine.filename,
                 cf_var.cf_name, fill_value)
-            return biggus.OrthoArrayAdapter(proxy)
+            return iris._lazy_data.as_lazy_data(proxy)
 
         # Get any coordinate point data.
         if isinstance(cf_coord_var, cf.CFLabelVariable):
             points_data = cf_coord_var.cf_label_data(cf_var)
         else:
-            points_data = cf_var_as_biggus(cf_coord_var)
+            points_data = cf_var_as_array(cf_coord_var)
 
         # Get any coordinate bounds.
         cf_bounds_var = get_cf_bounds_var(cf_coord_var)
         if cf_bounds_var is not None:
-            bounds_data = cf_var_as_biggus(cf_bounds_var)
+            bounds_data = cf_var_as_array(cf_bounds_var)
 
             # Handle transposed bounds where the vertex dimension is not
             # the last one. Test based on shape to support different
             # dimension names.
             if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
-                # Biggus 0.7 doesn't support rollaxis, so we have to
-                # resolve the data to a numpy array.
-                # NB. This is what used to happen with LazyArray as well.
+                # Resolving the data to a numpy array for compatibility with
+                # array creators (i.e. LazyArray or Dask)
                 bounds_data = bounds_data.ndarray()
                 bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var,
                                                   cf_coord_var)
@@ -1695,16 +1694,16 @@ fc_extras
         # Get units
         attr_units = get_attr_units(cf_cm_attr, attributes)
 
-        def cf_var_as_biggus(cf_var):
+        def cf_var_as_array(cf_var):
             dtype = cf_var.dtype
             fill_value = getattr(cf_var.cf_data, '_FillValue',
                                  netCDF4.default_fillvals[dtype.str[1:]])
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
                 cf_var.shape, dtype, engine.filename,
                 cf_var.cf_name, fill_value)
-            return biggus.OrthoArrayAdapter(proxy)
+            return iris._lazy_array.as_lazy_array(proxy)
 
-        data = cf_var_as_biggus(cf_cm_attr)
+        data = cf_var_as_array(cf_cm_attr)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
