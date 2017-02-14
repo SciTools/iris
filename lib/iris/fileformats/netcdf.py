@@ -37,7 +37,7 @@ import re
 import string
 import warnings
 
-import biggus
+
 import netCDF4
 import numpy as np
 import numpy.ma as ma
@@ -56,7 +56,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-import iris._lazy_data
+import iris._data_wrapper
 
 
 # Show Pyke inference engine statistics.
@@ -505,7 +505,7 @@ def _load_cube(engine, cf, cf_var, filename):
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
-    data = iris._lazy_data.as_lazy_data(proxy)
+    data = iris._data_wrapper.from_proxy(proxy)
     cube = iris.cube.Cube(data)
 
     # Reset the pyke inference engine.
