@@ -33,8 +33,8 @@ from iris.tests.unit.analysis.maths import \
 
 
 @tests.skip_data
-@tests._test_timings_class_decorator
-class TestBroadcasting(tests._IrisTest_nometa,
+@tests.iristest_timing_decorator
+class TestBroadcasting(tests.IrisTest_nometa,
                        CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
@@ -48,8 +48,8 @@ class TestBroadcasting(tests._IrisTest_nometa,
         return divide
 
 
-@tests._test_timings_class_decorator
-class TestMasking(tests._IrisTest_nometa, CubeArithmeticMaskingTestMixin):
+@tests.iristest_timing_decorator
+class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         try:

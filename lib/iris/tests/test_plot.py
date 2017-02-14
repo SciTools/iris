@@ -581,7 +581,7 @@ class CheckForWarningsMetaclass(type):
 
 
 @tests.skip_data
-@tests._test_timings_class_decorator
+@tests.iristest_timing_decorator
 class TestPcolorNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
                                             tests.GraphicsTest_nometa,
                                             SliceMixin)):
@@ -597,7 +597,7 @@ class TestPcolorNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
 
 
 @tests.skip_data
-@tests._test_timings_class_decorator
+@tests.iristest_timing_decorator
 class TestPcolormeshNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
                                                 tests.GraphicsTest_nometa,
                                                 SliceMixin)):
