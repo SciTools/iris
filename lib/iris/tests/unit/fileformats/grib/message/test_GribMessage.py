@@ -210,6 +210,7 @@ def _example_section_3(grib_definition_template_number, scanning_mode):
             'Nj': 3,
             'Ni': 4}
 
+
 @tests._test_timings_class_decorator
 class Test_data__grid_template_0(tests._IrisTest_nometa,
                                  Mixin_data__grid_template):

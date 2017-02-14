@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,10 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+# import iris tests first so that some things can be initialised before
+# importing anything else
+import iris.tests as tests
+
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
@@ -25,7 +29,6 @@ from itertools import chain
 import os
 import re
 import subprocess
-import unittest
 
 import pep8
 
@@ -170,7 +173,7 @@ class StandardReportWithExclusions(pep8.StandardReport):
                      self).get_file_results()
 
 
-class TestCodeFormat(unittest.TestCase):
+class TestCodeFormat(tests.IrisTest):
     def test_pep8_conformance(self):
         #
         #    Tests the iris codebase against the "pep8" tool.
@@ -218,7 +221,7 @@ class TestCodeFormat(unittest.TestCase):
                           '{}'.format('\n  '.join(unexpectedly_good)))
 
 
-class TestLicenseHeaders(unittest.TestCase):
+class TestLicenseHeaders(tests.IrisTest):
     @staticmethod
     def years_of_license_in_file(fh):
         """
@@ -345,7 +348,7 @@ class TestLicenseHeaders(unittest.TestCase):
             raise ValueError('There were license header failures. See stdout.')
 
 
-class TestFutureImports(unittest.TestCase):
+class TestFutureImports(tests.IrisTest):
     excluded = (
         '*/iris/fileformats/_old_pp_packing.py',
         '*/iris/fileformats/_pyke_rules/__init__.py',
@@ -406,4 +409,4 @@ class TestFutureImports(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    tests.main()
