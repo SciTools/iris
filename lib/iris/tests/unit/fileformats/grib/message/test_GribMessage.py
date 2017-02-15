@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -211,27 +211,37 @@ def _example_section_3(grib_definition_template_number, scanning_mode):
             'Ni': 4}
 
 
-class Test_data__grid_template_0(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_0(tests.IrisTest_nometa,
+                                 Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(0, scanning_mode)
 
 
-class Test_data__grid_template_1(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_1(tests.IrisTest_nometa,
+                                 Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(1, scanning_mode)
 
 
-class Test_data__grid_template_5(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_5(tests.IrisTest_nometa,
+                                 Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(5, scanning_mode)
 
 
-class Test_data__grid_template_12(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_12(tests.IrisTest_nometa,
+                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(12, scanning_mode)
 
 
-class Test_data__grid_template_30(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_30(tests.IrisTest_nometa,
+                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(30, scanning_mode)
         # Dimensions are 'Nx' + 'Ny' instead of 'Ni' + 'Nj'.
@@ -242,13 +252,16 @@ class Test_data__grid_template_30(tests.IrisTest, Mixin_data__grid_template):
         return section_3
 
 
-class Test_data__grid_template_40_regular(tests.IrisTest,
+@tests.iristest_timing_decorator
+class Test_data__grid_template_40_regular(tests.IrisTest_nometa,
                                           Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(40, scanning_mode)
 
 
-class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_90(tests.IrisTest_nometa,
+                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(90, scanning_mode)
         # Exceptionally, dimensions are 'Nx' + 'Ny' instead of 'Ni' + 'Nj'.

@@ -80,7 +80,9 @@ class _MaskedArrayEquality(six.with_metaclass(ABCMeta, object)):
             self._func(self.arr1, arr2, strict=False)
 
 
-class Test_assertMaskedArrayEqual(_MaskedArrayEquality, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_assertMaskedArrayEqual(_MaskedArrayEquality,
+                                  tests.IrisTest_nometa):
     @property
     def _func(self):
         return self.assertMaskedArrayEqual
@@ -127,7 +129,9 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
         self.assertMaskedArrayEqual(arr1, arr2)
 
 
-class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality,
+                                        tests.IrisTest_nometa):
     @property
     def _func(self):
         return self.assertMaskedArrayAlmostEqual
