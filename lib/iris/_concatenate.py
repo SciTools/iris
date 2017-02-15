@@ -26,7 +26,7 @@ import six
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 
-import biggus
+import dask.array as da
 import numpy as np
 
 import iris.coords
@@ -842,7 +842,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        data = biggus.LinearMosaic(tuple(data), axis=self.axis)
+        data = da.concatenate(data, self.axis)
 
         return data
 
