@@ -1078,16 +1078,16 @@ def _multidim_daskstack(stack):
 
     """
     if stack.ndim == 0:
-        # Handle array scalar inputs, as biggus does.
-        dask_components = stack[()]
+        # A 0-d array cannot be merged.
+        result = stack.item()
     elif stack.ndim == 1:
         # 'Another' base case : simple 1-d goes direct in dask.
-        dask_components = list(stack)
+        result = da.stack(list(stack))
     else:
         # Recurse because dask.stack does not do multi-dimensional.
-        dask_components = [_multidim_daskstack(subarray)
-                           for subarray in stack]
-    return da.stack(dask_components)
+        result = da.stack([_multidim_daskstack(subarray)
+                           for subarray in stack])
+    return result
 
 
 class ProtoCube(object):
