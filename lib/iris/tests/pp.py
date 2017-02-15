@@ -80,7 +80,6 @@ class PPTest(object):
             pp_fields = list(iris.fileformats.pp.load(temp_pp_path))
             for pp_field in pp_fields:
                 pp_field.data
-
             with open(reference_txt_path, 'r') as reference_fh:
                 reference = ''.join(reference_fh)
             self._assert_str_same(reference + '\n', str(pp_fields) + '\n',
