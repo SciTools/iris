@@ -38,6 +38,7 @@ from iris.fileformats.um._optimal_array_structuring import \
 from iris.fileformats.pp import PPField3
 import iris._lazy_data
 
+
 class FieldCollation(object):
     """
     An object representing a group of UM fields with array structure that can

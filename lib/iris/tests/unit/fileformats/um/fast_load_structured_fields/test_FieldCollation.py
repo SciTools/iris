@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,9 +27,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
+import dask.array as da
 from netcdftime import datetime
+import numpy as np
 
-from biggus import ConstantArray
 from iris.fileformats.um._fast_load_structured_fields import FieldCollation
 import iris.fileformats.pp
 
@@ -69,7 +70,7 @@ def _make_field(lbyr=None, lbyrd=None, lbft=None,
 
 def _make_data(fill_value):
     shape = (10, 10)
-    return ConstantArray(shape, fill_value)
+    return da.from_array(np.ones(shape)*fill_value, chunks=100)
 
 
 class Test_data(tests.IrisTest):
@@ -82,7 +83,7 @@ class Test_data(tests.IrisTest):
              _make_field(lbyr=2013, lbyrd=2001, data=3),
              _make_field(lbyr=2014, lbyrd=2001, data=4),
              _make_field(lbyr=2015, lbyrd=2001, data=5)])
-        data = collation.data.ndarray()
+        data = collation.data.compute()
         result = data[:, :, 0, 0]
         expected = [[0, 1, 2], [3, 4, 5]]
         self.assertArrayEqual(result, expected)
@@ -95,7 +96,7 @@ class Test_data(tests.IrisTest):
              _make_field(lbyr=2014, lbyrd=2000, data=3),
              _make_field(lbyr=2014, lbyrd=2001, data=4),
              _make_field(lbyr=2014, lbyrd=2002, data=5)])
-        data = collation.data.ndarray()
+        data = collation.data.compute()
         result = data[:, :, 0, 0]
         expected = [[0, 1, 2], [3, 4, 5]]
         self.assertArrayEqual(result, expected)
