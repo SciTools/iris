@@ -23,7 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import biggus
+import dask.array as da
+import numpy as np
 
 import iris.fileformats.pp as pp
 from iris.tests import mock
@@ -62,7 +63,8 @@ class Test__create_field_data(tests.IrisTest):
         field = mock.Mock(_data=deferred_bytes)
         data_shape = (100, 120)
         land_mask = mock.Mock()
-        proxy = mock.Mock(dtype=mock.sentinel.dtype, shape=data_shape)
+        proxy = mock.Mock(dtype=np.dtype('f4'), shape=data_shape,
+                          spec=pp.PPDataProxy)
         # We can't directly inspect the concrete data source underlying
         # the biggus array (it's a private attribute), so instead we
         # patch the proxy creation and check it's being created and
@@ -70,10 +72,10 @@ class Test__create_field_data(tests.IrisTest):
         with mock.patch('iris.fileformats.pp.PPDataProxy') as PPDataProxy:
             PPDataProxy.return_value = proxy
             pp._create_field_data(field, data_shape, land_mask)
-        # Does the biggus array look OK from the outside?
-        self.assertIsInstance(field._data, biggus.Array)
+        # Does the dask array look OK from the outside?
+        self.assertIsInstance(field._data, da.core.Array)
         self.assertEqual(field._data.shape, data_shape)
-        self.assertEqual(field._data.dtype, mock.sentinel.dtype)
+        self.assertEqual(field._data.dtype, np.dtype('f4'))
         # Is it making use of a correctly configured proxy?
         # NB. We know it's *using* the result of this call because
         # that's where the dtype came from above.
