@@ -28,15 +28,15 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import itertools
 
+import dask.array as da
 from netCDF4 import netcdftime
 import numpy as np
 
 from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
-from biggus import ArrayStack
 from iris.fileformats.pp import PPField3
-
+import iris._lazy_data
 
 class FieldCollation(object):
     """
@@ -89,9 +89,13 @@ class FieldCollation(object):
             self._calculate_structure()
         if self._data_cache is None:
             data_arrays = [f._data for f in self.fields]
-            self._data_cache = \
-                ArrayStack.multidim_array_stack(data_arrays,
-                                                self.vector_dims_shape)
+            vector_dims_list = list(self.vector_dims_shape)
+            vector_dims_list.reverse()
+            self._data_cache = data_arrays
+            for size in vector_dims_list:
+                self._data_cache = [da.stack(self._data_cache[i:i+size]) for i
+                                    in range(0, len(self._data_cache), size)]
+        self._data_cache, = self._data_cache
         return self._data_cache
 
     @property
