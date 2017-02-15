@@ -27,18 +27,6 @@ import dask.array as da
 import numpy as np
 
 
-# Whether to recognise biggus arrays as lazy, *as well as* dask.
-# NOTE: in either case, this module will not *make* biggus arrays, only dask.
-_SUPPORT_BIGGUS = True
-
-# Whether to translate masked arrays to+from NaNs, when converting to+from lazy
-# (dask) :  N.B. Dask currently has no support for masked arrays.
-_TRANSLATE_MASKS = True
-
-if _SUPPORT_BIGGUS:
-    import biggus
-
-
 def is_lazy_data(data):
     """
     Return whether the argument is an Iris 'lazy' data array.
@@ -49,8 +37,6 @@ def is_lazy_data(data):
 
     """
     result = hasattr(data, 'compute')
-    if not result and _SUPPORT_BIGGUS:
-        result = isinstance(data, biggus.Array)
     return result
 
 
@@ -62,21 +48,15 @@ def as_concrete_data(data):
 
     """
     if is_lazy_data(data):
-        if _SUPPORT_BIGGUS and isinstance(data, biggus.Array):
-            # Realise biggus array.
-            # treat all as masked, for standard cube.data behaviour.
-            data = data.masked_array()
-        else:
-            # Grab a fill value, in case this is just a converted masked array.
-            fill_value = getattr(data, 'fill_value', None)
-            # Realise dask array.
-            data = data.compute()
-            # Convert NaN arrays into masked arrays for Iris' consumption.
-            mask = np.isnan(data)
-            if np.all(~mask):
-                mask = None
-            data = np.ma.masked_array(data, mask=mask,
-                                      fill_value=fill_value)
+        # Grab a fill value, in case this is just a converted masked array.
+        fill_value = getattr(data, 'fill_value', None)
+        # Realise dask array.
+        data = data.compute()
+        # Convert NaN arrays into masked arrays for Iris' consumption.
+        mask = np.isnan(data)
+        if np.all(~mask):
+            mask = None
+        data = np.ma.masked_array(data, mask=mask, fill_value=fill_value)
     return data
 
 
