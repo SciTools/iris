@@ -56,7 +56,7 @@ def is_lazy_data(data):
 
 def as_concrete_data(data):
     """
-    Return the actual content of the argument, as a numpy array.
+    Return the actual content of the argument, as a numpy masked array.
 
     If lazy, return the realised data, otherwise return the argument unchanged.
 
@@ -71,12 +71,12 @@ def as_concrete_data(data):
             fill_value = getattr(data, 'fill_value', None)
             # Realise dask array.
             data = data.compute()
-            if _TRANSLATE_MASKS:
-                # Convert NaN arrays into masked arrays for Iris' consumption.
-                if isinstance(data.flat[0], np.float):
-                    mask = np.isnan(data)
-                    data = np.ma.masked_array(data, mask=mask,
-                                              fill_value=fill_value)
+            # Convert NaN arrays into masked arrays for Iris' consumption.
+            mask = np.isnan(data)
+            if np.all(~mask):
+                mask = None
+            data = np.ma.masked_array(data, mask=mask,
+                                      fill_value=fill_value)
     return data
 
 
