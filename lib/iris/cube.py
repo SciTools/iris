@@ -2192,7 +2192,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # We don't want a view of the data, so take a copy of it if it's
         # not already our own.
-        if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
+        if is_lazy_data(data) or not data.flags['OWNDATA']:
             data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
