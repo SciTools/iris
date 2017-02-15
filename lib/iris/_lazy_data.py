@@ -94,13 +94,11 @@ def as_lazy_data(data):
 
     """
     if not is_lazy_data(data):
+        # record the original fill value.
+        fill_value = getattr(data, 'fill_value', None)
         if isinstance(data, np.ma.MaskedArray):
-            # record the original fill value.
-            fill_value = data.fill_value
             # Use with NaNs replacing the mask.
             data = array_masked_to_nans(data)
-        else:
-            fill_value = None
         data = da.from_array(data, chunks=_MAX_CHUNK_SIZE)
         # Attach any fill value to the dask object.
         # Note: this is not passed on to dask arrays derived from this one.

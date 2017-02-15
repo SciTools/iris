@@ -80,6 +80,7 @@ class TestLBC(tests.IrisTest):
                       [4.626897, 6.520156]]),
             atol=1.0e-6)
 
+    @tests.skip_biggus
     def test_cube_mask(self):
         # Check the data mask : should be just the centre 6x2 section.
         cube = self.test_cube
