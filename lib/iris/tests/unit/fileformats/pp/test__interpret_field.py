@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from copy import deepcopy
+import numpy as np
 
 import iris.fileformats.pp as pp
 from iris.tests import mock
@@ -35,13 +36,13 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         self.pp_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0] * 7,
                                   lbrow=0, lbnpt=0,
                                   raw_lbpack=20,
-                                  _data=('dummy', 0, 0, 0))
+                                  _data=('dummy', 0, 0, np.dtype('f4')))
         # The field specifying the land/seamask.
         lbuser = [None, None, None, 30, None, None, 1]  # m01s00i030
         self.land_mask_field = mock.Mock(lblrec=1, lbext=0, lbuser=lbuser,
                                          lbrow=3, lbnpt=4,
                                          raw_lbpack=0,
-                                         _data=('dummy', 0, 0, 0))
+                                         _data=('dummy', 0, 0, np.dtype('f4')))
 
     def test_non_deferred_fix_lbrow_lbnpt(self):
         # Checks the fix_lbrow_lbnpt is applied to fields which are not
