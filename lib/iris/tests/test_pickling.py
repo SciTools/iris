@@ -48,8 +48,8 @@ class TestPickle(tests.IrisTest):
             yield protocol, reconstructed_obj
 
     def assertCubeData(self, cube1, cube2):
-        np.testing.assert_array_equal(cube1.lazy_data().ndarray(),
-                                      cube2.lazy_data().ndarray())
+        np.testing.assert_array_equal(cube1.lazy_data().compute(),
+                                      cube2.lazy_data().compute())
 
     @tests.skip_data
     def test_cube_pickle(self):
