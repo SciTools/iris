@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,7 +33,6 @@ import shutil
 import stat
 import tempfile
 
-import biggus
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -111,7 +110,8 @@ class TestNetCDFLoad(tests.IrisTest):
         cube = iris.load_cube(tests.get_data_path(
             ('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
         # Make sure the AuxCoords have lazy data.
-        self.assertIsInstance(cube.coord('latitude')._points, biggus.Array)
+        self.assertTrue(cube.coord('latitude')._points.all(),
+                        iris._lazy_data.is_lazy_data)
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 
     def test_load_rotated_xyt_precipitation(self):
