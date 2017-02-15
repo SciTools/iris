@@ -1701,7 +1701,7 @@ fc_extras
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
                 cf_var.shape, dtype, engine.filename,
                 cf_var.cf_name, fill_value)
-            return iris._lazy_array.as_lazy_array(proxy)
+            return iris._lazy_data.as_lazy_data(proxy)
 
         data = cf_var_as_array(cf_cm_attr)
 

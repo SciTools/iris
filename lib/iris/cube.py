@@ -1645,8 +1645,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._my_data = array
         else:
             array = self._my_data
-            if not is_lazy_data(array):
-                array = as_lazy_data(array)
+        array = as_lazy_data(array)
         return array
 
     @property

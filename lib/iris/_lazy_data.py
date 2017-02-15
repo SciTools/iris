@@ -110,6 +110,8 @@ def as_lazy_data(data):
         # Attach any fill value to the dask object.
         # Note: this is not passed on to dask arrays derived from this one.
         data.fill_value = fill_value
+    elif not hasattr(data, 'fill_value'):
+        data.fill_value = None  # make it look more like a biggus Array ?
     return data
 
 
