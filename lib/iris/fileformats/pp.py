@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -1288,9 +1288,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # Cache the real data on first use
         if iris._lazy_data.is_lazy_data(self._data):
             data = iris._lazy_data.as_concrete_data(self._data)
-            # why is this never a masked array, but assumed to always be
-            # if ma.count_masked(data) == 0:
-            #     data = data.data
+            if ma.count_masked(data) == 0:
+                data = data.data
             self._data = data
         return self._data
 
