@@ -1139,16 +1139,19 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         self.assertIsInstance(cube.data, np.ndarray)
 
+    @tests.skip_biggus
     def test_masked_field(self):
         # This pp field has some missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
         self.assertIsInstance(cube.data, ma.core.MaskedArray)
 
+    @tests.skip_biggus
     def test_missing_file(self):
         cube = self._load_3d_cube()
         self.assertIsInstance(cube.data, ma.core.MaskedArray)
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
-        
+
+    @tests.skip_biggus
     def test_slicing(self):
         cube = self._load_3d_cube()
 
