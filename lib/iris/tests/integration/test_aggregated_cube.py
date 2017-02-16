@@ -27,6 +27,7 @@ import iris
 from iris.analysis import MEAN
 
 
+@tests.skip_biggus
 class Test_aggregated_by(tests.IrisTest):
     @tests.skip_data
     def test_agg_by_aux_coord(self):
