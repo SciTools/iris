@@ -114,6 +114,7 @@ class TestFF2PP2Cube(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
 
+    @tests.skip_biggus
     def test_unit_pass_0(self):
         # Test FieldsFile to PPFields cube load.
         cube_by_name = collections.defaultdict(int)
