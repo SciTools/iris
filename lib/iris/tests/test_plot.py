@@ -332,6 +332,7 @@ class Test1dQuickplotScatter(Test1dScatter):
 
 @tests.skip_data
 @tests.skip_plot
+@tests.skip_biggus
 class TestAttributePositive(tests.GraphicsTest):
     def test_1d_positive_up(self):
         path = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
@@ -925,6 +926,7 @@ class TestPlottingExceptions(tests.IrisTest):
 
 @tests.skip_data
 @tests.skip_plot
+@tests.skip_biggus
 class TestPlotOtherCoordSystems(tests.GraphicsTest):
     def test_plot_tmerc(self):
         filename = tests.get_data_path(('NetCDF', 'transverse_mercator',
