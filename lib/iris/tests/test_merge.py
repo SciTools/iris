@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -64,6 +64,7 @@ class TestMixin(object):
         self.assertEqual(len(cubes2), 2 * len(cubes))
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestSingleCube(tests.IrisTest, TestMixin):
     def setUp(self):
@@ -72,6 +73,7 @@ class TestSingleCube(tests.IrisTest, TestMixin):
         self._prefix = 'theta'
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestMultiCube(tests.IrisTest, TestMixin):
     def setUp(self):
@@ -94,6 +96,7 @@ class TestMultiCube(tests.IrisTest, TestMixin):
             assert(cube.coord('time').attributes['brain'] == 'hurts')
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestColpex(tests.IrisTest):
     def setUp(self):
@@ -105,6 +108,7 @@ class TestColpex(tests.IrisTest):
         self.assertCML(cubes, ('COLPEX', 'small_colpex_theta_p_alt.cml'))
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestDataMerge(tests.IrisTest):
     def test_extended_proxy_data(self):

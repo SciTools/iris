@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,6 +32,7 @@ from iris.fileformats.netcdf import _load_cube
 from iris.tests import mock
 
 
+@tests.skip_biggus
 class TestFillValue(tests.IrisTest):
     def setUp(self):
         name = 'iris.fileformats.netcdf._assert_case_specific_facts'
@@ -184,6 +185,7 @@ class TestCoordAttributes(tests.IrisTest):
             self.assertEqual(set(attributes.items()), set(expect))
 
 
+@tests.skip_biggus
 class TestCubeAttributes(tests.IrisTest):
     def setUp(self):
         this = 'iris.fileformats.netcdf._assert_case_specific_facts'

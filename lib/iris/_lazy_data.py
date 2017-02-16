@@ -31,10 +31,6 @@ import numpy as np
 # NOTE: in either case, this module will not *make* biggus arrays, only dask.
 _SUPPORT_BIGGUS = True
 
-# Whether to translate masked arrays to+from NaNs, when converting to+from lazy
-# (dask) :  N.B. Dask currently has no support for masked arrays.
-_TRANSLATE_MASKS = True
-
 if _SUPPORT_BIGGUS:
     import biggus
 
@@ -56,7 +52,7 @@ def is_lazy_data(data):
 
 def as_concrete_data(data):
     """
-    Return the actual content of the argument, as a numpy array.
+    Return the actual content of the argument, as a numpy masked array.
 
     If lazy, return the realised data, otherwise return the argument unchanged.
 
@@ -71,12 +67,12 @@ def as_concrete_data(data):
             fill_value = getattr(data, 'fill_value', None)
             # Realise dask array.
             data = data.compute()
-            if _TRANSLATE_MASKS:
-                # Convert NaN arrays into masked arrays for Iris' consumption.
-                if isinstance(data.flat[0], np.float):
-                    mask = np.isnan(data)
-                    data = np.ma.masked_array(data, mask=mask,
-                                              fill_value=fill_value)
+            # Convert NaN arrays into masked arrays for Iris' consumption.
+            mask = np.isnan(data)
+            if np.all(~mask):
+                mask = None
+            data = np.ma.masked_array(data, mask=mask,
+                                      fill_value=fill_value)
     return data
 
 
@@ -98,18 +94,17 @@ def as_lazy_data(data):
 
     """
     if not is_lazy_data(data):
+        # record the original fill value.
+        fill_value = getattr(data, 'fill_value', None)
         if isinstance(data, np.ma.MaskedArray):
-            # record the original fill value.
-            fill_value = data.fill_value
-            if _TRANSLATE_MASKS:
-                # Use with NaNs replacing the mask.
-                data = array_masked_to_nans(data)
-        else:
-            fill_value = None
+            # Use with NaNs replacing the mask.
+            data = array_masked_to_nans(data)
         data = da.from_array(data, chunks=_MAX_CHUNK_SIZE)
         # Attach any fill value to the dask object.
         # Note: this is not passed on to dask arrays derived from this one.
         data.fill_value = fill_value
+    elif not hasattr(data, 'fill_value'):
+        data.fill_value = None  # make it look more like a biggus Array ?
     return data
 
 

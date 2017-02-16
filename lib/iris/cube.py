@@ -1592,13 +1592,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        shape = self.lazy_data().shape
+        shape = self._my_data.shape
         return shape
 
     @property
     def dtype(self):
         """The :class:`numpy.dtype` of the data of this cube."""
-        return self.lazy_data().dtype
+        return self._my_data.dtype
 
     @property
     def ndim(self):
@@ -1645,8 +1645,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._my_data = array
         else:
             array = self._my_data
-            if not is_lazy_data(array):
-                array = as_lazy_data(array)
+        array = as_lazy_data(array)
         return array
 
     @property
@@ -2192,7 +2191,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # We don't want a view of the data, so take a copy of it if it's
         # not already our own.
-        if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
+        if is_lazy_data(data) or not data.flags['OWNDATA']:
             data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
