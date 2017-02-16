@@ -108,6 +108,7 @@ class TestNetCDFLoad(tests.IrisTest):
             self.assertCML(cube, ('netcdf',
                                   'netcdf_global_xyzt_gems_iter_%d.cml' % i))
 
+    @tests.skip_biggus
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.
         cube = iris.load_cube(tests.get_data_path(
