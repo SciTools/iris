@@ -182,7 +182,7 @@ class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
              6: SECTION_6_NO_BITMAP,
              7: {'codedValues': np.arange(12)}})
         data = message.data
-        self.assertTrue(data, iris._lazy_data.is_lazy_data)
+        self.assertTrue(iris._lazy_data.is_lazy_data(data))
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
         self.assertIs(data.fill_value, np.nan)

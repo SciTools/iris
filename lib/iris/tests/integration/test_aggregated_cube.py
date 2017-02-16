@@ -43,8 +43,8 @@ class Test_aggregated_by(tests.IrisTest):
         # NB. This checks the merge process in `load_cube()` hasn't
         # triggered the load of the coordinate's data.
         forecast_period_coord = cube.coord('forecast_period')
-        self.assertTrue(forecast_period_coord._points.all(),
-                        iris._lazy_data.is_lazy_data)
+        fp_pts = forecast_period_coord._points
+        self.assertTrue(iris._lazy_data.is_lazy_data(fp_pts))
 
         # Now confirm we can aggregate along this coord.
         res_cube = cube.aggregated_by('forecast_period', MEAN)
