@@ -81,6 +81,7 @@ def callback_aaxzc_n10r13xy_b_pp(cube, field, filename):
 
 
 @tests.skip_data
+@tests.skip_biggus
 class TestAll(tests.IrisTest, pp.PPTest):
     _ref_dir = ('usecases', 'pp_to_cf_conversion')
 
