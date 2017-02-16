@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -69,7 +69,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             'iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
             new=patched__getitem__)
 
-    @tests.skip_biggus 
+    @tests.skip_biggus
     def test_slowest_varying_vertex_dim(self):
         # Create the bounds cf variable.
         bounds = np.arange(24).reshape(4, 2, 3)
