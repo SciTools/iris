@@ -113,8 +113,8 @@ class TestNetCDFLoad(tests.IrisTest):
         cube = iris.load_cube(tests.get_data_path(
             ('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
         # Make sure the AuxCoords have lazy data.
-        self.assertTrue(cube.coord('latitude')._points.all(),
-                        iris._lazy_data.is_lazy_data)
+        lat_pts = cube.coord('latitude')._points
+        self.assertTrue(iris._lazy_data.is_lazy_data(lat_pts))
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 
     def test_load_rotated_xyt_precipitation(self):
