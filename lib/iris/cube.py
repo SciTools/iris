@@ -716,7 +716,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if not is_lazy_data(data):
             data = np.asarray(data)
-        self._my_data = data
+        self.data_graph = as_lazy_data(data)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1592,13 +1592,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        shape = self._my_data.shape
+        shape = self.data_graph.shape
         return shape
 
     @property
     def dtype(self):
         """The :class:`numpy.dtype` of the data of this cube."""
-        return self._my_data.dtype
+        return self.data_graph.dtype
 
     @property
     def ndim(self):
@@ -1642,11 +1642,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if self.shape or array.shape != (1,):
                     raise ValueError('Require cube data with shape %r, got '
                                      '%r.' % (self.shape, array.shape))
-            self._my_data = array
-        else:
-            array = self._my_data
-        array = as_lazy_data(array)
-        return array
+            self.data_graph = array
+        return self.data_graph
 
     @property
     def data(self):
@@ -1681,7 +1678,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        data = self._my_data
+        data = self.data_graph
         if is_lazy_data(data):
             try:
                 data = as_concrete_data(data)
@@ -1699,8 +1696,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     ma.count_masked(data) == 0):
                 data = data.data
             # data may be a numeric type, so ensure an np.ndarray is returned
-            self._my_data = np.asanyarray(data)
-        return self._my_data
+            data = np.asanyarray(data)
+        return data
 
     @data.setter
     def data(self, value):
@@ -1714,10 +1711,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
 
-        self._my_data = data
+        self.data_graph = as_lazy_data(data)
 
     def has_lazy_data(self):
-        return is_lazy_data(self._my_data)
+        # now this always returns true, new pattern needed
+        return is_lazy_data(self.data_graph)
 
     @property
     def dim_coords(self):
@@ -2182,9 +2180,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             first_slice = None
 
         if first_slice is not None:
-            data = self._my_data[first_slice]
+            data = self.data_graph[first_slice]
         else:
-            data = copy.deepcopy(self._my_data)
+            data = copy.deepcopy(self.data_graph)
 
         for other_slice in slice_gen:
             data = data[other_slice]
@@ -2819,9 +2817,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('Incorrect number of dimensions.')
 
         if self.has_lazy_data():
-            self._my_data = self.lazy_data().transpose(new_order)
+            self.data_graph = self.lazy_data().transpose(new_order)
         else:
-            self._my_data = self.data.transpose(new_order)
+            self.data_graph = self.data.transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 

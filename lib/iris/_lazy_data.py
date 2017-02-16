@@ -22,6 +22,7 @@ To avoid replicating implementation-dependent test and conversion code.
 """
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 import dask.array as da
 import numpy as np
@@ -63,12 +64,24 @@ def as_concrete_data(data):
             # treat all as masked, for standard cube.data behaviour.
             data = data.masked_array()
         else:
+            fill_value=None
+            fill_values = set()
+            for dkey in data.dask.keys():
+                if (isinstance(dkey, six.string_types) and
+                   dkey.startswith('array-original-')):
+                    if hasattr(data.dask.get(dkey), 'fill_value'):
+                        fill_values.add(data.dask.get(dkey).fill_value)
+            if len(fill_values) == 1:
+                fill_value = fill_values.pop()
+            elif len(fill_values) > 1:
+                raise ValueError('Multiple fill values in a dask graph '
+                                 'is not supported')
             # Grab a fill value, in case this is just a converted masked array.
-            fill_value = getattr(data, 'fill_value', None)
+            # fill_value = getattr(data, 'fill_value', None)
             # Realise dask array.
             data = data.compute()
             # Convert NaN arrays into masked arrays for Iris' consumption.
-            mask = np.isnan(data)
+            mask = np.logical_or(np.isnan(data), data == fill_value)
             if np.all(~mask):
                 mask = None
             data = np.ma.masked_array(data, mask=mask,
@@ -95,16 +108,16 @@ def as_lazy_data(data):
     """
     if not is_lazy_data(data):
         # record the original fill value.
-        fill_value = getattr(data, 'fill_value', None)
+        # fill_value = getattr(data, 'fill_value', None)
         if isinstance(data, np.ma.MaskedArray):
             # Use with NaNs replacing the mask.
             data = array_masked_to_nans(data)
         data = da.from_array(data, chunks=_MAX_CHUNK_SIZE)
         # Attach any fill value to the dask object.
         # Note: this is not passed on to dask arrays derived from this one.
-        data.fill_value = fill_value
-    elif not hasattr(data, 'fill_value'):
-        data.fill_value = None  # make it look more like a biggus Array ?
+        # data.fill_value = fill_value
+    # elif not hasattr(data, 'fill_value'):
+    #     data.fill_value = None  # make it look more like a biggus Array ?
     return data
 
 
