@@ -242,6 +242,7 @@ class TestPackedPP(IrisPPTest):
             for orig_field, saved_field in zip(orig_fields, saved_fields):
                 assert_array_equal(orig_field.data, saved_field.data)
 
+    @tests.skip_biggus
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))
 
