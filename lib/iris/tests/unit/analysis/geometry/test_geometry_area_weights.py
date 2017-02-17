@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -143,9 +143,11 @@ class Test(tests.IrisTest):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")  # always trigger all warnings
             weights = geometry_area_weights(cube, geometry)
-            self.assertEqual(str(w[-1].message), "The geometry exceeds the "
-                             "cube's y dimension at the upper end.")
-            self.assertTrue(issubclass(w[-1].category, UserWarning))
+
+            msg = ("The geometry exceeds the cube's y dimension at the upper "
+                   "end.")
+            ind = [str(rec.message) for rec in w].index(msg)
+            self.assertTrue(issubclass(w[ind].category, UserWarning))
         target = np.array([
             [0, half, half, 0],
             [0, half, half, 0],
