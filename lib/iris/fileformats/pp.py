@@ -43,7 +43,6 @@ import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-import iris._lazy_data
 
 try:
     import mo_pack
@@ -831,7 +830,7 @@ class PPDataProxy(object):
     """A reference to the data payload of a single PP field."""
 
     __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len',
-                 '_lbpack', 'boundary_packing', 'mdi', 'mask')
+                 '_lbpack', 'boundary_packing', 'mdi', 'mask', '_data_cache')
 
     def __init__(self, shape, src_dtype, path, offset, data_len,
                  lbpack, boundary_packing, mdi, mask):
@@ -844,6 +843,7 @@ class PPDataProxy(object):
         self.boundary_packing = boundary_packing
         self.mdi = mdi
         self.mask = mask
+        self._data_cache = None
 
     # lbpack
     def _lbpack_setter(self, value):
@@ -874,12 +874,18 @@ class PPDataProxy(object):
         with open(self.path, 'rb') as pp_file:
             pp_file.seek(self.offset, os.SEEK_SET)
             data_bytes = pp_file.read(self.data_len)
-            data = _data_bytes_to_shaped_array(data_bytes,
-                                               self.lbpack,
-                                               self.boundary_packing,
-                                               self.shape, self.src_dtype,
-                                               self.mdi, self.mask)
-        return data.__getitem__(keys)
+            # Only read from disk if the data is not cached or
+            # if it is not the correct shape.
+            if (self._data_cache is None or
+               not hasattr(self._data_cache, 'shape') or
+               self._data_cache.shape != self.shape):
+                data = _data_bytes_to_shaped_array(data_bytes,
+                                                   self.lbpack,
+                                                   self.boundary_packing,
+                                                   self.shape, self.src_dtype,
+                                                   self.mdi, self.mask)
+                self._data_cache = data
+        return self._data_cache.__getitem__(keys)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
@@ -1035,9 +1041,13 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # Reform in row-column order
         data.shape = data_shape
 
+    if np.ma.is_masked(data):
+        data = data.filled(np.nan)
     # Mask the array?
     if mdi in data:
-        data = ma.masked_values(data, mdi, copy=False)
+        # data = ma.masked_values(data, mdi, copy=False)
+        # data = array_masked_to_nans(data)
+        data[data==mdi] = np.nan
 
     return data
 

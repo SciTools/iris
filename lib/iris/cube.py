@@ -33,6 +33,7 @@ import warnings
 import zlib
 
 import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -64,7 +65,8 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'var_name',
                                            'units',
                                            'attributes',
-                                           'cell_methods'])):
+                                           'cell_methods',
+                                           'dtype', 'fill_value'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -648,7 +650,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
                  aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None):
+                 cell_measures_and_dims=None, dtype=None, fill_value=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -713,6 +715,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Temporary error while we transition the API.
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
+
+        self.shape = data.shape
+        if dtype is not None and dtype != data.dtype:
+            raise ValueError('dtype must match data')
+        self.dtype = data.dtype
+        self.fill_value = fill_value
 
         if not is_lazy_data(data):
             data = np.asarray(data)
@@ -786,7 +794,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
-                            self.units, self.attributes, self.cell_methods)
+                            self.units, self.attributes, self.cell_methods,
+                            self.dtype, self.fill_value)
 
     @metadata.setter
     def metadata(self, value):
@@ -1589,16 +1598,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def cell_methods(self, cell_methods):
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
-    @property
-    def shape(self):
-        """The shape of the data of this cube."""
-        shape = self.data_graph.shape
-        return shape
+    # @property
+    # def shape(self):
+    #     """The shape of the data of this cube."""
+    #     shape = self.data_graph.shape
+    #     return shape
 
-    @property
-    def dtype(self):
-        """The :class:`numpy.dtype` of the data of this cube."""
-        return self.data_graph.dtype
+    # @property
+    # def dtype(self):
+    #     """The :class:`numpy.dtype` of the data of this cube."""
+    #     return self.data_graph.dtype
 
     @property
     def ndim(self):
@@ -1679,24 +1688,27 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         data = self.data_graph
-        if is_lazy_data(data):
-            try:
-                data = as_concrete_data(data)
-            except MemoryError:
-                msg = "Failed to create the cube's data as there was not" \
-                      " enough memory available.\n" \
-                      "The array shape would have been {0!r} and the data" \
-                      " type {1}.\n" \
-                      "Consider freeing up variables or indexing the cube" \
-                      " before getting its data."
-                msg = msg.format(self.shape, data.dtype)
-                raise MemoryError(msg)
-            # Unmask the array only if it is filled.
-            if (isinstance(data, np.ma.masked_array) and
-                    ma.count_masked(data) == 0):
-                data = data.data
-            # data may be a numeric type, so ensure an np.ndarray is returned
-            data = np.asanyarray(data)
+        chunks = self.data_graph.chunks
+        try:
+            data = as_concrete_data(data, fill_value=self.fill_value)
+        except MemoryError:
+            msg = "Failed to create the cube's data as there was not" \
+                  " enough memory available.\n" \
+                  "The array shape would have been {0!r} and the data" \
+                  " type {1}.\n" \
+                  "Consider freeing up variables or indexing the cube" \
+                  " before getting its data."
+            msg = msg.format(self.shape, data.dtype)
+            raise MemoryError(msg)
+
+        # Unmask the array only if it is filled.
+        if (isinstance(data, np.ma.masked_array) and
+                ma.count_masked(data) == 0):
+            data = data.data
+        # data may be a numeric type, so ensure an np.ndarray is returned
+        data = np.asanyarray(data)
+        # Create a dask data_graph and link the cube to this
+        self.data_graph = da.from_array(data.data, chunks)
         return data
 
     @data.setter
@@ -1710,12 +1722,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if self.shape or data.shape != (1,):
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
-
+        self.dtype = data.dtype
         self.data_graph = as_lazy_data(data)
 
     def has_lazy_data(self):
         # now this always returns true, new pattern needed
         return is_lazy_data(self.data_graph)
+        
 
     @property
     def dim_coords(self):
