@@ -2153,7 +2153,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         requested must be applicable directly to the cube.data attribute. All
         metadata will be subsequently indexed appropriately.
 
-        .. deprecated:: 1.12
+        .. deprecated:: 1.13
             In future, the `data` attribute of the indexing result may be a
             view onto the original data array, to avoid unnecessary copying.
             For the present, however, indexing always produces a full
@@ -2200,7 +2200,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # not already our own.
             msg = ('The `data` attribute of the indexing result is currently '
                    'a copy of the original data array.  This behaviour was '
-                   'deprecated in v1.12.0 and will be replaced with views '
+                   'deprecated in v1.13.0 and will be replaced with views '
                    'onto the original data array where possible.  Set '
                    'iris.FUTURE.share_data=True to switch to the new '
                    'behaviour.')

@@ -1354,7 +1354,7 @@ class Test___getitem__nofuture(tests.IrisTest):
             cube[1:]
         msg = ('The `data` attribute of the indexing result is currently a '
                'copy of the original data array.  This behaviour was '
-               'deprecated in v1.12.0')
+               'deprecated in v1.13.0')
         self.assertIn(msg, mocked_warn_call.call_args[0][0])
 
 
