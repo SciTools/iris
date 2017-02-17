@@ -1,18 +1,19 @@
 import dask
 
 def from_proxy(proxy):
-    return DataWrapper(dask.from_array(proxy, np.ones(proxy.ndim))))
+    return DataWrapper(dask.from_array(proxy, np.ones(proxy.ndim))), True)
 
-def from_lazy_array(array, lazy=True):
-    return DataWrapper(lazy_data=lazy_array)
+def from_array(array, lazy=False):
+    return DataWrapper(array, lazy)
 
-def from_array(array):
-    return DataWrapper(real_data=array), lazy=False)
-
-class DataWrapper(object):
-    def __init__(self, real_data=None, lazy_data=None):
-        self._real_data = real_data
-        self._lazy_data = lazy_data
+class _DataWrapper(object):
+    def __init__(self, data, lazy):
+        if lazy:
+            self._real_data = None
+            self._lazy_data = data
+        else
+            self._real_data = data
+            self._lazy_data = None
 
     def has_lazy_data(self):
         return self._real_data is None
@@ -31,14 +32,13 @@ class DataWrapper(object):
     def data(self):
         if self.has_lazy_data():
             self._real_data = self._lazy_data.compute()
+            # TODO: Delete self._lazy_data here?
         return self._real_data
 
     def __getitem__(self, indices):
-        return self.real_or_lazy_data[indices]
+        return from_array(self.lazy_data[indices], self.has_lazy_data())
 
     def __add__(self, other):
-        if self.has_lazy_data() or other.has_lazy_data():
-            return from_lazy_array(
-                self.real_or_lazy_data + other.real_or_lazy_data)
-        else:
-            return from_array(self.data + other.data)
+        lazy = self.has_lazy_data() or other.has_lazy_data():
+        return from_array(
+                self.real_or_lazy_data + other.real_or_lazy_data, lazy)
