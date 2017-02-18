@@ -47,7 +47,7 @@ import iris.coord_systems
 import iris.coords
 import iris._concatenate
 import iris._constraints
-from iris._lazy_data import is_lazy_data, as_lazy_data, as_concrete_data
+from iris._lazy_data import is_lazy_data, as_lazy_data#, as_concrete_data
 import iris._merge
 import iris.exceptions
 import iris.util
@@ -66,7 +66,7 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'units',
                                            'attributes',
                                            'cell_methods',
-                                           'dtype', 'fill_value'])):
+                                           'fill_value'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -650,7 +650,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
                  aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None, dtype=None, fill_value=None):
+                 cell_measures_and_dims=None, fill_value=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -716,11 +716,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        self.shape = data.shape
-        if dtype is not None and dtype != data.dtype:
-            raise ValueError('dtype must match data')
-        self.dtype = data.dtype
         self.fill_value = fill_value
+        self._has_lazy_data = True
 
         if not is_lazy_data(data):
             data = np.asarray(data)
@@ -795,7 +792,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
                             self.units, self.attributes, self.cell_methods,
-                            self.dtype, self.fill_value)
+                            self.fill_value)
 
     @metadata.setter
     def metadata(self, value):
@@ -1598,16 +1595,23 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def cell_methods(self, cell_methods):
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
-    # @property
-    # def shape(self):
-    #     """The shape of the data of this cube."""
-    #     shape = self.data_graph.shape
-    #     return shape
+    @property
+    def shape(self):
+        """The shape of the data of this cube."""
+        if self.data_graph is not None:
+            shape = self.data_graph.shape
+        else:
+            shape = self.data.shape
+        return shape
 
-    # @property
-    # def dtype(self):
-    #     """The :class:`numpy.dtype` of the data of this cube."""
-    #     return self.data_graph.dtype
+    @property
+    def dtype(self):
+        """The :class:`numpy.dtype` of the data of this cube."""
+        if self.data_graph is not None:
+            dtype = self.data_graph.dtype
+        else:
+            dtype = self.data.dtype
+        return dtype
 
     @property
     def ndim(self):
@@ -1687,10 +1691,25 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        data = self.data_graph
-        chunks = self.data_graph.chunks
+        # Compute returns a reference to a numpy array; re-calling compute returns
+        # another reference to the same array.  So, we preserve this array, wrapping
+        # it in a masked_array.
+        if self._has_lazy_data:
+            print('unsetting lazy!')
+            self._has_lazy_data = False
+            self._lazy_data_graph = self.data_graph
+            self.data_graph = da.from_array(self.data_graph.compute(),
+                                            chunks=self.data_graph.chunks)
         try:
-            data = as_concrete_data(data, fill_value=self.fill_value)
+            #data = as_concrete_data(self.data_graph, fill_value=self.fill_value)
+            if self.data_graph is not None:
+                mask = np.isnan(self.data_graph)
+                if np.all(~mask):
+                    mask = None
+                data = np.ma.masked_array(self.data_graph.compute(), mask=mask,
+                                          fill_value=self.fill_value)
+            else:
+                data = self._data
         except MemoryError:
             msg = "Failed to create the cube's data as there was not" \
                   " enough memory available.\n" \
@@ -1702,13 +1721,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise MemoryError(msg)
 
         # Unmask the array only if it is filled.
-        if (isinstance(data, np.ma.masked_array) and
-                ma.count_masked(data) == 0):
-            data = data.data
-        # data may be a numeric type, so ensure an np.ndarray is returned
-        data = np.asanyarray(data)
-        # Create a dask data_graph and link the cube to this
-        self.data_graph = da.from_array(data.data, chunks)
+        # if (isinstance(data, np.ma.masked_array) and
+        #         ma.count_masked(data) == 0):
+        #     data = data.data
+        # # data may be a numeric type, so ensure an np.ndarray is returned
+        # data = np.asanyarray(data)
         return data
 
     @data.setter
@@ -1726,8 +1743,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self.data_graph = as_lazy_data(data)
 
     def has_lazy_data(self):
-        # now this always returns true, new pattern needed
-        return is_lazy_data(self.data_graph)
+        return self._has_lazy_data
         
 
     @property

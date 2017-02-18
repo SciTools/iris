@@ -390,7 +390,7 @@ class NetCDFDataProxy(object):
         return len(self.shape)
 
     def __getitem__(self, keys):
-        if keys not in self._data_cache.keys():
+        if str(keys) not in self._data_cache.keys():
             dataset = netCDF4.Dataset(self.path)
             try:
                 variable = dataset.variables[self.variable_name]
