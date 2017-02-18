@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -548,7 +548,6 @@ class MixinProblemCases(object):
             # directory name affects the ordering of the cubes in the result !
             results = CubeList(sorted(results,
                                       key=lambda cube: cube.shape))
-
         self.assertEqual(results, expected)
 
     def test_FAIL_phenomena_nostash(self):

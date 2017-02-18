@@ -100,6 +100,13 @@ class FieldCollation(object):
         return self._data_cache
 
     @property
+    def bmdi(self):
+        bmdis = set([f.bmdi for f in self.fields])
+        if len(bmdis) != 1:
+            raise ValueError('Multiple bmdi values defined in FieldCollection')
+        return bmdis.pop()
+
+    @property
     def vector_dims_shape(self):
         """The shape of the array structure."""
         if not self._structure_calculated:

@@ -1698,10 +1698,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 data = self.data_graph.compute()
                 mask = np.isnan(self.data_graph.compute())
                 if np.all(~mask):
-                    mask = None
-                self._data = np.ma.masked_array(self.data_graph.compute(),
-                                                mask=mask,
-                                                fill_value=self.fill_value)
+                    self._data = np.ma.masked_array(self.data_graph.compute(),
+                                                    fill_value=self.fill_value)
+                else:
+                    self._data = np.ma.masked_array(self.data_graph.compute(),
+                                                    mask=mask,
+                                                    fill_value=self.fill_value)
             except MemoryError:
                 msg = "Failed to create the cube's data as there was not" \
                       " enough memory available.\n" \
