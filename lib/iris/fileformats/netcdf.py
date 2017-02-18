@@ -374,8 +374,7 @@ def _pyke_kb_engine():
 class NetCDFDataProxy(object):
     """A reference to the data payload of a single NetCDF file variable."""
 
-    __slots__ = ('shape', 'dtype', 'path', 'variable_name', 'fill_value',
-                 '_data_cache')
+    __slots__ = ('shape', 'dtype', 'path', 'variable_name', 'fill_value')
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
         self.shape = shape
@@ -383,27 +382,22 @@ class NetCDFDataProxy(object):
         self.path = path
         self.variable_name = variable_name
         self.fill_value = fill_value
-        self._data_cache = {}
 
     @property
     def ndim(self):
         return len(self.shape)
 
     def __getitem__(self, keys):
-        if str(keys) not in self._data_cache.keys():
-            dataset = netCDF4.Dataset(self.path)
-            try:
-                variable = dataset.variables[self.variable_name]
-                # Get the NetCDF variable data and slice.
-                v = variable[keys]
-                if isinstance(v, np.ma.MaskedArray):
-                    self._data_cache[str(keys)] = v.filled(np.nan)
-                else:
-                    self._data_cache[str(keys)] = v[keys]
-            finally:
-                dataset.close()
-        data = self._data_cache[str(keys)]
-        return data
+        dataset = netCDF4.Dataset(self.path)
+        try:
+            variable = dataset.variables[self.variable_name]
+            # Get the NetCDF variable data and slice.
+            v = variable[keys]
+            if isinstance(v, np.ma.MaskedArray):
+                v = v.filled(np.nan)
+        finally:
+            dataset.close()
+        return v
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
