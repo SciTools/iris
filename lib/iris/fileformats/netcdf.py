@@ -504,7 +504,7 @@ def _load_cube(engine, cf, cf_var, filename):
 
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue', None)
-                         # netCDF4.default_fillvals[cf_var.dtype.str[1:]])
+
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
     data = da.from_array(proxy, chunks=100)

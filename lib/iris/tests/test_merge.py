@@ -382,6 +382,7 @@ class TestTimeTripleMerging(tests.IrisTest):
     def _test_triples(self, triples, filename):
         cubes = [self._make_cube(fp, rt, t) for fp, rt, t in triples]
         cube = iris.cube.CubeList(cubes).merge()
+        import pdb; pdb.set_trace()
         self.assertCML(cube, ('merge', 'time_triple_' + filename + '.cml'), checksum=False)
 
     def test_single_forecast(self):

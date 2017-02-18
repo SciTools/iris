@@ -1047,7 +1047,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
     if mdi in data:
         # data = ma.masked_values(data, mdi, copy=False)
         # data = array_masked_to_nans(data)
-        data[data==mdi] = np.nan
+        data[data == mdi] = np.nan
 
     return data
 

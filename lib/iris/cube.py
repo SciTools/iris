@@ -47,7 +47,7 @@ import iris.coord_systems
 import iris.coords
 import iris._concatenate
 import iris._constraints
-from iris._lazy_data import is_lazy_data#, as_lazy_data#, as_concrete_data
+from iris._lazy_data import is_lazy_data
 import iris._merge
 import iris.exceptions
 import iris.util
@@ -453,8 +453,8 @@ class CubeList(list):
 
             for target_proto_cube in proto_cubes:
                 if target_proto_cube.register(cube):
-                   proto_cube = target_proto_cube
-                   break
+                    proto_cube = target_proto_cube
+                    break
 
             if proto_cube is None:
                 proto_cube = iris._merge.ProtoCube(cube)
@@ -717,11 +717,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         self.fill_value = fill_value
-        self._has_lazy_data = True
+
+        self.data_graph = None
         if hasattr(data, 'compute'):
             self.data_graph = data
+            self._data = None
         else:
-            self.data_graph = da.from_array(data, chunks=8*1024*1024*2)
+            self.data = data
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1691,81 +1693,51 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        
-        # Compute returns a reference to a numpy array; re-calling compute returns
-        # another reference to the same array... or does it?!? .
-        # We would like to  preserve this array, wrapping
-        # it in a masked_array so that it can be used and elements altered at will.
-        if self._has_lazy_data:
-            print('unsetting lazy!')
-            self._has_lazy_data = False
-            self.data_graph = da.from_array(self.data_graph.compute().copy(), chunks=self.data_graph.chunks)
-        data = np.ma.masked_array(self.data_graph.compute())
-            #self.data_graph = da.from_array(self.data_graph.compute(), chunks=self.data_graph.chunks)
-            #self.data_graph = da.from_array(data.data, chunks=self.data_graph.chunks)
-        #self.data_graph = da.from_array(self.data_graph.compute(), chunks=self.data_graph.chunks)
-        
-        #data = self.data_graph.compute()
-        #data = self.data_graph.dask.compute()
-        #import pdb; pdb.set_trace()
+        if self._data is None:
+            try:
+                data = self.data_graph.compute()
+                mask = np.isnan(self.data_graph.compute())
+                if np.all(~mask):
+                    mask = None
+                self._data = np.ma.masked_array(self.data_graph.compute(),
+                                                mask=mask,
+                                                fill_value=self.fill_value)
+            except MemoryError:
+                msg = "Failed to create the cube's data as there was not" \
+                      " enough memory available.\n" \
+                      "The array shape would have been {0!r} and the data" \
+                      " type {1}.\n" \
+                      "Consider freeing up variables or indexing the cube" \
+                      " before getting its data."
+                msg = msg.format(self.shape, data.dtype)
+                raise MemoryError(msg)
+            self.data_graph = da.from_array(self._data.data,
+                                            chunks=self.data_graph.chunks)
 
-        self.data_graph = da.from_array(data.data, chunks=self.data_graph.chunks)
-        return data
-
-        
-        # if self._has_lazy_data:
-        #     print('unsetting lazy!')
-        #     self._has_lazy_data = False
-        #     self._lazy_data_graph = self.data_graph
-        #     data = self.data_graph.compute()
-        #     self.data_graph = da.from_array(data,
-        #                                     chunks=self.data_graph.chunks)
-        # try:
-        #     # data = as_concrete_data(self.data_graph, fill_value=self.fill_value)
-        #     # if self.data_graph is not None:
-        #     mask = np.isnan(self.data_graph.compute())
-        #     if np.all(~mask):
-        #         mask = None
-        #     data = np.ma.masked_array(self.data_graph.compute(), mask=mask,
-        #                               fill_value=self.fill_value)
-        #     # else:
-        #     #     data = self._data
-        # except MemoryError:
-        #     msg = "Failed to create the cube's data as there was not" \
-        #           " enough memory available.\n" \
-        #           "The array shape would have been {0!r} and the data" \
-        #           " type {1}.\n" \
-        #           "Consider freeing up variables or indexing the cube" \
-        #           " before getting its data."
-        #     msg = msg.format(self.shape, data.dtype)
-        #     raise MemoryError(msg)
-
-        # Unmask the array only if it is filled.
-        # if (isinstance(data, np.ma.masked_array) and
-        #         ma.count_masked(data) == 0):
-        #     data = data.data
-        # # data may be a numeric type, so ensure an np.ndarray is returned
-        # data = np.asanyarray(data)
-        return data
+        return self._data
 
     @data.setter
     def data(self, value):
-        #data = np.asanyarray(value)
+        data = np.asanyarray(value)
 
-        if self.shape != data.shape:
+        if self.data_graph is not None and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
             if self.shape or data.shape != (1,):
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
-        
-        #self.data_graph = as_lazy_data(data)
-        # do nothing
+        if not isinstance(data, np.ma.masked_array):
+            data = np.ma.masked_array(data, fill_value=self.fill_value)
+        self._data = data
+        if self.data_graph is not None:
+            chunks = self.data_graph.chunks
+        else:
+            chunks = data.shape
+        self.data_graph = da.from_array(self._data.data, chunks=chunks)
 
     def has_lazy_data(self):
-        return self._has_lazy_data
-        
+        return True if self._data is None else False
 
     @property
     def dim_coords(self):
