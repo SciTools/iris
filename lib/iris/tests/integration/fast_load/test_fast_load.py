@@ -204,6 +204,7 @@ class Mixin_FieldTest(object):
             # NOTE: in order to get a cube that will write+readback the same,
             # we must include a STASH attribute.
             cube.attributes['STASH'] = STASH.from_msi(stash)
+            cube.fill_value = -1.0000000150474662e+30
 
         # Add x and y coords.
         cs = GeogCS(EARTH_RADIUS)

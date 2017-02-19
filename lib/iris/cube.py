@@ -721,7 +721,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self.data_graph = None
         if hasattr(data, 'compute'):
             self.data_graph = data
-            self._data = None
+            self._my_data = None
         else:
             self.data = data
 
@@ -1693,15 +1693,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        if self._data is None:
+        if self._my_data is None:
             try:
                 data = self.data_graph.compute()
                 mask = np.isnan(self.data_graph.compute())
                 if np.all(~mask):
-                    self._data = np.ma.masked_array(self.data_graph.compute(),
+                    self._my_data = np.ma.masked_array(self.data_graph.compute(),
                                                     fill_value=self.fill_value)
                 else:
-                    self._data = np.ma.masked_array(self.data_graph.compute(),
+                    self._my_data = np.ma.masked_array(self.data_graph.compute(),
                                                     mask=mask,
                                                     fill_value=self.fill_value)
             except MemoryError:
@@ -1713,10 +1713,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       " before getting its data."
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
-            self.data_graph = da.from_array(self._data.data,
+            self.data_graph = da.from_array(self._my_data.data,
                                             chunks=self.data_graph.chunks)
-
-        return self._data
+            if ma.count_masked(self._my_data) == 0:
+                self._my_data = self._my_data.data
+        return self._my_data
 
     @data.setter
     def data(self, value):
@@ -1731,15 +1732,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                  '%r.' % (self.shape, data.shape))
         if not isinstance(data, np.ma.masked_array):
             data = np.ma.masked_array(data, fill_value=self.fill_value)
-        self._data = data
+        self._my_data = data
         if self.data_graph is not None:
             chunks = self.data_graph.chunks
         else:
             chunks = data.shape
-        self.data_graph = da.from_array(self._data.data, chunks=chunks)
+        self.data_graph = da.from_array(self._my_data.data, chunks=chunks)
 
     def has_lazy_data(self):
-        return True if self._data is None else False
+        return True if self._my_data is None else False
 
     @property
     def dim_coords(self):
