@@ -72,6 +72,7 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
                                            lbpack, boundary_packing,
                                            self.data_shape,
                                            self.decompressed.dtype, -99)
+        r = np.ma.masked_array(r, np.isnan(r), fill_value=-99)
         self.assertMaskedArrayEqual(r, self.decompressed)
 
 
@@ -153,11 +154,12 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
         # Calls pp._data_bytes_to_shaped_array with the necessary mocked
         # items, an lbpack instance, the correct data shape and mask instance.
         with mock.patch('numpy.frombuffer', return_value=field_data):
-            return pp._data_bytes_to_shaped_array(mock.Mock(),
+            data = pp._data_bytes_to_shaped_array(mock.Mock(),
                                                   self.create_lbpack(lbpack),
                                                   None,
                                                   mask.shape, np.dtype('>f4'),
                                                   -999, mask=mask)
+        return np.ma.masked_array(data, np.isnan(data), fill_value=-999)
 
 
 if __name__ == "__main__":

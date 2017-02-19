@@ -1658,6 +1658,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     raise ValueError('Require cube data with shape %r, got '
                                      '%r.' % (self.shape, array.shape))
             self.data_graph = array
+            self._has_lazy_data = True
+            self._my_data = None
         return self.data_graph
 
     @property
@@ -1699,11 +1701,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 mask = np.isnan(self.data_graph.compute())
                 if np.all(~mask):
                     self._my_data = np.ma.masked_array(self.data_graph.compute(),
-                                                    fill_value=self.fill_value)
+                                                       fill_value=self.fill_value)
                 else:
                     self._my_data = np.ma.masked_array(self.data_graph.compute(),
-                                                    mask=mask,
-                                                    fill_value=self.fill_value)
+                                                       mask=mask,
+                                                       fill_value=self.fill_value)
             except MemoryError:
                 msg = "Failed to create the cube's data as there was not" \
                       " enough memory available.\n" \
@@ -1715,9 +1717,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise MemoryError(msg)
             self.data_graph = da.from_array(self._my_data.data,
                                             chunks=self.data_graph.chunks)
-            if ma.count_masked(self._my_data) == 0:
-                self._my_data = self._my_data.data
-        return self._my_data
+        if ma.count_masked(self._my_data) == 0:
+            data = self._my_data.data
+        else:
+            data = self._my_data
+        return data
 
     @data.setter
     def data(self, value):
@@ -2842,9 +2846,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('Incorrect number of dimensions.')
 
         if self.has_lazy_data():
-            self.data_graph = self.lazy_data().transpose(new_order)
+            self.data_graph = self.data_graph.transpose(new_order)
         else:
-            self.data_graph = self.data.transpose(new_order)
+            self._my_data = self.data.transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
