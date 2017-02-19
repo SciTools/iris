@@ -36,7 +36,6 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
 from iris.fileformats.pp import PPField3
-import iris._lazy_data
 
 
 class FieldCollation(object):

@@ -31,7 +31,6 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-import iris._lazy_data
 from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import GribMessage
 from iris.tests import mock
@@ -182,7 +181,7 @@ class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
              6: SECTION_6_NO_BITMAP,
              7: {'codedValues': np.arange(12)}})
         data = message.data
-        self.assertTrue(data, iris._lazy_data.is_lazy_data)
+        self.assertTrue(hasattr(data, 'compute'))
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
         self.assertIs(data.fill_value, np.nan)

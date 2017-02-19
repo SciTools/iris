@@ -1295,13 +1295,10 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         of the pp file
 
         """
-        # Cache the real data on first use
-        if iris._lazy_data.is_lazy_data(self._data):
-            data = iris._lazy_data.as_concrete_data(self._data)
-            if ma.count_masked(data) == 0:
-                data = data.data
-            self._data = data
-        return self._data
+        # The proxy supplies nan filled arrays
+        data = self._data[...].compute()
+        data[np.isnan(data)] = self.bmdi
+        return data
 
     @data.setter
     def data(self, value):
@@ -1893,7 +1890,7 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field._data = iris._lazy_data.as_lazy_data(proxy)
+        field._data = proxy
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):

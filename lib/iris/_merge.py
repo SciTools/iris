@@ -36,7 +36,6 @@ import numpy.ma as ma
 import iris.cube
 import iris.coords
 import iris.exceptions
-from iris._lazy_data import is_lazy_data, as_concrete_data, as_lazy_data
 import iris.util
 
 
@@ -1228,17 +1227,17 @@ class ProtoCube(object):
                 data = self._skeletons[group[offset]].data
                 # Ensure the data is represented as a dask array and
                 # slot that array into the stack.
-                if is_lazy_data(data):
+                if hasattr(data, 'compute'):
                     all_have_data = False
                 else:
-                    data = as_lazy_data(data)
+                    data = da.from_array(data, chunks=data.shape)
                 stack[nd_index] = data
 
             merged_data = _multidim_daskstack(stack)
             if all_have_data:
                 # All inputs were concrete, so turn the result back into a
                 # normal array.
-                merged_data = as_concrete_data(merged_data)
+                merged_data = merged_data.compute()
                 # Unmask the array only if it is filled.
                 if (ma.isMaskedArray(merged_data) and
                         ma.count_masked(merged_data) == 0):

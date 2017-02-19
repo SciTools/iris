@@ -537,6 +537,7 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         r = iris.cube.CubeList([cube1, cube2]).merge()[0]
         self.assertCML(r, ('cube_merge', 'multidim_coord_merge.cml'))
 
+        import pdb; pdb.set_trace()
         # try transposing the cubes first
         cube1.transpose([1, 0])
         cube2.transpose([1, 0])
