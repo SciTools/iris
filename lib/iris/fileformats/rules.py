@@ -37,6 +37,7 @@ import types
 import warnings
 
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -901,10 +902,9 @@ def _make_cube(field, converter):
     metadata = converter(field)
 
     try:
-        data = field._data
+        data = da.from_array(field._data, chunks=field._data.shape)
     except AttributeError:
         data = field.data
-
     cube = iris.cube.Cube(data,
                           attributes=metadata.attributes,
                           cell_methods=metadata.cell_methods,

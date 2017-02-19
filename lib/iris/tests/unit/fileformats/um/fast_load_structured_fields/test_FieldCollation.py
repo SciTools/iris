@@ -26,7 +26,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
-from iris._lazy_data import as_concrete_data
 
 import dask.array as da
 from netcdftime import datetime
@@ -84,8 +83,7 @@ class Test_data(tests.IrisTest):
              _make_field(lbyr=2013, lbyrd=2001, data=3),
              _make_field(lbyr=2014, lbyrd=2001, data=4),
              _make_field(lbyr=2015, lbyrd=2001, data=5)])
-        data = as_concrete_data(collation.data)
-        result = data[:, :, 0, 0]
+        result = collation.data[:, :, 0, 0]
         expected = [[0, 1, 2], [3, 4, 5]]
         self.assertArrayEqual(result, expected)
 
@@ -97,8 +95,7 @@ class Test_data(tests.IrisTest):
              _make_field(lbyr=2014, lbyrd=2000, data=3),
              _make_field(lbyr=2014, lbyrd=2001, data=4),
              _make_field(lbyr=2014, lbyrd=2002, data=5)])
-        data = as_concrete_data(collation.data)
-        result = data[:, :, 0, 0]
+        result = collation.data[:, :, 0, 0]
         expected = [[0, 1, 2], [3, 4, 5]]
         self.assertArrayEqual(result, expected)
 

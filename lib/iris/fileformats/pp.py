@@ -1195,17 +1195,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                       for name in public_attribute_names]
         self_attrs = [pair for pair in self_attrs if pair[1] is not None]
 
-        # Output any masked data as separate `data` and `mask`
-        # components, to avoid the standard MaskedArray output
-        # which causes irrelevant discrepancies between NumPy
-        # v1.6 and v1.7.
-        if ma.isMaskedArray(self._data):
-            # Force the fill value to zero to have the minimum
-            # impact on the output style.
-            self_attrs.append(('data.data', self._data.filled(0)))
-            self_attrs.append(('data.mask', self._data.mask))
-        else:
-            self_attrs.append(('data', self._data))
+        self_attrs.append(('data', self.data))
 
         # sort the attributes by position in the pp header followed,
         # then by alphabetical order.
@@ -1295,8 +1285,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         of the pp file
 
         """
-        # The proxy supplies nan filled arrays
-        data = self._data[...].compute()
+        # The proxy supplies nan filled arrays and caches data.
+        data = self._data[...]
         data[np.isnan(data)] = self.bmdi
         return data
 

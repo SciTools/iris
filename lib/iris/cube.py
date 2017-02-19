@@ -1655,7 +1655,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     raise ValueError('Require cube data with shape %r, got '
                                      '%r.' % (self.shape, array.shape))
             self.data_graph = array
-            self._has_lazy_data = True
             self._my_data = None
         return self.data_graph
 
