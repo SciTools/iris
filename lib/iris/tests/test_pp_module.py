@@ -34,7 +34,7 @@ import iris.fileformats
 import iris.fileformats.pp as pp
 from iris.tests import mock
 import iris.util
-
+from iris._lazy_data import is_lazy_data
 
 @tests.skip_data
 class TestPPCopy(tests.IrisTest):
@@ -44,7 +44,7 @@ class TestPPCopy(tests.IrisTest):
     def test_copy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = field.copy()
-        self.assertIsInstance(clone._data, dask.array.Array)
+        self.assertTrue(is_lazy_data(clone._data))
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -52,7 +52,7 @@ class TestPPCopy(tests.IrisTest):
     def test_deepcopy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = deepcopy(field)
-        self.assertIsInstance(clone._data, dask.array.Array)
+        self.assertTrue(is_lazy_data(clone._data))
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -242,6 +242,7 @@ class TestPackedPP(IrisPPTest):
             for orig_field, saved_field in zip(orig_fields, saved_fields):
                 assert_array_equal(orig_field.data, saved_field.data)
 
+    @tests.skip_biggus
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))
 

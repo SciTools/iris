@@ -28,6 +28,7 @@ import numpy as np
 
 import iris.fileformats.pp as pp
 from iris.tests import mock
+from iris._lazy_data import is_lazy_data
 
 
 class Test__create_field_data(tests.IrisTest):
@@ -73,7 +74,7 @@ class Test__create_field_data(tests.IrisTest):
             PPDataProxy.return_value = proxy
             pp._create_field_data(field, data_shape, land_mask)
         # Does the dask array look OK from the outside?
-        self.assertIsInstance(field._data, da.core.Array)
+        self.assertTrue(is_lazy_data(field._data))
         self.assertEqual(field._data.shape, data_shape)
         self.assertEqual(field._data.dtype, np.dtype('f4'))
         # Is it making use of a correctly configured proxy?

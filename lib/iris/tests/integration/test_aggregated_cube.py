@@ -27,6 +27,7 @@ import iris
 from iris.analysis import MEAN
 
 
+@tests.skip_biggus
 class Test_aggregated_by(tests.IrisTest):
     @tests.skip_data
     def test_agg_by_aux_coord(self):
@@ -43,6 +44,7 @@ class Test_aggregated_by(tests.IrisTest):
         # NB. This checks the merge process in `load_cube()` hasn't
         # triggered the load of the coordinate's data.
         forecast_period_coord = cube.coord('forecast_period')
+
         self.assertTrue(hasattr(forecast_period_coord._points, 'compute'))
 
         # Now confirm we can aggregate along this coord.
