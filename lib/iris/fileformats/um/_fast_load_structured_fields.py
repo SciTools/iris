@@ -88,7 +88,8 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            data_arrays = [da.from_array(f._data, f._data.shape) for f in self.fields]
+            data_arrays = [da.from_array(f._data, f._data.shape)
+                           for f in self.fields]
             vector_dims_list = list(self.vector_dims_shape)
             vector_dims_list.reverse()
             self._data_cache = data_arrays

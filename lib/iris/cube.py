@@ -718,9 +718,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         self.fill_value = fill_value
 
-        self.data_graph = None
+        self._data_graph = None
+        self._my_data = None
         if hasattr(data, 'compute'):
-            self.data_graph = data
+            self._data_graph = data
             self._my_data = None
         else:
             self.data = data
@@ -1600,19 +1601,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        if self.data_graph is not None:
-            shape = self.data_graph.shape
+        if self._my_data is not None:
+            shape = self._my_data.shape
+        elif self._data_graph is not None:
+            shape = self._data_graph.shape
         else:
-            shape = self.data.shape
+            shape = None
         return shape
 
     @property
     def dtype(self):
         """The :class:`numpy.dtype` of the data of this cube."""
-        if self.data_graph is not None:
-            dtype = self.data_graph.dtype
+        if self._my_data is not None:
+            dtype = self._my_data.dtype
         else:
-            dtype = self.data.dtype
+            dtype = self._data_graph.dtype
         return dtype
 
     @property
@@ -1654,9 +1657,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if self.shape or array.shape != (1,):
                     raise ValueError('Require cube data with shape %r, got '
                                      '%r.' % (self.shape, array.shape))
-            self.data_graph = array
+            self._data_graph = array
             self._my_data = None
-        return self.data_graph
+            result = self._data_graph
+        elif self._my_data is not None:
+            result = da.from_array(self._my_data.data,
+                                   chunks=self._my_data.data.shape)
+        elif self._data_graph is not None:
+            result = self._data_graph
+        return result
 
     @property
     def data(self):
@@ -1693,13 +1702,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         if self._my_data is None:
             try:
-                data = self.data_graph.compute()
-                mask = np.isnan(self.data_graph.compute())
+                data = self._data_graph.compute()
+                mask = np.isnan(data)
                 if np.all(~mask):
-                    self._my_data = ma.masked_array(self.data_graph.compute(),
+                    self._my_data = ma.masked_array(data,
                                                     fill_value=self.fill_value)
                 else:
-                    self._my_data = ma.masked_array(self.data_graph.compute(),
+                    self._my_data = ma.masked_array(data,
                                                     mask=mask,
                                                     fill_value=self.fill_value)
             except MemoryError:
@@ -1711,19 +1720,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       " before getting its data."
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
-            self.data_graph = da.from_array(self._my_data.data,
-                                            chunks=self.data_graph.chunks)
-        if ma.count_masked(self._my_data) == 0:
-            data = self._my_data.data
-        else:
-            data = self._my_data
-        return data
+        return self._my_data
 
     @data.setter
     def data(self, value):
         data = np.asanyarray(value)
 
-        if self.data_graph is not None and self.shape != data.shape:
+        if self.shape is not None and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
@@ -1733,11 +1736,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if not isinstance(data, np.ma.masked_array):
             data = np.ma.masked_array(data, fill_value=self.fill_value)
         self._my_data = data
-        if self.data_graph is not None:
-            chunks = self.data_graph.chunks
-        else:
-            chunks = data.shape
-        self.data_graph = da.from_array(self._my_data.data, chunks=chunks)
 
     def has_lazy_data(self):
         return True if self._my_data is None else False
@@ -2203,19 +2201,24 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             first_slice = next(slice_gen)
         except StopIteration:
             first_slice = None
+        if self._my_data is not None:
+            cube_data = self._my_data
+        elif self._data_graph is not None:
+            cube_data = self._data_graph
+        else:
+            raise ValueError('This cube has no data, slicing is not supported')
 
         if first_slice is not None:
-            data = self.data_graph[first_slice]
+            data = cube_data[first_slice]
         else:
-            data = copy.deepcopy(self.data_graph)
+            data = copy.deepcopy(cube_data)
 
         for other_slice in slice_gen:
             data = data[other_slice]
 
         # We don't want a view of the data, so take a copy of it if it's
         # not already our own.
-        if self.has_lazy_data():  # or not data.flags['OWNDATA']:
-            data = copy.deepcopy(data)
+        data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
@@ -2842,7 +2845,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('Incorrect number of dimensions.')
 
         if self.has_lazy_data():
-            self.data_graph = self.data_graph.transpose(new_order)
+            self._data_graph = self._data_graph.transpose(new_order)
         else:
             self._my_data = self.data.transpose(new_order)
 
