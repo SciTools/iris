@@ -3,7 +3,7 @@ import numpy as np
 
 
 def from_proxy(proxy):
-    return _DataWrapper(dask.from_array(proxy, 1), True)
+    return _DataWrapper(da.from_array(proxy, 1), True)
 
 
 def from_lazy_array(array):
