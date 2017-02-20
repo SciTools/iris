@@ -36,7 +36,6 @@ import iris.cube
 from iris.util import unify_time_units
 
 
-@tests.skip_biggus
 class Test_concatenate__epoch(tests.IrisTest):
     def simple_1d_time_cubes(self, reftimes, coords_points):
         cubes = []
@@ -94,7 +93,6 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         result = concatenate([cube_a, cube_b])
         self.assertEqual(len(result), 2)
 
-    @tests.skip_biggus
     def test_ignore_diff_aux_coord(self):
         cube_a = self.create_cube()
         cube_b = cube_a.copy()
@@ -133,7 +131,6 @@ class Test_anonymous_dims(tests.IrisTest):
         self.y_coord_non_monotonic = iris.coords.AuxCoord(
             [0, 30, 15], standard_name='latitude', units='degrees')
 
-    @tests.skip_biggus
     def test_matching_2d_longitudes(self):
         cube1 = self.cube
         cube1.add_dim_coord(self.y_coord, 1)
@@ -156,7 +153,6 @@ class Test_anonymous_dims(tests.IrisTest):
         result = concatenate([cube1, cube2])
         self.assertEqual(len(result), 2)
 
-    @tests.skip_biggus
     def test_matching_non_monotonic_latitudes(self):
         cube1 = self.cube
         cube1.add_aux_coord(self.y_coord_non_monotonic, 1)
