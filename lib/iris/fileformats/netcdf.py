@@ -394,7 +394,7 @@ class NetCDFDataProxy(object):
             # Get the NetCDF variable data and slice.
             v = variable[keys]
             if isinstance(v, np.ma.MaskedArray):
-                v = v.filled(np.nan)
+                v[v.mask] = np.nan
         finally:
             dataset.close()
         return v

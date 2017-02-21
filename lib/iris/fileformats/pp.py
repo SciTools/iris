@@ -1042,7 +1042,8 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         data.shape = data_shape
 
     if np.ma.is_masked(data):
-        data = data.filled(np.nan)
+        data[data.mask] = np.nan
+        data = data.data
     # Mask the array?
     if mdi in data:
         # data = ma.masked_values(data, mdi, copy=False)

@@ -1662,9 +1662,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._my_data = None
             result = self._data_graph
         elif self._my_data is not None:
-            self._my_data.data[self._my_data.mask] = np.nan
-            result = da.from_array(self._my_data.data,
-                                   chunks=self._my_data.data.shape)
+            if isinstance(self._my_data, np.ma.masked_array):
+                self._my_data.data[self._my_data.mask] = np.nan
+                result = da.from_array(self._my_data.data,
+                                       chunks=self._my_data.data.shape)
+            else:
+                result = da.from_array(self._my_data,
+                                       chunks=self._my_data.shape)
         elif self._data_graph is not None:
             result = self._data_graph
         return result
