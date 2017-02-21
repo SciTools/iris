@@ -37,8 +37,7 @@ import iris.cube
 import iris.exceptions
 import iris.util
 
-import biggus
-from biggus import BroadcastArray as BA
+import dask.array as da
 
 
 def abs(cube, in_place=False):
@@ -128,14 +127,9 @@ def _assert_compatible(cube, other):
     # data and the other array. As numpy.broadcast_arrays does not work
     # with masked arrays (it returns them as ndarrays) operations
     # involving masked arrays would be broken.
-
     try:
-        if not isinstance(other, biggus.Array):
-            data_view, other_view = BA.broadcast_arrays(cube._my_data,
-                                                        np.asarray(other))
-
-        else:
-            data_view, other_view = BA.broadcast_arrays(cube._my_data, other)
+        import pdb; pdb.set_trace()
+        data_view, other_view = da.broadcast_to(cube.lazy_data(), other.shape)
     except ValueError as err:
         # re-raise
         raise ValueError("The array was not broadcastable to the cube's data "
@@ -585,16 +579,15 @@ def _binary_op_common(operation_function, operation_name, cube, other,
                            `cube` and `cube.data`
     """
     _assert_is_cube(cube)
-
     if isinstance(other, iris.coords.Coord):
         other = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
         try:
-            BA.broadcast_arrays(cube._my_data, other._my_data)
+            da.broadcast_to(cube.lazy_data(), other.lazy_data())
         except ValueError:
-            other = iris.util.as_compatible_shape(other, cube)._my_data
+            other = iris.util.as_compatible_shape(other, cube).lazy_data()
         else:
-            other = other._my_data
+            other = other.lazy_data()
 
     # don't worry about checking for other data types (such as scalars or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
@@ -654,15 +647,19 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 def _math_op_common(cube, operation_function, new_unit, in_place=False):
     _assert_is_cube(cube)
+    if cube.has_lazy_data():
+        data = cube.lazy_data()
+    else:
+        data = cube.data
     if in_place:
         new_cube = cube
         try:
-            operation_function(new_cube._my_data, out=new_cube._my_data)
+            operation_function(new_cube.data, out=new_cube.data)
         except TypeError:
             # Non ufunc function
             operation_function(new_cube.data)
     else:
-        new_cube = cube.copy(data=operation_function(cube._my_data))
+        new_cube = cube.copy(data=operation_function(data))
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
