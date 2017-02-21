@@ -46,7 +46,7 @@ import iris.coord_systems
 import iris.coords
 import iris._concatenate
 import iris._constraints
-from iris._lazy_data import is_lazy_data, as_lazy_data, as_concrete_data
+import iris._data_wrapper
 import iris._merge
 import iris.exceptions
 import iris.util
@@ -648,7 +648,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
                  aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None):
+                 cell_measures_and_dims=None, lazy=False):
         """
         Creates a cube with data and optional metadata.
 
@@ -695,6 +695,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :mod:`iris.aux_factory`.
         * cell_measures_and_dims
             A list of CellMeasures with dimension mappings.
+        * lazy
+            Whether the data is lazy.
 
         For example::
             >>> from iris.coords import DimCoord
@@ -714,9 +716,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if not is_lazy_data(data):
-            data = np.asarray(data)
-        self._my_data = data
+        if not lazy:
+            self._my_data = iris._data_wrapper.from_array(np.asarray(data))
+        else:
+            self._my_data = data
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1632,8 +1635,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if array is not None:
-            if not is_lazy_data(array):
-                raise TypeError('new values must be a lazy array')
             if self.shape != array.shape:
                 # The _ONLY_ data reshape permitted is converting a
                 # 0-dimensional array into a 1-dimensional array of
@@ -1643,10 +1644,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     raise ValueError('Require cube data with shape %r, got '
                                      '%r.' % (self.shape, array.shape))
             self._my_data = array
-        else:
-            array = self._my_data
-        array = as_lazy_data(array)
-        return array
+        return self._my_data
 
     @property
     def data(self):
@@ -1681,26 +1679,23 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        data = self._my_data
-        if is_lazy_data(data):
-            try:
-                data = as_concrete_data(data)
-            except MemoryError:
-                msg = "Failed to create the cube's data as there was not" \
-                      " enough memory available.\n" \
-                      "The array shape would have been {0!r} and the data" \
-                      " type {1}.\n" \
-                      "Consider freeing up variables or indexing the cube" \
-                      " before getting its data."
-                msg = msg.format(self.shape, data.dtype)
-                raise MemoryError(msg)
-            # Unmask the array only if it is filled.
-            if (isinstance(data, np.ma.masked_array) and
-                    ma.count_masked(data) == 0):
-                data = data.data
-            # data may be a numeric type, so ensure an np.ndarray is returned
-            self._my_data = np.asanyarray(data)
-        return self._my_data
+        try:
+            data = self._my_data.data
+        except MemoryError:
+            msg = "Failed to create the cube's data as there was not" \
+                    " enough memory available.\n" \
+                    "The array shape would have been {0!r} and the data" \
+                    " type {1}.\n" \
+                    "Consider freeing up variables or indexing the cube" \
+                    " before getting its data."
+            msg = msg.format(self.shape, data.dtype)
+            raise MemoryError(msg)
+        # Unmask the array only if it is filled.
+        if (isinstance(data, np.ma.masked_array) and
+                ma.count_masked(data) == 0):
+            data = data.data
+        # data may be a numeric type, so ensure an np.ndarray is returned
+        return np.asanyarray(data)
 
     @data.setter
     def data(self, value):
@@ -1714,10 +1709,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
 
-        self._my_data = data
+        self._my_data = iris._data_wrapper.from_array(data)
 
     def has_lazy_data(self):
-        return is_lazy_data(self._my_data)
+        return self._my_data.has_lazy_data()
 
     @property
     def dim_coords(self):
@@ -2182,25 +2177,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             first_slice = None
 
         if first_slice is not None:
-            data = self._my_data[first_slice]
+            wrapper = self._my_data[first_slice]
         else:
-            data = copy.deepcopy(self._my_data)
+            wrapper = copy.deepcopy(self._my_data)
 
         for other_slice in slice_gen:
-            data = data[other_slice]
+            wrapper = wrapper[other_slice]
 
         # We don't want a view of the data, so take a copy of it if it's
         # not already our own.
-        if is_lazy_data(data) or not data.flags['OWNDATA']:
-            data = copy.deepcopy(data)
+        if wrapper.has_lazy_data() or not wrapper.data.flags['OWNDATA']:
+            wrapper = copy.deepcopy(wrapper)
 
         # We can turn a masked array into a normal array if it's full.
-        if isinstance(data, ma.core.MaskedArray):
-            if ma.count_masked(data) == 0:
-                data = data.filled()
+        if not wrapper.has_lazy_data() and \
+                isinstance(wrapper.data, ma.core.MaskedArray):
+            if ma.count_masked(wrapper.data) == 0:
+                wrapper = iris._data_wrapper.from_array(data.filled())
 
         # Make the new cube slice
-        cube = Cube(data)
+        cube = Cube(wrapper, lazy=wrapper.has_lazy_data())
         cube.metadata = copy.deepcopy(self.metadata)
 
         # Record a mapping from old coordinate IDs to new coordinates,
@@ -2431,14 +2427,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if len(chunks) == 1:
             result = chunks[0]
         else:
-            if self.has_lazy_data():
-                data = biggus.LinearMosaic([chunk.lazy_data()
-                                            for chunk in chunks],
-                                           dim)
-            else:
-                module = ma if ma.isMaskedArray(self.data) else np
-                data = module.concatenate([chunk.data for chunk in chunks],
-                                          dim)
+            data = iris._data_wrapper.concatenate([chunk.lazy_data()
+                                                   for chunk in chunks])
             result = iris.cube.Cube(data)
             result.metadata = copy.deepcopy(self.metadata)
 
@@ -2818,10 +2808,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        if self.has_lazy_data():
-            self._my_data = self.lazy_data().transpose(new_order)
-        else:
-            self._my_data = self.data.transpose(new_order)
+        self._my_data = self._my_data.transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -3009,10 +2996,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __deepcopy__(self, memo):
         return self._deepcopy(memo)
 
-    def _deepcopy(self, memo, data=None):
+    def _deepcopy(self, memo, data):
         if data is None:
             # Use a copy of the source cube data.
-            if self.has_lazy_data():
+            lazy = self.has_lazy_data()
+            if lazy:
                 # Use copy.copy, as lazy arrays don't have a copy method.
                 new_cube_data = copy.copy(self.lazy_data())
             else:
@@ -3020,15 +3008,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 new_cube_data = self.data.copy()
         else:
             # Use the provided data (without copying it).
-            if not isinstance(data, biggus.Array):
+            try:
+                lazy = data.has_lazy_data()
+                new_cube_data = data
+            except AttributeError:
+                lazy = False
                 data = np.asanyarray(data)
 
             if data.shape != self.shape:
                 msg = 'Cannot copy cube with new data of a different shape ' \
                       '(slice or subset the cube first).'
                 raise ValueError(msg)
-
-            new_cube_data = data
 
         new_dim_coords_and_dims = copy.deepcopy(self._dim_coords_and_dims,
                                                 memo)
@@ -3047,7 +3037,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         new_cube = Cube(new_cube_data,
                         dim_coords_and_dims=new_dim_coords_and_dims,
-                        aux_coords_and_dims=new_aux_coords_and_dims)
+                        aux_coords_and_dims=new_aux_coords_and_dims,
+                        lazy=lazy)
         new_cube.metadata = copy.deepcopy(self.metadata, memo)
 
         for factory in self.aux_factories:
