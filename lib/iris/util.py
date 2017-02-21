@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -1599,6 +1599,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.remove_coord(dim_coord)
 
     cube.add_aux_coord(dim_coord, coord_dim)
+
 
 def is_dask_array(data):
     result = False

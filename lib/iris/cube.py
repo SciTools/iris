@@ -1713,9 +1713,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if np.all(~mask):
                     self._numpy_array = data
                 else:
-                    self._numpy_array = ma.masked_array(data,
-                                                    mask=mask,
-                                                    fill_value=self.fill_value)
+                    fv = self.fill_value
+                    self._numpy_array = ma.masked_array(data, mask=mask,
+                                                        fill_value=self.fv)
             except MemoryError:
                 msg = "Failed to create the cube's data as there was not" \
                       " enough memory available.\n" \
