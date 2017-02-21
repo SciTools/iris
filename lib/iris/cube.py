@@ -66,7 +66,8 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'units',
                                            'attributes',
                                            'cell_methods',
-                                           'fill_value'])):
+                                           'fill_value',
+                                           'dtype'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -650,7 +651,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
                  aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None, fill_value=None):
+                 cell_measures_and_dims=None, fill_value=None, dtype=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -717,6 +718,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         self.fill_value = fill_value
+        if dtype is None:
+            dtype = data.dtype
+        self.dtype = dtype
+        self._shape = data.shape
 
         self._dask_array = None
         self._numpy_array = None
@@ -795,7 +800,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
                             self.units, self.attributes, self.cell_methods,
-                            self.fill_value)
+                            self.fill_value, self.dtype)
 
     @metadata.setter
     def metadata(self, value):
@@ -1601,22 +1606,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        if self._numpy_array is not None:
-            shape = self._numpy_array.shape
-        elif self._dask_array is not None:
-            shape = self._dask_array.shape
-        else:
-            shape = None
-        return shape
-
-    @property
-    def dtype(self):
-        """The :class:`numpy.dtype` of the data of this cube."""
-        if self._numpy_array is not None:
-            dtype = self._numpy_array.dtype
-        else:
-            dtype = self._dask_array.dtype
-        return dtype
+        return self._shape
 
     @property
     def ndim(self):
@@ -1662,13 +1652,25 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._numpy_array = None
             result = self._dask_array
         elif self._numpy_array is not None:
-            if isinstance(self._numpy_array, np.ma.masked_array):
-                self._numpy_array.data[self._numpy_array.mask] = np.nan
-                result = da.from_array(self._numpy_array.data,
-                                       chunks=self._numpy_array.data.shape)
-            else:
-                result = da.from_array(self._numpy_array,
-                                       chunks=self._numpy_array.shape)
+            data = self._numpy_array
+            if isinstance(data, np.ma.masked_array):
+                if np.ma.is_masked(data):
+                    if data.dtype.kind == 'i':
+                        data = data.astype(np.dtype('f8'))
+                    # Where possible, write these NANs into the cube's
+                    # _numpy_array.
+                    data.data[data.mask] = np.nan
+                data = data.data
+            result = da.from_array(data, chunks=data.shape)
+
+
+                # self._numpy_array.data[self._numpy_array.mask] = np.nan
+                # result = da.from_array(self._numpy_array.data,
+                #                        chunks=self._numpy_array.data.shape)
+            # else:
+                # result = da.from_array(self._numpy_array,
+                #                        chunks=self._numpy_array.shape)
+                
         elif self._dask_array is not None:
             result = self._dask_array
         return result
@@ -1710,12 +1712,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             try:
                 data = self._dask_array.compute()
                 mask = np.isnan(data)
+                if data.dtype != self.dtype:
+                    data = data.astype(self.dtype)
                 if np.all(~mask):
                     self._numpy_array = data
                 else:
                     fv = self.fill_value
                     self._numpy_array = ma.masked_array(data, mask=mask,
-                                                        fill_value=self.fv)
+                                                        fill_value=fv)
             except MemoryError:
                 msg = "Failed to create the cube's data as there was not" \
                       " enough memory available.\n" \
