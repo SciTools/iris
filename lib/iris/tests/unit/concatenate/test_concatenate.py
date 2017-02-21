@@ -33,7 +33,6 @@ import iris.cube
 from iris.exceptions import ConcatenateError
 
 
-@tests.skip_biggus
 class TestEpoch(tests.IrisTest):
     def simple_1d_time_cubes(self, reftimes, coords_points):
         cubes = []
@@ -172,7 +171,6 @@ class TestMessages(tests.IrisTest):
             result = concatenate([cube_1, cube_2], True)
 
 
-@tests.skip_biggus
 class TestOrder(tests.IrisTest):
     def _make_cube(self, points, bounds=None):
         nx = 4

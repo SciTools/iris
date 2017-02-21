@@ -960,7 +960,6 @@ class TestDataManagerIndexing(TestCube2d):
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
 
-    @tests.skip_biggus
     def test_cube_empty_indexing(self):
         test_filename = ('cube_slice', 'real_empty_data_indexing.cml')
         r = self.cube[:5, ::-1][3]
