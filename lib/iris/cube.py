@@ -1711,8 +1711,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 data = self._data_graph.compute()
                 mask = np.isnan(data)
                 if np.all(~mask):
-                    self._my_data = ma.masked_array(data,
-                                                    fill_value=self.fill_value)
+                    self._my_data = data
                 else:
                     self._my_data = ma.masked_array(data,
                                                     mask=mask,
@@ -1726,12 +1725,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       " before getting its data."
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
-            # Unmask the array only if it is filled.
-            if (isinstance(self._my_data, np.ma.masked_array) and
-                    ma.count_masked(self._my_data) == 0):
-                data = self._my_data.data
-            # data may be a numeric type, so ensure an np.ndarray is returned
-            self._my_data = np.asanyarray(self._my_data)
         return self._my_data
 
     @data.setter

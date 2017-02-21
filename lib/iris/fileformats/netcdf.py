@@ -392,12 +392,13 @@ class NetCDFDataProxy(object):
         try:
             variable = dataset.variables[self.variable_name]
             # Get the NetCDF variable data and slice.
-            v = variable[keys]
-            if isinstance(v, np.ma.MaskedArray):
-                v[v.mask] = np.nan
+            var = variable[keys]
+            if isinstance(var, np.ma.MaskedArray):
+                var[var.mask] = np.nan
+                var = var.data
         finally:
             dataset.close()
-        return v
+        return var
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
