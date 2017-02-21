@@ -1666,15 +1666,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     data.data[data.mask] = np.nan
                 data = data.data
             result = da.from_array(data, chunks=data.shape)
-
-
-                # self._numpy_array.data[self._numpy_array.mask] = np.nan
-                # result = da.from_array(self._numpy_array.data,
-                #                        chunks=self._numpy_array.data.shape)
-            # else:
-                # result = da.from_array(self._numpy_array,
-                #                        chunks=self._numpy_array.shape)
-                
         elif self._dask_array is not None:
             result = self._dask_array
         return result
