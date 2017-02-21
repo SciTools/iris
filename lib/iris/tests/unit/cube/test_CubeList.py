@@ -34,7 +34,6 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 
 
-@tests.skip_biggus
 class Test_concatenate_cube(tests.IrisTest):
     def setUp(self):
         self.units = Unit('days since 1970-01-01 00:00:00',
