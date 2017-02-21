@@ -45,7 +45,7 @@ class Test_aggregated_by(tests.IrisTest):
         # triggered the load of the coordinate's data.
         forecast_period_coord = cube.coord('forecast_period')
 
-        self.assertTrue(hasattr(forecast_period_coord._points, 'compute'))
+        self.assertTrue(is_dask_array(forecast_period_coord._points))
 
         # Now confirm we can aggregate along this coord.
         res_cube = cube.aggregated_by('forecast_period', MEAN)

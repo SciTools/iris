@@ -182,7 +182,7 @@ class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
              7: {'codedValues': np.arange(12)}})
         data = message.data
 
-        self.assertTrue(hasattr(data, 'compute'))
+        self.assertTrue(is_dask_array(data)
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
         self.assertIs(data.fill_value, np.nan)

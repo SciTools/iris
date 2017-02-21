@@ -1227,7 +1227,7 @@ class ProtoCube(object):
                 data = self._skeletons[group[offset]].data
                 # Ensure the data is represented as a dask array and
                 # slot that array into the stack.
-                if hasattr(data, 'compute'):
+                if is_dask_array(data):
                     all_have_data = False
                 else:
                     data = da.from_array(data, chunks=data.shape)
