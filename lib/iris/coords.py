@@ -33,6 +33,7 @@ import warnings
 import zlib
 
 import biggus
+import iris._lazy_data
 import netcdftime
 import numpy as np
 
@@ -1610,8 +1611,8 @@ class AuxCoord(Coord):
     def points(self):
         """Property containing the points values as a numpy array"""
         points = self._points
-        if isinstance(points, biggus.Array):
-            points = points.ndarray()
+        if iris._lazy_data.is_lazy_data(points):
+            points = iris._lazy_data.as_concrete_data(points)
             self._points = points
         return points.view()
 
@@ -1620,13 +1621,12 @@ class AuxCoord(Coord):
         # Set the points to a new array - as long as it's the same shape.
 
         # With the exception of LazyArrays, ensure points has an ndmin
-        # of 1 and is either a numpy or biggus array.
+        # of 1 and is either a numpy or lazy array.
         # This will avoid Scalar coords with points of shape () rather
         # than the desired (1,)
-        if isinstance(points, biggus.Array):
+        if iris._lazy_data.is_lazy_data(points):
             if points.shape == ():
-                points = biggus.ConstantArray((1,), points.ndarray(),
-                                              points.dtype)
+                points = points * np.ones(1)
         elif not isinstance(points, iris.aux_factory._LazyArray):
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
