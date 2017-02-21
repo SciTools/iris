@@ -718,11 +718,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         self.fill_value = fill_value
 
-        self._data_graph = None
-        self._my_data = None
+        self._dask_array = None
+        self._numpy_array = None
         if is_dask_array(data):
-            self._data_graph = data
-            self._my_data = None
+            self._dask_array = data
+            self._numpy_array = None
         else:
             self.data = data
 
@@ -1601,10 +1601,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        if self._my_data is not None:
-            shape = self._my_data.shape
-        elif self._data_graph is not None:
-            shape = self._data_graph.shape
+        if self._numpy_array is not None:
+            shape = self._numpy_array.shape
+        elif self._dask_array is not None:
+            shape = self._dask_array.shape
         else:
             shape = None
         return shape
@@ -1612,10 +1612,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def dtype(self):
         """The :class:`numpy.dtype` of the data of this cube."""
-        if self._my_data is not None:
-            dtype = self._my_data.dtype
+        if self._numpy_array is not None:
+            dtype = self._numpy_array.dtype
         else:
-            dtype = self._data_graph.dtype
+            dtype = self._dask_array.dtype
         return dtype
 
     @property
@@ -1658,19 +1658,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if self.shape or array.shape != (1,):
                     raise ValueError('Require cube data with shape %r, got '
                                      '%r.' % (self.shape, array.shape))
-            self._data_graph = array
-            self._my_data = None
-            result = self._data_graph
-        elif self._my_data is not None:
-            if isinstance(self._my_data, np.ma.masked_array):
-                self._my_data.data[self._my_data.mask] = np.nan
-                result = da.from_array(self._my_data.data,
-                                       chunks=self._my_data.data.shape)
+            self._dask_array = array
+            self._numpy_array = None
+            result = self._dask_array
+        elif self._numpy_array is not None:
+            if isinstance(self._numpy_array, np.ma.masked_array):
+                self._numpy_array.data[self._numpy_array.mask] = np.nan
+                result = da.from_array(self._numpy_array.data,
+                                       chunks=self._numpy_array.data.shape)
             else:
-                result = da.from_array(self._my_data,
-                                       chunks=self._my_data.shape)
-        elif self._data_graph is not None:
-            result = self._data_graph
+                result = da.from_array(self._numpy_array,
+                                       chunks=self._numpy_array.shape)
+        elif self._dask_array is not None:
+            result = self._dask_array
         return result
 
     @property
@@ -1706,14 +1706,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        if self._my_data is None:
+        if self._numpy_array is None:
             try:
-                data = self._data_graph.compute()
+                data = self._dask_array.compute()
                 mask = np.isnan(data)
                 if np.all(~mask):
-                    self._my_data = data
+                    self._numpy_array = data
                 else:
-                    self._my_data = ma.masked_array(data,
+                    self._numpy_array = ma.masked_array(data,
                                                     mask=mask,
                                                     fill_value=self.fill_value)
             except MemoryError:
@@ -1725,7 +1725,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       " before getting its data."
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
-        return self._my_data
+        return self._numpy_array
 
     @data.setter
     def data(self, value):
@@ -1738,10 +1738,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if self.shape or data.shape != (1,):
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
-        self._my_data = data
+        self._numpy_array = data
 
     def has_lazy_data(self):
-        return True if self._my_data is None else False
+        return True if self._numpy_array is None else False
 
     @property
     def dim_coords(self):
@@ -2204,10 +2204,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             first_slice = next(slice_gen)
         except StopIteration:
             first_slice = None
-        if self._my_data is not None:
-            cube_data = self._my_data
-        elif self._data_graph is not None:
-            cube_data = self._data_graph
+        if self._numpy_array is not None:
+            cube_data = self._numpy_array
+        elif self._dask_array is not None:
+            cube_data = self._dask_array
         else:
             raise ValueError('This cube has no data, slicing is not supported')
 
@@ -2848,9 +2848,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('Incorrect number of dimensions.')
 
         if self.has_lazy_data():
-            self._data_graph = self._data_graph.transpose(new_order)
+            self._dask_array = self._dask_array.transpose(new_order)
         else:
-            self._my_data = self.data.transpose(new_order)
+            self._numpy_array = self.data.transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
