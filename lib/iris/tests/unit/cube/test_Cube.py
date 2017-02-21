@@ -570,6 +570,7 @@ def create_cube(lon_min, lon_max, bounds=False):
 
 
 # Ensure all the other coordinates and factories are correctly preserved.
+@tests.skip_biggus
 class Test_intersection__Metadata(tests.IrisTest):
     def test_metadata(self):
         cube = create_cube(0, 360)
@@ -583,6 +584,7 @@ class Test_intersection__Metadata(tests.IrisTest):
 
 
 # Explicitly check the handling of `circular` on the result.
+@tests.skip_biggus
 class Test_intersection__Circular(tests.IrisTest):
     def test_regional(self):
         cube = create_cube(0, 360)
@@ -639,6 +641,7 @@ class Test_intersection__Invalid(tests.IrisTest):
             cube.intersection(longitude=(10, 10, False, False))
 
 
+@tests.skip_biggus
 class Test_intersection__Lazy(tests.IrisTest):
     def test_real_data(self):
         cube = create_cube(0, 360)
@@ -767,6 +770,7 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
 
 # Check what happens with a global, points-only circular intersection
 # coordinate.
+@tests.skip_biggus
 class Test_intersection__GlobalSrcModulus(tests.IrisTest):
     def test_global_wrapped_extreme_increasing_base_period(self):
         # Ensure that we can correctly handle points defined at (base + period)
@@ -952,6 +956,7 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
 
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
+@tests.skip_biggus
 class Test_intersection__ModulusBounds(tests.IrisTest):
     def test_global_wrapped_extreme_increasing_base_period(self):
         # Ensure that we can correctly handle bounds defined at (base + period)
