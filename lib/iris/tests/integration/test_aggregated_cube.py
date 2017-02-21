@@ -25,6 +25,7 @@ import iris.tests as tests
 
 import iris
 from iris.analysis import MEAN
+from iris.util import is_dask_array
 
 
 @tests.skip_biggus

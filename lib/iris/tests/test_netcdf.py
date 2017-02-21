@@ -43,6 +43,7 @@ import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
 import iris.std_names
 import iris.util
+from iris.util import is_dask_array
 import iris.coord_systems as icoord_systems
 from iris.tests import mock
 import iris.tests.stock as stock

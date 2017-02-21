@@ -720,7 +720,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         self._dask_array = None
         self._numpy_array = None
-        if is_dask_array(data):
+        if iris.util.is_dask_array(data):
             self._dask_array = data
             self._numpy_array = None
         else:
@@ -1648,7 +1648,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         result = None
         if array is not None:
-            if not is_dask_array(array):
+            if not iris.util.is_dask_array(array):
                 raise TypeError('new values must be a dask array')
             if self.shape != array.shape:
                 # The _ONLY_ data reshape permitted is converting a

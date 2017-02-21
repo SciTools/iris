@@ -35,6 +35,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import GribMessage
 from iris.tests import mock
 from iris.tests.unit.fileformats.grib import _make_test_message
+from iris.util import is_dask_array
 
 
 SECTION_6_NO_BITMAP = {'bitMapIndicator': 255, 'bitmap': None}
