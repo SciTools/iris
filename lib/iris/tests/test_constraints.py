@@ -75,7 +75,6 @@ class TestSimple(tests.IrisTest):
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 70 * 6)
 
-    @tests.skip_biggus
     def test_mismatched_type(self):
         constraint = iris.Constraint(model_level_number='aardvark')
         sub_list = self.slices.extract(constraint)
