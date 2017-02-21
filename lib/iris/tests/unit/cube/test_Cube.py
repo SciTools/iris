@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -49,7 +49,6 @@ class Test___init___data(tests.IrisTest):
         self.assertEqual(type(cube.data), np.ndarray)
         self.assertArrayEqual(cube.data, data)
 
-    @tests.skip_biggus
     def test_masked(self):
         # np.ma.MaskedArray should be allowed through
         data = np.ma.masked_greater(np.arange(12).reshape(3, 4), 1)
@@ -117,7 +116,6 @@ class Test_extract(tests.IrisTest):
 
 
 class Test_xml(tests.IrisTest):
-    @tests.skip_biggus
     def test_checksum_ignores_masked_values(self):
         # Mask out an single element.
         data = np.ma.arange(12).reshape(3, 4)
@@ -149,7 +147,7 @@ class Test_xml(tests.IrisTest):
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))
-        self.lazydata = biggus.NumpyArrayAdapter(self.data)
+        self.lazydata = da.from_array(self.data, chunks=self.data.shape)
         cube = Cube(self.lazydata)
         for i_dim, name in enumerate(('y', 'x')):
             npts = cube.shape[i_dim]
@@ -546,7 +544,7 @@ class Test_slices_over(tests.IrisTest):
 def create_cube(lon_min, lon_max, bounds=False):
     n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
     data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, n_lons)
-    data = biggus.NumpyArrayAdapter(data)
+    data = da.from_array(data, chunks=data.shape)
     cube = Cube(data, standard_name='x_wind', units='ms-1')
     cube.add_dim_coord(iris.coords.DimCoord([0, 20, 40, 80],
                                             long_name='level_height',
@@ -1220,7 +1218,7 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
-        cube = Cube(biggus.NumpyArrayAdapter(np.array([1, 0])))
+        cube = Cube(da.from_array(np.array([1, 0]), chunks=100))
         self._check_copy(cube, cube.copy())
 
 
@@ -1235,7 +1233,7 @@ class Test_dtype(tests.IrisTest):
 
     def test_lazy(self):
         data = np.arange(6, dtype=np.float32).reshape(2, 3)
-        lazydata = biggus.NumpyArrayAdapter(data)
+        lazydata = da.from_array(data, chunks=data.shape)
         cube = Cube(lazydata)
         self.assertEqual(cube.dtype, np.float32)
         # Check that accessing the dtype does not trigger loading of the data.
@@ -1415,7 +1413,7 @@ class TestCellMeasures(tests.IrisTest):
 class Test_transpose(tests.IrisTest):
     def test_lazy_data(self):
         data = np.arange(12).reshape(3, 4)
-        cube = Cube(biggus.NumpyArrayAdapter(data))
+        cube = Cube(da.from_array(data, chunks=data.shape))
         cube.transpose()
         self.assertTrue(cube.has_lazy_data())
         self.assertArrayEqual(data.T, cube.data)
