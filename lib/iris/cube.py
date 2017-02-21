@@ -1646,6 +1646,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             A lazy array, representing the Cube data array.
 
         """
+        result = None
         if array is not None:
             if not hasattr(array, 'compute'):
                 raise TypeError('new values must be a dask array')
@@ -1661,6 +1662,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._my_data = None
             result = self._data_graph
         elif self._my_data is not None:
+            self._my_data.data[self._my_data.mask] = np.nan
             result = da.from_array(self._my_data.data,
                                    chunks=self._my_data.data.shape)
         elif self._data_graph is not None:
@@ -1720,6 +1722,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       " before getting its data."
                 msg = msg.format(self.shape, data.dtype)
                 raise MemoryError(msg)
+            # Unmask the array only if it is filled.
+            if (isinstance(self._my_data, np.ma.masked_array) and
+                    ma.count_masked(self._my_data) == 0):
+                data = self._my_data.data
+            # data may be a numeric type, so ensure an np.ndarray is returned
+            self._my_data = np.asanyarray(self._my_data)
         return self._my_data
 
     @data.setter
@@ -1733,8 +1741,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if self.shape or data.shape != (1,):
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
-        if not isinstance(data, np.ma.masked_array):
-            data = np.ma.masked_array(data, fill_value=self.fill_value)
         self._my_data = data
 
     def has_lazy_data(self):
