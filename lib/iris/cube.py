@@ -718,18 +718,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         self.fill_value = fill_value
-        if dtype is None:
-            dtype = data.dtype
-        self.dtype = dtype
-        self._shape = data.shape
 
-        self._dask_array = None
-        self._numpy_array = None
         if iris.util.is_dask_array(data):
             self._dask_array = data
             self._numpy_array = None
         else:
-            self.data = data
+            self._dask_array = None
+            data = np.asarray(data)
+            self._numpy_array = data
+
+        if dtype is None:
+            dtype = data.dtype
+        self.dtype = dtype
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1606,7 +1606,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        return self._shape
+        if self._numpy_array is not None:
+            shape = self._numpy_array.shape
+        else:
+            shape = self._dask_array.shape
+        return shape
 
     @property
     def ndim(self):

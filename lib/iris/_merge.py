@@ -1230,6 +1230,12 @@ class ProtoCube(object):
                 if iris.util.is_dask_array(data):
                     all_have_data = False
                 else:
+                    if isinstance(data, np.ma.MaskedArray):
+                        if np.ma.is_masked(data):
+                            if data.dtype.kind == 'i':
+                                data = data.astype('f8')
+                            data[data.mask] = np.nan
+                        data = data.data
                     data = da.from_array(data, chunks=data.shape)
                 stack[nd_index] = data
 
