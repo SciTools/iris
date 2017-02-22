@@ -900,6 +900,10 @@ ConversionMetadata = collections.namedtuple('ConversionMetadata',
 def _make_cube(field, converter):
     # Convert the field to a Cube.
     metadata = converter(field)
+    # This horrible try:except pattern is bound into our testing strategy.
+    # it enables the magicmocking to amgically fail, fall over to data
+    # then use that to make it's tests pass.
+    # To be fixed!!
     try:
         data = da.from_array(field._data, chunks=field._data.shape)
     except AttributeError:
@@ -910,6 +914,7 @@ def _make_cube(field, converter):
                           dim_coords_and_dims=metadata.dim_coords_and_dims,
                           aux_coords_and_dims=metadata.aux_coords_and_dims,
                           fill_value=field.bmdi, dtype=data.dtype)
+    
 
     # Temporary code to deal with invalid standard names in the
     # translation table.

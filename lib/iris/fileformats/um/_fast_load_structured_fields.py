@@ -100,6 +100,10 @@ class FieldCollation(object):
         return self._data_cache
 
     @property
+    def data_proxy(self):
+        return self.data
+
+    @property
     def bmdi(self):
         bmdis = set([f.bmdi for f in self.fields])
         if len(bmdis) != 1:
