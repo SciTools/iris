@@ -49,6 +49,6 @@ def array_masked_to_nans(array, mask=None):
     if mask is None:
         mask = array.mask
     if array.dtype.kind == 'i':
-        data = data.astype(np.dtype('f8'))
+        array = array.astype(np.dtype('f8'))
     array[mask] = np.nan
     return array
