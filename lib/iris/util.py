@@ -1602,6 +1602,11 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
 
 def is_dask_array(data):
+    """
+    Identify if `data` is a dask array.
+    Should this be public?!? Private?!?
+
+    """
     result = False
     if hasattr(data, 'compute'):
         result = True

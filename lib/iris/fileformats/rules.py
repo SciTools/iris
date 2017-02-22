@@ -900,7 +900,6 @@ ConversionMetadata = collections.namedtuple('ConversionMetadata',
 def _make_cube(field, converter):
     # Convert the field to a Cube.
     metadata = converter(field)
-
     try:
         data = da.from_array(field._data, chunks=field._data.shape)
     except AttributeError:
@@ -910,7 +909,7 @@ def _make_cube(field, converter):
                           cell_methods=metadata.cell_methods,
                           dim_coords_and_dims=metadata.dim_coords_and_dims,
                           aux_coords_and_dims=metadata.aux_coords_and_dims,
-                          fill_value=field.bmdi)
+                          fill_value=field.bmdi, dtype=data.dtype)
 
     # Temporary code to deal with invalid standard names in the
     # translation table.

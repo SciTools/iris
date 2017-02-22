@@ -1606,6 +1606,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         The data at the core of this cube.
         May be a numpy array or a dask array.
+        In using this, you are buying into not caring about the
+        type of the result
+        to be decided: should this be public??
 
         """
         if self._numpy_array is not None:
