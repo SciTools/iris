@@ -78,7 +78,7 @@ def _make_cube(x, y, data, aux=None, offset=0, scalar=None,
 
     cube_data = np.empty((y_size, x_size), dtype=dtype)
     cube_data[:] = data
-    cube = iris.cube.Cube(cube_data, fill_value=fill_value)
+    cube = iris.cube.Cube(cube_data, fill_value=fill_value, dtype=dtype)
     coord = DimCoord(y_range, long_name='y')
     coord.guess_bounds()
     cube.add_dim_coord(coord, 0)

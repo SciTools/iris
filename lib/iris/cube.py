@@ -798,7 +798,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
                             self.units, self.attributes, self.cell_methods,
-                            self.fill_value, self.dtype)
+                            self.fill_value, self._dtype)
 
     @metadata.setter
     def metadata(self, value):
