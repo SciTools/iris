@@ -1028,14 +1028,12 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         new_data = np.full(land_mask.shape, np.nan, dtype=data_type)
         if lbpack.n3 == 1:
             # Land mask packed data.
-            new_data.mask = sea_mask
             # Sometimes the data comes in longer than it should be (i.e. it
             # looks like the compressed data is compressed, but the trailing
             # data hasn't been clipped off!).
             new_data[land_mask] = data[:land_mask.sum()]
         elif lbpack.n3 == 2:
             # Sea mask packed data.
-            new_data.mask = land_mask
             new_data[sea_mask] = data[:sea_mask.sum()]
         else:
             raise ValueError('Unsupported mask compression.')

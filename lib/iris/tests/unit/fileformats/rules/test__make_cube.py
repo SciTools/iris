@@ -29,6 +29,7 @@ from iris.tests import mock
 
 
 class Test(tests.IrisTest):
+    @tests.skip_biggus
     def test_invalid_units(self):
         # Mock converter() function that returns an invalid
         # units string amongst the collection of other elements.
