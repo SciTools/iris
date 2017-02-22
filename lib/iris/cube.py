@@ -66,7 +66,7 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'units',
                                            'attributes',
                                            'cell_methods',
-                                           'fill_value'])):
+                                           'fill_value', 'dtype'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -798,7 +798,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
                             self.units, self.attributes, self.cell_methods,
-                            self.fill_value)
+                            self.fill_value, self.dtype)
 
     @metadata.setter
     def metadata(self, value):
