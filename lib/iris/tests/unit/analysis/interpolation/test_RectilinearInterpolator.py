@@ -481,7 +481,7 @@ class Test___call___lazy_data(ThreeDimCube):
         # of loading it again and again.
 
         # Modify self.cube to have lazy data.
-        self.cube.data(da.from_array(self.data, chunks=self.data.shape))
+        self.cube.data = da.from_array(self.data, chunks=self.data.shape)
         self.assertTrue(self.cube.has_lazy_data())
 
         # Perform interpolation and check the data has been loaded.
