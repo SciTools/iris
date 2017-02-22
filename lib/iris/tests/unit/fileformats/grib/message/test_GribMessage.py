@@ -41,6 +41,7 @@ from iris.util import is_dask_array
 SECTION_6_NO_BITMAP = {'bitMapIndicator': 255, 'bitmap': None}
 
 
+@tests.skip_biggus
 @tests.skip_data
 class Test_messages_from_filename(tests.IrisTest):
     def test(self):
@@ -68,6 +69,7 @@ class Test_sections(tests.IrisTest):
         self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
 
+@tests.skip_biggus
 class Test_data__masked(tests.IrisTest):
     def setUp(self):
         self.bitmap = np.array([0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1])
@@ -126,6 +128,7 @@ class Test_data__masked(tests.IrisTest):
             message.data.ndarray()
 
 
+@tests.skip_biggus
 class Test_data__unsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
         message = _make_test_message({3: {'sourceOfGridDefinition': 1},
@@ -212,26 +215,31 @@ def _example_section_3(grib_definition_template_number, scanning_mode):
             'Ni': 4}
 
 
+@tests.skip_biggus
 class Test_data__grid_template_0(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(0, scanning_mode)
 
 
+@tests.skip_biggus
 class Test_data__grid_template_1(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(1, scanning_mode)
 
 
+@tests.skip_biggus
 class Test_data__grid_template_5(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(5, scanning_mode)
 
 
+@tests.skip_biggus
 class Test_data__grid_template_12(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(12, scanning_mode)
 
 
+@tests.skip_biggus
 class Test_data__grid_template_30(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(30, scanning_mode)
@@ -243,12 +251,14 @@ class Test_data__grid_template_30(tests.IrisTest, Mixin_data__grid_template):
         return section_3
 
 
+@tests.skip_biggus
 class Test_data__grid_template_40_regular(tests.IrisTest,
                                           Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(40, scanning_mode)
 
 
+@tests.skip_biggus
 class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(90, scanning_mode)
@@ -260,6 +270,7 @@ class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
         return section_3
 
 
+@tests.skip_biggus
 class Test_data__unknown_grid_template(tests.IrisTest):
     def test(self):
         message = _make_test_message(

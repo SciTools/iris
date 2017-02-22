@@ -128,6 +128,7 @@ def _donothing_context_manager():
     yield
 
 
+@tests.skip_biggus
 @skip_esmf
 class TestConservativeRegrid(tests.IrisTest):
 

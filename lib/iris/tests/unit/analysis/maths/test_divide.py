@@ -32,6 +32,7 @@ from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
     @property

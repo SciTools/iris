@@ -73,6 +73,7 @@ class TestToggle(tests.IrisTest):
 @tests.skip_data
 class Test_load_cubes(tests.IrisTest):
 
+    @tests.skip_biggus
     def test_reduced_raw(self):
         # Loading a GRIB message defined on a reduced grid without
         # interpolating to a regular grid.

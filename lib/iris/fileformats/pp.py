@@ -1290,6 +1290,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         """
         # The proxy supplies nan filled arrays and caches data.
         data = self._data[...]
+        if data.dtype.kind == 'i' and self.bmdi == -1e30:
+            self.bmdi = -9999
         data[np.isnan(data)] = self.bmdi
         return data
 
