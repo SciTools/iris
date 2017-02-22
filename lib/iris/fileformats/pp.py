@@ -1049,7 +1049,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
     if mdi in data:
         # data = ma.masked_values(data, mdi, copy=False)
         # data = array_masked_to_nans(data)
-        if data_type.kind != 'i':
+        if data_type.kind == 'i':
             data = data.astype(np.dtype('f8'))
 
         data[data == mdi] = np.nan

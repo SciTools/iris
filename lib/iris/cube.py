@@ -66,8 +66,7 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'units',
                                            'attributes',
                                            'cell_methods',
-                                           'fill_value',
-                                           'dtype'])):
+                                           'fill_value'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -724,12 +723,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._numpy_array = None
         else:
             self._dask_array = None
-            data = np.asarray(data)
+            if not isinstance(data, np.ma.MaskedArray):
+                data = np.asarray(data)
             self._numpy_array = data
 
-        if dtype is None:
-            dtype = data.dtype
-        self.dtype = dtype
+        self._dtype = dtype
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -800,7 +798,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
                             self.units, self.attributes, self.cell_methods,
-                            self.fill_value, self.dtype)
+                            self.fill_value)
 
     @metadata.setter
     def metadata(self, value):
@@ -1604,13 +1602,34 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
     @property
+    def core_data(self):
+        """
+        The data at the core of this cube.
+        May be a numpy array or a dask array.
+
+        """
+        if self._numpy_array is not None:
+            result = self._numpy_array
+        else:
+            result = self._dask_array
+        return result
+
+    @property
     def shape(self):
         """The shape of the data of this cube."""
-        if self._numpy_array is not None:
-            shape = self._numpy_array.shape
+        return self.core_data.shape
+
+    @property
+    def dtype(self):
+        if self._dtype is None:
+            result = self.core_data.dtype
         else:
-            shape = self._dask_array.shape
-        return shape
+            result = self._dtype
+        return result
+
+    @dtype.setter
+    def dtype(self, dtype):
+        self._dtype = dtype
 
     @property
     def ndim(self):
@@ -1722,7 +1741,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       " type {1}.\n" \
                       "Consider freeing up variables or indexing the cube" \
                       " before getting its data."
-                msg = msg.format(self.shape, data.dtype)
+                msg = msg.format(self.shape, self.dtype)
                 raise MemoryError(msg)
         return self._numpy_array
 
@@ -2842,7 +2861,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if new_order is None:
-            new_order = np.arange(self.ndim)[::-1]
+            # Passing numpy arrays as new_order works in numpy but not in dask,
+            # docs specify a list, so ensure a list is used.
+            new_order = list(np.arange(self.ndim)[::-1])
         elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 

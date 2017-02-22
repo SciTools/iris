@@ -71,8 +71,9 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
         r = pp._data_bytes_to_shaped_array(self.data_payload_bytes,
                                            lbpack, boundary_packing,
                                            self.data_shape,
-                                           self.decompressed.dtype, -99)
-        r = np.ma.masked_array(r, np.isnan(r), fill_value=-99)
+                                           self.decompressed.dtype,
+                                           -9223372036854775808)
+        r = np.ma.masked_array(r, np.isnan(r), fill_value=-9223372036854775808)
         self.assertMaskedArrayEqual(r, self.decompressed)
 
 
