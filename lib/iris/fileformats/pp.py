@@ -1046,7 +1046,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
 
     # Mask the array?
     if mdi in data:
-        data = array_masked_to_nans(data, data==mdi)
+        data = array_masked_to_nans(data, data == mdi)
 
     return data
 

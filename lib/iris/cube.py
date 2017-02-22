@@ -51,7 +51,7 @@ import iris._constraints
 import iris._merge
 import iris.exceptions
 import iris.util
-from iris._lazy_data import is_lazy_data
+from iris._lazy_data import is_lazy_data, array_masked_to_nans
 
 from iris._cube_coord_common import CFVariableMixin
 from functools import reduce
@@ -67,7 +67,8 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'units',
                                            'attributes',
                                            'cell_methods',
-                                           'fill_value', 'dtype'])):
+                                           'fill_value',
+                                           'dtype'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -1640,56 +1641,28 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """The number of dimensions in the data of this cube."""
         return len(self.shape)
 
-    def lazy_data(self, array=None):
+    def lazy_data(self):
         """
         Return a lazy array representing the Cube data.
-
-        Optionally, provide a new lazy array to assign as the cube data.
 
         Accessing this method will never cause the data to be loaded.
         Similarly, calling methods on, or indexing, the returned Array
         will not cause the Cube to have loaded data.
 
         If the data have already been loaded for the Cube, the returned
-        Array will be a lazy array wrapper.
-
-        Kwargs:
-
-        * array (lazy array or None):
-            When this is not None it sets the multi-dimensional data of
-            the cube to the given value.
+        Array will be a new lazy array wrapper.
 
         Returns:
             A lazy array, representing the Cube data array.
 
         """
-        result = None
-        if array is not None:
-            if not is_lazy_data(array):
-                raise TypeError('new values must be a dask array')
-            if self.shape != array.shape:
-                # The _ONLY_ data reshape permitted is converting a
-                # 0-dimensional array into a 1-dimensional array of
-                # length one.
-                # i.e. self.shape = () and array.shape == (1,)
-                if self.shape or array.shape != (1,):
-                    raise ValueError('Require cube data with shape %r, got '
-                                     '%r.' % (self.shape, array.shape))
-            self._dask_array = array
-            self._numpy_array = None
-            result = self._dask_array
-        elif self._numpy_array is not None:
+        if self._numpy_array is not None:
             data = self._numpy_array
             if isinstance(data, np.ma.masked_array):
-                if np.ma.is_masked(data):
-                    if data.dtype.kind == 'i':
-                        data = data.astype(np.dtype('f8'))
-                    # Where possible, write these NANs into the cube's
-                    # _numpy_array.
-                    data.data[data.mask] = np.nan
+                data = array_masked_to_nans(data)
                 data = data.data
             result = da.from_array(data, chunks=data.shape)
-        elif self._dask_array is not None:
+        else:
             result = self._dask_array
         return result
 
@@ -1732,6 +1705,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 mask = np.isnan(data)
                 if data.dtype != self.dtype:
                     data = data.astype(self.dtype)
+                    self.dtype = None
                 if np.all(~mask):
                     self._numpy_array = data
                 else:
@@ -1751,16 +1725,23 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @data.setter
     def data(self, value):
-        data = np.asanyarray(value)
+        if not (hasattr(value, 'shape') and hasattr(value, 'dtype')):
+            value = np.asanyarray(value)
 
-        if self.shape is not None and self.shape != data.shape:
+        if self.shape is not None and self.shape != value.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
-            if self.shape or data.shape != (1,):
+            if self.shape or value.shape != (1,):
                 raise ValueError('Require cube data with shape %r, got '
-                                 '%r.' % (self.shape, data.shape))
-        self._numpy_array = data
+                                 '%r.' % (self.shape, value.shape))
+
+        if is_lazy_data(value):
+            self._dask_array = value
+            self._numpy_array = None
+
+        else:
+            self._numpy_array = value
 
     def has_lazy_data(self):
         return True if self._numpy_array is None else False
