@@ -51,6 +51,7 @@ import iris._constraints
 import iris._merge
 import iris.exceptions
 import iris.util
+from iris._lazy_data import is_lazy_data
 
 from iris._cube_coord_common import CFVariableMixin
 from functools import reduce
@@ -718,7 +719,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         self.fill_value = fill_value
 
-        if iris.util.is_dask_array(data):
+        if is_lazy_data(data):
             self._dask_array = data
             self._numpy_array = None
         else:
@@ -1664,7 +1665,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         result = None
         if array is not None:
-            if not iris.util.is_dask_array(array):
+            if not is_lazy_data(array):
                 raise TypeError('new values must be a dask array')
             if self.shape != array.shape:
                 # The _ONLY_ data reshape permitted is converting a

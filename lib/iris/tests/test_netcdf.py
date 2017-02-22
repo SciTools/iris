@@ -43,10 +43,10 @@ import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
 import iris.std_names
 import iris.util
-from iris.util import is_dask_array
 import iris.coord_systems as icoord_systems
 from iris.tests import mock
 import iris.tests.stock as stock
+from iris._lazy_data import is_lazy_data
 
 
 @tests.skip_data
@@ -115,7 +115,7 @@ class TestNetCDFLoad(tests.IrisTest):
         cube = iris.load_cube(tests.get_data_path(
             ('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
         # Make sure the AuxCoords have lazy data.
-        self.assertTrue(is_dask_array(cube.coord('latitude')._points))
+        self.assertTrue(is_lazy_data(cube.coord('latitude')._points))
 
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 

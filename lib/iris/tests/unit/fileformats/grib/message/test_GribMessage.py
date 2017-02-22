@@ -35,7 +35,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import GribMessage
 from iris.tests import mock
 from iris.tests.unit.fileformats.grib import _make_test_message
-from iris.util import is_dask_array
+from iris._lazy_data import is_lazy_data
 
 
 SECTION_6_NO_BITMAP = {'bitMapIndicator': 255, 'bitmap': None}
@@ -186,7 +186,7 @@ class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
              7: {'codedValues': np.arange(12)}})
         data = message.data
 
-        self.assertTrue(is_dask_array(data))
+        self.assertTrue(is_lazy_data(data))
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
         self.assertIs(data.fill_value, np.nan)

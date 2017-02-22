@@ -37,6 +37,7 @@ import iris.cube
 import iris.coords
 import iris.exceptions
 import iris.util
+from iris._lazy_data import is_lazy_data, array_masked_to_nans
 
 
 #
@@ -1227,14 +1228,12 @@ class ProtoCube(object):
                 data = self._skeletons[group[offset]].data
                 # Ensure the data is represented as a dask array and
                 # slot that array into the stack.
-                if iris.util.is_dask_array(data):
+                if is_lazy_data(data):
                     all_have_data = False
                 else:
                     if isinstance(data, np.ma.MaskedArray):
                         if np.ma.is_masked(data):
-                            if data.dtype.kind == 'i':
-                                data = data.astype('f8')
-                            data[data.mask] = np.nan
+                            data = array_masked_to_nans(data)
                         data = data.data
                     data = da.from_array(data, chunks=data.shape)
                 stack[nd_index] = data

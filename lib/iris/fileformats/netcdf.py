@@ -57,7 +57,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-
+from iris._lazy_data import array_masked_to_nans
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -396,9 +396,7 @@ class NetCDFDataProxy(object):
         finally:
             dataset.close()
         if isinstance(var, np.ma.MaskedArray):
-            if var.dtype.kind == 'i':
-                var = var.astype(np.dtype('f8'))
-            var[var.mask] = np.nan
+            var = array_masked_to_nans(var)
             var = var.data
         return var
 

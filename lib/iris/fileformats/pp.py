@@ -43,6 +43,7 @@ import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
+from iris._lazy_data import array_masked_to_nans
 
 try:
     import mo_pack
@@ -1045,12 +1046,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
 
     # Mask the array?
     if mdi in data:
-        # data = ma.masked_values(data, mdi, copy=False)
-        # data = array_masked_to_nans(data)
-        if data_type.kind == 'i':
-            data = data.astype(np.dtype('f8'))
-
-        data[data == mdi] = np.nan
+        data = array_masked_to_nans(data, data==mdi)
 
     return data
 

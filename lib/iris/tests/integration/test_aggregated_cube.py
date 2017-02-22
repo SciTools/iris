@@ -25,7 +25,7 @@ import iris.tests as tests
 
 import iris
 from iris.analysis import MEAN
-from iris.util import is_dask_array
+from iris._lazy_data import is_lazy_data
 
 
 @tests.skip_biggus
@@ -46,7 +46,7 @@ class Test_aggregated_by(tests.IrisTest):
         # triggered the load of the coordinate's data.
         forecast_period_coord = cube.coord('forecast_period')
 
-        self.assertTrue(is_dask_array(forecast_period_coord._points))
+        self.assertTrue(is_lazy_data(forecast_period_coord._points))
 
         # Now confirm we can aggregate along this coord.
         res_cube = cube.aggregated_by('forecast_period', MEAN)
