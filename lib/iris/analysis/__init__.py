@@ -1414,11 +1414,11 @@ def _build_dask_mdtol_function(dask_nanfunction):
     """
     Make a wrapped dask statistic function that supports the 'mdtol' keyword.
 
-    'dask_nanfunction' must be a statistical function that handles NaNs as
+    'dask_nanfunction' must be a statistical function that treats NaNs as
     missing data, and which has the basic call signature
     "dask_nanfunction(data, axis, **kwargs)".
 
-    The returned value is new function operating on dask arrays.
+    The returned value is a new function operating on dask arrays.
     It has the call signature "stat(data, axis=-1, mdtol=None, *kwargs)".
 
     """
@@ -1431,6 +1431,7 @@ def _build_dask_mdtol_function(dask_nanfunction):
             point_counts = np.sum(np.ones(array.shape), axis=axis)
             point_mask_counts = da.sum(da.isnan(array), axis=axis)
             masked_point_fractions = (point_mask_counts + 0.0) / point_counts
+            # Note: the +0.0 forces a floating-point divide.
             boolean_mask = masked_point_fractions > mdtol
             result = da.where(boolean_mask, np.nan, dask_result)
         return result
