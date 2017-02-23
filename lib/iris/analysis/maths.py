@@ -122,7 +122,7 @@ def _assert_is_cube(cube):
 def _assert_compatible(cube, other):
     """
     Checks to see if cube.data and another array can be broadcast to
-    the same shape using ``numpy.broadcast_arrays`
+    the same shape.
 
     """
     try:
@@ -588,7 +588,7 @@ def _binary_op_common(operation_function, operation_name, cube, other,
         other = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
         try:
-            da.core.broadcast_shapes(cube.shape, other.shape)
+            broadcast_shapes(cube.shape, other.shape)
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube)
         other = other.core_data
