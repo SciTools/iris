@@ -561,11 +561,8 @@ class _Aggregator(object):
             The collapsed cube with its aggregated data payload.
 
         """
-        if isinstance(data_result, biggus.Array):
-            collapsed_cube.lazy_data(data_result)
-        else:
-            collapsed_cube.data = data_result
 
+        collapsed_cube.data = data_result
         return collapsed_cube
 
     def aggregate_shape(self, **kwargs):
