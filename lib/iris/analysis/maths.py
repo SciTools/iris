@@ -592,7 +592,7 @@ def _binary_op_common(operation_function, operation_name, cube, other,
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube)
         
-        other = other.lazy_data() if other.has_lazy_data() else other.data
+        other = other.core_data
     else:
         other = np.asanyarray(other)
 
@@ -654,20 +654,18 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 def _math_op_common(cube, operation_function, new_unit, in_place=False):
     _assert_is_cube(cube)
-    data = cube.lazy_data() if cube.has_lazy_data() else cube.data
     if in_place:
         new_cube = cube
         if cube.has_lazy_data():
-            new_lazy = operation_function(data)
-            new_cube.lazy_data(new_lazy)
+            new_cube.data = operation_function(cube.lazy_data())
         else:
             try:
-                operation_function(data, out=data)
+                operation_function(cube.data, out=cube.data)
             except TypeError:
                 # Non ufunc function
-                operation_function(data)
+                operation_function(cube.data)
     else:
-        new_cube = cube.copy(data=operation_function(data))
+        new_cube = cube.copy(data=operation_function(cube.core_data))
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
