@@ -205,6 +205,9 @@ class TestPPField_GlobalTemperature(IrisPPTest):
 
 @tests.skip_data
 class TestPackedPP(IrisPPTest):
+    # skip this tests, there are differences in behaviour of
+    # the mock patch of mo_pack across python and mock versions
+    @tests.skip_biggus
     def test_wgdos(self):
         filepath = tests.get_data_path(('PP', 'wgdos_packed',
                                         'nae.20100104-06_0001.pp'))
