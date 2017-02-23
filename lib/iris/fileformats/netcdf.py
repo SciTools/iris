@@ -395,7 +395,7 @@ class NetCDFDataProxy(object):
             var = variable[keys]
         finally:
             dataset.close()
-        if isinstance(var, np.ma.MaskedArray):
+        if isinstance(var, ma.MaskedArray):
             var = array_masked_to_nans(var)
             var = var.data
         return var

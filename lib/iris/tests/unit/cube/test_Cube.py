@@ -50,10 +50,10 @@ class Test___init___data(tests.IrisTest):
         self.assertArrayEqual(cube.data, data)
 
     def test_masked(self):
-        # np.ma.MaskedArray should be allowed through
-        data = np.ma.masked_greater(np.arange(12).reshape(3, 4), 1)
+        # ma.MaskedArray should be allowed through
+        data = ma.masked_greater(np.arange(12).reshape(3, 4), 1)
         cube = Cube(data)
-        self.assertEqual(type(cube.data), np.ma.MaskedArray)
+        self.assertEqual(type(cube.data), ma.MaskedArray)
         self.assertMaskedArrayEqual(cube.data, data)
 
     def test_matrix(self):
@@ -118,16 +118,16 @@ class Test_extract(tests.IrisTest):
 class Test_xml(tests.IrisTest):
     def test_checksum_ignores_masked_values(self):
         # Mask out an single element.
-        data = np.ma.arange(12).reshape(3, 4)
-        data[1, 2] = np.ma.masked
+        data = ma.arange(12).reshape(3, 4)
+        data[1, 2] = ma.masked
         cube = Cube(data)
         self.assertCML(cube)
 
         # If we change the underlying value before masking it, the
         # checksum should be unaffected.
-        data = np.ma.arange(12).reshape(3, 4)
+        data = ma.arange(12).reshape(3, 4)
         data[1, 2] = 42
-        data[1, 2] = np.ma.masked
+        data[1, 2] = ma.masked
         cube = Cube(data)
         self.assertCML(cube)
 
@@ -400,14 +400,14 @@ class Test_rolling_window(tests.IrisTest):
     def test_kwargs(self):
         # Rolling window with missing data not tolerated
         window = 2
-        self.cube.data = np.ma.array(self.cube.data,
-                                     mask=([True, False, False,
-                                            False, True, False]))
+        self.cube.data = ma.array(self.cube.data,
+                                  mask=([True, False, False,
+                                         False, True, False]))
         res_cube = self.cube.rolling_window('val', iris.analysis.MEAN,
                                             window, mdtol=0)
-        expected_result = np.ma.array([-99., 1.5, 2.5, -99., -99.],
-                                      mask=[True, False, False, True, True],
-                                      dtype=np.float64)
+        expected_result = ma.array([-99., 1.5, 2.5, -99., -99.],
+                                   mask=[True, False, False, True, True],
+                                   dtype=np.float64)
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
 
@@ -1191,7 +1191,7 @@ class Test_copy(tests.IrisTest):
         self.assertIsNot(cube_copy, cube)
         self.assertEqual(cube_copy, cube)
         self.assertIsNot(cube_copy.data, cube.data)
-        if isinstance(cube.data, np.ma.MaskedArray):
+        if isinstance(cube.data, ma.MaskedArray):
             self.assertMaskedArrayEqual(cube_copy.data, cube.data)
             if cube.data.mask is not ma.nomask:
                 # "No mask" is a constant : all other cases must be distinct.
@@ -1204,11 +1204,11 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__masked_emptymask(self):
-        cube = Cube(np.ma.array([0, 1]))
+        cube = Cube(ma.array([0, 1]))
         self._check_copy(cube, cube.copy())
 
     def test__masked_arraymask(self):
-        cube = Cube(np.ma.array([0, 1], mask=[True, False]))
+        cube = Cube(ma.array([0, 1], mask=[True, False]))
         self._check_copy(cube, cube.copy())
 
     def test__scalar(self):
@@ -1216,11 +1216,11 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__masked_scalar_emptymask(self):
-        cube = Cube(np.ma.array(0))
+        cube = Cube(ma.array(0))
         self._check_copy(cube, cube.copy())
 
     def test__masked_scalar_arraymask(self):
-        cube = Cube(np.ma.array(0, mask=False))
+        cube = Cube(ma.array(0, mask=False))
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):

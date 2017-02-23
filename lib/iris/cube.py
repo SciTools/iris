@@ -24,12 +24,13 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-from xml.dom.minidom import Document
 import collections
 import copy
 import datetime
+from functools import reduce
 import operator
 import warnings
+from xml.dom.minidom import Document
 import zlib
 
 import biggus
@@ -37,7 +38,12 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
+from iris._cube_coord_common import CFVariableMixin
+import iris._concatenate
+import iris._constraints
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import is_lazy_data, array_masked_to_nans
+import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
@@ -45,16 +51,8 @@ import iris.analysis._interpolate_private
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
-import iris._concatenate
-import iris._constraints
-
-import iris._merge
 import iris.exceptions
 import iris.util
-from iris._lazy_data import is_lazy_data, array_masked_to_nans
-
-from iris._cube_coord_common import CFVariableMixin
-from functools import reduce
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
@@ -725,7 +723,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._numpy_array = None
         else:
             self._dask_array = None
-            if not isinstance(data, np.ma.MaskedArray):
+            if not isinstance(data, ma.MaskedArray):
                 data = np.asarray(data)
             self._numpy_array = data
 
@@ -1658,7 +1656,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         if self._numpy_array is not None:
             data = self._numpy_array
-            if isinstance(data, np.ma.masked_array):
+            if isinstance(data, ma.masked_array):
                 data = array_masked_to_nans(data)
                 data = data.data
             result = da.from_array(data, chunks=data.shape)
