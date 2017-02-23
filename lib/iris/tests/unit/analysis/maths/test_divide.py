@@ -63,7 +63,6 @@ class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     def cube_func(self):
         return divide
 
-    @tests.skip_biggus
     def test_unmasked_div_zero(self):
         # Ensure cube behaviour matches numpy operator behaviour for the
         # handling of arrays containing 0.
@@ -78,7 +77,6 @@ class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
 
         self.assertArrayEqual(com, res)
 
-    @tests.skip_biggus
     def test_masked_div_zero(self):
         # Ensure cube behaviour matches numpy operator behaviour for the
         # handling of arrays containing 0.

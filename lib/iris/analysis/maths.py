@@ -37,8 +37,8 @@ import iris.cube
 import iris.exceptions
 import iris.util
 
-import biggus
-from biggus import BroadcastArray as BA
+import dask.array as da
+from dask.array.core import broadcast_shapes
 
 
 def abs(cube, in_place=False):
@@ -59,7 +59,8 @@ def abs(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.abs, cube.units, in_place=in_place)
+    op = da.absolute if cube.has_lazy_data() else np.abs
+    return _math_op_common(cube, op, cube.units, in_place=in_place)
 
 
 def intersection_of_cubes(cube, other_cube):
@@ -121,34 +122,24 @@ def _assert_is_cube(cube):
 def _assert_compatible(cube, other):
     """
     Checks to see if cube.data and another array can be broadcast to
-    the same shape using ``numpy.broadcast_arrays``.
+    the same shape.
 
     """
-    # This code previously returned broadcasted versions of the cube
-    # data and the other array. As numpy.broadcast_arrays does not work
-    # with masked arrays (it returns them as ndarrays) operations
-    # involving masked arrays would be broken.
-
     try:
-        if not isinstance(other, biggus.Array):
-            data_view, other_view = BA.broadcast_arrays(cube._my_data,
-                                                        np.asarray(other))
-
-        else:
-            data_view, other_view = BA.broadcast_arrays(cube._my_data, other)
+        new_shape = broadcast_shapes(cube.shape, other.shape)
     except ValueError as err:
         # re-raise
         raise ValueError("The array was not broadcastable to the cube's data "
-                         "shape. The error message from numpy when "
+                         "shape. The error message when "
                          "broadcasting:\n{}\nThe cube's shape was {} and the "
                          "array's shape was {}".format(err, cube.shape,
                                                        other.shape))
 
-    if cube.shape != data_view.shape:
-        raise ValueError("The array operation would increase the "
+    if cube.shape != new_shape:
+        raise ValueError("The array operation would increase the size or "
                          "dimensionality of the cube. The new cube's data "
                          "would have had to become: {}".format(
-                             data_view.shape))
+                             new_shape))
 
 
 def _assert_matching_units(cube, other, operation_name):
@@ -436,8 +427,12 @@ def exponentiate(cube, exponent, in_place=False):
     """
     _assert_is_cube(cube)
 
-    def power(data, out=None):
-        return np.power(data, exponent, out)
+    if cube.has_lazy_data():
+        def power(data):
+            return operator.pow(data, exponent)
+    else:
+        def power(data, out=None):
+            return np.pow(data, exponent, out)
 
     return _math_op_common(cube, power, cube.units ** exponent,
                            in_place=in_place)
@@ -465,7 +460,8 @@ def exp(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.exp, cf_units.Unit('1'),
+    op = da.exp if cube.has_lazy_data() else np.exp
+    return _math_op_common(cube, op, cf_units.Unit('1'),
                            in_place=in_place)
 
 
@@ -487,7 +483,8 @@ def log(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log, cube.units.log(math.e),
+    op = da.log if cube.has_lazy_data() else np.log
+    return _math_op_common(cube, op, cube.units.log(math.e),
                            in_place=in_place)
 
 
@@ -509,7 +506,8 @@ def log2(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log2, cube.units.log(2),
+    op = da.log2 if cube.has_lazy_data() else np.log2
+    return _math_op_common(cube, op, cube.units.log(2),
                            in_place=in_place)
 
 
@@ -531,7 +529,8 @@ def log10(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log10, cube.units.log(10),
+    op = da.log10 if cube.has_lazy_data() else np.log10
+    return _math_op_common(cube, op, cube.units.log(10),
                            in_place=in_place)
 
 
@@ -635,16 +634,16 @@ def _binary_op_common(operation_function, operation_name, cube, other,
                            `cube` and `cube.data`
     """
     _assert_is_cube(cube)
-
     if isinstance(other, iris.coords.Coord):
         other = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
         try:
-            BA.broadcast_arrays(cube._my_data, other._my_data)
+            broadcast_shapes(cube.shape, other.shape)
         except ValueError:
-            other = iris.util.as_compatible_shape(other, cube)._my_data
-        else:
-            other = other._my_data
+            other = iris.util.as_compatible_shape(other, cube)
+        other = other.core_data
+    else:
+        other = np.asanyarray(other)
 
     # don't worry about checking for other data types (such as scalars or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
@@ -706,13 +705,16 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
     _assert_is_cube(cube)
     if in_place:
         new_cube = cube
-        try:
-            operation_function(new_cube._my_data, out=new_cube._my_data)
-        except TypeError:
-            # Non ufunc function
-            operation_function(new_cube.data)
+        if cube.has_lazy_data():
+            new_cube.data = operation_function(cube.lazy_data())
+        else:
+            try:
+                operation_function(cube.data, out=cube.data)
+            except TypeError:
+                # Non ufunc function
+                operation_function(cube.data)
     else:
-        new_cube = cube.copy(data=operation_function(cube._my_data))
+        new_cube = cube.copy(data=operation_function(cube.core_data))
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
