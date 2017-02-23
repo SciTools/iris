@@ -24,27 +24,34 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
+import dask.array as da
 
-import biggus
 from iris.analysis import STD_DEV
 
 
 class Test_lazy_aggregate(tests.IrisTest):
-    def test_unsupported_mdtol(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
-        msg = "unexpected keyword argument 'mdtol'"
-        with self.assertRaisesRegexp(TypeError, msg):
-            STD_DEV.lazy_aggregate(array, axis=0, mdtol=0.8)
+    def test_mdtol(self):
+        na = np.nan
+        array = np.array([[1., 2., 1., 2.],
+                          [1., 2., 3., na],
+                          [1., 2., na, na]])
+        array = da.from_array(array, chunks=1e6)
+        var = STD_DEV.lazy_aggregate(array, axis=1, mdtol=0.3)
+        result = var.compute()
+        masked_result = np.ma.masked_array(result, mask=np.isnan(result))
+        masked_expected = np.ma.masked_array([0.57735, 1., 0.707107],
+                                             mask=[0, 0, 1])
+        self.assertMaskedArrayAlmostEqual(masked_result, masked_expected)
 
     def test_ddof_one(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = da.from_array(np.arange(8), chunks=1e6)
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=1)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(2.449489))
+        self.assertArrayAlmostEqual(var.compute(), np.array(2.449489))
 
     def test_ddof_zero(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = da.from_array(np.arange(8), chunks=1e6)
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=0)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(2.291287))
+        self.assertArrayAlmostEqual(var.compute(), np.array(2.291287))
 
 
 class Test_name(tests.IrisTest):

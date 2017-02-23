@@ -144,7 +144,6 @@ class Test_xml(tests.IrisTest):
         self.assertIn('byteorder', cube.xml(byteorder=True))
 
 
-@tests.skip_biggus
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))

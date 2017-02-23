@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -68,24 +68,15 @@ class Test_masked(tests.IrisTest):
 
 
 class Test_lazy_aggregate(tests.IrisTest):
-    def test_unsupported_mdtol(self):
-        # The VARIANCE aggregator supports lazy_aggregation but does
-        # not provide mdtol handling. Check that a TypeError is raised
-        # if this unsupported kwarg is specified.
-        array = biggus.NumpyArrayAdapter(np.arange(8))
-        msg = "unexpected keyword argument 'mdtol'"
-        with self.assertRaisesRegexp(TypeError, msg):
-            VARIANCE.lazy_aggregate(array, axis=0, mdtol=0.8)
-
     def test_ddof_one(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = da.from_array(np.arange(8), chunks=1e6)
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=1)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(6.0))
+        self.assertArrayAlmostEqual(var.compute(), np.array(6.0))
 
     def test_ddof_zero(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = da.from_array(np.arange(8), chunks=1e6)
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=0)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(5.25))
+        self.assertArrayAlmostEqual(var.compute(), np.array(5.25))
 
 
 class Test_name(tests.IrisTest):
