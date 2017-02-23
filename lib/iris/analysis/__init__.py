@@ -53,7 +53,6 @@ import six
 import collections
 
 import biggus
-import dask.array as da
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
@@ -562,11 +561,8 @@ class _Aggregator(object):
             The collapsed cube with its aggregated data payload.
 
         """
-        if isinstance(data_result, da.Array):
-            collapsed_cube.lazy_data(data_result)
-        else:
-            collapsed_cube.data = data_result
 
+        collapsed_cube.data = data_result
         return collapsed_cube
 
     def aggregate_shape(self, **kwargs):

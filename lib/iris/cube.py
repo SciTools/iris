@@ -3052,7 +3052,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 new_cube_data = self.data.copy()
         else:
             # Use the provided data (without copying it).
-            if not isinstance(data, da.Array):
+            if not is_lazy_data(data):
                 data = np.asanyarray(data)
 
             if data.shape != self.shape:
