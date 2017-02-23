@@ -38,6 +38,7 @@ import iris.exceptions
 import iris.util
 
 import dask.array as da
+from dask.array.core import broadcast_shapes
 
 
 def abs(cube, in_place=False):
@@ -123,16 +124,21 @@ def _assert_compatible(cube, other):
     the same shape using ``numpy.broadcast_arrays`
 
     """
-    for a, b in zip(cube.shape[::-1], other.shape[::-1]):
-        if a != 1 and b != 1 and a != b:
-            raise ValueError(
-                "The array was not broadcastable to the cube's data shape. "
-                "The cube's shape was {} and the array's shape was {}".format(
-                    cube.shape, other.shape))
+    try:
+        new_shape = broadcast_shapes(cube.shape, other.shape)
+    except ValueError as err:
+        # re-raise
+        raise ValueError("The array was not broadcastable to the cube's data "
+                         "shape. The error message when "
+                         "broadcasting:\n{}\nThe cube's shape was {} and the "
+                         "array's shape was {}".format(err, cube.shape,
+                                                       other.shape))
 
-    if len(cube.shape) < len(other.shape):
-        raise ValueError("The array operation would increase the "
-                         "dimensionality of the cube.")
+    if cube.shape != new_shape:
+        raise ValueError("The array operation would increase the size or "
+                         "dimensionality of the cube. The new cube's data "
+                         "would have had to become: {}".format(
+                             new_shape))
 
 
 def _assert_matching_units(cube, other, operation_name):
@@ -575,9 +581,9 @@ def _binary_op_common(operation_function, operation_name, cube, other,
         try:
             da.core.broadcast_shapes(cube.shape, other.shape)
         except ValueError:
-            other = iris.util.as_compatible_shape(other, cube).lazy_data()
-        else:
-            other = other.lazy_data()
+            other = iris.util.as_compatible_shape(other, cube)
+        
+        other = other.lazy_data() if other.has_lazy_data() else other.data
     else:
         other = np.asanyarray(other)
 
