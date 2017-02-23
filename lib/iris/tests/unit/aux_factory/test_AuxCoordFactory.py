@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import iris._lazy_data
+import dask.array as da
 import numpy as np
 
 import iris.coords
@@ -57,7 +58,7 @@ class Test__nd_points(tests.IrisTest):
 
     def test_lazy_simple(self):
         raw_points = np.arange(12).reshape(4, 3)
-        points = iris._lazy_data.as_lazy_data(raw_points)
+        points = da.from_array(raw_points, 1)
         coord = iris.coords.AuxCoord(points)
         self.assertTrue(iris._lazy_data.is_lazy_data(coord._points))
         result = AuxCoordFactory._nd_points(coord, (0, 1), 2)
@@ -69,7 +70,7 @@ class Test__nd_points(tests.IrisTest):
 
     def test_lazy_complex(self):
         raw_points = np.arange(12).reshape(4, 3)
-        points = iris._lazy_data.as_lazy_data(raw_points)
+        points = da.from_array(raw_points, 1)
         coord = iris.coords.AuxCoord(points)
         self.assertTrue(iris._lazy_data.is_lazy_data(coord._points))
         result = AuxCoordFactory._nd_points(coord, (3, 2), 5)

@@ -34,6 +34,7 @@ import zlib
 
 import biggus
 import iris._lazy_data
+import dask.array as da
 import netcdftime
 import numpy as np
 
@@ -1610,11 +1611,9 @@ class AuxCoord(Coord):
     @property
     def points(self):
         """Property containing the points values as a numpy array"""
-        points = self._points
-        if iris._lazy_data.is_lazy_data(points):
-            points = iris._lazy_data.as_concrete_data(points)
-            self._points = points
-        return points.view()
+        if iris._lazy_data.is_lazy_data(self._points):
+            self._points = self._points.compute()
+        return self._points.view()
 
     @points.setter
     def points(self, points):
