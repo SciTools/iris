@@ -63,6 +63,14 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertMaskedArrayAlmostEqual(masked_result,
                                           self.expected_masked)
 
+    def test_multi_axis(self):
+        data = np.arange(24.0).reshape((2, 3, 4))
+        collapse_axes = (0, 2)
+        lazy_data = da.from_array(data, chunks=1e6)
+        agg = MEAN.lazy_aggregate(lazy_data, axis=collapse_axes)
+        expected = np.mean(data, axis=collapse_axes)
+        self.assertArrayAllClose(agg.compute(), expected)
+
 
 class Test_name(tests.IrisTest):
     def test(self):
