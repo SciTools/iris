@@ -36,7 +36,6 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
 from iris.fileformats.pp import PPField3
-import iris._lazy_data
 
 
 class FieldCollation(object):
@@ -89,7 +88,8 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            data_arrays = [f._data for f in self.fields]
+            data_arrays = [da.from_array(f._data, f._data.shape)
+                           for f in self.fields]
             vector_dims_list = list(self.vector_dims_shape)
             vector_dims_list.reverse()
             self._data_cache = data_arrays
@@ -98,6 +98,17 @@ class FieldCollation(object):
                                     in range(0, len(self._data_cache), size)]
         self._data_cache, = self._data_cache
         return self._data_cache
+
+    @property
+    def data_proxy(self):
+        return self.data
+
+    @property
+    def bmdi(self):
+        bmdis = set([f.bmdi for f in self.fields])
+        if len(bmdis) != 1:
+            raise ValueError('Multiple bmdi values defined in FieldCollection')
+        return bmdis.pop()
 
     @property
     def vector_dims_shape(self):

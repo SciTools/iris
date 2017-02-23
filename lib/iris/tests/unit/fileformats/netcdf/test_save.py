@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -46,6 +46,8 @@ class Test_attributes(tests.IrisTest):
             ds.close()
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
 
+    # cannot save a cube with an empty array as data
+    @tests.skip_biggus
     def test_attributes_arrays(self):
         # Ensure that attributes containing NumPy arrays can be equality
         # checked and their cubes saved as appropriate.

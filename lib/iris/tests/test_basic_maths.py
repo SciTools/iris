@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,6 +35,7 @@ import iris.exceptions
 import iris.tests.stock
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestBasicMaths(tests.IrisTest):
     def setUp(self):
@@ -356,6 +357,7 @@ class TestBasicMaths(tests.IrisTest):
             iris.analysis.maths.add('not a cube', 123)
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestDivideAndMultiply(tests.IrisTest):
     def setUp(self):
@@ -499,6 +501,7 @@ class TestDivideAndMultiply(tests.IrisTest):
                                          in_place=True)
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestExponentiate(tests.IrisTest):
     def setUp(self):
@@ -528,6 +531,7 @@ class TestExponentiate(tests.IrisTest):
             iris.analysis.maths.exponentiate('not a cube', 2)
 
 
+@tests.skip_biggus
 class TestExponential(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.simple_1d()
@@ -537,6 +541,7 @@ class TestExponential(tests.IrisTest):
         self.assertCMLApproxData(e, ('analysis', 'exp.cml'))
 
 
+@tests.skip_biggus
 class TestApplyUfunc(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.simple_2d()
@@ -568,6 +573,7 @@ class TestApplyUfunc(tests.IrisTest):
         self.assertArrayAlmostEqual(b2.data, ans)
 
 
+@tests.skip_biggus
 class TestIFunc(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.simple_2d()
@@ -619,6 +625,7 @@ class TestIFunc(tests.IrisTest):
         self.assertArrayAlmostEqual(b.data, ans)
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestLog(tests.IrisTest):
     def setUp(self):
@@ -637,6 +644,7 @@ class TestLog(tests.IrisTest):
         self.assertCMLApproxData(e, ('analysis', 'log10.cml'), rtol=1e-6)
 
 
+@tests.skip_biggus
 class TestMaskedArrays(tests.IrisTest):
     ops = (operator.add, operator.sub, operator.mul)
     iops = (operator.iadd, operator.isub, operator.imul)

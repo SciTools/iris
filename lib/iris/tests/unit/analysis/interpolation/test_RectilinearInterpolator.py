@@ -28,7 +28,7 @@ import iris.tests as tests
 
 import datetime
 
-import biggus
+import dask.array as da
 import numpy as np
 
 import iris
@@ -361,7 +361,6 @@ class Test___call___1D_singlelendim(ThreeDimCube):
         self.assertArrayEqual(result.data, self.cube.data)
 
 
-@tests.skip_biggus
 class Test___call___masked(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_4d_with_hybrid_height()
@@ -482,7 +481,7 @@ class Test___call___lazy_data(ThreeDimCube):
         # of loading it again and again.
 
         # Modify self.cube to have lazy data.
-        self.cube.lazy_data(biggus.NumpyArrayAdapter(self.data))
+        self.cube.data = da.from_array(self.data, chunks=self.data.shape)
         self.assertTrue(self.cube.has_lazy_data())
 
         # Perform interpolation and check the data has been loaded.

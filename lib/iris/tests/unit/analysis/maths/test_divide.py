@@ -32,6 +32,7 @@ from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
 
 
+@tests.skip_biggus
 @tests.skip_data
 class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
     @property
@@ -58,6 +59,7 @@ class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
     def cube_func(self):
         return divide
 
+    @tests.skip_biggus
     def test_unmasked_div_zero(self):
         # Ensure cube behaviour matches numpy operator behaviour for the
         # handling of arrays containing 0.
