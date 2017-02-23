@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -49,12 +49,11 @@ class Test___init___data(tests.IrisTest):
         self.assertEqual(type(cube.data), np.ndarray)
         self.assertArrayEqual(cube.data, data)
 
-    @tests.skip_biggus
     def test_masked(self):
-        # np.ma.MaskedArray should be allowed through
-        data = np.ma.masked_greater(np.arange(12).reshape(3, 4), 1)
+        # ma.MaskedArray should be allowed through
+        data = ma.masked_greater(np.arange(12).reshape(3, 4), 1)
         cube = Cube(data)
-        self.assertEqual(type(cube.data), np.ma.MaskedArray)
+        self.assertEqual(type(cube.data), ma.MaskedArray)
         self.assertMaskedArrayEqual(cube.data, data)
 
     def test_matrix(self):
@@ -117,19 +116,18 @@ class Test_extract(tests.IrisTest):
 
 
 class Test_xml(tests.IrisTest):
-    @tests.skip_biggus
     def test_checksum_ignores_masked_values(self):
         # Mask out an single element.
-        data = np.ma.arange(12).reshape(3, 4)
-        data[1, 2] = np.ma.masked
+        data = ma.arange(12).reshape(3, 4)
+        data[1, 2] = ma.masked
         cube = Cube(data)
         self.assertCML(cube)
 
         # If we change the underlying value before masking it, the
         # checksum should be unaffected.
-        data = np.ma.arange(12).reshape(3, 4)
+        data = ma.arange(12).reshape(3, 4)
         data[1, 2] = 42
-        data[1, 2] = np.ma.masked
+        data[1, 2] = ma.masked
         cube = Cube(data)
         self.assertCML(cube)
 
@@ -146,10 +144,11 @@ class Test_xml(tests.IrisTest):
         self.assertIn('byteorder', cube.xml(byteorder=True))
 
 
+@tests.skip_biggus
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))
-        self.lazydata = biggus.NumpyArrayAdapter(self.data)
+        self.lazydata = da.from_array(self.data, chunks=self.data.shape)
         cube = Cube(self.lazydata)
         for i_dim, name in enumerate(('y', 'x')):
             npts = cube.shape[i_dim]
@@ -401,14 +400,14 @@ class Test_rolling_window(tests.IrisTest):
     def test_kwargs(self):
         # Rolling window with missing data not tolerated
         window = 2
-        self.cube.data = np.ma.array(self.cube.data,
-                                     mask=([True, False, False,
-                                            False, True, False]))
+        self.cube.data = ma.array(self.cube.data,
+                                  mask=([True, False, False,
+                                         False, True, False]))
         res_cube = self.cube.rolling_window('val', iris.analysis.MEAN,
                                             window, mdtol=0)
-        expected_result = np.ma.array([-99., 1.5, 2.5, -99., -99.],
-                                      mask=[True, False, False, True, True],
-                                      dtype=np.float64)
+        expected_result = ma.array([-99., 1.5, 2.5, -99., -99.],
+                                   mask=[True, False, False, True, True],
+                                   dtype=np.float64)
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
 
@@ -546,7 +545,7 @@ class Test_slices_over(tests.IrisTest):
 def create_cube(lon_min, lon_max, bounds=False):
     n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
     data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, n_lons)
-    data = biggus.NumpyArrayAdapter(data)
+    data = da.from_array(data, chunks=data.shape)
     cube = Cube(data, standard_name='x_wind', units='ms-1')
     cube.add_dim_coord(iris.coords.DimCoord([0, 20, 40, 80],
                                             long_name='level_height',
@@ -572,6 +571,7 @@ def create_cube(lon_min, lon_max, bounds=False):
 
 
 # Ensure all the other coordinates and factories are correctly preserved.
+@tests.skip_biggus
 class Test_intersection__Metadata(tests.IrisTest):
     def test_metadata(self):
         cube = create_cube(0, 360)
@@ -585,6 +585,7 @@ class Test_intersection__Metadata(tests.IrisTest):
 
 
 # Explicitly check the handling of `circular` on the result.
+@tests.skip_biggus
 class Test_intersection__Circular(tests.IrisTest):
     def test_regional(self):
         cube = create_cube(0, 360)
@@ -641,6 +642,7 @@ class Test_intersection__Invalid(tests.IrisTest):
             cube.intersection(longitude=(10, 10, False, False))
 
 
+@tests.skip_biggus
 class Test_intersection__Lazy(tests.IrisTest):
     def test_real_data(self):
         cube = create_cube(0, 360)
@@ -769,6 +771,7 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
 
 # Check what happens with a global, points-only circular intersection
 # coordinate.
+@tests.skip_biggus
 class Test_intersection__GlobalSrcModulus(tests.IrisTest):
     def test_global_wrapped_extreme_increasing_base_period(self):
         # Ensure that we can correctly handle points defined at (base + period)
@@ -954,6 +957,7 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
 
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
+@tests.skip_biggus
 class Test_intersection__ModulusBounds(tests.IrisTest):
     def test_global_wrapped_extreme_increasing_base_period(self):
         # Ensure that we can correctly handle bounds defined at (base + period)
@@ -1187,7 +1191,7 @@ class Test_copy(tests.IrisTest):
         self.assertIsNot(cube_copy, cube)
         self.assertEqual(cube_copy, cube)
         self.assertIsNot(cube_copy.data, cube.data)
-        if isinstance(cube.data, np.ma.MaskedArray):
+        if isinstance(cube.data, ma.MaskedArray):
             self.assertMaskedArrayEqual(cube_copy.data, cube.data)
             if cube.data.mask is not ma.nomask:
                 # "No mask" is a constant : all other cases must be distinct.
@@ -1200,11 +1204,11 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__masked_emptymask(self):
-        cube = Cube(np.ma.array([0, 1]))
+        cube = Cube(ma.array([0, 1]))
         self._check_copy(cube, cube.copy())
 
     def test__masked_arraymask(self):
-        cube = Cube(np.ma.array([0, 1], mask=[True, False]))
+        cube = Cube(ma.array([0, 1], mask=[True, False]))
         self._check_copy(cube, cube.copy())
 
     def test__scalar(self):
@@ -1212,15 +1216,15 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__masked_scalar_emptymask(self):
-        cube = Cube(np.ma.array(0))
+        cube = Cube(ma.array(0))
         self._check_copy(cube, cube.copy())
 
     def test__masked_scalar_arraymask(self):
-        cube = Cube(np.ma.array(0, mask=False))
+        cube = Cube(ma.array(0, mask=False))
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
-        cube = Cube(biggus.NumpyArrayAdapter(np.array([1, 0])))
+        cube = Cube(da.from_array(np.array([1, 0]), chunks=100))
         self._check_copy(cube, cube.copy())
 
 
@@ -1235,7 +1239,7 @@ class Test_dtype(tests.IrisTest):
 
     def test_lazy(self):
         data = np.arange(6, dtype=np.float32).reshape(2, 3)
-        lazydata = biggus.NumpyArrayAdapter(data)
+        lazydata = da.from_array(data, chunks=data.shape)
         cube = Cube(lazydata)
         self.assertEqual(cube.dtype, np.float32)
         # Check that accessing the dtype does not trigger loading of the data.
@@ -1415,7 +1419,7 @@ class TestCellMeasures(tests.IrisTest):
 class Test_transpose(tests.IrisTest):
     def test_lazy_data(self):
         data = np.arange(12).reshape(3, 4)
-        cube = Cube(biggus.NumpyArrayAdapter(data))
+        cube = Cube(da.from_array(data, chunks=data.shape))
         cube.transpose()
         self.assertTrue(cube.has_lazy_data())
         self.assertArrayEqual(data.T, cube.data)

@@ -24,19 +24,26 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-from xml.dom.minidom import Document
 import collections
 import copy
 import datetime
+from functools import reduce
 import operator
 import warnings
+from xml.dom.minidom import Document
 import zlib
 
 import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
+from iris._cube_coord_common import CFVariableMixin
+import iris._concatenate
+import iris._constraints
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import is_lazy_data, array_masked_to_nans
+import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
@@ -44,15 +51,8 @@ import iris.analysis._interpolate_private
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
-import iris._concatenate
-import iris._constraints
-from iris._lazy_data import is_lazy_data, as_lazy_data, as_concrete_data
-import iris._merge
 import iris.exceptions
 import iris.util
-
-from iris._cube_coord_common import CFVariableMixin
-from functools import reduce
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
@@ -64,7 +64,9 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'var_name',
                                            'units',
                                            'attributes',
-                                           'cell_methods'])):
+                                           'cell_methods',
+                                           'fill_value',
+                                           'dtype'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -648,7 +650,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
                  aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None):
+                 cell_measures_and_dims=None, fill_value=None, dtype=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -714,9 +716,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if not is_lazy_data(data):
-            data = np.asarray(data)
-        self._my_data = data
+        self.fill_value = fill_value
+
+        if is_lazy_data(data):
+            self._dask_array = data
+            self._numpy_array = None
+        else:
+            self._dask_array = None
+            if not isinstance(data, ma.MaskedArray):
+                data = np.asarray(data)
+            self._numpy_array = data
+
+        self._dtype = dtype
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -786,7 +797,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
-                            self.units, self.attributes, self.cell_methods)
+                            self.units, self.attributes, self.cell_methods,
+                            self.fill_value, self._dtype)
 
     @metadata.setter
     def metadata(self, value):
@@ -1590,63 +1602,67 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
     @property
+    def core_data(self):
+        """
+        The data at the core of this cube.
+        May be a numpy array or a dask array.
+        In using this, you are buying into not caring about the
+        type of the result
+        to be decided: should this be public??
+
+        """
+        if self._numpy_array is not None:
+            result = self._numpy_array
+        else:
+            result = self._dask_array
+        return result
+
+    @property
     def shape(self):
         """The shape of the data of this cube."""
-        shape = self._my_data.shape
-        return shape
+        return self.core_data.shape
 
     @property
     def dtype(self):
-        """The :class:`numpy.dtype` of the data of this cube."""
-        return self._my_data.dtype
+        if self._dtype is None:
+            result = self.core_data.dtype
+        else:
+            result = self._dtype
+        return result
+
+    @dtype.setter
+    def dtype(self, dtype):
+        self._dtype = dtype
 
     @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
         return len(self.shape)
 
-    def lazy_data(self, array=None):
+    def lazy_data(self):
         """
         Return a lazy array representing the Cube data.
-
-        Optionally, provide a new lazy array to assign as the cube data.
-        This must also be a lazy array, according to
-        :meth:`iris._lazy_data.is_lazy_data`.
 
         Accessing this method will never cause the data to be loaded.
         Similarly, calling methods on, or indexing, the returned Array
         will not cause the Cube to have loaded data.
 
         If the data have already been loaded for the Cube, the returned
-        Array will be a lazy array wrapper, generated by a call to
-        :meth:`iris._lazy_data.as_lazy_data`.
-
-        Kwargs:
-
-        * array (lazy array or None):
-            When this is not None it sets the multi-dimensional data of
-            the cube to the given value.
+        Array will be a new lazy array wrapper.
 
         Returns:
             A lazy array, representing the Cube data array.
 
         """
-        if array is not None:
-            if not is_lazy_data(array):
-                raise TypeError('new values must be a lazy array')
-            if self.shape != array.shape:
-                # The _ONLY_ data reshape permitted is converting a
-                # 0-dimensional array into a 1-dimensional array of
-                # length one.
-                # i.e. self.shape = () and array.shape == (1,)
-                if self.shape or array.shape != (1,):
-                    raise ValueError('Require cube data with shape %r, got '
-                                     '%r.' % (self.shape, array.shape))
-            self._my_data = array
+        if self._numpy_array is not None:
+            data = self._numpy_array
+            if isinstance(data, ma.masked_array):
+                data = array_masked_to_nans(data)
+                data = data.data
+            result = da.from_array(data, chunks=data.shape)
         else:
-            array = self._my_data
-        array = as_lazy_data(array)
-        return array
+            result = self._dask_array
+        return result
 
     @property
     def data(self):
@@ -1681,10 +1697,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        data = self._my_data
-        if is_lazy_data(data):
+        if self._numpy_array is None:
             try:
-                data = as_concrete_data(data)
+                data = self._dask_array.compute()
+                mask = np.isnan(data)
+                if data.dtype != self.dtype:
+                    data = data.astype(self.dtype)
+                    self.dtype = None
+                if np.all(~mask):
+                    self._numpy_array = data
+                else:
+                    fv = self.fill_value
+                    self._numpy_array = ma.masked_array(data, mask=mask,
+                                                        fill_value=fv)
             except MemoryError:
                 msg = "Failed to create the cube's data as there was not" \
                       " enough memory available.\n" \
@@ -1692,32 +1717,32 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       " type {1}.\n" \
                       "Consider freeing up variables or indexing the cube" \
                       " before getting its data."
-                msg = msg.format(self.shape, data.dtype)
+                msg = msg.format(self.shape, self.dtype)
                 raise MemoryError(msg)
-            # Unmask the array only if it is filled.
-            if (isinstance(data, np.ma.masked_array) and
-                    ma.count_masked(data) == 0):
-                data = data.data
-            # data may be a numeric type, so ensure an np.ndarray is returned
-            self._my_data = np.asanyarray(data)
-        return self._my_data
+        return self._numpy_array
 
     @data.setter
     def data(self, value):
-        data = np.asanyarray(value)
+        if not (hasattr(value, 'shape') and hasattr(value, 'dtype')):
+            value = np.asanyarray(value)
 
-        if self.shape != data.shape:
+        if self.shape is not None and self.shape != value.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
-            if self.shape or data.shape != (1,):
+            if self.shape or value.shape != (1,):
                 raise ValueError('Require cube data with shape %r, got '
-                                 '%r.' % (self.shape, data.shape))
+                                 '%r.' % (self.shape, value.shape))
 
-        self._my_data = data
+        if is_lazy_data(value):
+            self._dask_array = value
+            self._numpy_array = None
+
+        else:
+            self._numpy_array = value
 
     def has_lazy_data(self):
-        return is_lazy_data(self._my_data)
+        return True if self._numpy_array is None else False
 
     @property
     def dim_coords(self):
@@ -2180,19 +2205,24 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             first_slice = next(slice_gen)
         except StopIteration:
             first_slice = None
+        if self._numpy_array is not None:
+            cube_data = self._numpy_array
+        elif self._dask_array is not None:
+            cube_data = self._dask_array
+        else:
+            raise ValueError('This cube has no data, slicing is not supported')
 
         if first_slice is not None:
-            data = self._my_data[first_slice]
+            data = cube_data[first_slice]
         else:
-            data = copy.deepcopy(self._my_data)
+            data = copy.deepcopy(cube_data)
 
         for other_slice in slice_gen:
             data = data[other_slice]
 
         # We don't want a view of the data, so take a copy of it if it's
         # not already our own.
-        if is_lazy_data(data) or not data.flags['OWNDATA']:
-            data = copy.deepcopy(data)
+        data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
@@ -2814,14 +2844,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if new_order is None:
-            new_order = np.arange(self.ndim)[::-1]
+            # Passing numpy arrays as new_order works in numpy but not in dask,
+            # docs specify a list, so ensure a list is used.
+            new_order = list(np.arange(self.ndim)[::-1])
         elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
         if self.has_lazy_data():
-            self._my_data = self.lazy_data().transpose(new_order)
+            self._dask_array = self._dask_array.transpose(new_order)
         else:
-            self._my_data = self.data.transpose(new_order)
+            self._numpy_array = self.data.transpose(new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 

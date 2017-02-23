@@ -31,16 +31,17 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-import iris._lazy_data
 from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import GribMessage
 from iris.tests import mock
 from iris.tests.unit.fileformats.grib import _make_test_message
+from iris._lazy_data import is_lazy_data
 
 
 SECTION_6_NO_BITMAP = {'bitMapIndicator': 255, 'bitmap': None}
 
 
+@tests.skip_biggus
 @tests.skip_data
 class Test_messages_from_filename(tests.IrisTest):
     def test(self):
@@ -68,6 +69,7 @@ class Test_sections(tests.IrisTest):
         self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
 
+@tests.skip_biggus
 class Test_data__masked(tests.IrisTest):
     def setUp(self):
         self.bitmap = np.array([0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1])
@@ -126,6 +128,7 @@ class Test_data__masked(tests.IrisTest):
             message.data.ndarray()
 
 
+@tests.skip_biggus
 class Test_data__unsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
         message = _make_test_message({3: {'sourceOfGridDefinition': 1},
@@ -182,7 +185,8 @@ class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
              6: SECTION_6_NO_BITMAP,
              7: {'codedValues': np.arange(12)}})
         data = message.data
-        self.assertTrue(iris._lazy_data.is_lazy_data(data))
+
+        self.assertTrue(is_lazy_data(data))
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
         self.assertIs(data.fill_value, np.nan)
@@ -211,6 +215,7 @@ def _example_section_3(grib_definition_template_number, scanning_mode):
             'Ni': 4}
 
 
+@tests.skip_biggus
 @tests.iristest_timing_decorator
 class Test_data__grid_template_0(tests.IrisTest_nometa,
                                  Mixin_data__grid_template):
@@ -218,6 +223,7 @@ class Test_data__grid_template_0(tests.IrisTest_nometa,
         return _example_section_3(0, scanning_mode)
 
 
+@tests.skip_biggus
 @tests.iristest_timing_decorator
 class Test_data__grid_template_1(tests.IrisTest_nometa,
                                  Mixin_data__grid_template):
@@ -225,6 +231,7 @@ class Test_data__grid_template_1(tests.IrisTest_nometa,
         return _example_section_3(1, scanning_mode)
 
 
+@tests.skip_biggus
 @tests.iristest_timing_decorator
 class Test_data__grid_template_5(tests.IrisTest_nometa,
                                  Mixin_data__grid_template):
@@ -232,6 +239,7 @@ class Test_data__grid_template_5(tests.IrisTest_nometa,
         return _example_section_3(5, scanning_mode)
 
 
+@tests.skip_biggus
 @tests.iristest_timing_decorator
 class Test_data__grid_template_12(tests.IrisTest_nometa,
                                   Mixin_data__grid_template):
@@ -239,6 +247,7 @@ class Test_data__grid_template_12(tests.IrisTest_nometa,
         return _example_section_3(12, scanning_mode)
 
 
+@tests.skip_biggus
 @tests.iristest_timing_decorator
 class Test_data__grid_template_30(tests.IrisTest_nometa,
                                   Mixin_data__grid_template):
@@ -252,6 +261,7 @@ class Test_data__grid_template_30(tests.IrisTest_nometa,
         return section_3
 
 
+@tests.skip_biggus
 @tests.iristest_timing_decorator
 class Test_data__grid_template_40_regular(tests.IrisTest_nometa,
                                           Mixin_data__grid_template):
@@ -259,6 +269,7 @@ class Test_data__grid_template_40_regular(tests.IrisTest_nometa,
         return _example_section_3(40, scanning_mode)
 
 
+@tests.skip_biggus
 @tests.iristest_timing_decorator
 class Test_data__grid_template_90(tests.IrisTest_nometa,
                                   Mixin_data__grid_template):
@@ -272,6 +283,7 @@ class Test_data__grid_template_90(tests.IrisTest_nometa,
         return section_3
 
 
+@tests.skip_biggus
 class Test_data__unknown_grid_template(tests.IrisTest):
     def test(self):
         message = _make_test_message(

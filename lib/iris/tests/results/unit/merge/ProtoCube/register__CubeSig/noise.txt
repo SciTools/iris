@@ -4,4 +4,4 @@ failed to merge into a single cube.
   cube.attributes keys differ: 'stuffed'
   cube.cell_methods differ
   cube.shape differs: (3,) != (2,)
-  cube data dtype differs: int64 != int8
+  cube data dtype differs: int64 != float64

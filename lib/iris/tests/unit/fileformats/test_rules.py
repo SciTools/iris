@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -105,6 +105,7 @@ class TestConcreteReferenceTarget(tests.IrisTest):
 
 
 class TestLoadCubes(tests.IrisTest):
+    @tests.skip_biggus
     def test_simple_factory(self):
         # Test the creation process for a factory definition which only
         # uses simple dict arguments.
@@ -155,6 +156,7 @@ class TestLoadCubes(tests.IrisTest):
         self.assertEqual(aux_factory.fake_args, ({'name': 'foo'},))
 
     @tests.skip_data
+    @tests.skip_biggus
     def test_cross_reference(self):
         # Test the creation process for a factory definition which uses
         # a cross-reference.
