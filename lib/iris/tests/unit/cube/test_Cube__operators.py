@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ import biggus
 from biggus._init import _Elementwise
 
 
+@tests.skip_biggus
 class Test_Lazy_Maths(tests.IrisTest):
     def build_lazy_cube(self, points, bounds=None, nx=10):
         data = np.arange(len(points) * nx).reshape(len(points), nx)
@@ -104,6 +105,7 @@ class Test_Lazy_Maths(tests.IrisTest):
         self.assert_elementwise(c1, None, result, np.divide)
 
 
+@tests.skip_biggus
 class Test_Scalar_Cube_Lazy_Maths(tests.IrisTest):
     def build_lazy_cube(self, value):
         data = np.array(value)
@@ -163,6 +165,7 @@ class Test_Scalar_Cube_Lazy_Maths(tests.IrisTest):
         self.assertEqual(data.shape, ())
 
 
+@tests.skip_biggus
 class Test_Masked_Lazy_Maths(tests.IrisTest):
 
     def build_lazy_cube(self):

@@ -34,7 +34,8 @@ from iris.coords import DimCoord, AuxCoord
 import iris.tests.stock as stock
 
 
-def _make_cube(x, y, data, aux=None, offset=0, scalar=None):
+def _make_cube(x, y, data, aux=None, offset=0, scalar=None,
+               dtype=np.float32, fill_value=None):
     """
     A convenience test function that creates a custom 2D cube.
 
@@ -70,14 +71,14 @@ def _make_cube(x, y, data, aux=None, offset=0, scalar=None):
         The newly created 2D :class:`iris.cube.Cube`.
 
     """
-    x_range = np.arange(*x, dtype=np.float32)
-    y_range = np.arange(*y, dtype=np.float32)
+    x_range = np.arange(*x, dtype=dtype)
+    y_range = np.arange(*y, dtype=dtype)
     x_size = len(x_range)
     y_size = len(y_range)
 
-    cube_data = np.empty((y_size, x_size), dtype=np.float32)
+    cube_data = np.empty((y_size, x_size), dtype=dtype)
     cube_data[:] = data
-    cube = iris.cube.Cube(cube_data)
+    cube = iris.cube.Cube(cube_data, fill_value=fill_value, dtype=dtype)
     coord = DimCoord(y_range, long_name='y')
     coord.guess_bounds()
     cube.add_dim_coord(coord, 0)
@@ -95,12 +96,12 @@ def _make_cube(x, y, data, aux=None, offset=0, scalar=None):
             cube.add_aux_coord(coord, (1,))
         if 'xy' in aux:
             payload = np.arange(y_size * x_size,
-                                dtype=np.float32).reshape(y_size, x_size)
+                                dtype=dtype).reshape(y_size, x_size)
             coord = AuxCoord(payload * 100 + offset, long_name='xy-aux')
             cube.add_aux_coord(coord, (0, 1))
 
     if scalar is not None:
-        data = np.array([scalar], dtype=np.float32)
+        data = np.array([scalar], dtype=dtype)
         coord = AuxCoord(data, long_name='height', units='m')
         cube.add_aux_coord(coord, ())
 
@@ -375,6 +376,27 @@ class Test2D(tests.IrisTest):
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertCML(result, ('concatenate', 'concat_masked_2y2d.cml'))
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+        mask = np.array([[True, False],
+                         [False, True],
+                         [False, True],
+                         [True, False]], dtype=np.bool)
+        self.assertArrayEqual(result[0].data.mask, mask)
+
+    def test_concat_masked_2y2d_int16(self):
+        cubes = []
+        x = (0, 2)
+        cube = _make_cube(x, (0, 2), 1, dtype=np.int16, fill_value=-37)
+        cube.data = np.ma.asarray(cube.data)
+        cube.data[(0, 1), (0, 1)] = ma.masked
+        cubes.append(cube)
+        cube = _make_cube(x, (2, 4), 2, dtype=np.int16, fill_value=-37)
+        cube.data = ma.asarray(cube.data)
+        cube.data[(0, 1), (1, 0)] = ma.masked
+        cubes.append(cube)
+        result = concatenate(cubes)
+        self.assertCML(result, ('concatenate', 'concat_masked_2y2d_int16.cml'))
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (4, 2))
         mask = np.array([[True, False],

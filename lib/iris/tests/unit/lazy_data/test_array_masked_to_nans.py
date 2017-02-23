@@ -25,20 +25,21 @@ import iris.tests as tests
 
 
 import numpy as np
+import numpy.ma as ma
 
 from iris._lazy_data import array_masked_to_nans
 
 
 class Test(tests.IrisTest):
     def test_masked(self):
-        masked_array = np.ma.masked_array([[1.0, 2.0], [3.0, 4.0]],
-                                          mask=[[0, 1], [0, 0]])
+        masked_array = ma.masked_array([[1.0, 2.0], [3.0, 4.0]],
+                                       mask=[[0, 1], [0, 0]])
 
-        result = array_masked_to_nans(masked_array)
+        result = array_masked_to_nans(masked_array).data
 
         self.assertIsInstance(result, np.ndarray)
-        self.assertFalse(isinstance(result, np.ma.MaskedArray))
-        self.assertFalse(np.ma.is_masked(result))
+        self.assertFalse(isinstance(result, ma.MaskedArray))
+        self.assertFalse(ma.is_masked(result))
 
         self.assertArrayAllClose(np.isnan(result),
                                  [[False, True], [False, False]])
@@ -46,13 +47,13 @@ class Test(tests.IrisTest):
         self.assertArrayAllClose(result, [[1.0, 777.7], [3.0, 4.0]])
 
     def test_empty_mask(self):
-        masked_array = np.ma.masked_array([1.0, 2.0], mask=[0, 0])
+        masked_array = ma.masked_array([1.0, 2.0], mask=[0, 0])
 
-        result = array_masked_to_nans(masked_array)
+        result = array_masked_to_nans(masked_array).data
 
         self.assertIsInstance(result, np.ndarray)
-        self.assertFalse(isinstance(result, np.ma.MaskedArray))
-        self.assertFalse(np.ma.is_masked(result))
+        self.assertFalse(isinstance(result, ma.MaskedArray))
+        self.assertFalse(ma.is_masked(result))
 
         # self.assertIs(result, masked_array.data)
         # NOTE: Wanted to check that result in this case is delivered without
@@ -62,7 +63,7 @@ class Test(tests.IrisTest):
 
     def test_non_masked(self):
         unmasked_array = np.array([1.0, 2.0])
-        result = array_masked_to_nans(unmasked_array)
+        result = array_masked_to_nans(unmasked_array, mask=False)
         # Non-masked array is returned as-is, without copying.
         self.assertIs(result, unmasked_array)
 

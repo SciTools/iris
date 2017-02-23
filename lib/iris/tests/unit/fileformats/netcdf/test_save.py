@@ -50,6 +50,7 @@ class Test_conventions(tests.IrisTest):
             ds.close()
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
 
+<<<<<<< HEAD
     def test_custom_conventions__allowed(self):
         # Ensure that existing conventions attributes are passed through if the
         # relevant Iris option is set.
@@ -75,6 +76,8 @@ class Test_conventions(tests.IrisTest):
 
 
 class Test_attributes(tests.IrisTest):
+    # cannot save a cube with an empty array as data
+    @tests.skip_biggus
     def test_attributes_arrays(self):
         # Ensure that attributes containing NumPy arrays can be equality
         # checked and their cubes saved as appropriate.

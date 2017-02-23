@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,6 +29,7 @@ import iris.tests as tests
 import io
 
 import numpy as np
+import numpy.ma as ma
 
 import iris.fileformats.pp as pp
 from iris.tests import mock
@@ -48,8 +49,8 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
         decompressed_mask[y_halo+rim:-(y_halo+rim),
                           x_halo+rim:-(x_halo+rim)] = True
 
-        self.decompressed = np.ma.masked_array(decompressed,
-                                               mask=decompressed_mask)
+        self.decompressed = ma.masked_array(decompressed,
+                                            mask=decompressed_mask)
 
         self.north = decompressed[-(y_halo+rim):, :]
         self.east = decompressed[y_halo+rim:-(y_halo+rim), -(x_halo+rim):]
@@ -71,7 +72,9 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
         r = pp._data_bytes_to_shaped_array(self.data_payload_bytes,
                                            lbpack, boundary_packing,
                                            self.data_shape,
-                                           self.decompressed.dtype, -99)
+                                           self.decompressed.dtype,
+                                           -9223372036854775808)
+        r = ma.masked_array(r, np.isnan(r), fill_value=-9223372036854775808)
         self.assertMaskedArrayEqual(r, self.decompressed)
 
 
@@ -87,17 +90,17 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
         self.sea_masked_data = np.array([1, 3, 4.5, -4, 5, 0, 1, 2, 3])
 
         # Compute the decompressed land mask data.
-        self.decomp_land_data = np.ma.masked_array([[0, 1, 0, 0],
-                                                    [3, 0, 0, 0],
-                                                    [0, 0, 0, 4.5]],
-                                                   mask=sea,
-                                                   dtype=np.float64)
+        self.decomp_land_data = ma.masked_array([[0, 1, 0, 0],
+                                                 [3, 0, 0, 0],
+                                                 [0, 0, 0, 4.5]],
+                                                mask=sea,
+                                                dtype=np.float64)
         # Compute the decompressed sea mask data.
-        self.decomp_sea_data = np.ma.masked_array([[1, -10, 3, 4.5],
-                                                   [-10, -4, 5, 0],
-                                                   [1, 2, 3, -10]],
-                                                  mask=self.land,
-                                                  dtype=np.float64)
+        self.decomp_sea_data = ma.masked_array([[1, -10, 3, 4.5],
+                                                [-10, -4, 5, 0],
+                                                [1, 2, 3, -10]],
+                                               mask=self.land,
+                                               dtype=np.float64)
 
         self.land_mask = mock.Mock(data=self.land,
                                    lbrow=self.land.shape[0],
@@ -153,11 +156,12 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
         # Calls pp._data_bytes_to_shaped_array with the necessary mocked
         # items, an lbpack instance, the correct data shape and mask instance.
         with mock.patch('numpy.frombuffer', return_value=field_data):
-            return pp._data_bytes_to_shaped_array(mock.Mock(),
+            data = pp._data_bytes_to_shaped_array(mock.Mock(),
                                                   self.create_lbpack(lbpack),
                                                   None,
                                                   mask.shape, np.dtype('>f4'),
                                                   -999, mask=mask)
+        return ma.masked_array(data, np.isnan(data), fill_value=-999)
 
 
 if __name__ == "__main__":

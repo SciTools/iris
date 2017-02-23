@@ -790,7 +790,8 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_tuple(self):
-        metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, ())
+        metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (),
+                    -99, np.dtype('f8'))
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -799,6 +800,8 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.attributes, metadata[4])
         self.assertIsNot(self.t.attributes, metadata[4])
         self.assertEqual(self.t.cell_methods, ())
+        self.assertEqual(self.t.fill_value, -99)
+        self.assertEqual(self.t.dtype, np.dtype('f8'))
 
     def test_metadata_dict(self):
         metadata = {'standard_name': 'air_pressure',
@@ -806,7 +809,9 @@ class TestCubeAPI(TestCube2d):
                     'var_name': 'bar',
                     'units': '',
                     'attributes': {'random': '12'},
-                    'cell_methods': ()}
+                    'cell_methods': (),
+                    'fill_value': -99,
+                    'dtype': np.dtype('f8')}
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -815,6 +820,8 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.attributes, metadata['attributes'])
         self.assertIsNot(self.t.attributes, metadata['attributes'])
         self.assertEqual(self.t.cell_methods, ())
+        self.assertEqual(self.t.fill_value, -99)
+        self.assertEqual(self.t.dtype, np.dtype('f8'))
 
     def test_metadata_attrs(self):
         class Metadata(object): pass
@@ -826,6 +833,8 @@ class TestCubeAPI(TestCube2d):
         metadata.attributes = {'random': '12'}
         metadata.cell_methods = ()
         metadata.cell_measures_and_dims = []
+        metadata.fill_value = -99
+        metadata.dtype = np.dtype('f8')
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -835,12 +844,14 @@ class TestCubeAPI(TestCube2d):
         self.assertIsNot(self.t.attributes, metadata.attributes)
         self.assertEqual(self.t.cell_methods, ())
         self.assertEqual(self.t._cell_measures_and_dims, [])
+        self.assertEqual(self.t.fill_value, -99)
+        self.assertEqual(self.t.dtype, np.dtype('f8'))
 
     def test_metadata_fail(self):
         with self.assertRaises(TypeError):
             self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'})
         with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), [], ())
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), [], (), ())
         with self.assertRaises(TypeError):
             self.t.metadata = {'standard_name': 'air_pressure',
                                'long_name': 'foo',
@@ -861,7 +872,8 @@ class TestCubeAPI(TestCube2d):
 class TestCubeEquality(TestCube2d):
     def test_simple_equality(self):
         self.assertEqual(self.t, self.t.copy())
-    
+
+    @tests.skip_biggus
     def test_data_inequality(self):
         self.assertNotEqual(self.t, self.t + 1)
     

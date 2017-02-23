@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,6 +29,7 @@ from iris.tests import mock
 
 
 class Test(tests.IrisTest):
+    @tests.skip_biggus
     def test_invalid_units(self):
         # Mock converter() function that returns an invalid
         # units string amongst the collection of other elements.

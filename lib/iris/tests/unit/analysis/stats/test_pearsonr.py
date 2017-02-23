@@ -31,6 +31,7 @@ import iris.analysis.stats as stats
 from iris.exceptions import CoordinateNotFoundError
 
 
+@tests.skip_biggus
 @tests.skip_data
 class Test(tests.IrisTest):
     def setUp(self):

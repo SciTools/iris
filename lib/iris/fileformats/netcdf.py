@@ -38,6 +38,7 @@ import string
 import warnings
 
 import biggus
+import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
@@ -56,8 +57,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-import iris._lazy_data
-
+from iris._lazy_data import array_masked_to_nans
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -392,10 +392,13 @@ class NetCDFDataProxy(object):
         try:
             variable = dataset.variables[self.variable_name]
             # Get the NetCDF variable data and slice.
-            data = variable[keys]
+            var = variable[keys]
         finally:
             dataset.close()
-        return data
+        if isinstance(var, ma.MaskedArray):
+            var = array_masked_to_nans(var)
+            var = var.data
+        return var
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
@@ -501,12 +504,12 @@ def _load_cube(engine, cf, cf_var, filename):
         dummy_data = cf_var.add_offset + dummy_data
 
     # Create cube with deferred data, but no metadata
-    fill_value = getattr(cf_var.cf_data, '_FillValue',
-                         netCDF4.default_fillvals[cf_var.dtype.str[1:]])
+    fill_value = getattr(cf_var.cf_data, '_FillValue', None)
+
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
-    data = iris._lazy_data.as_lazy_data(proxy)
-    cube = iris.cube.Cube(data)
+    data = da.from_array(proxy, chunks=100)
+    cube = iris.cube.Cube(data, fill_value=fill_value, dtype=dummy_data.dtype)
 
     # Reset the pyke inference engine.
     engine.reset()

@@ -43,7 +43,7 @@ import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-import iris._lazy_data
+from iris._lazy_data import array_masked_to_nans
 
 try:
     import mo_pack
@@ -974,7 +974,9 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # condition" array, which is split into 4 quartiles, North
         # East, South, West and where North and South contain the corners.
         compressed_data = data
-        data = np.ma.masked_all(data_shape)
+        if data_type.kind != 'i':
+            data_type = np.dtype('f8')
+        data = np.full(data_shape, np.nan, dtype=data_type)
 
         boundary_height = boundary_packing.y_halo + boundary_packing.rim_width
         boundary_width = boundary_packing.x_halo + boundary_packing.rim_width
@@ -1015,17 +1017,17 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                              'Could not load.')
         land_mask = mask.data.astype(np.bool)
         sea_mask = ~land_mask
-        new_data = np.ma.masked_all(land_mask.shape)
+        if data_type.kind != 'i':
+            data_type = np.dtype('f8')
+        new_data = np.full(land_mask.shape, np.nan, dtype=data_type)
         if lbpack.n3 == 1:
             # Land mask packed data.
-            new_data.mask = sea_mask
             # Sometimes the data comes in longer than it should be (i.e. it
             # looks like the compressed data is compressed, but the trailing
             # data hasn't been clipped off!).
             new_data[land_mask] = data[:land_mask.sum()]
         elif lbpack.n3 == 2:
             # Sea mask packed data.
-            new_data.mask = land_mask
             new_data[sea_mask] = data[:sea_mask.sum()]
         else:
             raise ValueError('Unsupported mask compression.')
@@ -1037,7 +1039,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
 
     # Mask the array?
     if mdi in data:
-        data = ma.masked_values(data, mdi, copy=False)
+        data = array_masked_to_nans(data, data == mdi)
 
     return data
 
@@ -1185,17 +1187,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                       for name in public_attribute_names]
         self_attrs = [pair for pair in self_attrs if pair[1] is not None]
 
-        # Output any masked data as separate `data` and `mask`
-        # components, to avoid the standard MaskedArray output
-        # which causes irrelevant discrepancies between NumPy
-        # v1.6 and v1.7.
-        if ma.isMaskedArray(self._data):
-            # Force the fill value to zero to have the minimum
-            # impact on the output style.
-            self_attrs.append(('data.data', self._data.filled(0)))
-            self_attrs.append(('data.mask', self._data.mask))
-        else:
-            self_attrs.append(('data', self._data))
+        self_attrs.append(('data', self.data))
 
         # sort the attributes by position in the pp header followed,
         # then by alphabetical order.
@@ -1285,13 +1277,12 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         of the pp file
 
         """
-        # Cache the real data on first use
-        if iris._lazy_data.is_lazy_data(self._data):
-            data = iris._lazy_data.as_concrete_data(self._data)
-            if ma.count_masked(data) == 0:
-                data = data.data
-            self._data = data
-        return self._data
+        # The proxy supplies nan filled arrays and caches data.
+        data = self._data[...]
+        if data.dtype.kind == 'i' and self.bmdi == -1e30:
+            self.bmdi = -9999
+        data[np.isnan(data)] = self.bmdi
+        return data
 
     @data.setter
     def data(self, value):
@@ -1883,7 +1874,7 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field._data = iris._lazy_data.as_lazy_data(proxy)
+        field._data = proxy
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):

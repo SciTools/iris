@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -204,6 +204,8 @@ class Mixin_FieldTest(object):
             # NOTE: in order to get a cube that will write+readback the same,
             # we must include a STASH attribute.
             cube.attributes['STASH'] = STASH.from_msi(stash)
+            cube.fill_value = np.float32(-1e30)
+            cube.dtype = np.dtype('float32')
 
         # Add x and y coords.
         cs = GeogCS(EARTH_RADIUS)
@@ -548,7 +550,6 @@ class MixinProblemCases(object):
             # directory name affects the ordering of the cubes in the result !
             results = CubeList(sorted(results,
                                       key=lambda cube: cube.shape))
-
         self.assertEqual(results, expected)
 
     def test_FAIL_phenomena_nostash(self):
