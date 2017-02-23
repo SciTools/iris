@@ -43,7 +43,6 @@ class TestPPCopy(tests.IrisTest):
     def test_copy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = field.copy()
-        self.assertTrue(clone._data._data_cache is None)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -51,7 +50,6 @@ class TestPPCopy(tests.IrisTest):
     def test_deepcopy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = deepcopy(field)
-        self.assertTrue(clone._data._data_cache is None)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
