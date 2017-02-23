@@ -3359,8 +3359,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_result = unrolled_data
 
         # Perform the aggregation in lazy form if possible.
-        elif (aggregator.lazy_func is not None and
-                len(dims_to_collapse) == 1 and self.has_lazy_data()):
+        elif (aggregator.lazy_func is not None and self.has_lazy_data()):
             # Use a lazy operation separately defined by the aggregator, based
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
