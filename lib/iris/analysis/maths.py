@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -591,7 +591,6 @@ def _binary_op_common(operation_function, operation_name, cube, other,
             da.core.broadcast_shapes(cube.shape, other.shape)
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube)
-        
         other = other.core_data
     else:
         other = np.asanyarray(other)
