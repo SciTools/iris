@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,10 +24,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import copy
+import dask.array as da
 import numpy as np
 import unittest
 
-from biggus import NumpyArrayAdapter
 import iris
 from iris.util import new_axis
 
@@ -136,13 +136,14 @@ class Test(tests.IrisTest):
         self._assert_cube_notis(res, cube)
 
     def test_lazy_data(self):
-        cube = iris.cube.Cube(NumpyArrayAdapter(self.data))
+        cube = iris.cube.Cube(da.from_array(self.data, chunks=self.data.shape))
         cube.add_aux_coord(iris.coords.DimCoord([1], standard_name='time'))
         res = new_axis(cube, 'time')
         self.assertTrue(cube.has_lazy_data())
         self.assertTrue(res.has_lazy_data())
         self.assertEqual(res.shape, (1,) + cube.shape)
 
+    @tests.skip_biggus
     def test_masked_unit_array(self):
         cube = tests.stock.simple_3d_mask()
         test_cube = cube[0, 0, 0]

@@ -103,6 +103,9 @@ except ImportError:
     except ImportError:
         GRIB_AVAILABLE = False
 
+# skip all iris_grib tests until a new dask aware iris_grib is available
+GRIB_AVAILABLE = False
+
 try:
     import iris_sample_data
 except ImportError:
@@ -1116,6 +1119,13 @@ def skip_plot(fn):
         reason='Graphics tests require the matplotlib library.')
 
     return skip(fn)
+
+
+# Control for @skip_biggus : Set to False to run the biggus-dependent tests.
+_SKIP_BIGGUS_DEPENDENT_TESTS = True
+
+skip_biggus = unittest.skipIf(_SKIP_BIGGUS_DEPENDENT_TESTS,
+                              reason='Test(s) assume biggus in place of dask.')
 
 
 skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '

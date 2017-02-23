@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,7 +33,6 @@ import shutil
 import stat
 import tempfile
 
-import biggus
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -47,10 +46,12 @@ import iris.util
 import iris.coord_systems as icoord_systems
 from iris.tests import mock
 import iris.tests.stock as stock
+from iris._lazy_data import is_lazy_data
 
 
 @tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
+    @tests.skip_biggus
     def test_monotonic(self):
         cubes = iris.load(tests.get_data_path(
             ('NetCDF', 'testing', 'test_monotonic_coordinate.nc')))
@@ -83,6 +84,7 @@ class TestNetCDFLoad(tests.IrisTest):
             dataset.close()
             cube = iris.load_cube(filename, 'eastward_wind')
 
+    @tests.skip_biggus
     def test_load_global_xyzt_gems(self):
         # Test loading single xyzt CF-netCDF file (multi-cube).
         cubes = iris.load(tests.get_data_path(('NetCDF', 'global', 'xyz_t',
@@ -96,6 +98,7 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertTrue(ma.isMaskedArray(lnsp.data))
         self.assertEqual(-32767.0, lnsp.data.fill_value)
 
+    @tests.skip_biggus
     def test_load_global_xyzt_gems_iter(self):
         # Test loading stepped single xyzt CF-netCDF file (multi-cube).
         for i, cube in enumerate(sorted(
@@ -106,12 +109,14 @@ class TestNetCDFLoad(tests.IrisTest):
             self.assertCML(cube, ('netcdf',
                                   'netcdf_global_xyzt_gems_iter_%d.cml' % i))
 
+    @tests.skip_biggus
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.
         cube = iris.load_cube(tests.get_data_path(
             ('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
         # Make sure the AuxCoords have lazy data.
-        self.assertIsInstance(cube.coord('latitude')._points, biggus.Array)
+        self.assertTrue(is_lazy_data(cube.coord('latitude')._points))
+
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 
     def test_load_rotated_xyt_precipitation(self):
@@ -122,6 +127,7 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(cube, ('netcdf',
                               'netcdf_rotated_xyt_precipitation.cml'))
 
+    @tests.skip_biggus
     def test_load_tmerc_grid_and_clim_bounds(self):
         # Test loading a single CF-netCDF file with a transverse Mercator
         # grid_mapping and a time variable with climatology.
@@ -152,6 +158,7 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertEqual(cube.coord('projection_y_coordinate').coord_system,
                          expected)
 
+    @tests.skip_biggus
     def test_load_lcc_grid(self):
         # Test loading a single CF-netCDF file with Lambert conformal conic
         # grid mapping.
@@ -180,6 +187,7 @@ class TestNetCDFLoad(tests.IrisTest):
                                  'toa_brightness_temperature.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_merc.cml'))
 
+    @tests.skip_biggus
     def test_load_stereographic_grid(self):
         # Test loading a single CF-netCDF file with a stereographic
         # grid_mapping.
@@ -347,6 +355,7 @@ class TestSave(tests.IrisTest):
             self.assertCDL(filename, ('netcdf', 'netcdf_save_no_name.cdl'))
 
 
+@tests.skip_biggus
 class TestNetCDFSave(tests.IrisTest):
     def setUp(self):
         self.cubell = iris.cube.Cube(np.arange(4).reshape(2, 2),

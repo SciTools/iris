@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,6 +31,7 @@ import iris.analysis.stats as stats
 from iris.exceptions import CoordinateNotFoundError
 
 
+@tests.skip_biggus
 @tests.skip_data
 class Test(tests.IrisTest):
     def setUp(self):
@@ -111,6 +112,7 @@ class Test(tests.IrisTest):
         with self.assertRaises(CoordinateNotFoundError):
             stats.pearsonr(self.cube_a, self.cube_b, 'bad_coord')
 
+    @tests.skip_biggus
     def test_mdtol(self):
         cube_small = self.cube_a[:, 0, 0]
         cube_small_masked = cube_small.copy()
@@ -121,6 +123,7 @@ class Test(tests.IrisTest):
         self.assertArrayAlmostEqual(r1.data, np.array([0.74586593]))
         self.assertMaskedArrayEqual(r2.data, ma.array([0], mask=[True]))
 
+    @tests.skip_biggus
     def test_common_mask_simple(self):
         cube_small = self.cube_a[:, 0, 0]
         cube_small_masked = cube_small.copy()
@@ -129,6 +132,7 @@ class Test(tests.IrisTest):
         r = stats.pearsonr(cube_small, cube_small_masked, common_mask=True)
         self.assertArrayAlmostEqual(r.data, np.array([1.]))
 
+    @tests.skip_biggus
     def test_common_mask_broadcast(self):
         cube_small = self.cube_a[:, 0, 0]
         cube_small_2d = self.cube_a[:, 0:2, 0]

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -282,6 +282,7 @@ class TestOrder(tests.IrisTest):
         self.assertEqual(result1, result2)
 
 
+@tests.skip_biggus
 class TestConcatenateBiggus(tests.IrisTest):
     def build_lazy_cube(self, points, bounds=None, nx=4):
         data = np.arange(len(points) * nx).reshape(len(points), nx)

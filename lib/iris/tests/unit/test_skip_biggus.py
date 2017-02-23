@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,8 +14,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :func:`iris.analysis.maths.multiply` function."""
+"""
+Check operation of @skip_biggus.
 
+"""
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
@@ -23,37 +25,17 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import operator
-
-from iris.analysis.maths import multiply
-from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
+from iris.tests import skip_biggus
 
 
-@tests.skip_biggus
-@tests.skip_data
-@tests.iristest_timing_decorator
-class TestBroadcasting(tests.IrisTest_nometa,
-                       CubeArithmeticBroadcastingTestMixin):
-    @property
-    def data_op(self):
-        return operator.mul
-
-    @property
-    def cube_func(self):
-        return multiply
+class TestSkipBiggus(tests.IrisTest):
+    # Test always fails, unless skipped.
+    # To check, set tests._SKIP_BIGGUS_DEPENDENT_TESTS = False,
+    # then this test should fail.
+    @skip_biggus
+    def test_fail(self):
+        self.assertTrue(False)
 
 
-@tests.iristest_timing_decorator
-class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
-    @property
-    def data_op(self):
-        return operator.mul
-
-    @property
-    def cube_func(self):
-        return multiply
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     tests.main()

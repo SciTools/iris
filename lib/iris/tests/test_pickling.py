@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -48,9 +48,9 @@ class TestPickle(tests.IrisTest):
             yield protocol, reconstructed_obj
 
     def assertCubeData(self, cube1, cube2):
-        np.testing.assert_array_equal(cube1.lazy_data().ndarray(),
-                                      cube2.lazy_data().ndarray())
+        np.testing.assert_array_equal(cube1.data, cube2.data)
 
+    @tests.skip_biggus
     @tests.skip_data
     def test_cube_pickle(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')))

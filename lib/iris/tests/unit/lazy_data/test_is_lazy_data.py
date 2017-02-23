@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :func:`iris.analysis.maths.multiply` function."""
+"""Test :meth:`iris._lazy data.is_lazy_data` method."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -23,37 +23,22 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import operator
+import numpy as np
+import dask.array as da
 
-from iris.analysis.maths import multiply
-from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
-
-
-@tests.skip_biggus
-@tests.skip_data
-@tests.iristest_timing_decorator
-class TestBroadcasting(tests.IrisTest_nometa,
-                       CubeArithmeticBroadcastingTestMixin):
-    @property
-    def data_op(self):
-        return operator.mul
-
-    @property
-    def cube_func(self):
-        return multiply
+from iris._lazy_data import is_lazy_data
 
 
-@tests.iristest_timing_decorator
-class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
-    @property
-    def data_op(self):
-        return operator.mul
+class Test_is_lazy_data(tests.IrisTest):
+    def test_lazy(self):
+        lazy_values = np.arange(30).reshape((2, 5, 3))
+        lazy_array = da.from_array(lazy_values, 1e6)
+        self.assertTrue(is_lazy_data(lazy_array))
 
-    @property
-    def cube_func(self):
-        return multiply
+    def test_real(self):
+        real_array = np.arange(24).reshape((2, 3, 4))
+        self.assertFalse(is_lazy_data(real_array))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     tests.main()

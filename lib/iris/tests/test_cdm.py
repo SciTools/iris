@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -790,7 +790,8 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_tuple(self):
-        metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, ())
+        metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (),
+                    -99, np.dtype('f8'))
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -799,6 +800,8 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.attributes, metadata[4])
         self.assertIsNot(self.t.attributes, metadata[4])
         self.assertEqual(self.t.cell_methods, ())
+        self.assertEqual(self.t.fill_value, -99)
+        self.assertEqual(self.t.dtype, np.dtype('f8'))
 
     def test_metadata_dict(self):
         metadata = {'standard_name': 'air_pressure',
@@ -806,7 +809,9 @@ class TestCubeAPI(TestCube2d):
                     'var_name': 'bar',
                     'units': '',
                     'attributes': {'random': '12'},
-                    'cell_methods': ()}
+                    'cell_methods': (),
+                    'fill_value': -99,
+                    'dtype': np.dtype('f8')}
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -815,6 +820,8 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.attributes, metadata['attributes'])
         self.assertIsNot(self.t.attributes, metadata['attributes'])
         self.assertEqual(self.t.cell_methods, ())
+        self.assertEqual(self.t.fill_value, -99)
+        self.assertEqual(self.t.dtype, np.dtype('f8'))
 
     def test_metadata_attrs(self):
         class Metadata(object): pass
@@ -826,6 +833,8 @@ class TestCubeAPI(TestCube2d):
         metadata.attributes = {'random': '12'}
         metadata.cell_methods = ()
         metadata.cell_measures_and_dims = []
+        metadata.fill_value = -99
+        metadata.dtype = np.dtype('f8')
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -835,12 +844,14 @@ class TestCubeAPI(TestCube2d):
         self.assertIsNot(self.t.attributes, metadata.attributes)
         self.assertEqual(self.t.cell_methods, ())
         self.assertEqual(self.t._cell_measures_and_dims, [])
+        self.assertEqual(self.t.fill_value, -99)
+        self.assertEqual(self.t.dtype, np.dtype('f8'))
 
     def test_metadata_fail(self):
         with self.assertRaises(TypeError):
             self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'})
         with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), [], ())
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), [], (), ())
         with self.assertRaises(TypeError):
             self.t.metadata = {'standard_name': 'air_pressure',
                                'long_name': 'foo',
@@ -861,7 +872,8 @@ class TestCubeAPI(TestCube2d):
 class TestCubeEquality(TestCube2d):
     def test_simple_equality(self):
         self.assertEqual(self.t, self.t.copy())
-    
+
+    @tests.skip_biggus
     def test_data_inequality(self):
         self.assertNotEqual(self.t, self.t + 1)
     
@@ -959,7 +971,7 @@ class TestDataManagerIndexing(TestCube2d):
         lat_cube = next(self.cube.slices(['grid_latitude', ]))
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
- 
+
     def test_cube_empty_indexing(self):
         test_filename = ('cube_slice', 'real_empty_data_indexing.cml')
         r = self.cube[:5, ::-1][3]
@@ -998,6 +1010,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.assertRaises(IndexError, self.cube.__getitem__, ((0, 4, 5, 2), (3, 5, 5), 0, 0, 4) )
         self.assertRaises(IndexError, self.cube.__getitem__, (Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis) )
 
+    @tests.skip_biggus
     def test_fancy_indexing_bool_array(self):
         cube = self.cube
         cube.data = np.ma.masked_array(cube.data, mask=cube.data > 100000)
@@ -1137,16 +1150,19 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         self.assertIsInstance(cube.data, np.ndarray)
 
+    @tests.skip_biggus
     def test_masked_field(self):
         # This pp field has some missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
         self.assertIsInstance(cube.data, ma.core.MaskedArray)
 
+    @tests.skip_biggus
     def test_missing_file(self):
         cube = self._load_3d_cube()
         self.assertIsInstance(cube.data, ma.core.MaskedArray)
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
-        
+
+    @tests.skip_biggus
     def test_slicing(self):
         cube = self._load_3d_cube()
 
@@ -1164,6 +1180,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice.data), 25)
 
+    @tests.skip_biggus
     def test_save_and_merge(self):
         cube = self._load_3d_cube()
 

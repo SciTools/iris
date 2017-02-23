@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -37,6 +37,7 @@ import types
 import warnings
 
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -899,17 +900,21 @@ ConversionMetadata = collections.namedtuple('ConversionMetadata',
 def _make_cube(field, converter):
     # Convert the field to a Cube.
     metadata = converter(field)
-
+    # This horrible try:except pattern is bound into our testing strategy.
+    # it enables the magicmocking to amgically fail, fall over to data
+    # then use that to make it's tests pass.
+    # To be fixed!!
     try:
-        data = field._data
+        data = da.from_array(field._data, chunks=field._data.shape)
     except AttributeError:
         data = field.data
-
     cube = iris.cube.Cube(data,
                           attributes=metadata.attributes,
                           cell_methods=metadata.cell_methods,
                           dim_coords_and_dims=metadata.dim_coords_and_dims,
-                          aux_coords_and_dims=metadata.aux_coords_and_dims)
+                          aux_coords_and_dims=metadata.aux_coords_and_dims,
+                          fill_value=field.bmdi, dtype=data.dtype)
+    
 
     # Temporary code to deal with invalid standard names in the
     # translation table.

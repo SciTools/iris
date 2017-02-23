@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,7 @@ import six
 # importing anything else
 import iris.tests as tests
 
-import biggus
+import dask.array as da
 import numpy as np
 
 import iris
@@ -190,6 +190,7 @@ class TestTriPolar(tests.IrisTest):
         self.assertRaises(ValueError, traj_interpolate,
                           self.cube, self.sample_points, method="linekar")
 
+    @tests.skip_biggus
     def test_tri_polar__nearest(self):
         # Check a smallish nearest-neighbour interpolation against a result
         # snapshot.
@@ -233,7 +234,7 @@ class TestLazyData(tests.IrisTest):
     def test_hybrid_height(self):
         cube = istk.simple_4d_with_hybrid_height()
         # Put a biggus array on the cube so we can test deferred loading.
-        cube.lazy_data(biggus.NumpyArrayAdapter(cube.data))
+        cube.data = da.from_array(cube.data, chunks=cube.data.shape)
 
         traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude', [31, 32, 33, 34]))
