@@ -59,7 +59,8 @@ def abs(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.abs, cube.units, in_place=in_place)
+    op = da.absolute if cube.has_lazy_data() else np.abs
+    return _math_op_common(cube, op, cube.units, in_place=in_place)
 
 
 def intersection_of_cubes(cube, other_cube):
@@ -376,8 +377,12 @@ def exponentiate(cube, exponent, in_place=False):
     """
     _assert_is_cube(cube)
 
-    def power(data, out=None):
-        return np.power(data, exponent, out)
+    if cube.has_lazy_data():
+        def power(data):
+            return operator.pow(data, exponent)
+    else:
+        def power(data, out=None):
+            return np.pow(data, exponent, out)
 
     return _math_op_common(cube, power, cube.units ** exponent,
                            in_place=in_place)
@@ -405,7 +410,8 @@ def exp(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.exp, cf_units.Unit('1'),
+    op = da.exp if cube.has_lazy_data() else np.exp
+    return _math_op_common(cube, op, cf_units.Unit('1'),
                            in_place=in_place)
 
 
@@ -427,7 +433,8 @@ def log(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log, cube.units.log(math.e),
+    op = da.log if cube.has_lazy_data() else np.log
+    return _math_op_common(cube, op, cube.units.log(math.e),
                            in_place=in_place)
 
 
@@ -449,7 +456,8 @@ def log2(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log2, cube.units.log(2),
+    op = da.log2 if cube.has_lazy_data() else np.log2
+    return _math_op_common(cube, op, cube.units.log(2),
                            in_place=in_place)
 
 
@@ -471,7 +479,8 @@ def log10(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log10, cube.units.log(10),
+    op = da.log10 if cube.has_lazy_data() else np.log10
+    return _math_op_common(cube, op, cube.units.log(10),
                            in_place=in_place)
 
 
@@ -645,17 +654,18 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 def _math_op_common(cube, operation_function, new_unit, in_place=False):
     _assert_is_cube(cube)
-    if cube.has_lazy_data():
-        data = cube.lazy_data()
-    else:
-        data = cube.data
+    data = cube.lazy_data() if cube.has_lazy_data() else cube.data
     if in_place:
         new_cube = cube
-        try:
-            operation_function(new_cube.data, out=new_cube.data)
-        except TypeError:
-            # Non ufunc function
-            operation_function(new_cube.data)
+        if cube.has_lazy_data():
+            new_lazy = operation_function(data)
+            new_cube.lazy_data(new_lazy)
+        else:
+            try:
+                operation_function(data, out=data)
+            except TypeError:
+                # Non ufunc function
+                operation_function(data)
     else:
         new_cube = cube.copy(data=operation_function(data))
     iris.analysis.clear_phenomenon_identity(new_cube)
