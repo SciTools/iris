@@ -2462,9 +2462,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = chunks[0]
         else:
             if self.has_lazy_data():
-                data = biggus.LinearMosaic([chunk.lazy_data()
-                                            for chunk in chunks],
-                                           dim)
+                data = da.concatenate([chunk.lazy_data()
+                                       for chunk in chunks],
+                                      dim)
             else:
                 module = ma if ma.isMaskedArray(self.data) else np
                 data = module.concatenate([chunk.data for chunk in chunks],
