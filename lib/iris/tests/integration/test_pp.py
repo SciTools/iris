@@ -57,7 +57,8 @@ class TestVertical(tests.IrisTest):
         field = mock.MagicMock(lbvc=6, lblev=soil_level,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
-                               brsvd=[0] * 4, brlev=0)
+                               brsvd=[0] * 4, brlev=0,
+                               _data=np.zeros(1))
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -92,7 +93,8 @@ class TestVertical(tests.IrisTest):
         field = mock.MagicMock(lbvc=6, blev=point,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
-                               brsvd=brsvd, brlev=upper)
+                               brsvd=brsvd, brlev=upper,
+                               _data=np.zeros(1))
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -126,9 +128,10 @@ class TestVertical(tests.IrisTest):
         # LBCODE, support len().
         potm_value = 22.5
         field = mock.MagicMock(lbvc=19, blev=potm_value,
-                               lbuser=[0] * 7, lbrsvd=[0] * 4)
+                               lbuser=[0] * 7, lbrsvd=[0] * 4,
+                               _data=np.zeros(1))
         load = mock.Mock(return_value=iter([field]))
-        with mock.patch('iris.fileformats.pp.load', new=load) as load:
+        with mock.patch('iris.fileformats.pp.load', new=load):
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
 
         self._test_coord(cube, potm_value,
