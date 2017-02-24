@@ -37,13 +37,14 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 import netcdftime
+import dask.array as da
 
 from iris._deprecation import warn_deprecated
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-from iris._lazy_data import array_masked_to_nans
+from iris._lazy_data import is_lazy_data, array_masked_to_nans
 
 try:
     import mo_pack
@@ -1277,16 +1278,21 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         of the pp file
 
         """
-        # The proxy supplies nan filled arrays and caches data.
-        data = self._data[...]
-        if data.dtype.kind == 'i' and self.bmdi == -1e30:
+        # Cache the real data on first use
+        if is_lazy_data(self._data):
+            self._data = self._data.compute()
+        if self._data.dtype.kind == 'i' and self.bmdi == -1e30:
             self.bmdi = -9999
-        data[np.isnan(data)] = self.bmdi
-        return data
+        self._data[np.isnan(self._data)] = self.bmdi
+        return self._data
 
     @data.setter
     def data(self, value):
         self._data = value
+
+    @property
+    def core_data(self):
+        return self._data
 
     @property
     def calendar(self):
@@ -1874,7 +1880,7 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field._data = proxy
+        field._data = da.from_array(proxy, data_shape)
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):
