@@ -190,7 +190,6 @@ class TestTriPolar(tests.IrisTest):
         self.assertRaises(ValueError, traj_interpolate,
                           self.cube, self.sample_points, method="linekar")
 
-    @tests.skip_biggus
     def test_tri_polar__nearest(self):
         # Check a smallish nearest-neighbour interpolation against a result
         # snapshot.

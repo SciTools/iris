@@ -432,7 +432,7 @@ def exponentiate(cube, exponent, in_place=False):
             return operator.pow(data, exponent)
     else:
         def power(data, out=None):
-            return np.pow(data, exponent, out)
+            return np.power(data, exponent, out)
 
     return _math_op_common(cube, power, cube.units ** exponent,
                            in_place=in_place)

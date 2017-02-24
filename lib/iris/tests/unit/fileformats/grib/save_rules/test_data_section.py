@@ -39,7 +39,6 @@ GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 GRIB_MESSAGE = mock.sentinel.GRIB_MESSAGE
 
 
-@tests.skip_biggus
 class TestMDI(tests.IrisTest):
     def assertBitmapOff(self, grib_api):
         # Check the use of a mask has been turned off via:
