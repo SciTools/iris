@@ -45,7 +45,6 @@ from iris.experimental.regrid \
 PLAIN_LATLON_CS = GeogCS(EARTH_RADIUS)
 
 
-@tests.skip_biggus
 class Test(tests.IrisTest):
     def setUp(self):
         # Source cube.

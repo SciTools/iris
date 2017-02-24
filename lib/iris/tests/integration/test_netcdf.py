@@ -425,7 +425,6 @@ class TestPackedData(tests.IrisTest):
                 else:
                     self.assertArrayEqual(cube.data, packedcube.data)
 
-    @tests.skip_biggus
     def test_multi_packed_single_dtype(self):
         """Test saving multiple packed cubes with the same pack_dtype."""
         # Read PP input file.

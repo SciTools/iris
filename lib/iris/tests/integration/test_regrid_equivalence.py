@@ -120,7 +120,6 @@ class MixinCheckingCode(object):
         _debug_data(result_cube, "matching RESULt")
         self.assertArrayAllClose(result_cube.data, expected_result)
 
-    @tests.skip_biggus
     def test_source_mask(self):
         src_x = [40.0, 50.0, 60.0]
         src_y = [40.0, 50.0, 60.0]

@@ -176,7 +176,6 @@ class TestPeakAggregator(tests.IrisTest):
         self.assertTrue(np.isnan(collapsed_cube.data).all())
         self.assertEqual(collapsed_cube.data.shape, (1,))
 
-    @tests.skip_biggus
     def test_peak_with_mask(self):
         # Single value in column masked.
         latitude = iris.coords.DimCoord(np.arange(0, 5, 1),
@@ -204,7 +203,6 @@ class TestPeakAggregator(tests.IrisTest):
         self.assertTrue(ma.isMaskedArray(collapsed_cube.data))
         self.assertEqual(collapsed_cube.data.shape, (1,))
 
-    @tests.skip_biggus
     def test_peak_with_nan_and_mask(self):
         # Single nan in column with single value masked.
         latitude = iris.coords.DimCoord(np.arange(0, 5, 1),
