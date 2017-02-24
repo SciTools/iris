@@ -905,7 +905,10 @@ def _make_cube(field, converter):
     # then use that to make it's tests pass.
     # To be fixed!!
     try:
-        data = da.from_array(field._data, chunks=field._data.shape)
+        if field.has_lazy_data():
+            data = da.from_array(field._data, chunks=field._data.shape)
+        else
+            data = field._data
     except AttributeError:
         data = field.data
     cube = iris.cube.Cube(data,

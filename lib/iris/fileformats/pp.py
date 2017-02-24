@@ -1288,6 +1288,9 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
     def data(self, value):
         self._data = value
 
+    def has_lazy_data(self):
+        return not isinstance(self._data, LoadedArrayBytes)
+
     @property
     def calendar(self):
         """Return the calendar of the field."""
