@@ -150,7 +150,6 @@ class Test_xml(tests.IrisTest):
         self.assertIn('byteorder', cube.xml(byteorder=True))
 
 
-@tests.skip_biggus
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))
@@ -174,10 +173,11 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.assertArrayAlmostEqual(cube_collapsed.data, [1.0, 4.0])
         self.assertFalse(cube_collapsed.has_lazy_data())
 
-    def test_fail_multidims(self):
-        # Check that MEAN produces a suitable error message for multiple dims.
-        # N.B. non-lazy op can do this
-        self.cube.collapsed(('x', 'y'), MEAN)
+    def test_multidims(self):
+        # Check that MEAN works with multiple dims.
+        cube_collapsed = self.cube.collapsed(('x', 'y'), MEAN)
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAllClose(cube_collapsed.data, 2.5)
 
     def test_non_lazy_aggregator(self):
         # An aggregator which doesn't have a lazy function should still work.

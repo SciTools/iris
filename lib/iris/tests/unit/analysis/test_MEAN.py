@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import biggus
+import dask.array as da
+import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import MEAN
@@ -31,29 +32,44 @@ from iris.analysis import MEAN
 
 class Test_lazy_aggregate(tests.IrisTest):
     def setUp(self):
-        self.data = ma.arange(12).reshape(3, 4)
-        self.data[2, 1:] = ma.masked
-        self.array = biggus.NumpyArrayAdapter(self.data)
+        self.data = np.arange(12.0).reshape(3, 4)
+        self.data[2, 1:] = np.nan
+        self.array = da.from_array(self.data, chunks=self.data.shape)
+        masked_data = ma.masked_array(self.data,
+                                      mask=np.isnan(self.data))
         self.axis = 0
+        self.expected_masked = ma.mean(masked_data, axis=self.axis)
 
     def test_mdtol_default(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis)
-        result = agg.masked_array()
-        expected = ma.mean(self.data, axis=self.axis)
-        self.assertArrayAlmostEqual(result, expected)
+        result = agg.compute()
+        masked_result = ma.masked_array(result, mask=np.isnan(result))
+        self.assertMaskedArrayAlmostEqual(masked_result,
+                                          self.expected_masked)
 
     def test_mdtol_below(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis, mdtol=0.3)
-        result = agg.masked_array()
-        expected = ma.mean(self.data, axis=self.axis)
-        expected.mask = [False, True, True, True]
-        self.assertMaskedArrayAlmostEqual(result, expected)
+        result = agg.compute()
+        masked_result = ma.masked_array(result, mask=np.isnan(result))
+        expected_masked = self.expected_masked
+        expected_masked.mask = [False, True, True, True]
+        self.assertMaskedArrayAlmostEqual(masked_result,
+                                          expected_masked)
 
     def test_mdtol_above(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis, mdtol=0.4)
-        result = agg.masked_array()
-        expected = ma.mean(self.data, axis=self.axis)
-        self.assertMaskedArrayAlmostEqual(result, expected)
+        result = agg.compute()
+        masked_result = ma.masked_array(result, mask=np.isnan(result))
+        self.assertMaskedArrayAlmostEqual(masked_result,
+                                          self.expected_masked)
+
+    def test_multi_axis(self):
+        data = np.arange(24.0).reshape((2, 3, 4))
+        collapse_axes = (0, 2)
+        lazy_data = da.from_array(data, chunks=1e6)
+        agg = MEAN.lazy_aggregate(lazy_data, axis=collapse_axes)
+        expected = np.mean(data, axis=collapse_axes)
+        self.assertArrayAllClose(agg.compute(), expected)
 
 
 class Test_name(tests.IrisTest):
