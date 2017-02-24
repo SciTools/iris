@@ -128,7 +128,7 @@ def _donothing_context_manager():
     yield
 
 
-@tests.skip_biggus
+#@tests.skip_biggus
 @skip_esmf
 class TestConservativeRegrid(tests.IrisTest):
 
@@ -195,7 +195,7 @@ class TestConservativeRegrid(tests.IrisTest):
         # check area sums again
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
-    @tests.skip_biggus
+    #@tests.skip_biggus
     def test_simple_missing_data(self):
         """
         Check for missing data handling.
@@ -600,7 +600,7 @@ class TestConservativeRegrid(tests.IrisTest):
         with self.assertRaises(ValueError):
             regrid_conservative_via_esmpy(c1, c2)
 
-    @tests.skip_biggus
+    #@tests.skip_biggus
     def test_rotated(self):
         """
         Test area-weighted regrid on more complex area.
@@ -686,7 +686,7 @@ class TestConservativeRegrid(tests.IrisTest):
         c2toc1_areasum = _cube_area_sum(c2toc1)
         self.assertArrayAllClose(c2toc1_areasum, c2_areasum, rtol=0.004)
 
-    @tests.skip_biggus
+    #@tests.skip_biggus
     def test_missing_data_rotated(self):
         """
         Check missing-data handling between different coordinate systems.

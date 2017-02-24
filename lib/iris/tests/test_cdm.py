@@ -873,7 +873,6 @@ class TestCubeEquality(TestCube2d):
     def test_simple_equality(self):
         self.assertEqual(self.t, self.t.copy())
 
-    @tests.skip_biggus
     def test_data_inequality(self):
         self.assertNotEqual(self.t, self.t + 1)
     

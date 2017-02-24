@@ -64,7 +64,6 @@ class Test(tests.IrisTest):
         self._assert_expected_call(sample_points, sample_points_call)
 
 
-@tests.skip_biggus
 @tests.skip_data
 class Test_masks(tests.IrisTest):
     def test_mask_retention(self):

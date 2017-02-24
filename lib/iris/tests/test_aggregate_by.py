@@ -401,7 +401,6 @@ class TestAggregateBy(tests.IrisTest):
         np.testing.assert_almost_equal(aggregateby_cube.data,
                                        np.array(row, dtype=np.float32))
 
-    @tests.skip_biggus
     def test_single_missing(self):
         # aggregation correctly handles masked data
         mask = np.vstack(
@@ -441,7 +440,6 @@ class TestAggregateBy(tests.IrisTest):
         self.assertMaskedArrayAlmostEqual(aggregateby_cube.data,
                                           single_expected)
 
-    @tests.skip_biggus
     def test_multi_missing(self):
         # aggregation correctly handles masked data
         mask = np.vstack(
