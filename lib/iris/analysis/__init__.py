@@ -51,8 +51,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
+from functools import wraps
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
@@ -64,6 +65,7 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
+import iris._lazy_data as iris_lazy_data
 
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
@@ -440,7 +442,7 @@ class _Aggregator(object):
         Args:
 
         * data (array):
-            A lazy array (:class:`biggus.Array`).
+            A lazy array (:class:`dask.array.Array`).
 
         * axis (int or list of int):
             The dimensions to aggregate over -- note that this is defined
@@ -455,7 +457,7 @@ class _Aggregator(object):
 
         Returns:
             A lazy array representing the aggregation operation
-            (:class:`biggus.Array`).
+            (:class:`dask.array.Array`).
 
         """
         if self.lazy_func is None:
@@ -561,7 +563,6 @@ class _Aggregator(object):
             The collapsed cube with its aggregated data payload.
 
         """
-
         collapsed_cube.data = data_result
         return collapsed_cube
 
@@ -1409,7 +1410,36 @@ This aggregator handles masked data.
 """
 
 
-MEAN = WeightedAggregator('mean', ma.average, lazy_func=biggus.mean)
+def _build_dask_mdtol_function(dask_nanfunction):
+    """
+    Make a wrapped dask statistic function that supports the 'mdtol' keyword.
+
+    'dask_nanfunction' must be a statistical function that treats NaNs as
+    missing data, and which has the basic call signature
+    "dask_nanfunction(data, axis, **kwargs)".
+
+    The returned value is a new function operating on dask arrays.
+    It has the call signature "stat(data, axis=-1, mdtol=None, *kwargs)".
+
+    """
+    @wraps(dask_nanfunction)
+    def inner_stat(array, axis=-1, mdtol=None, **kwargs):
+        dask_result = dask_nanfunction(array, axis=axis, **kwargs)
+        if mdtol is None:
+            result = dask_result
+        else:
+            point_counts = np.sum(np.ones(array.shape), axis=axis)
+            point_mask_counts = da.sum(da.isnan(array), axis=axis)
+            masked_point_fractions = (point_mask_counts + 0.0) / point_counts
+            # Note: the +0.0 forces a floating-point divide.
+            boolean_mask = masked_point_fractions > mdtol
+            result = da.where(boolean_mask, np.nan, dask_result)
+        return result
+    return inner_stat
+
+
+MEAN = WeightedAggregator('mean', ma.average,
+                          lazy_func=_build_dask_mdtol_function(da.nanmean))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1449,7 +1479,7 @@ To compute a weighted area average::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.mean`.
+    Lazy operation is supported, via :func:`dask.array.nanmean`.
 
 This aggregator handles masked data.
 
@@ -1608,7 +1638,7 @@ This aggregator handles masked data.
 
 
 STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1,
-                     lazy_func=biggus.std)
+                     lazy_func=_build_dask_mdtol_function(da.nanstd))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the standard deviation over a :class:`~iris.cube.Cube`, as
@@ -1632,7 +1662,7 @@ To obtain the biased standard deviation::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.std`.
+    Lazy operation is supported, via :func:`dask.array.nanstd`.
 
 This aggregator handles masked data.
 
@@ -1675,7 +1705,8 @@ This aggregator handles masked data.
 VARIANCE = Aggregator('variance',
                       ma.var,
                       units_func=lambda units: units * units,
-                      lazy_func=biggus.var, ddof=1)
+                      lazy_func=_build_dask_mdtol_function(da.nanvar),
+                      ddof=1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the variance over a :class:`~iris.cube.Cube`, as computed by
@@ -1699,7 +1730,7 @@ To obtain the biased variance::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.var`.
+    Lazy operation is supported, via :func:`dask.array.nanvar`.
 
 This aggregator handles masked data.
 
