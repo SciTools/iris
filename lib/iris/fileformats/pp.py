@@ -1863,24 +1863,25 @@ def _create_field_data(field, data_shape, land_mask):
      * converting LoadedArrayBytes into an actual numpy array.
 
     """
-    if isinstance(field._data, LoadedArrayBytes):
-        loaded_bytes = field._data
-        field._data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
-                                                  field.lbpack,
-                                                  field.boundary_packing,
-                                                  data_shape,
-                                                  loaded_bytes.dtype,
-                                                  field.bmdi, land_mask)
+    if isinstance(field.core_data, LoadedArrayBytes):
+        loaded_bytes = field.core_data
+        field.data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
+                                                 field.lbpack,
+                                                 field.boundary_packing,
+                                                 data_shape,
+                                                 loaded_bytes.dtype,
+                                                 field.bmdi, land_mask)
     else:
         # Wrap the reference to the data payload within a data proxy
         # in order to support deferred data loading.
-        fname, position, n_bytes, dtype = field._data
+        fname, position, n_bytes, dtype = field.core_data
         proxy = PPDataProxy(data_shape, dtype,
                             fname, position, n_bytes,
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field._data = da.from_array(proxy, data_shape)
+        block_shape = data_shape if 0 not in data_shape else (1, 1)
+        field.data = da.from_array(proxy, block_shape)
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):
@@ -1970,11 +1971,11 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             if read_data_bytes:
                 # Read the actual bytes. This can then be converted to a numpy
                 # array at a higher level.
-                pp_field._data = LoadedArrayBytes(pp_file.read(data_len),
-                                                  dtype)
+                pp_field.data = LoadedArrayBytes(pp_file.read(data_len),
+                                                 dtype)
             else:
                 # Provide enough context to read the data bytes later on.
-                pp_field._data = (filename, pp_file.tell(), data_len, dtype)
+                pp_field.data = (filename, pp_file.tell(), data_len, dtype)
                 # Seek over the actual data payload.
                 pp_file_seek(data_len, os.SEEK_CUR)
 
