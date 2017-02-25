@@ -51,6 +51,7 @@ from iris._lazy_data import is_lazy_data
 
 @tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
+    # XXX: TODO - this is a _FillValue problem
     @tests.skip_biggus
     def test_monotonic(self):
         cubes = iris.load(tests.get_data_path(
@@ -107,7 +108,6 @@ class TestNetCDFLoad(tests.IrisTest):
             self.assertCML(cube, ('netcdf',
                                   'netcdf_global_xyzt_gems_iter_%d.cml' % i))
 
-    @tests.skip_biggus
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.
         cube = iris.load_cube(tests.get_data_path(
@@ -350,7 +350,6 @@ class TestSave(tests.IrisTest):
             self.assertCDL(filename, ('netcdf', 'netcdf_save_no_name.cdl'))
 
 
-@tests.skip_biggus
 class TestNetCDFSave(tests.IrisTest):
     def setUp(self):
         self.cubell = iris.cube.Cube(np.arange(4).reshape(2, 2),

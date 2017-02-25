@@ -32,8 +32,7 @@ import operator
 import warnings
 import zlib
 
-import biggus
-import iris._lazy_data
+from iris._lazy_data import is_lazy_data
 import dask.array as da
 import netcdftime
 import numpy as np
@@ -1611,7 +1610,7 @@ class AuxCoord(Coord):
     @property
     def points(self):
         """Property containing the points values as a numpy array"""
-        if iris._lazy_data.is_lazy_data(self._points):
+        if is_lazy_data(self._points):
             self._points = self._points.compute()
         return self._points.view()
 
@@ -1623,9 +1622,9 @@ class AuxCoord(Coord):
         # of 1 and is either a numpy or lazy array.
         # This will avoid Scalar coords with points of shape () rather
         # than the desired (1,)
-        if iris._lazy_data.is_lazy_data(points):
+        if is_lazy_data(points):
             if points.shape == ():
-                points = points * np.ones(1)
+                points = da.reshape(points, (1,))
         elif not isinstance(points, iris.aux_factory._LazyArray):
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
@@ -1647,14 +1646,13 @@ class AuxCoord(Coord):
             (n_bounds, )``.
 
         """
+        bounds = None
         if self._bounds is not None:
             bounds = self._bounds
-            if isinstance(bounds, biggus.Array):
-                bounds = bounds.ndarray()
+            if is_lazy_data(bounds):
+                bounds = bounds.compute()
                 self._bounds = bounds
             bounds = bounds.view()
-        else:
-            bounds = None
 
         return bounds
 
@@ -1662,8 +1660,8 @@ class AuxCoord(Coord):
     def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is not None:
-            if not isinstance(bounds, (iris.aux_factory._LazyArray,
-                                       biggus.Array)):
+            if not (isinstance(bounds, iris.aux_factory._LazyArray) or
+                    is_lazy_data(bounds)):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
             if self._points.shape != bounds.shape[:-1]:
@@ -1742,10 +1740,9 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
     def data(self):
         """Property containing the data values as a numpy array"""
         data = self._data
-        if isinstance(data, biggus.Array):
-            data = data.ndarray()
-            self._data = data
-        return data.view()
+        if is_lazy_data(self._data):
+            self._data = self._data.compute()
+        return self._data.view()
 
     @data.setter
     def data(self, data):
