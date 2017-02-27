@@ -47,7 +47,6 @@ class Test_attributes(tests.IrisTest):
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
 
     # cannot save a cube with an empty array as data
-    @tests.skip_biggus
     def test_attributes_arrays(self):
         # Ensure that attributes containing NumPy arrays can be equality
         # checked and their cubes saved as appropriate.
