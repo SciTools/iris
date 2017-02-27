@@ -37,13 +37,14 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 import netcdftime
+import dask.array as da
 
 from iris._deprecation import warn_deprecated
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-from iris._lazy_data import array_masked_to_nans
+from iris._lazy_data import is_lazy_data, array_masked_to_nans
 
 try:
     import mo_pack
@@ -1277,16 +1278,21 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         of the pp file
 
         """
-        # The proxy supplies nan filled arrays and caches data.
-        data = self._data[...]
-        if data.dtype.kind == 'i' and self.bmdi == -1e30:
+        # Cache the real data on first use
+        if is_lazy_data(self._data):
+            self._data = self._data.compute()
+        if self._data.dtype.kind == 'i' and self.bmdi == -1e30:
             self.bmdi = -9999
-        data[np.isnan(data)] = self.bmdi
-        return data
+        self._data[np.isnan(self._data)] = self.bmdi
+        return self._data
 
     @data.setter
     def data(self, value):
         self._data = value
+
+    @property
+    def core_data(self):
+        return self._data
 
     @property
     def calendar(self):
@@ -1857,24 +1863,25 @@ def _create_field_data(field, data_shape, land_mask):
      * converting LoadedArrayBytes into an actual numpy array.
 
     """
-    if isinstance(field._data, LoadedArrayBytes):
-        loaded_bytes = field._data
-        field._data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
-                                                  field.lbpack,
-                                                  field.boundary_packing,
-                                                  data_shape,
-                                                  loaded_bytes.dtype,
-                                                  field.bmdi, land_mask)
+    if isinstance(field.core_data, LoadedArrayBytes):
+        loaded_bytes = field.core_data
+        field.data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
+                                                 field.lbpack,
+                                                 field.boundary_packing,
+                                                 data_shape,
+                                                 loaded_bytes.dtype,
+                                                 field.bmdi, land_mask)
     else:
         # Wrap the reference to the data payload within a data proxy
         # in order to support deferred data loading.
-        fname, position, n_bytes, dtype = field._data
+        fname, position, n_bytes, dtype = field.core_data
         proxy = PPDataProxy(data_shape, dtype,
                             fname, position, n_bytes,
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field._data = proxy
+        block_shape = data_shape if 0 not in data_shape else (1, 1)
+        field.data = da.from_array(proxy, block_shape)
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):
@@ -1964,11 +1971,11 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             if read_data_bytes:
                 # Read the actual bytes. This can then be converted to a numpy
                 # array at a higher level.
-                pp_field._data = LoadedArrayBytes(pp_file.read(data_len),
-                                                  dtype)
+                pp_field.data = LoadedArrayBytes(pp_file.read(data_len),
+                                                 dtype)
             else:
                 # Provide enough context to read the data bytes later on.
-                pp_field._data = (filename, pp_file.tell(), data_len, dtype)
+                pp_field.data = (filename, pp_file.tell(), data_len, dtype)
                 # Seek over the actual data payload.
                 pp_file_seek(data_len, os.SEEK_CUR)
 

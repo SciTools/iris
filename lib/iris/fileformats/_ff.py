@@ -782,13 +782,13 @@ class FF2PP(object):
                             # Read the actual bytes. This can then be converted
                             # to a numpy array at a higher level.
                             ff_file_seek(data_offset, os.SEEK_SET)
-                            result_field._data = pp.LoadedArrayBytes(
+                            result_field.data = pp.LoadedArrayBytes(
                                 ff_file.read(data_depth), data_type)
                         else:
                             # Provide enough context to read the data bytes
                             # later.
-                            result_field._data = (self._filename, data_offset,
-                                                  data_depth, data_type)
+                            result_field.data = (self._filename, data_offset,
+                                                 data_depth, data_type)
 
                         data_offset += data_depth
 
