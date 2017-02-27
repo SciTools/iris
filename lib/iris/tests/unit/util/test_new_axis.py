@@ -22,6 +22,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+import iris.tests.stock as stock
 
 import copy
 import dask.array as da
@@ -143,9 +144,8 @@ class Test(tests.IrisTest):
         self.assertTrue(res.has_lazy_data())
         self.assertEqual(res.shape, (1,) + cube.shape)
 
-    @tests.skip_biggus
     def test_masked_unit_array(self):
-        cube = tests.stock.simple_3d_mask()
+        cube = stock.simple_3d_mask()
         test_cube = cube[0, 0, 0]
         test_cube = new_axis(test_cube, 'longitude')
         test_cube = new_axis(test_cube, 'latitude')
