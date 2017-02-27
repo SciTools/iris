@@ -69,7 +69,6 @@ class Test_sections(tests.IrisTest):
         self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
 
-@tests.skip_biggus
 class Test_data__masked(tests.IrisTest):
     def setUp(self):
         self.bitmap = np.array([0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1])
@@ -128,7 +127,6 @@ class Test_data__masked(tests.IrisTest):
             message.data.ndarray()
 
 
-@tests.skip_biggus
 class Test_data__unsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
         message = _make_test_message({3: {'sourceOfGridDefinition': 1},
@@ -283,7 +281,6 @@ class Test_data__grid_template_90(tests.IrisTest_nometa,
         return section_3
 
 
-@tests.skip_biggus
 class Test_data__unknown_grid_template(tests.IrisTest):
     def test(self):
         message = _make_test_message(
