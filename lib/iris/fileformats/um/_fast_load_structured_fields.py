@@ -96,8 +96,12 @@ class FieldCollation(object):
             for size in vector_dims_list:
                 self._data_cache = [da.stack(self._data_cache[i:i+size]) for i
                                     in range(0, len(self._data_cache), size)]
-        self._data_cache, = self._data_cache
+            self._data_cache, = self._data_cache
         return self._data_cache
+
+    @property
+    def core_data(self):
+        return self.data
 
     @property
     def data_proxy(self):
