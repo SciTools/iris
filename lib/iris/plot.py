@@ -251,14 +251,14 @@ def _invert_yaxis(v_coord, axes=None):
 
 def _check_cubes_for_consistency(cubes, mode):
     """
-    Checks that shape and DimCoords for the first Cube are consistent with those
-    of all subsequent Cubes in the list.
+    Checks that shape and DimCoords for the first Cube are consistent with
+    those of all subsequent Cubes in the list.
     """
     msg = ''
     for cube in cubes[1:]:
         if cube.shape != cubes[0].shape:
-            msg += '\nCubes must be the same shape: %s != %s' % (cubes[0].shape,
-                                                                 cube.shape)
+            msg += '\nCubes must be the same shape: %s != %s' %\
+                   (cubes[0].shape, cube.shape)
         else:
             for [coord0, coord1] in zip(cubes[0].dim_coords, cube.dim_coords):
                 name0 = coord0.name()
@@ -269,7 +269,8 @@ def _check_cubes_for_consistency(cubes, mode):
                 if mode == iris.coords.BOUND_MODE:
                     if coord0.has_bounds() and coord1.has_bounds():
                         if (coord0.bounds != coord1.bounds).any():
-                            msg += '\nBounds for DimCoord %s do not match' % name0
+                            msg += '\nBounds for DimCoord %s do not match' %\
+                                   name0
                     elif coord0.has_bounds() or coord1.has_bounds():
                         msg += '\nBounds for DimCoord %s do not match' % name0
                 elif mode == iris.coords.POINT_MODE:
