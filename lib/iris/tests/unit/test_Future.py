@@ -24,6 +24,12 @@ from iris import Future
 
 
 class Test___setattr__(tests.IrisTest):
+    def test_valid_netcdf_no_unlimited(self):
+        future = Future()
+        new_value = not future.netcdf_no_unlimited
+        future.netcdf_no_unlimited = new_value
+        self.assertEqual(future.netcdf_no_unlimited, new_value)
+
     def test_valid_attribute(self):
         future = Future()
         new_value = not future.cell_datetime_objects

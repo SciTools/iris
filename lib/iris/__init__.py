@@ -128,7 +128,8 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=False, netcdf_promote=False):
+    def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
+                 netcdf_no_unlimited=False):
         """
         A container for run-time options controls.
 
@@ -160,13 +161,21 @@ class Future(threading.local):
         will expose variables which define reference surfaces for
         dimensionless vertical coordinates as independent Cubes.
 
+        The option `netcdf_no_unlimited` controls whether the netCDF saver
+        chooses the leading dimension of a cube to make unlimited or not in
+        the resulting netCDF file.
+
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
         self.__dict__['netcdf_promote'] = netcdf_promote
+        self.__dict__['netcdf_no_unlimited'] = netcdf_no_unlimited
 
     def __repr__(self):
-        return 'Future(cell_datetime_objects={}, netcdf_promote={})'.format(
-            self.cell_datetime_objects, self.netcdf_promote)
+        msg = ('Future(cell_datetime_objects={}, netcdf_promote={}, '
+               'netcdf_no_unlimited={})')
+        msg.format(self.cell_datetime_objects, self.netcdf_promote,
+                   self.netcdf_no_unlimited)
+        return msg
 
     def __setattr__(self, name, value):
         if name not in self.__dict__:
