@@ -781,6 +781,10 @@ class Saver(object):
                     dim_name = self._get_coord_variable_name(cube, coord)
                     unlimited_dim_names.append(dim_name)
 
+        if unlimited_dim_names is not None:
+            warnings.warn('The behaviour for making the outermost dimension '
+                          'unlimited is to be removed in a future release.')
+
         for dim_name in dimension_names:
             if dim_name not in self._dataset.dimensions:
                 if dim_name in unlimited_dim_names:
