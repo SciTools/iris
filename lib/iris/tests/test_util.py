@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,6 @@ import six
 import iris.tests as tests
 
 import inspect
-import unittest
 
 import cf_units
 import numpy as np
@@ -39,7 +38,7 @@ import iris.tests.stock as stock
 import iris.util
 
 
-class TestMonotonic(unittest.TestCase):
+class TestMonotonic(tests.IrisTest):
     def assertMonotonic(self, array, direction=None, **kwargs):
         if direction is not None:
             mono, dir = iris.util.monotonic(array, return_direction=True, **kwargs)
@@ -94,7 +93,7 @@ class TestMonotonic(unittest.TestCase):
         self.assertMonotonic(b)
 
 
-class TestReverse(unittest.TestCase):
+class TestReverse(tests.IrisTest):
     def test_simple(self):
         a = np.arange(12).reshape(3, 4)
         np.testing.assert_array_equal(a[::-1], iris.util.reverse(a, 0))
@@ -119,7 +118,7 @@ class TestReverse(unittest.TestCase):
         self.assertRaises(ValueError, iris.util.reverse, a, [0, -1])
 
 
-class TestClipString(unittest.TestCase):
+class TestClipString(tests.IrisTest):
     def setUp(self):
         self.test_string = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
         self.rider = "**^^**$$..--__" # A good chance at being unique and not in the string to be tested!
@@ -357,4 +356,4 @@ class TestAsCompatibleShape(tests.IrisTest):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    tests.main()

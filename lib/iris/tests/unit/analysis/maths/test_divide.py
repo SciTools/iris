@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,7 +33,9 @@ from iris.tests.unit.analysis.maths import \
 
 
 @tests.skip_data
-class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
+@tests.iristest_timing_decorator
+class TestBroadcasting(tests.IrisTest_nometa,
+                       CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
         try:
@@ -46,7 +48,8 @@ class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
         return divide
 
 
-class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
+@tests.iristest_timing_decorator
+class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         try:

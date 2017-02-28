@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -50,7 +50,7 @@ class Mixin_register(six.with_metaclass(abc.ABCMeta, object)):
         return example_cube()
 
     @abc.abstractproperty
-    def cube2():
+    def cube2(self):
         pass
 
     @abc.abstractproperty
@@ -86,7 +86,8 @@ class Mixin_register(six.with_metaclass(abc.ABCMeta, object)):
             self.assertTrue(result)
 
 
-class Test_register__match(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__match(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return []
@@ -96,7 +97,8 @@ class Test_register__match(Mixin_register, tests.IrisTest):
         return example_cube()
 
 
-class Test_register__standard_name(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__standard_name(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.standard_name', 'air_temperature', 'air_density']
@@ -108,7 +110,8 @@ class Test_register__standard_name(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__long_name(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__long_name(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.long_name', 'screen_air_temp', 'Belling']
@@ -120,7 +123,8 @@ class Test_register__long_name(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__var_name(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__var_name(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.var_name', "'airtemp'", "'airtemp2'"]
@@ -132,7 +136,8 @@ class Test_register__var_name(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__units(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__units(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.units', "'K'", "'C'"]
@@ -144,7 +149,9 @@ class Test_register__units(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_unequal(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__attributes_unequal(Mixin_register,
+                                        tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.attributes', "'mint'"]
@@ -156,7 +163,9 @@ class Test_register__attributes_unequal(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_unequal_array(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__attributes_unequal_array(Mixin_register,
+                                              tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.attributes', "'mint'"]
@@ -174,7 +183,9 @@ class Test_register__attributes_unequal_array(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_superset(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__attributes_superset(Mixin_register,
+                                         tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.attributes', "'stuffed'"]
@@ -186,7 +197,9 @@ class Test_register__attributes_superset(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_multi_diff(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__attributes_multi_diff(Mixin_register,
+                                           tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.attributes', "'sam'", "'mint'"]
@@ -209,7 +222,8 @@ class Test_register__attributes_multi_diff(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__cell_method(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__cell_method(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.cell_methods']
@@ -221,7 +235,8 @@ class Test_register__cell_method(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__data_shape(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__data_shape(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube.shape', '(2,)', '(3,)']
@@ -233,7 +248,8 @@ class Test_register__data_shape(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__data_dtype(Mixin_register, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_register__data_dtype(Mixin_register, tests.IrisTest_nometa):
     @property
     def fragments(self):
         return ['cube data dtype', 'int32', 'int8']
