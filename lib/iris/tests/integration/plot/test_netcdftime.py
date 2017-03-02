@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,12 +26,15 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-from cf_units import Unit
-if tests.NC_TIME_AXIS_AVAILABLE:
-    from nc_time_axis import CalendarDateTime
+import netcdftime
 import numpy as np
 
 from iris.coords import AuxCoord
+
+from cf_units import Unit
+if tests.NC_TIME_AXIS_AVAILABLE:
+    from nc_time_axis import CalendarDateTime
+
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
@@ -47,9 +50,12 @@ class Test(tests.GraphicsTest):
         calendar = '360_day'
         time_unit = Unit('days since 1970-01-01 00:00', calendar=calendar)
         time_coord = AuxCoord(np.arange(n), 'time', units=time_unit)
-        expected_ydata = np.array([CalendarDateTime(time_unit.num2date(point),
-                                                    calendar)
-                                   for point in time_coord.points])
+        times = [time_unit.num2date(point) for point in time_coord.points]
+        times = [netcdftime.datetime(atime.year, atime.month, atime.day,
+                                     atime.hour, atime.minute, atime.second)
+                 for atime in times]
+        expected_ydata = np.array([CalendarDateTime(time, calendar)
+                                   for time in times])
         line1, = iplt.plot(time_coord)
         result_ydata = line1.get_ydata()
         self.assertArrayEqual(expected_ydata, result_ydata)

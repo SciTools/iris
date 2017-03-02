@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -52,8 +52,12 @@ def _make_field(lbyr=None, lbyrd=None, lbft=None,
     header = [0] * 64
     if lbyr is not None:
         header[0] = lbyr
+        header[1] = 1
+        header[2] = 1
     if lbyrd is not None:
         header[6] = lbyrd
+        header[7] = 1
+        header[8] = 1
     if lbft is not None:
         header[13] = lbft
     if blev is not None:

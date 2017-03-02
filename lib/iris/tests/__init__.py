@@ -295,7 +295,7 @@ class IrisTest_nometa(unittest.TestCase):
             if fname[-1].endswith(".cml"):
                 fname[-1] = fname[-1][:-4]
             fname[-1] += '.data.%d.json' % i
-            self.assertCubeDataAlmostEqual(cube, fname, **kwargs)
+            self.assertDataAlmostEqual(cube.data, fname, **kwargs)
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags='-h'):
@@ -407,36 +407,36 @@ class IrisTest_nometa(unittest.TestCase):
             diff = ''.join(difflib.unified_diff(reference_text, source_text, 'Reference', 'Test result', '', '', 0))
             self.fail("%s does not match reference file: %s\n%s" % (desc, reference_filename, diff))
 
-    def assertCubeDataAlmostEqual(self, cube, reference_filename, **kwargs):
+    def assertDataAlmostEqual(self, data, reference_filename, **kwargs):
         reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
             with open(reference_path, 'r') as reference_file:
                 stats = json.load(reference_file)
-                self.assertEqual(stats.get('shape', []), list(cube.shape))
+                self.assertEqual(stats.get('shape', []), list(data.shape))
                 self.assertEqual(stats.get('masked', False),
-                                       isinstance(cube.data, ma.MaskedArray))
+                                       isinstance(data, ma.MaskedArray))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
                                    stats.get('max', 0.), stats.get('min', 0.)),
                                   dtype=np.float_)
                 if math.isnan(stats.get('mean', 0.)):
-                    self.assertTrue(math.isnan(cube.data.mean()))
+                    self.assertTrue(math.isnan(data.mean()))
                 else:
-                    cube_stats = np.array((cube.data.mean(), cube.data.std(),
-                                           cube.data.max(), cube.data.min()),
+                    data_stats = np.array((data.mean(), data.std(),
+                                           data.max(), data.min()),
                                           dtype=np.float_)
-                    self.assertArrayAllClose(nstats, cube_stats, **kwargs)
+                    self.assertArrayAllClose(nstats, data_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
             masked = False
-            if isinstance(cube.data, ma.MaskedArray):
+            if isinstance(data, ma.MaskedArray):
                 masked = True
-            stats = {'mean': np.float_(cube.data.mean()),
-                     'std': np.float_(cube.data.std()),
-                     'max': np.float_(cube.data.max()),
-                     'min': np.float_(cube.data.min()),
-                     'shape': cube.shape, 'masked': masked}
+            stats = {'mean': np.float_(data.mean()),
+                     'std': np.float_(data.std()),
+                     'max': np.float_(data.max()),
+                     'min': np.float_(data.min()),
+                     'shape': data.shape, 'masked': masked}
             with open(reference_path, 'w') as reference_file:
                 reference_file.write(json.dumps(stats))
 

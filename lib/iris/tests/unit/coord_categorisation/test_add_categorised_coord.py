@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -116,6 +116,11 @@ class Test_add_day_of_year(tests.IrisTest):
 
     def test_calendars(self):
         for calendar in calendars:
+            # Skip the Julian calendar due to
+            # https://github.com/Unidata/netcdftime/issues/13
+            # Remove this if block once the issue is resolved.
+            if calendar == 'julian':
+                continue
             cube = self.make_cube(calendar)
             add_day_of_year(cube, 'time')
             points = cube.coord('day_of_year').points
