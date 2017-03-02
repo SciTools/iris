@@ -33,17 +33,11 @@ import numpy.ma as ma
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal, unify_time_units
+from iris.util import guess_coord_axis, array_equal, as_compatible_shape
 
 
 #
 # TODO:
-#
-#   * Deal with scalar coordinate promotion to a new dimension
-#     e.g. promote scalar z coordinate in 2D cube (y:m, x:n) to
-#     give the similar 3D cube (z:1, y:m, x:n). These two types
-#     of cubes are one and the same, and as such should concatenate
-#     together.
 #
 #   * Cope with auxiliary coordinate factories.
 #
@@ -264,7 +258,11 @@ def concatenate(cubes, error_on_mismatch=False):
     axis = None
 
     # Register each cube with its appropriate proto-cube.
-    for cube in cubes:
+    # Ensure to seed higher dimensional cubes first. This means that
+    # proto-cubes have a higher dimensionality, allowing them to promote
+    # the dimensionality of candidate cubes containing scalar coordinates,
+    # such that they are compatible for concatenation.
+    for cube in sorted(cubes, key=lambda c: c.ndim, reverse=True):
         # TODO: Remove this when new deferred data mechanism is available.
         # Avoid deferred data/data manager issues, and load the cube data!
         cube.data
@@ -703,6 +701,14 @@ class _ProtoCube(object):
             msg = 'Nominated axis [{}] is not equal ' \
                 'to negotiated axis [{}]'.format(axis, self.axis)
             raise ValueError(msg)
+
+        # Attempt automatic scalar coordinate promotion.
+        if self._cube.ndim > cube.ndim:
+            try:
+                # XXX This loads the cube data payload!
+                cube = as_compatible_shape(cube, self._cube)
+            except ValueError:
+                pass
 
         # Check for compatible cube signatures.
         cube_signature = _CubeSignature(cube)

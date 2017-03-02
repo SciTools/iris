@@ -26,7 +26,23 @@ import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
 from iris.exceptions import ConcatenateError
+from iris.tests.stock import realistic_4d
 import iris.unit
+
+
+class TestPromote(tests.IrisTest):
+    def setUp(self):
+        self.cube = realistic_4d()
+
+    def test_auto_promote_single(self):
+        cube = self.cube
+        cl = iris.cube.CubeList([cube[:-1], cube[-1]])
+        self.assertEqual(len(cl.concatenate()), 1)
+
+    def test_auto_promote_multi(self):
+        cube = self.cube
+        cl = iris.cube.CubeList([cube[-1], cube[1:-1], cube[0]])
+        self.assertEqual(len(cl.concatenate()), 1)
 
 
 class TestEpoch(tests.IrisTest):
