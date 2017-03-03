@@ -49,12 +49,12 @@ install:
 
   # Customise the testing environment
   # ---------------------------------
-  - conda config --add channels scitools
+  - conda config --add channels conda-forge
   - if [[ "$TEST_MINIMAL" == true ]]; then
       conda install --quiet --file minimal-conda-requirements.txt;
     else
       if [[ "$TRAVIS_PYTHON_VERSION" == 3* ]]; then
-        sed -e '/ecmwf_grib/d' -e '/esmpy/d' -e '/iris_grib/d' -e 's/#.\+$//' conda-requirements.txt | xargs conda install --quiet;
+        sed -e '/ecmwf_grib/d' -e '/esmpy/d' -e '/iris-grib/d' -e 's/#.\+$//' conda-requirements.txt | xargs conda install --quiet;
       else
         conda install --quiet --file conda-requirements.txt;
       fi

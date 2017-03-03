@@ -19,14 +19,14 @@ mock
 nose
 pep8
 sphinx
-iris_sample_data
+iris-sample-data
 filelock
 imagehash
 requests
 
 # Optional iris dependencies
 nc_time_axis
-iris_grib
+iris-grib
 esmpy>=7.0
 gdal
 libmo_unpack
