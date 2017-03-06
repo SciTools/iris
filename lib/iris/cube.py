@@ -716,8 +716,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        self.fill_value = fill_value
-
         if is_lazy_data(data):
             self._dask_array = data
             self._numpy_array = None
@@ -726,8 +724,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if not isinstance(data, ma.MaskedArray):
                 data = np.asarray(data)
             self._numpy_array = data
-
-        self._dtype = dtype
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -754,6 +750,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Cell Measures
         self._cell_measures_and_dims = []
+
+        self.fill_value = fill_value
+
+        self._dtype = dtype
 
         identities = set()
         if dim_coords_and_dims:
@@ -1611,10 +1611,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         to be decided: should this be public??
 
         """
-        if self._numpy_array is not None:
-            result = self._numpy_array
-        else:
+        if self.has_lazy_data():
             result = self._dask_array
+        else:
+            result = self._numpy_array
         return result
 
     @property
@@ -1654,14 +1654,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             A lazy array, representing the Cube data array.
 
         """
-        if self._numpy_array is not None:
+        if self.has_lazy_data():
+            result = self._dask_array
+        else:
             data = self._numpy_array
             if isinstance(data, ma.masked_array):
                 data = array_masked_to_nans(data)
                 data = data.data
             result = da.from_array(data, chunks=data.shape)
-        else:
-            result = self._dask_array
         return result
 
     @property
@@ -1697,7 +1697,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        if self._numpy_array is None:
+        if self.has_lazy_data():
             try:
                 data = self._dask_array.compute()
                 mask = np.isnan(data)
@@ -1742,7 +1742,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._numpy_array = value
 
     def has_lazy_data(self):
-        return True if self._numpy_array is None else False
+        return self._numpy_array is None
 
     @property
     def dim_coords(self):
@@ -2205,12 +2205,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             first_slice = next(slice_gen)
         except StopIteration:
             first_slice = None
-        if self._numpy_array is not None:
-            cube_data = self._numpy_array
-        elif self._dask_array is not None:
+
+        if self.has_lazy_data():
             cube_data = self._dask_array
         else:
-            raise ValueError('This cube has no data, slicing is not supported')
+            cube_data = self._numpy_array
 
         if first_slice is not None:
             data = cube_data[first_slice]
@@ -2840,12 +2839,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Example usage::
 
             # put the second dimension first, followed by the third dimension,
-            and finally put the first dimension third cube.transpose([1, 2, 0])
+            and finally put the first dimension third::
+
+                >>> cube.transpose([1, 2, 0])
 
         """
         if new_order is None:
-            # Passing numpy arrays as new_order works in numpy but not in dask,
-            # docs specify a list, so ensure a list is used.
+            # Passing NumPy arrays as new_order works in NumPy but not in dask.
+            # Dask docs specify a list, so ensure a list is used.
             new_order = list(np.arange(self.ndim)[::-1])
         elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
