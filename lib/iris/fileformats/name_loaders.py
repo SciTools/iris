@@ -83,8 +83,8 @@ def read_header(file_handle):
     for line in file_handle:
         words = line.split(':', 1)
         if len(words) != 2:
-            if 'Forward' or 'Backward' in line:
-                header['Trajectory direction'] = words[0]
+            if 'Forward' in line or 'Backward' in line:
+                header['Trajectory direction'] = words[0].strip()
             break
         key, value = [word.strip() for word in words]
         header[key] = value
