@@ -518,7 +518,7 @@ def _shift_plot_sections(u_object, u, v):
     # in which direction
     lwraps = np.logical_and(u[1:] > u[:-1], azms_u < 0)
     rwraps = np.logical_and(u[1:] < u[:-1], azms_u > 0)
-    shifts = rwraps.astype(np.int32) - lwraps.astype(np.int32)
+    shifts = np.where(rwraps, 1, 0) - np.where(lwraps, 1, 0)
     shift_vals = shifts.cumsum() * u_object.units.modulus
     new_u = np.empty_like(u)
     new_u[0] = u[0]
