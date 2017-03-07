@@ -1,6 +1,13 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="U Turb" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -39,6 +46,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="V Turb" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -77,6 +91,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="W Turb" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -115,6 +136,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="U Ambient" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -153,6 +181,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="V Ambient" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -191,6 +226,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="W Ambient" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -229,6 +271,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Sigma UU" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -267,6 +316,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Sigma VV" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -305,6 +361,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Sigma WW" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -343,6 +406,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Temperature" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -381,6 +451,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Pressure" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -419,6 +496,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Potential Temp" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -457,6 +541,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="BL Depth" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -495,6 +586,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Cloud (oktas)" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -533,6 +631,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Rel Humidity" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -571,6 +676,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Wind Speed" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -609,6 +721,13 @@
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Wind Direction" units="unknown">
+    <attributes>
+      <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Run name" value="USER_DEFINED_LL 15112011 1129"/>
+      <attribute name="Run time" value="15/11/2011 14:21:56.345 UTC"/>
+      <attribute name="Trajectory direction" value="Forward trajectories"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
