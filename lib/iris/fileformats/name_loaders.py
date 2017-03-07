@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -83,6 +83,8 @@ def read_header(file_handle):
     for line in file_handle:
         words = line.split(':', 1)
         if len(words) != 2:
+            if 'Forward' or 'Backward' in line:
+                header['Trajectory direction'] = words[0]
             break
         key, value = [word.strip() for word in words]
         header[key] = value
@@ -1174,6 +1176,12 @@ def load_NAMEIII_trajectory(filename):
         name, units = _split_name_and_units(name)
         cube = iris.cube.Cube(values, units=units)
         cube.rename(name)
+        # Add the Main Headings as attributes.
+        for key, value in six.iteritems(header):
+            if value is not None and value != '' and \
+                    key not in headings:
+                cube.attributes[key] = value
+        # Add coordinates
         for coord in coords:
             dim = 0 if len(coord.points) > 1 else None
             if dim == 0 and coord.name() == "time":
