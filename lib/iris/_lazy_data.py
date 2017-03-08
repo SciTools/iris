@@ -68,6 +68,7 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
     if not is_lazy_data(data):
         if isinstance(data, np.ma.MaskedArray):
             data = array_masked_to_nans(data)
+            data = data.data
         data = da.from_array(data, chunks=chunks)
     return data
 

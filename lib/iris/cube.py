@@ -1658,9 +1658,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = self._dask_array
         else:
             data = self._numpy_array
-            if isinstance(data, ma.masked_array):
-                data = array_masked_to_nans(data)
-                data = data.data
             result = as_lazy_data(data, chunks=data.shape)
         return result
 
