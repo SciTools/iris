@@ -33,7 +33,7 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import array_masked_to_nans, as_lazy_data, is_lazy_data 
+from iris._lazy_data import array_masked_to_nans, as_lazy_data, is_lazy_data
 import iris.cube
 import iris.coords
 import iris.exceptions
@@ -1231,10 +1231,6 @@ class ProtoCube(object):
                 if is_lazy_data(data):
                     all_have_data = False
                 else:
-                    if isinstance(data, ma.MaskedArray):
-                        if ma.is_masked(data):
-                            data = array_masked_to_nans(data)
-                        data = data.data
                     data = as_lazy_data(data, chunks=data.shape)
                 stack[nd_index] = data
 
