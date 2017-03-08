@@ -24,11 +24,11 @@ import six
 # importing anything else
 import iris.tests as tests
 
-import dask.array as da
 import numpy as np
 
 import iris
 import iris.tests.stock as istk
+from iris._lazy_data import as_lazy_data
 
 from iris.analysis.trajectory import (Trajectory,
                                       interpolate as traj_interpolate)
@@ -233,7 +233,7 @@ class TestLazyData(tests.IrisTest):
     def test_hybrid_height(self):
         cube = istk.simple_4d_with_hybrid_height()
         # Put a biggus array on the cube so we can test deferred loading.
-        cube.data = da.from_array(cube.data, chunks=cube.data.shape)
+        cube.data = as_lazy_data(cube.data)
 
         traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude', [31, 32, 33, 34]))

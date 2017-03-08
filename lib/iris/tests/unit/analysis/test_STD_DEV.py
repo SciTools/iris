@@ -23,8 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from iris._lazy_data import as_lazy_data
 import numpy as np
-import dask.array as da
 
 from iris.analysis import STD_DEV
 
@@ -35,7 +35,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         array = np.array([[1., 2., 1., 2.],
                           [1., 2., 3., na],
                           [1., 2., na, na]])
-        array = da.from_array(array, chunks=1e6)
+        array = as_lazy_data(array)
         var = STD_DEV.lazy_aggregate(array, axis=1, mdtol=0.3)
         result = var.compute()
         masked_result = np.ma.masked_array(result, mask=np.isnan(result))
@@ -44,12 +44,12 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertMaskedArrayAlmostEqual(masked_result, masked_expected)
 
     def test_ddof_one(self):
-        array = da.from_array(np.arange(8), chunks=1e6)
+        array = as_lazy_data(np.arange(8), chunks=1e6)
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=1)
         self.assertArrayAlmostEqual(var.compute(), np.array(2.449489))
 
     def test_ddof_zero(self):
-        array = da.from_array(np.arange(8), chunks=1e6)
+        array = as_lazy_data(np.arange(8), chunks=1e6)
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=0)
         self.assertArrayAlmostEqual(var.compute(), np.array(2.291287))
 

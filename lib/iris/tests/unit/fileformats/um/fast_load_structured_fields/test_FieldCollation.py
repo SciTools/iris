@@ -27,7 +27,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
-import dask.array as da
+from iris._lazy_data import as_lazy_data
 from netcdftime import datetime
 import numpy as np
 
@@ -70,7 +70,7 @@ def _make_field(lbyr=None, lbyrd=None, lbft=None,
 
 def _make_data(fill_value):
     shape = (10, 10)
-    return da.from_array(np.ones(shape)*fill_value, chunks=100)
+    return as_lazy_data(np.ones(shape)*fill_value)
 
 
 class Test_data(tests.IrisTest):
