@@ -95,7 +95,7 @@ class IrisPPTest(tests.IrisTest):
                 reference_fh.writelines(test_string)
 
 
-class TestPPHeaderDerived(unittest.TestCase):
+class TestPPHeaderDerived(tests.IrisTest):
 
     def setUp(self):
         self.pp = pp.PPField2()
@@ -339,7 +339,7 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         os.remove(temp_filename)
     
 
-class TestBitwiseInt(unittest.TestCase):
+class TestBitwiseInt(tests.IrisTest):
 
     def test_3(self):
         with mock.patch('warnings.warn') as warn:
@@ -448,7 +448,7 @@ class TestBitwiseInt(unittest.TestCase):
         self.assertEqual(t.flag128, 1)
         
 
-class TestSplittableInt(unittest.TestCase):
+class TestSplittableInt(tests.IrisTest):
 
     def test_3(self):
         t = pp.SplittableInt(3)
@@ -547,7 +547,7 @@ class TestSplittableInt(unittest.TestCase):
             self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
 
             
-class TestSplittableIntEquality(unittest.TestCase):
+class TestSplittableIntEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object): pass
         sin = pp.SplittableInt(0)
@@ -555,7 +555,7 @@ class TestSplittableIntEquality(unittest.TestCase):
         self.assertIs(sin.__ne__(Terry()), NotImplemented)
 
 
-class TestPPDataProxyEquality(unittest.TestCase):
+class TestPPDataProxyEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object): pass
         pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian",
@@ -564,7 +564,7 @@ class TestPPDataProxyEquality(unittest.TestCase):
         self.assertIs(pox.__ne__(Terry()), NotImplemented)
 
 
-class TestPPFieldEquality(unittest.TestCase):
+class TestPPFieldEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object): pass
         pox = pp.PPField3()

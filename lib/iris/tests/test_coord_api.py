@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import unittest
 from xml.dom.minidom import Document
 import logging
 
@@ -40,7 +39,7 @@ import iris.tests.stock
 logger = logging.getLogger('tests')
 
 
-class TestLazy(unittest.TestCase):
+class TestLazy(tests.IrisTest):
     def setUp(self):
         # Start with a coord with LazyArray points.
         shape = (3, 4)
@@ -107,7 +106,7 @@ class TestLazy(unittest.TestCase):
 
 
 @tests.skip_data
-class TestCoordSlicing(unittest.TestCase):
+class TestCoordSlicing(tests.IrisTest):
     def setUp(self):
         cube = iris.tests.stock.realistic_4d()
         self.lat = cube.coord('grid_latitude')
@@ -278,7 +277,7 @@ class TestCoord_ReprStr_time(tests.IrisTest):
                           ('coord_api', 'str_repr', 'aux_time_str.txt'))
 
 
-class TestAuxCoordCreation(unittest.TestCase):
+class TestAuxCoordCreation(tests.IrisTest):
     def test_basic(self):
         a = iris.coords.AuxCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
@@ -336,7 +335,7 @@ class TestAuxCoordCreation(unittest.TestCase):
         self.assertIsNot(a.coord_system, b.coord_system)
   
   
-class TestDimCoordCreation(unittest.TestCase):
+class TestDimCoordCreation(tests.IrisTest):
     def test_basic(self):
         a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
