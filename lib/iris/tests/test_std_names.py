@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,12 +18,13 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import unittest
+# import iris tests first so that some things can be initialised before importing anything else
+import iris.tests as tests
 
 from iris.std_names import STD_NAMES
 
 
-class TestStandardNames(unittest.TestCase):
+class TestStandardNames(tests.IrisTest):
     """
     standard_names.py is a machine generated file which contains a single dictionary
     called STD_NAMES
@@ -50,4 +51,4 @@ class TestStandardNames(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    tests.main()

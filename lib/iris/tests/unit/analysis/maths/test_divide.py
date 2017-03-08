@@ -34,7 +34,9 @@ from iris.tests.unit.analysis.maths import \
 
 @tests.skip_biggus
 @tests.skip_data
-class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
+@tests.iristest_timing_decorator
+class TestBroadcasting(tests.IrisTest_nometa,
+                       CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
         try:
@@ -47,7 +49,8 @@ class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
         return divide
 
 
-class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
+@tests.iristest_timing_decorator
+class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         try:
