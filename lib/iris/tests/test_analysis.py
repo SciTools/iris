@@ -286,6 +286,7 @@ class TestMissingData(tests.IrisTest):
         np.testing.assert_array_equal(cube.data, np.array([6, 18, 17]))
 
 
+@tests.skip_biggus
 class TestAggregator_mdtol_keyword(tests.IrisTest):
     def setUp(self):
         data = ma.array([[1, 2], [4, 5]], dtype=np.float32,

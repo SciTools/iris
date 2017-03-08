@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import iris.analysis
 import iris.tests as tests
 import iris.tests.stock
 import numpy as np
@@ -175,6 +176,7 @@ class TestPeakAggregator(tests.IrisTest):
         self.assertTrue(np.isnan(collapsed_cube.data).all())
         self.assertEqual(collapsed_cube.data.shape, (1,))
 
+    @tests.skip_biggus
     def test_peak_with_mask(self):
         # Single value in column masked.
         latitude = iris.coords.DimCoord(np.arange(0, 5, 1),
@@ -202,6 +204,7 @@ class TestPeakAggregator(tests.IrisTest):
         self.assertTrue(ma.isMaskedArray(collapsed_cube.data))
         self.assertEqual(collapsed_cube.data.shape, (1,))
 
+    @tests.skip_biggus
     def test_peak_with_nan_and_mask(self):
         # Single nan in column with single value masked.
         latitude = iris.coords.DimCoord(np.arange(0, 5, 1),

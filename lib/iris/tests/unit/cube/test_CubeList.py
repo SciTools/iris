@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,6 +34,7 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 
 
+@tests.skip_biggus
 class Test_concatenate_cube(tests.IrisTest):
     def setUp(self):
         self.units = Unit('days since 1970-01-01 00:00:00',

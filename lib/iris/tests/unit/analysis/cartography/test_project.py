@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -138,6 +138,7 @@ class TestAll(tests.IrisTest):
         self.assertEqual(extent, [-17005833.33052523, 17005833.33052523,
                                   -8625155.12857459, 8625155.12857459])
 
+    @tests.skip_biggus
     @tests.skip_data
     def test_cube(self):
         cube = low_res_4d()

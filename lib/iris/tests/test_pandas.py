@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -72,6 +72,7 @@ class TestAsSeries(tests.IrisTest):
         self.assertArrayEqual(series, cube.data)
         self.assertArrayEqual(series.index, expected_index)
 
+    @tests.skip_biggus
     def test_masked(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4.4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
@@ -140,6 +141,7 @@ class TestAsSeries(tests.IrisTest):
         series[0] = 99
         self.assertEqual(cube.data[0], 0)
 
+    @tests.skip_biggus
     def test_copy_masked_false(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
@@ -199,6 +201,7 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.index, expected_index)
         self.assertArrayEqual(data_frame.columns, expected_columns)
 
+    @tests.skip_biggus
     def test_masked(self):
         data = np.ma.MaskedArray([[0, 1, 2, 3, 4.4], [5, 6, 7, 8, 9]],
                                  mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]])
@@ -280,6 +283,7 @@ class TestAsDataFrame(tests.IrisTest):
         data_frame[0][0] = 99
         self.assertEqual(cube.data[0, 0], 0)
 
+    @tests.skip_biggus
     def test_copy_masked_false(self):
         data = np.ma.MaskedArray([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
                                  mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]])
@@ -288,6 +292,7 @@ class TestAsDataFrame(tests.IrisTest):
             data_frame = iris.pandas.as_data_frame(cube, copy=False)
 
 
+@tests.skip_biggus
 @skip_pandas
 class TestSeriesAsCube(tests.IrisTest):
 
@@ -355,6 +360,7 @@ class TestSeriesAsCube(tests.IrisTest):
         self.assertEqual(series[5], 99)
 
 
+@tests.skip_biggus
 @skip_pandas
 class TestDataFrameAsCube(tests.IrisTest):
 
