@@ -42,7 +42,7 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import is_lazy_data, array_masked_to_nans
+from iris._lazy_data import array_masked_to_nans, as_lazy_data, is_lazy_data
 import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
@@ -1661,7 +1661,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if isinstance(data, ma.masked_array):
                 data = array_masked_to_nans(data)
                 data = data.data
-            result = da.from_array(data, chunks=data.shape)
+            result = as_lazy_data(data, chunks=data.shape)
         return result
 
     @property

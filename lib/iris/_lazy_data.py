@@ -40,11 +40,43 @@ def is_lazy_data(data):
     return result
 
 
+# A magic value, borrowed from biggus
+_MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
+
+
+def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
+    """
+    Convert the input array `data` to a lazy dask array.
+
+    Args:
+
+    * data:
+        An array. This will be converted to a lazy dask array.
+
+    Kwargs:
+
+    * chunks:
+        Describes how the created dask array should be split up. Defaults to a
+        value first defined in biggus (being `8 * 1024 * 1024 * 2`).
+        For more information see
+        http://dask.pydata.org/en/latest/array-creation.html#chunks.
+
+    Returns:
+        The input array converted to a lazy dask array.
+
+    """
+    if not is_lazy_data(data):
+        data = array_masked_to_nans(data)
+        data = da.from_array(data, chunks=chunks)
+    return data
+
+
 def array_masked_to_nans(array, mask=None):
     """
-    Convert a masked array to a normal array with NaNs at masked points.
+    Convert a masked array to an `ndarray` with NaNs at masked points.
     This is used for dask integration, as dask does not support masked arrays.
     Note that any fill value will be lost.
+
     """
     if mask is None:
         mask = array.mask

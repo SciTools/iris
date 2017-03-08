@@ -36,6 +36,7 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
 from iris.fileformats.pp import PPField3
+from iris._lazy_data import as_lazy_data
 
 
 class FieldCollation(object):
@@ -88,7 +89,7 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            data_arrays = [da.from_array(f._data, f._data.shape)
+            data_arrays = [as_lazy_data(f._data, chunks=f._data.shape)
                            for f in self.fields]
             vector_dims_list = list(self.vector_dims_shape)
             vector_dims_list.reverse()
