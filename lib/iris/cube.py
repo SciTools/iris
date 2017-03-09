@@ -1658,7 +1658,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = self._dask_array
         else:
             data = self._numpy_array
-            result = as_lazy_data(data, chunks=data.shape)
+            result = as_lazy_data(data)
         return result
 
     @property

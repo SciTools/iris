@@ -44,12 +44,12 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertMaskedArrayAlmostEqual(masked_result, masked_expected)
 
     def test_ddof_one(self):
-        array = as_lazy_data(np.arange(8), chunks=1e6)
+        array = as_lazy_data(np.arange(8))
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=1)
         self.assertArrayAlmostEqual(var.compute(), np.array(2.449489))
 
     def test_ddof_zero(self):
-        array = as_lazy_data(np.arange(8), chunks=1e6)
+        array = as_lazy_data(np.arange(8))
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=0)
         self.assertArrayAlmostEqual(var.compute(), np.array(2.291287))
 
