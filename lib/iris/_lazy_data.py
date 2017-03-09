@@ -87,3 +87,31 @@ def array_masked_to_nans(array, mask=None):
         array = array.astype(np.dtype('f8'))
     array[mask] = np.nan
     return array
+
+
+def multidim_daskstack(stack):
+    """
+    Recursively build a multidimensional stacked dask array.
+
+    This is needed because dask.array.stack only accepts a 1-dimensional list.
+
+    Args:
+
+    * stack:
++        An ndarray of dask arrays.
+
+    Returns:
+        The input array converted to a lazy dask array.
+
+    """
+    if stack.ndim == 0:
+        # A 0-d array cannot be stacked.
+        result = stack.item()
+    elif stack.ndim == 1:
+        # Another base case : simple 1-d goes direct in dask.
+        result = da.stack(list(stack))
+    else:
+        # Recurse because dask.stack does not do multi-dimensional.
+        result = da.stack([multidim_daskstack(subarray)
+                           for subarray in stack])
+    return result
