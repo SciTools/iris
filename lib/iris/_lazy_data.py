@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import dask.array as da
 import numpy as np
+import numpy.ma as ma
 
 
 def is_lazy_data(data):
@@ -66,7 +67,7 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
 
     """
     if not is_lazy_data(data):
-        if isinstance(data, np.ma.MaskedArray):
+        if isinstance(data, ma.MaskedArray):
             data = array_masked_to_nans(data)
             data = data.data
         data = da.from_array(data, chunks=chunks)
