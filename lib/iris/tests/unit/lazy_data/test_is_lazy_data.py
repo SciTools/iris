@@ -26,13 +26,13 @@ import iris.tests as tests
 import numpy as np
 import dask.array as da
 
-from iris._lazy_data import is_lazy_data
+from iris._lazy_data import as_lazy_data, is_lazy_data, _MAX_CHUNK_SIZE
 
 
 class Test_is_lazy_data(tests.IrisTest):
     def test_lazy(self):
-        lazy_values = np.arange(30).reshape((2, 5, 3))
-        lazy_array = da.from_array(lazy_values, 1e6)
+        values = np.arange(30).reshape((2, 5, 3))
+        lazy_array = da.from_array(values, chunks=_MAX_CHUNK_SIZE)
         self.assertTrue(is_lazy_data(lazy_array))
 
     def test_real(self):

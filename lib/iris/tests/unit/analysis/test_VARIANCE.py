@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import dask.array as da
+from iris._lazy_data import as_lazy_data
 import numpy as np
 import numpy.ma as ma
 
@@ -69,12 +69,12 @@ class Test_masked(tests.IrisTest):
 
 class Test_lazy_aggregate(tests.IrisTest):
     def test_ddof_one(self):
-        array = da.from_array(np.arange(8), chunks=1e6)
+        array = as_lazy_data(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=1)
         self.assertArrayAlmostEqual(var.compute(), np.array(6.0))
 
     def test_ddof_zero(self):
-        array = da.from_array(np.arange(8), chunks=1e6)
+        array = as_lazy_data(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=0)
         self.assertArrayAlmostEqual(var.compute(), np.array(5.25))
 

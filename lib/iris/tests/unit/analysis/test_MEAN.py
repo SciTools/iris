@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import dask.array as da
+from iris._lazy_data import as_lazy_data
 import numpy as np
 import numpy.ma as ma
 
@@ -34,7 +34,7 @@ class Test_lazy_aggregate(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(12.0).reshape(3, 4)
         self.data[2, 1:] = np.nan
-        self.array = da.from_array(self.data, chunks=self.data.shape)
+        self.array = as_lazy_data(self.data)
         masked_data = ma.masked_array(self.data,
                                       mask=np.isnan(self.data))
         self.axis = 0
@@ -66,7 +66,7 @@ class Test_lazy_aggregate(tests.IrisTest):
     def test_multi_axis(self):
         data = np.arange(24.0).reshape((2, 3, 4))
         collapse_axes = (0, 2)
-        lazy_data = da.from_array(data, chunks=1e6)
+        lazy_data = as_lazy_data(data)
         agg = MEAN.lazy_aggregate(lazy_data, axis=collapse_axes)
         expected = np.mean(data, axis=collapse_axes)
         self.assertArrayAllClose(agg.compute(), expected)

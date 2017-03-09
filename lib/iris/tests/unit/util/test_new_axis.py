@@ -25,7 +25,7 @@ import iris.tests as tests
 import iris.tests.stock as stock
 
 import copy
-import dask.array as da
+from iris._lazy_data import as_lazy_data
 import numpy as np
 import unittest
 
@@ -137,7 +137,7 @@ class Test(tests.IrisTest):
         self._assert_cube_notis(res, cube)
 
     def test_lazy_data(self):
-        cube = iris.cube.Cube(da.from_array(self.data, chunks=self.data.shape))
+        cube = iris.cube.Cube(as_lazy_data(self.data))
         cube.add_aux_coord(iris.coords.DimCoord([1], standard_name='time'))
         res = new_axis(cube, 'time')
         self.assertTrue(cube.has_lazy_data())

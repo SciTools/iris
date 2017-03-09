@@ -38,7 +38,6 @@ import string
 import warnings
 
 import biggus
-import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
@@ -57,7 +56,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from iris._lazy_data import array_masked_to_nans
+from iris._lazy_data import array_masked_to_nans, as_lazy_data
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -508,7 +507,7 @@ def _load_cube(engine, cf, cf_var, filename):
 
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
-    data = da.from_array(proxy, chunks=100)
+    data = as_lazy_data(proxy, chunks=cf_var.shape)
     cube = iris.cube.Cube(data, fill_value=fill_value, dtype=dummy_data.dtype)
 
     # Reset the pyke inference engine.

@@ -1003,7 +1003,6 @@ fc_extras
     import warnings
 
     import cf_units
-    import dask.array as da
     import netCDF4
     import numpy as np
     import numpy.ma as ma
@@ -1018,6 +1017,7 @@ fc_extras
     import iris.exceptions
     import iris.std_names
     import iris.util
+    from iris._lazy_data import as_lazy_data
     
     
     #
@@ -1630,7 +1630,7 @@ fc_extras
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
                 cf_var.shape, dtype, engine.filename,
                 cf_var.cf_name, fill_value)
-            return da.from_array(proxy, chunks=proxy.shape)
+            return as_lazy_data(proxy, chunks=proxy.shape)
 
         # Get any coordinate point data.
         if isinstance(cf_coord_var, cf.CFLabelVariable):
@@ -1701,7 +1701,7 @@ fc_extras
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
                 cf_var.shape, dtype, engine.filename,
                 cf_var.cf_name, fill_value)
-            return da.from_array(proxy, chunks=proxy.shape)
+            return as_lazy_data(proxy, chunks=proxy.shape)
 
         data = cf_var_as_array(cf_cm_attr)
 
