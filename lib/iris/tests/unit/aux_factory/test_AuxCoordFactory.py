@@ -26,8 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import iris._lazy_data
-import dask.array as da
+from iris._lazy_data import as_lazy_data, is_lazy_data
 import numpy as np
 
 import iris.coords
@@ -58,25 +57,25 @@ class Test__nd_points(tests.IrisTest):
 
     def test_lazy_simple(self):
         raw_points = np.arange(12).reshape(4, 3)
-        points = da.from_array(raw_points, 1)
+        points = as_lazy_data(raw_points, 1)
         coord = iris.coords.AuxCoord(points)
-        self.assertTrue(iris._lazy_data.is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(coord._points))
         result = AuxCoordFactory._nd_points(coord, (0, 1), 2)
         # Check we haven't triggered the loading of the coordinate values.
-        self.assertTrue(iris._lazy_data.is_lazy_data(coord._points))
-        self.assertTrue(iris._lazy_data.is_lazy_data(result))
+        self.assertTrue(is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(result))
         expected = raw_points
         self.assertArrayEqual(result, expected)
 
     def test_lazy_complex(self):
         raw_points = np.arange(12).reshape(4, 3)
-        points = da.from_array(raw_points, 1)
+        points = as_lazy_data(raw_points, 1)
         coord = iris.coords.AuxCoord(points)
-        self.assertTrue(iris._lazy_data.is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(coord._points))
         result = AuxCoordFactory._nd_points(coord, (3, 2), 5)
         # Check we haven't triggered the loading of the coordinate values.
-        self.assertTrue(iris._lazy_data.is_lazy_data(coord._points))
-        self.assertTrue(iris._lazy_data.is_lazy_data(result))
+        self.assertTrue(is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(result))
         expected = raw_points.T[np.newaxis, np.newaxis, ..., np.newaxis]
         self.assertArrayEqual(result, expected)
 

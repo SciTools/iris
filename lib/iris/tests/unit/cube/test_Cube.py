@@ -25,7 +25,6 @@ import iris.tests as tests
 
 from itertools import permutations
 
-import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -41,6 +40,7 @@ from iris.coords import AuxCoord, DimCoord, CellMeasure
 from iris.exceptions import CoordinateNotFoundError, CellMeasureNotFoundError
 from iris.tests import mock
 import iris.tests.stock as stock
+from iris._lazy_data import as_lazy_data
 
 
 class Test___init___data(tests.IrisTest):
@@ -153,7 +153,7 @@ class Test_xml(tests.IrisTest):
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))
-        self.lazydata = da.from_array(self.data, chunks=self.data.shape)
+        self.lazydata = as_lazy_data(self.data)
         cube = Cube(self.lazydata)
         for i_dim, name in enumerate(('y', 'x')):
             npts = cube.shape[i_dim]
@@ -627,7 +627,7 @@ class Test_slices_over(tests.IrisTest):
 def create_cube(lon_min, lon_max, bounds=False):
     n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
     data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, -1)
-    data = da.from_array(data, chunks=data.shape)
+    data = as_lazy_data(data)
     cube = Cube(data, standard_name='x_wind', units='ms-1')
     cube.add_dim_coord(iris.coords.DimCoord([0, 20, 40, 80],
                                             long_name='level_height',
@@ -1301,7 +1301,7 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
-        cube = Cube(da.from_array(np.array([1, 0]), chunks=100))
+        cube = Cube(as_lazy_data(np.array([1, 0])))
         self._check_copy(cube, cube.copy())
 
 
@@ -1316,8 +1316,7 @@ class Test_dtype(tests.IrisTest):
 
     def test_lazy(self):
         data = np.arange(6, dtype=np.float32).reshape(2, 3)
-        lazydata = da.from_array(data, chunks=data.shape)
-        cube = Cube(lazydata)
+        cube = Cube(as_lazy_data(data))
         self.assertEqual(cube.dtype, np.float32)
         # Check that accessing the dtype does not trigger loading of the data.
         self.assertTrue(cube.has_lazy_data())
@@ -1540,7 +1539,7 @@ class TestCellMeasures(tests.IrisTest):
 class Test_transpose(tests.IrisTest):
     def test_lazy_data(self):
         data = np.arange(12).reshape(3, 4)
-        cube = Cube(da.from_array(data, chunks=data.shape))
+        cube = Cube(as_lazy_data(data))
         cube.transpose()
         self.assertTrue(cube.has_lazy_data())
         self.assertArrayEqual(data.T, cube.data)

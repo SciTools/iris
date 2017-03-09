@@ -28,7 +28,7 @@ import iris.tests as tests
 
 import datetime
 
-import dask.array as da
+from iris._lazy_data import as_lazy_data
 import numpy as np
 
 import iris
@@ -481,7 +481,7 @@ class Test___call___lazy_data(ThreeDimCube):
         # of loading it again and again.
 
         # Modify self.cube to have lazy data.
-        self.cube.data = da.from_array(self.data, chunks=self.data.shape)
+        self.cube.data = as_lazy_data(self.data)
         self.assertTrue(self.cube.has_lazy_data())
 
         # Perform interpolation and check the data has been loaded.

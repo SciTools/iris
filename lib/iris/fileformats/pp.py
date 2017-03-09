@@ -37,14 +37,13 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 import netcdftime
-import dask.array as da
 
 from iris._deprecation import warn_deprecated
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-from iris._lazy_data import is_lazy_data, array_masked_to_nans
+from iris._lazy_data import array_masked_to_nans, as_lazy_data, is_lazy_data
 
 try:
     import mo_pack
@@ -1881,7 +1880,7 @@ def _create_field_data(field, data_shape, land_mask):
                             field.boundary_packing,
                             field.bmdi, land_mask)
         block_shape = data_shape if 0 not in data_shape else (1, 1)
-        field.data = da.from_array(proxy, block_shape)
+        field.data = as_lazy_data(proxy, chunks=block_shape)
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):
