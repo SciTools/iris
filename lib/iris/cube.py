@@ -42,7 +42,8 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import array_masked_to_nans, as_lazy_data, is_lazy_data
+from iris._lazy_data import (array_masked_to_nans, array_nans_to_masked,
+                             as_lazy_data, is_lazy_data)
 import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
@@ -1733,16 +1734,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.has_lazy_data():
             try:
                 data = self._dask_array.compute()
-                mask = np.isnan(data)
-                if data.dtype != self.dtype:
-                    data = data.astype(self.dtype)
-                    self.dtype = None
-                if np.all(~mask):
-                    self._numpy_array = data
-                else:
-                    fv = self.fill_value
-                    self._numpy_array = ma.masked_array(data, mask=mask,
-                                                        fill_value=fv)
+                self._numpy_array = array_nans_to_masked(data,
+                                                         self.fill_value,
+                                                         self.dtype)
+                self.dtype = None
+
             except MemoryError:
                 msg = "Failed to create the cube's data as there was not" \
                       " enough memory available.\n" \

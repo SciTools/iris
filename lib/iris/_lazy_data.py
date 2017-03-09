@@ -118,7 +118,7 @@ def multidim_lazy_stack(stack):
     Args:
 
     * stack:
-+        An ndarray of dask arrays.
+        An ndarray of dask arrays.
 
     Returns:
         The input array converted to a lazy dask array.
@@ -135,3 +135,32 @@ def multidim_lazy_stack(stack):
         result = da.stack([multidim_lazy_stack(subarray)
                            for subarray in stack])
     return result
+
+
+def array_nans_to_masked(array, fill_value=None, dtype=None, filled=False):
+    """
+    Convert an array into a masked array, by masking any NaN points.
+
+    Optional data type casting is also performed to the specified dtype.
+
+    The resultant array may also be filled with the fill_value, if requested.
+
+    """
+    if (not isinstance(array, ma.masked_array)) and \
+            array.dtype.kind == 'f':
+        # First, calculate the mask.
+        mask = np.isnan(array)
+        # Now, cast the dtype, if required.
+        if dtype is not None and dtype != array.dtype:
+            array = array.astype(dtype)
+        # Finally, mask or fill the data, as required.
+        if np.any(mask):
+            if filled:
+                if fill_value is None:
+                    emsg = 'Invalid fill value, got {!r}.'
+                    raise ValueError(emsg.format(fill_value))
+                array[mask] = fill_value
+            else:
+                array = ma.masked_array(array, mask=mask,
+                                        fill_value=fill_value)
+    return array
