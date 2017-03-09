@@ -26,28 +26,28 @@ import iris.tests as tests
 import numpy as np
 import dask.array as da
 
-from iris._lazy_data import multidim_daskstack
+from iris._lazy_data import as_lazy_data, multidim_daskstack
 
 
 class Test_multidim_daskstack(tests.IrisTest):
-    def test_0d(self):
+    def test_0d_dask_stack(self):
         value = 4
-        data = np.array(da.from_array(np.array(value), chunks=1), dtype=object)
+        data = np.array(as_lazy_data(np.array(value)), dtype=object)
         result = multidim_daskstack(data)
         self.assertEqual(result, value)
 
-    def test_1d(self):
+    def test_1d_dask_stack(self):
         vals = [4, 11]
-        data = np.array([da.from_array(val*np.ones((3, 3)), chunks=3) for val
-                         in vals], dtype=object)
+        data = np.array([as_lazy_data(val*np.ones((3, 3))) for val in vals],
+                        dtype=object)
         result = multidim_daskstack(data)
         self.assertEqual(result.shape, (2, 3, 3))
         self.assertArrayEqual(result[:, 0, 0], np.array(vals))
 
-    def test_2d(self):
+    def test_2d_dask_stack(self):
         vals = [4, 8, 11]
-        data = np.array([da.from_array(val*np.ones((2, 2)), chunks=2) for val
-                         in vals], dtype=object)
+        data = np.array([as_lazy_data(val*np.ones((2, 2))) for val in vals],
+                        dtype=object)
         data = data.reshape(3, 1, 2, 2)
         result = multidim_daskstack(data)
         self.assertEqual(result.shape, (3, 1, 2, 2))
