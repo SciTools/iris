@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="Zonal Surface Wind Speed" standard_name="eastward_wind" units="m s-1" var_name="uas">
+  <cube dtype="float32" fill_value="1e+20" long_name="Zonal Surface Wind Speed" standard_name="eastward_wind" units="m s-1" var_name="uas">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="cmor_version" value="0.96"/>

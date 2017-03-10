@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord>
         <auxCoord id="ecc4ad5a" long_name="height" points="[10.0]" shape="(1,)" units="Unit('m')" value_type="float32"/>
@@ -27,7 +27,7 @@
     <cellMethods/>
     <data checksum="0xa905726d" dtype="float32" shape="(4, 4)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord>
         <auxCoord id="ecc4ad5a" long_name="height" points="[20.0]" shape="(1,)" units="Unit('m')" value_type="float32"/>

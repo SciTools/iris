@@ -1624,15 +1624,29 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @property
     def dtype(self):
-        if self._dtype is None:
-            result = self.core_data.dtype
-        else:
-            result = self._dtype
-        return result
+        dtype = self._dtype
+        if dtype is None:
+            dtype = self.core_data.dtype
+        return dtype
 
     @dtype.setter
     def dtype(self, dtype):
         self._dtype = dtype
+
+    @property
+    def fill_value(self):
+        fill_value = self._fill_value
+        if fill_value is not None:
+            try:
+                fill_value = np.asarray([self._fill_value],
+                                        dtype=self.dtype)[0]
+            except OverflowError:
+                fill_value = None
+        return fill_value
+
+    @fill_value.setter
+    def fill_value(self, fill_value):
+        self._fill_value = fill_value
 
     @property
     def ndim(self):
@@ -2892,6 +2906,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.var_name:
             cube_xml_element.setAttribute('var_name', self.var_name)
         cube_xml_element.setAttribute('units', str(self.units))
+        if self.fill_value is not None:
+            cube_xml_element.setAttribute('fill_value', str(self.fill_value))
+        cube_xml_element.setAttribute('dtype', self.dtype.name)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
@@ -2970,8 +2987,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 else:
                     crc = 'no-masked-elements'
                 data_xml_element.setAttribute("mask_checksum", crc)
-                data_xml_element.setAttribute('fill_value',
-                                              str(data.fill_value))
             else:
                 crc = '0x%08x' % (zlib.crc32(normalise(data)) & 0xffffffff, )
                 data_xml_element.setAttribute("checksum", crc)

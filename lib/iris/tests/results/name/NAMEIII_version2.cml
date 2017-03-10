@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
     <attributes>
       <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
       <attribute name="Ensemble av info" value="No ensemble averaging"/>
@@ -82,7 +82,7 @@
     <cellMethods/>
     <data dtype="float32" shape="(24, 10)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
     <attributes>
       <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
       <attribute name="Ensemble av info" value="No ensemble averaging"/>
@@ -164,7 +164,7 @@
     <cellMethods/>
     <data dtype="float32" shape="(24, 10)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
     <attributes>
       <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
       <attribute name="Ensemble av info" value="No ensemble averaging"/>
@@ -246,7 +246,7 @@
     <cellMethods/>
     <data dtype="float32" shape="(24, 10)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
     <attributes>
       <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
       <attribute name="Ensemble av info" value="No ensemble averaging"/>

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
         <auxCoord id="78c32bc2" long_name="a" points="[a, b, c, d]" shape="(4,)" units="Unit('1')" value_type="string"/>

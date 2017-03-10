@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="Mean temperature" units="degrees_celsius" var_name="tmean">
+  <cube dtype="float32" fill_value="-9999.0" long_name="Mean temperature" units="degrees_celsius" var_name="tmean">
     <attributes>
       <attribute name="Conventions" value="CF-1.6"/>
       <attribute name="Note" value="This dataset is for test purposes only"/>
@@ -73,6 +73,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x9f376918" dtype="float32" fill_value="-9999.0" mask_checksum="0xc0db3d4e" shape="(1, 290, 180)"/>
+    <data checksum="0x9f376918" dtype="float32" mask_checksum="0xc0db3d4e" shape="(1, 290, 180)"/>
   </cube>
 </cubes>

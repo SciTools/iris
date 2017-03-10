@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="int64" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="77a50eb5" points="[-2, -1, 0, 1, 2]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
@@ -16,7 +16,7 @@
     <cellMethods/>
     <data dtype="int64" shape="(5, 6)" state="loaded"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="int64" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="77a50eb5" points="[-2, -1, 0, 1, 2]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
@@ -32,7 +32,7 @@
     <cellMethods/>
     <data dtype="int64" shape="(5, 6)" state="loaded"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="int64" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="77a50eb5" points="[-2, -1, 0, 1, 2]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">

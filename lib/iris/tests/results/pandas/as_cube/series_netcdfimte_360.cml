@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="int64" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="5816e14d" long_name="index" points="[267841.016944, 277226.033889, 286611.050833,
@@ -8,6 +8,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6c8f4e1c" dtype="int64" fill_value="999999" mask_checksum="no-masked-elements" shape="(5,)"/>
+    <data checksum="0x6c8f4e1c" dtype="int64" mask_checksum="no-masked-elements" shape="(5,)"/>
   </cube>
 </cubes>
