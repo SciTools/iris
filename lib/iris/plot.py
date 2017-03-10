@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import datetime
 
 import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes
+from cartopy.geodesic import Geodesic
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
@@ -481,6 +482,79 @@ def _get_plot_objects(args):
     return u_object, v_object, u, v, args
 
 
+def _get_geodesic_params(globe):
+    # Derive the semimajor axis and flattening values for a given globe from
+    # its attributes. If the values are under specified, raise a ValueError
+    flattening = globe.flattening
+    semimajor = globe.semimajor_axis
+    try:
+        if semimajor is None:
+            # Has semiminor or raises error
+            if flattening is None:
+                # Has inverse flattening or raises error
+                flattening = 1. / globe.inverse_flattening
+            semimajor = globe.semiminor_axis / (1. - flattening)
+        elif flattening is None:
+            if globe.semiminor_axis is not None:
+                flattening = ((semimajor - globe.semiminor_axis) /
+                              float(semimajor))
+            else:
+                # Has inverse flattening or raises error
+                flattening = 1. / globe.inverse_flattening
+    except TypeError:
+        # One of the required attributes was None
+        raise ValueError('The globe was underspecified.')
+
+    return semimajor, flattening
+
+
+def _shift_plot_sections(u_object, u, v):
+    """
+    Shifts subsections of u by multiples of 360 degrees within ranges
+    defined by the points where the line should cross over the 0/360 degree
+    longitude boundary.
+
+    e.g. [ 300, 100, 200, 300, 100, 300 ] => [ 300, 460, 560, 660, 820, 660 ]
+
+    """
+    # Convert coordinates to true lat-lon
+    src_crs = u_object.coord_system.as_cartopy_crs() \
+        if u_object.coord_system is not None else ccrs.Geodetic()
+    tgt_crs = ccrs.Geodetic(globe=src_crs.globe)
+    tgt_proj = ccrs.PlateCarree(globe=src_crs.globe)
+
+    points = tgt_crs.transform_points(src_crs, u, v)
+    startpoints = points[:-1, :2]
+    endpoints = points[1:, :2]
+    proj_x, proj_y, _ = tgt_proj.transform_points(src_crs, u, v).T
+
+    # Calculate the inverse geodesic for each pair of points in turn, and
+    # convert the start point's azimuth into a vector in the source coordinate
+    # system.
+    try:
+        radius, flattening = _get_geodesic_params(src_crs.globe)
+        geodesic = Geodesic(radius, flattening)
+    except ValueError:
+        geodesic = Geodesic()
+    dists, azms, _ = geodesic.inverse(startpoints, endpoints).T
+    azms_lon = np.sin(np.deg2rad(azms))
+    azms_lat = np.cos(np.deg2rad(azms))
+    azms_u, _ = src_crs.transform_vectors(tgt_proj, proj_x[:-1], proj_y[:-1],
+                                          azms_lon, azms_lat)
+
+    # Use the grid longitude values and the geodesic azimuth to determine
+    # the points where the line should cross the 0/360 degree boundary, and
+    # in which direction
+    lwraps = np.logical_and(u[1:] > u[:-1], azms_u < 0)
+    rwraps = np.logical_and(u[1:] < u[:-1], azms_u > 0)
+    shifts = np.where(rwraps, 1, 0) - np.where(lwraps, 1, 0)
+    shift_vals = shifts.cumsum() * u_object.units.modulus
+    new_u = np.empty_like(u)
+    new_u[0] = u[0]
+    new_u[1:] = u[1:] + shift_vals
+    return new_u
+
+
 def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     # NB. In the interests of clarity we use "u" to refer to the horizontal
     # axes on the matplotlib plot and "v" for the vertical axes.
@@ -518,6 +592,10 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         # the transform keyword.
         kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object,
                                                            kwargs)
+        if draw_method_name == 'plot' and \
+                u_object.standard_name not in ('projection_x_coordinate',
+                                               'projection_y_coordinate'):
+            u = _shift_plot_sections(u_object, u, v)
 
     axes = kwargs.pop('axes', None)
     draw_method = getattr(axes if axes else plt, draw_method_name)
