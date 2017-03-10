@@ -73,7 +73,7 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
     return data
 
 
-def array_masked_to_nans(masked_array):
+def array_masked_to_nans(array):
     """
     Convert a masked array to a NumPy `ndarray` filled with NaN values. Input
     NumPy arrays with no mask are returned unchanged.
@@ -82,29 +82,29 @@ def array_masked_to_nans(masked_array):
     Args:
 
     * masked_array:
-        A NumPy array. If masked, the masked points will be filled with
-        `np.nan` values.
+        A NumPy `ndarray` or masked array.
 
     Returns:
-        The input array if unmasked, or a NaN-filled masked array of
-        floating-point values if masked.
+        A NumPy `ndarray`. This is the input array if unmasked, or an array
+        of floating-point values with NaN values where the mask was `True` if
+        the input array is masked.
 
     .. note::
         The fill value and mask of the input masked array will be lost.
 
     .. note::
-        Integer masked arrays are cast to floats because NaN is a
+        Integer masked arrays are cast to 8-byte floats because NaN is a
         floating-point value.
 
     """
-    if not hasattr(masked_array, 'mask'):
-        result = masked_array
+    if not ma.isMaskedArray(array):
+        result = array
     else:
-        if masked_array.dtype.kind == 'i':
-            masked_array = masked_array.astype(np.dtype('f8'))
-        mask = masked_array.mask
-        masked_array[mask] = np.nan
-        result = masked_array.data
+        if array.dtype.kind == 'i':
+            array = array.astype(np.dtype('f8'))
+        mask = array.mask
+        array[mask] = np.nan
+        result = array.data
     return result
 
 

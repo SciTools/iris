@@ -33,7 +33,7 @@ from iris._lazy_data import array_masked_to_nans
 class Test(tests.IrisTest):
     def _common_checks(self, result):
         self.assertIsInstance(result, np.ndarray)
-        self.assertFalse(isinstance(result, ma.MaskedArray))
+        self.assertFalse(ma.isMaskedArray(result))
         self.assertFalse(ma.is_masked(result))
 
     def test_masked_input(self):
@@ -54,8 +54,22 @@ class Test(tests.IrisTest):
         # Non-masked array is returned as-is, without copying.
         self.assertIs(result, unmasked_array)
 
+    def test_unmasked_ints_input(self):
+        unmasked_array = np.array([1, 2])
+        result = array_masked_to_nans(unmasked_array)
+        # Non-masked array is returned as-is, without copying.
+        self.assertIs(result, unmasked_array)
+
     def test_empty_mask(self):
         masked_array = ma.masked_array([1.0, 2.0], mask=[0, 0])
+
+        result = array_masked_to_nans(masked_array)
+
+        self._common_checks(result)
+        self.assertArrayAllClose(result, masked_array.data)
+
+    def test_no_mask(self):
+        masked_array = ma.masked_array([1.0, 2.0], mask=ma.nomask)
 
         result = array_masked_to_nans(masked_array)
 
