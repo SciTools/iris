@@ -89,7 +89,7 @@ def array_masked_to_nans(array, mask=None):
     return array
 
 
-def multidim_daskstack(stack):
+def multidim_lazy_stack(stack):
     """
     Recursively build a multidimensional stacked dask array.
 
@@ -112,6 +112,6 @@ def multidim_daskstack(stack):
         result = da.stack(list(stack))
     else:
         # Recurse because dask.stack does not do multi-dimensional.
-        result = da.stack([multidim_daskstack(subarray)
+        result = da.stack([multidim_lazy_stack(subarray)
                            for subarray in stack])
     return result

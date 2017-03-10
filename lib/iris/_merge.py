@@ -33,8 +33,7 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import (array_masked_to_nans, as_lazy_data, is_lazy_data,
-                             multidim_daskstack)
+from iris._lazy_data import as_lazy_data, is_lazy_data, multidim_lazy_stack
 import iris.cube
 import iris.coords
 import iris.exceptions
@@ -1214,7 +1213,7 @@ class ProtoCube(object):
                     data = as_lazy_data(data, chunks=data.shape)
                 stack[nd_index] = data
 
-            merged_data = multidim_daskstack(stack)
+            merged_data = multidim_lazy_stack(stack)
             if all_have_data:
                 # All inputs were concrete, so turn the result back into a
                 # normal array.

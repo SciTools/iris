@@ -32,8 +32,7 @@ import dask.array as da
 from netCDF4 import netcdftime
 import numpy as np
 
-from iris._lazy_data import (as_lazy_data, array_masked_to_nans, is_lazy_data,
-                             multidim_daskstack)
+from iris._lazy_data import as_lazy_data, multidim_lazy_stack
 from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
@@ -88,11 +87,11 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            data_arrays = np.array([as_lazy_data(f._data, chunks=f._data.shape)
-                for f in self.fields], dtype=object)
-            data_arrays = data_arrays.reshape(
-                self.vector_dims_shape + data_arrays.shape[1:])
-            self._data_cache = multidim_daskstack(data_arrays)            
+            stack = np.empty(np.prod(self.vector_dims_shape), 'object')
+            for index, f in enumerate(self.fields):
+                stack[index] = as_lazy_data(f._data, chunks=f._data.shape)
+            stack = stack.reshape(self.vector_dims_shape)
+            self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
 
     @property
