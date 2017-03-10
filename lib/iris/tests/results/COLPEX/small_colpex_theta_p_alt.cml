@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" fill_value="-1.07374e+09" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -523,7 +523,7 @@
     <cellMethods/>
     <data checksum="0x9554cc14" dtype="float32" shape="(6, 10, 83, 83)"/>
   </cube>
-  <cube standard_name="air_pressure" units="Pa">
+  <cube dtype="float32" fill_value="-1.07374e+09" standard_name="air_pressure" units="Pa">
     <attributes>
       <attribute name="STASH" value="m01s00i408"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1046,7 +1046,7 @@
     <cellMethods/>
     <data checksum="0xd9d57b21" dtype="float32" shape="(6, 10, 83, 83)"/>
   </cube>
-  <cube standard_name="surface_altitude" units="m">
+  <cube dtype="float32" fill_value="-1e+30" standard_name="surface_altitude" units="m">
     <attributes>
       <attribute name="STASH" value="m01s00i033"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

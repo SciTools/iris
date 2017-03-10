@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="temperature" units="kelvin">
+  <cube dtype="float64" long_name="temperature" units="kelvin">
     <coords>
       <coord datadims="[0]">
         <auxCoord bounds="[[19, 17],

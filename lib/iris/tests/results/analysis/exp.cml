@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="1">
+  <cube dtype="float64" units="1">
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[0, 1],

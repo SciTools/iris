@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[1]">
         <dimCoord bounds="[[-0.5, 0.5],
@@ -16,7 +16,7 @@
     <cellMethods/>
     <data checksum="0x4fc3cae2" dtype="float32" shape="(2, 4)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[-0.5, 0.5],

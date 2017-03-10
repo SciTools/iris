@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="int64" units="unknown">
     <coords>
       <coord>
         <dimCoord id="8004d8b1" long_name="levels_below_ground" points="[42]" shape="(1,)" units="Unit('1')" value_type="int64">

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="test 2d dimensional cube" units="meters">
+  <cube dtype="int32" long_name="test 2d dimensional cube" units="meters">
     <coords>
       <coord>
         <auxCoord id="da892976" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>

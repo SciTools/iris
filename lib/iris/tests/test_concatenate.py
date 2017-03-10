@@ -35,7 +35,7 @@ import iris.tests.stock as stock
 
 
 def _make_cube(x, y, data, aux=None, offset=0, scalar=None,
-               dtype=np.float32, fill_value=None):
+               dtype=np.dtype('float32'), fill_value=None):
     """
     A convenience test function that creates a custom 2D cube.
 

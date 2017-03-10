@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="75879334" points="[0, 1]" shape="(2,)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
@@ -21,7 +21,7 @@
     <cellMethods/>
     <data dtype="float32" shape="(2, 4, 5)" state="loaded"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="75879334" points="[0, 1]" shape="(2,)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>

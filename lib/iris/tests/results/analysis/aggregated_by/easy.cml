@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="temperature" units="kelvin">
+  <cube dtype="float32" long_name="temperature" units="kelvin">
     <coords>
       <coord datadims="[0]">
         <auxCoord id="77a50eb5" points="[0.0, 0.0, 10.0]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
