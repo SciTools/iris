@@ -488,15 +488,18 @@ def _get_geodesic_params(globe):
     flattening = globe.flattening
     semimajor = globe.semimajor_axis
     try:
-        if semimajor is None: # Has semiminor or raises error
-            if flattening is None: # Has inverse flattening or raises error
+        if semimajor is None:
+            # Has semiminor or raises error
+            if flattening is None:
+                # Has inverse flattening or raises error
                 flattening = 1. / globe.inverse_flattening
             semimajor = globe.semiminor_axis / (1. - flattening)
         elif flattening is None:
             if globe.semiminor_axis is not None:
                 flattening = ((semimajor - globe.semiminor_axis) /
-                                float(semimajor))
-            else: # Has inverse flattening or raises error
+                              float(semimajor))
+            else:
+                # Has inverse flattening or raises error
                 flattening = 1. / globe.inverse_flattening
     except TypeError:
         # One of the required attributes was None
@@ -528,12 +531,11 @@ def _shift_plot_sections(u_object, u, v):
     # Calculate the inverse geodesic for each pair of points in turn, and
     # convert the start point's azimuth into a vector in the source coordinate
     # system.
-    # TODO: Figure out what the parameters of the geodesic should be
     try:
-       radius, flattening = _get_geodesic_params(ccrs.globe)
-       geodesic = Geodesic(radius, flattening)
+        radius, flattening = _get_geodesic_params(src_crs.globe)
+        geodesic = Geodesic(radius, flattening)
     except ValueError:
-       geodesic = Geodesic()
+        geodesic = Geodesic()
     dists, azms, _ = geodesic.inverse(startpoints, endpoints).T
     azms_lon = np.sin(np.deg2rad(azms))
     azms_lat = np.cos(np.deg2rad(azms))
