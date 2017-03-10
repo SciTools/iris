@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -407,6 +407,160 @@ class Test_rolling_window(tests.IrisTest):
                                       mask=[True, False, False, True, True],
                                       dtype=np.float64)
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
+
+
+class Testslices(tests.IrisTest):
+    '''
+    This class tests the slices capability of iris.cube.Cube
+    '''
+    def setUp(self):
+        '''
+        setup a 4D iris cube, each dimension is length 1.
+        The dimensions are;
+            dim1: height
+            dim2: time
+            dim3: longitude
+            dim4: latitude
+        '''
+        self.cube = iris.cube.Cube(np.array([[[[8.]]]]))
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "height"), [0])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [1])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "longitude"), [2])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "latitude"), [3])
+
+    @staticmethod
+    def expectedcube_setup(dim1name, dim2name, dim3name):
+        '''
+        input:
+        ------
+            dim1name: str
+                name of the first dimension coordinate
+            dim2name: str
+                name of the second dimension coordinate
+            dim3name: str
+                name of the third dimension coordinate
+        output:
+        ------
+            cube: iris cube
+                iris cube with the specified axis holding the data 8
+        '''
+        cube = iris.cube.Cube(np.array([[[8.]]]))
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim1name), [0])
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim2name), [1])
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim3name), [2])
+        return cube
+
+    def makethetest(self, dim1, dim2, dim3, dimtoremove):
+        '''
+        does two things:
+        (1) slices the 4D cube in dim1, dim2, dim3 (and removes the scalar
+        coordinate) and
+        (2) sets up a 3D cube with dim1, dim2, dim3.
+        input:
+        -----
+            dim1: str
+                name of first dimension
+            dim2: str
+                name of second dimension
+            dim3: str
+                name of third dimension
+            dimtoremove: str
+                name of the dimension that transforms into a scalar coordinate
+                when slicing the cube.
+        output:
+        ------
+            slicecube: 3D cube
+                the cube that results if slicing the original cube
+            expectedcube: 3D cube
+                a cube set up with the axis corresponding to the dims
+        '''
+        slicecube = next(self.cube.slices([dim1, dim2, dim3]))
+        slicecube.remove_coord(dimtoremove)
+        expectedcube = self.expectedcube_setup(dim1, dim2, dim3)
+        return slicecube, expectedcube
+
+    def test_height_long_lat(self):
+        '''
+        tests the slicing in this order:
+        height
+        longitude
+        latitude
+        '''
+        have, want = self.makethetest(
+            "height", "longitude", "latitude", "time")
+        self.assertEqual(have, want)
+
+    def test_long_height_lat(self):
+        '''
+        tests the slicing in this order:
+        longitude
+        height
+        latitude
+        '''
+        have, want = self.makethetest(
+            "longitude", "height", "latitude", "time")
+        self.assertEqual(have, want)
+
+    def test_time_height_lat(self):
+        '''
+        tests the slicing in this order:
+        time
+        height
+        latitude
+        '''
+        have, want = self.makethetest(
+            "time", "height", "latitude", "longitude")
+        self.assertEqual(have, want)
+
+    def test_time_height_long(self):
+        '''
+        tests the slicing in this order:
+        time
+        height
+        longitude
+        '''
+        have, want = self.makethetest(
+            "time", "height", "longitude", "latitude")
+        self.assertEqual(have, want)
+
+    def test_long_lat_height(self):
+        '''
+        tests the slicing in this order:
+        longitude
+        latitude
+        height
+
+        currently, this test fails
+        '''
+        have, want = self.makethetest(
+            "longitude", "latitude", "height", "time")
+        self.assertEqual(have, want)
+
+    def test_lat_height_time(self):
+        '''
+        tests the slicing in this order:
+        latitude
+        height
+        time
+
+        currently, this test fails
+        '''
+        have, want = self.makethetest(
+            "latitude", "height", "time", "longitude")
+        self.assertEqual(have, want)
+
+    def test_long_height_time(self):
+        '''
+        tests the slicing in this order:
+        longitude
+        height
+        time
+
+        currently, this test fails
+        '''
+        have, want = self.makethetest(
+            "longitude", "height", "time", "latitude")
+        self.assertEqual(have, want)
 
 
 @tests.skip_data
