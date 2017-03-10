@@ -89,7 +89,8 @@ class FieldCollation(object):
         if self._data_cache is None:
             stack = np.empty(np.prod(self.vector_dims_shape), 'object')
             for index, field in enumerate(self.fields):
-                stack[index] = as_lazy_data(f._data, chunks=f._data.shape)
+                stack[index] = as_lazy_data(field._data,
+                                            chunks=field._data.shape)
             stack = stack.reshape(self.vector_dims_shape)
             self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
