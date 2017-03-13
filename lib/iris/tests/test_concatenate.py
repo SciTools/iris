@@ -35,7 +35,7 @@ import iris.tests.stock as stock
 
 
 def _make_cube(x, y, data, aux=None, offset=0, scalar=None,
-               dtype=np.float32, fill_value=None):
+               dtype=np.dtype('float32'), fill_value=None):
     """
     A convenience test function that creates a custom 2D cube.
 
@@ -387,11 +387,13 @@ class Test2D(tests.IrisTest):
     def test_concat_masked_2y2d_int16(self):
         cubes = []
         x = (0, 2)
-        cube = _make_cube(x, (0, 2), 1, dtype=np.int16, fill_value=-37)
+        cube = _make_cube(x, (0, 2), 1, dtype=np.dtype('int16'),
+                          fill_value=-37)
         cube.data = np.ma.asarray(cube.data)
         cube.data[(0, 1), (0, 1)] = ma.masked
         cubes.append(cube)
-        cube = _make_cube(x, (2, 4), 2, dtype=np.int16, fill_value=-37)
+        cube = _make_cube(x, (2, 4), 2, dtype=np.dtype('int16'),
+                          fill_value=-37)
         cube.data = ma.asarray(cube.data)
         cube.data[(0, 1), (1, 0)] = ma.masked
         cubes.append(cube)

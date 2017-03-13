@@ -2892,6 +2892,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.var_name:
             cube_xml_element.setAttribute('var_name', self.var_name)
         cube_xml_element.setAttribute('units', str(self.units))
+        if self.fill_value is not None:
+            cube_xml_element.setAttribute('fill_value', str(self.fill_value))
+        cube_xml_element.setAttribute('dtype', self.dtype.name)
+        cube_xml_element.setAttribute('core-dtype', self.core_data.dtype.name)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
@@ -2970,8 +2974,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 else:
                     crc = 'no-masked-elements'
                 data_xml_element.setAttribute("mask_checksum", crc)
-                data_xml_element.setAttribute('fill_value',
-                                              str(data.fill_value))
             else:
                 crc = '0x%08x' % (zlib.crc32(normalise(data)) & 0xffffffff, )
                 data_xml_element.setAttribute("checksum", crc)

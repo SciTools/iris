@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="wind_speed" units="m s-1" var_name="wind_speed">
+  <cube core-dtype="float32" dtype="float32" standard_name="wind_speed" units="m s-1" var_name="wind_speed">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
     </attributes>
