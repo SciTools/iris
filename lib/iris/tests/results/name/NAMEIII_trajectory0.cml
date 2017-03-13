@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="U Turb" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="U Turb" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>

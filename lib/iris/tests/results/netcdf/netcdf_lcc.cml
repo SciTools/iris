@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="Daily Mean Near-Surface Air Temperature" standard_name="air_temperature" units="Celsius" var_name="tas">
+  <cube core-dtype="float64" dtype="float64" fill_value="1e+20" long_name="Daily Mean Near-Surface Air Temperature" standard_name="air_temperature" units="Celsius" var_name="tas">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="Note" value="This dataset is for test purposes only"/>
@@ -96,6 +96,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xe2560749" dtype="float64" fill_value="1e+20" mask_checksum="0x8cfaa70e" shape="(12, 60, 60)"/>
+    <data checksum="0xe2560749" dtype="float64" mask_checksum="0x8cfaa70e" shape="(12, 60, 60)"/>
   </cube>
 </cubes>

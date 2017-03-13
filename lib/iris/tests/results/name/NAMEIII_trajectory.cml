@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="U Turb" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="U Turb" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -38,7 +38,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="V Turb" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="V Turb" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -76,7 +76,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="W Turb" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="W Turb" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -114,7 +114,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="U Ambient" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="U Ambient" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -152,7 +152,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="V Ambient" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="V Ambient" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -190,7 +190,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="W Ambient" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="W Ambient" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -228,7 +228,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Sigma UU" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Sigma UU" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -266,7 +266,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Sigma VV" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Sigma VV" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -304,7 +304,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Sigma WW" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Sigma WW" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -342,7 +342,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Temperature" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Temperature" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -380,7 +380,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Pressure" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Pressure" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -418,7 +418,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Potential Temp" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Potential Temp" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -456,7 +456,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="BL Depth" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="BL Depth" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -494,7 +494,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Cloud (oktas)" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Cloud (oktas)" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -532,7 +532,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Rel Humidity" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Rel Humidity" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -570,7 +570,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Wind Speed" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Wind Speed" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
@@ -608,7 +608,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
-  <cube long_name="Wind Direction" units="unknown">
+  <cube core-dtype="float64" dtype="float64" long_name="Wind Direction" units="unknown">
     <coords>
       <coord>
         <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
