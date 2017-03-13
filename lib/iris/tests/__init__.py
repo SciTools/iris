@@ -764,7 +764,7 @@ class IrisTest_nometa(unittest.TestCase):
                 else:
                     figure.savefig(result_fname)
                     emsg = 'Missing image test result: {}.'
-                    raise ValueError(emsg.format(unique_id))
+                    raise AssertionError(emsg.format(unique_id))
             else:
                 uris = repo[unique_id]
                 # Create the expected perceptual image hashes from the uris.
@@ -789,7 +789,7 @@ class IrisTest_nometa(unittest.TestCase):
                             print(emsg.format(msg))
                         else:
                             emsg = 'Image comparison failed: {}'
-                            raise ValueError(emsg.format(msg))
+                            raise AssertionError(emsg.format(msg))
 
             if _DISPLAY_FIGURES:
                 plt.show()
