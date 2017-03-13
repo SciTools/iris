@@ -32,11 +32,9 @@ import dask.array as da
 from netCDF4 import netcdftime
 import numpy as np
 
+from iris._lazy_data import as_lazy_data, multidim_lazy_stack
 from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
-
-from iris.fileformats.pp import PPField3
-from iris._lazy_data import as_lazy_data
 
 
 class FieldCollation(object):
@@ -89,15 +87,12 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            data_arrays = [as_lazy_data(f._data, chunks=f._data.shape)
-                           for f in self.fields]
-            vector_dims_list = list(self.vector_dims_shape)
-            vector_dims_list.reverse()
-            self._data_cache = data_arrays
-            for size in vector_dims_list:
-                self._data_cache = [da.stack(self._data_cache[i:i+size]) for i
-                                    in range(0, len(self._data_cache), size)]
-            self._data_cache, = self._data_cache
+            stack = np.empty(self.vector_dims_shape, 'object')
+            for nd_index, field in zip(np.ndindex(self.vector_dims_shape),
+                                       self.fields):
+                stack[nd_index] = as_lazy_data(field._data,
+                                               chunks=field._data.shape)
+            self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
 
     @property
