@@ -89,7 +89,6 @@ class IrisPPTest(tests.IrisTest):
                 reference = ''.join(reference_fh.readlines())
             self._assert_str_same(reference+'\n', test_string+'\n', reference_filename, type_comparison_name='PP files')
         else:
-            tests.logger.warning('Creating result file: %s', reference_path)
             with open(reference_path, 'w') as reference_fh:
                 reference_fh.writelines(test_string)
 

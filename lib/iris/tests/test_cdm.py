@@ -55,7 +55,6 @@ class IrisDotTest(tests.IrisTest):
                 reference = ''.join(reference_fh.readlines())
             self._assert_str_same(reference, test_string, reference_filename, type_comparison_name='DOT files')
         else:
-            tests.logger.warning('Creating result file: %s', reference_path)
             with open(reference_path, 'w') as reference_fh:
                 reference_fh.writelines(test_string)
 

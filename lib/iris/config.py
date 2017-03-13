@@ -116,15 +116,6 @@ if override:
 PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
                               os.path.join(CONFIG_PATH, 'palette'))
 
-
-#################
-# Logging options
-_LOGGING_SECTION = 'Logging'
-
-IMPORT_LOGGER = get_option(_LOGGING_SECTION, 'import_logger')
-
-
-#################
 # Runtime options
 
 class NetCDF(object):

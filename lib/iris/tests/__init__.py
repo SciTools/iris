@@ -45,7 +45,6 @@ import gzip
 import inspect
 import json
 import io
-import logging
 import math
 import os
 import os.path
@@ -145,9 +144,6 @@ if '--create-missing' in sys.argv:
     print('Allowing creation of missing test results.')
     os.environ['IRIS_TEST_CREATE_MISSING'] = 'true'
 
-
-# A shared logger for use by unit tests
-logger = logging.getLogger('tests')
 
 # Whether to display matplotlib output to the screen.
 _DISPLAY_FIGURES = False
@@ -430,7 +426,6 @@ class IrisTest_nometa(unittest.TestCase):
                     self.assertArrayAllClose(nstats, data_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
-            logger.warning('Creating result file: %s', reference_path)
             stats = collections.OrderedDict([
                 ('std', np.float_(data.std())),
                 ('min', np.float_(data.min())),
@@ -449,7 +444,6 @@ class IrisTest_nometa(unittest.TestCase):
                             fmt.format(test_filename, reference_path))
         else:
             self._ensure_folder(reference_path)
-            logger.warning('Creating result file: %s', reference_path)
             shutil.copy(test_filename, reference_path)
 
     def assertString(self, string, reference_filename=None):
@@ -492,7 +486,6 @@ class IrisTest_nometa(unittest.TestCase):
                                   type_comparison_name)
         else:
             self._ensure_folder(reference_path)
-            logger.warning('Creating result file: %s', reference_path)
             with open(reference_path, 'wb') as reference_fh:
                 reference_fh.writelines(
                     part.encode('utf-8')
@@ -694,7 +687,6 @@ class IrisTest_nometa(unittest.TestCase):
     def _ensure_folder(self, path):
         dir_path = os.path.dirname(path)
         if not os.path.exists(dir_path):
-            logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
 
     def check_graphic(self):
