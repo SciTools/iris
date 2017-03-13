@@ -34,9 +34,8 @@ class Test(tests.IrisTest):
     def _common_checks(self, result):
         self.assertIsInstance(result, np.ndarray)
         self.assertFalse(ma.isMaskedArray(result))
-        self.assertFalse(ma.is_masked(result))
 
-    def test_masked_input(self):
+    def test_masked(self):
         masked_array = ma.masked_array([[1.0, 2.0], [3.0, 4.0]],
                                        mask=[[0, 1], [0, 0]])
 
@@ -48,14 +47,8 @@ class Test(tests.IrisTest):
         result[0, 1] = 777.7
         self.assertArrayAllClose(result, [[1.0, 777.7], [3.0, 4.0]])
 
-    def test_unmasked_input(self):
+    def test_unmasked(self):
         unmasked_array = np.array([1.0, 2.0])
-        result = array_masked_to_nans(unmasked_array)
-        # Non-masked array is returned as-is, without copying.
-        self.assertIs(result, unmasked_array)
-
-    def test_unmasked_ints_input(self):
-        unmasked_array = np.array([1, 2])
         result = array_masked_to_nans(unmasked_array)
         # Non-masked array is returned as-is, without copying.
         self.assertIs(result, unmasked_array)
@@ -76,9 +69,27 @@ class Test(tests.IrisTest):
         self._common_checks(result)
         self.assertArrayAllClose(result, masked_array.data)
 
-    def test_integer_array(self):
+    def test_masked__integers(self):
         masked_array = ma.masked_array([[1, 2], [3, 4]],
                                        mask=[[0, 1], [0, 0]])
+
+        result = array_masked_to_nans(masked_array)
+
+        self._common_checks(result)
+        self.assertEqual(result.dtype, np.dtype('f8'))
+        self.assertArrayAllClose(np.isnan(result),
+                                 [[False, True], [False, False]])
+        result[0, 1] = 777.7
+        self.assertArrayAllClose(result, [[1.0, 777.7], [3.0, 4.0]])
+
+    def test_unmasked__integers(self):
+        unmasked_array = np.array([1, 2])
+        result = array_masked_to_nans(unmasked_array)
+        # Non-masked array is returned as-is, without copying.
+        self.assertIs(result, unmasked_array)
+
+    def test_no_mask__integers(self):
+        masked_array = ma.masked_array([1, 2], mask=ma.nomask)
 
         result = array_masked_to_nans(masked_array)
 
