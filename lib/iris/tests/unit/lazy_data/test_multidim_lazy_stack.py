@@ -35,11 +35,16 @@ class Test_multidim_lazy_stack(tests.IrisTest):
         stack = np.empty(stack_shape, 'object')
         # Define the shape of each element in the stack.
         stack_element_shape = (4, 5)
+        expected = np.empty(stack_shape + stack_element_shape,
+                            dtype=int)
         for index, val in np.ndenumerate(vals):
-            stack[index] = as_lazy_data(val*np.ones(stack_element_shape))
+            stack[index] = as_lazy_data(val * np.ones(stack_element_shape))
+
+            expected[index] = val
         result = multidim_lazy_stack(stack)
         self.assertEqual(result.shape, stack_shape + stack_element_shape)
         self.assertIsInstance(result, da.core.Array)
+        self.assertArrayAllClose(result.compute(), expected)
 
     def test_0d_lazy_stack(self):
         shape = ()

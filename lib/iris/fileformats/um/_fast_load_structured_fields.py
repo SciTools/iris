@@ -87,11 +87,11 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            stack = np.empty(np.prod(self.vector_dims_shape), 'object')
-            for index, field in enumerate(self.fields):
-                stack[index] = as_lazy_data(field._data,
-                                            chunks=field._data.shape)
-            stack = stack.reshape(self.vector_dims_shape)
+            stack = np.empty(self.vector_dims_shape, 'object')
+            for nd_index, field in zip(np.ndindex(self.vector_dims_shape),
+                                       self.fields):
+                stack[nd_index] = as_lazy_data(field._data,
+                                               chunks=field._data.shape)
             self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
 
