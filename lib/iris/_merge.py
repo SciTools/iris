@@ -33,7 +33,7 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import array_masked_to_nans, as_lazy_data, is_lazy_data
+from iris._lazy_data import as_lazy_data, is_lazy_data, multidim_lazy_stack
 import iris.cube
 import iris.coords
 import iris.exceptions
@@ -1069,27 +1069,6 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
     return space
 
 
-def _multidim_daskstack(stack):
-    """
-    Recursively build a multidensional stacked dask array.
-
-    The argument is an ndarray of dask arrays.
-    This is needed because dask.array.stack only accepts a 1-dimensional list.
-
-    """
-    if stack.ndim == 0:
-        # A 0-d array cannot be merged.
-        result = stack.item()
-    elif stack.ndim == 1:
-        # 'Another' base case : simple 1-d goes direct in dask.
-        result = da.stack(list(stack))
-    else:
-        # Recurse because dask.stack does not do multi-dimensional.
-        result = da.stack([_multidim_daskstack(subarray)
-                           for subarray in stack])
-    return result
-
-
 class ProtoCube(object):
     """
     Framework for merging source-cubes into one or more higher
@@ -1234,7 +1213,7 @@ class ProtoCube(object):
                     data = as_lazy_data(data, chunks=data.shape)
                 stack[nd_index] = data
 
-            merged_data = _multidim_daskstack(stack)
+            merged_data = multidim_lazy_stack(stack)
             if all_have_data:
                 # All inputs were concrete, so turn the result back into a
                 # normal array.
