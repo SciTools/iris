@@ -101,7 +101,7 @@ def extend_circular_data(data, coord_dim):
     coord_slice_in_cube = [slice(None)] * data.ndim
     coord_slice_in_cube[coord_dim] = slice(0, 1)
 
-    mod = ma if isinstance(data, ma.MaskedArray) else np
+    mod = ma if ma.isMaskedArray(data) else np
     data = mod.concatenate((data,
                             data[tuple(coord_slice_in_cube)]),
                            axis=coord_dim)
@@ -366,7 +366,7 @@ class RectilinearInterpolator(object):
             self._interpolator.values = src_mask
             mask_fraction = self._interpolator(interp_points)
             new_mask = (mask_fraction > 0)
-            if isinstance(data, ma.MaskedArray) or np.any(new_mask):
+            if ma.isMaskedArray(data) or np.any(new_mask):
                 result = np.ma.MaskedArray(result, new_mask)
 
         return result

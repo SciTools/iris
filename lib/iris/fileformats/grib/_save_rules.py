@@ -1029,7 +1029,7 @@ def product_definition_section(cube, grib):
 
 def data_section(cube, grib):
     # Masked data?
-    if isinstance(cube.data, ma.core.MaskedArray):
+    if ma.isMaskedArray(cube.data):
         # What missing value shall we use?
         if not np.isnan(cube.data.fill_value):
             # Use the data's fill value.

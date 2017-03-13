@@ -433,7 +433,7 @@ class IrisTest_nometa(unittest.TestCase):
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
             masked = False
-            if isinstance(cube.data, ma.MaskedArray):
+            if ma.isMaskedArray(cube.data):
                 masked = True
             stats = {'mean': np.float_(cube.data.mean()),
                      'std': np.float_(cube.data.std()),

@@ -1186,7 +1186,7 @@ def _count(array, function, axis, **kwargs):
 def _proportion(array, function, axis, **kwargs):
     # if the incoming array is masked use that to count the total number of
     # values
-    if isinstance(array, ma.MaskedArray):
+    if ma.isMaskedArray(array):
         # calculate the total number of non-masked values across the given axis
         total_non_masked = _count(array.mask, np.logical_not,
                                   axis=axis, **kwargs)
