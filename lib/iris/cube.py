@@ -65,8 +65,8 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'units',
                                            'attributes',
                                            'cell_methods',
-                                           'fill_value',
-                                           'dtype'])):
+                                           'dtype',
+                                           'fill_value'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -751,9 +751,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Cell Measures
         self._cell_measures_and_dims = []
 
+        # We need to set the dtype before the fill_value,
+        # as the fill_value is checked against self.dtype.
+        self._dtype = None
+        if dtype is not None:
+            self.dtype = dtype
         self.fill_value = fill_value
-
-        self._dtype = dtype
 
         identities = set()
         if dim_coords_and_dims:
@@ -798,7 +801,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
                             self.units, self.attributes, self.cell_methods,
-                            self.fill_value, self._dtype)
+                            self._dtype, self.fill_value)
 
     @metadata.setter
     def metadata(self, value):
@@ -813,7 +816,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
-            setattr(self, name, getattr(value, name))
+            alias = name
+            if name in ['dtype', 'fill_value']:
+                alias = '_{}'.format(name)
+            setattr(self, alias, getattr(value, name))
 
     def is_compatible(self, other, ignore=None):
         """
@@ -1632,7 +1638,33 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @dtype.setter
     def dtype(self, dtype):
-        self._dtype = dtype
+        if dtype != self.dtype:
+            if not self.has_lazy_data():
+                emsg = 'Cube does not have lazy data, cannot set dtype.'
+                raise ValueError(emsg)
+            if dtype is not None:
+                dtype = np.dtype(dtype)
+                if dtype.kind != 'i':
+                    emsg = ('Can only cast lazy data to integral dtype, '
+                            'got {!r}.')
+                    raise ValueError(emsg.format(dtype))
+                self._fill_value = None
+            self._dtype = dtype
+
+    @property
+    def fill_value(self):
+        return self._fill_value
+
+    @fill_value.setter
+    def fill_value(self, fill_value):
+        if fill_value is not None:
+            try:
+                fill_value = np.asarray([fill_value],
+                                        dtype=self.dtype)[0]
+            except OverflowError:
+                emsg = 'Fill value of {!r} invalid for cube {!r}.'
+                raise ValueError(emsg.format(fill_value, self.dtype))
+        self._fill_value = fill_value
 
     @property
     def ndim(self):

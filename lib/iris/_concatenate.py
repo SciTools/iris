@@ -28,6 +28,7 @@ from copy import deepcopy
 
 import dask.array as da
 import numpy as np
+import numpy.ma as ma
 
 import iris.coords
 import iris.cube
@@ -329,6 +330,16 @@ class _CubeSignature(object):
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
+        # Concatenation will generate resultant cubes that contain lazy data.
+        # We need to deal with the special case of preserving the dtype of a
+        # candidate cube with concrete masked integral data by ensuring that
+        # the cube metadata has the correct target dtype.
+        kwargs = self.defn._asdict()
+        if kwargs['dtype'] is None and not cube.has_lazy_data() and \
+                isinstance(cube.data, ma.masked_array) and \
+                cube.data.dtype.kind == 'i':
+            kwargs['dtype'] = self.data_type
+            self.defn = iris.cube.CubeMetadata(**kwargs)
 
         #
         # Collate the dimension coordinate metadata.
@@ -402,6 +413,14 @@ class _CubeSignature(object):
                       ', '.join(diff_names))
         return result
 
+    def promote_defn(self):
+        defn = self.defn
+        kwargs = defn._asdict()
+        if kwargs['dtype'] is None and self.data_type.kind == 'i':
+            kwargs['dtype'] = self.data_type
+            defn = iris.cube.CubeMetadata(**kwargs)
+        return defn
+
     def match(self, other, error_on_mismatch):
         """
         Return whether this _CubeSignature equals another.
@@ -433,10 +452,14 @@ class _CubeSignature(object):
 
         # Check cube definitions.
         if self.defn != other.defn:
-            # Note that the case of different phenomenon names is dealt with
-            # in :meth:`iris.cube.CubeList.concatenate_cube()`.
-            msg = 'Cube metadata differs for phenomenon: {}'
-            msgs.append(msg.format(self.defn.name()))
+            promoted = self.promote_defn()
+            if promoted != other.promote_defn():
+                # Note that the case of different phenomenon names is dealt
+                # with in :meth:`iris.cube.CubeList.concatenate_cube()`.
+                msg = 'Cube metadata differs for phenomenon: {}'
+                msgs.append(msg.format(self.defn.name()))
+            else:
+                self.defn = promoted
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')
