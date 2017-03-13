@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="Carbon Dioxide" units="kg kg**-1" var_name="co2">
+  <cube core-dtype="float64" dtype="float64" fill_value="-32767" long_name="Carbon Dioxide" units="kg kg**-1" var_name="co2">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="history" value="2009-08-25 13:46:31 GMT by mars2netcdf-0.92"/>
@@ -26,7 +26,7 @@
     <cellMethods/>
     <data checksum="0x65252ed2" dtype="float64" shape="(1, 60, 181, 360)"/>
   </cube>
-  <cube long_name="Logarithm of surface pressure" units="no_unit" var_name="lnsp">
+  <cube core-dtype="float64" dtype="float64" fill_value="-32767" long_name="Logarithm of surface pressure" units="no_unit" var_name="lnsp">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="history" value="2009-08-25 13:46:31 GMT by mars2netcdf-0.92"/>
@@ -50,6 +50,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xc613a1f2" dtype="float64" fill_value="-32767.0" mask_checksum="0x5f099d34" shape="(1, 60, 181, 360)"/>
+    <data checksum="0xc613a1f2" dtype="float64" mask_checksum="0x5f099d34" shape="(1, 60, 181, 360)"/>
   </cube>
 </cubes>
