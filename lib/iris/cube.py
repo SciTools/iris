@@ -1777,7 +1777,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._dask_array = None
 
         # Cancel any 'realisation' datatype conversion, and fill value.
-        self._dtype = None
+        self.dtype = None
         self.fill_value = None
 
     def has_lazy_data(self):
