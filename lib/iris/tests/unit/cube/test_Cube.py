@@ -1359,7 +1359,6 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         self.assertEqual(cube.core_data.dtype, np.dtype('f4'))
         self.assertIsNone(cube.fill_value)
 
-
     def test_lazydata_maskedints_dtype_change(self):
         # Check that re-assigning dtype resets fill_value.
         cube = self._sample_cube(dtype=np.int16, masked=True, lazy=True,
@@ -1383,6 +1382,31 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         cube = self._sample_cube(dtype=np.int16, cube_fill_value=1734.99999)
         self.assertEqual(cube.fill_value.dtype, np.dtype('i2'))
         self.assertArrayAllClose(cube.fill_value, 1735)
+
+    def test_set_fill_value(self):
+        cube = self._sample_cube()
+        cube.fill_value = -74.6
+        self.assertEqual(cube.fill_value.dtype, np.dtype('f4'))
+        self.assertArrayAllClose(cube.fill_value, -74.6)
+
+    def test_set_fill_value__typecast(self):
+        cube = self._sample_cube(dtype=np.int16)
+        cube.fill_value = -74.6
+        self.assertEqual(cube.fill_value.dtype, np.dtype('i2'))
+        self.assertArrayAllClose(cube.fill_value, -75)
+
+    def test_set_fill_value__casterror(self):
+        cube = self._sample_cube(dtype=np.int16)
+        msg = "invalid for cube dtype\('int16'\)"
+        with self.assertRaisesRegexp(ValueError, msg):
+            # NOTE: this doesn't actually work properly in most cases.
+            # E.G. it will happily assign 1e12 to an int16 and gets 4096.
+            cube.fill_value = -1.0e23
+
+    def test_clear_fill_value(self):
+        cube = self._sample_cube(cube_fill_value=123.768)
+        cube.fill_value = None
+        self.assertIsNone(cube.fill_value)
 
 
 class TestSubset(tests.IrisTest):
