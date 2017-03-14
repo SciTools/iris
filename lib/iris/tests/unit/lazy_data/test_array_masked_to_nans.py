@@ -36,14 +36,13 @@ class Test(tests.IrisTest):
         self.assertFalse(ma.isMaskedArray(result))
 
     def test_masked(self):
-        masked_array = ma.masked_array([[1.0, 2.0], [3.0, 4.0]],
-                                       mask=[[0, 1], [0, 0]])
+        mask = [[False, True], [False, False]]
+        masked_array = ma.masked_array([[1.0, 2.0], [3.0, 4.0]], mask=mask)
 
         result = array_masked_to_nans(masked_array)
 
         self._common_checks(result)
-        self.assertArrayAllClose(np.isnan(result),
-                                 [[False, True], [False, False]])
+        self.assertArrayAllClose(np.isnan(result), mask)
         result[0, 1] = 777.7
         self.assertArrayAllClose(result, [[1.0, 777.7], [3.0, 4.0]])
 
@@ -70,15 +69,14 @@ class Test(tests.IrisTest):
         self.assertArrayAllClose(result, masked_array.data)
 
     def test_masked__integers(self):
-        masked_array = ma.masked_array([[1, 2], [3, 4]],
-                                       mask=[[0, 1], [0, 0]])
+        mask = [[False, True], [False, False]]
+        masked_array = ma.masked_array([[1, 2], [3, 4]], mask=mask)
 
         result = array_masked_to_nans(masked_array)
 
         self._common_checks(result)
         self.assertEqual(result.dtype, np.dtype('f8'))
-        self.assertArrayAllClose(np.isnan(result),
-                                 [[False, True], [False, False]])
+        self.assertArrayAllClose(np.isnan(result), mask)
         result[0, 1] = 777.7
         self.assertArrayAllClose(result, [[1.0, 777.7], [3.0, 4.0]])
 
