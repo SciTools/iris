@@ -1037,9 +1037,11 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # Reform in row-column order
         data.shape = data_shape
 
-    # Mask the array?
+    # Convert mdi to NaN.
     if mdi in data:
-        data = array_masked_to_nans(data, data == mdi)
+        if data.dtype.kind == 'i':
+            data = data.astype(np.dtype('f8'))
+        data[data == mdi] = np.nan
 
     return data
 

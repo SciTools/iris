@@ -396,7 +396,6 @@ class NetCDFDataProxy(object):
             dataset.close()
         if isinstance(var, ma.MaskedArray):
             var = array_masked_to_nans(var)
-            var = var.data
         return var
 
     def __repr__(self):
