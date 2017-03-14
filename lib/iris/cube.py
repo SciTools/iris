@@ -1639,10 +1639,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @dtype.setter
     def dtype(self, dtype):
         if dtype != self.dtype:
-            if not self.has_lazy_data():
-                emsg = 'Cube does not have lazy data, cannot set dtype.'
-                raise ValueError(emsg)
             if dtype is not None:
+                if not self.has_lazy_data():
+                    emsg = 'Cube does not have lazy data, cannot set dtype.'
+                    raise ValueError(emsg)
                 dtype = np.dtype(dtype)
                 if dtype.kind != 'i':
                     emsg = ('Can only cast lazy data to integral dtype, '

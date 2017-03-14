@@ -428,7 +428,7 @@ class TestDivideAndMultiply(tests.IrisTest):
         # Check that the division has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
 
-    def test_divide_by_singluar_coordinate(self):
+    def test_divide_by_singular_coordinate(self):
         a = self.cube
 
         coord = iris.coords.DimCoord(points=2, long_name='foo', units='1')
