@@ -1359,7 +1359,6 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         self.assertEqual(cube.core_data.dtype, np.dtype('f4'))
         self.assertIsNone(cube.fill_value)
 
-
     def test_lazydata_maskedints_dtype_change(self):
         # Check that re-assigning dtype resets fill_value.
         cube = self._sample_cube(dtype=np.int16, masked=True, lazy=True,
