@@ -1658,9 +1658,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @fill_value.setter
     def fill_value(self, fill_value):
         if fill_value is not None:
+            # Convert the given value to the dtype of the cube.
+            fill_value = np.asarray([fill_value])[0]
+            target_dtype = self.dtype
+            if fill_value.dtype.kind == 'f' and target_dtype.kind == 'i':
+                # Perform rounding when converting floats to ints.
+                fill_value = np.rint(fill_value)
             try:
-                fill_value = np.asarray([fill_value],
-                                        dtype=self.dtype)[0]
+                fill_value = np.asarray([fill_value], dtype=target_dtype)[0]
             except OverflowError:
                 emsg = 'Fill value of {!r} invalid for cube {!r}.'
                 raise ValueError(emsg.format(fill_value, self.dtype))
@@ -1763,12 +1768,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, value.shape))
 
+        # Set lazy or real data, and reset the other.
         if is_lazy_data(value):
             self._dask_array = value
             self._numpy_array = None
-
         else:
             self._numpy_array = value
+            self._dask_array = value
+        # Cancel any 'realisation' datatype conversion, and fill value.
+        self._dtype = None
+        self.fill_value = None
 
     def has_lazy_data(self):
         return self._numpy_array is None

@@ -1383,6 +1383,31 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         self.assertEqual(cube.fill_value.dtype, np.dtype('i2'))
         self.assertArrayAllClose(cube.fill_value, 1735)
 
+    def test_set_fill_value(self):
+        cube = self._sample_cube()
+        cube.fill_value = -74.6
+        self.assertEqual(cube.fill_value.dtype, np.dtype('f4'))
+        self.assertArrayAllClose(cube.fill_value, -74.6)
+
+    def test_set_fill_value__typecast(self):
+        cube = self._sample_cube(dtype=np.int16)
+        cube.fill_value = -74.6
+        self.assertEqual(cube.fill_value.dtype, np.dtype('i2'))
+        self.assertArrayAllClose(cube.fill_value, -75)
+
+    def test_set_fill_value__casterror(self):
+        cube = self._sample_cube(dtype=np.int16)
+        msg = "invalid for cube dtype\('int16'\)"
+        with self.assertRaisesRegexp(ValueError, msg):
+            # NOTE: this doesn't actually work properly in most cases.
+            # E.G. it will happily assign 1e12 to an int16 and gets 4096.
+            cube.fill_value = -1.0e23
+
+    def test_clear_fill_value(self):
+        cube = self._sample_cube(cube_fill_value=123.768)
+        cube.fill_value = None
+        self.assertIsNone(cube.fill_value)
+
 
 class TestSubset(tests.IrisTest):
     def test_scalar_coordinate(self):
