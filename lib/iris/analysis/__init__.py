@@ -563,7 +563,9 @@ class _Aggregator(object):
             The collapsed cube with its aggregated data payload.
 
         """
+        cube_fill_value = collapsed_cube.fill_value
         collapsed_cube.data = data_result
+        collapsed_cube.fill_value = cube_fill_value
         return collapsed_cube
 
     def aggregate_shape(self, **kwargs):
