@@ -57,7 +57,7 @@ import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
 from iris._lazy_data import (array_masked_to_nans, as_lazy_data,
-                             array_nans_to_masked)
+                             convert_nans_array)
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -1950,8 +1950,8 @@ class Saver(object):
 
             # Now stream the cube data payload straight to the netCDF
             # data variable within the netCDF file.
-            data = da.map_blocks(array_nans_to_masked, cube.lazy_data(),
-                                 cube.fill_value, cube.dtype, filled=True)
+            data = da.map_blocks(convert_nans_array, cube.lazy_data(),
+                                 nans=cube.fill_value, result_dtype=cube.dtype)
             da.store([data], [cf_var])
 
         if cube.standard_name:

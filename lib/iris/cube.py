@@ -42,7 +42,7 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import (array_masked_to_nans, array_nans_to_masked,
+from iris._lazy_data import (array_masked_to_nans, convert_nans_array,
                              as_lazy_data, is_lazy_data)
 import iris._merge
 import iris.analysis
@@ -1734,9 +1734,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.has_lazy_data():
             try:
                 data = self._dask_array.compute()
-                self._numpy_array = array_nans_to_masked(data,
-                                                         self.fill_value,
-                                                         self.dtype)
+                self._numpy_array = convert_nans_array(data,
+                                                       nans=ma.masked,
+                                                       result_dtype=self.dtype)
                 self.dtype = None
 
             except MemoryError:

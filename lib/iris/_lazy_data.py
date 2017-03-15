@@ -137,7 +137,7 @@ def multidim_lazy_stack(stack):
     return result
 
 
-def array_nans_to_masked(array, fill_value=None, dtype=None, filled=False):
+def convert_nans_array(array, nans=None, result_dtype=None):
     """
     Convert an array into a masked array, by masking any NaN points.
 
@@ -146,21 +146,24 @@ def array_nans_to_masked(array, fill_value=None, dtype=None, filled=False):
     The resultant array may also be filled with the fill_value, if requested.
 
     """
-    if (not isinstance(array, ma.masked_array)) and \
-            array.dtype.kind == 'f':
+    if not ma.isMaskedArray(array) and array.dtype.kind == 'f':
         # First, calculate the mask.
         mask = np.isnan(array)
         # Now, cast the dtype, if required.
-        if dtype is not None and dtype != array.dtype:
-            array = array.astype(dtype)
-        # Finally, mask or fill the data, as required.
+        if result_dtype is not None:
+            result_dtype = np.dtype(result_dtype)
+            if array.dtype != result_dtype:
+                array = array.astype(result_dtype)
+        # Finally, mask or fill the data, as required or raise an exception
+        # if we detect there are NaNs present and we didn't expect any.
         if np.any(mask):
-            if filled:
-                if fill_value is None:
-                    emsg = 'Invalid fill value, got {!r}.'
-                    raise ValueError(emsg.format(fill_value))
-                array[mask] = fill_value
+            if nans is None:
+                emsg = 'Array contains unexpected NaNs.'
+                raise ValueError(emsg)
+            elif nans is ma.masked:
+                # Mask the array with the default fill_value.
+                array = ma.masked_array(array, mask=mask)
             else:
-                array = ma.masked_array(array, mask=mask,
-                                        fill_value=fill_value)
+                # Fill the array.
+                array[mask] = nans
     return array
