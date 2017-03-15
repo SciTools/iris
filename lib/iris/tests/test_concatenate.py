@@ -387,7 +387,7 @@ class Test2D(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 1)
 
-    def test_masked_fill_value(self):
+    def test_masked_with_data_fill_value_difference(self):
         cubes = []
         y = (0, 2)
         cube = _make_cube((0, 2), y, 1, mask=True)

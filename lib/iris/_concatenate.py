@@ -414,6 +414,12 @@ class _CubeSignature(object):
         return result
 
     def promote_defn(self):
+        """
+        Update the metadata definition to match that of a similar but lazy cube.
+        A cube with lazy masked integral data must have its :attr:`metadata.dtype`
+        set appropriately.
+
+        """
         defn = self.defn
         kwargs = defn._asdict()
         if kwargs['dtype'] is None and self.data_type.kind == 'i':
@@ -452,6 +458,8 @@ class _CubeSignature(object):
 
         # Check cube definitions.
         if self.defn != other.defn:
+            # Attempt to match metadata for the lazy masked integral
+            # dtype case.
             promoted = self.promote_defn()
             if promoted != other.promote_defn():
                 # Note that the case of different phenomenon names is dealt
@@ -459,6 +467,7 @@ class _CubeSignature(object):
                 msg = 'Cube metadata differs for phenomenon: {}'
                 msgs.append(msg.format(self.defn.name()))
             else:
+                # Persist the promoted metadata dtype match case.
                 self.defn = promoted
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
