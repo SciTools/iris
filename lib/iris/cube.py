@@ -1664,7 +1664,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # Perform rounding when converting floats to ints.
                 fill_value = np.rint(fill_value)
             try:
-                fill_value = np.asarray([fill_value], dtype=target_dtype)[0]
+                [fill_value] = np.asarray([fill_value], dtype=target_dtype)
             except OverflowError:
                 emsg = 'Fill value of {!r} invalid for cube {!r}.'
                 raise ValueError(emsg.format(fill_value, self.dtype))
