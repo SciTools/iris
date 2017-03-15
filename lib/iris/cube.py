@@ -754,8 +754,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # We need to set the dtype before the fill_value,
         # as the fill_value is checked against self.dtype.
         self._dtype = None
-        if dtype is not None:
-            self.dtype = dtype
+        self.dtype = dtype
         self.fill_value = fill_value
 
         identities = set()
