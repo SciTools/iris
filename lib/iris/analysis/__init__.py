@@ -1079,7 +1079,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
         of weights is zero or masked)
     """
     # Return np.nan if no useable points found
-    if np.isclose(weights.sum(), 0.) or weights.sum() is ma.masked:
+    if np.isclose(weights.sum(), 0.) or ma.is_masked(weights.sum()):
         return np.resize(np.array(np.nan), len(quantiles))
     # Sort the data
     ind_sorted = ma.argsort(data)
@@ -1186,7 +1186,7 @@ def _count(array, function, axis, **kwargs):
 def _proportion(array, function, axis, **kwargs):
     # if the incoming array is masked use that to count the total number of
     # values
-    if isinstance(array, ma.MaskedArray):
+    if ma.isMaskedArray(array):
         # calculate the total number of non-masked values across the given axis
         total_non_masked = _count(array.mask, np.logical_not,
                                   axis=axis, **kwargs)

@@ -678,7 +678,7 @@ class CFLabelVariable(CFVariable):
         str_dim_name = str_dim_name[0]
         label_data = self[:]
 
-        if isinstance(label_data, ma.MaskedArray):
+        if ma.isMaskedArray(label_data):
             label_data = label_data.filled()
 
         # Determine whether we have a string-valued scalar label

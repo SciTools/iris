@@ -418,7 +418,7 @@ class IrisTest_nometa(unittest.TestCase):
                 stats = json.load(reference_file)
                 self.assertEqual(stats.get('shape', []), list(cube.shape))
                 self.assertEqual(stats.get('masked', False),
-                                       isinstance(cube.data, ma.MaskedArray))
+                                 ma.isMaskedArray(cube.data))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
                                    stats.get('max', 0.), stats.get('min', 0.)),
                                   dtype=np.float_)
@@ -433,7 +433,7 @@ class IrisTest_nometa(unittest.TestCase):
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
             masked = False
-            if isinstance(cube.data, ma.MaskedArray):
+            if ma.isMaskedArray(cube.data):
                 masked = True
             stats = {'mean': np.float_(cube.data.mean()),
                      'std': np.float_(cube.data.std()),
