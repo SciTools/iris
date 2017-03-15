@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -766,7 +766,7 @@ THEN
     pp.bmdi = cm.fill_value
 
 IF
-    cm.fill_value == None
+    cm.fill_value is None
 THEN
     pp.bmdi = -1e30
 

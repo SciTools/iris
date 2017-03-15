@@ -1268,7 +1268,7 @@ class Test_copy(tests.IrisTest):
         self.assertIsNot(cube_copy, cube)
         self.assertEqual(cube_copy, cube)
         self.assertIsNot(cube_copy.data, cube.data)
-        if isinstance(cube.data, ma.MaskedArray):
+        if ma.isMaskedArray(cube.data):
             self.assertMaskedArrayEqual(cube_copy.data, cube.data)
             if cube.data.mask is not ma.nomask:
                 # "No mask" is a constant : all other cases must be distinct.

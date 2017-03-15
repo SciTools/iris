@@ -931,7 +931,7 @@ def ensure_array(a):
     """.. deprecated:: 1.7"""
     warn_deprecated('ensure_array() is deprecated and will be removed '
                     'in a future release.')
-    if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
+    if not isinstance(a, np.ndarray) and not ma.isMaskedArray(a):
         a = np.array([a])
     return a
 

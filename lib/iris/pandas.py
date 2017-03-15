@@ -30,6 +30,7 @@ import cf_units
 from cf_units import Unit
 import netcdftime
 import numpy as np
+import numpy.ma as ma
 import pandas
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
@@ -174,7 +175,7 @@ def as_series(cube, copy=True):
 
     """
     data = cube.data
-    if isinstance(data, np.ma.MaskedArray):
+    if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
         data = data.astype('f').filled(np.nan)
@@ -220,7 +221,7 @@ def as_data_frame(cube, copy=True):
 
     """
     data = cube.data
-    if isinstance(data, np.ma.MaskedArray):
+    if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
         data = data.astype('f').filled(np.nan)

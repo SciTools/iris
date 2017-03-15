@@ -721,7 +721,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._numpy_array = None
         else:
             self._dask_array = None
-            if not isinstance(data, ma.MaskedArray):
+            if not ma.isMaskedArray(data):
                 data = np.asarray(data)
             self._numpy_array = data
 
@@ -2281,7 +2281,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
-        if isinstance(data, ma.core.MaskedArray):
+        if ma.isMaskedArray(data):
             if ma.count_masked(data) == 0:
                 data = data.filled()
 
@@ -3020,7 +3020,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     data.dtype = data.dtype.newbyteorder('<')
                 return data
 
-            if isinstance(data, ma.MaskedArray):
+            if ma.isMaskedArray(data):
                 # Fill in masked values to avoid the checksum being
                 # sensitive to unused numbers. Use a fixed value so
                 # a change in fill_value doesn't affect the
@@ -3066,7 +3066,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if array_byteorder is not None:
                     data_xml_element.setAttribute('byteorder', array_byteorder)
 
-            if order and isinstance(data, ma.core.MaskedArray):
+            if order and ma.isMaskedArray(data):
                 data_xml_element.setAttribute('mask_order',
                                               _order(data.mask))
         else:
@@ -3598,7 +3598,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Determine aggregation result data type for the aggregate-by cube
             # data on first pass.
             if i == 0:
-                if isinstance(self.data, ma.MaskedArray):
+                if ma.isMaskedArray(self.data):
                     aggregateby_data = ma.zeros(data_shape, dtype=result.dtype)
                 else:
                     aggregateby_data = np.zeros(data_shape, dtype=result.dtype)

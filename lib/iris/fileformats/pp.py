@@ -1383,7 +1383,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # Before we can actually write to file, we need to calculate the header
         # elements. First things first, make sure the data is big-endian
         data = self.data
-        if isinstance(data, ma.core.MaskedArray):
+        if ma.isMaskedArray(data):
             data = data.filled(fill_value=self.bmdi)
 
         if data.dtype.newbyteorder('>') != data.dtype:

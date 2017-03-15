@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -422,7 +422,7 @@ def ellipsoid(shapeOfTheEarth, major, minor, radius):
     elif shapeOfTheEarth == 1:
         # Earth assumed spherical with radius specified (in m) by
         # data producer.
-        if radius is ma.masked:
+        if ma.is_masked(radius):
             msg = 'Ellipsoid for shape of the earth {} requires a' \
                 'radius to be specified.'.format(shapeOfTheEarth)
             raise ValueError(msg)
@@ -432,9 +432,9 @@ def ellipsoid(shapeOfTheEarth, major, minor, radius):
         # specified (in km)/(in m) by data producer.
         emsg_oblate = 'Ellipsoid for shape of the earth [{}] requires a' \
             'semi-{} axis to be specified.'
-        if major is ma.masked:
+        if ma.is_masked(major):
             raise ValueError(emsg_oblate.format(shapeOfTheEarth, 'major'))
-        if minor is ma.masked:
+        if ma.is_masked(minor):
             raise ValueError(emsg_oblate.format(shapeOfTheEarth, 'minor'))
         # Check whether to convert from km to m.
         if shapeOfTheEarth == 3:
