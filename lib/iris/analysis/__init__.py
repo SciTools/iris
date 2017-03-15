@@ -1079,7 +1079,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
         of weights is zero or masked)
     """
     # Return np.nan if no useable points found
-    if np.isclose(weights.sum(), 0.) or weights.sum() is ma.masked:
+    if np.isclose(weights.sum(), 0.) or ma.is_masked(weights.sum()):
         return np.resize(np.array(np.nan), len(quantiles))
     # Sort the data
     ind_sorted = ma.argsort(data)

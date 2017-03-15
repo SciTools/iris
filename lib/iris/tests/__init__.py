@@ -418,7 +418,7 @@ class IrisTest_nometa(unittest.TestCase):
                 stats = json.load(reference_file)
                 self.assertEqual(stats.get('shape', []), list(cube.shape))
                 self.assertEqual(stats.get('masked', False),
-                                       isinstance(cube.data, ma.MaskedArray))
+                                 ma.isMaskedArray(cube.data))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
                                    stats.get('max', 0.), stats.get('min', 0.)),
                                   dtype=np.float_)
