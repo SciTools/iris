@@ -327,7 +327,7 @@ class TestNoConcat(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
-    def test_order(self):
+    def test_order_difference(self):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
@@ -335,7 +335,7 @@ class TestNoConcat(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
-    def test_masked_fill_value(self):
+    def test_masked_fill_value_difference(self):
         cubes = []
         y = (0, 2)
         cube = _make_cube((0, 2), y, 1, mask=True)
