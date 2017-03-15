@@ -192,10 +192,12 @@ class TestAnalysisBasic(tests.IrisTest):
         file = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         cubes = iris.load(file)
         self.cube = cubes[0]
+        self.cube_fill_val = self.cube.fill_value
         self.assertCML(self.cube, ('analysis', 'original.cml'))
 
     def _common(self, name, aggregate, original_name='original_common.cml', *args, **kwargs):
         self.cube.data = self.cube.data.astype(np.float64)
+        self.cube.fill_value = self.cube_fill_val
 
         self.assertCML(self.cube, ('analysis', original_name))
 
@@ -221,6 +223,7 @@ class TestAnalysisBasic(tests.IrisTest):
     def test_hmean(self):
         # harmonic mean requires data > 0
         self.cube.data *= self.cube.data
+        self.cube.fill_value = self.cube_fill_val
         self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', rtol=1e-05)
 
     def test_gmean(self):
