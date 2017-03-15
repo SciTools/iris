@@ -415,9 +415,9 @@ class _CubeSignature(object):
 
     def promote_defn(self):
         """
-        Update the metadata definition to match that of a similar but lazy cube.
-        A cube with lazy masked integral data must have its :attr:`metadata.dtype`
-        set appropriately.
+        Update the metadata definition to match that of a similar but lazy
+        cube. A cube with lazy masked integral data must have its
+        :attr:`metadata.dtype` set appropriately.
 
         """
         defn = self.defn
