@@ -65,8 +65,8 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'units',
                                            'attributes',
                                            'cell_methods',
-                                           'fill_value',
-                                           'dtype'])):
+                                           'dtype',
+                                           'fill_value'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -751,9 +751,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Cell Measures
         self._cell_measures_and_dims = []
 
+        # We need to set the dtype before the fill_value,
+        # as the fill_value is checked against self.dtype.
+        self._dtype = None
+        self.dtype = dtype
         self.fill_value = fill_value
-
-        self._dtype = dtype
 
         identities = set()
         if dim_coords_and_dims:
@@ -815,7 +817,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
                             self.units, self.attributes, self.cell_methods,
-                            self.fill_value, self._dtype)
+                            self._dtype, self.fill_value)
 
     @metadata.setter
     def metadata(self, value):
@@ -830,7 +832,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
-            setattr(self, name, getattr(value, name))
+            alias = name
+            if name in ['dtype', 'fill_value']:
+                alias = '_{}'.format(name)
+            setattr(self, alias, getattr(value, name))
 
     def is_compatible(self, other, ignore=None):
         """
@@ -1649,7 +1654,38 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @dtype.setter
     def dtype(self, dtype):
-        self._dtype = dtype
+        if dtype != self.dtype:
+            if dtype is not None:
+                if not self.has_lazy_data():
+                    emsg = 'Cube does not have lazy data, cannot set dtype.'
+                    raise ValueError(emsg)
+                dtype = np.dtype(dtype)
+                if dtype.kind != 'i':
+                    emsg = ('Can only cast lazy data to integral dtype, '
+                            'got {!r}.')
+                    raise ValueError(emsg.format(dtype))
+                self._fill_value = None
+            self._dtype = dtype
+
+    @property
+    def fill_value(self):
+        return self._fill_value
+
+    @fill_value.setter
+    def fill_value(self, fill_value):
+        if fill_value is not None:
+            # Convert the given value to the dtype of the cube.
+            fill_value = np.asarray([fill_value])[0]
+            target_dtype = self.dtype
+            if fill_value.dtype.kind == 'f' and target_dtype.kind == 'i':
+                # Perform rounding when converting floats to ints.
+                fill_value = np.rint(fill_value)
+            try:
+                [fill_value] = np.asarray([fill_value], dtype=target_dtype)
+            except OverflowError:
+                emsg = 'Fill value of {!r} invalid for cube {!r}.'
+                raise ValueError(emsg.format(fill_value, self.dtype))
+        self._fill_value = fill_value
 
     @property
     def ndim(self):
@@ -1748,12 +1784,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, value.shape))
 
+        # Set lazy or real data, and reset the other.
         if is_lazy_data(value):
             self._dask_array = value
             self._numpy_array = None
-
         else:
             self._numpy_array = value
+            self._dask_array = None
+
+        # Cancel any 'realisation' datatype conversion, and fill value.
+        self.dtype = None
+        self.fill_value = None
 
     def has_lazy_data(self):
         return self._numpy_array is None

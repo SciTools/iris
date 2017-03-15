@@ -791,7 +791,7 @@ class TestCubeAPI(TestCube2d):
 
     def test_metadata_tuple(self):
         metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (),
-                    -99, np.dtype('f8'))
+                    np.dtype('f8'), -99)
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')

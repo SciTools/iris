@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
-import numpy.ma as ma
 from scipy.interpolate import interp1d
 
 import iris
@@ -43,7 +42,9 @@ def normalise_order(cube):
     #     function when the circular flag is true.
     #   * scipy.interpolate.interp1d in 0.11.0 which is used in
     #     `Linear1dExtrapolator`.
+    cube_fill_val = cube.fill_value
     cube.data = np.ascontiguousarray(cube.data)
+    cube.fill_value = cube_fill_val
 
 
 class TestLinearExtrapolator(tests.IrisTest):

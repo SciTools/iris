@@ -139,7 +139,7 @@ class TestCoordAttributes(tests.IrisTest):
 
         cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
                                 dtype=np.dtype('i4'),
-                                cf_data=mock.Mock(),
+                                cf_data=mock.Mock(_FillValue=None),
                                 cf_name='DUMMY_VAR',
                                 cf_group=coords,
                                 shape=(1,))

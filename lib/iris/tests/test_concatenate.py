@@ -35,7 +35,8 @@ import iris.tests.stock as stock
 
 
 def _make_cube(x, y, data, aux=None, offset=0, scalar=None,
-               dtype=np.dtype('float32'), fill_value=None):
+               dtype=np.dtype('float32'), fill_value=None,
+               mask=None):
     """
     A convenience test function that creates a custom 2D cube.
 
@@ -67,6 +68,10 @@ def _make_cube(x, y, data, aux=None, offset=0, scalar=None,
     * scalar:
         Create a 'height' scalar coordinate with the given value.
 
+    * mask:
+        Create cube masked data with the specified mask. Boolean or
+        array indicies of points to be masked.
+
     Returns:
         The newly created 2D :class:`iris.cube.Cube`.
 
@@ -75,10 +80,19 @@ def _make_cube(x, y, data, aux=None, offset=0, scalar=None,
     y_range = np.arange(*y, dtype=dtype)
     x_size = len(x_range)
     y_size = len(y_range)
+    shape = (y_size, x_size)
 
-    cube_data = np.empty((y_size, x_size), dtype=dtype)
-    cube_data[:] = data
-    cube = iris.cube.Cube(cube_data, fill_value=fill_value, dtype=dtype)
+    if mask is not None:
+        cube_data = ma.empty(shape, dtype=dtype)
+        cube_data.data[:] = data
+        if isinstance(mask, bool):
+            cube_data.mask = mask
+        else:
+            cube_data[mask] = ma.masked
+    else:
+        cube_data = np.empty(shape, dtype=dtype)
+        cube_data[:] = data
+    cube = iris.cube.Cube(cube_data, fill_value=fill_value)
     coord = DimCoord(y_range, long_name='y')
     coord.guess_bounds()
     cube.add_dim_coord(coord, 0)
@@ -217,15 +231,18 @@ def concatenate(cubes, order=None):
     result = cubelist.concatenate()
 
     for cube in result:
+        # Setting the cube.data clears the cube.dtype and cube.fill_value.
+        # We want to maintain the fill_value for testing purposes, even
+        # though we have lost the lazy data in order to pin down the array
+        # data order to overcome testing on different architectures.
+        fill_value = cube.fill_value
         if ma.isMaskedArray(cube.data):
-            # cube.data = ma.copy(cube.data, order=order)
             data = np.array(cube.data.data, copy=True, order=order)
             mask = np.array(cube.data.mask, copy=True, order=order)
-            fill_value = cube.data.fill_value
-            cube.data = ma.array(data, mask=mask, fill_value=fill_value)
+            cube.data = ma.array(data, mask=mask)
         else:
-            # cube.data = np.copy(cube.data, order=order)
             cube.data = np.array(cube.data, copy=True, order=order)
+        cube.fill_value = fill_value
 
     return result
 
@@ -310,7 +327,7 @@ class TestNoConcat(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
-    def test_order(self):
+    def test_order_difference(self):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
@@ -318,42 +335,78 @@ class TestNoConcat(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
+    def test_masked_fill_value_difference(self):
+        cubes = []
+        y = (0, 2)
+        cube = _make_cube((0, 2), y, 1, mask=True)
+        cube.fill_value = 10
+        cubes.append(cube)
+        cube = _make_cube((2, 4), y, 1, mask=True)
+        cube.fill_value = 20
+        cubes.append(cube)
+        result = concatenate(cubes)
+        self.assertEqual(len(result), 2)
+
+
+class Test2D(tests.IrisTest):
     def test_masked_and_unmasked(self):
         cubes = []
         y = (0, 2)
+        cube = _make_cube((0, 2), y, 1, mask=True)
+        cubes.append(cube)
+        cubes.append(_make_cube((2, 4), y, 2))
+        result = concatenate(cubes)
+        self.assertEqual(len(result), 1)
+
+    def test_masked_and_unmasked_int16(self):
+        cubes = []
+        y = (0, 2)
+        dtype = np.dtype('int16')
+        cube = _make_cube((0, 2), y, 1, dtype=dtype, mask=True)
+        cubes.append(cube)
+        cubes.append(_make_cube((2, 4), y, 2, dtype=dtype))
+        result = concatenate(cubes)
+        self.assertEqual(len(result), 1)
+
+    def test_unmasked_and_masked(self):
+        cubes = []
+        y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
-        cube = _make_cube((2, 4), y, 2)
-        cube.data = ma.asarray(cube.data)
+        cube = _make_cube((2, 4), y, 2, mask=True)
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertEqual(len(result), 1)
 
-    def test_masked_fill_value(self):
+    def test_unmasked_and_masked_int16(self):
         cubes = []
         y = (0, 2)
-        cube = _make_cube((0, 2), y, 1)
-        cube.data = ma.asarray(cube.data)
+        dtype = np.dtype('int16')
+        cubes.append(_make_cube((0, 2), y, 1, dtype=dtype))
+        cube = _make_cube((2, 4), y, 2, dtype=dtype, mask=True)
+        cubes.append(cube)
+        result = concatenate(cubes)
+        self.assertEqual(len(result), 1)
+
+    def test_masked_with_data_fill_value_difference(self):
+        cubes = []
+        y = (0, 2)
+        cube = _make_cube((0, 2), y, 1, mask=True)
         cube.data.fill_value = 10
         cubes.append(cube)
-        cube = _make_cube((2, 4), y, 1)
-        cube.data = ma.asarray(cube.data)
+        cube = _make_cube((2, 4), y, 1, mask=True)
         cube.data.fill_value = 20
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertEqual(len(result), 1)
 
-
-class Test2D(tests.IrisTest):
     def test_concat_masked_2x2d(self):
         cubes = []
         y = (0, 2)
-        cube = _make_cube((0, 2), y, 1)
-        cube.data = ma.asarray(cube.data)
-        cube.data[(0, 1), (0, 1)] = ma.masked
+        mask = [(0, 1), (0, 1)]
+        cube = _make_cube((0, 2), y, 1, mask=mask)
         cubes.append(cube)
-        cube = _make_cube((2, 4), y, 2)
-        cube.data = ma.asarray(cube.data)
-        cube.data[(0, 1), (1, 0)] = ma.masked
+        mask = [(0, 1), (1, 0)]
+        cube = _make_cube((2, 4), y, 2, mask=mask)
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertCML(result, ('concatenate', 'concat_masked_2x2d.cml'))
@@ -366,13 +419,11 @@ class Test2D(tests.IrisTest):
     def test_concat_masked_2y2d(self):
         cubes = []
         x = (0, 2)
-        cube = _make_cube(x, (0, 2), 1)
-        cube.data = np.ma.asarray(cube.data)
-        cube.data[(0, 1), (0, 1)] = ma.masked
+        mask = [(0, 1), (0, 1)]
+        cube = _make_cube(x, (0, 2), 1, mask=mask)
         cubes.append(cube)
-        cube = _make_cube(x, (2, 4), 2)
-        cube.data = ma.asarray(cube.data)
-        cube.data[(0, 1), (1, 0)] = ma.masked
+        mask = [(0, 1), (1, 0)]
+        cube = _make_cube(x, (2, 4), 2, mask=mask)
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertCML(result, ('concatenate', 'concat_masked_2y2d.cml'))
@@ -387,15 +438,65 @@ class Test2D(tests.IrisTest):
     def test_concat_masked_2y2d_int16(self):
         cubes = []
         x = (0, 2)
-        cube = _make_cube(x, (0, 2), 1, dtype=np.dtype('int16'),
-                          fill_value=-37)
-        cube.data = np.ma.asarray(cube.data)
-        cube.data[(0, 1), (0, 1)] = ma.masked
+        dtype = np.dtype('int16')
+        fill_value = -37
+        mask = [(0, 1), (0, 1)]
+        cube = _make_cube(x, (0, 2), 1, dtype=dtype, fill_value=fill_value,
+                          mask=mask)
         cubes.append(cube)
-        cube = _make_cube(x, (2, 4), 2, dtype=np.dtype('int16'),
-                          fill_value=-37)
-        cube.data = ma.asarray(cube.data)
-        cube.data[(0, 1), (1, 0)] = ma.masked
+        mask = [(0, 1), (1, 0)]
+        cube = _make_cube(x, (2, 4), 2, dtype=dtype, fill_value=fill_value,
+                          mask=mask)
+        cubes.append(cube)
+        result = concatenate(cubes)
+        self.assertCML(result, ('concatenate', 'concat_masked_2y2d_int16.cml'))
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+        mask = np.array([[True, False],
+                         [False, True],
+                         [False, True],
+                         [True, False]], dtype=np.bool)
+        self.assertArrayEqual(result[0].data.mask, mask)
+
+    def test_concat_masked_2y2d_int16_with_concrete_and_lazy(self):
+        cubes = []
+        x = (0, 2)
+        dtype = np.dtype('int16')
+        fill_value = -37
+        mask = [(0, 1), (0, 1)]
+        cube = _make_cube(x, (0, 2), 1, dtype=dtype, fill_value=fill_value,
+                          mask=mask)
+        cubes.append(cube)
+        mask = [(0, 1), (1, 0)]
+        cube = _make_cube(x, (2, 4), 2, dtype=dtype, mask=mask)
+        cube.data = cube.lazy_data()
+        cube.dtype = dtype
+        cube.fill_value = fill_value
+        cubes.append(cube)
+        result = concatenate(cubes)
+        self.assertCML(result, ('concatenate', 'concat_masked_2y2d_int16.cml'))
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+        mask = np.array([[True, False],
+                         [False, True],
+                         [False, True],
+                         [True, False]], dtype=np.bool)
+        self.assertArrayEqual(result[0].data.mask, mask)
+
+    def test_concat_masked_2y2d_int16_with_lazy_and_concrete(self):
+        cubes = []
+        x = (0, 2)
+        dtype = np.dtype('int16')
+        fill_value = -37
+        mask = [(0, 1), (1, 0)]
+        cube = _make_cube(x, (2, 4), 2, dtype=dtype, mask=mask)
+        cube.data = cube.lazy_data()
+        cube.dtype = dtype
+        cube.fill_value = fill_value
+        cubes.append(cube)
+        mask = [(0, 1), (0, 1)]
+        cube = _make_cube(x, (0, 2), 1, dtype=dtype, fill_value=fill_value,
+                          mask=mask)
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertCML(result, ('concatenate', 'concat_masked_2y2d_int16.cml'))
