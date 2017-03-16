@@ -1949,7 +1949,8 @@ class Saver(object):
             set_packing_ncattrs(cf_var)
 
             # Now stream the cube data payload straight to the netCDF
-            # data variable within the netCDF file.
+            # data variable within the netCDF file, where any NaN values
+            # are replaced with the specified cube fill_value.
             data = da.map_blocks(convert_nans_array, cube.lazy_data(),
                                  nans=cube.fill_value, result_dtype=cube.dtype)
             da.store([data], [cf_var])

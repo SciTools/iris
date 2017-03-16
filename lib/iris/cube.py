@@ -1734,6 +1734,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.has_lazy_data():
             try:
                 data = self._dask_array.compute()
+                # Now convert the data payload from a NaN array to a
+                # masked array, and if appropriate cast to the specified
+                # cube result dtype.
                 self._numpy_array = convert_nans_array(data,
                                                        nans=ma.masked,
                                                        result_dtype=self.dtype)
