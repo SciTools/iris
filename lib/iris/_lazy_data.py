@@ -73,6 +73,30 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
     return data
 
 
+def as_concrete_data(data, nans_replacement=None, result_dtype=None):
+    """
+    Return the actual content of a lazy array, as a numpy array.
+
+    If the data is a NumPy array, return it unchanged.
+
+    If the data is lazy, return the realised result.
+
+    Where lazy data contains NaNs these are translated by filling or conversion
+    to masked data, using the :func:`convert_nans_array` function.
+    See there for usage of the 'nans_replacement' and 'result_dtype' keys.
+
+    """
+    if is_lazy_data(data):
+        # Realise dask array.
+        data = data.compute()
+        # Convert any missing data as requested.
+        data = convert_nans_array(data,
+                                  nans_replacement=nans_replacement,
+                                  result_dtype=result_dtype)
+
+    return data
+
+
 def array_masked_to_nans(array):
     """
     Convert a masked array to a NumPy `ndarray` filled with NaN values. Input

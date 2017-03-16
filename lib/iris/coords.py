@@ -39,6 +39,7 @@ import numpy as np
 
 import iris.aux_factory
 import iris.exceptions
+from iris._lazy_data import as_concrete_data
 import iris.time
 import iris.util
 
@@ -1611,7 +1612,11 @@ class AuxCoord(Coord):
     def points(self):
         """Property containing the points values as a numpy array"""
         if is_lazy_data(self._points):
-            self._points = self._points.compute()
+            self._points = as_concrete_data(self._points,
+                                            nans_replacement=np.ma.masked)
+            # NOTE: we probably don't have full support for masked aux-coords.
+            # We certainly *don't* handle a _FillValue attribute (and possibly
+            # the loader will throw one away ?)
         return self._points.view()
 
     @points.setter
@@ -1649,7 +1654,11 @@ class AuxCoord(Coord):
         if self._bounds is not None:
             bounds = self._bounds
             if is_lazy_data(bounds):
-                bounds = bounds.compute()
+                bounds = as_concrete_data(bounds,
+                                          nans_replacement=np.ma.masked)
+                # NOTE: we probably don't fully support for masked aux-coords.
+                # We certainly *don't* handle a _FillValue attribute (and
+                # possibly the loader will throw one away ?)
                 self._bounds = bounds
             bounds = bounds.view()
         else:
@@ -1740,9 +1749,11 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def data(self):
         """Property containing the data values as a numpy array"""
-        data = self._data
         if is_lazy_data(self._data):
-            self._data = self._data.compute()
+            self._data = as_concrete_data(self._data,
+                                          nans_replacement=np.ma.masked)
+            # NOTE: like AuxCoords, we probably don't fully support masks, and
+            # we certainly don't handle any _FillValue attribute.
         return self._data.view()
 
     @data.setter

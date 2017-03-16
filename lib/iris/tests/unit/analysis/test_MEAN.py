@@ -28,6 +28,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import MEAN
+from iris._lazy_data import as_concrete_data
 
 
 class Test_lazy_aggregate(tests.IrisTest):
@@ -42,15 +43,13 @@ class Test_lazy_aggregate(tests.IrisTest):
 
     def test_mdtol_default(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis)
-        result = agg.compute()
-        masked_result = ma.masked_array(result, mask=np.isnan(result))
+        masked_result = as_concrete_data(agg, nans_replacement=ma.masked)
         self.assertMaskedArrayAlmostEqual(masked_result,
                                           self.expected_masked)
 
     def test_mdtol_below(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis, mdtol=0.3)
-        result = agg.compute()
-        masked_result = ma.masked_array(result, mask=np.isnan(result))
+        masked_result = as_concrete_data(agg, nans_replacement=ma.masked)
         expected_masked = self.expected_masked
         expected_masked.mask = [False, True, True, True]
         self.assertMaskedArrayAlmostEqual(masked_result,
@@ -58,8 +57,7 @@ class Test_lazy_aggregate(tests.IrisTest):
 
     def test_mdtol_above(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis, mdtol=0.4)
-        result = agg.compute()
-        masked_result = ma.masked_array(result, mask=np.isnan(result))
+        masked_result = as_concrete_data(agg, nans_replacement=ma.masked)
         self.assertMaskedArrayAlmostEqual(masked_result,
                                           self.expected_masked)
 
@@ -68,8 +66,9 @@ class Test_lazy_aggregate(tests.IrisTest):
         collapse_axes = (0, 2)
         lazy_data = as_lazy_data(data)
         agg = MEAN.lazy_aggregate(lazy_data, axis=collapse_axes)
+        result = as_concrete_data(agg, nans_replacement=ma.masked)
         expected = np.mean(data, axis=collapse_axes)
-        self.assertArrayAllClose(agg.compute(), expected)
+        self.assertArrayAllClose(result, expected)
 
 
 class Test_name(tests.IrisTest):
