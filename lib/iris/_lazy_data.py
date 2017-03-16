@@ -154,7 +154,7 @@ def convert_nans_array(array, nans=None, result_dtype=None):
         If `nans` is None, then raise an exception if the `array` contains
         any NaN values (default).
         If `nans` is `numpy.ma.masked`, then convert the `array` to a
-        :class:`numpy.ma.core.MaskedArray`.
+        :class:`~numpy.ma.core.MaskedArray`.
         Otherwise, use the specified `nans` value as the `array` fill value.
 
     * result_dtype:
@@ -187,12 +187,12 @@ def convert_nans_array(array, nans=None, result_dtype=None):
                 array = ma.masked_array(array, mask=mask)
             else:
                 # Check the fill value is appropriate for the
-                # target result dtype.
+                # result array dtype.
                 try:
-                    [fill_value] = np.asarray([nans], dtype=result_dtype)
+                    [fill_value] = np.asarray([nans], dtype=array.dtype)
                 except OverflowError:
-                    emsg = 'Fill value of {!r} invalid for result {!r}.'
-                    raise ValueError(emsg.format(nans, result_dtype))
+                    emsg = 'Fill value of {!r} invalid for array result {!r}.'
+                    raise ValueError(emsg.format(nans, array.dtype))
                 # Fill the array.
                 array[mask] = fill_value
     return array

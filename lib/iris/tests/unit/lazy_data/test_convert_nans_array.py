@@ -83,7 +83,7 @@ class Test(tests.IrisTest):
     def test_nans_filled_failure(self):
         fill_value = 1e+20
         dtype = np.dtype('int16')
-        emsg = 'Fill value of .* invalid for result .*'
+        emsg = 'Fill value of .* invalid for array result .*'
         with self.assertRaisesRegexp(ValueError, emsg):
             convert_nans_array(self.array, nans=fill_value,
                                result_dtype=dtype)
