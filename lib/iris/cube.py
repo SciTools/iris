@@ -1737,9 +1737,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # Now convert the data payload from a NaN array to a
                 # masked array, and if appropriate cast to the specified
                 # cube result dtype.
-                self._numpy_array = convert_nans_array(data,
-                                                       nans=ma.masked,
-                                                       result_dtype=self.dtype)
+                result = convert_nans_array(data,
+                                            nans_replacement=ma.masked,
+                                            result_dtype=self.dtype)
+                self._numpy_array = result
                 self.dtype = None
 
             except MemoryError:

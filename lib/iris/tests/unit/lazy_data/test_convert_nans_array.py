@@ -58,7 +58,8 @@ class Test(tests.IrisTest):
         self.assertIs(result, array)
 
     def test_nans_masked(self):
-        result = convert_nans_array(self.array, nans=ma.masked)
+        result = convert_nans_array(self.array,
+                                    nans_replacement=ma.masked)
         self.assertIsInstance(result, ma.MaskedArray)
         self.assertArrayEqual(result.mask, [[False, True],
                                             [False, False]])
@@ -73,7 +74,8 @@ class Test(tests.IrisTest):
 
     def test_nans_filled(self):
         fill_value = 666.0
-        result = convert_nans_array(self.array, nans=fill_value)
+        result = convert_nans_array(self.array,
+                                    nans_replacement=fill_value)
         self.assertNotIsInstance(result, ma.MaskedArray)
         self.assertIs(result, self.array)
         expected = np.array([[1.0, fill_value],
@@ -85,7 +87,8 @@ class Test(tests.IrisTest):
         dtype = np.dtype('int16')
         emsg = 'Fill value of .* invalid for array result .*'
         with self.assertRaisesRegexp(ValueError, emsg):
-            convert_nans_array(self.array, nans=fill_value,
+            convert_nans_array(self.array,
+                               nans_replacement=fill_value,
                                result_dtype=dtype)
 
     def test_nans_none_failure(self):
@@ -95,7 +98,8 @@ class Test(tests.IrisTest):
 
     def test_result_dtype_cast_float_to_int(self):
         dtype = np.int
-        result = convert_nans_array(self.array, nans=ma.masked,
+        result = convert_nans_array(self.array,
+                                    nans_replacement=ma.masked,
                                     result_dtype=dtype)
         self.assertIsInstance(result, ma.MaskedArray)
         expected = ma.masked_array([[1, 2],
@@ -108,7 +112,8 @@ class Test(tests.IrisTest):
     def test_filled_result_dtype_cast_float_to_int(self):
         fill_value = 666
         dtype = np.int
-        result = convert_nans_array(self.array, nans=fill_value,
+        result = convert_nans_array(self.array,
+                                    nans_replacement=fill_value,
                                     result_dtype=dtype)
         self.assertNotIsInstance(result, ma.MaskedArray)
         expected = np.array([[1, fill_value],

@@ -137,7 +137,7 @@ def multidim_lazy_stack(stack):
     return result
 
 
-def convert_nans_array(array, nans=None, result_dtype=None):
+def convert_nans_array(array, nans_replacement=None, result_dtype=None):
     """
     Convert a :class:`~numpy.ndarray` that may contain one or more NaN values
     to either a :class:`~numpy.ma.core.MaskedArray` or a
@@ -150,12 +150,13 @@ def convert_nans_array(array, nans=None, result_dtype=None):
 
     Kwargs:
 
-    * nans:
-        If `nans` is None, then raise an exception if the `array` contains
-        any NaN values (default).
-        If `nans` is `numpy.ma.masked`, then convert the `array` to a
-        :class:`~numpy.ma.core.MaskedArray`.
-        Otherwise, use the specified `nans` value as the `array` fill value.
+    * nans_replacement:
+        If `nans_replacement` is None, then raise an exception if the `array`
+        contains any NaN values (default behaviour).
+        If `nans_replacement` is `numpy.ma.masked`, then convert the `array`
+        to a :class:`~numpy.ma.core.MaskedArray`.
+        Otherwise, use the specified `nans_replacement` value as the `array`
+        fill value.
 
     * result_dtype:
         Cast the resultant array to this target :class:`~numpy.dtype`.
@@ -179,20 +180,22 @@ def convert_nans_array(array, nans=None, result_dtype=None):
         # Finally, mask or fill the data, as required or raise an exception
         # if we detect there are NaNs present and we didn't expect any.
         if np.any(mask):
-            if nans is None:
+            if nans_replacement is None:
                 emsg = 'Array contains unexpected NaNs.'
                 raise ValueError(emsg)
-            elif nans is ma.masked:
+            elif nans_replacement is ma.masked:
                 # Mask the array with the default fill_value.
                 array = ma.masked_array(array, mask=mask)
             else:
                 # Check the fill value is appropriate for the
                 # result array dtype.
                 try:
-                    [fill_value] = np.asarray([nans], dtype=array.dtype)
+                    [fill_value] = np.asarray([nans_replacement],
+                                              dtype=array.dtype)
                 except OverflowError:
                     emsg = 'Fill value of {!r} invalid for array result {!r}.'
-                    raise ValueError(emsg.format(nans, array.dtype))
+                    raise ValueError(emsg.format(nans_replacement,
+                                                 array.dtype))
                 # Fill the array.
                 array[mask] = fill_value
     return array
