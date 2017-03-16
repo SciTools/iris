@@ -43,7 +43,8 @@ import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-from iris._lazy_data import array_masked_to_nans, as_lazy_data, is_lazy_data
+from iris._lazy_data import (array_masked_to_nans, as_lazy_data, is_lazy_data,
+                             as_concrete_data)
 
 try:
     import mo_pack
@@ -1280,11 +1281,11 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         """
         # Cache the real data on first use
-        if is_lazy_data(self._data):
-            self._data = self._data.compute()
         if self._data.dtype.kind == 'i' and self.bmdi == -1e30:
             self.bmdi = -9999
-        self._data[np.isnan(self._data)] = self.bmdi
+        if is_lazy_data(self._data):
+            self._data = as_concrete_data(self._data,
+                                          nans_replacement=self.bmdi)
         return self._data
 
     @data.setter

@@ -32,14 +32,14 @@ import operator
 import warnings
 import zlib
 
-import biggus
-import iris._lazy_data
+from iris._lazy_data import is_lazy_data
 import dask.array as da
 import netcdftime
 import numpy as np
 
 import iris.aux_factory
 import iris.exceptions
+from iris._lazy_data import as_concrete_data
 import iris.time
 import iris.util
 
@@ -1611,8 +1611,12 @@ class AuxCoord(Coord):
     @property
     def points(self):
         """Property containing the points values as a numpy array"""
-        if iris._lazy_data.is_lazy_data(self._points):
-            self._points = self._points.compute()
+        if is_lazy_data(self._points):
+            self._points = as_concrete_data(self._points,
+                                            nans_replacement=np.ma.masked)
+            # NOTE: we probably don't have full support for masked aux-coords.
+            # We certainly *don't* handle a _FillValue attribute (and possibly
+            # the loader will throw one away ?)
         return self._points.view()
 
     @points.setter
@@ -1623,9 +1627,9 @@ class AuxCoord(Coord):
         # of 1 and is either a numpy or lazy array.
         # This will avoid Scalar coords with points of shape () rather
         # than the desired (1,)
-        if iris._lazy_data.is_lazy_data(points):
+        if is_lazy_data(points):
             if points.shape == ():
-                points = points * np.ones(1)
+                points = da.reshape(points, (1,))
         elif not isinstance(points, iris.aux_factory._LazyArray):
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
@@ -1649,8 +1653,12 @@ class AuxCoord(Coord):
         """
         if self._bounds is not None:
             bounds = self._bounds
-            if isinstance(bounds, biggus.Array):
-                bounds = bounds.ndarray()
+            if is_lazy_data(bounds):
+                bounds = as_concrete_data(bounds,
+                                          nans_replacement=np.ma.masked)
+                # NOTE: we probably don't fully support for masked aux-coords.
+                # We certainly *don't* handle a _FillValue attribute (and
+                # possibly the loader will throw one away ?)
                 self._bounds = bounds
             bounds = bounds.view()
         else:
@@ -1662,8 +1670,8 @@ class AuxCoord(Coord):
     def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is not None:
-            if not isinstance(bounds, (iris.aux_factory._LazyArray,
-                                       biggus.Array)):
+            if not (isinstance(bounds, iris.aux_factory._LazyArray) or
+                    is_lazy_data(bounds)):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
             if self._points.shape != bounds.shape[:-1]:
@@ -1741,11 +1749,12 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def data(self):
         """Property containing the data values as a numpy array"""
-        data = self._data
-        if isinstance(data, biggus.Array):
-            data = data.ndarray()
-            self._data = data
-        return data.view()
+        if is_lazy_data(self._data):
+            self._data = as_concrete_data(self._data,
+                                          nans_replacement=np.ma.masked)
+            # NOTE: like AuxCoords, we probably don't fully support masks, and
+            # we certainly don't handle any _FillValue attribute.
+        return self._data.view()
 
     @data.setter
     def data(self, data):
