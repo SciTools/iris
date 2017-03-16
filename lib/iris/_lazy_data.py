@@ -139,11 +139,33 @@ def multidim_lazy_stack(stack):
 
 def convert_nans_array(array, nans=None, result_dtype=None):
     """
-    Convert an array into a masked array, by masking any NaN points.
+    Convert a :class:`~numpy.ndarray` that may contain one or more NaN values
+    to either a :class:`~numpy.ma.core.MaskedArray` or a
+    :class:`~numpy.ndarray` with the NaN values filled.
 
-    Optional data type casting is also performed to the specified dtype.
+    Args:
 
-    The resultant array may also be filled with the fill_value, if requested.
+    * array:
+        The :class:`~numpy.ndarray` to be converted.
+
+    Kwargs:
+
+    * nans:
+        If `nans` is None, then raise an exception if the `array` contains
+        any NaN values (default).
+        If `nans` is `numpy.ma.masked`, then convert the `array` to a
+        :class:`numpy.ma.core.MaskedArray`.
+        Otherwise, use the specified `nans` value as the `array` fill value.
+
+    * result_dtype:
+        Cast the resultant array to this target :class:`~numpy.dtype`.
+
+    Returns:
+        An :class:`numpy.ndarray`.
+
+    .. note::
+        An input array that is either a :class:`~numpy.ma.core.MaskedArray`
+        or has an integral dtype will be returned unaltered.
 
     """
     if not ma.isMaskedArray(array) and array.dtype.kind == 'f':
@@ -164,6 +186,13 @@ def convert_nans_array(array, nans=None, result_dtype=None):
                 # Mask the array with the default fill_value.
                 array = ma.masked_array(array, mask=mask)
             else:
+                # Check the fill value is appropriate for the
+                # target result dtype.
+                try:
+                    [fill_value] = np.asarray([nans], dtype=result_dtype)
+                except OverflowError:
+                    emsg = 'Fill value of {!r} invalid for result {!r}.'
+                    raise ValueError(emsg.format(nans, result_dtype))
                 # Fill the array.
-                array[mask] = nans
+                array[mask] = fill_value
     return array

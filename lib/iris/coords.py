@@ -1646,13 +1646,14 @@ class AuxCoord(Coord):
             (n_bounds, )``.
 
         """
-        bounds = None
         if self._bounds is not None:
             bounds = self._bounds
             if is_lazy_data(bounds):
                 bounds = bounds.compute()
                 self._bounds = bounds
             bounds = bounds.view()
+        else:
+            bounds = None
 
         return bounds
 

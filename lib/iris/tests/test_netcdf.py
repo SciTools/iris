@@ -51,8 +51,6 @@ from iris._lazy_data import is_lazy_data
 
 @tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
-    # XXX: TODO - this is a _FillValue problem
-    @tests.skip_biggus
     def test_monotonic(self):
         cubes = iris.load(tests.get_data_path(
             ('NetCDF', 'testing', 'test_monotonic_coordinate.nc')))
@@ -96,7 +94,7 @@ class TestNetCDFLoad(tests.IrisTest):
         # manager loading.
         lnsp = cubes[1]
         self.assertTrue(ma.isMaskedArray(lnsp.data))
-        self.assertEqual(-32767.0, lnsp.data.fill_value)
+        self.assertEqual(-32767.0, lnsp.fill_value)
 
     def test_load_global_xyzt_gems_iter(self):
         # Test loading stepped single xyzt CF-netCDF file (multi-cube).
