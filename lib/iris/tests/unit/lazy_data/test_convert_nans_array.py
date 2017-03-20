@@ -50,6 +50,12 @@ class Test(tests.IrisTest):
         self.assertIsInstance(result, ma.MaskedArray)
         self.assertIs(result, array)
 
+    def test_pass_thru_array_integer(self):
+        array = np.arange(10)
+        result = convert_nans_array(array)
+        self.assertNotIsInstance(result, ma.MaskedArray)
+        self.assertIs(result, array)
+
     def test_no_nans(self):
         array = np.array([[1.0, 2.0],
                           [3.0, 4.0]])
@@ -120,6 +126,7 @@ class Test(tests.IrisTest):
                              [3, 4]],
                             dtype=dtype)
         self.assertArrayEqual(result, expected)
+        self.assertIsNot(result, self.array)
 
 
 if __name__ == '__main__':

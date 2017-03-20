@@ -101,11 +101,14 @@ def array_masked_to_nans(array):
         result = array
     else:
         if ma.is_masked(array):
-            if array.dtype.kind == 'i':
-                array = array.astype(np.dtype('f8'))
             mask = array.mask
-            array[mask] = np.nan
-        result = array.data
+            if array.dtype.kind == 'i':
+                result = array.data.astype(np.dtype('f8'))
+            else:
+                result = array.data.copy()
+            result[mask] = np.nan
+        else:
+            result = array.data
     return result
 
 
@@ -167,6 +170,9 @@ def convert_nans_array(array, nans_replacement=None, result_dtype=None):
     .. note::
         An input array that is either a :class:`~numpy.ma.core.MaskedArray`
         or has an integral dtype will be returned unaltered.
+
+    .. note::
+        In some cases, the input array is modified in-place.
 
     """
     if not ma.isMaskedArray(array) and array.dtype.kind == 'f':
