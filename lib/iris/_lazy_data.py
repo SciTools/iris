@@ -101,11 +101,14 @@ def array_masked_to_nans(array):
         result = array
     else:
         if ma.is_masked(array):
-            if array.dtype.kind == 'i':
-                array = array.astype(np.dtype('f8'))
             mask = array.mask
-            array[mask] = np.nan
-        result = array.data
+            if array.dtype.kind == 'i':
+                result = array.data.astype(np.dtype('f8'))
+            else:
+                result = array.data.copy()
+            result[mask] = np.nan
+        else:
+            result = array.data
     return result
 
 
@@ -118,7 +121,7 @@ def multidim_lazy_stack(stack):
     Args:
 
     * stack:
-+        An ndarray of dask arrays.
+        An ndarray of dask arrays.
 
     Returns:
         The input array converted to a lazy dask array.
@@ -135,3 +138,70 @@ def multidim_lazy_stack(stack):
         result = da.stack([multidim_lazy_stack(subarray)
                            for subarray in stack])
     return result
+
+
+def convert_nans_array(array, nans_replacement=None, result_dtype=None):
+    """
+    Convert a :class:`~numpy.ndarray` that may contain one or more NaN values
+    to either a :class:`~numpy.ma.core.MaskedArray` or a
+    :class:`~numpy.ndarray` with the NaN values filled.
+
+    Args:
+
+    * array:
+        The :class:`~numpy.ndarray` to be converted.
+
+    Kwargs:
+
+    * nans_replacement:
+        If `nans_replacement` is None, then raise an exception if the `array`
+        contains any NaN values (default behaviour).
+        If `nans_replacement` is `numpy.ma.masked`, then convert the `array`
+        to a :class:`~numpy.ma.core.MaskedArray`.
+        Otherwise, use the specified `nans_replacement` value as the `array`
+        fill value.
+
+    * result_dtype:
+        Cast the resultant array to this target :class:`~numpy.dtype`.
+
+    Returns:
+        An :class:`numpy.ndarray`.
+
+    .. note::
+        An input array that is either a :class:`~numpy.ma.core.MaskedArray`
+        or has an integral dtype will be returned unaltered.
+
+    .. note::
+        In some cases, the input array is modified in-place.
+
+    """
+    if not ma.isMaskedArray(array) and array.dtype.kind == 'f':
+        # First, calculate the mask.
+        mask = np.isnan(array)
+        # Now, cast the dtype, if required.
+        if result_dtype is not None:
+            result_dtype = np.dtype(result_dtype)
+            if array.dtype != result_dtype:
+                array = array.astype(result_dtype)
+        # Finally, mask or fill the data, as required or raise an exception
+        # if we detect there are NaNs present and we didn't expect any.
+        if np.any(mask):
+            if nans_replacement is None:
+                emsg = 'Array contains unexpected NaNs.'
+                raise ValueError(emsg)
+            elif nans_replacement is ma.masked:
+                # Mask the array with the default fill_value.
+                array = ma.masked_array(array, mask=mask)
+            else:
+                # Check the fill value is appropriate for the
+                # result array dtype.
+                try:
+                    [fill_value] = np.asarray([nans_replacement],
+                                              dtype=array.dtype)
+                except OverflowError:
+                    emsg = 'Fill value of {!r} invalid for array result {!r}.'
+                    raise ValueError(emsg.format(nans_replacement,
+                                                 array.dtype))
+                # Fill the array.
+                array[mask] = fill_value
+    return array
