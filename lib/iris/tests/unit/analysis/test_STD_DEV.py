@@ -23,9 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris._lazy_data import as_lazy_data, as_concrete_data
 import numpy as np
 
+from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.analysis import STD_DEV
 
 

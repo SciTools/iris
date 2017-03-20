@@ -26,7 +26,7 @@ import iris.tests as tests
 import numpy as np
 import dask.array as da
 
-from iris._lazy_data import as_lazy_data, multidim_lazy_stack, as_concrete_data
+from iris._lazy_data import as_concrete_data, as_lazy_data, multidim_lazy_stack
 
 
 class Test_multidim_lazy_stack(tests.IrisTest):

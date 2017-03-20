@@ -77,12 +77,13 @@ def as_concrete_data(data, nans_replacement=None, result_dtype=None):
     """
     Return the actual content of a lazy array, as a numpy array.
 
-    If the data is a NumPy array, return it unchanged.
+    If the data is a NumPy ndarray or masked array, return it unchanged.
 
     If the data is lazy, return the realised result.
 
     Where lazy data contains NaNs these are translated by filling or conversion
-    to masked data, using the :func:`convert_nans_array` function.
+    to masked data, using the :func:`~iris._lazy_data.convert_nans_array`
+    function.
     See there for usage of the 'nans_replacement' and 'result_dtype' keys.
 
     """

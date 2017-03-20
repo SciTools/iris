@@ -32,14 +32,13 @@ import operator
 import warnings
 import zlib
 
-from iris._lazy_data import is_lazy_data
 import dask.array as da
 import netcdftime
 import numpy as np
 
+from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.aux_factory
 import iris.exceptions
-from iris._lazy_data import as_concrete_data
 import iris.time
 import iris.util
 

@@ -33,8 +33,8 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import (as_lazy_data, is_lazy_data, multidim_lazy_stack,
-                             as_concrete_data)
+from iris._lazy_data import (as_lazy_data, as_concrete_data, is_lazy_data,
+                             multidim_lazy_stack)
 import iris.cube
 import iris.coords
 import iris.exceptions

@@ -26,10 +26,11 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_lazy_data, as_concrete_data
 from iris.analysis import VARIANCE
 import iris.cube
 from iris.coords import DimCoord
-from iris._lazy_data import as_lazy_data, as_concrete_data
+
 from iris.tests import mock
 
 

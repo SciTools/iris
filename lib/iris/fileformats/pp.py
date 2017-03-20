@@ -39,12 +39,13 @@ import numpy.ma as ma
 import netcdftime
 
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import (array_masked_to_nans, as_concrete_data,
+                             as_lazy_data, is_lazy_data)
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
-from iris._lazy_data import (array_masked_to_nans, as_lazy_data, is_lazy_data,
-                             as_concrete_data)
+
 
 try:
     import mo_pack
