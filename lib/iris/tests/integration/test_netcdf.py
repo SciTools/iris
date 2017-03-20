@@ -67,7 +67,6 @@ class TestHybridPressure(tests.IrisTest):
             iris.save(self.cube, filename)
             self.assertCDL(filename)
 
-    @tests.skip_biggus
     def test_save_load_loop(self):
         # Tests an issue where the variable names in the formula
         # terms changed to the standard_names instead of the variable names
@@ -201,7 +200,6 @@ class TestConventionsAttributes(tests.IrisTest):
 class TestLazySave(tests.IrisTest):
 
     @tests.skip_data
-    @tests.skip_biggus
     def test_lazy_preserved_save(self):
         fpath = tests.get_data_path(('NetCDF', 'label_and_climate',
                                      'small_FC_167_mon_19601101.nc'))
@@ -212,7 +210,6 @@ class TestLazySave(tests.IrisTest):
                 saver.write(acube)
         self.assertTrue(acube.has_lazy_data())
 
-    @tests.skip_biggus
     def test_lazy_mask_preserve_fill_value(self):
         cube = iris.cube.Cube(np.ma.array([0, 1], mask=[False, True],
                                           fill_value=-1))
@@ -272,7 +269,6 @@ class TestCellMeasures(tests.IrisTest):
         self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
         self.assertEqual(len(cubes), 1)
 
-    @tests.skip_biggus
     def test_round_trip(self):
         cube, = iris.load(self.fname)
         with self.temp_filename(suffix='.nc') as filename:
@@ -430,7 +426,6 @@ class TestPackedData(tests.IrisTest):
         # Read PP input file.
         self._multi_test('multi_packed_single_dtype.cdl')
 
-    @tests.skip_biggus
     def test_multi_packed_multi_dtype(self):
         """Test saving multiple packed cubes with pack_dtype list."""
         # Read PP input file.

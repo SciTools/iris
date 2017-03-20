@@ -37,7 +37,7 @@ import re
 import string
 import warnings
 
-import biggus
+import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
@@ -56,7 +56,8 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from iris._lazy_data import array_masked_to_nans, as_lazy_data
+from iris._lazy_data import (array_masked_to_nans, as_lazy_data,
+                             convert_nans_array)
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -1938,7 +1939,7 @@ class Saver(object):
             # Explicitly assign the fill_value, which will be the type default
             # in the case of an unmasked array.
             if packing is None:
-                fill_value = cube.lazy_data().fill_value
+                fill_value = cube.fill_value
                 dtype = cube.lazy_data().dtype.newbyteorder('=')
 
             cf_var = self._dataset.createVariable(
@@ -1946,8 +1947,14 @@ class Saver(object):
                 dimension_names, fill_value=fill_value,
                 **kwargs)
             set_packing_ncattrs(cf_var)
-            # stream the data
-            biggus.save([cube.lazy_data()], [cf_var], masked=True)
+
+            # Now stream the cube data payload straight to the netCDF
+            # data variable within the netCDF file, where any NaN values
+            # are replaced with the specified cube fill_value.
+            data = da.map_blocks(convert_nans_array, cube.lazy_data(),
+                                 nans_replacement=cube.fill_value,
+                                 result_dtype=cube.dtype)
+            da.store([data], [cf_var])
 
         if cube.standard_name:
             _setncattr(cf_var, 'standard_name', cube.standard_name)
@@ -2045,7 +2052,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     * Keyword arguments specifying how to save the data are applied
       to each cube. To use different settings for different cubes, use
       the NetCDF Context manager (:class:`~Saver`) directly.
-    * The save process will stream the data payload to the file using biggus,
+    * The save process will stream the data payload to the file using dask,
       enabling large data payloads to be saved and maintaining the 'lazy'
       status of the cube's data payload, unless the netcdf_format is explicitly
       specified to be 'NETCDF3' or 'NETCDF3_CLASSIC'.
