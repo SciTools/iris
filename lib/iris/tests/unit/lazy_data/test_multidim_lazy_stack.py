@@ -23,10 +23,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import numpy as np
 import dask.array as da
+import numpy as np
 
-from iris._lazy_data import as_lazy_data, multidim_lazy_stack
+from iris._lazy_data import as_concrete_data, as_lazy_data, multidim_lazy_stack
 
 
 class Test_multidim_lazy_stack(tests.IrisTest):
@@ -44,19 +44,20 @@ class Test_multidim_lazy_stack(tests.IrisTest):
         result = multidim_lazy_stack(stack)
         self.assertEqual(result.shape, stack_shape + stack_element_shape)
         self.assertIsInstance(result, da.core.Array)
-        self.assertArrayAllClose(result.compute(), expected)
+        result = as_concrete_data(result)
+        self.assertArrayAllClose(result, expected)
 
     def test_0d_lazy_stack(self):
         shape = ()
-        result = self._check(shape)
+        self._check(shape)
 
     def test_1d_lazy_stack(self):
         shape = (2,)
-        result = self._check(shape)
+        self._check(shape)
 
     def test_2d_lazy_stack(self):
         shape = (3, 2)
-        result = self._check(shape)
+        self._check(shape)
 
 
 if __name__ == '__main__':

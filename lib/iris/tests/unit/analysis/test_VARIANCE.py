@@ -23,13 +23,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris._lazy_data import as_lazy_data
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_lazy_data, as_concrete_data
 from iris.analysis import VARIANCE
 import iris.cube
 from iris.coords import DimCoord
+
 from iris.tests import mock
 
 
@@ -71,12 +72,14 @@ class Test_lazy_aggregate(tests.IrisTest):
     def test_ddof_one(self):
         array = as_lazy_data(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=1)
-        self.assertArrayAlmostEqual(var.compute(), np.array(6.0))
+        result = as_concrete_data(var)
+        self.assertArrayAlmostEqual(result, np.array(6.0))
 
     def test_ddof_zero(self):
         array = as_lazy_data(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=0)
-        self.assertArrayAlmostEqual(var.compute(), np.array(5.25))
+        result = as_concrete_data(var)
+        self.assertArrayAlmostEqual(result, np.array(5.25))
 
 
 class Test_name(tests.IrisTest):
