@@ -34,7 +34,6 @@ from iris.tests.stock import global_pp, simple_3d
 from iris.analysis import UnstructuredNearest
 
 
-@tests.skip_biggus
 @tests.skip_data
 class TestOSGBToLatLon(tests.IrisTest):
     def setUp(self):
