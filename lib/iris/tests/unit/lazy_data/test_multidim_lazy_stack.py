@@ -23,8 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import numpy as np
 import dask.array as da
+import numpy as np
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, multidim_lazy_stack
 

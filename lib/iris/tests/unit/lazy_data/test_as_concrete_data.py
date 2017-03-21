@@ -23,9 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
-import dask.array as da
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.tests import mock
@@ -49,6 +49,7 @@ class Test_as_concrete_data(tests.IrisTest):
         # convert_nans_array
         data = np.arange(24).reshape((2, 12))
         lazy_array = as_lazy_data(data)
+
         sentinel = mock.sentinel.data
         with mock.patch('iris._lazy_data.convert_nans_array') as conv_nans:
             conv_nans.return_value = sentinel
@@ -61,19 +62,22 @@ class Test_as_concrete_data(tests.IrisTest):
         arg, = args
         self.assertFalse(is_lazy_data(arg))
         self.assertArrayEqual(arg, data)
-        self.assertEqual(kwargs, {'result_dtype': None,
-                                  'nans_replacement': None})
+        self.assertEqual(kwargs, {})
 
     def test_lazy_data_pass_thru_kwargs(self):
         # Minimal testing as as_concrete_data is a wrapper to
         # convert_nans_array
         data = np.arange(24).reshape((2, 12))
         lazy_array = as_lazy_data(data)
+        nans_replacement = 7
+        result_dtype = np.int16
+
         sentinel = mock.sentinel.data
         with mock.patch('iris._lazy_data.convert_nans_array') as conv_nans:
             conv_nans.return_value = sentinel
-            result = as_concrete_data(lazy_array, nans_replacement=7,
-                                      result_dtype=np.int16)
+            result = as_concrete_data(lazy_array,
+                                      nans_replacement=nans_replacement,
+                                      result_dtype=result_dtype)
         self.assertEqual(sentinel, result)
 
         # Check call to convert_nans_array
@@ -82,8 +86,8 @@ class Test_as_concrete_data(tests.IrisTest):
         arg, = args
         self.assertFalse(is_lazy_data(arg))
         self.assertArrayEqual(arg, data)
-        self.assertEqual(kwargs, {'nans_replacement': 7,
-                                  'result_dtype': np.int16, })
+        self.assertEqual(kwargs, {'nans_replacement': nans_replacement,
+                                  'result_dtype': result_dtype, })
 
 
 if __name__ == '__main__':
