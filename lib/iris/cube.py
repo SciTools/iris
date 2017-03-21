@@ -33,7 +33,6 @@ import warnings
 from xml.dom.minidom import Document
 import zlib
 
-import biggus
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
