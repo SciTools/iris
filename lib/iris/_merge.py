@@ -33,7 +33,8 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, is_lazy_data, multidim_lazy_stack
+from iris._lazy_data import (as_lazy_data, as_concrete_data, is_lazy_data,
+                             multidim_lazy_stack)
 import iris.cube
 import iris.coords
 import iris.exceptions
@@ -1217,10 +1218,11 @@ class ProtoCube(object):
             if all_have_data:
                 # All inputs were concrete, so turn the result back into a
                 # normal array.
-                merged_data = merged_data.compute()
-                # Unmask the array only if it is filled.
+                merged_data = as_concrete_data(merged_data,
+                                               nans_replacement=ma.masked)
+                # Unmask the array if it has no masked points.
                 if (ma.isMaskedArray(merged_data) and
-                        ma.count_masked(merged_data) == 0):
+                        not ma.is_masked(merged_data)):
                     merged_data = merged_data.data
             merged_cube = self._get_cube(merged_data)
             merged_cubes.append(merged_cube)

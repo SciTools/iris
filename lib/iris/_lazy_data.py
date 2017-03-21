@@ -47,12 +47,12 @@ _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
 def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
     """
-    Convert the input array `data` to a lazy dask array.
+    Convert the input array `data` to a dask array.
 
     Args:
 
     * data:
-        An array. This will be converted to a lazy dask array.
+        An array. This will be converted to a dask array.
 
     Kwargs:
 
@@ -63,13 +63,45 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
         http://dask.pydata.org/en/latest/array-creation.html#chunks.
 
     Returns:
-        The input array converted to a lazy dask array.
+        The input array converted to a dask array.
 
     """
     if not is_lazy_data(data):
         if ma.isMaskedArray(data):
             data = array_masked_to_nans(data)
         data = da.from_array(data, chunks=chunks)
+    return data
+
+
+def as_concrete_data(data, **kwargs):
+    """
+    Return the actual content of a lazy array, as a numpy array.
+    If the input data is a NumPy `ndarray` or masked array, return it
+    unchanged.
+
+    If the input data is lazy, return the realised result.
+
+    Where lazy data contains NaNs these are translated by filling or converting
+    to masked data, using the :func:`~iris._lazy_data.convert_nans_array`
+    function.
+
+    Args:
+
+    * data:
+        A dask array, NumPy `ndarray` or masked array
+
+    Kwargs are passed through to :func:`~iris._lazy_data.convert_nans_array`.
+
+    Returns:
+        A NumPy `ndarray` or masked array.
+
+    """
+    if is_lazy_data(data):
+        # Realise dask array.
+        data = data.compute()
+        # Convert any missing data as requested.
+        data = convert_nans_array(data, **kwargs)
+
     return data
 
 

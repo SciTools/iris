@@ -42,8 +42,8 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import (array_masked_to_nans, as_lazy_data,
-                             convert_nans_array, is_lazy_data)
+from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
+
 import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
@@ -1733,13 +1733,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         if self.has_lazy_data():
             try:
-                data = self._dask_array.compute()
-                # Now convert the data payload from a NaN array to a
-                # masked array, and if appropriate cast to the specified
-                # cube result dtype.
-                result = convert_nans_array(data,
-                                            nans_replacement=ma.masked,
-                                            result_dtype=self.dtype)
+                # Realise the data, convert from a NaN array to a masked array,
+                # and if appropriate cast to the specified cube result dtype.
+                result = as_concrete_data(self._dask_array,
+                                          nans_replacement=ma.masked,
+                                          result_dtype=self.dtype)
                 self._numpy_array = result
                 self.dtype = None
 
