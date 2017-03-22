@@ -1754,6 +1754,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if is_lazy_data(value):
             self._dask_array = value
             self._numpy_array = None
+            self.dtype = value.dtype
+            self.fill_value = None
         else:
             value = np.asanyarray(value)
             self._numpy_array = value
@@ -1769,7 +1771,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Cancel any 'realisation' datatype conversion, and fill value.
         # self.dtype = None
-        # self.fill_value = None
 
     def has_lazy_data(self):
         return self._numpy_array is None
