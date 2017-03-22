@@ -1009,7 +1009,6 @@ class TestDataManagerIndexing(TestCube2d):
         self.assertRaises(IndexError, self.cube.__getitem__, ((0, 4, 5, 2), (3, 5, 5), 0, 0, 4) )
         self.assertRaises(IndexError, self.cube.__getitem__, (Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis) )
 
-    @tests.skip_biggus
     def test_fancy_indexing_bool_array(self):
         cube = self.cube
         cube.data = np.ma.masked_array(cube.data, mask=cube.data > 100000)
@@ -1157,19 +1156,16 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         self.assertIsInstance(cube.data, np.ndarray)
 
-    @tests.skip_biggus
     def test_masked_field(self):
         # This pp field has some missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
         self.assertIsInstance(cube.data, ma.core.MaskedArray)
 
-    @tests.skip_biggus
     def test_missing_file(self):
         cube = self._load_3d_cube()
         self.assertIsInstance(cube.data, ma.core.MaskedArray)
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
 
-    @tests.skip_biggus
     def test_slicing(self):
         cube = self._load_3d_cube()
 
@@ -1194,7 +1190,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # extract the 2d field that has SOME missing values
         masked_slice = cube[0]
         masked_slice.data.fill_value = 123456
-        
+
         # test saving masked data
         reference_txt_path = tests.get_result_path(('cdm', 'masked_save_pp.txt'))
         with self.cube_save_test(reference_txt_path, reference_cubes=masked_slice) as temp_pp_path:
