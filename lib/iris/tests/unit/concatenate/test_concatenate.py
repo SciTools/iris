@@ -23,12 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
-import biggus
 import cf_units
 import numpy as np
+import numpy.ma as ma
 
-import iris.coords
 from iris._concatenate import concatenate
+from iris._lazy_data import as_lazy_data
+import iris.coords
 import iris.cube
 from iris.exceptions import ConcatenateError
 
@@ -282,11 +283,10 @@ class TestOrder(tests.IrisTest):
         self.assertEqual(result1, result2)
 
 
-@tests.skip_biggus
-class TestConcatenateBiggus(tests.IrisTest):
+class TestConcatenate__dask(tests.IrisTest):
     def build_lazy_cube(self, points, bounds=None, nx=4):
         data = np.arange(len(points) * nx).reshape(len(points), nx)
-        data = biggus.NumpyArrayAdapter(data)
+        data = as_lazy_data(data)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         lat = iris.coords.DimCoord(points, 'latitude', bounds=bounds)
         lon = iris.coords.DimCoord(np.arange(nx), 'longitude')
@@ -294,21 +294,20 @@ class TestConcatenateBiggus(tests.IrisTest):
         cube.add_dim_coord(lon, 1)
         return cube
 
-    def test_lazy_biggus_concatenate(self):
+    def test_lazy_concatenate(self):
         c1 = self.build_lazy_cube([1, 2])
         c2 = self.build_lazy_cube([3, 4, 5])
         cube, = concatenate([c1, c2])
         self.assertTrue(cube.has_lazy_data())
-        self.assertNotIsInstance(cube.data, np.ma.MaskedArray)
+        self.assertFalse(ma.isMaskedArray(cube.data))
 
-    def test_lazy_biggus_concatenate_masked_array_mixed_deffered(self):
+    def test_lazy_concatenate_masked_array_mixed_deferred(self):
         c1 = self.build_lazy_cube([1, 2])
         c2 = self.build_lazy_cube([3, 4, 5])
         c2.data = np.ma.masked_greater(c2.data, 3)
-        self.assertFalse(c2.has_lazy_data())
         cube, = concatenate([c1, c2])
         self.assertTrue(cube.has_lazy_data())
-        self.assertIsInstance(cube.data, np.ma.MaskedArray)
+        self.assertTrue(ma.isMaskedArray(cube.data))
 
 
 if __name__ == '__main__':

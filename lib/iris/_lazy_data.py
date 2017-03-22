@@ -97,8 +97,11 @@ def as_concrete_data(data, **kwargs):
 
     """
     if is_lazy_data(data):
-        # Realise dask array.
-        data = data.compute()
+        # Realise dask array, ensuring the data result is always a NumPy array.
+        # In some cases dask may return a scalar numpy.int/numpy.float object
+        # rather than a numpy.ndarray object.
+        # Recorded in https://github.com/dask/dask/issues/2111.
+        data = np.asanyarray(data.compute())
         # Convert any missing data as requested.
         data = convert_nans_array(data, **kwargs)
 

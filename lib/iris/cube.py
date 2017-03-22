@@ -663,9 +663,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
-            It can be a biggus array, a numpy array, a numpy array
-            subclass (such as :class:`numpy.ma.MaskedArray`), or an
-            *array_like* as described in :func:`numpy.asarray`.
+            ``data`` can be a dask array, a NumPy array, a NumPy array
+            subclass (such as :class:`numpy.ma.MaskedArray`), or
+            array_like (as described in :func:`numpy.asarray`).
 
             See :attr:`Cube.data<iris.cube.Cube.data>`.
 
