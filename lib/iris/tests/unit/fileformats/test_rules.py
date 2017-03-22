@@ -35,12 +35,8 @@ from iris.fileformats.rules import (ConcreteReferenceTarget,
                                     Reference, ReferenceTarget, load_cubes,
                                     scalar_cell_method)
 from iris.coords import CellMethod
+from iris.tests import mock
 import iris.tests.stock as stock
-
-
-class Mock(object):
-    def __repr__(self):
-        return '<Mock {!r}>'.format(self.__dict__)
 
 
 class TestConcreteReferenceTarget(tests.IrisTest):
@@ -105,22 +101,25 @@ class TestConcreteReferenceTarget(tests.IrisTest):
 
 
 class TestLoadCubes(tests.IrisTest):
-    @tests.skip_biggus
     def test_simple_factory(self):
         # Test the creation process for a factory definition which only
         # uses simple dict arguments.
 
         # The fake PPField which will be supplied to our converter.
-        field = Mock()
-        field.data = None
+        field = mock.Mock()
+        field.core_data = mock.Mock()
+        # Add a compute attribute so that the data will be treated as lazy.
+        field.core_data.compute = None
+        field.core_data.dtype = None
+        field.bmdi = None
 
         def field_generator(filename):
             return [field]
 
         # A fake conversion function returning:
         #   1) A parameter cube needing a simple factory construction.
-        aux_factory = Mock()
-        factory = Mock()
+        aux_factory = mock.Mock()
+        factory = mock.Mock()
         factory.args = [{'name': 'foo'}]
         factory.factory_class = lambda *args: \
             setattr(aux_factory, 'fake_args', args) or aux_factory
@@ -156,7 +155,6 @@ class TestLoadCubes(tests.IrisTest):
         self.assertEqual(aux_factory.fake_args, ({'name': 'foo'},))
 
     @tests.skip_data
-    @tests.skip_biggus
     def test_cross_reference(self):
         # Test the creation process for a factory definition which uses
         # a cross-reference.
@@ -177,10 +175,12 @@ class TestLoadCubes(tests.IrisTest):
         assert not param_cube.coords('surface_altitude')
 
         # The fake PPFields which will be supplied to our converter.
-        press_field = Mock()
-        press_field.data = param_cube.data
-        orog_field = Mock()
-        orog_field.data = orog_cube.data
+        press_field = mock.Mock()
+        press_field.core_data = param_cube.data
+        press_field.bmdi = -1e20
+        orog_field = mock.Mock()
+        orog_field.core_data = orog_cube.data
+        orog_field.bmdi = -1e20
 
         def field_generator(filename):
             return [press_field, orog_field]
