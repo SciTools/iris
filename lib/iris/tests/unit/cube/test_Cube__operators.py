@@ -36,8 +36,8 @@ from iris._lazy_data import as_lazy_data
 
 class Test_lazy_maths(tests.IrisTest):
     def build_lazy_cube(self, points, dtype=np.float64, bounds=None, nx=10):
-        data = \
-            np.arange(len(points) * nx, dtype=dtype).reshape(len(points), nx)
+        data = np.arange(len(points) * nx, dtype=dtype) + 1  # Just avoid 0.
+        data = data.reshape(len(points), nx)
         data = as_lazy_data(data)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         lat = DimCoord(points, 'latitude', bounds=bounds)
@@ -100,13 +100,13 @@ class Test_lazy_maths(tests.IrisTest):
 
     def test_div_cubes__float(self):
         c1 = self.build_lazy_cube([1, 2])
-        op = operator.div
+        op = operator.truediv
         self.cube_cube_math_op(c1, op)
 
     def test_div_scalar__float(self):
         c1 = self.build_lazy_cube([1, 2])
         scalar = 5
-        op = operator.div
+        op = operator.truediv
         self.cube_scalar_math_op(c1, scalar, op, commutative=False)
 
     def test_add_cubes__int(self):
@@ -144,13 +144,13 @@ class Test_lazy_maths(tests.IrisTest):
 
     def test_div_cubes__int(self):
         c1 = self.build_lazy_cube([1, 2], dtype=np.int64)
-        op = operator.div
+        op = operator.truediv
         self.cube_cube_math_op(c1, op)
 
     def test_div_scalar__int(self):
         c1 = self.build_lazy_cube([1, 2], dtype=np.int64)
         scalar = 5
-        op = operator.div
+        op = operator.truediv
         self.cube_scalar_math_op(c1, scalar, op, commutative=False)
 
 
@@ -196,11 +196,11 @@ class Test_lazy_maths__scalar_cube(tests.IrisTest):
         self.check_common(c3, c4, op)
 
     def test_div_scalar__int(self):
-        c3, c4, op = self.c3, 5, operator.div
+        c3, c4, op = self.c3, 5, operator.truediv
         self.check_common(c3, c4, op)
 
     def test_div_cubes__int(self):
-        c3, c4, op = self.c3, self.c4, operator.div
+        c3, c4, op = self.c3, self.c4, operator.truediv
         self.check_common(c3, c4, op)
 
     def test_add_scalar__float(self):
@@ -228,11 +228,11 @@ class Test_lazy_maths__scalar_cube(tests.IrisTest):
         self.check_common(c1, c2, op)
 
     def test_div_scalar__float(self):
-        c1, c2, op = self.c1, 5, operator.div
+        c1, c2, op = self.c1, 5, operator.truediv
         self.check_common(c1, c2, op)
 
     def test_div_cubes__float(self):
-        c1, c2, op = self.c1, self.c2, operator.div
+        c1, c2, op = self.c1, self.c2, operator.truediv
         self.check_common(c1, c2, op)
 
 
