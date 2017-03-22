@@ -33,7 +33,6 @@ import warnings
 from xml.dom.minidom import Document
 import zlib
 
-import biggus
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -664,9 +663,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
-            It can be a biggus array, a numpy array, a numpy array
-            subclass (such as :class:`numpy.ma.MaskedArray`), or an
-            *array_like* as described in :func:`numpy.asarray`.
+            ``data`` can be a dask array, a NumPy array, a NumPy array
+            subclass (such as :class:`numpy.ma.MaskedArray`), or
+            array_like (as described in :func:`numpy.asarray`).
 
             See :attr:`Cube.data<iris.cube.Cube.data>`.
 
@@ -1735,7 +1734,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 result = as_concrete_data(self._dask_array,
                                           nans_replacement=ma.masked,
                                           result_dtype=self.dtype)
-                self._numpy_array = result
+                self.data = result
                 self.dtype = None
 
             except MemoryError:
@@ -1756,7 +1755,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._dask_array = value
             self._numpy_array = None
         else:
-            self._numpy_array = np.asanyarray(value)
+            value = np.asanyarray(value)
+            self._numpy_array = value
             self._dask_array = None
 
         if self.shape is not None and self.shape != value.shape:
@@ -1768,8 +1768,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                  '%r.' % (self.shape, value.shape))
 
         # Cancel any 'realisation' datatype conversion, and fill value.
-        self.dtype = None
-        self.fill_value = None
+        # self.dtype = None
+        # self.fill_value = None
 
     def has_lazy_data(self):
         return self._numpy_array is None
