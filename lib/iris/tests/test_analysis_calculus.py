@@ -200,7 +200,6 @@ class TestCoordTrig(tests.IrisTest):
         self.assertXMLElement(cos_of_coord_radians, ('analysis', 'calculus', 'cos_simple_radians.xml'))
 
 
-@tests.skip_biggus
 class TestCalculusSimple3(tests.IrisTest):
 
     def setUp(self):
@@ -223,7 +222,6 @@ class TestCalculusSimple3(tests.IrisTest):
         self.assertCMLApproxData(t, ('analysis', 'calculus', 'handmade2_wrt_lat.cml'))
 
 
-@tests.skip_biggus
 class TestCalculusSimple2(tests.IrisTest):
 
     def setUp(self):
@@ -275,7 +273,6 @@ class TestCalculusSimple2(tests.IrisTest):
         self.assertCMLApproxData(t, ('analysis', 'calculus', 'delta_handmade_wrt_lat.cml'))
 
 
-@tests.skip_biggus
 class TestCalculusSimple1(tests.IrisTest):
 
     def setUp(self):
@@ -337,7 +334,6 @@ def build_cube(data, spherical=False):
     return cube
 
 
-@tests.skip_biggus
 class TestCalculusWKnownSolutions(tests.IrisTest):
 
     def get_coord_pts(self, cube):
@@ -623,7 +619,6 @@ class TestCurlInterface(tests.IrisTest):
         v.rename('northward_foobar2')
         self.assertRaises(ValueError, iris.analysis.calculus.spatial_vectors_with_phenom_name, u, v)
 
-    @tests.skip_biggus
     def test_rotated_pole(self):
         u = build_cube(np.empty((30, 20)), spherical='rotated')
         v = u.copy()

@@ -30,7 +30,6 @@ from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
 
 
-@tests.skip_biggus
 @tests.skip_data
 @tests.iristest_timing_decorator
 class TestBroadcasting(tests.IrisTest_nometa,

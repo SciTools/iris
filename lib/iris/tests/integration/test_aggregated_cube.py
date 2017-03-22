@@ -28,7 +28,6 @@ from iris.analysis import MEAN
 from iris._lazy_data import is_lazy_data
 
 
-@tests.skip_biggus
 class Test_aggregated_by(tests.IrisTest):
     @tests.skip_data
     def test_agg_by_aux_coord(self):
