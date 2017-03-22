@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,12 +28,10 @@ import tempfile
 import cf_units
 import numpy as np
 
-import iris
 import iris.coords
 import iris.coord_systems
-import iris.fileformats.pp as ff_pp
+import iris.fileformats.pp
 from iris.fileformats.pp import PPField3
-import iris.io
 from iris.tests import mock
 import iris.tests.pp as pp
 import iris.util
@@ -207,12 +205,14 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         new_unit = cf_units.Unit('hours since 1970-01-01 00:00:00',
                                   calendar=cf_units.CALENDAR_365_DAY)
         cube.coord('time').units = new_unit
+        # Add an extra "fill_value" property, as used by the save rules.
+        cube.fill_value = None
         pp_field = mock.MagicMock(spec=PPField3)
         iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, pp_field)
         self.assertEqual(pp_field.lbtim.ic, 4)
 
-            
+
 class FakePPEnvironment(object):
     ''' fake a minimal PP environment for use in cross-section coords, as in PP save rules '''
     y = [1, 2, 3, 4]
@@ -340,7 +340,7 @@ def fields_from_cube(cubes):
         fh.seek(0)
         
         # load in the saved pp fields and check the appropriate metadata
-        for field in ff_pp.load(tmp_file.name):
+        for field in iris.fileformats.pp.load(tmp_file.name):
             yield field
             
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -47,6 +47,15 @@ class TestAsFields(tests.IrisTest):
         for aslice, field in slices_and_fields:
             self.assertEqual(aslice.shape, (11, 9))
             self.assertEqual(field.lbcode, 101)
+
+    def test_lazy_data(self):
+        cube = self.cube.copy()
+        # "Rebase" the cube onto a lazy version of its data.
+        cube.lazy_data(cube.lazy_data())
+        # Check that lazy data is preserved in save-pairs generation.
+        slices_and_fields = pp.as_pairs(cube)
+        for aslice, _ in slices_and_fields:
+            self.assertTrue(aslice.has_lazy_data())
 
 
 if __name__ == "__main__":

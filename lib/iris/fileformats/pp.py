@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -2322,6 +2322,18 @@ def as_pairs(cube, field_coords=None, target=None):
                                 target=target)
 
 
+def _data_fill_value(cube):
+    # Function to deduce a fill_value for a cube's data.
+    # This should eventually be superceded by a cube 'fill_value' property.
+    if cube.has_lazy_data():
+        fill_value = cube.lazy_data().fill_value
+    elif isinstance(cube.data, ma.MaskedArray):
+        fill_value = cube.data.fill_value
+    else:
+        fill_value = None
+    return fill_value
+
+
 def save_pairs_from_cube(cube, field_coords=None, target=None):
     """
     Use the PP saving rules (and any user rules) to convert a cube or
@@ -2404,6 +2416,11 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
     # Save each named or latlon slice2D in the cube
     for slice2D in cube.slices(field_coords):
+        # Attach an extra cube "fill_value" property, allowing the save rules
+        # to deduce MDI more easily without realising the data.
+        # NOTE: it is done this way because this property may exist in future.
+        slice2D.fill_value = _data_fill_value(slice2D)
+
         # Start with a blank PPField
         pp_field = PPField3()
 
@@ -2426,8 +2443,12 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         # From UM doc F3: "Set to -99 if LBEGIN not known"
         pp_field.lbuser[1] = -99
 
-        # Set the data
-        pp_field.data = slice2D.data
+        # Set the data, keeping it lazy where possible.
+        if slice2D.has_lazy_data():
+            slice_core_data = slice2D.lazy_data()
+        else:
+            slice_core_data = slice2D.data
+        pp_field._data = slice_core_data
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
