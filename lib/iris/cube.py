@@ -33,7 +33,6 @@ import warnings
 from xml.dom.minidom import Document
 import zlib
 
-import biggus
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -664,9 +663,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
-            It can be a biggus array, a numpy array, a numpy array
-            subclass (such as :class:`numpy.ma.MaskedArray`), or an
-            *array_like* as described in :func:`numpy.asarray`.
+            ``data`` can be a dask array, a NumPy array, a NumPy array
+            subclass (such as :class:`numpy.ma.MaskedArray`), or
+            array_like (as described in :func:`numpy.asarray`).
 
             See :attr:`Cube.data<iris.cube.Cube.data>`.
 
@@ -717,14 +716,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if is_lazy_data(data):
-            self._dask_array = data
-            self._numpy_array = None
-        else:
-            self._dask_array = None
-            if not ma.isMaskedArray(data):
-                data = np.asarray(data)
-            self._numpy_array = data
+        # Initialise the private `_dtype` before setting the data so we have a
+        # default value to compare with.
+        self._dtype = None
+        # Use the class' data setter to set the data and the private
+        # `_numpy_array` and `_dask_array` properties.
+        self.data = data
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -754,7 +751,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # We need to set the dtype before the fill_value,
         # as the fill_value is checked against self.dtype.
-        self._dtype = None
         self.dtype = dtype
         self.fill_value = fill_value
 
@@ -1738,7 +1734,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 result = as_concrete_data(self._dask_array,
                                           nans_replacement=ma.masked,
                                           result_dtype=self.dtype)
-                self._numpy_array = result
+                self.data = result
                 self.dtype = None
 
             except MemoryError:
@@ -1754,8 +1750,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @data.setter
     def data(self, value):
-        if not (hasattr(value, 'shape') and hasattr(value, 'dtype')):
+        # Set lazy or real data, and unset the other.
+        if is_lazy_data(value):
+            self._dask_array = value
+            self._numpy_array = None
+            self.dtype = value.dtype
+            self.fill_value = None
+        else:
             value = np.asanyarray(value)
+            self._numpy_array = value
+            self._dask_array = None
 
         if self.shape is not None and self.shape != value.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
@@ -1765,17 +1769,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, value.shape))
 
-        # Set lazy or real data, and reset the other.
-        if is_lazy_data(value):
-            self._dask_array = value
-            self._numpy_array = None
-        else:
-            self._numpy_array = value
-            self._dask_array = None
-
         # Cancel any 'realisation' datatype conversion, and fill value.
-        self.dtype = None
-        self.fill_value = None
+        # self.dtype = None
 
     def has_lazy_data(self):
         return self._numpy_array is None
