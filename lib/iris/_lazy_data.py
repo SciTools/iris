@@ -134,7 +134,7 @@ def array_masked_to_nans(array):
     else:
         if ma.is_masked(array):
             mask = array.mask
-            if array.dtype.kind == 'i':
+            if array.dtype.kind in 'biu':
                 result = array.data.astype(np.dtype('f8'))
             else:
                 result = array.data.copy()
