@@ -2251,6 +2251,10 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         else:
             conventions = CF_CONVENTIONS_VERSION
 
+        # Prioritise cube attributes conventions over the default.
+        if 'Conventions' in cube.attributes:
+            conventions = cube.attributes['Conventions']
+
         # Perform a CF patch of the conventions attribute.
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
                                 in [None, False])
@@ -2265,12 +2269,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                 warnings.warn(msg)
 
         # Add conventions attribute.
-        if (cube.attributes.has_key('Conventions')):
-            msg = 'Keeping conventions from original netcdf file'
-            warnings.warn(msg)
-            sman.update_global_attributes(Conventions=cube.attributes.get('Conventions'))
-        else:
-            sman.update_global_attributes(Conventions=conventions)
+        sman.update_global_attributes(Conventions=conventions)
 
 
 def _no_unlim_dep_warning():

@@ -179,22 +179,38 @@ def _patch_site_configuration():
 
 
 class TestConventionsAttributes(tests.IrisTest):
-    def test_patching_conventions_attribute(self):
-        # Ensure that user defined conventions are wiped and those which are
+    def test_patching_conventions_attribute_user_existing(self):
+        # Ensure that user defined conventions pass-thru and those which are
         # saved patched through site_config can be loaded without an exception
         # being raised.
+        conventions = 'some user defined conventions'
         cube = Cube([1.0], standard_name='air_temperature', units='K',
-                    attributes={'Conventions':
-                                'some user defined conventions'})
+                    attributes=dict(Conventions=conventions))
 
         # Patch the site configuration dictionary.
         with _patch_site_configuration(), self.temp_filename('.nc') as nc_path:
             iris.save(cube, nc_path)
             res = iris.load_cube(nc_path)
 
-        self.assertEqual(res.attributes['Conventions'],
-                         '{}, {}, {}'.format(CF_CONVENTIONS_VERSION,
-                                             'convention1', 'convention2'))
+        expected = '{}, {}, {}'.format(conventions,
+                                       'convention1',
+                                       'convention2')
+        self.assertEqual(res.attributes['Conventions'], expected)
+
+    def test_patching_conventions_attribute_user_missing(self):
+        # Ensure that conventions which are saved patched through site_config
+        # can be loaded without an exception being raised.
+        cube = Cube([1.0], standard_name='air_temperature', units='K')
+
+        # Patch the site configuration dictionary.
+        with _patch_site_configuration(), self.temp_filename('.nc') as nc_path:
+            iris.save(cube, nc_path)
+            res = iris.load_cube(nc_path)
+
+        expected = '{}, {}, {}'.format(CF_CONVENTIONS_VERSION,
+                                       'convention1',
+                                       'convention2')
+        self.assertEqual(res.attributes['Conventions'], expected)
 
 
 class TestLazySave(tests.IrisTest):

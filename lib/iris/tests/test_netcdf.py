@@ -699,12 +699,9 @@ class TestNetCDFSave(tests.IrisTest):
         # Should be global attributes.
         aglobals = {'history': 'A long time ago...',
                     'title': 'Attribute test',
-                    'foo': 'bar'}
+                    'foo': 'bar',
+                    'Conventions': 'TEST'}
         for k, v in six.iteritems(aglobals):
-            self.cube.attributes[k] = v
-        # Should be overriden.
-        aover = {'Conventions': 'TEST'}
-        for k, v in six.iteritems(aover):
             self.cube.attributes[k] = v
         # Should be data varible attributes.
         avars = {'standard_error_multiplier': 23,
@@ -724,11 +721,7 @@ class TestNetCDFSave(tests.IrisTest):
                 if getattr(ds, gkey) != aglobals.get(gkey):
                     exceptions.append('{} != {}'.format(getattr(ds, gkey),
                                                         aglobals.get(gkey)))
-            # Should be overriden.
-            for okey in aover:
-                if getattr(ds, okey) == aover.get(okey):
-                    exceptions.append('{} != {}'.format(getattr(ds, okey),
-                                                        avars.get(okey)))
+
             dv = ds['temp']
             # Should be data varible attributes;
             # except STASH -> um_stash_source.
