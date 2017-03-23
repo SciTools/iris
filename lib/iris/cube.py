@@ -717,14 +717,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if is_lazy_data(data):
-            self._dask_array = data
-            self._numpy_array = None
-        else:
-            self._dask_array = None
-            if not ma.isMaskedArray(data):
-                data = np.asarray(data)
-            self._numpy_array = data
+        self._dask_array = None
+        self._numpy_array = None
+        self.data = data
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1638,18 +1633,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @dtype.setter
     def dtype(self, dtype):
-        if dtype != self.dtype:
-            if dtype is not None:
+        if dtype is not None:
+            dtype = np.dtype(dtype)
+            if dtype != self.dtype:
                 if not self.has_lazy_data():
                     emsg = 'Cube does not have lazy data, cannot set dtype.'
                     raise ValueError(emsg)
-                dtype = np.dtype(dtype)
                 if dtype.kind != 'i':
                     emsg = ('Can only cast lazy data to integral dtype, '
                             'got {!r}.')
                     raise ValueError(emsg.format(dtype))
                 self._fill_value = None
-            self._dtype = dtype
+                self._dtype = dtype
+        else:
+            self._dtype = None
 
     @property
     def fill_value(self):
@@ -1757,7 +1754,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if not (hasattr(value, 'shape') and hasattr(value, 'dtype')):
             value = np.asanyarray(value)
 
-        if self.shape is not None and self.shape != value.shape:
+        if self.core_data is not None and self.shape != value.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
@@ -1770,6 +1767,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             self._dask_array = value
             self._numpy_array = None
         else:
+            if not ma.isMaskedArray(value):
+                # Coerce input to ndarray (including ndarray subclasses).
+                value = np.asarray(value)
             self._numpy_array = value
             self._dask_array = None
 
