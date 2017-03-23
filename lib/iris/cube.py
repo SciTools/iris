@@ -3161,15 +3161,37 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def __add__(self, other):
         return iris.analysis.maths.add(self, other, ignore=True)
+
+    def __iadd__(self, other):
+        return iris.analysis.maths.add(self, other, ignore=True, in_place=True)
+
     __radd__ = __add__
 
     def __sub__(self, other):
         return iris.analysis.maths.subtract(self, other, ignore=True)
 
+    def __isub__(self, other):
+        return iris.analysis.maths.subtract(self, other,
+                                            ignore=True, in_place=True)
+
     __mul__ = iris.analysis.maths.multiply
     __rmul__ = iris.analysis.maths.multiply
+
+    def __imul__(self, other):
+        return iris.analysis.maths.multiply(self, other, in_place=True)
+
     __div__ = iris.analysis.maths.divide
+
+    def __idiv__(self, other):
+        return iris.analysis.maths.divide(self, other, in_place=True)
+
     __truediv__ = iris.analysis.maths.divide
+
+    def __itruediv__(self, other):
+        return iris.analysis.maths.divide(self, other, in_place=True)
+
+
+
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
 

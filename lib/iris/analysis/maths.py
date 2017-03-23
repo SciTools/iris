@@ -341,7 +341,14 @@ def divide(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
-    op = operator.itruediv if in_place else operator.truediv
+    if in_place:
+        op = operator.itruediv
+        if 'i' in [cube.dtype.kind, other.dtype.kind]:
+            # NumPy ufunc `true_divide` cannot coerce output to int.
+            aemsg = 'Cannot perform inplace division of integer data.'
+            raise ArithmeticError(aemsg)
+    else:
+        op = operator.truediv
     return _binary_op_common(op, 'divide', cube, other, new_unit, dim,
                              in_place=in_place)
 

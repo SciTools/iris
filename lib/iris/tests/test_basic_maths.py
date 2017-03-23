@@ -654,72 +654,86 @@ class TestLog(tests.IrisTest):
 
 
 class TestMaskedArrays(tests.IrisTest):
-    ops = (operator.add, operator.sub, operator.mul)
-    iops = (operator.iadd, operator.isub, operator.imul)
-    # This is to ensure compatibility for both Python2 (which uses div and
-    # idiv) and Python3 (which uses truediv and itruediv).
-    try:
-        ops = ops + (operator.div, )
-        iops = iops + (operator.idiv, )
-    except AttributeError:
-        ops = ops + (operator.truediv, )
-        iops = iops + (operator.itruediv, )
-
     def setUp(self):
-        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8,]],
-                                    mask=[[0, 1, 0], [0, 0, 1]])
-        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2,]],
-                                    mask=[[0, 1, 0], [0, 1, 1]])
+        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8]],
+                                    mask=[[0, 1, 0], [0, 0, 1]],
+                                    dtype=np.float64)
+        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2]],
+                                    mask=[[0, 1, 0], [0, 1, 1]],
+                                    dtype=np.float64)
+        self.data3 = ma.MaskedArray([[9, 9, 9], [8, 8, 8]],
+                                    mask=[[0, 1, 0], [0, 0, 1]],
+                                    dtype=np.int64)
+        self.data4 = ma.MaskedArray([[3, 3, 3], [2, 2, 2]],
+                                    mask=[[0, 1, 0], [0, 1, 1]],
+                                    dtype=np.int64)
 
         self.cube1 = iris.cube.Cube(self.data1)
         self.cube2 = iris.cube.Cube(self.data2)
+        self.cube3 = iris.cube.Cube(self.data3)
+        self.cube4 = iris.cube.Cube(self.data4)
+
+        self.ops = (operator.add, operator.sub, operator.mul, operator.truediv)
+        self.iops = (operator.iadd, operator.isub,
+                     operator.imul, operator.itruediv)
 
     def test_operator(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, self.cube2)
             result2 = test_op(self.data1, self.data2)
-
-            np.testing.assert_array_equal(result1.data, result2)
+            self.assertArrayAlmostEqual(result1.data, result2)
+            result3 = test_op(self.cube3, self.cube4)
+            result4 = test_op(self.data3, self.data4)
+            self.assertArrayAlmostEqual(result3.data, result4)
 
     def test_operator_in_place(self):
         for test_op in self.iops:
             test_op(self.cube1, self.cube2)
-            if test_op == operator.itruediv:
-                # Python3 itruediv requires floats to return floats, numpy1.10:
-                # "TypeError: ufunc 'true_divide' output (typecode 'd') could
-                # not be coerced to provided output parameter (typecode 'l')
-                # according to the casting rule ''same_kind''"
-                test_op(self.data1.astype('float'), self.data2.astype('float'))
-            else:
-                test_op(self.data1, self.data2)
-
-            np.testing.assert_array_equal(self.cube1.data, self.data1)
+            test_op(self.data1, self.data2)
+            self.assertArrayAlmostEqual(self.cube1.data, self.data1)
+            if test_op != operator.itruediv:
+                # NumPy ufunc `true_divide` does not handle int data.
+                test_op(self.cube3, self.cube4)
+                expected = test_op(self.data3, self.data4)
+                self.assertArrayAlmostEqual(self.cube3.data, expected)
 
     def test_operator_scalar(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, 2)
             result2 = test_op(self.data1, 2)
-
-            np.testing.assert_array_equal(result1.data, result2)
+            self.assertArrayAlmostEqual(result1.data, result2)
+            result3 = test_op(self.cube3, 2)
+            result4 = test_op(self.data3, 2)
+            self.assertArrayAlmostEqual(result3.data, result4)
 
     def test_operator_array(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, self.data2)
             result2 = test_op(self.data1, self.data2)
+            self.assertArrayAlmostEqual(result1.data, result2)
+            result3 = test_op(self.cube3, self.data4)
+            result4 = test_op(self.data3, self.data4)
+            self.assertArrayAlmostEqual(result3.data, result4)
 
-            np.testing.assert_array_equal(result1.data, result2)
+    def test_cube_itruediv__int(self):
+        test_op = self.iops[-1]  # `itruediv`
+        with self.assertRaisesRegexp(ArithmeticError,
+                                     'Cannot perform inplace division'):
+            test_op(self.cube3, self.cube4)
 
     def test_incompatible_dimensions(self):
-        data3 = ma.MaskedArray([[3, 3, 3, 4], [2, 2, 2]], mask=[[0, 1, 0, 0], [0, 1, 1]])
+        data3 = ma.MaskedArray([[3, 3, 3, 4], [2, 2, 2]],
+                               mask=[[0, 1, 0, 0], [0, 1, 1]])
         with self.assertRaises(ValueError):
-            # incompatible dimensions
+            # Incompatible dimensions.
             self.cube1 + data3
 
     def test_increase_cube_dimensionality(self):
         with self.assertRaises(ValueError):
-            # This would increase the dimensionality of the cube due to auto broadcasting
-            cubex = iris.cube.Cube(ma.MaskedArray([[9,]], mask=[[0]]))
-            cubex + ma.MaskedArray([[3, 3, 3, 3]], mask=[[0, 1, 0, 1]])
+            # This would increase the dimensionality of the cube
+            # due to auto-broadcasting.
+            cube_x = iris.cube.Cube(ma.MaskedArray([[9]], mask=[[0]]))
+            cube_x + ma.MaskedArray([[3, 3, 3, 3]], mask=[[0, 1, 0, 1]])
 
 
 if __name__ == "__main__":
