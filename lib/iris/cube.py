@@ -1640,8 +1640,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     emsg = 'Cube does not have lazy data, cannot set dtype.'
                     raise ValueError(emsg)
                 if dtype.kind not in 'biu':
-                    emsg = ('Can only cast lazy data to integral dtype, '
-                            'got {!r}.')
+                    emsg = ('Can only cast lazy data to integral or bool '
+                            'dtype, got {!r}.')
                     raise ValueError(emsg.format(dtype))
                 self._fill_value = None
                 self._dtype = dtype
