@@ -2265,7 +2265,12 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                 warnings.warn(msg)
 
         # Add conventions attribute.
-        sman.update_global_attributes(Conventions=conventions)
+        if (cube.attributes.has_key('Conventions')):
+            msg = 'keeping conventions from original netcdf file'
+            warnings.warn(msg)
+            sman.update_global_attributes(Conventions=cube.attributes.get('Conventions'))
+        else:
+            sman.update_global_attributes(Conventions=conventions)
 
 
 def _no_unlim_dep_warning():
