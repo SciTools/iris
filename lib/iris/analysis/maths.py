@@ -184,7 +184,11 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    op = operator.iadd if in_place else operator.add
+    if in_place:
+        _inplace_common(cube, other, 'addition')
+        op = operator.iadd
+    else:
+        op = operator.add
     return _add_subtract_common(op, 'add', cube, other, dim=dim,
                                 ignore=ignore, in_place=in_place)
 
@@ -220,7 +224,11 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    op = operator.isub if in_place else operator.sub
+    if in_place:
+        _inplace_common(cube, other, 'subtraction')
+        op = operator.isub
+    else:
+        op = operator.sub
     return _add_subtract_common(op, 'subtract', cube, other,
                                 dim=dim, ignore=ignore, in_place=in_place)
 
@@ -311,9 +319,33 @@ def multiply(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
-    op = operator.imul if in_place else operator.mul
+    if in_place:
+        _inplace_common(cube, other, 'multiplication')
+        op = operator.imul
+    else:
+        op = operator.mul
     return _binary_op_common(op, 'multiply', cube, other, new_unit, dim,
                              in_place=in_place)
+
+
+def _inplace_common(cube, other, math_op):
+    """
+    Check whether an inplace math operation can take place between `cube` and
+    `other`. It cannot if `cube` has integer data and `other` has float data
+    as the operation will always produce float data that cannot be 'safely'
+    cast back to the integer data of `cube`.
+
+    """
+    if cube.dtype.kind == 'i':
+        if hasattr(other, 'dtype'):
+            other_kind = other.dtype.kind
+        else:
+            other_kind = np.asanyarray(other).dtype.kind
+        if other_kind != 'i':
+            # Cannot coerce math op between int cube and float back to int.
+            aemsg = ('Cannot perform inplace {} between {!r} '
+                     'with integer data and {!r} with floating-point data.')
+            raise ArithmeticError(aemsg.format(math_op, cube, other))
 
 
 def divide(cube, other, dim=None, in_place=False):
@@ -342,13 +374,12 @@ def divide(cube, other, dim=None, in_place=False):
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
     if in_place:
-        op = operator.itruediv
-        # Input `other` may not have a `dtype` attribute.
-        other_dtype_kind = other.dtype.kind if hasattr(other, 'dtype') else 'f'
-        if 'i' in [cube.dtype.kind, other_dtype_kind]:
-            # NumPy ufunc `true_divide` cannot coerce output to int.
-            aemsg = 'Cannot perform inplace division of integer data.'
+        if cube.dtype.kind == 'i':
+            # Cannot coerce float result from inplace division back to int.
+            aemsg = ('Cannot perform inplace division of cube {!r} '
+                     'with integer data.')
             raise ArithmeticError(aemsg)
+        op = operator.itruediv
     else:
         op = operator.truediv
     return _binary_op_common(op, 'divide', cube, other, new_unit, dim,

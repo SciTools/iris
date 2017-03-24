@@ -655,23 +655,23 @@ class TestLog(tests.IrisTest):
 
 class TestMaskedArrays(tests.IrisTest):
     def setUp(self):
-        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8]],
-                                    mask=[[0, 1, 0], [0, 0, 1]],
-                                    dtype=np.float64)
-        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2]],
-                                    mask=[[0, 1, 0], [0, 1, 1]],
-                                    dtype=np.float64)
-        self.data3 = ma.MaskedArray([[9, 9, 9], [8, 8, 8]],
-                                    mask=[[0, 1, 0], [0, 0, 1]],
-                                    dtype=np.int64)
-        self.data4 = ma.MaskedArray([[3, 3, 3], [2, 2, 2]],
-                                    mask=[[0, 1, 0], [0, 1, 1]],
-                                    dtype=np.int64)
+        self.data_1f = ma.MaskedArray([[9, 9, 9], [8, 8, 8]],
+                                      mask=[[0, 1, 0], [0, 0, 1]],
+                                      dtype=np.float64)
+        self.data_2f = ma.MaskedArray([[3, 3, 3], [2, 2, 2]],
+                                      mask=[[0, 1, 0], [0, 1, 1]],
+                                      dtype=np.float64)
+        self.data_1i = ma.MaskedArray([[9, 9, 9], [8, 8, 8]],
+                                      mask=[[0, 1, 0], [0, 0, 1]],
+                                      dtype=np.int64)
+        self.data_2i = ma.MaskedArray([[3, 3, 3], [2, 2, 2]],
+                                      mask=[[0, 1, 0], [0, 1, 1]],
+                                      dtype=np.int64)
 
-        self.cube1 = iris.cube.Cube(self.data1)
-        self.cube2 = iris.cube.Cube(self.data2)
-        self.cube3 = iris.cube.Cube(self.data3)
-        self.cube4 = iris.cube.Cube(self.data4)
+        self.cube_1f = iris.cube.Cube(self.data_1f)
+        self.cube_2f = iris.cube.Cube(self.data_2f)
+        self.cube_1i = iris.cube.Cube(self.data_1i)
+        self.cube_2i = iris.cube.Cube(self.data_2i)
 
         self.ops = (operator.add, operator.sub, operator.mul, operator.truediv)
         self.iops = (operator.iadd, operator.isub,
@@ -679,60 +679,120 @@ class TestMaskedArrays(tests.IrisTest):
 
     def test_operator(self):
         for test_op in self.ops:
-            result1 = test_op(self.cube1, self.cube2)
-            result2 = test_op(self.data1, self.data2)
+            result1 = test_op(self.cube_1f, self.cube_2f)
+            result2 = test_op(self.data_1f, self.data_2f)
             self.assertArrayAlmostEqual(result1.data, result2)
-            result3 = test_op(self.cube3, self.cube4)
-            result4 = test_op(self.data3, self.data4)
+            result3 = test_op(self.cube_1i, self.cube_2i)
+            result4 = test_op(self.data_1i, self.data_2i)
             self.assertArrayAlmostEqual(result3.data, result4)
 
-    def test_operator_in_place(self):
-        for test_op in self.iops:
-            test_op(self.cube1, self.cube2)
-            test_op(self.data1, self.data2)
-            self.assertArrayAlmostEqual(self.cube1.data, self.data1)
-            if test_op != operator.itruediv:
-                # NumPy ufunc `true_divide` does not handle int data.
-                test_op(self.cube3, self.cube4)
-                expected = test_op(self.data3, self.data4)
-                self.assertArrayAlmostEqual(self.cube3.data, expected)
-
-    def test_operator_scalar(self):
+    def test_operator__mixed_floats_ints(self):
         for test_op in self.ops:
-            result1 = test_op(self.cube1, 2)
-            result2 = test_op(self.data1, 2)
+            result1 = test_op(self.cube_1f, self.cube_2i)
+            result2 = test_op(self.data_1f, self.data_2i)
             self.assertArrayAlmostEqual(result1.data, result2)
-            result3 = test_op(self.cube3, 2)
-            result4 = test_op(self.data3, 2)
+            result3 = test_op(self.cube_1i, self.cube_2f)
+            result4 = test_op(self.data_1i, self.data_2f)
+            self.assertArrayAlmostEqual(result3.data, result4)
+
+    def test_operator__inplace(self):
+        for test_op in self.iops:
+            test_op(self.cube_1f, self.cube_2f)
+            test_op(self.data_1f, self.data_2f)
+            self.assertArrayAlmostEqual(self.cube_1f.data, self.data_1f)
+            if test_op != operator.itruediv:
+                # You can't safely cast floats from true-dividing back to ints
+                # to satisfy the in-place requirement.
+                test_op(self.cube_1i, self.cube_2i)
+                expected = test_op(self.data_1i, self.data_2i)
+                self.assertArrayAlmostEqual(self.cube_1i.data, expected)
+
+    def test_operator__inplace__mixed_floats_ints(self):
+        # Can only test float-type numerators as int-type numerators
+        # would require casting ints to floats to satisfy the in-place
+        # requirement, which cannot be done 'safely'.
+        for test_op in self.iops:
+            result1 = test_op(self.cube_1f, self.cube_2i)
+            result2 = test_op(self.data_1f, self.data_2i)
+            self.assertArrayAlmostEqual(result1.data, result2)
+
+    def test_operator__inplace__mixed_ints_floats(self):
+        # Math operations on int-type numerators float-type denominators
+        # would require casting floats to ints to satisfy the in-place
+        # requirement.
+        for test_op in self.iops:
+            test_emsg = 'Cannot perform inplace'
+            with self.assertRaisesRegexp(ArithmeticError, test_emsg):
+                test_op(self.cube_1i, self.cube_2f)
+
+    def test_operator__inplace__scalar_int(self):
+        # Math operations on int-type numerators float-type denominators
+        # would require casting floats to ints to satisfy the in-place
+        # requirement.
+        scalar = 2
+        for test_op in self.iops:
+            if test_op != operator.itruediv:
+                # You can't safely cast floats from true-dividing back to ints
+                # to satisfy the in-place requirement.
+                test_op(self.cube_1i, scalar)
+                test_op(self.data_1i, scalar)
+                self.assertArrayAlmostEqual(self.cube_1i.data, self.data_1i)
+
+    def test_operator__inplace__scalar_float(self):
+        # Math operations on int-type numerators float-type denominators
+        # would require casting floats to ints to satisfy the in-place
+        # requirement.
+        scalar = 2.5
+        for test_op in self.iops:
+            test_emsg = 'Cannot perform inplace'
+            with self.assertRaisesRegexp(ArithmeticError, test_emsg):
+                test_op(self.cube_1i, scalar)
+
+    def test_operator__scalar_float(self):
+        scalar = 2.5
+        for test_op in self.ops:
+            result1 = test_op(self.cube_1f, scalar)
+            result2 = test_op(self.data_1f, scalar)
+            self.assertArrayAlmostEqual(result1.data, result2)
+            result3 = test_op(self.cube_1i, scalar)
+            result4 = test_op(self.data_1i, scalar)
+            self.assertArrayAlmostEqual(result3.data, result4)
+
+    def test_operator_scalar__int(self):
+        scalar = 2
+        for test_op in self.ops:
+            result1 = test_op(self.cube_1f, scalar)
+            result2 = test_op(self.data_1f, scalar)
+            self.assertArrayAlmostEqual(result1.data, result2)
+            result3 = test_op(self.cube_1i, scalar)
+            result4 = test_op(self.data_1i, scalar)
             self.assertArrayAlmostEqual(result3.data, result4)
 
     def test_operator_array(self):
         for test_op in self.ops:
-            result1 = test_op(self.cube1, self.data2)
-            result2 = test_op(self.data1, self.data2)
+            result1 = test_op(self.cube_1f, self.data_2f)
+            result2 = test_op(self.data_1f, self.data_2f)
             self.assertArrayAlmostEqual(result1.data, result2)
-            result3 = test_op(self.cube3, self.data4)
-            result4 = test_op(self.data3, self.data4)
+            result3 = test_op(self.cube_1i, self.data_2i)
+            result4 = test_op(self.data_1i, self.data_2i)
             self.assertArrayAlmostEqual(result3.data, result4)
 
     def test_cube_itruediv__int(self):
-        test_op = self.iops[-1]  # `itruediv`
         with self.assertRaisesRegexp(ArithmeticError,
                                      'Cannot perform inplace division'):
-            test_op(self.cube3, self.cube4)
+            operator.itruediv(self.cube_1i, self.cube_2i)
 
     def test_cube_itruediv__scalar(self):
-        test_op = self.iops[-1]  # `itruediv`
         with self.assertRaisesRegexp(ArithmeticError,
                                      'Cannot perform inplace division'):
-            test_op(self.cube3, 5)
+            operator.itruediv(self.cube_1i, 5)
 
     def test_incompatible_dimensions(self):
         data3 = ma.MaskedArray([[3, 3, 3, 4], [2, 2, 2]],
                                mask=[[0, 1, 0, 0], [0, 1, 1]])
         with self.assertRaises(ValueError):
             # Incompatible dimensions.
-            self.cube1 + data3
+            self.cube_1f + data3
 
     def test_increase_cube_dimensionality(self):
         with self.assertRaises(ValueError):
