@@ -1639,9 +1639,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if not self.has_lazy_data():
                     emsg = 'Cube does not have lazy data, cannot set dtype.'
                     raise ValueError(emsg)
-                if dtype.kind != 'i':
-                    emsg = ('Can only cast lazy data to integral dtype, '
-                            'got {!r}.')
+                if dtype.kind not in 'biu':
+                    emsg = ('Can only cast lazy data to an integer or boolean '
+                            'dtype, got {!r}.')
                     raise ValueError(emsg.format(dtype))
                 self._fill_value = None
                 self._dtype = dtype
@@ -1658,7 +1658,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Convert the given value to the dtype of the cube.
             fill_value = np.asarray([fill_value])[0]
             target_dtype = self.dtype
-            if fill_value.dtype.kind == 'f' and target_dtype.kind == 'i':
+            if fill_value.dtype.kind == 'f' and target_dtype.kind in 'biu':
                 # Perform rounding when converting floats to ints.
                 fill_value = np.rint(fill_value)
             try:
