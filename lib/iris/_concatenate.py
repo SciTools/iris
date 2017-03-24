@@ -338,7 +338,7 @@ class _CubeSignature(object):
         kwargs = self.defn._asdict()
         if kwargs['dtype'] is None and not cube.has_lazy_data() and \
                 isinstance(cube.data, ma.masked_array) and \
-                cube.data.dtype.kind == 'i':
+                cube.data.dtype.kind in 'biu':
             kwargs['dtype'] = self.data_type
             self.defn = iris.cube.CubeMetadata(**kwargs)
 

@@ -31,6 +31,11 @@ from iris._lazy_data import array_masked_to_nans
 
 
 class Test(tests.IrisTest):
+    def setUp(self):
+        self.integer_dtypes = (np.dtype('int'),
+                               np.dtype('uint'),
+                               np.dtype('bool'))
+
     def _common_checks(self, result):
         self.assertIsInstance(result, np.ndarray)
         self.assertFalse(ma.isMaskedArray(result))
@@ -69,31 +74,37 @@ class Test(tests.IrisTest):
         self.assertArrayAllClose(result, masked_array.data)
 
     def test_masked__integers(self):
-        mask = [[False, True], [False, False]]
-        masked_array = ma.masked_array([[1, 2], [3, 4]], mask=mask)
+        for dtype in self.integer_dtypes:
+            mask = [[False, True], [False, False]]
+            data = [[1, 2], [3, 4]]
+            masked_array = ma.masked_array(data, mask=mask, dtype=dtype)
 
-        result = array_masked_to_nans(masked_array)
+            result = array_masked_to_nans(masked_array)
 
-        self._common_checks(result)
-        self.assertEqual(result.dtype, np.dtype('f8'))
-        self.assertArrayAllClose(np.isnan(result), mask)
-        result[0, 1] = 777.7
-        self.assertArrayAllClose(result, [[1.0, 777.7], [3.0, 4.0]])
+            self._common_checks(result)
+            self.assertEqual(result.dtype, np.dtype('f8'))
+            self.assertArrayAllClose(np.isnan(result), mask)
+            masker = 777.7
+            result[0, 1] = masker
+            expected = np.array(data, dtype=dtype).astype('f8')
+            expected[0, 1] = masker
+            self.assertArrayAllClose(result, expected)
 
     def test_unmasked__integers(self):
-        unmasked_array = np.array([1, 2])
-        result = array_masked_to_nans(unmasked_array)
-        # Non-masked array is returned as-is, without copying.
-        self.assertIs(result, unmasked_array)
+        for dtype in self.integer_dtypes:
+            unmasked_array = np.array([1, 2], dtype=dtype)
+            result = array_masked_to_nans(unmasked_array)
+            # Non-masked array is returned as-is, without copying.
+            self.assertIs(result, unmasked_array)
 
     def test_no_mask__integers(self):
-        datatype = np.dtype('i4')
-        masked_array = ma.masked_array([1, 2], dtype=datatype, mask=ma.nomask)
+        for dtype in self.integer_dtypes:
+            masked_array = ma.masked_array([1, 2], dtype=dtype, mask=ma.nomask)
 
-        result = array_masked_to_nans(masked_array)
+            result = array_masked_to_nans(masked_array)
 
-        self._common_checks(result)
-        self.assertEqual(result.dtype, datatype)
+            self._common_checks(result)
+            self.assertEqual(result.dtype, dtype)
 
 
 if __name__ == '__main__':
