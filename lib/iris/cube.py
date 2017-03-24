@@ -3190,8 +3190,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __itruediv__(self, other):
         return iris.analysis.maths.divide(self, other, in_place=True)
 
-
-
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
 

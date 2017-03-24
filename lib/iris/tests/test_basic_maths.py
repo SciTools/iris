@@ -721,6 +721,12 @@ class TestMaskedArrays(tests.IrisTest):
                                      'Cannot perform inplace division'):
             test_op(self.cube3, self.cube4)
 
+    def test_cube_itruediv__scalar(self):
+        test_op = self.iops[-1]  # `itruediv`
+        with self.assertRaisesRegexp(ArithmeticError,
+                                     'Cannot perform inplace division'):
+            test_op(self.cube3, 5)
+
     def test_incompatible_dimensions(self):
         data3 = ma.MaskedArray([[3, 3, 3, 4], [2, 2, 2]],
                                mask=[[0, 1, 0, 0], [0, 1, 1]])

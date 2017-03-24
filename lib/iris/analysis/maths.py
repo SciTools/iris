@@ -343,7 +343,9 @@ def divide(cube, other, dim=None, in_place=False):
     new_unit = cube.units / other_unit
     if in_place:
         op = operator.itruediv
-        if 'i' in [cube.dtype.kind, other.dtype.kind]:
+        # Input `other` may not have a `dtype` attribute.
+        other_dtype_kind = other.dtype.kind if hasattr(other, 'dtype') else 'f'
+        if 'i' in [cube.dtype.kind, other_dtype_kind]:
             # NumPy ufunc `true_divide` cannot coerce output to int.
             aemsg = 'Cannot perform inplace division of integer data.'
             raise ArithmeticError(aemsg)
