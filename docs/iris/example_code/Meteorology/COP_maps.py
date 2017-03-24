@@ -50,6 +50,9 @@ def cop_metadata_callback(cube, field, filename):
 
 
 def main():
+    # Use new behaviour of data-sharing behaviour on indexing.
+    iris.FUTURE.share_data = True
+
     # Load e1 and a1 using the callback to update the metadata
     e1 = iris.load_cube(iris.sample_data_path('E1.2098.pp'),
                         callback=cop_metadata_callback)

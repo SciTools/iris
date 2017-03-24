@@ -11,6 +11,9 @@ import iris.quickplot as qplt
 
 
 def main():
+    # Use new behaviour of data-sharing behaviour on indexing.
+    iris.FUTURE.share_data = True
+
     fname = iris.sample_data_path('air_temp.pp')
 
     # Load exactly one cube from the given file.

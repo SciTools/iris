@@ -17,6 +17,9 @@ import iris.plot as iplt
 
 
 def main():
+    # Use new behaviour of data-sharing behaviour on indexing.
+    iris.FUTURE.share_data = True
+
     # Load the data
     with iris.FUTURE.context(netcdf_promote=True):
         cube1 = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))

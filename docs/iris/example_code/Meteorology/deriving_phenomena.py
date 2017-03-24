@@ -38,6 +38,9 @@ def limit_colorbar_ticks(contour_object):
 
 
 def main():
+    # Use new behaviour of data-sharing behaviour on indexing.
+    iris.FUTURE.share_data = True
+
     fname = iris.sample_data_path('colpex.pp')
 
     # The list of phenomena of interest
