@@ -1406,7 +1406,7 @@ class Test_dtype(tests.IrisTest):
     def test_lazy_data_with_dtype_non_integral(self):
         for dtype in self.dtypes:
             data = np.array([0, 1], dtype=dtype)
-            emsg = 'Can only cast lazy data to integral or bool dtype'
+            emsg = 'Can only cast lazy data to an integer or boolean dtype'
             with self.assertRaisesRegexp(ValueError, emsg):
                 Cube(as_lazy_data(data), dtype=np.complex)
 
@@ -1516,7 +1516,7 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         cube = self._sample_cube(dtype=np.float32, lazy=True,
                                  cube_fill_value=23.7)
         self.assertArrayAllClose(cube.fill_value, 23.7)
-        msg = "Can only cast lazy data to integral or bool dtype"
+        msg = "Can only cast lazy data to an integer or boolean dtype"
         with self.assertRaisesRegexp(ValueError, msg):
             cube.dtype = np.float64
 
