@@ -103,14 +103,14 @@ class DataManager(object):
                 emsg = 'Cannot set dtype, no lazy data is available.'
                 raise ValueError(emgs)
             if dtype.kind not in 'biu':
-                emsg = ('Can only cast lazy data to integral or bool dtype, '
-                        'got {!r}.')
+                emsg = ('Can only cast lazy data to an integer or boolean '
+                        'dtype, got {!r}.')
                 raise ValueError(emsg.format(dtype))
             self._dtype = dtype
         # check this logic for replace usage and copy usage!
 
     @property
-    def any(self):
+    def core_data(self):
         """
         If real data is being managed, then return the :class:`~numpy.ndarray`
         or :class:`numpy.ma.core.MaskedArray`. Otherwise, return the lazy
@@ -208,7 +208,7 @@ class DataManager(object):
         if self._dtype is not None:
             result = self._dtype
         else:
-            result = self.any.dtype
+            result = self.core_data.dtype
         return result
 
     @property
@@ -225,7 +225,7 @@ class DataManager(object):
         The shape of the data being managed.
 
         """
-        return self.any.shape
+        return self.core_data.shape
 
     def copy(self, data=None, dtype=None):
         """
@@ -304,14 +304,14 @@ class DataManager(object):
 
         """
         # Capture the currently managed data.
-        temp = self.any
+        cache = self.core_data
         # Perform in-place assignment.
         self.data = data
         try:
             self._dtype_setter(dtype)
         except ValueError as exception:
-            # Reinstate the original managed data.
-            self.data = temp
+            # Reinstate the original (cached) managed data.
+            self.data = cache
             raise exception
-        
+         
 
