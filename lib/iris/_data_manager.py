@@ -30,31 +30,51 @@ import numpy.ma as ma
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 
-# TBD:
-#   - unit test coverage.
-#   - pep8 
-
-
 class DataManager(object):
-    def __init__(self, data, dtype=None):
+    """
+    XXX
+
+    """
+
+    def __init__(self, data, realised_dtype=None):
+        """
+        XXX
+
+        """
         self._lazy_array = None
         self._real_array = None
         self.data = data
 
-        self._dtype = None
-        self._dtype_setter(dtype)
+        self._realised_dtype = None
+        self._dtype_setter(realised_dtype)
 
         # Enforce the manager contract.
         self._assert_axiom()
 
     def __copy__(self):
-        name = self.__class__.__name__
+        """
+        Forbid :class:`DataManager` instance shallow-copy support.
+
+        """
+        name = type(self).__name__
         emsg = ('Shallow-copy of {!r} is not permitted. Use '
                 'copy.deepcopy() or {}.copy() instead.')
         raise copy.Error(emsg.format(name, name))
 
     def __deepcopy__(self, memo):
+        """
+        Allow :class:`DataManager` instance deepcopy support.
+
+        Args:
+
+        * memo:
+            :class:`copy` memo dictionary.
+
+        """
         return self._deepcopy(memo)
+
+    def __repr__(self):
+        ...
 
     def _assert_axiom(self):
         """
@@ -68,46 +88,85 @@ class DataManager(object):
         state = is_lazy ^ is_real
         assert state, emsg.format('' if is_lazy else 'no ',
                                   '' if is_real else 'no ')
-        # Ensure intended dtype validity.
-        state = self._dtype is None or self._dtype in 'biu'
-        emsg = 'Unexpected dtype state, got {!r}'
-        assert state, emsg.format(self._dtype)
+        # Ensure validiity of realised dtype.
+        state = self._realised_dtype is None or self._realised_dtype in 'biu'
+        emsg = 'Unexpected realised dtype state, got {!r}'
+        assert state, emsg.format(self._realised_dtype)
 
-        # Ensure lazy data with intended dtype validity.
-        state = not (self.has_real_data() and self._dtype is not None)
-        emsg = ('Unexpected dtype with real data state, got '
-                'real data and intended {!r}.')
-        assert state, emsg.format(self._dtype)
+        # Ensure validity of lazy data and realised dtype.
+        state = not (self.has_real_data() and self._realised_dtype is not None)
+        emsg = ('Unexpected realised dtype with real data state, got '
+                'real data and realised {!r}.')
+        assert state, emsg.format(self._realised_dtype)
 
-    def _deepcopy(self, memo, data=None, dtype=None):
-        ...
-        # what's best/possible - copy or deepcopy a dask array ?
+    def _deepcopy(self, memo, data=None, realised_dtype=None):
+        """
+        Perform a deepcopy of the :class:`DataManager` instance.
 
-    def _dtype_setter(self, dtype):
+        Args:
+
+        * memo:
+            :class:`copy` memo dictionary.
+
+        Kwargs:
+
+        * data:
+            Replacement data to substitute the currently managed
+            data with.
+
+        * realised_dtype:
+            Replacement for the intended dtype of the realised lazy data.
+
+        Returns:
+            :class:`DataManager`
+
+        """
+        try:
+            if data is None:
+                # Copy the managed data.
+                if self.has_lazy_data():
+                    data = copy.deepcopy(self._lazy_array, memo)
+                else:
+                    data = self._real_array.copy()
+            else:
+                # Check that the replacement data is valid relative to
+                # the currently managed data.
+                DataManager(self.core_data).replace(data)
+
+            result = DataManager(data, realised_dtype=realised_dtype)
+        except ValueError as error:
+            emsg = 'Cannot copy {!r} - {}'
+            raise ValueError(emsg.format(type(self).__name__, error.message))
+
+        return result
+
+    def _dtype_setter(self, realised_dtype):
         """
         Set the intended dtype of the realised lazy data. This is to support
         the case of lazy masked integral and boolean data in dask.
 
         Args:
 
-        * dtype:
+        * realised_dtype:
             A numpy :class:`~numpy.dtype`, array-protocol type string,
             or built-in scalar type.
 
         """
-        if dtype is None:
-            self._dtype = None
+        if realised_dtype is None:
+            self._realised_dtype = None
         else:
-            dtype = np.dtype(dtype)
+            realised_dtype = np.dtype(realised_dtype)
             if self.has_real_data():
-                emsg = 'Cannot set dtype, no lazy data is available.'
+                emsg = 'Cannot set realised dtype, no lazy data is available.'
                 raise ValueError(emgs)
-            if dtype.kind not in 'biu':
+            if realised_dtype.kind not in 'biu':
                 emsg = ('Can only cast lazy data to an integer or boolean '
                         'dtype, got {!r}.')
-                raise ValueError(emsg.format(dtype))
-            self._dtype = dtype
-        # check this logic for replace usage and copy usage!
+                raise ValueError(emsg.format(realised_dtype))
+            self._realised_dtype = realised_dtype
+
+            # Check the manager contract, as the managed dtype has changed.
+            self._assert_axiom()
 
     @property
     def core_data(self):
@@ -147,10 +206,9 @@ class DataManager(object):
                                           result_dtype=self.dtype)
                 # Assign the realised result.
                 self._real_array = result
-                # Reset the lazy data and intended dtype of the realised
-                # lazy data.
+                # Reset the lazy data and the realised dtype.
                 self._lazy_array = None
-                self._dtype = None
+                self._realised_dtype = None
             except MemoryError:
                 emsg = ('Failed to realise the lazy data as there was not '
                         'enough memory available.\n'
@@ -166,6 +224,10 @@ class DataManager(object):
 
     @data.setter
     def data(self, data):
+        """
+        XXX
+
+        """
         # Ensure we have numpy-like data.
         if not (hasattr(data, 'shape') and hasattr(data, 'dtype')):
             data = np.asanyarray(data)
@@ -192,9 +254,8 @@ class DataManager(object):
             self._lazy_array = None
             self._real_array = data
 
-        # Always reset the intended dtype of the realised lazy data, as the
-        # managed data has changed.
-        self._dtype = None
+        # Always reset the realised dtype, as the managed data has changed.
+        self._realised_dtype = None
 
         # Check the manager contract, as the managed data has changed.
         self._assert_axiom()
@@ -205,8 +266,8 @@ class DataManager(object):
         The dtype of the realised lazy data or the dtype of the real data.
 
         """
-        if self._dtype is not None:
-            result = self._dtype
+        if self._realised_dtype is not None:
+            result = self._realised_dtype
         else:
             result = self.core_data.dtype
         return result
@@ -219,7 +280,7 @@ class DataManager(object):
         """
         return len(self.shape)
 
-    @shape
+    @property
     def shape(self):
         """
         The shape of the data being managed.
@@ -227,7 +288,7 @@ class DataManager(object):
         """
         return self.core_data.shape
 
-    def copy(self, data=None, dtype=None):
+    def copy(self, data=None, realised_dtype=None):
         """
         Returns a deep copy of this :class:`DataManager`.
 
@@ -236,15 +297,15 @@ class DataManager(object):
         * data:
             Replace the data of the copy with this data.
 
-        * dtype:
+        * realised_dtype:
             Replace the intended dtype of the lazy data
             in the copy with this :class:`~numpy.dtype`.
 
         Returns:
             A copy :class:`DataManager`.
-            
+
         """
-        return self._deepcopy({}, data, dtype)
+        return self._deepcopy({}, data=data, realised_dtype=realised_dtype)
 
     def has_lazy_data(self):
         """
@@ -286,7 +347,7 @@ class DataManager(object):
             result = self._lazy_array
         return result
 
-    def replace(self, data, dtype=None):
+    def replace(self, data, realised_dtype=None):
         """
         Perform an in-place replacement of the managed data.
 
@@ -299,19 +360,22 @@ class DataManager(object):
 
         Kwargs:
 
-        * dtype:
+        * realised_dtype:
             The intended dtype of the specified lazy data.
 
+        .. note::
+            Data replacement alone will clear the intended dtype
+            of the realised lazy data.
+
         """
-        # Capture the currently managed data.
-        cache = self.core_data
-        # Perform in-place assignment.
+        # Snapshot the currently managed data.
+        cached_data = self.core_data
+        # Perform in-place data assignment.
         self.data = data
         try:
-            self._dtype_setter(dtype)
-        except ValueError as exception:
-            # Reinstate the original (cached) managed data.
-            self.data = cache
-            raise exception
-         
-
+            self._dtype_setter(realised_dtype)
+        except ValueError as error:
+            # Backout the data replacement, and reinstate the original
+            # (cached) managed data.
+            self.data = cached_data
+            raise error
