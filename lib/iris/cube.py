@@ -3940,6 +3940,17 @@ class _SliceIterator(collections.Iterator):
 
         if self._ordered:
             if any(self._mod_requested_dims != list(range(len(cube.shape)))):
+                # TODO: Correct the re-ordering here.
+                # Currently argsort determines the chronology of the requested
+                # order and then sorts it into that.  What we need is to relate
+                # the reduced-dimensionality order to the requested order and
+                # apply that instead.
+                # For example, if the requested order was [3, 0, 1], the cube
+                # gets sliced up and hence ends up with only 3 dimensions
+                # instead of 4, so the order then needs to become [2, 0, 1].
+                # TODO: How do I determine the reduced dimensionality ordering?
+                # Will this involve some sort of mapping of argsorted dims to
+                # new cube dims?
                 cube.transpose(self._mod_requested_dims)
 
         return cube
