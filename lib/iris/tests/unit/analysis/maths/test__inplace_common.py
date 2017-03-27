@@ -33,6 +33,14 @@ from iris.analysis.maths import _inplace_common_checks
 
 
 class Test(tests.IrisTest):
+    # `_inplace_common_checks` is a pass-through function that does not return
+    # anything but will fail iff `cube` and `other` have integer dtype. Thus in
+    # a sense we only want to test the failing cases. Doing so, however, leaves
+    # us open to the case where currently known good cases fail silently.
+    # To avoid this all the known good cases are also tested by relying on the
+    # fact that functions with no return value implicitly return `None`. If
+    # these currently known good cases ever changed these tests would start
+    # failing and indicate something was wrong.
     def setUp(self):
         self.scalar_int = 5
         self.scalar_float = 5.5
