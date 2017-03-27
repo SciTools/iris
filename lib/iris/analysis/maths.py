@@ -185,7 +185,7 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
 
     """
     if in_place:
-        _inplace_common(cube, other, 'addition')
+        _inplace_common_checks(cube, other, 'addition')
         op = operator.iadd
     else:
         op = operator.add
@@ -225,7 +225,7 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
 
     """
     if in_place:
-        _inplace_common(cube, other, 'subtraction')
+        _inplace_common_checks(cube, other, 'subtraction')
         op = operator.isub
     else:
         op = operator.sub
@@ -320,7 +320,7 @@ def multiply(cube, other, dim=None, in_place=False):
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
     if in_place:
-        _inplace_common(cube, other, 'multiplication')
+        _inplace_common_checks(cube, other, 'multiplication')
         op = operator.imul
     else:
         op = operator.mul
@@ -328,7 +328,7 @@ def multiply(cube, other, dim=None, in_place=False):
                              in_place=in_place)
 
 
-def _inplace_common(cube, other, math_op):
+def _inplace_common_checks(cube, other, math_op):
     """
     Check whether an inplace math operation can take place between `cube` and
     `other`. It cannot if `cube` has integer data and `other` has float data

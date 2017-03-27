@@ -14,7 +14,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :func:`iris.analysis.maths._inplace_common` function."""
+"""
+Unit tests for the function :func:`iris.analysis.maths._inplace_common_checks`.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -26,7 +29,7 @@ import iris.tests as tests
 from iris.cube import Cube
 import numpy as np
 
-from iris.analysis.maths import _inplace_common
+from iris.analysis.maths import _inplace_common_checks
 
 
 class Test(tests.IrisTest):
@@ -44,52 +47,58 @@ class Test(tests.IrisTest):
         self.emsg = 'Cannot perform inplace {}'.format(self.op)
 
     def test_float_cubes(self):
-        result = _inplace_common(self.float_cube, self.float_cube, self.op)
+        result = _inplace_common_checks(self.float_cube, self.float_cube,
+                                        self.op)
         self.assertIsNone(result)
 
     def test_int_cubes(self):
-        result = _inplace_common(self.int_cube, self.int_cube, self.op)
+        result = _inplace_common_checks(self.int_cube, self.int_cube, self.op)
         self.assertIsNone(result)
 
     def test_float_cube_int_cube(self):
-        result = _inplace_common(self.float_cube, self.int_cube, self.op)
+        result = _inplace_common_checks(self.float_cube, self.int_cube,
+                                        self.op)
         self.assertIsNone(result)
 
     def test_int_cube_float_cube(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
-            _inplace_common(self.int_cube, self.float_cube, self.op)
+            _inplace_common_checks(self.int_cube, self.float_cube, self.op)
 
     def test_float_cube__scalar_int(self):
-        result = _inplace_common(self.float_cube, self.scalar_int, self.op)
+        result = _inplace_common_checks(self.float_cube, self.scalar_int, self.op)
         self.assertIsNone(result)
 
     def test_float_cube__scalar_float(self):
-        result = _inplace_common(self.float_cube, self.scalar_float, self.op)
+        result = _inplace_common_checks(self.float_cube, self.scalar_float,
+                                        self.op)
         self.assertIsNone(result)
 
     def test_float_cube__int_array(self):
-        result = _inplace_common(self.float_cube, self.int_data, self.op)
+        result = _inplace_common_checks(self.float_cube, self.int_data,
+                                        self.op)
         self.assertIsNone(result)
 
     def test_float_cube__float_array(self):
-        result = _inplace_common(self.float_cube, self.float_data, self.op)
+        result = _inplace_common_checks(self.float_cube, self.float_data,
+                                        self.op)
         self.assertIsNone(result)
 
     def test_int_cube__scalar_int(self):
-        result = _inplace_common(self.int_cube, self.scalar_int, self.op)
+        result = _inplace_common_checks(self.int_cube, self.scalar_int,
+                                        self.op)
         self.assertIsNone(result)
 
     def test_int_cube__scalar_float(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
-            _inplace_common(self.int_cube, self.scalar_float, self.op)
+            _inplace_common_checks(self.int_cube, self.scalar_float, self.op)
 
     def test_int_cube__int_array(self):
-        result = _inplace_common(self.int_cube, self.int_cube, self.op)
+        result = _inplace_common_checks(self.int_cube, self.int_cube, self.op)
         self.assertIsNone(result)
 
     def test_int_cube__float_array(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
-            _inplace_common(self.int_cube, self.float_data, self.op)
+            _inplace_common_checks(self.int_cube, self.float_data, self.op)
 
 
 if __name__ == "__main__":
