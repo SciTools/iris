@@ -30,7 +30,7 @@ import numpy.ma as ma
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 
-# TODO: complete the XXX doc-strings
+# TODO: Complete the XXX doc-strings
 
 
 class DataManager(object):
@@ -315,7 +315,8 @@ class DataManager(object):
             A copy :class:`DataManager`.
 
         """
-        return self._deepcopy({}, data=data, realised_dtype=realised_dtype)
+        memo = {}
+        return self._deepcopy(memo, data=data, realised_dtype=realised_dtype)
 
     def has_lazy_data(self):
         """
@@ -379,13 +380,13 @@ class DataManager(object):
 
         """
         # Snapshot the currently managed data.
-        cached_data = self.core_data
+        original_data = self.core_data
         # Perform in-place data assignment.
         self.data = data
         try:
             self._dtype_setter(realised_dtype)
         except ValueError as error:
-            # Backout the data replacement, and reinstate the original
-            # (cached) managed data.
-            self.data = cached_data
+            # Backout the data replacement, and reinstate the cached
+            # original managed data.
+            self.data = original_data
             raise error
