@@ -184,7 +184,11 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    op = operator.iadd if in_place else operator.add
+    if in_place:
+        _inplace_common_checks(cube, other, 'addition')
+        op = operator.iadd
+    else:
+        op = operator.add
     return _add_subtract_common(op, 'add', cube, other, dim=dim,
                                 ignore=ignore, in_place=in_place)
 
@@ -220,7 +224,11 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    op = operator.isub if in_place else operator.sub
+    if in_place:
+        _inplace_common_checks(cube, other, 'subtraction')
+        op = operator.isub
+    else:
+        op = operator.sub
     return _add_subtract_common(op, 'subtract', cube, other,
                                 dim=dim, ignore=ignore, in_place=in_place)
 
@@ -309,9 +317,13 @@ def multiply(cube, other, dim=None, in_place=False):
 
     """
     _assert_is_cube(cube)
-    op = operator.imul if in_place else operator.mul
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
+    if in_place:
+        _inplace_common_checks(cube, other, 'multiplication')
+        op = operator.imul
+    else:
+        op = operator.mul
 
     if isinstance(other, iris.cube.Cube):
         # get a coordinate comparison of this cube and the cube to do the
@@ -341,6 +353,27 @@ def multiply(cube, other, dim=None, in_place=False):
     return new_cube
 
 
+def _inplace_common_checks(cube, other, math_op):
+    """
+    Check whether an inplace math operation can take place between `cube` and
+    `other`. It cannot if `cube` has integer data and `other` has float data
+    as the operation will always produce float data that cannot be 'safely'
+    cast back to the integer data of `cube`.
+
+    """
+    if cube.dtype.kind in 'iu':
+        if hasattr(other, 'dtype'):
+            other_kind = other.dtype.kind
+        else:
+            other_kind = np.asanyarray(other).dtype.kind
+        if other_kind not in 'iu':
+            # Cannot coerce math op between int `cube` and float `other`
+            # back to int.
+            aemsg = ('Cannot perform inplace {} between {!r} '
+                     'with integer data and {!r} with floating-point data.')
+            raise ArithmeticError(aemsg.format(math_op, cube, other))
+
+
 def divide(cube, other, dim=None, in_place=False):
     """
     Calculate the division of a cube by a cube or coordinate.
@@ -364,12 +397,17 @@ def divide(cube, other, dim=None, in_place=False):
 
     """
     _assert_is_cube(cube)
-    try:
-        op = operator.idiv if in_place else operator.div
-    except AttributeError:
-        op = operator.itruediv if in_place else operator.truediv
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
+    if in_place:
+        if cube.dtype.kind in 'iu':
+            # Cannot coerce float result from inplace division back to int.
+            aemsg = ('Cannot perform inplace division of cube {!r} '
+                     'with integer data.')
+            raise ArithmeticError(aemsg)
+        op = operator.itruediv
+    else:
+        op = operator.truediv
 
     if isinstance(other, iris.cube.Cube):
         # get a coordinate comparison of this cube and the cube to do the
