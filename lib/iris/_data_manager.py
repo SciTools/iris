@@ -30,6 +30,9 @@ import numpy.ma as ma
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 
+# TODO: complete the XXX doc-strings
+
+
 class DataManager(object):
     """
     XXX
@@ -239,9 +242,10 @@ class DataManager(object):
             data = np.asanyarray(data)
 
         # Determine whether the __init__ has completed.
-        loaded = self._lazy_array is not None or self._real_array is not None
+        init_done = (self._lazy_array is not None or
+                     self._real_array is not None)
 
-        if loaded and self.shape != data.shape:
+        if init_done and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
