@@ -30,8 +30,8 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris.coords import DimCoord
 from iris._lazy_data import as_lazy_data
+from iris.coords import DimCoord
 
 
 class Test_lazy_maths(tests.IrisTest):
