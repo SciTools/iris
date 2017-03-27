@@ -47,9 +47,11 @@ class Test(tests.IrisTest):
 
         self.float_data = np.array([8, 9], dtype=np.float64)
         self.int_data = np.array([9, 8], dtype=np.int64)
+        self.uint_data = np.array([9, 8], dtype=np.uint64)
 
         self.float_cube = Cube(self.float_data)
         self.int_cube = Cube(self.int_data)
+        self.uint_cube = Cube(self.uint_data)
 
         self.op = 'addition'
         self.emsg = 'Cannot perform inplace {}'.format(self.op)
@@ -63,14 +65,28 @@ class Test(tests.IrisTest):
         result = _inplace_common_checks(self.int_cube, self.int_cube, self.op)
         self.assertIsNone(result)
 
+    def test_uint_cubes(self):
+        result = _inplace_common_checks(self.uint_cube, self.uint_cube,
+                                        self.op)
+        self.assertIsNone(result)
+
     def test_float_cube_int_cube(self):
         result = _inplace_common_checks(self.float_cube, self.int_cube,
+                                        self.op)
+        self.assertIsNone(result)
+
+    def test_float_cube_uint_cube(self):
+        result = _inplace_common_checks(self.float_cube, self.uint_cube,
                                         self.op)
         self.assertIsNone(result)
 
     def test_int_cube_float_cube(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
             _inplace_common_checks(self.int_cube, self.float_cube, self.op)
+
+    def test_uint_cube_float_cube(self):
+        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+            _inplace_common_checks(self.uint_cube, self.float_cube, self.op)
 
     def test_float_cube__scalar_int(self):
         result = _inplace_common_checks(self.float_cube, self.scalar_int, self.op)
@@ -96,6 +112,21 @@ class Test(tests.IrisTest):
                                         self.op)
         self.assertIsNone(result)
 
+    def test_int_cube_uint_cube(self):
+        result = _inplace_common_checks(self.int_cube, self.uint_cube,
+                                        self.op)
+        self.assertIsNone(result)
+
+    def test_uint_cube_uint_cube(self):
+        result = _inplace_common_checks(self.uint_cube, self.uint_cube,
+                                        self.op)
+        self.assertIsNone(result)
+
+    def test_uint_cube_int_cube(self):
+        result = _inplace_common_checks(self.uint_cube, self.int_cube,
+                                        self.op)
+        self.assertIsNone(result)
+
     def test_int_cube__scalar_float(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
             _inplace_common_checks(self.int_cube, self.scalar_float, self.op)
@@ -107,6 +138,18 @@ class Test(tests.IrisTest):
     def test_int_cube__float_array(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
             _inplace_common_checks(self.int_cube, self.float_data, self.op)
+
+    def test_uint_cube__scalar_float(self):
+        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+            _inplace_common_checks(self.uint_cube, self.scalar_float, self.op)
+
+    def test_uint_cube__int_array(self):
+        result = _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
+        self.assertIsNone(result)
+
+    def test_uint_cube__float_array(self):
+        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+            _inplace_common_checks(self.uint_cube, self.float_data, self.op)
 
 
 if __name__ == "__main__":

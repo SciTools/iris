@@ -336,13 +336,14 @@ def _inplace_common_checks(cube, other, math_op):
     cast back to the integer data of `cube`.
 
     """
-    if cube.dtype.kind == 'i':
+    if cube.dtype.kind in 'iu':
         if hasattr(other, 'dtype'):
             other_kind = other.dtype.kind
         else:
             other_kind = np.asanyarray(other).dtype.kind
-        if other_kind != 'i':
-            # Cannot coerce math op between int cube and float back to int.
+        if other_kind not in 'iu':
+            # Cannot coerce math op between int `cube` and float `other`
+            # back to int.
             aemsg = ('Cannot perform inplace {} between {!r} '
                      'with integer data and {!r} with floating-point data.')
             raise ArithmeticError(aemsg.format(math_op, cube, other))
@@ -374,7 +375,7 @@ def divide(cube, other, dim=None, in_place=False):
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
     if in_place:
-        if cube.dtype.kind == 'i':
+        if cube.dtype.kind in 'iu':
             # Cannot coerce float result from inplace division back to int.
             aemsg = ('Cannot perform inplace division of cube {!r} '
                      'with integer data.')
