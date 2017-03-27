@@ -89,7 +89,8 @@ class Test(tests.IrisTest):
             _inplace_common_checks(self.uint_cube, self.float_cube, self.op)
 
     def test_float_cube__scalar_int(self):
-        result = _inplace_common_checks(self.float_cube, self.scalar_int, self.op)
+        result = _inplace_common_checks(self.float_cube, self.scalar_int,
+                                        self.op)
         self.assertIsNone(result)
 
     def test_float_cube__scalar_float(self):
