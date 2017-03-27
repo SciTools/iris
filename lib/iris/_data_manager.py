@@ -49,7 +49,7 @@ class DataManager(object):
         self._dtype_setter(realised_dtype)
 
         # Enforce the manager contract.
-        self._assert_axiom()
+        self._assert_axioms()
 
     def __copy__(self):
         """
@@ -74,28 +74,34 @@ class DataManager(object):
         return self._deepcopy(memo)
 
     def __repr__(self):
-        ...
+        fmt = '{cls}({self.core_data!r}{dtype})'
+        dtype = ''
+        if self._realised_dtype is not None:
+            dtype = ', realised_dtype={!r}'.format(self._realised_dtype)
+        result = fmt.format(self=self, cls=type(self).__name__, dtype=dtype)
+        return result
 
-    def _assert_axiom(self):
+    def _assert_axioms(self):
         """
         Definition of the manager state, that should never be violated.
 
         """
         # Ensure there is a valid data state.
-        is_lazy = bool(self._lazy_array is None)
-        is_real = bool(self._real_array is None)
+        is_lazy = bool(self._lazy_array is not None)
+        is_real = bool(self._real_array is not None)
         emsg = 'Unexpected data state, got {}lazy and {}real data.'
         state = is_lazy ^ is_real
         assert state, emsg.format('' if is_lazy else 'no ',
                                   '' if is_real else 'no ')
-        # Ensure validiity of realised dtype.
-        state = self._realised_dtype is None or self._realised_dtype in 'biu'
+        # Ensure validity of realised dtype.
+        state = (self._realised_dtype is None or
+                 self._realised_dtype.kind in 'biu')
         emsg = 'Unexpected realised dtype state, got {!r}'
         assert state, emsg.format(self._realised_dtype)
 
-        # Ensure validity of lazy data and realised dtype.
+        # Ensure validity of lazy data with realised dtype.
         state = not (self.has_real_data() and self._realised_dtype is not None)
-        emsg = ('Unexpected realised dtype with real data state, got '
+        emsg = ('Unexpected real data with realised dtype, got '
                 'real data and realised {!r}.')
         assert state, emsg.format(self._realised_dtype)
 
@@ -158,7 +164,7 @@ class DataManager(object):
             realised_dtype = np.dtype(realised_dtype)
             if self.has_real_data():
                 emsg = 'Cannot set realised dtype, no lazy data is available.'
-                raise ValueError(emgs)
+                raise ValueError(emsg)
             if realised_dtype.kind not in 'biu':
                 emsg = ('Can only cast lazy data to an integer or boolean '
                         'dtype, got {!r}.')
@@ -166,7 +172,7 @@ class DataManager(object):
             self._realised_dtype = realised_dtype
 
             # Check the manager contract, as the managed dtype has changed.
-            self._assert_axiom()
+            self._assert_axioms()
 
     @property
     def core_data(self):
@@ -218,7 +224,7 @@ class DataManager(object):
                 raise MemoryError(emsg.format(self.shape, self.dtype))
 
             # Check the manager contract, as the managed data has changed.
-            self._assert_axiom()
+            self._assert_axioms()
 
         return self._real_array
 
@@ -258,7 +264,7 @@ class DataManager(object):
         self._realised_dtype = None
 
         # Check the manager contract, as the managed data has changed.
-        self._assert_axiom()
+        self._assert_axioms()
 
     @property
     def dtype(self):
