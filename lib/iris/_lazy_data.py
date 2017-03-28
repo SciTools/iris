@@ -95,6 +95,10 @@ def as_concrete_data(data, **kwargs):
     Returns:
         A NumPy `ndarray` or masked array.
 
+    .. note::
+        Specific dask options for computation are controlled by
+        :class:`iris.options.Parallel`.
+
     """
     if is_lazy_data(data):
         # Realise dask array, ensuring the data result is always a NumPy array.
