@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -2663,6 +2663,33 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise TypeError(msg)
         return coords
 
+    def _dim_as_index(self, ref):
+        """
+        Convert coord name to index.
+        """
+        try:
+            coord = self._as_list_of_coords(ref)[0]
+            dim = self.coord_dims(coord)
+            if not dim:
+                msg = ('Requested an iterator over a coordinate ({}) '
+                       'which does not describe a dimension.')
+                msg = msg.format(coord.name())
+                raise ValueError(msg)
+        
+        except TypeError:
+            try:
+                # attempt to handle as dimension index
+                dim = int(ref)
+            except ValueError:
+                raise ValueError('{} Incompatible type {} for '
+                                 'slicing'.format(ref, type(ref)))
+            if dim < 0 or dim > self.ndim:
+                msg = ('Requested an iterator over a dimension ({}) '
+                       'which does not exist.'.format(dim))
+                raise ValueError(msg)
+
+        return dim[0]
+
     def slices_over(self, ref_to_slice):
         """
         Return an iterator of all subcubes along a given coordinate or
@@ -2756,31 +2783,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
 
-        dim_to_slice = []
-        for ref in ref_to_slice:
-            try:
-                # attempt to handle as coordinate
-                coord = self._as_list_of_coords(ref)[0]
-                dims = self.coord_dims(coord)
-                if not dims:
-                    msg = ('Requested an iterator over a coordinate ({}) '
-                           'which does not describe a dimension.')
-                    msg = msg.format(coord.name())
-                    raise ValueError(msg)
-                dim_to_slice.extend(dims)
-
-            except TypeError:
-                try:
-                    # attempt to handle as dimension index
-                    dim = int(ref)
-                except ValueError:
-                    raise ValueError('{} Incompatible type {} for '
-                                     'slicing'.format(ref, type(ref)))
-                if dim < 0 or dim > self.ndim:
-                    msg = ('Requested an iterator over a dimension ({}) '
-                           'which does not exist.'.format(dim))
-                    raise ValueError(msg)
-                dim_to_slice.append(dim)
+        if not isinstance(ref_to_slice[0], int):
+            dim_to_slice = [self._dim_as_index(ref) for ref in ref_to_slice]
+        else:
+            dim_to_slice = ref_to_slice
 
         if len(set(dim_to_slice)) != len(dim_to_slice):
             msg = 'The requested coordinates are not orthogonal.'
@@ -3940,37 +3946,13 @@ class _SliceIterator(collections.Iterator):
 
         if self._ordered:
             if any(self._mod_requested_dims != list(range(len(cube.shape)))):
-                # TODO: Correct the re-ordering here.
-
-                # Convert dim numbers back to dims to match up to reduced
-                # dimensions
+                # Convert dim numbers back to dims to match up to indices of
+                # sliced cube
                 sliced_dim_refs = [self._cube.dim_coords[i].name() for i in
                                     self._requested_dims]
-                sliced_dims = []
-                for ref in sliced_dim_refs:
-                    try:
-                        # attempt to handle as coordinate
-                        coord = cube._as_list_of_coords(ref)[0]
-                        dims = cube.coord_dims(coord)
-                        if not dims:
-                            msg = ('Requested an iterator over a coordinate ({}) '
-                                   'which does not describe a dimension.')
-                            msg = msg.format(coord.name())
-                            raise ValueError(msg)
-                        sliced_dims.extend(dims)
-
-                    except TypeError:
-                        try:
-                            # attempt to handle as dimension index
-                            new_dim = int(ref)
-                        except ValueError:
-                            raise ValueError('{} Incompatible type {} for '
-                                             'slicing'.format(ref, type(ref)))
-                        if new_dim < 0 or new_dim > self.ndim:
-                            msg = ('Requested an iterator over a dimension ({}) '
-                                   'which does not exist.'.format(new_dim))
-                            raise ValueError(msg)
-                        sliced_dims.append(new_dim)
+                # Now convert back to dim numbers to use in transpose
+                sliced_dims = [cube._dim_as_index(ref) for ref in
+                               sliced_dim_refs]
                 cube.transpose(sliced_dims)
 
         return cube
