@@ -2669,8 +2669,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         try:
             coord = self._as_list_of_coords(ref)[0]
-            dim = self.coord_dims(coord)
-            if not dim:
+            dim, = self.coord_dims(coord)
+            if dim not in self.coord_dims(coord):
                 msg = ('Requested an iterator over a coordinate ({}) '
                        'which does not describe a dimension.')
                 msg = msg.format(coord.name())
@@ -2679,7 +2679,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         except TypeError:
             try:
                 # attempt to handle as dimension index
-                dim = int(ref)
+                dim, = int(ref)
             except ValueError:
                 raise ValueError('{} Incompatible type {} for '
                                  'slicing'.format(ref, type(ref)))
@@ -2688,7 +2688,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                        'which does not exist.'.format(dim))
                 raise ValueError(msg)
 
-        return dim[0]
+        return dim
 
     def slices_over(self, ref_to_slice):
         """
@@ -2783,12 +2783,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
 
-        if not isinstance(ref_to_slice[0], int):
-            dim_to_slice = [self._dim_as_index(ref) for ref in ref_to_slice]
-        else:
-            dim_to_slice = ref_to_slice
+        dims_to_slice = []
+        for ref in ref_to_slice:
+            # If the coord ref is already an index, leave it as is
+            if isinstance(ref, int):
+                dim_to_slice = ref_to_slice
+            # Otherwise, turn the ref into an index
+            else:
+                dim_to_slice = self._dim_as_index(ref)
+            dims_to_slice.append(dim_to_slice)
 
-        if len(set(dim_to_slice)) != len(dim_to_slice):
+        if len(set(dims_to_slice)) != len(dims_to_slice):
             msg = 'The requested coordinates are not orthogonal.'
             raise ValueError(msg)
 
@@ -2796,10 +2801,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dims_index = list(self.shape)
 
         # Set the dimensions which have been requested to length 1
-        for d in dim_to_slice:
+        for d in dims_to_slice:
             dims_index[d] = 1
 
-        return _SliceIterator(self, dims_index, dim_to_slice, ordered)
+        return _SliceIterator(self, dims_index, dims_to_slice, ordered)
 
     def transpose(self, new_order=None):
         """
