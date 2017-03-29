@@ -20,6 +20,10 @@ Control runtime options of Iris.
 """
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
+import contextlib
+import warnings
 
 
 class NetCDF(object):
@@ -57,18 +61,47 @@ class NetCDF(object):
         ...     iris.save('my_cube', 'my_dataset.nc')
 
         """
-        self._override_default = False
         self.__dict__['conventions_override'] = conventions_override
 
     def __str__(self):
         msg = 'NetCDF options: conventions_override={}.'
         return msg.format(self.conventions_override)
 
-    def __enter__(self):
-        return
+    def __setattr__(self, name, value):
+        if name not in self.__dict__:
+            msg = "'Future' object has no attribute {!r}".format(name)
+            raise AttributeError(msg)
+        if value not in [True, False]:
+            good_value = self._defaults_dict[name]
+            wmsg = ('Attempting to set bad value {!r} for attribute {!r}. '
+                    'Defaulting to {!r}.')
+            warnings.warn(wmsg.format(value, name, good_value))
+            value = good_value
+        self.__dict__[name] = value
 
-    def __exit__(self, exception_type, exception_val, exception_traceback):
-        self.__dict__['conventions_override'] = self._override_default
+    @property
+    def _defaults_dict(self):
+        return {'conventions_override': False}
+
+    @contextlib.contextmanager
+    def context(self, **kwargs):
+        """
+        Allow temporary modification of the options via a context manager.
+        Accepted kwargs are the same as can be supplied to the Option.
+
+        """
+        # Snapshot the starting state for restoration at the end of the
+        # contextmanager block.
+        starting_state = self.__dict__.copy()
+        # Update the state to reflect the requested changes.
+        for name, value in six.iteritems(kwargs):
+            setattr(self, name, value)
+        try:
+            yield
+        finally:
+            # Return the state to the starting state.
+            self.__dict__.clear()
+            self.__dict__.update(starting_state)
 
 
 netcdf = NetCDF()
