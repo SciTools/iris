@@ -111,10 +111,10 @@ class DataManager(object):
 
         if isinstance(other, type(self)):
             result = False
-            is_lazy = self.has_lazy_data() == other.has_lazy_data()
-            is_realised_dtype = self._realised_dtype == other._realised_dtype
-            is_dtype = self.dtype == other.dtype
-            if is_lazy and is_realised_dtype and is_dtype:
+            same_lazy = self.has_lazy_data() == other.has_lazy_data()
+            same_realised_dtype = self._realised_dtype == other._realised_dtype
+            same_dtype = self.dtype == other.dtype
+            if same_lazy and same_realised_dtype and same_dtype:
                 result = array_equal(self.core_data, other.core_data)
 
         return result
