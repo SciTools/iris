@@ -31,18 +31,27 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.util import array_equal
 
 
-# TODO: Complete the XXX doc-strings
-
-
 class DataManager(object):
     """
-    XXX
+    Provides a well defined API for management of real or lazy data.
 
     """
 
     def __init__(self, data, realised_dtype=None):
         """
-        XXX
+        Create a data manager for the specified data.
+
+        Args:
+
+        * data:
+            The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
+            real data, or :class:`~dask.array.core.Array` lazy data to be
+            managed.
+
+        Kwargs:
+
+        * realised_dtype:
+            The intended dtype of the specified lazy data.
 
         """
         self._lazy_array = None
@@ -134,6 +143,10 @@ class DataManager(object):
         return result
 
     def __repr__(self):
+        """
+        Returns an string representation of the instance.
+
+        """
         fmt = '{cls}({self.core_data!r}{dtype})'
         dtype = ''
 
@@ -293,7 +306,18 @@ class DataManager(object):
     @data.setter
     def data(self, data):
         """
-        XXX
+        Replaces the currently managed data with the specified data, which must
+        be of an equivalent shape.
+
+        Note that, the only shape promotion permitted is for 0-dimensional
+        scalar data to be replaced with a single item 1-dimensional data.
+
+        Args:
+
+        * data:
+            The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
+            real data, or :class:`~dask.array.core.Array` lazy data to be
+            managed.
 
         """
         # Ensure we have numpy-like data.

@@ -30,6 +30,7 @@ import copy
 import mock
 import numpy as np
 import numpy.ma as ma
+import six
 
 from iris._data_manager import DataManager
 from iris._lazy_data import as_lazy_data
@@ -560,8 +561,10 @@ class Test___deepcopy__(tests.IrisTest):
             self.assertEqual(mocker.call_count, 1)
             [args], kwargs = mocker.call_args
             self.assertEqual(kwargs, dict())
-            expected = sorted([return_value, [dm]])
-            self.assertEqual(sorted(args.values()), expected)
+            self.assertEqual(len(args), 2)
+            expected = [return_value, [dm]]
+            for item in six.itervalues(args):
+                self.assertIn(item, expected)
         self.assertIs(result, return_value)
 
 
