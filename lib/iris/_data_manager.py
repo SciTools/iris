@@ -208,7 +208,7 @@ class DataManager(object):
             result = DataManager(data, realised_dtype=realised_dtype)
         except ValueError as error:
             emsg = 'Cannot copy {!r} - {}'
-            raise ValueError(emsg.format(type(self).__name__, error.message))
+            raise ValueError(emsg.format(type(self).__name__, error))
 
         return result
 
