@@ -27,6 +27,7 @@ import re
 import warnings
 
 import dask
+import dask.multiprocessing
 import distributed
 
 
@@ -35,7 +36,7 @@ class Parallel(object):
     Control dask parallel processing options for Iris.
 
     """
-    def __init__(self, scheduler=None, num_workers=None):
+    def __init__(self, scheduler='threaded', num_workers=1):
         """
         Set up options for dask parallel processing.
 
@@ -107,8 +108,8 @@ class Parallel(object):
         self._default_scheduler = 'threaded'
         self._default_num_workers = 1
 
-        self._scheduler = scheduler
-        self._num_workers = num_workers
+        self.scheduler = scheduler
+        self.num_workers = num_workers
 
         self._dask_scheduler = None
 
@@ -147,17 +148,18 @@ class Parallel(object):
 
     @num_workers.setter
     def num_workers(self, value):
-        if self.scheduler == 'async':
+        if self.scheduler == 'async' and value != self._default_num_workers:
             wmsg = 'Cannot set `num_workers` for the serial scheduler {!r}.'
             warnings.warn(wmsg.format(self.scheduler))
             value = None
-        elif self.scheduler == 'distributed':
+        elif (self.scheduler == 'distributed' and
+                      value != self._default_num_workers):
             wmsg = ('Attempting to set `num_workers` with the {!r} scheduler '
                     'requested. Please instead specify number of workers when '
                     'setting up the distributed scheduler. See '
                     'https://distributed.readthedocs.io/en/latest/index.html '
                     'for more details.')
-            warnings.warn(wmsg)
+            warnings.warn(wmsg.format(self.scheduler))
             value = None
         else:
             if value is None:
