@@ -28,6 +28,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
+from iris.util import array_equal
 
 
 # TODO: Complete the XXX doc-strings
@@ -49,14 +50,15 @@ class DataManager(object):
         self.data = data
 
         self._realised_dtype = None
-        self._dtype_setter(realised_dtype)
+        self._realised_dtype_setter(realised_dtype)
 
         # Enforce the manager contract.
         self._assert_axioms()
 
     def __copy__(self):
         """
-        Forbid :class:`DataManager` instance shallow-copy support.
+        Forbid :class:`~iris._data_manager.DataManager` instance
+        shallow-copy support.
 
         """
         name = type(self).__name__
@@ -66,7 +68,8 @@ class DataManager(object):
 
     def __deepcopy__(self, memo):
         """
-        Allow :class:`DataManager` instance deepcopy support.
+        Allow :class:`~iris._data_manager.DataManager` instance
+        deepcopy support.
 
         Args:
 
@@ -76,12 +79,69 @@ class DataManager(object):
         """
         return self._deepcopy(memo)
 
+    def __eq__(self, other):
+        """
+        Perform :class:`~iris._data_manager.DataManager` instance equality.
+        Note that, this is explicitly not a lazy operation and will load any
+        lazy payload to determine the equality result.
+
+        Comparison is strict with regards to lazy or real managed payload,
+        the realised_dtype, the dtype of the payload and the payload content.
+
+        Args:
+
+        * other:
+            The :class:`~iris._data_manager.DataManager` instance to
+            compare with.
+
+        Returns:
+            Boolean.
+
+        """
+        result = NotImplemented
+
+        if isinstance(other, type(self)):
+            result = False
+            is_lazy = self.has_lazy_data() == other.has_lazy_data()
+            is_realised_dtype = self._realised_dtype == other._realised_dtype
+            is_dtype = self.dtype == other.dtype
+            if is_lazy and is_realised_dtype and is_dtype:
+                result = array_equal(self.core_data, other.core_data)
+
+        return result
+
+    def __ne__(self, other):
+        """
+        Perform :class:`~iris._data_manager.DataManager` instance inequality.
+        Note that, this is explicitly not a lazy operation and will load any
+        lazy payload to determine the inequality result.
+
+        Args:
+
+        * other:
+            The :class:`~iris._data_manager.DataManager` instance to
+            compare with.
+
+        Returns:
+            Boolean.
+
+        """
+        result = self.__eq__(other)
+
+        if result is not NotImplemented:
+            result = not result
+
+        return result
+
     def __repr__(self):
         fmt = '{cls}({self.core_data!r}{dtype})'
         dtype = ''
+
         if self._realised_dtype is not None:
             dtype = ', realised_dtype={!r}'.format(self._realised_dtype)
+
         result = fmt.format(self=self, cls=type(self).__name__, dtype=dtype)
+
         return result
 
     def _assert_axioms(self):
@@ -90,8 +150,8 @@ class DataManager(object):
 
         """
         # Ensure there is a valid data state.
-        is_lazy = bool(self._lazy_array is not None)
-        is_real = bool(self._real_array is not None)
+        is_lazy = self._lazy_array is not None
+        is_real = self._real_array is not None
         emsg = 'Unexpected data state, got {}lazy and {}real data.'
         state = is_lazy ^ is_real
         assert state, emsg.format('' if is_lazy else 'no ',
@@ -110,7 +170,8 @@ class DataManager(object):
 
     def _deepcopy(self, memo, data=None, realised_dtype=None):
         """
-        Perform a deepcopy of the :class:`DataManager` instance.
+        Perform a deepcopy of the :class:`~iris._data_manager.DataManager`
+        instance.
 
         Args:
 
@@ -127,7 +188,7 @@ class DataManager(object):
             Replacement for the intended dtype of the realised lazy data.
 
         Returns:
-            :class:`DataManager`
+            :class:`~iris._data_manager.DataManager` instance.
 
         """
         try:
@@ -141,6 +202,8 @@ class DataManager(object):
                 # Check that the replacement data is valid relative to
                 # the currently managed data.
                 DataManager(self.core_data).replace(data)
+                # If the replacement data is valid, then use it but
+                # without copying it.
 
             result = DataManager(data, realised_dtype=realised_dtype)
         except ValueError as error:
@@ -149,7 +212,7 @@ class DataManager(object):
 
         return result
 
-    def _dtype_setter(self, realised_dtype):
+    def _realised_dtype_setter(self, realised_dtype):
         """
         Set the intended dtype of the realised lazy data. This is to support
         the case of lazy masked integral and boolean data in dask.
@@ -164,10 +227,10 @@ class DataManager(object):
         if realised_dtype is None:
             self._realised_dtype = None
         else:
-            realised_dtype = np.dtype(realised_dtype)
             if self.has_real_data():
                 emsg = 'Cannot set realised dtype, no lazy data is available.'
                 raise ValueError(emsg)
+            realised_dtype = np.dtype(realised_dtype)
             if realised_dtype.kind not in 'biu':
                 emsg = ('Can only cast lazy data to an integer or boolean '
                         'dtype, got {!r}.')
@@ -197,14 +260,10 @@ class DataManager(object):
     @property
     def data(self):
         """
-        Returns the real :class:`~numpy.ndarray` or
-        :class:`numpy.ma.core.MaskedArray`.
+        Returns the real data. Any lazy data being managed will be realised.
 
         Returns:
-            The real data.
-
-        .. note::
-            Any lazy data being managed will be realised.
+            :class:`~numpy.ndarray` or :class:`numpy.ma.core.MaskedArray`.
 
         """
         if self.has_lazy_data():
@@ -241,7 +300,8 @@ class DataManager(object):
         if not (hasattr(data, 'shape') and hasattr(data, 'dtype')):
             data = np.asanyarray(data)
 
-        # Determine whether the __init__ has completed.
+        # Determine whether the class instance has been created,
+        # as this method is called from within the __init__.
         init_done = (self._lazy_array is not None or
                      self._real_array is not None)
 
@@ -288,7 +348,7 @@ class DataManager(object):
         The number of dimensions covered by the data being managed.
 
         """
-        return len(self.shape)
+        return self.core_data.ndim
 
     @property
     def shape(self):
@@ -300,7 +360,8 @@ class DataManager(object):
 
     def copy(self, data=None, realised_dtype=None):
         """
-        Returns a deep copy of this :class:`DataManager`.
+        Returns a deep copy of this :class:`~iris._data_manager.DataManager`
+        instance.
 
         Kwargs:
 
@@ -312,7 +373,7 @@ class DataManager(object):
             in the copy with this :class:`~numpy.dtype`.
 
         Returns:
-            A copy :class:`DataManager`.
+            A copy :class:`~iris._data_manager.DataManager` instance.
 
         """
         memo = {}
@@ -384,7 +445,7 @@ class DataManager(object):
         # Perform in-place data assignment.
         self.data = data
         try:
-            self._dtype_setter(realised_dtype)
+            self._realised_dtype_setter(realised_dtype)
         except ValueError as error:
             # Backout the data replacement, and reinstate the cached
             # original managed data.
