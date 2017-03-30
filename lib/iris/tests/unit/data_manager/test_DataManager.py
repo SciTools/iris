@@ -120,7 +120,7 @@ class Test___eq__(tests.IrisTest):
                           realised_dtype=np.dtype('int16'))
         self.assertFalse(dm1 == dm2)
 
-    def test__non_DataManager_failure(self):
+    def test_non_DataManager_failure(self):
         dm = DataManager(np.array(0))
         self.assertFalse(dm == 0)
 
@@ -182,7 +182,7 @@ class Test___ne__(tests.IrisTest):
                           realised_dtype=dtype)
         self.assertFalse(dm1 != dm2)
 
-    def test__non_DataManager(self):
+    def test_non_DataManager(self):
         dm = DataManager(np.array(0))
         self.assertNotEqual(dm, 0)
 
