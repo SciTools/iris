@@ -50,15 +50,15 @@ class NetCDF(object):
         * Specify, for the lifetime of the session, that we want all cubes
           written to NetCDF to define their own CF Conventions versions::
 
-        >>> iris.options.netcdf(conventions_override=True)
-        >>> iris.save('my_cube', 'my_dataset.nc')
-        >>> iris.save('my_second_cube', 'my_second_dataset.nc')
+            iris.options.netcdf.conventions_override = True
+            iris.save('my_cube', 'my_dataset.nc')
+            iris.save('my_second_cube', 'my_second_dataset.nc')
 
         * Specify, with a context manager, that we want a cube written to
           NetCDF to define its own CF Conventions version::
 
-        >>> with iris.options.netcdf(conventions_override=True):
-        ...     iris.save('my_cube', 'my_dataset.nc')
+            with iris.options.netcdf.context(conventions_override=True):
+                iris.save('my_cube', 'my_dataset.nc')
 
         """
         self.__dict__['conventions_override'] = conventions_override
