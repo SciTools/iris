@@ -530,8 +530,6 @@ class TestSlices(tests.IrisTest):
         longitude
         latitude
         height
-
-        currently, this test fails
         '''
         actual, expected = self.make_the_test(
             "longitude", "latitude", "height", "time")
@@ -543,8 +541,6 @@ class TestSlices(tests.IrisTest):
         latitude
         height
         time
-
-        currently, this test fails
         '''
         actual, expected = self.make_the_test(
             "latitude", "height", "time", "longitude")
@@ -556,8 +552,6 @@ class TestSlices(tests.IrisTest):
         longitude
         height
         time
-
-        currently, this test fails
         '''
         actual, expected = self.make_the_test(
             "longitude", "height", "time", "latitude")
