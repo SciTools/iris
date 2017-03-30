@@ -51,7 +51,9 @@ class DataManager(object):
         Kwargs:
 
         * realised_dtype:
-            The intended dtype of the specified lazy data.
+            The intended dtype of the specified lazy data, which must be
+            either integer or boolean. This is to handle the case of lazy
+            integer or boolean masked data.
 
         """
         self._lazy_array = None
