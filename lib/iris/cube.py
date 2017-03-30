@@ -3940,14 +3940,9 @@ class _SliceIterator(collections.Iterator):
 
         if self._ordered:
             if any(self._mod_requested_dims != list(range(len(cube.shape)))):
-                sliced_dims = []
-                for i in self._requested_dims:
-                    # Convert dim numbers back to dims to match up to indices
-                    # of sliced cube
-                    dim_ref = self._cube.dim_coords[i].name()
-                    # Now convert back to dim numbers to use in transpose
-                    new_dim, = cube.coord_dims(dim_ref)
-                    sliced_dims.append(new_dim)
+                n = len(self._mod_requested_dims)
+                sliced_dims = np.empty(n, dtype=int)
+                sliced_dims[self._mod_requested_dims] = np.arange(n)
                 cube.transpose(sliced_dims)
 
         return cube
