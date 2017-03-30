@@ -409,9 +409,10 @@ class Test_rolling_window(tests.IrisTest):
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
 
-class Testslices(tests.IrisTest):
+class TestSlices(tests.IrisTest):
     '''
-    This class tests the slices capability of iris.cube.Cube
+    This class tests the capability of iris.cube.Cube.slices(), including its
+    ability to correctly re-order the dimensions.
     '''
     def setUp(self):
         '''
@@ -429,7 +430,7 @@ class Testslices(tests.IrisTest):
         self.cube.add_dim_coord(iris.coords.DimCoord([0], "latitude"), [3])
 
     @staticmethod
-    def expectedcube_setup(dim1name, dim2name, dim3name):
+    def expected_cube_setup(dim1name, dim2name, dim3name):
         '''
         input:
         ------
@@ -450,7 +451,7 @@ class Testslices(tests.IrisTest):
         cube.add_dim_coord(iris.coords.DimCoord([0], dim3name), [2])
         return cube
 
-    def makethetest(self, dim1, dim2, dim3, dimtoremove):
+    def make_the_test(self, dim1, dim2, dim3, dim_to_remove):
         '''
         does two things:
         (1) slices the 4D cube in dim1, dim2, dim3 (and removes the scalar
@@ -464,20 +465,20 @@ class Testslices(tests.IrisTest):
                 name of second dimension
             dim3: str
                 name of third dimension
-            dimtoremove: str
+            dim_to_remove: str
                 name of the dimension that transforms into a scalar coordinate
                 when slicing the cube.
         output:
         ------
-            slicecube: 3D cube
+            sliced_cube: 3D cube
                 the cube that results if slicing the original cube
-            expectedcube: 3D cube
+            expected_cube: 3D cube
                 a cube set up with the axis corresponding to the dims
         '''
-        slicecube = next(self.cube.slices([dim1, dim2, dim3]))
-        slicecube.remove_coord(dimtoremove)
-        expectedcube = self.expectedcube_setup(dim1, dim2, dim3)
-        return slicecube, expectedcube
+        sliced_cube = next(self.cube.slices([dim1, dim2, dim3]))
+        sliced_cube.remove_coord(dim_to_remove)
+        expected_cube = self.expected_cube_setup(dim1, dim2, dim3)
+        return sliced_cube, expected_cube
 
     def test_height_long_lat(self):
         '''
@@ -486,9 +487,9 @@ class Testslices(tests.IrisTest):
         longitude
         latitude
         '''
-        have, want = self.makethetest(
+        actual, expected = self.make_the_test(
             "height", "longitude", "latitude", "time")
-        self.assertEqual(have, want)
+        self.assertEqual(actual, expected)
 
     def test_long_height_lat(self):
         '''
@@ -497,9 +498,9 @@ class Testslices(tests.IrisTest):
         height
         latitude
         '''
-        have, want = self.makethetest(
+        actual, expected = self.make_the_test(
             "longitude", "height", "latitude", "time")
-        self.assertEqual(have, want)
+        self.assertEqual(actual, expected)
 
     def test_time_height_lat(self):
         '''
@@ -508,9 +509,9 @@ class Testslices(tests.IrisTest):
         height
         latitude
         '''
-        have, want = self.makethetest(
+        actual, expected = self.make_the_test(
             "time", "height", "latitude", "longitude")
-        self.assertEqual(have, want)
+        self.assertEqual(actual, expected)
 
     def test_time_height_long(self):
         '''
@@ -519,9 +520,9 @@ class Testslices(tests.IrisTest):
         height
         longitude
         '''
-        have, want = self.makethetest(
+        actual, expected = self.make_the_test(
             "time", "height", "longitude", "latitude")
-        self.assertEqual(have, want)
+        self.assertEqual(actual, expected)
 
     def test_long_lat_height(self):
         '''
@@ -532,9 +533,9 @@ class Testslices(tests.IrisTest):
 
         currently, this test fails
         '''
-        have, want = self.makethetest(
+        actual, expected = self.make_the_test(
             "longitude", "latitude", "height", "time")
-        self.assertEqual(have, want)
+        self.assertEqual(actual, expected)
 
     def test_lat_height_time(self):
         '''
@@ -545,9 +546,9 @@ class Testslices(tests.IrisTest):
 
         currently, this test fails
         '''
-        have, want = self.makethetest(
+        actual, expected = self.make_the_test(
             "latitude", "height", "time", "longitude")
-        self.assertEqual(have, want)
+        self.assertEqual(actual, expected)
 
     def test_long_height_time(self):
         '''
@@ -558,9 +559,9 @@ class Testslices(tests.IrisTest):
 
         currently, this test fails
         '''
-        have, want = self.makethetest(
+        actual, expected = self.make_the_test(
             "longitude", "height", "time", "latitude")
-        self.assertEqual(have, want)
+        self.assertEqual(actual, expected)
 
 
 @tests.skip_data
