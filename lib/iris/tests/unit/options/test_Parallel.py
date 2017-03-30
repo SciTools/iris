@@ -24,9 +24,11 @@ import six
 # importing anything else.
 import iris.tests as tests
 
+import multiprocessing
 import warnings
 
-from dask import set_options, async
+import dask
+import distributed
 
 from iris.options import Parallel
 from iris.tests import mock
@@ -35,7 +37,10 @@ from iris.tests import mock
 class Test_operation(tests.IrisTest):
     # Check that the options are passed through to 'real' code.
     # NOTE: tests that call the option class directly and as a contextmgr.
-    pass
+
+    def test_bad_name__contextmgr(self):
+        # Check we can't do `with iris.options.parallel.context('foo'='bar')`.
+        pass
 
 
 class Test__set_dask_options(tests.IrisTest):
@@ -47,23 +52,34 @@ class Test__set_dask_options(tests.IrisTest):
     #     self.addCleanup(patcher.stop)
     #     self.mock_dask_opts = patcher.start()
 
+    def setUp(self):
+        self.mock_dask = dask
+        self.mock_dask.threaded.get = mock.MagicMock()
+        self.mock_dask.set_options = mock.MagicMock()
+        self.mock_mul = multiprocessing
+        self.mock_mul.pool.ThreadPool = mock.MagicMock()
+
     def test_default(self):
         pass
 
     def test_threaded(self):
-        pass
+        scheduler = 'threaded'
+        Parallel(scheduler=scheduler)
+        # self.mock_mul.pool.ThreadPool.assert_called_once_with(1)
+        self.mock_dask.set_options.assert_called_once_with(get=self.mock_dask.threaded.get,
+                                                       pool=self.mock_mul.pool.ThreadPool)
 
     def test_threaded_num_workers(self):
         pass
 
-    def test_async(self):
-        scheduler = 'async'
-        # dask_options = mock.Mock(spec=set_options)
-        # dask_scheduler = mock.Mock(spec=async.get_sync)
-        with mock.patch('dask.set_options') as mock_dask_opts:
-            Parallel(scheduler=scheduler)
-        # dask_options.assert_called_once_with(get=dask_scheduler)
-        mock_dask_opts.assert_any_call()
+    # def test_async(self):
+    #     scheduler = 'async'
+    #     # dask_options = mock.Mock(spec=set_options)
+    #     # dask_scheduler = mock.Mock(spec=async.get_sync)
+    #     with mock.patch('dask.set_options') as mock_dask_opts:
+    #         Parallel(scheduler=scheduler)
+    #     # dask_options.assert_called_once_with(get=dask_scheduler)
+    #     mock_dask_opts.assert_any_call()
 
 
 class Test_set_schedulers(tests.IrisTest):
@@ -71,32 +87,32 @@ class Test_set_schedulers(tests.IrisTest):
     # inputs.
     def test_default(self):
         opts = Parallel()
-        result = opts.scheduler
-        expected = opts._default_scheduler
+        result = opts.get('scheduler')
+        expected = opts._defaults_dict['scheduler']['default']
         self.assertEqual(result, expected)
 
     def test_threaded(self):
         scheduler = 'threaded'
         opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
+        result = opts.get('scheduler')
         self.assertEqual(result, scheduler)
 
     def test_multiprocessing(self):
         scheduler = 'multiprocessing'
         opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
+        result = opts.get('scheduler')
         self.assertEqual(result, scheduler)
 
     def test_async(self):
         scheduler = 'async'
         opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
+        result = opts.get('scheduler')
         self.assertEqual(result, scheduler)
 
     def test_distributed(self):
         scheduler = '192.168.0.128:8786'
         opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
+        result = opts.get('scheduler')
         self.assertEqual(result, 'distributed')
 
     def test_bad(self):
@@ -104,8 +120,8 @@ class Test_set_schedulers(tests.IrisTest):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
             opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
-        expected = opts._default_scheduler
+        result = opts.get('scheduler')
+        expected = opts._defaults_dict['scheduler']['default']
         self.assertEqual(result, expected)
         exp_wmsg = 'Invalid value for scheduler: {!r}'
         six.assertRegex(self, str(w[0].message), exp_wmsg.format(scheduler))
@@ -116,58 +132,46 @@ class Test_set_dask_scheduler(tests.IrisTest):
     # inputs.
     def test_default(self):
         opts = Parallel()
-        result = opts.scheduler
-        expected = opts._default_scheduler
-        self.assertEqual(result, expected)
+        result = opts.get('dask_scheduler')
+        self.assertIs(result, dask.threaded.get)
 
     def test_threaded(self):
         scheduler = 'threaded'
         opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
-        self.assertEqual(result, scheduler)
+        result = opts.get('dask_scheduler')
+        self.assertIs(result, dask.threaded.get)
 
     def test_multiprocessing(self):
         scheduler = 'multiprocessing'
         opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
-        self.assertEqual(result, scheduler)
+        result = opts.get('dask_scheduler')
+        self.assertIs(result, dask.multiprocessing.get)
 
     def test_async(self):
         scheduler = 'async'
         opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
-        self.assertEqual(result, scheduler)
+        result = opts.get('dask_scheduler')
+        self.assertIs(result, dask.async.get_sync)
 
     def test_distributed(self):
         scheduler = '192.168.0.128:8786'
-        opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
-        self.assertEqual(result, 'distributed')
-
-    def test_bad(self):
-        scheduler = 'wibble'
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always')
+        with mock.patch('distributed.Client.get') as mock_get:
             opts = Parallel(scheduler=scheduler)
-        result = opts.scheduler
-        expected = opts._default_scheduler
-        self.assertEqual(result, expected)
-        exp_wmsg = 'Invalid value for scheduler: {!r}'
-        six.assertRegex(self, str(w[0].message), exp_wmsg.format(scheduler))
+        mock_get.assert_called_once_with(scheduler)
 
 
 class Test_set_num_workers(tests.IrisTest):
     # Check that the correct `num_workers` are chosen given the inputs.
     def test_default(self):
         opts = Parallel()
-        result = opts.num_workers
-        expected = opts._default_num_workers
+        result = opts.get('num_workers')
+        expected = opts._defaults_dict['num_workers']['default']
         self.assertEqual(result, expected)
 
     def test_basic(self):
         n_workers = 5
         opts = Parallel(num_workers=n_workers)
-        result = opts.num_workers
+        result = opts.get('num_workers')
         self.assertEqual(result, n_workers)
 
     def test_too_many_workers(self):
@@ -177,7 +181,7 @@ class Test_set_num_workers(tests.IrisTest):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter('always')
                 opts = Parallel(num_workers=n_workers)
-        result = opts.num_workers
+        result = opts.get('num_workers')
         self.assertEqual(result, max_cpus-1)
         exp_wmsg = ('Requested more CPUs ({}) than total available ({}). '
                     'Limiting number of used CPUs to {}.')
@@ -195,7 +199,8 @@ class Test_set_num_workers(tests.IrisTest):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
             opts = Parallel(scheduler=scheduler, num_workers=5)
-        self.assertIsNone(opts.num_workers)
+        expected = opts._defaults_dict['num_workers']['default']
+        self.assertEqual(opts.get('num_workers'), expected)
         exp_wmsg = 'Cannot set `num_workers` for the serial scheduler {!r}'
         six.assertRegex(self, str(w[0].message), exp_wmsg.format(scheduler))
 
@@ -204,7 +209,8 @@ class Test_set_num_workers(tests.IrisTest):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
             opts = Parallel(scheduler=scheduler, num_workers=5)
-        self.assertIsNone(opts.num_workers)
+        expected = opts._defaults_dict['num_workers']['default']
+        self.assertEqual(opts.get('num_workers'), expected)
         exp_wmsg = 'Attempting to set `num_workers` with the {!r} scheduler'
         six.assertRegex(self, str(w[0].message),
                         exp_wmsg.format('distributed'))

@@ -11,6 +11,7 @@ pyke
 udunits2
 cf_units
 dask
+distributed
 
 # Iris build dependencies
 setuptools

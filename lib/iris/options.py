@@ -20,7 +20,9 @@ Control runtime options of Iris.
 """
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
+import contextlib
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
 import re
@@ -31,12 +33,45 @@ import dask.multiprocessing
 import distributed
 
 
-class Parallel(object):
+class Option(object):
+    """
+    An abstract superclass to enforce certain key behaviours for all `Option`
+    classes.
+
+    """
+    @property
+    def _defaults_dict(self):
+        raise NotImplementedError
+
+    def __setattr__(self, name, value):
+        if name not in self.__dict__:
+            # Can't add new names.
+            msg = "'Option' object has no attribute {!r}".format(name)
+            raise AttributeError(msg)
+        if value is None:
+            # Set an explicitly unset value to the default value for the name.
+            value = self._defaults_dict[name]['default']
+        if self._defaults_dict[name]['options'] is not None:
+            # Replace a bad value with the default if there is a defined set of
+            # specified good values.
+            if value not in self._defaults_dict[name]['options']:
+                good_value = self._defaults_dict[name]['default']
+                wmsg = ('Attempting to set bad value {!r} for attribute {!r}. '
+                        'Defaulting to {!r}.')
+                warnings.warn(wmsg.format(value, name, good_value))
+                value = good_value
+        self.__dict__[name] = value
+
+    def context(self):
+        raise NotImplementedError
+
+
+class Parallel(Option):
     """
     Control dask parallel processing options for Iris.
 
     """
-    def __init__(self, scheduler='threaded', num_workers=1):
+    def __init__(self, scheduler=None, num_workers=None):
         """
         Set up options for dask parallel processing.
 
@@ -89,96 +124,115 @@ class Parallel(object):
         * Specify that we want to load a cube with dask parallel processing
         using multiprocessing with six worker processes::
 
-        >>> iris.options.parallel(scheduler='multiprocessing', num_workers=6)
-        >>> iris.load('my_dataset.nc')
+            iris.options.parallel(scheduler='multiprocessing', num_workers=6)
+            iris.load('my_dataset.nc')
 
         * Specify, with a context manager, that we want to load a cube with
         dask parallel processing using four worker threads::
 
-        >>> with iris.options.parallel(scheduler='threaded', num_workers=4):
-        ...     iris.load('my_dataset.nc')
+            with iris.options.parallel(scheduler='threaded', num_workers=4):
+                iris.load('my_dataset.nc')
 
         * Run dask parallel processing using a distributed scheduler that has
         been set up at the IP address and port at ``192.168.0.219:8786``::
 
-        >>> iris.options.parallel(scheduler='192.168.0.219:8786')
+            iris.options.parallel(scheduler='192.168.0.219:8786')
 
         """
-        # Set some defaults first of all.
-        self._default_scheduler = 'threaded'
-        self._default_num_workers = 1
+        # Set `__dict__` keys first.
+        self.__dict__['_scheduler'] = scheduler
+        self.__dict__['scheduler'] = None
+        self.__dict__['num_workers'] = None
+        self.__dict__['dask_scheduler'] = None
 
-        self.scheduler = scheduler
-        self.num_workers = num_workers
-
-        self._dask_scheduler = None
+        # Set `__dict__` values for each kwarg.
+        setattr(self, 'scheduler', scheduler)
+        setattr(self, 'num_workers', num_workers)
+        setattr(self, 'dask_scheduler', self.get('scheduler'))
 
         # Activate the specified dask options.
         self._set_dask_options()
 
-    @property
-    def scheduler(self):
-        return self._scheduler
-
-    @scheduler.setter
-    def scheduler(self, value):
+    def __setattr__(self, name, value):
         if value is None:
-            value = self._default_scheduler
-        if value == 'threaded':
-            self._scheduler = value
-            self.dask_scheduler = dask.threaded.get
-        elif value == 'multiprocessing':
-            self._scheduler = value
-            self.dask_scheduler = dask.multiprocessing.get
-        elif value == 'async':
-            self._scheduler = value
-            self.dask_scheduler = dask.async.get_sync
+            value = self._defaults_dict[name]['default']
+        attr_setter = getattr(self, 'set_{}'.format(name))
+        value = attr_setter(value)
+        super(Parallel, self).__setattr__(name, value)
+
+    @property
+    def _defaults_dict(self):
+        """
+        Define the default value and available options for each settable
+        `kwarg` of this `Option`.
+
+        Note: `'options'` can be set to `None` if it is not reasonable to
+        specify all possible options. For example, this may be reasonable if
+        the `'options'` were a range of numbers.
+
+        """
+        return {'_scheduler': {'default': None, 'options': None},
+                'scheduler': {'default': 'threaded',
+                              'options': ['threaded',
+                                          'multiprocessing',
+                                          'async',
+                                          'distributed']},
+                'num_workers': {'default': 1, 'options': None},
+                'dask_scheduler': {'default': None, 'options': None},
+                }
+
+    def set__scheduler(self, value):
+        return value
+
+    def set_scheduler(self, value):
+        default = self._defaults_dict['scheduler']['default']
+        if value is None:
+            value = default
         elif re.match(r'^(\d{1,3}\.){3}\d{1,3}:\d{1,5}$', value):
-            self._scheduler = 'distributed'
-            self.dask_scheduler = value
-        else:
+            value = 'distributed'
+        elif value not in self._defaults_dict['scheduler']['options']:
             # Invalid value for `scheduler`.
             wmsg = 'Invalid value for scheduler: {!r}. Defaulting to {}.'
-            warnings.warn(wmsg.format(value, self._default_scheduler))
-            self.scheduler = self._default_scheduler
+            warnings.warn(wmsg.format(value, default))
+            self.set_scheduler(default)
+        return value
 
-    @property
-    def num_workers(self):
-        return self._num_workers
-
-    @num_workers.setter
-    def num_workers(self, value):
-        if self.scheduler == 'async' and value != self._default_num_workers:
+    def set_num_workers(self, value):
+        default = self._defaults_dict['num_workers']['default']
+        scheduler = self.get('scheduler')
+        if scheduler == 'async' and value != default:
             wmsg = 'Cannot set `num_workers` for the serial scheduler {!r}.'
-            warnings.warn(wmsg.format(self.scheduler))
+            warnings.warn(wmsg.format(scheduler))
             value = None
-        elif (self.scheduler == 'distributed' and
-                      value != self._default_num_workers):
+        elif scheduler == 'distributed' and value != default:
             wmsg = ('Attempting to set `num_workers` with the {!r} scheduler '
                     'requested. Please instead specify number of workers when '
                     'setting up the distributed scheduler. See '
                     'https://distributed.readthedocs.io/en/latest/index.html '
                     'for more details.')
-            warnings.warn(wmsg.format(self.scheduler))
+            warnings.warn(wmsg.format(scheduler))
             value = None
         else:
             if value is None:
-                value = self._default_num_workers
+                value = default
             if value >= cpu_count():
                 # Limit maximum CPUs used to 1 fewer than all available CPUs.
                 wmsg = ('Requested more CPUs ({}) than total available ({}). '
                         'Limiting number of used CPUs to {}.')
                 warnings.warn(wmsg.format(value, cpu_count(), cpu_count()-1))
                 value = cpu_count() - 1
-        self._num_workers = value
+        return value
 
-    @property
-    def dask_scheduler(self):
-        return self._dask_scheduler
-
-    @dask_scheduler.setter
-    def dask_scheduler(self, value):
-        self._dask_scheduler = value
+    def set_dask_scheduler(self, scheduler):
+        if scheduler == 'threaded':
+            value = dask.threaded.get
+        elif scheduler == 'multiprocessing':
+            value = dask.multiprocessing.get
+        elif scheduler == 'async':
+            value = dask.async.get_sync
+        elif scheduler == 'distributed':
+            value = self.get('_scheduler')
+        return value
 
     def _set_dask_options(self):
         """
@@ -187,25 +241,37 @@ class Parallel(object):
         context manager.
 
         """
-        get = self.dask_scheduler
+        scheduler = self.get('scheduler')
+        num_workers = self.get('num_workers')
+        get = self.get('dask_scheduler')
         pool = None
-        if self.scheduler in ['threaded', 'multiprocessing']:
-            pool = ThreadPool(self.num_workers)
-        if self.scheduler == 'distributed':
-            get = distributed.Client(self.dask_scheduler).get
+
+        if scheduler in ['threaded', 'multiprocessing']:
+            pool = ThreadPool(num_workers)
+        if scheduler == 'distributed':
+            get = distributed.Client(get).get
 
         dask.set_options(get=get, pool=pool)
 
     def get(self, item):
         return getattr(self, item)
 
-    def __enter__(self):
-        return
-
-    def __exit__(self, exception_type, exception_value, exception_traceback):
-        self.num_workers = self._default_num_workers
-        self.scheduler = self._default_scheduler
+    @contextlib.contextmanager
+    def context(self, **kwargs):
+        # Snapshot the starting state for restoration at the end of the
+        # contextmanager block.
+        starting_state = self.__dict__.copy()
+        # Update the state to reflect the requested changes.
+        for name, value in six.iteritems(kwargs):
+            setattr(self, name, value)
         self._set_dask_options()
+        try:
+            yield
+        finally:
+            # Return the state to the starting state.
+            self.__dict__.clear()
+            self.__dict__.update(starting_state)
+            self._set_dask_options()
 
 
-parallel = Parallel
+parallel = Parallel()
