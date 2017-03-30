@@ -391,29 +391,23 @@ class Test_data__getter(tests.IrisTest):
 
     def test_with_real_array(self):
         dm = DataManager(self.real_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         result = dm.data
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertIs(result, self.real_array)
 
     def test_with_lazy_array(self):
         dm = DataManager(self.lazy_array)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         result = dm.data
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(result, self.real_array)
 
     def test_with_lazy_mask_array__not_masked(self):
         dm = DataManager(self.lazy_mask_array,
                          realised_dtype=self.realised_dtype)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         result = dm.data
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertIsInstance(result, np.core.ndarray)
         self.assertIsNone(dm._realised_dtype)
@@ -423,10 +417,8 @@ class Test_data__getter(tests.IrisTest):
     def test_with_lazy_mask_array__masked(self):
         dm = DataManager(self.lazy_mask_array_masked,
                          realised_dtype=self.realised_dtype)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         result = dm.data
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertIsInstance(result, ma.MaskedArray)
         self.assertIsNone(dm._realised_dtype)
@@ -438,100 +430,80 @@ class Test_data__setter(tests.IrisTest):
     def test_zero_ndim_real_with_scalar_int(self):
         value = 456
         dm = DataManager(np.array(123))
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = value
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, np.array(value))
 
     def test_zero_ndim_real_with_scalar_float(self):
         value = 456.0
         dm = DataManager(np.array(123))
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = value
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, np.array(value))
 
     def test_zero_ndim_real_with_zero_ndim_real(self):
         real_array = np.array(456)
         dm = DataManager(np.array(123))
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = real_array
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, real_array)
 
     def test_zero_ndim_real_with_zero_ndim_lazy(self):
         lazy_array = as_lazy_data(np.array(456))
         dm = DataManager(np.array(123))
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = lazy_array
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
     def test_zero_ndim_lazy_with_zero_ndim_real(self):
         real_array = np.array(456)
         dm = DataManager(as_lazy_data(np.array(123)))
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.data = real_array
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, real_array)
 
     def test_zero_ndim_lazy_with_zero_ndim_lazy(self):
         lazy_array = as_lazy_data(np.array(456))
         dm = DataManager(as_lazy_data(np.array(123)))
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.data = lazy_array
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
     def test_zero_ndim_real_to_scalar_1d_real_promote(self):
         real_array = np.array([456])
         dm = DataManager(np.array(123))
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = real_array
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, real_array)
 
     def test_zero_ndim_real_to_scalar_1d_lazy_promote(self):
         lazy_array = as_lazy_data(np.array([456]))
         dm = DataManager(np.array(123))
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = lazy_array
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
     def test_zero_ndim_lazy_to_scalar_1d_real_promote(self):
         real_array = np.array([456])
         dm = DataManager(as_lazy_data(np.array(123)))
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.data = real_array
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, real_array)
 
     def test_zero_ndim_lazy_to_scalar_1d_lazy_promote(self):
         lazy_array = as_lazy_data(np.array([456]))
         dm = DataManager(as_lazy_data(np.array(123)))
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.data = lazy_array
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
@@ -546,10 +518,8 @@ class Test_data__setter(tests.IrisTest):
         size = np.prod(shape)
         real_array = np.arange(size).reshape(shape)
         dm = DataManager(real_array * 10)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = real_array
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, real_array)
 
@@ -559,10 +529,8 @@ class Test_data__setter(tests.IrisTest):
         real_array = np.arange(size).reshape(shape)
         lazy_array = as_lazy_data(real_array) * 10
         dm = DataManager(real_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.data = lazy_array
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
@@ -572,10 +540,8 @@ class Test_data__setter(tests.IrisTest):
         real_array = np.arange(size).reshape(shape)
         lazy_array = as_lazy_data(real_array)
         dm = DataManager(lazy_array * 10)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.data = real_array
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, real_array)
 
@@ -585,10 +551,8 @@ class Test_data__setter(tests.IrisTest):
         real_array = np.arange(size).reshape(shape)
         lazy_array = as_lazy_data(real_array)
         dm = DataManager(lazy_array * 10)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.data = lazy_array
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
@@ -691,19 +655,17 @@ class Test_copy(tests.IrisTest):
         self.assertIs(result, return_value)
 
 
-class Test__has_real_data_and_has_lazy_data(tests.IrisTest):
+class Test_has_lazy_data(tests.IrisTest):
     def setUp(self):
         self.real_array = np.array(0)
         self.lazy_array = as_lazy_data(self.real_array)
 
     def test_with_lazy_array(self):
         dm = DataManager(self.lazy_array)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
 
     def test_with_real_array(self):
         dm = DataManager(self.real_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
 
 
@@ -714,11 +676,11 @@ class Test_lazy_data(tests.IrisTest):
 
     def test_with_real_array(self):
         dm = DataManager(self.real_array)
-        self.assertTrue(dm.has_real_data())
+        self.assertFalse(dm.has_lazy_data())
         result = dm.lazy_data()
-        self.assertTrue(dm.has_real_data())
+        self.assertFalse(dm.has_lazy_data())
         self.assertEqual(result, self.lazy_array)
-        self.assertTrue(dm.has_real_data())
+        self.assertFalse(dm.has_lazy_data())
 
     def test_with_lazy_array(self):
         dm = DataManager(self.lazy_array)
@@ -736,10 +698,8 @@ class Test_replace(tests.IrisTest):
 
     def test_real_with_real(self):
         dm = DataManager(self.real_array * 10)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.replace(self.real_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertIs(dm._real_array, self.real_array)
         self.assertIs(dm.data, self.real_array)
@@ -747,10 +707,8 @@ class Test_replace(tests.IrisTest):
     def test_real_with_lazy(self):
         lazy_array = as_lazy_data(self.real_array)
         dm = DataManager(self.real_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         dm.replace(lazy_array)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertIs(dm._lazy_array, lazy_array)
         self.assertArrayEqual(dm.data, self.real_array)
@@ -758,10 +716,8 @@ class Test_replace(tests.IrisTest):
     def test_lazy_with_real(self):
         lazy_array = as_lazy_data(self.real_array)
         dm = DataManager(lazy_array * 10)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.replace(self.real_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertIs(dm._real_array, self.real_array)
         self.assertIs(dm.data, self.real_array)
@@ -769,10 +725,8 @@ class Test_replace(tests.IrisTest):
     def test_lazy_with_lazy(self):
         lazy_array = as_lazy_data(self.real_array)
         dm = DataManager(lazy_array * 10)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         dm.replace(lazy_array)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertIs(dm._lazy_array, lazy_array)
         self.assertArrayEqual(dm.data, self.real_array)
@@ -782,12 +736,10 @@ class Test_replace(tests.IrisTest):
         dtype = mask_array.dtype
         lazy_array = as_lazy_data(mask_array)
         dm = DataManager(lazy_array, realised_dtype=dtype)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertEqual(dm._realised_dtype, dtype)
         self.assertEqual(dm.dtype, dtype)
         dm.replace(mask_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertIsNone(dm._realised_dtype)
         self.assertEqual(dm.dtype, dtype)
@@ -799,12 +751,10 @@ class Test_replace(tests.IrisTest):
         dtype = mask_array.dtype
         lazy_array = as_lazy_data(mask_array)
         dm = DataManager(self.real_array)
-        self.assertTrue(dm.has_real_data())
         self.assertFalse(dm.has_lazy_data())
         self.assertIsNone(dm._realised_dtype)
         self.assertEqual(dm.dtype, dtype)
         dm.replace(lazy_array, realised_dtype=dtype)
-        self.assertFalse(dm.has_real_data())
         self.assertTrue(dm.has_lazy_data())
         self.assertEqual(dm._realised_dtype, dtype)
         self.assertEqual(dm.dtype, dtype)

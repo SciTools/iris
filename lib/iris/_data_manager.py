@@ -176,7 +176,8 @@ class DataManager(object):
         assert state, emsg.format(self._realised_dtype)
 
         # Ensure validity of lazy data with realised dtype.
-        state = not (self.has_real_data() and self._realised_dtype is not None)
+        state = not (not self.has_lazy_data() and
+                     self._realised_dtype is not None)
         emsg = ('Unexpected real data with realised dtype, got '
                 'real data and realised {!r}.')
         assert state, emsg.format(self._realised_dtype)
@@ -240,7 +241,7 @@ class DataManager(object):
         if realised_dtype is None:
             self._realised_dtype = None
         else:
-            if self.has_real_data():
+            if not self.has_lazy_data():
                 emsg = 'Cannot set realised dtype, no lazy data is available.'
                 raise ValueError(emsg)
             realised_dtype = np.dtype(realised_dtype)
@@ -264,10 +265,11 @@ class DataManager(object):
             The real or lazy data.
 
         """
-        if self.has_real_data():
-            result = self._real_array
-        else:
+        if self.has_lazy_data():
             result = self._lazy_array
+        else:
+            result = self._real_array
+
         return result
 
     @property
@@ -364,6 +366,7 @@ class DataManager(object):
             result = self._realised_dtype
         else:
             result = self.core_data.dtype
+
         return result
 
     @property
@@ -413,16 +416,6 @@ class DataManager(object):
         """
         return self._lazy_array is not None
 
-    def has_real_data(self):
-        """
-        Determine whether real data is being managed.
-
-        Returns:
-            Boolean.
-
-        """
-        return self._real_array is not None
-
     def lazy_data(self):
         """
         Return the lazy representation of the managed data.
@@ -437,10 +430,11 @@ class DataManager(object):
             This method will never realise any lazy data.
 
         """
-        if self.has_real_data():
-            result = as_lazy_data(self._real_array)
-        else:
+        if self.has_lazy_data():
             result = self._lazy_array
+        else:
+            result = as_lazy_data(self._real_array)
+
         return result
 
     def replace(self, data, realised_dtype=None):
