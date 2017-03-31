@@ -761,12 +761,12 @@ THEN
 
 #MDI
 IF
-    ma.isMaskedArray(cm.data)
+    not cm.fill_value is None
 THEN
-    pp.bmdi = cm.data.fill_value
+    pp.bmdi = cm.fill_value
 
 IF
-    not ma.isMaskedArray(cm.data)
+    cm.fill_value is None
 THEN
     pp.bmdi = -1e30
 
