@@ -51,7 +51,7 @@ class Test_conventions(tests.IrisTest):
     def test_custom_conventions__allowed(self):
         # Ensure that existing conventions attributes are passed through if the
         # relevant Iris option is set.
-        with iris.options.netcdf.context(conventions_override=True):
+        with iris.config.netcdf.context(conventions_override=True):
             with self.temp_filename('.nc') as nc_path:
                 save(self.cube, nc_path, 'NETCDF4')
                 ds = nc.Dataset(nc_path)

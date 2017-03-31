@@ -26,32 +26,31 @@ import iris.tests as tests
 
 import warnings
 
-import iris.options
-from iris.tests import mock
+import iris.config
 
 
 class Test(tests.IrisTest):
     def test_basic(self):
-        self.assertFalse(iris.options.netcdf.conventions_override)
+        self.assertFalse(iris.config.netcdf.conventions_override)
 
     def test_enabled(self):
-        iris.options.netcdf.conventions_override = True
-        self.assertTrue(iris.options.netcdf.conventions_override)
+        iris.config.netcdf.conventions_override = True
+        self.assertTrue(iris.config.netcdf.conventions_override)
 
     def test_bad_value(self):
         # A bad value should be ignored and replaced with the default value.
         bad_value = 'wibble'
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
-            iris.options.netcdf.conventions_override = bad_value
-        self.assertFalse(iris.options.netcdf.conventions_override)
+            iris.config.netcdf.conventions_override = bad_value
+        self.assertFalse(iris.config.netcdf.conventions_override)
         exp_wmsg = 'Attempting to set bad value {!r}'.format(bad_value)
         six.assertRegex(self, str(w[0].message), exp_wmsg)
 
     def test__contextmgr(self):
-        with iris.options.netcdf.context(conventions_override=True):
-            self.assertTrue(iris.options.netcdf.conventions_override)
-        self.assertFalse(iris.options.netcdf.conventions_override)
+        with iris.config.netcdf.context(conventions_override=True):
+            self.assertTrue(iris.config.netcdf.conventions_override)
+        self.assertFalse(iris.config.netcdf.conventions_override)
 
 
 if __name__ == '__main__':

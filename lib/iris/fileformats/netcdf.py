@@ -55,7 +55,6 @@ import iris.exceptions
 import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
-import iris.options
 import iris.util
 
 
@@ -2245,7 +2244,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
                        least_significant_digit, packing=packspec)
 
-        if iris.options.netcdf.conventions_override:
+        if iris.config.netcdf.conventions_override:
             conventions = cube.attributes['Conventions']
         else:
             conventions = CF_CONVENTIONS_VERSION
