@@ -409,7 +409,7 @@ class Test_rolling_window(tests.IrisTest):
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
 
-class TestSlices(tests.IrisTest):
+class Test_slices_dim_order(tests.IrisTest):
     '''
     This class tests the capability of iris.cube.Cube.slices(), including its
     ability to correctly re-order the dimensions.
@@ -451,7 +451,7 @@ class TestSlices(tests.IrisTest):
         cube.add_dim_coord(iris.coords.DimCoord([0], dim3name), [2])
         return cube
 
-    def make_the_test(self, dim1, dim2, dim3, dim_to_remove):
+    def check_order(self, dim1, dim2, dim3, dim_to_remove):
         '''
         does two things:
         (1) slices the 4D cube in dim1, dim2, dim3 (and removes the scalar
@@ -478,7 +478,8 @@ class TestSlices(tests.IrisTest):
         sliced_cube = next(self.cube.slices([dim1, dim2, dim3]))
         sliced_cube.remove_coord(dim_to_remove)
         expected_cube = self.expected_cube_setup(dim1, dim2, dim3)
-        return sliced_cube, expected_cube
+        return self.assertEqual(sliced_cube, expected_cube)
+
 
     def test_height_long_lat(self):
         '''
@@ -487,9 +488,7 @@ class TestSlices(tests.IrisTest):
         longitude
         latitude
         '''
-        actual, expected = self.make_the_test(
-            "height", "longitude", "latitude", "time")
-        self.assertEqual(actual, expected)
+        self.check_order("height", "longitude", "latitude", "time")
 
     def test_long_height_lat(self):
         '''
@@ -498,9 +497,7 @@ class TestSlices(tests.IrisTest):
         height
         latitude
         '''
-        actual, expected = self.make_the_test(
-            "longitude", "height", "latitude", "time")
-        self.assertEqual(actual, expected)
+        self.check_order("longitude", "height", "latitude", "time")
 
     def test_time_height_lat(self):
         '''
@@ -509,9 +506,7 @@ class TestSlices(tests.IrisTest):
         height
         latitude
         '''
-        actual, expected = self.make_the_test(
-            "time", "height", "latitude", "longitude")
-        self.assertEqual(actual, expected)
+        self.check_order("time", "height", "latitude", "longitude")
 
     def test_time_height_long(self):
         '''
@@ -520,9 +515,7 @@ class TestSlices(tests.IrisTest):
         height
         longitude
         '''
-        actual, expected = self.make_the_test(
-            "time", "height", "longitude", "latitude")
-        self.assertEqual(actual, expected)
+        self.check_order("time", "height", "longitude", "latitude")
 
     def test_long_lat_height(self):
         '''
@@ -531,9 +524,7 @@ class TestSlices(tests.IrisTest):
         latitude
         height
         '''
-        actual, expected = self.make_the_test(
-            "longitude", "latitude", "height", "time")
-        self.assertEqual(actual, expected)
+        self.check_order("longitude", "latitude", "height", "time")
 
     def test_lat_height_time(self):
         '''
@@ -542,9 +533,7 @@ class TestSlices(tests.IrisTest):
         height
         time
         '''
-        actual, expected = self.make_the_test(
-            "latitude", "height", "time", "longitude")
-        self.assertEqual(actual, expected)
+        self.check_order("latitude", "height", "time", "longitude")
 
     def test_long_height_time(self):
         '''
@@ -553,9 +542,7 @@ class TestSlices(tests.IrisTest):
         height
         time
         '''
-        actual, expected = self.make_the_test(
-            "longitude", "height", "time", "latitude")
-        self.assertEqual(actual, expected)
+        self.check_order("longitude", "height", "time", "latitude")
 
 
 @tests.skip_data
