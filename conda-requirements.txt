@@ -33,3 +33,4 @@ libmo_unpack
 pandas
 pyugrid
 mo_pack
+python-stratify

@@ -122,6 +122,12 @@ try:
 except requests.exceptions.ConnectionError:
     INET_AVAILABLE = False
 
+try:
+    import stratify
+    STRATIFY_AVAILABLE = True
+except ImportError:
+    STRATIFY_AVAILABLE = False
+
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
 #: Default perceptual hash size.
@@ -1135,6 +1141,11 @@ skip_nc_time_axis = unittest.skipIf(
 skip_inet = unittest.skipIf(not INET_AVAILABLE,
                             ('Test(s) require an "internet connection", '
                              'which is not available.'))
+
+
+skip_stratify = unittest.skipIf(
+    not STRATIFY_AVAILABLE,
+    'Test(s) require "python-stratify", which is not available.')
 
 
 def no_warnings(func):
