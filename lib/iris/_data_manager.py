@@ -184,7 +184,7 @@ class DataManager(object):
                 'real data and realised {!r}.')
         assert state, emsg.format(self._realised_dtype)
 
-    def _deepcopy(self, memo, data=None, realised_dtype=None):
+    def _deepcopy(self, memo, data=None, realised_dtype='none'):
         """
         Perform a deepcopy of the :class:`~iris._data_manager.DataManager`
         instance.
@@ -221,7 +221,11 @@ class DataManager(object):
                 # If the replacement data is valid, then use it but
                 # without copying it.
 
-            result = DataManager(data, realised_dtype=realised_dtype)
+            if isinstance(realised_dtype, six.string_types) and \
+                    realised_dtype == 'none':
+                result = DataManager(data, realised_dtype=self._realised_dtype)
+            else:
+                result = DataManager(data, realised_dtype=realised_dtype)
         except ValueError as error:
             emsg = 'Cannot copy {!r} - {}'
             raise ValueError(emsg.format(type(self).__name__, error))
@@ -243,18 +247,20 @@ class DataManager(object):
         if realised_dtype is None:
             self._realised_dtype = None
         else:
-            if not self.has_lazy_data():
-                emsg = 'Cannot set realised dtype, no lazy data is available.'
-                raise ValueError(emsg)
             realised_dtype = np.dtype(realised_dtype)
-            if realised_dtype.kind not in 'biu':
-                emsg = ('Can only cast lazy data to an integer or boolean '
-                        'dtype, got {!r}.')
-                raise ValueError(emsg.format(realised_dtype))
-            self._realised_dtype = realised_dtype
+            if realised_dtype != self.dtype:
+                if not self.has_lazy_data():
+                    emsg = ('Cannot set realised dtype, no lazy data '
+                            'is available.')
+                    raise ValueError(emsg)
+                if realised_dtype.kind not in 'biu':
+                    emsg = ('Can only cast lazy data to an integer or boolean '
+                            'dtype, got {!r}.')
+                    raise ValueError(emsg.format(realised_dtype))
+                self._realised_dtype = realised_dtype
 
-            # Check the manager contract, as the managed dtype has changed.
-            self._assert_axioms()
+                # Check the manager contract, as the managed dtype has changed.
+                self._assert_axioms()
 
     @property
     def core_data(self):
@@ -387,7 +393,7 @@ class DataManager(object):
         """
         return self.core_data.shape
 
-    def copy(self, data=None, realised_dtype=None):
+    def copy(self, data=None, realised_dtype='none'):
         """
         Returns a deep copy of this :class:`~iris._data_manager.DataManager`
         instance.
