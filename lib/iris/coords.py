@@ -330,7 +330,7 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                 else:
                     me = max(self.bound)
 
-            # Hack to handle netcdftime.datetime comparison, which doesn't
+            # Work around to handle netcdftime.datetime comparison, which doesn't
             # return NotImplemented on failure in some versions of the library
             try:
                 result = operator_method(me, other)
