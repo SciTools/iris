@@ -33,6 +33,9 @@ import iris.coord_categorisation as ccat
 
 
 class Test_add_hour(tests.IrisTest):
+    def calendar(self):
+        return 'gregorian'
+
     def setUp(self):
         # make a series of 'hour numbers' for the time
         hour_numbers = np.arange(0, 200, 5, dtype=np.int32)
@@ -44,7 +47,7 @@ class Test_add_hour(tests.IrisTest):
 
         time_coord = iris.coords.DimCoord(
             hour_numbers, standard_name='time',
-            units=cf_units.Unit('hours since epoch', 'gregorian'))
+            units=cf_units.Unit('hours since epoch', self.calendar()))
         cube.add_dim_coord(time_coord, 0)
 
         self.hour_numbers = hour_numbers
@@ -87,6 +90,10 @@ class Test_add_hour(tests.IrisTest):
 
         self.assertEqual(cube.coord(coord_name), expected_coord)
 
+
+class Test_add_hour_360_day(Test_add_hour):
+    def calendar(self):
+        return '360_day'
 
 if __name__ == '__main__':
     tests.main()
