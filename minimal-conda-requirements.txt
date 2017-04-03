@@ -4,7 +4,7 @@
 # Mandatory dependencies
 biggus
 cartopy
-matplotlib
+matplotlib<1.9
 netcdf4
 numpy
 pyke

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -329,7 +329,17 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                     me = min(self.bound)
                 else:
                     me = max(self.bound)
-            result = operator_method(me, other)
+
+            # Work around to handle netcdftime.datetime comparison, which doesn't
+            # return NotImplemented on failure in some versions of the library
+            try:
+                result = operator_method(me, other)
+            except TypeError:
+                rop = {operator.lt: operator.gt,
+                       operator.gt: operator.lt,
+                       operator.le: operator.ge,
+                       operator.ge: operator.le}[operator_method]
+                result = rop(other, me)
 
         return result
 
@@ -492,7 +502,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                         raise IndexError('Cannot index with zero length '
                                          'slice.')
                 if bounds is not None:
-                    bounds = bounds[keys + (Ellipsis, )]
+                    # Bounds will generally have an extra dimension compared
+                    # to points, so add an Ellipsis at the end, unless there
+                    # is already one, as numpy does not support double
+                    # Ellipsis.
+                    if (not isinstance(keys[-1], np.ndarray) and
+                       keys[-1] == Ellipsis):
+                        bounds = bounds[keys]
+                    else:
+                        bounds = bounds[keys + (Ellipsis, )]
 
         new_coord = self.copy(points=points, bounds=bounds)
         return new_coord

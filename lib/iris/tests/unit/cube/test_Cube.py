@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -542,7 +542,7 @@ class Test_slices_over(tests.IrisTest):
 
 def create_cube(lon_min, lon_max, bounds=False):
     n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
-    data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, n_lons)
+    data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, -1)
     data = biggus.NumpyArrayAdapter(data)
     cube = Cube(data, standard_name='x_wind', units='ms-1')
     cube.add_dim_coord(iris.coords.DimCoord([0, 20, 40, 80],
@@ -560,7 +560,7 @@ def create_cube(lon_min, lon_max, bounds=False):
     if bounds:
         cube.coord('longitude').guess_bounds()
     cube.add_aux_coord(iris.coords.AuxCoord(
-        np.arange(3 * n_lons).reshape(3, n_lons) * 10, 'surface_altitude',
+        np.arange(3 * n_lons).reshape(3, -1) * 10, 'surface_altitude',
         units='m'), [1, 2])
     cube.add_aux_factory(iris.aux_factory.HybridHeightFactory(
         cube.coord('level_height'), cube.coord('sigma'),

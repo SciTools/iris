@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -56,7 +56,7 @@ _authors = ('Byron Blay', 'Ed Campbell', 'Philip Elson', 'Richard Hattersley',
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.coverage',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.imgmath',
               'sphinx.ext.autosummary',
               'sphinx.ext.graphviz',
               'sphinx.ext.intersphinx',
