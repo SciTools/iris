@@ -123,15 +123,25 @@ class TestAnalysisWeights(tests.IrisTest):
         self.assertCML(cube, ('analysis', 'weighted_mean_source.cml'))
 
         a = cube.collapsed('lat', iris.analysis.MEAN, weights=weights)
+        # np.ma.average doesn't apply type promotion rules in some versions,
+        # and instead makes the result type float64. To ignore that case we
+        # fix up the dtype here if it is promotable from float32. We still want
+        # to catch cases where there is a loss of precision however.
+        if a.dtype > np.float32:
+            a.data = a.data.astype(np.float32)
         self.assertCMLApproxData(a, ('analysis', 'weighted_mean_lat.cml'))
 
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
+        if b.dtype > np.float32:
+            b.data = b.data.astype(np.float32)
         b.data = np.asarray(b.data)
         self.assertCMLApproxData(b, ('analysis', 'weighted_mean_lon.cml'))
         self.assertEqual(b.coord('dummy').shape, (1, ))
 
         # test collapsing multiple coordinates (and the fact that one of the coordinates isn't the same coordinate instance as on the cube)
         c = cube.collapsed([lat_coord[:], lon_coord], iris.analysis.MEAN, weights=weights)
+        if c.dtype > np.float32:
+            c.data = c.data.astype(np.float32)
         self.assertCMLApproxData(c, ('analysis', 'weighted_mean_latlon.cml'))
         self.assertEqual(c.coord('dummy').shape, (1, ))
 
@@ -534,19 +544,23 @@ class TestAggregators(tests.IrisTest):
 
 
 @tests.skip_data
-class TestRotatedPole(tests.GraphicsTest):
-    @tests.skip_plot
-    def _check_both_conversions(self, cube):
+class TestRotatedPole(tests.IrisTest):
+    def _check_both_conversions(self, cube, index):
         rlons, rlats = iris.analysis.cartography.get_xy_grids(cube)
         rcs = cube.coord_system('RotatedGeogCS')
         x, y = iris.analysis.cartography.unrotate_pole(
             rlons, rlats, rcs.grid_north_pole_longitude,
             rcs.grid_north_pole_latitude)
-        plt.scatter(x, y)
-        self.check_graphic()
-
-        plt.scatter(rlons, rlats)
-        self.check_graphic()
+        self.assertDataAlmostEqual(x, ('analysis',
+                                       'rotated_pole.{}.x.json'.format(index)))
+        self.assertDataAlmostEqual(y, ('analysis',
+                                       'rotated_pole.{}.y.json'.format(index)))
+        self.assertDataAlmostEqual(rlons,
+                                   ('analysis',
+                                    'rotated_pole.{}.rlon.json'.format(index)))
+        self.assertDataAlmostEqual(rlats,
+                                   ('analysis',
+                                    'rotated_pole.{}.rlat.json'.format(index)))
 
     def test_all(self):
         path = tests.get_data_path(('PP', 'ukVorog', 'ukv_orog_refonly.pp'))
@@ -554,11 +568,11 @@ class TestRotatedPole(tests.GraphicsTest):
 
         # Check overall behaviour.
         cube = master_cube[::10, ::10]
-        self._check_both_conversions(cube)
+        self._check_both_conversions(cube, 0)
 
         # Check numerical stability.
         cube = master_cube[210:238, 424:450]
-        self._check_both_conversions(cube)
+        self._check_both_conversions(cube, 1)
 
     def test_unrotate_nd(self):
         rlons = np.array([[350., 352.], [350., 352.]])
