@@ -37,7 +37,7 @@ if tests.GRIB_AVAILABLE:
 @tests.skip_grib
 class TestGribLookupTableType(tests.IrisTest):
     def test_lookuptable_type(self):
-        ll = gptx.LookupTable([('a', 1), ('b', 2)])
+        ll = gptx._LookupTable([('a', 1), ('b', 2)])
         assert ll['a'] == 1
         assert ll['q'] is None
         ll['q'] = 15
