@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,26 +19,27 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
+import mock
+
 from iris.exceptions import TranslationError
+
 from iris.fileformats.grib._load_convert import convert
-from iris.tests import mock
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 
-class Test(tests.IrisTest):
-    def test_call(self):
+class TestGribMessage(tests.IrisGribTest):
+    def test_edition_2(self):
+        def func(field, metadata):
+            return metadata['factories'].append(factory)
+
         sections = [{'editionNumber': 2}]
         field = _make_test_message(sections)
         this = 'iris.fileformats.grib._load_convert.grib2_convert'
         factory = mock.sentinel.factory
-
-        def func(field, metadata):
-            return metadata['factories'].append(factory)
-
         with mock.patch(this, side_effect=func) as grib2_convert:
             # The call being tested.
             result = convert(field)
@@ -46,12 +47,31 @@ class Test(tests.IrisTest):
             metadata = ([factory], [], None, None, None, {}, [], [], [])
             self.assertEqual(result, metadata)
 
-    def test_edition_1(self):
+    def test_edition_1_bad(self):
         sections = [{'editionNumber': 1}]
         field = _make_test_message(sections)
-        with self.assertRaisesRegexp(TranslationError,
-                                     'edition 1 is not supported'):
+        emsg = 'edition 1 is not supported'
+        with self.assertRaisesRegexp(TranslationError, emsg):
             convert(field)
+
+
+class TestGribWrapper(tests.IrisGribTest):
+    def test_edition_2_bad(self):
+        # Test object with no '.sections', and '.edition' ==2.
+        field = mock.Mock(edition=2, spec=('edition'))
+        emsg = 'edition 2 is not supported'
+        with self.assertRaisesRegexp(TranslationError, emsg):
+            convert(field)
+
+    def test_edition_1(self):
+        # Test object with no '.sections', and '.edition' ==1.
+        field = mock.Mock(edition=1, spec=('edition'))
+        func = 'iris.fileformats.grib._load_convert.grib1_convert'
+        metadata = mock.sentinel.metadata
+        with mock.patch(func, return_value=metadata) as grib1_convert:
+            result = convert(field)
+            grib1_convert.assert_called_once_with(field)
+            self.assertEqual(result, metadata)
 
 
 if __name__ == '__main__':

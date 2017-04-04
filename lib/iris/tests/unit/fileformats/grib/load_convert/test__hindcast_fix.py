@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,7 @@ Tests for function :func:`iris.fileformats.grib._load_convert._hindcast_fix`.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
@@ -31,7 +31,7 @@ from collections import namedtuple
 from iris.fileformats.grib._load_convert import _hindcast_fix as hindcast_fix
 
 
-class TestHindcastFix(tests.IrisTest):
+class TestHindcastFix(tests.IrisGribTest):
     # setup tests : provided value, fix-applies, expected-fixed
     FixTest = namedtuple('FixTest', ('given', 'fixable', 'fixed'))
     test_values = [
@@ -56,8 +56,8 @@ class TestHindcastFix(tests.IrisTest):
 
     def test_fix_warning(self):
         # Check warning appears when enabled.
-        self.patch('iris.fileformats.grib._load_convert.options'
-                   '.warn_on_unsupported', True)
+        pm = 'iris.fileformats.grib._load_convert.options.warn_on_unsupported'
+        self.patch(pm, True)
         hindcast_fix(2 * 2**30 + 5)
         self.assertEqual(self.patch_warn.call_count, 1)
         self.assertIn('Re-interpreting large grib forecastTime',

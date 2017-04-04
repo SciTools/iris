@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,15 +22,15 @@ Test function :func:`iris.fileformats.grib._load_convert.resolution_flags.`
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
-from iris.fileformats.grib._load_convert import \
-    resolution_flags, ResolutionFlags
+from iris.fileformats.grib._load_convert import (resolution_flags,
+                                                 ResolutionFlags)
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def test_unset(self):
         expected = ResolutionFlags(False, False, False)
         self.assertEqual(resolution_flags(0x0), expected)

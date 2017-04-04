@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,14 +29,15 @@ import iris.tests as tests
 
 from cf_units import Unit
 import gribapi
+import mock
 
 from iris.coords import CellMethod, DimCoord
-from iris.tests import mock
 import iris.tests.stock as stock
+
 from iris.fileformats.grib._save_rules import product_definition_template_11
 
 
-class TestRealizationIdentifier(tests.IrisTest):
+class TestRealizationIdentifier(tests.IrisGribTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.

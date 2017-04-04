@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,30 +15,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests for function
-:func:`iris.fileformats.grib._load_convert.translate_phenomenon`.
+Tests for
+function :func:`iris.fileformats.grib._load_convert.translate_phenomenon`.
 
 """
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from copy import deepcopy
 
 from cf_units import Unit
-
 from iris.coords import DimCoord
-from iris.fileformats.grib._load_convert import Probability
+
+from iris.fileformats.grib._load_convert import (Probability,
+                                                 translate_phenomenon)
 from iris.fileformats.grib.grib_phenom_translation import _GribToCfDataClass
 
-from iris.fileformats.grib._load_convert import translate_phenomenon
 
-
-class Test_probability(tests.IrisTest):
+class Test_probability(tests.IrisGribTest):
     def setUp(self):
         # Patch inner call to return a given phenomenon type.
         target_module = 'iris.fileformats.grib._load_convert'

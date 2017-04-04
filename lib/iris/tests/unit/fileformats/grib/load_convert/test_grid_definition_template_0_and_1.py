@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,16 +23,17 @@ Test function
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# Import iris tests first so that some things can be initialised
+# Import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._load_convert import \
-    grid_definition_template_0_and_1
+
+from iris.fileformats.grib._load_convert \
+    import grid_definition_template_0_and_1
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
 
     def test_unsupported_quasi_regular__number_of_octets(self):
         section = {'numberOfOctectsForNumberOfPoints': 1}

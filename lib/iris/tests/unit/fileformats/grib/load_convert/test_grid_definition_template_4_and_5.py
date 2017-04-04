@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,32 +23,29 @@ Test function
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from copy import deepcopy
+import mock
+import numpy as np
 import warnings
 
-import numpy as np
-
 from iris.coords import DimCoord
+
 from iris.fileformats.grib._load_convert import \
-    grid_definition_template_4_and_5, \
-    _MDI as MDI
-from iris.tests import mock
+     grid_definition_template_4_and_5, _MDI as MDI
 
 
 RESOLUTION = 1e6
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
-        patch = []
-        patch.append(mock.patch('warnings.warn'))
-        module = 'iris.fileformats.grib._load_convert'
-        this = '{}._is_circular'.format(module)
-        patch.append(mock.patch(this, return_value=False))
+        self.patch('warnings.warn')
+        self.patch('iris.fileformats.grib._load_convert._is_circular',
+                   return_value=False)
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
                          'long_name': None, 'units': None, 'attributes': {},
@@ -56,9 +53,6 @@ class Test(tests.IrisTest):
                          'aux_coords_and_dims': []}
         self.cs = mock.sentinel.coord_system
         self.data = np.arange(10, dtype=np.float64)
-        for p in patch:
-            p.start()
-            self.addCleanup(p.stop)
 
     def _check(self, section, request_warning,
                expect_warning=False, y_dim=0, x_dim=1):

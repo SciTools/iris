@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,12 +24,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
+import mock
 
-import iris.fileformats.grib
-from iris.fileformats.grib._save_rules import identification
-from iris.tests import mock
+import iris
 import iris.tests.stock as stock
-from iris.tests.test_grib_load_translations import TestGribSimple
+
+from iris.fileformats.grib._save_rules import identification
+from iris.tests.unit.fileformats.grib import TestGribSimple
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'

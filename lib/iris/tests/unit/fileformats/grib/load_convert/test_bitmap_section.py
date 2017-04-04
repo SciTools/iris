@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,16 +22,17 @@ Test function :func:`iris.fileformats.grib._load_convert.bitmap_section.`
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from iris.exceptions import TranslationError
+
 from iris.fileformats.grib._load_convert import bitmap_section
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def test_bitmap_unsupported(self):
         # bitMapIndicator in range 1-254.
         # Note that bitMapIndicator = 1-253 and bitMapIndicator = 254 mean two

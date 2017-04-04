@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,27 +24,18 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
+import mock
 
-import iris.fileformats.grib
+from iris.fileformats.grib import load_cubes
 from iris.fileformats.grib._save_rules import reference_time
-from iris.tests import mock
-import iris.tests.stock as stock
-from iris.tests.test_grib_load_translations import TestGribSimple
 
 
-GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
-
-
-class Test(TestGribSimple):
-    @tests.skip_data
-    def test_forecast_period(self):
-        # The stock cube has a non-compliant forecast_period.
-        iris.fileformats.grib.hindcast_workaround = True
-        cube = stock.global_grib2()
-
+class Test(tests.IrisGribTest):
+    def _test(self, cube):
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch(GRIB_API, mock_gribapi):
+        with mock.patch('iris.fileformats.grib._save_rules.gribapi',
+                        mock_gribapi):
             reference_time(cube, grib)
 
         mock_gribapi.assert_has_calls(
@@ -53,24 +44,19 @@ class Test(TestGribSimple):
              mock.call.grib_set_long(grib, "dataTime", '0300')])
 
     @tests.skip_data
+    def test_forecast_period(self):
+        # The stock cube has a non-compliant forecast_period.
+        fname = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
+        [cube] = load_cubes(fname)
+        self._test(cube)
+
+    @tests.skip_data
     def test_no_forecast_period(self):
         # The stock cube has a non-compliant forecast_period.
-        iris.fileformats.grib.hindcast_workaround = True
-        cube = stock.global_grib2()
+        fname = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
+        [cube] = load_cubes(fname)
         cube.remove_coord("forecast_period")
-        frt_coords = cube.coords('forecast_reference_time')
-        if frt_coords:
-            cube.remove_coord(frt_coords[0])
-
-        grib = mock.Mock()
-        mock_gribapi = mock.Mock(spec=gribapi)
-        with mock.patch(GRIB_API, mock_gribapi):
-            reference_time(cube, grib)
-
-        mock_gribapi.assert_has_calls(
-            [mock.call.grib_set_long(grib, "significanceOfReferenceTime", 3),
-             mock.call.grib_set_long(grib, "dataDate", '19941201'),
-             mock.call.grib_set_long(grib, "dataTime", '0000')])
+        self._test(cube)
 
 
 if __name__ == "__main__":

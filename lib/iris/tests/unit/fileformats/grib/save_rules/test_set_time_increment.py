@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for
-:func:`iris.fileformats.grib._save_rules.set_time_increment`
+Unit tests for :func:`iris.fileformats.grib._save_rules.set_time_increment`
 
 """
 
@@ -28,13 +27,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
+import mock
 
 from iris.coords import CellMethod
+
 from iris.fileformats.grib._save_rules import set_time_increment
-from iris.tests import mock
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     @mock.patch.object(gribapi, 'grib_set')
     def test_no_intervals(self, mock_set):
         cell_method = CellMethod('sum', 'time')

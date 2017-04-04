@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,10 +26,11 @@ import iris.tests as tests
 import cf_units
 
 import iris
+
 from iris.fileformats.grib._save_rules import _non_missing_forecast_period
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def _cube(self, t_bounds=False):
         time_coord = iris.coords.DimCoord(15, standard_name='time',
                                           units='hours since epoch')

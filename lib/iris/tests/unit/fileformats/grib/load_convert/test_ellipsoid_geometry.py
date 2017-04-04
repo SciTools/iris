@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,14 +22,14 @@ Test function :func:`iris.fileformats.grib._load_convert.ellipsoid_geometry.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from iris.fileformats.grib._load_convert import ellipsoid_geometry
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         self.section = {'scaledValueOfEarthMajorAxis': 10,
                         'scaleFactorOfEarthMajorAxis': 1,

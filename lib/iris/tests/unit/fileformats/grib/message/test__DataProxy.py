@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the `iris.fileformats.grib.message._DataProxy` class.
+Unit tests for the `iris.message._DataProxy` class.
 
 """
 
@@ -30,10 +30,11 @@ import numpy as np
 from numpy.random import randint
 
 from iris.exceptions import TranslationError
+
 from iris.fileformats.grib.message import _DataProxy
 
 
-class Test__bitmap(tests.IrisTest):
+class Test__bitmap(tests.IrisGribTest):
     def test_no_bitmap(self):
         section_6 = {'bitMapIndicator': 255, 'bitmap': None}
         data_proxy = _DataProxy(0, 0, 0, 0)

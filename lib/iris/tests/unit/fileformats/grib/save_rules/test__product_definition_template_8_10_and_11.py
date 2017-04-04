@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,7 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.grib._save_rules._product_definition_template_8_and_11`
+:func:
+`iris.fileformats.grib._save_rules._product_definition_template_8_10_and_11`
 
 """
 
@@ -29,15 +30,16 @@ import iris.tests as tests
 
 from cf_units import Unit
 import gribapi
+import mock
 
 from iris.coords import CellMethod, DimCoord
-from iris.tests import mock
 import iris.tests.stock as stock
+
 from iris.fileformats.grib._save_rules import \
-    _product_definition_template_8_and_11
+     _product_definition_template_8_10_and_11
 
 
-class TestTypeOfStatisticalProcessing(tests.IrisTest):
+class TestTypeOfStatisticalProcessing(tests.IrisGribTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -52,7 +54,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
         cell_method = CellMethod(method='sum', coords=['time'])
         cube.add_cell_method(cell_method)
 
-        _product_definition_template_8_and_11(cube, mock.sentinel.grib)
+        _product_definition_template_8_10_and_11(cube, mock.sentinel.grib)
         mock_set.assert_any_call(mock.sentinel.grib,
                                  "typeOfStatisticalProcessing", 1)
 
@@ -62,7 +64,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
         cell_method = CellMethod(method='95th percentile', coords=['time'])
         cube.add_cell_method(cell_method)
 
-        _product_definition_template_8_and_11(cube, mock.sentinel.grib)
+        _product_definition_template_8_10_and_11(cube, mock.sentinel.grib)
         mock_set.assert_any_call(mock.sentinel.grib,
                                  "typeOfStatisticalProcessing", 255)
 
@@ -74,7 +76,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
         cube.add_cell_method(cell_method)
         with self.assertRaisesRegexp(ValueError,
                                      'Cannot handle multiple coordinate name'):
-            _product_definition_template_8_and_11(cube, mock.sentinel.grib)
+            _product_definition_template_8_10_and_11(cube, mock.sentinel.grib)
 
     @mock.patch.object(gribapi, 'grib_set')
     def test_cell_method_coord_name_fail(self, mock_set):
@@ -84,10 +86,10 @@ class TestTypeOfStatisticalProcessing(tests.IrisTest):
         with self.assertRaisesRegexp(
                 ValueError, "Expected a cell method with a coordinate "
                 "name of 'time'"):
-            _product_definition_template_8_and_11(cube, mock.sentinel.grib)
+            _product_definition_template_8_10_and_11(cube, mock.sentinel.grib)
 
 
-class TestTimeCoordPrerequisites(tests.IrisTest):
+class TestTimeCoordPrerequisites(tests.IrisGribTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -102,8 +104,8 @@ class TestTimeCoordPrerequisites(tests.IrisTest):
         self.cube.add_aux_coord(coord, 0)
         with self.assertRaisesRegexp(
                 ValueError, 'Expected length one time coordinate'):
-            _product_definition_template_8_and_11(self.cube,
-                                                  mock.sentinel.grib)
+            _product_definition_template_8_10_and_11(self.cube,
+                                                     mock.sentinel.grib)
 
     @mock.patch.object(gribapi, 'grib_set')
     def test_no_bounds(self, mock_set):
@@ -114,8 +116,8 @@ class TestTimeCoordPrerequisites(tests.IrisTest):
         with self.assertRaisesRegexp(
                 ValueError, 'Expected time coordinate with two bounds, '
                 'got 0 bounds'):
-            _product_definition_template_8_and_11(self.cube,
-                                                  mock.sentinel.grib)
+            _product_definition_template_8_10_and_11(self.cube,
+                                                     mock.sentinel.grib)
 
     @mock.patch.object(gribapi, 'grib_set')
     def test_more_than_two_bounds(self, mock_set):
@@ -126,11 +128,11 @@ class TestTimeCoordPrerequisites(tests.IrisTest):
         with self.assertRaisesRegexp(
                 ValueError, 'Expected time coordinate with two bounds, '
                 'got 3 bounds'):
-            _product_definition_template_8_and_11(self.cube,
-                                                  mock.sentinel.grib)
+            _product_definition_template_8_10_and_11(self.cube,
+                                                     mock.sentinel.grib)
 
 
-class TestEndOfOverallTimeInterval(tests.IrisTest):
+class TestEndOfOverallTimeInterval(tests.IrisGribTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -147,7 +149,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
         cube.add_aux_coord(coord)
 
         grib = mock.sentinel.grib
-        _product_definition_template_8_and_11(cube, grib)
+        _product_definition_template_8_10_and_11(cube, grib)
 
         mock_set.assert_any_call(
             grib, "yearOfEndOfOverallTimeInterval", 1972)
@@ -171,7 +173,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
         cube.add_aux_coord(coord)
 
         grib = mock.sentinel.grib
-        _product_definition_template_8_and_11(cube, grib)
+        _product_definition_template_8_10_and_11(cube, grib)
 
         mock_set.assert_any_call(
             grib, "yearOfEndOfOverallTimeInterval", 1972)
@@ -187,7 +189,7 @@ class TestEndOfOverallTimeInterval(tests.IrisTest):
             grib, "secondOfEndOfOverallTimeInterval", 7)
 
 
-class TestNumberOfTimeRange(tests.IrisTest):
+class TestNumberOfTimeRange(tests.IrisGribTest):
     @mock.patch.object(gribapi, 'grib_set')
     def test_other_cell_methods(self, mock_set):
         cube = stock.lat_lon_cube()
@@ -202,7 +204,7 @@ class TestNumberOfTimeRange(tests.IrisTest):
         cell_method = CellMethod(method='sum', coords=['time'])
         cube.add_cell_method(cell_method)
 
-        _product_definition_template_8_and_11(cube, mock.sentinel.grib)
+        _product_definition_template_8_10_and_11(cube, mock.sentinel.grib)
         mock_set.assert_any_call(mock.sentinel.grib, 'numberOfTimeRange', 1)
 
 

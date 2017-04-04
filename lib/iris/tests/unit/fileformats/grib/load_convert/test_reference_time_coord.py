@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,7 @@ Reference Code Table 1.2.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
@@ -35,10 +35,11 @@ from cf_units import CALENDAR_GREGORIAN, Unit
 
 from iris.coords import DimCoord
 from iris.exceptions import TranslationError
+
 from iris.fileformats.grib._load_convert import reference_time_coord
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         self.section = {'year': 2007,
                         'month': 1,
@@ -58,6 +59,11 @@ class Test(tests.IrisTest):
         # The call being tested.
         coord = reference_time_coord(section)
         self.assertEqual(coord, expected)
+
+    def test_start_of_forecast(self):
+        section = deepcopy(self.section)
+        section['significanceOfReferenceTime'] = 0
+        self._check(section, 'forecast_reference_time')
 
     def test_start_of_forecast(self):
         section = deepcopy(self.section)

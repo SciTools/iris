@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,49 +23,50 @@ Test function
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from copy import deepcopy
+import mock
 
 from iris.fileformats.grib._load_convert import grid_definition_template_5
-from iris.tests import mock
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
+        def func(s, m, y, x, c):
+            return m['dim_coords_and_dims'].append(item)
+
         module = 'iris.fileformats.grib._load_convert'
-        patch = []
+
         self.major = mock.sentinel.major
         self.minor = mock.sentinel.minor
         self.radius = mock.sentinel.radius
-        this = '{}.ellipsoid_geometry'.format(module)
+
+        mfunc = '{}.ellipsoid_geometry'.format(module)
         return_value = (self.major, self.minor, self.radius)
-        patch.append(mock.patch(this, return_value=return_value))
-        this = '{}.ellipsoid'.format(module)
+        self.patch(mfunc, return_value=return_value)
+
+        mfunc = '{}.ellipsoid'.format(module)
         self.ellipsoid = mock.sentinel.ellipsoid
-        patch.append(mock.patch(this, return_value=self.ellipsoid))
-        this = '{}.grid_definition_template_4_and_5'.format(module)
+        self.patch(mfunc, return_value=self.ellipsoid)
+
+        mfunc = '{}.grid_definition_template_4_and_5'.format(module)
         self.coord = mock.sentinel.coord
         self.dim = mock.sentinel.dim
         item = (self.coord, self.dim)
+        self.patch(mfunc, side_effect=func)
 
-        def func(s, m, y, x, c):
-            return m['dim_coords_and_dims'].append(item)
-        patch.append(mock.patch(this, side_effect=func))
-
-        this = 'iris.coord_systems.RotatedGeogCS'
+        mclass = 'iris.coord_systems.RotatedGeogCS'
         self.cs = mock.sentinel.cs
-        patch.append(mock.patch(this, return_value=self.cs))
+        self.patch(mclass, return_value=self.cs)
+
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
                          'long_name': None, 'units': None, 'attributes': {},
                          'cell_methods': [], 'dim_coords_and_dims': [],
                          'aux_coords_and_dims': []}
-        for p in patch:
-            p.start()
-            self.addCleanup(p.stop)
 
     def test(self):
         metadata = deepcopy(self.metadata)

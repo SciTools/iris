@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,13 +25,13 @@ import six
 import iris.tests as tests
 
 import gribapi
+import mock
 import numpy as np
 
-import iris.fileformats.grib as grib
-from iris.tests import mock
+import iris.fileformats.grib
 
 
-class TestSaveMessages(tests.IrisTest):
+class TestSaveMessages(tests.IrisGribTest):
     def setUp(self):
         # Create a test object to stand in for a real PPField.
         self.grib_message = gribapi.grib_new_from_samples("GRIB2")
@@ -47,7 +47,8 @@ class TestSaveMessages(tests.IrisTest):
             # as the gribapi code does a type check
             # this is deemed acceptable within the scope of this unit test
             with self.assertRaises((AssertionError, TypeError)):
-                grib.save_messages([self.grib_message], 'foo.grib2')
+                iris.fileformats.grib.save_messages([self.grib_message],
+                                                    'foo.grib2')
         self.assertTrue(mock.call('foo.grib2', 'wb') in m.mock_calls)
 
     def test_save_append(self):
@@ -61,8 +62,9 @@ class TestSaveMessages(tests.IrisTest):
             # as the gribapi code does a type check
             # this is deemed acceptable within the scope of this unit test
             with self.assertRaises((AssertionError, TypeError)):
-                grib.save_messages([self.grib_message], 'foo.grib2',
-                                   append=True)
+                iris.fileformats.grib.save_messages([self.grib_message],
+                                                    'foo.grib2',
+                                                    append=True)
         self.assertTrue(mock.call('foo.grib2', 'ab') in m.mock_calls)
 
 

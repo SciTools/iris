@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,29 +23,29 @@ Test function
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from copy import deepcopy
+import mock
 import warnings
 
 from iris.coords import DimCoord, CellMethod
+
 from iris.fileformats.grib._load_convert import product_definition_template_11
-from iris.tests import mock
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
+        def func(s, m, f):
+            return m['cell_methods'].append(self.cell_method)
+
         module = 'iris.fileformats.grib._load_convert'
         self.patch('warnings.warn')
         this_module = '{}.product_definition_template_11'.format(module)
         self.cell_method = mock.sentinel.cell_method
-
-        def func(s, m, f):
-            return m['cell_methods'].append(self.cell_method)
         self.patch(this_module, side_effect=func)
-
         self.patch_statistical_fp_coord = self.patch(
             module + '.statistical_forecast_period_coord',
             return_value=mock.sentinel.dummy_fp_coord)
@@ -77,7 +77,7 @@ class Test(tests.IrisTest):
                        'hourOfEndOfOverallTimeInterval': 1,
                        'minuteOfEndOfOverallTimeInterval': 0,
                        'secondOfEndOfOverallTimeInterval': 1}
-            forecast_reference_time = mock.sentinel.forecast_reference_time
+            forecast_reference_time = mock.Mock()
             # The called being tested.
             product_definition_template_11(section, metadata,
                                            forecast_reference_time)

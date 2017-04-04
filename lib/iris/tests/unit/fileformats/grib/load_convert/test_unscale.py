@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,7 @@ Test function :func:`iris.fileformats.grib._load_convert.unscale.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
@@ -34,7 +34,7 @@ from iris.fileformats.grib._load_convert import unscale, _MDI as MDI
 # Reference GRIB2 Regulation 92.1.12.
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def test_single(self):
         self.assertEqual(unscale(123, 1), 12.3)
         self.assertEqual(unscale(123, -1), 1230.0)
