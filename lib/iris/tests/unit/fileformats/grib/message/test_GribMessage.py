@@ -212,31 +212,31 @@ def _example_section_3(grib_definition_template_number, scanning_mode):
             'Ni': 4}
 
 
-class Test_data__grid_template_0(tests.IrisGribTest,
+class Test_data__grid_template_0(tests.IrisTest_nometa,
                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(0, scanning_mode)
 
 
-class Test_data__grid_template_1(tests.IrisGribTest,
+class Test_data__grid_template_1(tests.IrisTest_nometa,
                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(1, scanning_mode)
 
 
-class Test_data__grid_template_5(tests.IrisGribTest,
+class Test_data__grid_template_5(tests.IrisTest_nometa,
                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(5, scanning_mode)
 
 
-class Test_data__grid_template_12(tests.IrisGribTest,
+class Test_data__grid_template_12(tests.IrisTest_nometa,
                                   Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(12, scanning_mode)
 
 
-class Test_data__grid_template_30(tests.IrisGribTest,
+class Test_data__grid_template_30(tests.IrisTest_nometa,
                                   Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(30, scanning_mode)
@@ -248,13 +248,13 @@ class Test_data__grid_template_30(tests.IrisGribTest,
         return section_3
 
 
-class Test_data__grid_template_40_regular(tests.IrisGribTest,
+class Test_data__grid_template_40_regular(tests.IrisTest_nometa,
                                           Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(40, scanning_mode)
 
 
-class Test_data__grid_template_90(tests.IrisGribTest,
+class Test_data__grid_template_90(tests.IrisTest_nometa,
                                   Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(90, scanning_mode)
