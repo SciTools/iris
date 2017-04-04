@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,9 +38,12 @@ from iris.aux_factory import HybridPressureFactory
 import iris.coord_systems as icoord_systems
 from iris.coords import AuxCoord, DimCoord, CellMethod
 from iris.exceptions import TranslationError
-from iris.fileformats.grib import grib_phenom_translation as itranslation
+from . import grib_phenom_translation as itranslation
 from iris.fileformats.rules import ConversionMetadata, Factory, Reference
 from iris.util import _is_circular
+
+from ._grib1_load_rules import grib1_convert
+from .message import GribMessage
 
 
 # Restrict the names imported from this namespace.
@@ -274,7 +277,7 @@ def reference_time_coord(section):
 
     """
     # Look-up standard name by significanceOfReferenceTime.
-    _lookup = {0: 'time',
+    _lookup = {0: 'forecast_reference_time',
                1: 'forecast_reference_time',
                2: 'time',
                3: 'time'}
@@ -1007,10 +1010,10 @@ def grid_definition_template_40_regular(section, metadata, cs):
 
     # Create lat/lon coordinates.
     x_coord = DimCoord(x_points, standard_name='longitude',
-                       units='degrees_east', coord_system=cs,
+                       units='degrees', coord_system=cs,
                        circular=circular)
     y_coord = DimCoord(y_points, standard_name='latitude',
-                       units='degrees_north', coord_system=cs)
+                       units='degrees', coord_system=cs)
 
     # Determine the lat/lon dimensions.
     y_dim, x_dim = 0, 1
@@ -1042,9 +1045,9 @@ def grid_definition_template_40_reduced(section, metadata, cs):
 
     # Create lat/lon coordinates.
     x_coord = AuxCoord(x_points, standard_name='longitude',
-                       units='degrees_east', coord_system=cs)
+                       units='degrees', coord_system=cs)
     y_coord = AuxCoord(y_points, standard_name='latitude',
-                       units='degrees_north', coord_system=cs)
+                       units='degrees', coord_system=cs)
 
     # Add the lat/lon coordinates to the metadata dim coords.
     metadata['aux_coords_and_dims'].append((y_coord, 0))
@@ -1847,8 +1850,11 @@ def product_definition_template_8(section, metadata, frt_coord):
     # Add the forecast cell method to the metadata.
     metadata['cell_methods'].append(time_statistic_cell_method)
 
-    # Add the forecast reference time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((frt_coord, None))
+    # Add the forecast reference time coordinate to the metadata aux coords,
+    # if it is a forecast reference time, not a time coord, as defined by
+    # significanceOfReferenceTime.
+    if frt_coord.name() != 'time':
+        metadata['aux_coords_and_dims'].append((frt_coord, None))
 
     # Add a bounded forecast period coordinate.
     fp_coord = statistical_forecast_period_coord(section, frt_coord)
@@ -1921,6 +1927,35 @@ def product_definition_template_9(section, metadata, frt_coord):
         raise TranslationError(msg)
 
     return probability_type
+
+
+def product_definition_template_10(section, metadata, frt_coord):
+    """
+    Translate template representing percentile forecasts at a horizontal level
+    or in a horizontal layer in a continuous or non-continuous time interval.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    """
+    product_definition_template_8(section, metadata, frt_coord)
+
+    percentile = DimCoord(section['percentileValue'],
+                          long_name='percentile_over_time',
+                          units='no_unit')
+
+    # Add the percentile data info
+    metadata['aux_coords_and_dims'].append((percentile, None))
 
 
 def product_definition_template_11(section, metadata, frt_coord):
@@ -2035,6 +2070,7 @@ def product_definition_template_40(section, metadata, frt_coord):
     # Perform identical message processing.
     product_definition_template_0(section, metadata, frt_coord)
 
+    # Reference GRIB2 Code Table 4.230.
     constituent_type = section['constituentType']
 
     # Add the constituent type as  an attribute.
@@ -2085,6 +2121,8 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     elif template == 9:
         probability = \
             product_definition_template_9(section, metadata, rt_coord)
+    elif template == 10:
+        product_definition_template_10(section, metadata, rt_coord)
     elif template == 11:
         product_definition_template_11(section, metadata, rt_coord)
     elif template == 31:
@@ -2220,24 +2258,38 @@ def convert(field):
         A :class:`iris.fileformats.rules.ConversionMetadata` object.
 
     """
-    editionNumber = field.sections[0]['editionNumber']
-    if editionNumber != 2:
-        msg = 'GRIB edition {} is not supported'.format(editionNumber)
-        raise TranslationError(msg)
+    if hasattr(field, 'sections'):
+        editionNumber = field.sections[0]['editionNumber']
 
-    # Initialise the cube metadata.
-    metadata = OrderedDict()
-    metadata['factories'] = []
-    metadata['references'] = []
-    metadata['standard_name'] = None
-    metadata['long_name'] = None
-    metadata['units'] = None
-    metadata['attributes'] = {}
-    metadata['cell_methods'] = []
-    metadata['dim_coords_and_dims'] = []
-    metadata['aux_coords_and_dims'] = []
+        if editionNumber != 2:
+            emsg = 'GRIB edition {} is not supported by {!r}.'
+            raise TranslationError(emsg.format(editionNumber,
+                                               type(field).__name__))
 
-    # Convert GRIB2 message to cube metadata.
-    grib2_convert(field, metadata)
+        # Initialise the cube metadata.
+        metadata = OrderedDict()
+        metadata['factories'] = []
+        metadata['references'] = []
+        metadata['standard_name'] = None
+        metadata['long_name'] = None
+        metadata['units'] = None
+        metadata['attributes'] = {}
+        metadata['cell_methods'] = []
+        metadata['dim_coords_and_dims'] = []
+        metadata['aux_coords_and_dims'] = []
 
-    return ConversionMetadata._make(metadata.values())
+        # Convert GRIB2 message to cube metadata.
+        grib2_convert(field, metadata)
+
+        result = ConversionMetadata._make(metadata.values())
+    else:
+        editionNumber = field.edition
+
+        if editionNumber != 1:
+            emsg = 'GRIB edition {} is not supported by {!r}.'
+            raise TranslationError(emsg.format(editionNumber,
+                                               type(field).__name__))
+
+        result = grib1_convert(field)
+
+    return result

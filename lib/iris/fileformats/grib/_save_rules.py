@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -17,10 +17,9 @@
 """
 Grib save implementation.
 
-This module replaces the deprecated
-:mod:`iris.fileformats.grib.grib_save_rules`. It is a private module
-with no public API. It is invoked from
-:meth:`iris.fileformats.grib.save_grib2`.
+:mod:`iris.fileformats.grib._save_rules` is a private module with
+no public API.
+It is invoked from :meth:`iris.fileformats.grib.save_grib2`.
 
 """
 
@@ -37,9 +36,8 @@ import numpy.ma as ma
 import iris
 import iris.exceptions
 from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
-from iris.fileformats.grib import grib_phenom_translation as gptx
-from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
-                                                 _TIME_RANGE_UNITS)
+from . import grib_phenom_translation as gptx
+from ._load_convert import (_STATISTIC_TYPE_NAMES, _TIME_RANGE_UNITS)
 from iris.util import is_regular, regular_step
 
 
@@ -573,14 +571,6 @@ def _non_missing_forecast_period(cube):
                       "scaling required.")
     fp = int(fp)
 
-    # Turn negative forecast times into grib negative numbers?
-    from iris.fileformats.grib import hindcast_workaround
-    if hindcast_workaround and fp < 0:
-        msg = "Encoding negative forecast period from {} to ".format(fp)
-        fp = 2**31 + abs(fp)
-        msg += "{}".format(np.int32(fp))
-        warnings.warn(msg)
-
     return rt, rt_meaning, fp, grib_time_code
 
 
@@ -808,33 +798,55 @@ def _cube_is_time_statistic(cube):
     """
     Test whether we can identify this cube as a statistic over time.
 
-    At present, accept anything whose latest cell method operates over a single
-    coordinate that "looks like" a time factor (i.e. some specific names).
-    In particular, we recognise the coordinate names defined in
-    :py:mod:`iris.coord_categorisation`.
+    We need to know whether our cube represents a time statistic. This is
+    almost always captured in the cell methods. The exception is when a
+    percentage statistic has been calculated (i.e. for PDT10). This is
+    captured in a `percentage_over_time` scalar coord, which must be handled
+    here too.
 
     """
-    # The *only* relevant information is in cell_methods, as coordinates or
-    # dimensions of aggregation may no longer exist.  So it's not possible to
-    # be definitive, but we handle *some* useful cases.
-    # In other cases just say "no", which is safe even when not ideal.
+    result = False
+    stat_coord_name = 'percentile_over_time'
+    cube_coord_names = [coord.name() for coord in cube.coords()]
 
-    # Identify a single coordinate from the latest cell_method.
-    if not cube.cell_methods:
-        return False
-    latest_coordnames = cube.cell_methods[-1].coord_names
-    if len(latest_coordnames) != 1:
-        return False
-    coord_name = latest_coordnames[0]
+    # Check our cube for time statistic indicators.
+    has_percentile_statistic = stat_coord_name in cube_coord_names
+    has_cell_methods = cube.cell_methods
 
-    # Define accepted time names, including those from coord_categorisations.
-    recognised_time_names = ['time', 'year', 'month', 'day', 'weekday',
-                             'season']
+    # Determine whether we have a time statistic.
+    if has_percentile_statistic:
+        result = True
+    elif has_cell_methods:
+        # Define accepted time names, including from coord_categorisations.
+        recognised_time_names = ['time', 'year', 'month', 'day', 'weekday',
+                                 'season']
+        latest_coordnames = cube.cell_methods[-1].coord_names
+        if len(latest_coordnames) != 1:
+            result = False
+        else:
+            coord_name = latest_coordnames[0]
+            result = coord_name in recognised_time_names
+    else:
+        result = False
 
-    # Accept it if the name is recognised.
-    # Currently does *not* recognise related names like 'month_number' or
-    # 'years', as that seems potentially unsafe.
-    return coord_name in recognised_time_names
+    return result
+
+
+def set_ensemble(cube, grib):
+    """
+    Set keys in the provided grib based message relating to ensemble
+    information.
+
+    """
+    if not (cube.coords('realization') and
+            len(cube.coord('realization').points) == 1):
+        raise ValueError("A cube 'realization' coordinate with one "
+                         "point is required, but not present")
+    gribapi.grib_set(grib, "perturbationNumber",
+                     int(cube.coord('realization').points[0]))
+    # no encoding at present in iris, set to missing
+    gribapi.grib_set(grib, "numberOfForecastsInEnsemble", 255)
+    gribapi.grib_set(grib, "typeOfEnsembleForecast", 255)
 
 
 def product_definition_template_common(cube, grib):
@@ -870,6 +882,21 @@ def product_definition_template_0(cube, grib):
     product_definition_template_common(cube, grib)
 
 
+def product_definition_template_1(cube, grib):
+    """
+    Set keys within the provided grib message based on Product
+    Definition Template 4.1.
+
+    Template 4.1 is used to represent an individual ensemble forecast, control
+    and perturbed, at a horizontal level or in a horizontal layer at a point
+    in time.
+
+    """
+    gribapi.grib_set(grib, "productDefinitionTemplateNumber", 1)
+    product_definition_template_common(cube, grib)
+    set_ensemble(cube, grib)
+
+
 def product_definition_template_8(cube, grib):
     """
     Set keys within the provided grib message based on Product
@@ -880,32 +907,43 @@ def product_definition_template_8(cube, grib):
 
     """
     gribapi.grib_set(grib, "productDefinitionTemplateNumber", 8)
-    _product_definition_template_8_and_11(cube, grib)
+    _product_definition_template_8_10_and_11(cube, grib)
+
+
+def product_definition_template_10(cube, grib):
+    """
+    Set keys within the provided grib message based on Product Definition
+    Template 4.10.
+
+    Template 4.10 is used to represent a percentile forecast over a time
+    interval.
+
+    """
+    gribapi.grib_set(grib, "productDefinitionTemplateNumber", 10)
+    if not (cube.coords('percentile_over_time') and
+            len(cube.coord('percentile_over_time').points) == 1):
+        raise ValueError("A cube 'percentile_over_time' coordinate with one "
+                         "point is required, but not present.")
+    gribapi.grib_set(grib, "percentileValue",
+                     int(cube.coord('percentile_over_time').points[0]))
+    _product_definition_template_8_10_and_11(cube, grib)
 
 
 def product_definition_template_11(cube, grib):
     """
     Set keys within the provided grib message based on Product
-    Definition Template 4.8.
+    Definition Template 4.11.
 
-    Template 4.8 is used to represent an aggregation over a time
-    interval.
+    Template 4.11 is used to represent an aggregation over a time
+    interval for an ensemble member.
 
     """
     gribapi.grib_set(grib, "productDefinitionTemplateNumber", 11)
-    if not (cube.coords('realization') and
-            len(cube.coord('realization').points) == 1):
-        raise ValueError("A cube 'realization' coordinate with one"
-                         "point is required, but not present")
-    gribapi.grib_set(grib, "perturbationNumber",
-                     int(cube.coord('realization').points[0]))
-    # no encoding at present in Iris, set to missing
-    gribapi.grib_set(grib, "numberOfForecastsInEnsemble", 255)
-    gribapi.grib_set(grib, "typeOfEnsembleForecast", 255)
-    _product_definition_template_8_and_11(cube, grib)
+    set_ensemble(cube, grib)
+    _product_definition_template_8_10_and_11(cube, grib)
 
 
-def _product_definition_template_8_and_11(cube, grib):
+def _product_definition_template_8_10_and_11(cube, grib):
     """
     Set keys within the provided grib message based on common aspects of
     Product Definition Templates 4.8 and 4.11.
@@ -927,22 +965,6 @@ def _product_definition_template_8_and_11(cube, grib):
         msg = 'Expected time coordinate with two bounds, got {} bounds'
         raise ValueError(msg.format(time_coord.nbounds))
 
-    # Check that there is one and only one cell method related to the
-    # time coord.
-    time_cell_methods = [cell_method for cell_method in cube.cell_methods if
-                         'time' in cell_method.coord_names]
-    if not time_cell_methods:
-        raise ValueError("Expected a cell method with a coordinate name "
-                         "of 'time'")
-    if len(time_cell_methods) > 1:
-        raise ValueError("Cannot handle multiple 'time' cell methods")
-    cell_method, = time_cell_methods
-
-    if len(cell_method.coord_names) > 1:
-        raise ValueError("Cannot handle multiple coordinate names in "
-                         "the time related cell method. Expected ('time',), "
-                         "got {!r}".format(cell_method.coord_names))
-
     # Extract the datetime-like object corresponding to the end of
     # the overall processing interval.
     end = time_coord.units.num2date(time_coord.bounds[0, -1])
@@ -962,15 +984,34 @@ def _product_definition_template_8_and_11(cube, grib):
     gribapi.grib_set(grib, "numberOfTimeRange", 1)
     gribapi.grib_set(grib, "numberOfMissingInStatisticalProcess", 0)
 
-    # Type of statistical process (see code table 4.10)
-    statistic_type = _STATISTIC_TYPE_NAMES.get(cell_method.method, 255)
-    gribapi.grib_set(grib, "typeOfStatisticalProcessing", statistic_type)
-
     # Period over which statistical processing is performed.
     set_time_range(time_coord, grib)
 
-    # Time increment i.e. interval of cell method (if any)
-    set_time_increment(cell_method, grib)
+    # Check that there is one and only one cell method related to the
+    # time coord.
+    if cube.cell_methods:
+        time_cell_methods = [
+            cell_method for cell_method in cube.cell_methods if 'time' in
+            cell_method.coord_names]
+        if not time_cell_methods:
+            raise ValueError("Expected a cell method with a coordinate name "
+                             "of 'time'")
+        if len(time_cell_methods) > 1:
+            raise ValueError("Cannot handle multiple 'time' cell methods")
+        cell_method, = time_cell_methods
+
+        if len(cell_method.coord_names) > 1:
+            raise ValueError("Cannot handle multiple coordinate names in "
+                             "the time related cell method. Expected "
+                             "('time',), got {!r}".format(
+                                 cell_method.coord_names))
+
+        # Type of statistical process (see code table 4.10)
+        statistic_type = _STATISTIC_TYPE_NAMES.get(cell_method.method, 255)
+        gribapi.grib_set(grib, "typeOfStatisticalProcessing", statistic_type)
+
+        # Time increment i.e. interval of cell method (if any)
+        set_time_increment(cell_method, grib)
 
 
 def product_definition_template_40(cube, grib):
@@ -996,7 +1037,10 @@ def product_definition_section(cube, grib):
 
     """
     if not cube.coord("time").has_bounds():
-        if 'WMO_constituent_type' in cube.attributes:
+        if cube.coords('realization'):
+            # ensemble forecast (template 4.1)
+            pdt = product_definition_template_1(cube, grib)
+        elif 'WMO_constituent_type' in cube.attributes:
             # forecast for atmospheric chemical constiuent (template 4.40)
             product_definition_template_40(cube, grib)
         else:
@@ -1006,6 +1050,9 @@ def product_definition_section(cube, grib):
         if cube.coords('realization'):
             # time processed (template 4.11)
             pdt = product_definition_template_11
+        elif cube.coords('percentile_over_time'):
+            # time processed as percentile (template 4.10)
+            pdt = product_definition_template_10
         else:
             # time processed (template 4.8)
             pdt = product_definition_template_8

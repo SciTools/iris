@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -37,11 +37,11 @@ import warnings
 
 import cf_units
 
-from iris.fileformats.grib import _grib_cf_map as grcf
+from . import _grib_cf_map as grcf
 import iris.std_names
 
 
-class LookupTable(dict):
+class _LookupTable(dict):
     """
     Specialised dictionary object for making lookup tables.
 
@@ -51,7 +51,7 @@ class LookupTable(dict):
 
     """
     def __init__(self, *args, **kwargs):
-        self._super = super(LookupTable, self)
+        self._super = super(_LookupTable, self)
         self._super.__init__(*args, **kwargs)
 
     def __getitem__(self, key):
@@ -83,7 +83,7 @@ _GribToCfDataClass = collections.namedtuple(
 
 def _make_grib1_cf_table():
     """ Build the Grib1 to CF phenomenon translation table. """
-    table = LookupTable()
+    table = _LookupTable()
 
     def _make_grib1_cf_entry(table2_version, centre_number, param_number,
                              standard_name, long_name, units, set_height=None):
@@ -170,7 +170,7 @@ _Grib2ToCfKeyClass = collections.namedtuple(
 
 def _make_grib2_to_cf_table():
     """ Build the Grib2 to CF phenomenon translation table. """
-    table = LookupTable()
+    table = _LookupTable()
 
     def _make_grib2_cf_entry(param_discipline, param_category, param_number,
                              standard_name, long_name, units):
@@ -233,7 +233,7 @@ _CfToGrib2DataClass = collections.namedtuple(
 
 def _make_cf_to_grib2_table():
     """ Build the Grib1 to CF phenomenon translation table. """
-    table = LookupTable()
+    table = _LookupTable()
 
     def _make_cf_grib2_entry(standard_name, long_name,
                              param_discipline, param_category, param_number,
