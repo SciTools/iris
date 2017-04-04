@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,19 +22,20 @@ Test function :func:`iris.fileformats.grib._load_convert.validity_time_coord.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from cf_units import Unit
+import mock
 import numpy as np
 
 from iris.coords import DimCoord
+
 from iris.fileformats.grib._load_convert import validity_time_coord
-from iris.tests import mock
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         self.fp = DimCoord(5, standard_name='forecast_period', units='hours')
         self.fp_test_bounds = np.array([[1.0, 9.0]])

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,15 +23,18 @@ Test function
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
+import mock
+
 import iris.coords
+
+import iris.fileformats.grib
 from iris.tests.unit.fileformats.grib.load_convert import (LoadConvertTest,
                                                            empty_metadata)
 from iris.fileformats.grib._load_convert import product_definition_template_0
-from iris.tests import mock
 
 
 MDI = 0xffffffff

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,25 +22,23 @@ Tests for `iris.fileformats.grib._load_convert.product_definition_template_31`.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from copy import deepcopy
+import mock
+import numpy as np
 import warnings
 
-import numpy as np
-
 from iris.coords import AuxCoord
+
 from iris.fileformats.grib._load_convert import product_definition_template_31
-from iris.tests import mock
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
-        patch = mock.patch('warnings.warn')
-        patch.start()
-        self.addCleanup(patch.stop)
+        self.patch('warnings.warn')
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
                          'long_name': None, 'units': None, 'attributes': None,
@@ -49,6 +47,9 @@ class Test(tests.IrisTest):
 
     def _check(self, request_warning=False, value=10, factor=1):
         # Prepare the arguments.
+        def unscale(v, f):
+            return v / 10.0 ** f
+
         series = mock.sentinel.satelliteSeries
         number = mock.sentinel.satelliteNumber
         instrument = mock.sentinel.instrumentType
@@ -64,11 +65,7 @@ class Test(tests.IrisTest):
         with mock.patch(this, warn_on_unsupported=request_warning):
             # The call being tested.
             product_definition_template_31(section, metadata, rt_coord)
-
         # Check the result.
-        def unscale(v, f):
-            return v / 10.0 ** f
-
         expected = deepcopy(self.metadata)
         coord = AuxCoord(series, long_name='satellite_series')
         expected['aux_coords_and_dims'].append((coord, None))

@@ -927,6 +927,8 @@ class IrisTest(six.with_metaclass(_TestTimingsMetaclass, IrisTest_nometa)):
     # @iristest_timing_decorator explicitly to your new testclass.
     pass
 
+class IrisGribTest(IrisTest):
+    pass
 
 get_result_path = IrisTest.get_result_path
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,7 @@ Test function :func:`iris.fileformats.grib._load_convert.ellipsoid.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
@@ -30,6 +30,7 @@ import numpy.ma as ma
 
 import iris.coord_systems as icoord_systems
 from iris.exceptions import TranslationError
+
 from iris.fileformats.grib._load_convert import ellipsoid
 
 
@@ -39,7 +40,7 @@ from iris.fileformats.grib._load_convert import ellipsoid
 MDI = ma.masked
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def test_shape_unsupported(self):
         unsupported = [2, 4, 5, 8, 9, 10, MDI]
         emsg = 'unsupported shape of the earth'

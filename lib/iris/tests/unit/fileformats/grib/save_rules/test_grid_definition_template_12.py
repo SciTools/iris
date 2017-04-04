@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,16 +32,16 @@ import numpy as np
 import iris.coords
 from iris.coord_systems import GeogCS, TransverseMercator
 from iris.exceptions import TranslationError
-from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 from iris.fileformats.grib._save_rules import grid_definition_template_12
+from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 
 class FakeGribError(Exception):
     pass
 
 
-class Test(tests.IrisTest, GdtTestMixin):
+class Test(tests.IrisGribTest, GdtTestMixin):
     def setUp(self):
         self.default_ellipsoid = GeogCS(semi_major_axis=6377563.396,
                                         semi_minor_axis=6356256.909)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,12 +32,12 @@ import numpy as np
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.exceptions import TranslationError
 from iris.fileformats.pp import EARTH_RADIUS as PP_DEFAULT_EARTH_RADIUS
-from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 from iris.fileformats.grib._save_rules import grid_definition_template_1
+from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 
-class Test(tests.IrisTest, GdtTestMixin):
+class Test(tests.IrisGribTest, GdtTestMixin):
     def setUp(self):
         self.default_ellipsoid = GeogCS(PP_DEFAULT_EARTH_RADIUS)
         GdtTestMixin.setUp(self)

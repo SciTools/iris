@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for
-:func:`iris.fileformats.grib._save_rules.set_fixed_surfaces`.
+Unit tests for :func:`iris.fileformats.grib._save_rules.set_fixed_surfaces`.
 
 """
 
@@ -32,10 +31,11 @@ import numpy as np
 
 import iris.cube
 import iris.coords
+
 from iris.fileformats.grib._save_rules import set_fixed_surfaces
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def test_bounded_altitude_feet(self):
         cube = iris.cube.Cube([0])
         cube.add_aux_coord(iris.coords.AuxCoord(

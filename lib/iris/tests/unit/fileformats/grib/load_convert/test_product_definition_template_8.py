@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,15 +24,16 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
+import mock
+
 from iris.fileformats.grib._load_convert import product_definition_template_8
-from iris.tests import mock
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         module = 'iris.fileformats.grib._load_convert'
         self.module = module
@@ -54,7 +55,7 @@ class Test(tests.IrisTest):
         self.section = {}
         self.section['hoursAfterDataCutoff'] = mock.sentinel.cutoff_hours
         self.section['minutesAfterDataCutoff'] = mock.sentinel.cutoff_mins
-        self.frt_coord = mock.sentinel.frt_coord
+        self.frt_coord = mock.Mock()
         self.metadata = {'cell_methods': [], 'aux_coords_and_dims': []}
 
     def test_basic(self):

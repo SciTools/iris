@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for
-:func:`iris.fileformats.grib._save_rules.set_time_range`
+Unit tests for :func:`iris.fileformats.grib._save_rules.set_time_range`
 
 """
 
@@ -32,13 +31,14 @@ import warnings
 
 from cf_units import Unit
 import gribapi
+import mock
 
 from iris.coords import DimCoord
+
 from iris.fileformats.grib._save_rules import set_time_range
-from iris.tests import mock
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         self.coord = DimCoord(0, 'time',
                               units=Unit('hours since epoch',

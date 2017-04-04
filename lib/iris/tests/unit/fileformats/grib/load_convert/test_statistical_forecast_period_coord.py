@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,18 +23,18 @@ Tests for function
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 import datetime
+import mock
 
 from iris.fileformats.grib._load_convert import \
-    statistical_forecast_period_coord
-from iris.tests import mock
+     statistical_forecast_period_coord
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         module = 'iris.fileformats.grib._load_convert'
         self.module = module

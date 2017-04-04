@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,70 +14,36 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.fileformats.grib.load_rules.convert`."""
+"""
+Unit tests for :func:`iris.fileformats.grib._grib1_load_rules.grib1_convert`.
+"""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# Import iris tests first so that some things can be initialised before
+# Import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import cf_units
 import gribapi
+import mock
 
 import iris
+from iris.exceptions import TranslationError
 from iris.fileformats.rules import Reference
-from iris.tests import mock
-from iris.tests.test_grib_load_translations import TestGribSimple
-from iris.tests.unit.fileformats import TestField
 
 from iris.fileformats.grib import GribWrapper
-from iris.fileformats.grib.load_rules import convert
+from iris.fileformats.grib._grib1_load_rules import grib1_convert
+from iris.tests.unit.fileformats.grib import TestField
 
 
-class Test_GribLevels_Mock(TestGribSimple):
-    # Unit test levels with mocking.
-    def test_grib2_height(self):
-        grib = self.mock_grib()
-        grib.edition = 2
-        grib.typeOfFirstFixedSurface = 103
-        grib.scaledValueOfFirstFixedSurface = 12345
-        grib.scaleFactorOfFirstFixedSurface = 0
-        grib.typeOfSecondFixedSurface = 255
-        cube = self.cube_from_message(grib)
-        self.assertEqual(
-            cube.coord('height'),
-            iris.coords.DimCoord(12345, standard_name="height", units="m"))
-
-    def test_grib2_bounded_height(self):
-        grib = self.mock_grib()
-        grib.edition = 2
-        grib.typeOfFirstFixedSurface = 103
-        grib.scaledValueOfFirstFixedSurface = 12345
-        grib.scaleFactorOfFirstFixedSurface = 0
-        grib.typeOfSecondFixedSurface = 103
-        grib.scaledValueOfSecondFixedSurface = 54321
-        grib.scaleFactorOfSecondFixedSurface = 0
-        cube = self.cube_from_message(grib)
-        self.assertEqual(
-            cube.coord('height'),
-            iris.coords.DimCoord(33333, standard_name="height", units="m",
-                                 bounds=[[12345, 54321]]))
-
-    def test_grib2_diff_bound_types(self):
-        grib = self.mock_grib()
-        grib.edition = 2
-        grib.typeOfFirstFixedSurface = 103
-        grib.scaledValueOfFirstFixedSurface = 12345
-        grib.scaleFactorOfFirstFixedSurface = 0
-        grib.typeOfSecondFixedSurface = 102
-        grib.scaledValueOfSecondFixedSurface = 54321
-        grib.scaleFactorOfSecondFixedSurface = 0
-        with mock.patch('warnings.warn') as warn:
-            cube = self.cube_from_message(grib)
-        warn.assert_called_with(
-            "Different vertical bound types not yet handled.")
+class TestBadEdition(tests.IrisGribTest):
+    def test(self):
+        message = mock.Mock(edition=2)
+        emsg = 'GRIB edition 2 is not supported'
+        with self.assertRaisesRegexp(TranslationError, emsg):
+            grib1_convert(message)
 
 
 class TestBoundedTime(TestField):
@@ -100,10 +66,10 @@ class TestBoundedTime(TestField):
                       'table2Version': 9999}
         attributes.update(kwargs)
         message = mock.Mock(**attributes)
-        self._test_for_coord(message, convert, self.is_forecast_period,
+        self._test_for_coord(message, grib1_convert, self.is_forecast_period,
                              expected_points=[35],
                              expected_bounds=[[15, 55]])
-        self._test_for_coord(message, convert, self.is_time,
+        self._test_for_coord(message, grib1_convert, self.is_time,
                              expected_points=[100],
                              expected_bounds=[[80, 120]])
 
@@ -149,20 +115,12 @@ class TestBoundedTime(TestField):
     def test_time_range_indicator_125(self):
         self.assert_bounded_message(timeRangeIndicator=125)
 
-    def test_product_template_8(self):
-        self.assert_bounded_message(edition=2,
-                                    productDefinitionTemplateNumber=8)
-
-    def test_product_template_9(self):
-        self.assert_bounded_message(edition=2,
-                                    productDefinitionTemplateNumber=9)
-
 
 class Test_GribLevels(tests.IrisTest):
     def test_grib1_hybrid_height(self):
         gm = gribapi.grib_new_from_samples('regular_gg_ml_grib1')
         gw = GribWrapper(gm)
-        results = convert(gw)
+        results = grib1_convert(gw)
 
         factory, = results[0]
         self.assertEqual(factory.factory_class,

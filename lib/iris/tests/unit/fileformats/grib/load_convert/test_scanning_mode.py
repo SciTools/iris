@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,15 +22,16 @@ Test function :func:`iris.fileformats.grib._load_convert.scanning_mode.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from iris.exceptions import TranslationError
+
 from iris.fileformats.grib._load_convert import scanning_mode, ScanningMode
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def test_unset(self):
         expected = ScanningMode(False, False, False, False)
         self.assertEqual(scanning_mode(0x0), expected)

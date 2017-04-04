@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,7 +32,7 @@ from iris.fileformats.grib.message import _RawGribMessage
 
 
 @tests.skip_data
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
         with open(filename, 'rb') as grib_fh:

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,7 @@ import iris.tests as tests
 from iris.fileformats.grib._load_convert import fixup_int32_from_uint32
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def test_negative(self):
         result = fixup_int32_from_uint32(0x80000005)
         self.assertEqual(result, -5)

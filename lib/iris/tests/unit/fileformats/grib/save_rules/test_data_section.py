@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,31 +15,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for
-:func:`iris.fileformats.grib._save_rules.data_section`.
+Unit tests for :func:`iris.fileformats.grib._save_rules.data_section`.
 
 """
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised before
+# import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
+import mock
 import numpy as np
 
 import iris.cube
 
 from iris.fileformats.grib._save_rules import data_section
-from iris.tests import mock
 
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 GRIB_MESSAGE = mock.sentinel.GRIB_MESSAGE
 
 
-class TestMDI(tests.IrisTest):
+class TestMDI(tests.IrisGribTest):
     def assertBitmapOff(self, grib_api):
         # Check the use of a mask has been turned off via:
         #   gribapi.grib_set(grib_message, 'bitmapPresent', 0)

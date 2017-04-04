@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,15 +22,16 @@ Test function :func:`iris.fileformats.grib._load_convert.other_time_coord.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 import iris.coords
+
 from iris.fileformats.grib._load_convert import other_time_coord
 
 
-class TestValid(tests.IrisTest):
+class TestValid(tests.IrisGribTest):
     def test_t(self):
         rt = iris.coords.DimCoord(48, 'time', units='hours since epoch')
         fp = iris.coords.DimCoord(6, 'forecast_period', units='hours')
@@ -48,7 +49,7 @@ class TestValid(tests.IrisTest):
         self.assertEqual(result, expected)
 
 
-class TestInvalid(tests.IrisTest):
+class TestInvalid(tests.IrisGribTest):
     def test_t_with_bounds(self):
         rt = iris.coords.DimCoord(48, 'time', units='hours since epoch',
                                   bounds=[36, 60])

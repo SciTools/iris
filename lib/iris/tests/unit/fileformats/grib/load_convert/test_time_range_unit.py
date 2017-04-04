@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,17 +22,17 @@ Test function :func:`iris.fileformats.grib._load_convert.time_range_unit.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 from cf_units import Unit
-
 from iris.exceptions import TranslationError
+
 from iris.fileformats.grib._load_convert import time_range_unit
 
 
-class Test(tests.IrisTest):
+class Test(tests.IrisGribTest):
     def setUp(self):
         self.unit_by_indicator = {0: Unit('minutes'),
                                   1: Unit('hours'),
