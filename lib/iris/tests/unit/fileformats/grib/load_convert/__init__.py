@@ -40,7 +40,7 @@ def empty_metadata():
     return metadata
 
 
-class LoadConvertTest(tests.IrisGribTest):
+class LoadConvertTest(tests.IrisTest):
     def assertMetadataEqual(self, result, expected):
         # Compare two metadata dictionaries. Gives slightly more
         # helpful error message than: self.assertEqual(result, expected)

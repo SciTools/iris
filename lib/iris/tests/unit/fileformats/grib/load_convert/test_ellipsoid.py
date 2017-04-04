@@ -40,7 +40,7 @@ from iris.fileformats.grib._load_convert import ellipsoid
 MDI = ma.masked
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_shape_unsupported(self):
         unsupported = [2, 4, 5, 8, 9, 10, MDI]
         emsg = 'unsupported shape of the earth'

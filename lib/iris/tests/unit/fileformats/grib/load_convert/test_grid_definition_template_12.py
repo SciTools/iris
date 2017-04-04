@@ -40,7 +40,7 @@ from iris.fileformats.grib._load_convert import grid_definition_template_12
 MDI = 2 ** 32 - 1
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def section_3(self):
         section = {
             'shapeOfTheEarth': 7,

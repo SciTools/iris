@@ -29,7 +29,7 @@ import iris.tests as tests
 from iris.fileformats.grib._load_convert import ellipsoid_geometry
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.section = {'scaledValueOfEarthMajorAxis': 10,
                         'scaleFactorOfEarthMajorAxis': 1,

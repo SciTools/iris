@@ -64,7 +64,7 @@ def _mock_grib_get_native_type(grib_message, key):
     return result
 
 
-class Test_edition(tests.IrisGribTest):
+class Test_edition(tests.IrisTest):
     def setUp(self):
         self.patch('iris.fileformats.grib.GribWrapper._confirm_in_scope')
         self.patch('iris.fileformats.grib.GribWrapper._compute_extra_keys')
@@ -89,7 +89,7 @@ class Test_edition(tests.IrisGribTest):
         self.assertEqual(wrapper.grib_message, grib_message)
 
 
-class Test_deferred(tests.IrisGribTest):
+class Test_deferred(tests.IrisTest):
     def setUp(self):
         confirm_patch = mock.patch(
             'iris.fileformats.grib.GribWrapper._confirm_in_scope')

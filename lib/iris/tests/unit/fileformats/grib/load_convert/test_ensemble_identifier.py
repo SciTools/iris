@@ -36,7 +36,7 @@ from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import ensemble_identifier
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         module = 'iris.fileformats.grib._load_convert'
         self.patch('warnings.warn')

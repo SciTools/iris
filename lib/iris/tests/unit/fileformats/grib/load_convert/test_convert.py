@@ -31,7 +31,7 @@ from iris.fileformats.grib._load_convert import convert
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 
-class TestGribMessage(tests.IrisGribTest):
+class TestGribMessage(tests.IrisTest):
     def test_edition_2(self):
         def func(field, metadata):
             return metadata['factories'].append(factory)
@@ -55,7 +55,7 @@ class TestGribMessage(tests.IrisGribTest):
             convert(field)
 
 
-class TestGribWrapper(tests.IrisGribTest):
+class TestGribWrapper(tests.IrisTest):
     def test_edition_2_bad(self):
         # Test object with no '.sections', and '.edition' ==2.
         field = mock.Mock(edition=2, spec=('edition'))

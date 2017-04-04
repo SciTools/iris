@@ -33,7 +33,7 @@ import mock
 from iris.fileformats.grib._load_convert import grid_definition_template_5
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         def func(s, m, y, x, c):
             return m['dim_coords_and_dims'].append(item)

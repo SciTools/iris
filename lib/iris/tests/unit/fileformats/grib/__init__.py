@@ -161,7 +161,7 @@ class FakeGribMessage(dict):
         self['unitOfTime'] = timecode
 
 
-class TestField(tests.IrisGribTest):
+class TestField(tests.IrisTest):
     def _test_for_coord(self, field, convert, coord_predicate, expected_points,
                         expected_bounds):
         (factories, references, standard_name, long_name, units,
@@ -208,7 +208,7 @@ class TestField(tests.IrisGribTest):
             [type(coord) for coord, dims in coords_and_dims_expected])
 
 
-class TestGribSimple(tests.IrisGribTest):
+class TestGribSimple(tests.IrisTest):
     # A testing class that does not need the test data.
     def mock_grib(self):
         # A mock grib message, with attributes that can't be Mocks themselves.

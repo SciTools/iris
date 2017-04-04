@@ -30,7 +30,7 @@ from iris.fileformats.grib._load_convert import (resolution_flags,
                                                  ResolutionFlags)
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_unset(self):
         expected = ResolutionFlags(False, False, False)
         self.assertEqual(resolution_flags(0x0), expected)

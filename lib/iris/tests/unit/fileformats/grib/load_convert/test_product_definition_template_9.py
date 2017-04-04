@@ -35,7 +35,7 @@ from iris.fileformats.grib._load_convert import product_definition_template_9
 from iris.fileformats.grib._load_convert import Probability, _MDI
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         # Create patches for called routines
         module = 'iris.fileformats.grib._load_convert'

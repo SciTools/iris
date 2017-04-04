@@ -32,7 +32,7 @@ from iris.fileformats.grib._load_convert import bitmap_section
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_bitmap_unsupported(self):
         # bitMapIndicator in range 1-254.
         # Note that bitMapIndicator = 1-253 and bitMapIndicator = 254 mean two

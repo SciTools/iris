@@ -34,7 +34,7 @@ from iris.fileformats.grib._load_convert import \
      statistical_forecast_period_coord
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         module = 'iris.fileformats.grib._load_convert'
         self.module = module

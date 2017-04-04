@@ -30,7 +30,7 @@ import iris.tests as tests
 from iris.fileformats.grib._load_convert import generating_process
 
 
-class TestGeneratingProcess(tests.IrisGribTest):
+class TestGeneratingProcess(tests.IrisTest):
     def setUp(self):
         self.warn_patch = self.patch('warnings.warn')
 

@@ -34,7 +34,7 @@ from iris.coords import CellMethod
 from iris.fileformats.grib._save_rules import set_time_increment
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     @mock.patch.object(gribapi, 'grib_set')
     def test_no_intervals(self, mock_set):
         cell_method = CellMethod('sum', 'time')

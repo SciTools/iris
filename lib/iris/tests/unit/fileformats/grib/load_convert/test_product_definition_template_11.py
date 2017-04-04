@@ -36,7 +36,7 @@ from iris.coords import DimCoord, CellMethod
 from iris.fileformats.grib._load_convert import product_definition_template_11
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         def func(s, m, f):
             return m['cell_methods'].append(self.cell_method)

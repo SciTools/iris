@@ -34,7 +34,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import _DataProxy
 
 
-class Test__bitmap(tests.IrisGribTest):
+class Test__bitmap(tests.IrisTest):
     def test_no_bitmap(self):
         section_6 = {'bitMapIndicator': 255, 'bitmap': None}
         data_proxy = _DataProxy(0, 0, 0, 0)

@@ -37,7 +37,7 @@ from iris.fileformats.grib._load_convert import (Probability,
 from iris.fileformats.grib.grib_phenom_translation import _GribToCfDataClass
 
 
-class Test_probability(tests.IrisGribTest):
+class Test_probability(tests.IrisTest):
     def setUp(self):
         # Patch inner call to return a given phenomenon type.
         target_module = 'iris.fileformats.grib._load_convert'

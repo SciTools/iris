@@ -32,7 +32,7 @@ from iris.fileformats.grib.message import _RawGribMessage
 
 
 @tests.skip_data
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
         with open(filename, 'rb') as grib_fh:

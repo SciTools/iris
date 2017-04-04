@@ -38,7 +38,7 @@ from iris.fileformats.grib._grib1_load_rules import grib1_convert
 from iris.tests.unit.fileformats.grib import TestField
 
 
-class TestBadEdition(tests.IrisGribTest):
+class TestBadEdition(tests.IrisTest):
     def test(self):
         message = mock.Mock(edition=2)
         emsg = 'GRIB edition 2 is not supported'

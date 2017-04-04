@@ -32,7 +32,7 @@ from iris.fileformats.grib._load_convert import _MDI as MDI
 from iris.fileformats.grib._load_convert import data_cutoff
 
 
-class TestDataCutoff(tests.IrisGribTest):
+class TestDataCutoff(tests.IrisTest):
     def _check(self, hours, minutes, request_warning, expect_warning=False):
         # Setup the environment.
         patch_target = 'iris.fileformats.grib._load_convert.options'

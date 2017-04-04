@@ -31,7 +31,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import scanning_mode, ScanningMode
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_unset(self):
         expected = ScanningMode(False, False, False, False)
         self.assertEqual(scanning_mode(0x0), expected)

@@ -29,7 +29,7 @@ import iris.tests as tests
 from iris.fileformats.grib._load_convert import fixup_float32_from_int32
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_negative(self):
         result = fixup_float32_from_int32(-0x3f000000)
         self.assertEqual(result, -0.5)

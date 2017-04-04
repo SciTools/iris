@@ -33,7 +33,7 @@ from iris.fileformats.grib import _load_generate
 from iris.fileformats.grib.message import GribMessage
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.fname = mock.sentinel.fname
         self.message_id = mock.sentinel.message_id

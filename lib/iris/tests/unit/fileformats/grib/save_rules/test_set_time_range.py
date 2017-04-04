@@ -38,7 +38,7 @@ from iris.coords import DimCoord
 from iris.fileformats.grib._save_rules import set_time_range
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.coord = DimCoord(0, 'time',
                               units=Unit('hours since epoch',

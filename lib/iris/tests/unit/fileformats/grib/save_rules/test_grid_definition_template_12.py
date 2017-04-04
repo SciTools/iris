@@ -41,7 +41,7 @@ class FakeGribError(Exception):
     pass
 
 
-class Test(tests.IrisGribTest, GdtTestMixin):
+class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
         self.default_ellipsoid = GeogCS(semi_major_axis=6377563.396,
                                         semi_minor_axis=6356256.909)

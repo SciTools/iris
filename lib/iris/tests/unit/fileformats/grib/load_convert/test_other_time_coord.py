@@ -31,7 +31,7 @@ import iris.coords
 from iris.fileformats.grib._load_convert import other_time_coord
 
 
-class TestValid(tests.IrisGribTest):
+class TestValid(tests.IrisTest):
     def test_t(self):
         rt = iris.coords.DimCoord(48, 'time', units='hours since epoch')
         fp = iris.coords.DimCoord(6, 'forecast_period', units='hours')
@@ -49,7 +49,7 @@ class TestValid(tests.IrisGribTest):
         self.assertEqual(result, expected)
 
 
-class TestInvalid(tests.IrisGribTest):
+class TestInvalid(tests.IrisTest):
     def test_t_with_bounds(self):
         rt = iris.coords.DimCoord(48, 'time', units='hours since epoch',
                                   bounds=[36, 60])

@@ -30,7 +30,7 @@ import iris
 from iris.fileformats.grib._save_rules import _non_missing_forecast_period
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def _cube(self, t_bounds=False):
         time_coord = iris.coords.DimCoord(15, standard_name='time',
                                           units='hours since epoch')

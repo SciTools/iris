@@ -29,7 +29,7 @@ import mock
 import iris.fileformats.grib
 
 
-class TestSaveGrib2(tests.IrisGribTest):
+class TestSaveGrib2(tests.IrisTest):
     def setUp(self):
         self.cube = mock.sentinel.cube
         self.target = mock.sentinel.target

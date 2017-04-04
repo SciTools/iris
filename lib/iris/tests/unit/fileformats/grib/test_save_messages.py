@@ -31,7 +31,7 @@ import numpy as np
 import iris.fileformats.grib
 
 
-class TestSaveMessages(tests.IrisGribTest):
+class TestSaveMessages(tests.IrisTest):
     def setUp(self):
         # Create a test object to stand in for a real PPField.
         self.grib_message = gribapi.grib_new_from_samples("GRIB2")

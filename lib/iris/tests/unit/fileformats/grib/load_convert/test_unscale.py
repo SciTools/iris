@@ -34,7 +34,7 @@ from iris.fileformats.grib._load_convert import unscale, _MDI as MDI
 # Reference GRIB2 Regulation 92.1.12.
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_single(self):
         self.assertEqual(unscale(123, 1), 12.3)
         self.assertEqual(unscale(123, -1), 1230.0)

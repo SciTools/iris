@@ -33,7 +33,7 @@ from iris.fileformats.grib._load_convert \
     import grid_definition_template_0_and_1
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
 
     def test_unsupported_quasi_regular__number_of_octets(self):
         section = {'numberOfOctectsForNumberOfPoints': 1}
