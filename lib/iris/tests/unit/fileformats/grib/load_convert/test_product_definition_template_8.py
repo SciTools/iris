@@ -33,7 +33,7 @@ import mock
 from iris.fileformats.grib._load_convert import product_definition_template_8
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         module = 'iris.fileformats.grib._load_convert'
         self.module = module

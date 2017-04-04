@@ -31,7 +31,7 @@ from iris.fileformats.grib._load_convert import grib2_convert
 from iris.tests.unit.fileformats.grib import _make_test_message
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         this = 'iris.fileformats.grib._load_convert'
         self.patch('{}.reference_time_coord'.format(this), return_value=None)

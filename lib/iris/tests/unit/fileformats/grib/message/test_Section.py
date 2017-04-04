@@ -33,7 +33,7 @@ from iris.fileformats.grib.message import Section
 
 
 @tests.skip_data
-class Test___getitem__(tests.IrisGribTest):
+class Test___getitem__(tests.IrisTest):
     def setUp(self):
         filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
         with open(filename, 'rb') as grib_fh:
@@ -66,7 +66,7 @@ class Test___getitem__(tests.IrisGribTest):
 
 
 @tests.skip_data
-class Test__getitem___pdt_31(tests.IrisGribTest):
+class Test__getitem___pdt_31(tests.IrisTest):
     def setUp(self):
         filename = tests.get_data_path(('GRIB', 'umukv', 'ukv_chan9.grib2'))
         with open(filename, 'rb') as grib_fh:
@@ -84,7 +84,7 @@ class Test__getitem___pdt_31(tests.IrisGribTest):
 
 
 @tests.skip_data
-class Test_get_computed_key(tests.IrisGribTest):
+class Test_get_computed_key(tests.IrisTest):
     def test_gdt40_computed(self):
         fname = tests.get_data_path(('GRIB', 'gaussian', 'regular_gg.grib2'))
         with open(fname, 'rb') as grib_fh:

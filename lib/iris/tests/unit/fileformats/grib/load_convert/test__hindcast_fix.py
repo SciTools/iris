@@ -31,7 +31,7 @@ from collections import namedtuple
 from iris.fileformats.grib._load_convert import _hindcast_fix as hindcast_fix
 
 
-class TestHindcastFix(tests.IrisGribTest):
+class TestHindcastFix(tests.IrisTest):
     # setup tests : provided value, fix-applies, expected-fixed
     FixTest = namedtuple('FixTest', ('given', 'fixable', 'fixed'))
     test_values = [

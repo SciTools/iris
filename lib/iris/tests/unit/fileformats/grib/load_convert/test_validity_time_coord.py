@@ -35,7 +35,7 @@ from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import validity_time_coord
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.fp = DimCoord(5, standard_name='forecast_period', units='hours')
         self.fp_test_bounds = np.array([[1.0, 9.0]])

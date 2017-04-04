@@ -32,7 +32,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import time_range_unit
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.unit_by_indicator = {0: Unit('minutes'),
                                   1: Unit('hours'),

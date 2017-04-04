@@ -38,7 +38,7 @@ from iris.fileformats.grib._load_convert import \
     _MDI as MISSING_LEVEL
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,

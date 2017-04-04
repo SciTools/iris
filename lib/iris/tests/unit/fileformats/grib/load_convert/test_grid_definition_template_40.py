@@ -44,7 +44,7 @@ class _Section(dict):
         return self.get(key)
 
 
-class Test_regular(tests.IrisGribTest):
+class Test_regular(tests.IrisTest):
 
     def section_3(self):
         section = _Section({
@@ -118,7 +118,7 @@ class Test_regular(tests.IrisGribTest):
         self.assertEqual(metadata, expected)
 
 
-class Test_reduced(tests.IrisGribTest):
+class Test_reduced(tests.IrisTest):
 
     def section_3(self):
         section = _Section({

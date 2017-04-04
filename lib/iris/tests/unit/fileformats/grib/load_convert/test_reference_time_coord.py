@@ -39,7 +39,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import reference_time_coord
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.section = {'year': 2007,
                         'month': 1,

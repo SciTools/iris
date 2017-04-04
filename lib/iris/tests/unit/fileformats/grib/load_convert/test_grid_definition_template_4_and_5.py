@@ -41,7 +41,7 @@ from iris.fileformats.grib._load_convert import \
 RESOLUTION = 1e6
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.patch('warnings.warn')
         self.patch('iris.fileformats.grib._load_convert._is_circular',

@@ -30,7 +30,7 @@ from iris.fileformats.grib import load_cubes
 from iris.fileformats.grib._save_rules import reference_time
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def _test(self, cube):
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)

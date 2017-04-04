@@ -39,7 +39,7 @@ from iris.fileformats.grib._save_rules import \
      _product_definition_template_8_10_and_11
 
 
-class TestTypeOfStatisticalProcessing(tests.IrisGribTest):
+class TestTypeOfStatisticalProcessing(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -89,7 +89,7 @@ class TestTypeOfStatisticalProcessing(tests.IrisGribTest):
             _product_definition_template_8_10_and_11(cube, mock.sentinel.grib)
 
 
-class TestTimeCoordPrerequisites(tests.IrisGribTest):
+class TestTimeCoordPrerequisites(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -132,7 +132,7 @@ class TestTimeCoordPrerequisites(tests.IrisGribTest):
                                                      mock.sentinel.grib)
 
 
-class TestEndOfOverallTimeInterval(tests.IrisGribTest):
+class TestEndOfOverallTimeInterval(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
@@ -189,7 +189,7 @@ class TestEndOfOverallTimeInterval(tests.IrisGribTest):
             grib, "secondOfEndOfOverallTimeInterval", 7)
 
 
-class TestNumberOfTimeRange(tests.IrisGribTest):
+class TestNumberOfTimeRange(tests.IrisTest):
     @mock.patch.object(gribapi, 'grib_set')
     def test_other_cell_methods(self, mock_set):
         cube = stock.lat_lon_cube()

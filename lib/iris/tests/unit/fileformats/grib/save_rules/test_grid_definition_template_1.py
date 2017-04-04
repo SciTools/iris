@@ -37,7 +37,7 @@ from iris.fileformats.grib._save_rules import grid_definition_template_1
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 
-class Test(tests.IrisGribTest, GdtTestMixin):
+class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
         self.default_ellipsoid = GeogCS(PP_DEFAULT_EARTH_RADIUS)
         GdtTestMixin.setUp(self)

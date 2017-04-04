@@ -32,7 +32,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import statistical_cell_method
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.section = {}
         self.section['numberOfTimeRange'] = 1

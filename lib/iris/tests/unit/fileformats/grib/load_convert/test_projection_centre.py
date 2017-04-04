@@ -30,7 +30,7 @@ from iris.fileformats.grib._load_convert import (projection_centre,
                                                  ProjectionCentre)
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_unset(self):
         expected = ProjectionCentre(False, False)
         self.assertEqual(projection_centre(0x0), expected)

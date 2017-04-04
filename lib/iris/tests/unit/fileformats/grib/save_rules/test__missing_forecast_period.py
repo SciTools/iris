@@ -36,7 +36,7 @@ from iris.coords import DimCoord
 from iris.fileformats.grib._save_rules import _missing_forecast_period
 
 
-class TestNoForecastReferenceTime(tests.IrisGribTest):
+class TestNoForecastReferenceTime(tests.IrisTest):
     def test_no_bounds(self):
         t_coord = DimCoord(15, 'time', units='hours since epoch')
         cube = Cube(23)
@@ -71,7 +71,7 @@ class TestNoForecastReferenceTime(tests.IrisGribTest):
         self.assertEqual(res, expected)
 
 
-class TestWithForecastReferenceTime(tests.IrisGribTest):
+class TestWithForecastReferenceTime(tests.IrisTest):
     def test_no_bounds(self):
         t_coord = DimCoord(3, 'time', units='days since epoch')
         frt_coord = DimCoord(8, 'forecast_reference_time',

@@ -31,7 +31,7 @@ import mock
 from iris.fileformats.grib.message import _MessageLocation
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test(self):
         message_location = _MessageLocation(mock.sentinel.filename,
                                             mock.sentinel.location)

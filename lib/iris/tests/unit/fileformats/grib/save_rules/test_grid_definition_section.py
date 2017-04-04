@@ -34,7 +34,7 @@ from iris.fileformats.grib._save_rules import grid_definition_section
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 
-class Test(tests.IrisGribTest, GdtTestMixin):
+class Test(tests.IrisTest, GdtTestMixin):
     def setUp(self):
         GdtTestMixin.setUp(self)
 

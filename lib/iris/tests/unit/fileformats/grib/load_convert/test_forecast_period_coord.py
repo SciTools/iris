@@ -31,7 +31,7 @@ from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import forecast_period_coord
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test(self):
         # (indicatorOfUnitOfTimeRange, forecastTime, expected-hours)
         times = [(0, 60, 1),     # minutes

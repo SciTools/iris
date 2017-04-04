@@ -35,7 +35,7 @@ import iris.coords
 from iris.fileformats.grib._save_rules import set_fixed_surfaces
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_bounded_altitude_feet(self):
         cube = iris.cube.Cube([0])
         cube.add_aux_coord(iris.coords.AuxCoord(

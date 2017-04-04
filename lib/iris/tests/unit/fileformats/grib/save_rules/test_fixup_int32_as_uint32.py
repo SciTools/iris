@@ -29,7 +29,7 @@ import iris.tests as tests
 from iris.fileformats.grib._save_rules import fixup_int32_as_uint32
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test_very_negative(self):
         with self.assertRaises(ValueError):
             fixup_int32_as_uint32(-0x80000000)

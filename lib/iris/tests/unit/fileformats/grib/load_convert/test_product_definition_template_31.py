@@ -36,7 +36,7 @@ from iris.coords import AuxCoord
 from iris.fileformats.grib._load_convert import product_definition_template_31
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def setUp(self):
         self.patch('warnings.warn')
         self.metadata = {'factories': [], 'references': [],

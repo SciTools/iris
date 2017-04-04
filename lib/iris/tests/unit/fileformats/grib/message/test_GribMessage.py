@@ -43,7 +43,7 @@ SECTION_6_NO_BITMAP = {'bitMapIndicator': 255, 'bitmap': None}
 
 
 @tests.skip_data
-class Test_messages_from_filename(tests.IrisGribTest):
+class Test_messages_from_filename(tests.IrisTest):
     def test(self):
         filename = tests.get_data_path(('GRIB', '3_layer_viz',
                                         '3_layer.grib2'))
@@ -61,7 +61,7 @@ class Test_messages_from_filename(tests.IrisGribTest):
         self.assertTrue(my_file.closed)
 
 
-class Test_sections(tests.IrisGribTest):
+class Test_sections(tests.IrisTest):
     def test(self):
         # Check that the `sections` attribute defers to the `sections`
         # attribute on the underlying _RawGribMessage.
@@ -69,7 +69,7 @@ class Test_sections(tests.IrisGribTest):
         self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
 
-class Test_data__masked(tests.IrisGribTest):
+class Test_data__masked(tests.IrisTest):
     def setUp(self):
         self.bitmap = np.array([0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1])
         self.shape = (3, 4)
@@ -127,7 +127,7 @@ class Test_data__masked(tests.IrisGribTest):
             message.data.ndarray()
 
 
-class Test_data__unsupported(tests.IrisGribTest):
+class Test_data__unsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
         message = _make_test_message({3: {'sourceOfGridDefinition': 1},
                                       6: SECTION_6_NO_BITMAP})
@@ -266,7 +266,7 @@ class Test_data__grid_template_90(tests.IrisTest_nometa,
         return section_3
 
 
-class Test_data__unknown_grid_template(tests.IrisGribTest):
+class Test_data__unknown_grid_template(tests.IrisTest):
     def test(self):
         message = _make_test_message(
             {3: _example_section_3(999, 0),

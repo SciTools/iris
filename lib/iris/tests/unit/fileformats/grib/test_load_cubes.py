@@ -30,7 +30,7 @@ import iris.fileformats.grib
 from iris.fileformats.grib import load_cubes
 
 
-class Test(tests.IrisGribTest):
+class Test(tests.IrisTest):
     def test(self):
         generator = iris.fileformats.grib._load_generate
         converter = iris.fileformats.grib._load_convert.convert
@@ -47,7 +47,7 @@ class Test(tests.IrisGribTest):
 
 
 @tests.skip_data
-class Test_load_cubes(tests.IrisGribTest):
+class Test_load_cubes(tests.IrisTest):
 
     def test_reduced_raw(self):
         # Loading a GRIB message defined on a reduced grid without

@@ -37,7 +37,7 @@ import iris.tests.stock as stock
 from iris.fileformats.grib._save_rules import product_definition_template_10
 
 
-class TestPercentileValueIdentifier(tests.IrisGribTest):
+class TestPercentileValueIdentifier(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Rename cube to avoid warning about unknown discipline/parameter.
