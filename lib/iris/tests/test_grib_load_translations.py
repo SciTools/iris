@@ -42,7 +42,6 @@ import iris.exceptions
 from iris.tests import mock
 import iris.tests.stock
 import iris.util
-import iris.fileformats.grib.grib_phenom_translation as gpt
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
@@ -54,6 +53,7 @@ if tests.MPL_AVAILABLE:
 if tests.GRIB_AVAILABLE:
     import gribapi
     import iris.fileformats.grib
+    import iris.fileformats.grib.grib_phenom_translation as gpt
 
 
 def _mock_gribapi_fetch(message, key):
