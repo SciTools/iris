@@ -27,15 +27,14 @@ import iris.tests as tests
 
 import cf_units
 import gribapi
-import mock
 
 import iris
 from iris.exceptions import TranslationError
-from iris.fileformats.rules import Reference
-
 from iris.fileformats.grib import GribWrapper
 from iris.fileformats.grib._grib1_load_rules import grib1_convert
+from iris.fileformats.rules import Reference
 from iris.tests.unit.fileformats.grib import TestField
+from iris.tests import mock
 
 
 class TestBadEdition(tests.IrisTest):

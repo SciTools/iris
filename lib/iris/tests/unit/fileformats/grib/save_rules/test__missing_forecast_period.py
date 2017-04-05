@@ -27,12 +27,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import datetime
-import numpy as np
-
 from iris.cube import Cube
 from iris.coords import DimCoord
-
 from iris.fileformats.grib._save_rules import _missing_forecast_period
 
 

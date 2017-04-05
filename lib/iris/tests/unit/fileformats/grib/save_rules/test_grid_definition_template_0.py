@@ -30,7 +30,6 @@ import iris.tests as tests
 import numpy as np
 
 from iris.coord_systems import GeogCS
-
 from iris.fileformats.grib._save_rules import grid_definition_template_0
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 

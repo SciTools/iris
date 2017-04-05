@@ -23,11 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 
 import iris
 from iris.fileformats.pp import EARTH_RADIUS as PP_DEFAULT_EARTH_RADIUS
+from iris.tests import mock
 
 
 class GdtTestMixin(object):

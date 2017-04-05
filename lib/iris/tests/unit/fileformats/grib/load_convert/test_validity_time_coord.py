@@ -27,12 +27,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from cf_units import Unit
-import mock
 import numpy as np
 
 from iris.coords import DimCoord
-
 from iris.fileformats.grib._load_convert import validity_time_coord
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

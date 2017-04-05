@@ -19,18 +19,18 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
 import iris.tests as tests
-
-import mock
 
 import iris
 from iris.exceptions import TranslationError
-from iris.fileformats.rules import Loader
-
 import iris.fileformats.grib
 from iris.fileformats.grib import GribWrapper
 from iris.fileformats.grib import _load_generate
 from iris.fileformats.grib.message import GribMessage
+from iris.fileformats.rules import Loader
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

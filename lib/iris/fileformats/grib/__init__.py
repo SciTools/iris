@@ -38,13 +38,11 @@ import numpy.ma as ma
 
 import iris
 import iris.coord_systems as coord_systems
-from iris.exceptions import TranslationError, NotYetImplementedError
-
-# NOTE: careful here, to avoid circular imports (as iris imports grib)
-from . import grib_phenom_translation as gptx
-from . import _save_rules
-from ._load_convert import convert as load_convert
-from .message import GribMessage
+from iris.exceptions import TranslationError, NotYetImplementedError, IrisError
+from iris.fileformats.grib import grib_phenom_translation as gptx
+from iris.fileformats.grib import _save_rules
+from iris.fileformats.grib._load_convert import convert as load_convert
+from iris.fileformats.grib.message import GribMessage
 
 
 __all__ = ['load_cubes', 'save_grib2', 'load_pairs_from_fields',
@@ -195,7 +193,7 @@ class GribWrapper(object):
         # forbid alternate row scanning
         # (uncommon entry from GRIB2 flag table 3.4, also in GRIB1)
         if self.alternativeRowScanning == 1:
-            raise ValueError("alternativeRowScanning == 1 not handled.")
+            raise IrisError("alternativeRowScanning == 1 not handled.")
 
     def __getattr__(self, key):
         """Return a grib key, or one of our extra keys."""

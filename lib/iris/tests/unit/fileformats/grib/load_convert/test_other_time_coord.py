@@ -27,7 +27,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import iris.coords
-
 from iris.fileformats.grib._load_convert import other_time_coord
 
 

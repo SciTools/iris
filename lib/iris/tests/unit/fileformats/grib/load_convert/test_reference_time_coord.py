@@ -35,7 +35,6 @@ from cf_units import CALENDAR_GREGORIAN, Unit
 
 from iris.coords import DimCoord
 from iris.exceptions import TranslationError
-
 from iris.fileformats.grib._load_convert import reference_time_coord
 
 
@@ -60,12 +59,12 @@ class Test(tests.IrisTest):
         coord = reference_time_coord(section)
         self.assertEqual(coord, expected)
 
-    def test_start_of_forecast(self):
+    def test_start_of_forecast0(self):
         section = deepcopy(self.section)
         section['significanceOfReferenceTime'] = 0
         self._check(section, 'forecast_reference_time')
 
-    def test_start_of_forecast(self):
+    def test_start_of_forecast1(self):
         section = deepcopy(self.section)
         section['significanceOfReferenceTime'] = 1
         self._check(section, 'forecast_reference_time')

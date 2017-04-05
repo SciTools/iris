@@ -26,7 +26,6 @@ import iris.tests as tests
 import cf_units
 
 import iris
-
 from iris.fileformats.grib._save_rules import _non_missing_forecast_period
 
 

@@ -24,9 +24,8 @@ import six
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import iris.fileformats.grib
+from iris.tests import mock
 
 
 class TestSaveGrib2(tests.IrisTest):

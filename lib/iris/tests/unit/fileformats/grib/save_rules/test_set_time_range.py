@@ -31,11 +31,10 @@ import warnings
 
 from cf_units import Unit
 import gribapi
-import mock
 
 from iris.coords import DimCoord
-
 from iris.fileformats.grib._save_rules import set_time_range
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

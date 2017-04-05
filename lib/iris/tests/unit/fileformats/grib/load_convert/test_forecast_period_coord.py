@@ -27,7 +27,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from iris.coords import DimCoord
-
 from iris.fileformats.grib._load_convert import forecast_period_coord
 
 

@@ -31,9 +31,8 @@ import numpy as np
 
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.exceptions import TranslationError
-from iris.fileformats.pp import EARTH_RADIUS as PP_DEFAULT_EARTH_RADIUS
-
 from iris.fileformats.grib._save_rules import grid_definition_template_5
+from iris.fileformats.pp import EARTH_RADIUS as PP_DEFAULT_EARTH_RADIUS
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 

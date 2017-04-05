@@ -27,7 +27,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from iris.exceptions import TranslationError
-
 from iris.fileformats.grib._load_convert import bitmap_section
 from iris.tests.unit.fileformats.grib import _make_test_message
 
