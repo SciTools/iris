@@ -30,11 +30,10 @@ import iris.tests as tests
 
 from cf_units import Unit
 import gribapi
-import mock
 
 from iris.coords import CellMethod, DimCoord
+from iris.tests import mock
 import iris.tests.stock as stock
-
 from iris.fileformats.grib._save_rules import \
      _product_definition_template_8_10_and_11
 

@@ -36,8 +36,9 @@ import numpy.ma as ma
 import iris
 import iris.exceptions
 from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
-from . import grib_phenom_translation as gptx
-from ._load_convert import (_STATISTIC_TYPE_NAMES, _TIME_RANGE_UNITS)
+from iris.fileformats.grib import grib_phenom_translation as gptx
+from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
+                                                 _TIME_RANGE_UNITS)
 from iris.util import is_regular, regular_step
 
 

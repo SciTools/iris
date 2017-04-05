@@ -27,12 +27,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.exceptions import TranslationError
-
 from iris.fileformats.grib._load_convert import product_definition_template_9
 from iris.fileformats.grib._load_convert import Probability, _MDI
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

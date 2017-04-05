@@ -24,13 +24,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
-import mock
 import numpy as np
 
 import iris
-
 import iris.fileformats.grib
 from iris.fileformats.grib.message import GribMessage
+from iris.tests import mock
 
 
 def _make_test_message(sections):
@@ -206,30 +205,3 @@ class TestField(tests.IrisTest):
         self.assertEqual(
             [type(coord) for coord, dims in coords_and_dims_got],
             [type(coord) for coord, dims in coords_and_dims_expected])
-
-
-class TestGribSimple(tests.IrisTest):
-    # A testing class that does not need the test data.
-    def mock_grib(self):
-        # A mock grib message, with attributes that can't be Mocks themselves.
-        grib = mock.Mock()
-        grib.startStep = 0
-        grib.phenomenon_points = lambda unit: 3
-        grib._forecastTimeUnit = "hours"
-        grib.productDefinitionTemplateNumber = 0
-        # define a level type (NB these 2 are effectively the same)
-        grib.levelType = 1
-        grib.typeOfFirstFixedSurface = 1
-        grib.typeOfSecondFixedSurface = 1
-        return grib
-
-    def cube_from_message(self, grib):
-        # Parameter translation now uses the GribWrapper, so we must convert
-        # the Mock-based fake message to a FakeGribMessage.
-        with mock.patch('iris.fileformats.grib.gribapi', _mock_gribapi):
-                grib_message = FakeGribMessage(**grib.__dict__)
-                wrapped_msg = iris.fileformats.grib.GribWrapper(grib_message)
-                cube, _, _ = iris.fileformats.rules._make_cube(
-                    wrapped_msg,
-                    iris.fileformats.grib._grib1_load_rules.grib1_convert)
-        return cube

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the `iris.message._DataProxy` class.
+Unit tests for the `iris.fileformats.grib.message._DataProxy` class.
 
 """
 
@@ -30,7 +30,6 @@ import numpy as np
 from numpy.random import randint
 
 from iris.exceptions import TranslationError
-
 from iris.fileformats.grib.message import _DataProxy
 
 

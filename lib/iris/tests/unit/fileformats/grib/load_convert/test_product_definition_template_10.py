@@ -28,10 +28,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from copy import deepcopy
-import mock
 
 from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import product_definition_template_10
+from iris.tests import mock
 from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 
 

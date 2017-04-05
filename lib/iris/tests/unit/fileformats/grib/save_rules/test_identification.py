@@ -24,14 +24,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import gribapi
-import mock
 
 import iris
-import iris.tests.stock as stock
-
 from iris.fileformats.grib._save_rules import identification
-from iris.tests.unit.fileformats.grib import TestGribSimple
-
+from iris.tests import mock
+import iris.tests.stock as stock
+from iris.tests.test_grib_load_translations import TestGribSimple
 
 GRIB_API = 'iris.fileformats.grib._save_rules.gribapi'
 

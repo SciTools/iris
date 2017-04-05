@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the `iris.message._MessageLocation` class.
+Unit tests for the `iris.fileformats.grib.message._MessageLocation` class.
 
 """
 
@@ -26,9 +26,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.fileformats.grib.message import _MessageLocation
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

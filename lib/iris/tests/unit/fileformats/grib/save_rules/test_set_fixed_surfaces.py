@@ -31,7 +31,6 @@ import numpy as np
 
 import iris.cube
 import iris.coords
-
 from iris.fileformats.grib._save_rules import set_fixed_surfaces
 
 

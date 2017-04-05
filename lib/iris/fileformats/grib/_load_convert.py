@@ -38,12 +38,11 @@ from iris.aux_factory import HybridPressureFactory
 import iris.coord_systems as icoord_systems
 from iris.coords import AuxCoord, DimCoord, CellMethod
 from iris.exceptions import TranslationError
-from . import grib_phenom_translation as itranslation
+from iris.fileformats.grib._grib1_load_rules import grib1_convert
+from iris.fileformats.grib import grib_phenom_translation as itranslation
+from iris.fileformats.grib.message import GribMessage
 from iris.fileformats.rules import ConversionMetadata, Factory, Reference
 from iris.util import _is_circular
-
-from ._grib1_load_rules import grib1_convert
-from .message import GribMessage
 
 
 # Restrict the names imported from this namespace.

@@ -31,9 +31,8 @@ import numpy as np
 
 import iris.coord_systems
 import iris.coords
-
-from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 from iris.fileformats.grib._load_convert import grid_definition_template_30
+from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 
 
 MDI = 2 ** 32 - 1

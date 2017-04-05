@@ -30,7 +30,6 @@ import numpy.ma as ma
 
 import iris.coord_systems as icoord_systems
 from iris.exceptions import TranslationError
-
 from iris.fileformats.grib._load_convert import ellipsoid
 
 

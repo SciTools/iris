@@ -28,12 +28,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from copy import deepcopy
-import mock
 import warnings
 
 from iris.coords import DimCoord
-
 from iris.fileformats.grib._load_convert import ensemble_identifier
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):

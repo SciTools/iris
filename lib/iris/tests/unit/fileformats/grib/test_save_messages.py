@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2017, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,10 +25,10 @@ import six
 import iris.tests as tests
 
 import gribapi
-import mock
 import numpy as np
 
 import iris.fileformats.grib
+from iris.tests import mock
 
 
 class TestSaveMessages(tests.IrisTest):

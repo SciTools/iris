@@ -27,14 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
-import mock
-
 import iris.coords
-
 import iris.fileformats.grib
+from iris.fileformats.grib._load_convert import product_definition_template_0
+from iris.tests import mock
 from iris.tests.unit.fileformats.grib.load_convert import (LoadConvertTest,
                                                            empty_metadata)
-from iris.fileformats.grib._load_convert import product_definition_template_0
 
 
 MDI = 0xffffffff
