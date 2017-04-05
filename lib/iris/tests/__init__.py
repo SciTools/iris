@@ -420,8 +420,20 @@ class IrisTest_nometa(unittest.TestCase):
             with open(reference_path, 'r') as reference_file:
                 stats = json.load(reference_file)
                 self.assertEqual(stats.get('shape', []), list(data.shape))
+                is_masked_array = isinstance(data, np.ma.MaskedArray)
+                mask = data.mask if is_masked_array else None
+                msg_fmt = 'The reference file claims the data shoud {not1}' \
+                          'be masked.\n' \
+                          'The array is {not2}a MaskedArray instance.\n' \
+                          'The mask is:\n{mask}'
+                not1 = '' if stats.get('masked', False) else 'not '
+                not2 = '' if is_masked_array else 'not '
                 self.assertEqual(stats.get('masked', False),
-                                       isinstance(data, ma.MaskedArray))
+                                 np.ma.is_masked(data),
+                                 msg=msg_fmt.format(file=reference_path,
+                                                    not1=not1,
+                                                    not2=not2,
+                                                    mask=mask))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
                                    stats.get('max', 0.), stats.get('min', 0.)),
                                   dtype=np.float_)
@@ -435,14 +447,11 @@ class IrisTest_nometa(unittest.TestCase):
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            masked = False
-            if isinstance(data, ma.MaskedArray):
-                masked = True
             stats = {'mean': np.float_(data.mean()),
                      'std': np.float_(data.std()),
                      'max': np.float_(data.max()),
                      'min': np.float_(data.min()),
-                     'shape': data.shape, 'masked': masked}
+                     'shape': data.shape, 'masked': np.ma.is_masked(data)}
             with open(reference_path, 'w') as reference_file:
                 reference_file.write(json.dumps(stats))
 
