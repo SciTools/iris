@@ -1183,28 +1183,32 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice.data), 25)
 
-    @tests.skip_biggus
     def test_save_and_merge(self):
         cube = self._load_3d_cube()
+        dtype = cube.dtype
+        fill_value = 123456
 
         # extract the 2d field that has SOME missing values
         masked_slice = cube[0]
-        masked_slice.data.fill_value = 123456
+        masked_slice.fill_value = fill_value
 
         # test saving masked data
         reference_txt_path = tests.get_result_path(('cdm', 'masked_save_pp.txt'))
         with self.cube_save_test(reference_txt_path, reference_cubes=masked_slice) as temp_pp_path:
             iris.save(masked_slice, temp_pp_path)
-        
+
             # test merge keeps the mdi we just saved
             cube1 = iris.load_cube(temp_pp_path)
+            self.assertEqual(cube1.dtype, dtype)
+
             cube2 = cube1.copy()
             # make cube1 and cube2 differ on a scalar coord, to make them mergeable into a 3d cube
             cube2.coord("pressure").points = [1001.0]
             merged_cubes = iris.cube.CubeList([cube1, cube2]).merge()
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]
-            self.assertEqual(merged_cube.data.fill_value, 123456)
+            self.assertEqual(merged_cube.dtype, dtype)
+            self.assertEqual(merged_cube.fill_value, fill_value)
 
 
 @tests.skip_data
