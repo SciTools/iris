@@ -1286,7 +1286,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
             self.bmdi = -9999
         if is_lazy_data(self._data):
             self._data = as_concrete_data(self._data,
-                                          nans_replacement=self.bmdi)
+                                          nans_replacement=ma.masked)
         return self._data
 
     @data.setter
