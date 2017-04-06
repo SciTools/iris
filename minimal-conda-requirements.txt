@@ -2,7 +2,6 @@
 # conda create -n <name> --file minimal-conda-requirements.txt
 
 # Mandatory dependencies
-biggus
 cartopy
 matplotlib
 netcdf4

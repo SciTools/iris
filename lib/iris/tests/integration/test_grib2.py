@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,16 +36,13 @@ from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
 import iris.tests.stock as stock
 from iris.util import is_regular
 
-# Grib support is optional.
+# gribapi is an optional dependency
 if tests.GRIB_AVAILABLE:
     try:
-        # Try to load the independent 'iris_grib' package.
-        from iris_grib import load_pairs_from_fields
-        from iris_grib.message import GribMessage
-    except ImportError:
-        # Try to load old inbuilt module instead.
         from iris.fileformats.grib import load_pairs_from_fields
         from iris.fileformats.grib.message import GribMessage
+    except ImportError:
+        pass
 
 
 @tests.skip_data

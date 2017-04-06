@@ -15,13 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests for specific implementation aspects of the 'old' grib loaders.
-
-The class TestGribLoad has been moved to the separate source file
-'tests/integration/test_grib_load.py'.
-These tests are specific to the old internal grib module,
-:mod:`iris.fileformats.grib`, which will shortly be superceded by the separate
-'iris_grib' package, and will eventually be removed.
+Tests for specific implementation aspects of the grib loaders.
 
 """
 from __future__ import (absolute_import, division, print_function)

@@ -92,19 +92,12 @@ else:
     GDAL_AVAILABLE = True
 
 try:
-    import iris_grib
-    GRIB_AVAILABLE = True
-    from iris_grib.message import GribMessage
+    import gribapi
 except ImportError:
-    try:
-        import gribapi
-        GRIB_AVAILABLE = True
-        from iris.fileformats.grib.message import GribMessage
-    except ImportError:
-        GRIB_AVAILABLE = False
-
-# skip all iris_grib tests until a new dask aware iris_grib is available
-GRIB_AVAILABLE = False
+    GRIB_AVAILABLE = False
+else:
+    GRIB_AVAILABLE = True
+    from iris.fileformats.grib.message import GribMessage
 
 try:
     import iris_sample_data
