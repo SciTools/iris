@@ -421,7 +421,7 @@ class IrisTest_nometa(unittest.TestCase):
                 stats = json.load(reference_file)
                 self.assertEqual(stats.get('shape', []), list(data.shape))
                 self.assertEqual(stats.get('masked', False),
-                                       isinstance(data, ma.MaskedArray))
+                                 np.ma.is_masked(data))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
                                    stats.get('max', 0.), stats.get('min', 0.)),
                                   dtype=np.float_)
@@ -435,14 +435,13 @@ class IrisTest_nometa(unittest.TestCase):
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            masked = False
-            if isinstance(data, ma.MaskedArray):
-                masked = True
-            stats = {'mean': np.float_(data.mean()),
-                     'std': np.float_(data.std()),
-                     'max': np.float_(data.max()),
-                     'min': np.float_(data.min()),
-                     'shape': data.shape, 'masked': masked}
+            stats = collections.OrderedDict([
+                ('std', np.float_(data.std())),
+                ('min', np.float_(data.min())),
+                ('max', np.float_(data.max())),
+                ('shape', data.shape),
+                ('masked', np.ma.is_masked(data)),
+                ('mean', np.float_(data.mean()))])
             with open(reference_path, 'w') as reference_file:
                 reference_file.write(json.dumps(stats))
 
