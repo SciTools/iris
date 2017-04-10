@@ -113,7 +113,6 @@ import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.fileformats
 import iris.io
-import iris.options
 
 
 try:
