@@ -420,10 +420,10 @@ class Test_slices_dim_order(tests.IrisTest):
         '''
         setup a 4D iris cube, each dimension is length 1.
         The dimensions are;
-            dim1: height
-            dim2: time
-            dim3: longitude
-            dim4: latitude
+            dim1: time
+            dim2: height
+            dim3: latitude
+            dim4: longitude
         '''
         self.cube = iris.cube.Cube(np.array([[[[8.]]]]))
         self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [0])
