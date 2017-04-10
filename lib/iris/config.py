@@ -178,21 +178,21 @@ class NetCDF(object):
             If `False` (the default), specifies that Iris should set the
             CF Conventions version when saving cubes as NetCDF files.
             If `True`, specifies that the cubes being saved to NetCDF should
-            set the cf conventions version for the saved NetCDF files.
+            set the CF Conventions version for the saved NetCDF files.
 
         Example usages:
 
         * Specify, for the lifetime of the session, that we want all cubes
           written to NetCDF to define their own CF Conventions versions::
 
-            iris.options.netcdf.conventions_override = True
+            iris.config.netcdf.conventions_override = True
             iris.save('my_cube', 'my_dataset.nc')
             iris.save('my_second_cube', 'my_second_dataset.nc')
 
         * Specify, with a context manager, that we want a cube written to
           NetCDF to define its own CF Conventions version::
 
-            with iris.options.netcdf.context(conventions_override=True):
+            with iris.config.netcdf.context(conventions_override=True):
                 iris.save('my_cube', 'my_dataset.nc')
 
         """
@@ -202,15 +202,19 @@ class NetCDF(object):
         # Now set specific values.
         setattr(self, 'conventions_override', conventions_override)
 
-    def __str__(self):
-        msg = 'NetCDF options: conventions_override={}.'
-        return msg.format(self.conventions_override)
+    def __repr__(self):
+        msg = 'NetCDF options: {}.'
+        # Automatically populate with all currently accepted kwargs.
+        options = ['{}={}'.format(k, v)
+                   for k, v in six.iteritems(self.__dict__)]
+        joined = ', '.join(options)
+        return msg.format(joined)
 
     def __setattr__(self, name, value):
         if name not in self.__dict__:
             # Can't add new names.
-            msg = "'Option' object has no attribute {!r}".format(name)
-            raise AttributeError(msg)
+            msg = 'Cannot set option {!r} for {} configuration.'
+            raise AttributeError(msg.format(name, self.__class__.__name__))
         if value is None:
             # Set an unset value to the name's default.
             value = self._defaults_dict[name]['default']
@@ -220,14 +224,15 @@ class NetCDF(object):
             # anything goes.
             if value not in self._defaults_dict[name]['options']:
                 good_value = self._defaults_dict[name]['default']
-                wmsg = ('Attempting to set bad value {!r} for attribute {!r}. '
-                        'Defaulting to {!r}.')
+                wmsg = ('Attempting to set invalid value {!r} for '
+                        'attribute {!r}. Defaulting to {!r}.')
                 warnings.warn(wmsg.format(value, name, good_value))
                 value = good_value
         self.__dict__[name] = value
 
     @property
     def _defaults_dict(self):
+        # Set this as a property so that it isn't added to `self.__dict__`.
         return {'conventions_override': {'default': False,
                                          'options': [True, False]},
                 }

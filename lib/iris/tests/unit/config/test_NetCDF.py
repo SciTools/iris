@@ -44,7 +44,7 @@ class Test(tests.IrisTest):
             warnings.simplefilter('always')
             iris.config.netcdf.conventions_override = bad_value
         self.assertFalse(iris.config.netcdf.conventions_override)
-        exp_wmsg = 'Attempting to set bad value {!r}'.format(bad_value)
+        exp_wmsg = 'Attempting to set invalid value {!r}'.format(bad_value)
         six.assertRegex(self, str(w[0].message), exp_wmsg)
 
     def test__contextmgr(self):
