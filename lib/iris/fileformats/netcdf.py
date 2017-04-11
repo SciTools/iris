@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -2244,7 +2244,12 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
                        least_significant_digit, packing=packspec)
 
-        conventions = CF_CONVENTIONS_VERSION
+        if iris.config.netcdf.conventions_override:
+            # Set to the default if custom conventions are not available.
+            conventions = cube.attributes.get('Conventions',
+                                              CF_CONVENTIONS_VERSION)
+        else:
+            conventions = CF_CONVENTIONS_VERSION
 
         # Perform a CF patch of the conventions attribute.
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
