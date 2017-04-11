@@ -20,7 +20,7 @@ If you wish to run any of the code examples
 (see http://scitools.org.uk/iris/docs/latest/examples/index.html) you will also
 need the Iris sample data. This can also be installed using conda::
 
-  conda install -c conda-forge iris_sample_data
+  conda install -c conda-forge iris-sample-data
 
 Further documentation on using conda and the features it provides can be found
 at http://conda.pydata.org/docs/intro.html.
