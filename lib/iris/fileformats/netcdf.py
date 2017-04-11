@@ -2245,7 +2245,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                        least_significant_digit, packing=packspec)
 
         if iris.config.netcdf.conventions_override:
-            conventions = cube.attributes['Conventions']
+            # Set to the default if custom conventions are not available.
+            conventions = cube.attributes.get('Conventions',
+                                              CF_CONVENTIONS_VERSION)
         else:
             conventions = CF_CONVENTIONS_VERSION
 
