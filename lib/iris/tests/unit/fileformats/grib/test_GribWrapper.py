@@ -88,6 +88,7 @@ class Test_edition(tests.IrisTest):
         self.assertEqual(wrapper.grib_message, grib_message)
 
 
+@tests.skip_biggus
 class Test_deferred(tests.IrisTest):
     def setUp(self):
         confirm_patch = mock.patch(
