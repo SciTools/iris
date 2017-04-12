@@ -232,7 +232,7 @@ class TestTriPolar(tests.IrisTest):
 class TestLazyData(tests.IrisTest):
     def test_hybrid_height(self):
         cube = istk.simple_4d_with_hybrid_height()
-        # Put a biggus array on the cube so we can test deferred loading.
+        # Put a lazy array into the cube so we can test deferred loading.
         cube.data = as_lazy_data(cube.data)
 
         traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
