@@ -293,6 +293,16 @@ class Parallel(Option):
         # Activate the specified dask options.
         self._set_dask_options()
 
+    def __repr__(self):
+        msg = 'Dask parallel options: {}.'
+
+        # Automatically populate with all currently accepted kwargs.
+        options = ['{}={}'.format(k, v)
+                   for k, v in six.iteritems(self.__dict__)
+                   if not k.startswith('_')]
+        joined = ', '.join(options)
+        return msg.format(joined)
+
     def __setattr__(self, name, value):
         if value is None:
             value = self._defaults_dict[name]['default']
@@ -388,11 +398,11 @@ class Parallel(Option):
 
         """
         scheduler = self.get('scheduler')
-        num_workers = self.get('num_workers')
         get = self.get('dask_scheduler')
         pool = None
 
         if scheduler in ['threaded', 'multiprocessing']:
+            num_workers = self.get('num_workers')
             pool = ThreadPool(num_workers)
         if scheduler == 'distributed':
             get = distributed.Client(get).get
@@ -410,6 +420,7 @@ class Parallel(Option):
         # Update the state to reflect the requested changes.
         for name, value in six.iteritems(kwargs):
             setattr(self, name, value)
+        setattr(self, 'dask_scheduler', self.get('scheduler'))
         self._set_dask_options()
         try:
             yield

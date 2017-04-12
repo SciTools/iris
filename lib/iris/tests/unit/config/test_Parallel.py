@@ -24,11 +24,9 @@ import six
 # importing anything else.
 import iris.tests as tests
 
-import multiprocessing
 import warnings
 
 import dask
-import distributed
 
 from iris.config import Parallel
 from iris.tests import mock
@@ -44,47 +42,116 @@ class Test_operation(tests.IrisTest):
 
 
 class Test__set_dask_options(tests.IrisTest):
-    # Check the correct dask options are set given the inputs.
-    # NOTE: tests that check the correct dask options are set
-    # (will require mock :scream:).
-    # def setUp(self):
-    #     patcher = mock.patch('dask.set_options')
-    #     self.addCleanup(patcher.stop)
-    #     self.mock_dask_opts = patcher.start()
-
     def setUp(self):
-        self.mock_dask = dask
-        self.mock_dask.threaded.get = mock.MagicMock()
-        self.mock_dask.set_options = mock.MagicMock()
-        self.mock_mul = multiprocessing
-        self.mock_mul.pool.ThreadPool = mock.MagicMock()
+        ThreadPool = 'iris.config.ThreadPool'
+        self.pool = mock.sentinel.pool
+        self.patch_ThreadPool = self.patch(ThreadPool, return_value=self.pool)
+        self.default_num_workers = 1
+
+        Client = 'distributed.Client'
+        self.address = '192.168.0.128:8786'
+        mocker = mock.Mock(get=self.address)
+        self.patch_Client = self.patch(Client, return_value=mocker)
+
+        set_options = 'dask.set_options'
+        self.patch_set_options = self.patch(set_options)
 
     def test_default(self):
-        pass
+        Parallel()
+        self.assertEqual(self.patch_Client.call_count, 0)
+        self.patch_ThreadPool.assert_called_once_with(self.default_num_workers)
+
+        pool = self.pool
+        get = dask.threaded.get
+        self.patch_set_options.assert_called_once_with(pool=pool, get=get)
+
+    def test__five_workers(self):
+        n_workers = 5
+        Parallel(num_workers=n_workers)
+        self.assertEqual(self.patch_Client.call_count, 0)
+        self.patch_ThreadPool.assert_called_once_with(n_workers)
+
+        pool = self.pool
+        get = dask.threaded.get
+        self.patch_set_options.assert_called_once_with(pool=pool, get=get)
+
+    def test__five_workers__contextmgr(self):
+        n_workers = 5
+        options = Parallel()
+        pool = self.pool
+        get = dask.threaded.get
+
+        with options.context(num_workers=n_workers):
+            self.assertEqual(self.patch_Client.call_count, 0)
+            self.patch_ThreadPool.assert_called_with(n_workers)
+
+            self.patch_set_options.assert_called_with(pool=pool, get=get)
+
+        self.patch_ThreadPool.assert_called_with(self.default_num_workers)
+        self.patch_set_options.assert_called_with(pool=pool, get=get)
 
     def test_threaded(self):
         scheduler = 'threaded'
         Parallel(scheduler=scheduler)
-        # self.mock_mul.pool.ThreadPool.assert_called_once_with(1)
-        self.mock_dask.set_options.assert_called_once_with(get=self.mock_dask.threaded.get,
-                                                       pool=self.mock_mul.pool.ThreadPool)
+        self.assertEqual(self.patch_Client.call_count, 0)
+        self.patch_ThreadPool.assert_called_once_with(self.default_num_workers)
 
-    def test_threaded_num_workers(self):
-        pass
+        pool = self.pool
+        get = dask.threaded.get
+        self.patch_set_options.assert_called_once_with(pool=pool, get=get)
 
-    # def test_async(self):
-    #     scheduler = 'async'
-    #     # dask_options = mock.Mock(spec=set_options)
-    #     # dask_scheduler = mock.Mock(spec=async.get_sync)
-    #     with mock.patch('dask.set_options') as mock_dask_opts:
-    #         Parallel(scheduler=scheduler)
-    #     # dask_options.assert_called_once_with(get=dask_scheduler)
-    #     mock_dask_opts.assert_any_call()
+    def test_multiprocessing(self):
+        scheduler = 'multiprocessing'
+        Parallel(scheduler=scheduler)
+        self.assertEqual(self.patch_Client.call_count, 0)
+        self.patch_ThreadPool.assert_called_once_with(self.default_num_workers)
+
+        pool = self.pool
+        get = dask.multiprocessing.get
+        self.patch_set_options.assert_called_once_with(pool=pool, get=get)
+
+    def test_multiprocessing__contextmgr(self):
+        scheduler = 'multiprocessing'
+        options = Parallel()
+        with options.context(scheduler=scheduler):
+            self.assertEqual(self.patch_Client.call_count, 0)
+            self.patch_ThreadPool.assert_called_with(self.default_num_workers)
+
+            pool = self.pool
+            get = dask.multiprocessing.get
+            self.patch_set_options.assert_called_with(pool=pool, get=get)
+
+        default_get = dask.threaded.get
+        self.patch_ThreadPool.assert_called_with(self.default_num_workers)
+        self.patch_set_options.assert_called_with(pool=pool,
+                                                  get=default_get)
+
+    def test_async(self):
+        scheduler = 'async'
+        Parallel(scheduler=scheduler)
+        self.assertEqual(self.patch_Client.call_count, 0)
+        self.assertEqual(self.patch_ThreadPool.call_count, 0)
+
+        pool = self.pool
+        get = dask.async.get_sync
+        self.patch_set_options.assert_called_once_with(pool=None, get=get)
+
+    def test_distributed(self):
+        scheduler = self.address
+        Parallel(scheduler=scheduler)
+        self.assertEqual(self.patch_ThreadPool.call_count, 0)
+
+        get = scheduler
+        self.patch_Client.assert_called_once_with(get)
+
+        self.patch_set_options.assert_called_once_with(pool=None, get=get)
 
 
 class Test_set_schedulers(tests.IrisTest):
-    # Check that the correct scheduler and dask scheduler are chosen given the
-    # inputs.
+    # Check that the correct scheduler is chosen given the inputs.
+    def setUp(self):
+        self.patch('iris.config.Parallel._set_dask_options')
+
     def test_default(self):
         opts = Parallel()
         result = opts.get('scheduler')
@@ -127,41 +194,11 @@ class Test_set_schedulers(tests.IrisTest):
         six.assertRegex(self, str(w[0].message), exp_wmsg.format(scheduler))
 
 
-class Test_set_dask_scheduler(tests.IrisTest):
-    # Check that the correct scheduler and dask scheduler are chosen given the
-    # inputs.
-    def test_default(self):
-        opts = Parallel()
-        result = opts.get('dask_scheduler')
-        self.assertIs(result, dask.threaded.get)
-
-    def test_threaded(self):
-        scheduler = 'threaded'
-        opts = Parallel(scheduler=scheduler)
-        result = opts.get('dask_scheduler')
-        self.assertIs(result, dask.threaded.get)
-
-    def test_multiprocessing(self):
-        scheduler = 'multiprocessing'
-        opts = Parallel(scheduler=scheduler)
-        result = opts.get('dask_scheduler')
-        self.assertIs(result, dask.multiprocessing.get)
-
-    def test_async(self):
-        scheduler = 'async'
-        opts = Parallel(scheduler=scheduler)
-        result = opts.get('dask_scheduler')
-        self.assertIs(result, dask.async.get_sync)
-
-    def test_distributed(self):
-        scheduler = '192.168.0.128:8786'
-        with mock.patch('distributed.Client.get') as mock_get:
-            opts = Parallel(scheduler=scheduler)
-        mock_get.assert_called_once_with(scheduler)
-
-
 class Test_set_num_workers(tests.IrisTest):
     # Check that the correct `num_workers` are chosen given the inputs.
+    def setUp(self):
+        self.patch('iris.config.Parallel._set_dask_options')
+
     def test_default(self):
         opts = Parallel()
         result = opts.get('num_workers')
@@ -188,12 +225,6 @@ class Test_set_num_workers(tests.IrisTest):
         self.assertEqual(str(w[0].message),
                          exp_wmsg.format(n_workers, max_cpus, max_cpus-1))
 
-    def test_negative_workers(self):
-        n_workers = -2
-        exp_emsg = "Number of processes must be at least 1"
-        with self.assertRaisesRegexp(ValueError, exp_emsg):
-            Parallel(num_workers=n_workers)
-
     def test_async(self):
         scheduler = 'async'
         with warnings.catch_warnings(record=True) as w:
@@ -214,6 +245,42 @@ class Test_set_num_workers(tests.IrisTest):
         exp_wmsg = 'Attempting to set `num_workers` with the {!r} scheduler'
         six.assertRegex(self, str(w[0].message),
                         exp_wmsg.format('distributed'))
+
+
+class Test_set_dask_scheduler(tests.IrisTest):
+    # Check that the correct dask scheduler is chosen given the inputs.
+    def setUp(self):
+        self.patch('iris.config.Parallel._set_dask_options')
+
+    def test_default(self):
+        opts = Parallel()
+        result = opts.get('dask_scheduler')
+        expected = dask.threaded.get
+        self.assertIs(result, expected)
+
+    def test_threaded(self):
+        opts = Parallel(scheduler='threaded')
+        result = opts.get('dask_scheduler')
+        expected = dask.threaded.get
+        self.assertIs(result, expected)
+
+    def test_multiprocessing(self):
+        opts = Parallel(scheduler='multiprocessing')
+        result = opts.get('dask_scheduler')
+        expected = dask.multiprocessing.get
+        self.assertIs(result, expected)
+
+    def test_async(self):
+        opts = Parallel(scheduler='async')
+        result = opts.get('dask_scheduler')
+        expected = dask.async.get_sync
+        self.assertIs(result, expected)
+
+    def test_distributed(self):
+        scheduler = '192.168.0.128:8786'
+        opts = Parallel(scheduler=scheduler)
+        result = opts.get('dask_scheduler')
+        self.assertEqual(result, scheduler)
 
 
 if __name__ == '__main__':
