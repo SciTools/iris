@@ -28,6 +28,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import warnings
 
+import cartopy.crs as ccrs
 import cf_units
 import gribapi
 import numpy as np
@@ -35,7 +36,8 @@ import numpy.ma as ma
 
 import iris
 import iris.exceptions
-from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
+from iris.coord_systems import (GeogCS, RotatedGeogCS, TransverseMercator,
+                                LambertConformal)
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
                                                  _TIME_RANGE_UNITS)
@@ -223,9 +225,9 @@ def shape_of_the_earth(cube, grib):
                               ellipsoid.semi_minor_axis)
 
 
-def grid_dims(x_coord, y_coord, grib):
-    gribapi.grib_set_long(grib, "Ni", x_coord.shape[0])
-    gribapi.grib_set_long(grib, "Nj", y_coord.shape[0])
+def grid_dims(x_coord, y_coord, grib, x_str, y_str):
+    gribapi.grib_set_long(grib, x_str, x_coord.shape[0])
+    gribapi.grib_set_long(grib, y_str, y_coord.shape[0])
 
 
 def latlon_first_last(x_coord, y_coord, grib):
@@ -266,12 +268,13 @@ def scanning_mode_flags(x_coord, y_coord, grib):
                           int(y_coord.points[1] - y_coord.points[0] > 0))
 
 
-def horizontal_grid_common(cube, grib):
+def horizontal_grid_common(cube, grib, xy=False):
+    nx_str, ny_str = ("Nx", "Ny") if xy else ("Ni", "Nj")
     # Grib encoding of the sequences of X and Y points.
     y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
     shape_of_the_earth(cube, grib)
-    grid_dims(x_coord, y_coord, grib)
+    grid_dims(x_coord, y_coord, grib, nx_str, ny_str)
     scanning_mode_flags(x_coord, y_coord, grib)
 
 
@@ -329,6 +332,20 @@ def rotated_pole(cube, grib):
     gribapi.grib_set(grib, "latitudeOfSouthernPole", - int(round(latitude)))
     gribapi.grib_set(grib, "longitudeOfSouthernPole", int(round(longitude)))
     gribapi.grib_set(grib, "angleOfRotation", 0)
+
+
+def points_in_unit(coord, unit):
+    points = coord.units.convert(coord.points, unit)
+    points = np.around(points).astype(int)
+    return points
+
+
+def step(points, atol):
+    diffs = points[1:] - points[:-1]
+    mean_diff = np.mean(diffs).astype(points.dtype)
+    if not np.allclose(diffs, mean_diff, atol=atol):
+        raise ValueError()
+    return int(mean_diff)
 
 
 def grid_definition_template_0(cube, grib):
@@ -413,29 +430,23 @@ def grid_definition_template_12(cube, grib):
 
     # Normalise the coordinate values to centimetres - the resolution
     # used in the GRIB message.
-    def points_in_cm(coord):
-        points = coord.units.convert(coord.points, 'cm')
-        points = np.around(points).astype(int)
-        return points
-    y_cm = points_in_cm(y_coord)
-    x_cm = points_in_cm(x_coord)
+    y_cm = points_in_unit(y_coord, 'cm')
+    x_cm = points_in_unit(x_coord, 'cm')
 
     # Set some keys specific to GDT12.
     # Encode the horizontal points.
 
     # NB. Since we're already in centimetres, our tolerance for
     # discrepancy in the differences is 1.
-    def step(points):
-        diffs = points[1:] - points[:-1]
-        mean_diff = np.mean(diffs).astype(points.dtype)
-        if not np.allclose(diffs, mean_diff, atol=1):
-            msg = ('Irregular coordinates not supported for transverse '
-                   'Mercator.')
-            raise iris.exceptions.TranslationError(msg)
-        return int(mean_diff)
-
-    gribapi.grib_set(grib, 'Di', abs(step(x_cm)))
-    gribapi.grib_set(grib, 'Dj', abs(step(y_cm)))
+    try:
+        x_step = step(x_cm, atol=1)
+        y_step = step(y_cm, atol=1)
+    except ValueError:
+        msg = ('Irregular coordinates not supported for transverse '
+               'Mercator.')
+        raise iris.exceptions.TranslationError(msg)
+    gribapi.grib_set(grib, 'Di', abs(x_step))
+    gribapi.grib_set(grib, 'Dj', abs(y_step))
     horizontal_grid_common(cube, grib)
 
     # GRIBAPI expects unsigned ints in X1, X2, Y1, Y2 but it should accept
@@ -472,6 +483,73 @@ def grid_definition_template_12(cube, grib):
     gribapi.grib_set(grib, "scaleFactorAtReferencePoint", value)
 
 
+def grid_definition_template_30(cube, grib):
+    """
+    Set keys within the provided grib message based on
+    Grid Definition Template 3.30.
+
+    Template 3.30 is used to represent a Lambert Conformal grid.
+
+    """
+
+    gribapi.grib_set(grib, "gridDefinitionTemplateNumber", 30)
+
+    # Retrieve some information from the cube.
+    y_coord = cube.coord(dimensions=[0])
+    x_coord = cube.coord(dimensions=[1])
+    cs = y_coord.coord_system
+
+    # Normalise the coordinate values to millimetres - the resolution
+    # used in the GRIB message.
+    y_mm = points_in_unit(y_coord, 'mm')
+    x_mm = points_in_unit(x_coord, 'mm')
+
+    # Encode the horizontal points.
+
+    # NB. Since we're already in millimetres, our tolerance for
+    # discrepancy in the differences is 1.
+    try:
+        x_step = step(x_mm, atol=1)
+        y_step = step(y_mm, atol=1)
+    except ValueError:
+        msg = ('Irregular coordinates not supported for Lambert '
+               'Conformal.')
+        raise iris.exceptions.TranslationError(msg)
+    gribapi.grib_set(grib, 'Dx', abs(x_step))
+    gribapi.grib_set(grib, 'Dy', abs(y_step))
+
+    horizontal_grid_common(cube, grib, xy=True)
+
+    # Transform first point into geographic CS
+    geog = cs.ellipsoid if cs.ellipsoid is not None else GeogCS(1)
+    first_x, first_y = geog.as_cartopy_crs().transform_point(
+        x_coord.points[0],
+        y_coord.points[0],
+        cs.as_cartopy_crs())
+    first_x = first_x % 360
+    central_lon = cs.central_lon % 360
+
+    gribapi.grib_set(grib, "latitudeOfFirstGridPoint",
+                     int(np.round(first_y * 1e6)))
+    gribapi.grib_set(grib, "longitudeOfFirstGridPoint",
+                     int(np.round(first_x * 1e6)))
+    gribapi.grib_set(grib, "LaD", cs.central_lat * 1e6)
+    gribapi.grib_set(grib, "LoV", central_lon * 1e6)
+    latin1, latin2 = cs.secant_latitudes
+    gribapi.grib_set(grib, "Latin1", latin1 * 1e6)
+    gribapi.grib_set(grib, "Latin2", latin2 * 1e6)
+    gribapi.grib_set(grib, 'resolutionAndComponentFlags',
+                     0x1 << _RESOLUTION_AND_COMPONENTS_GRID_WINDS_BIT)
+
+    # Which pole are the parallels closest to? That is the direction
+    # that the cone converges.
+    poliest_sec = latin1 if abs(latin1) > abs(latin2) else latin2
+    centre_flag = 0x0 if poliest_sec > 0 else 0x1
+    gribapi.grib_set(grib, 'projectionCentreFlag', centre_flag)
+    gribapi.grib_set(grib, "latitudeOfSouthernPole", 0)
+    gribapi.grib_set(grib, "longitudeOfSouthernPole", 0)
+
+
 def grid_definition_section(cube, grib):
     """
     Set keys within the grid definition section of the provided grib message,
@@ -502,6 +580,10 @@ def grid_definition_section(cube, grib):
     elif isinstance(cs, TransverseMercator):
         # Transverse Mercator coordinate system (template 3.12).
         grid_definition_template_12(cube, grib)
+
+    elif isinstance(cs, LambertConformal):
+        # Lambert Conformal coordinate system (template 3.30).
+        grid_definition_template_30(cube, grib)
 
     else:
         raise ValueError('Grib saving is not supported for coordinate system: '
