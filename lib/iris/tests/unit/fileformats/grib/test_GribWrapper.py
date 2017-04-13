@@ -30,7 +30,8 @@ import numpy as np
 
 from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.exceptions import TranslationError
-from iris.fileformats.grib import GribWrapper, GribDataProxy
+from iris.fileformats.grib import GribWrapper
+import iris.fileformats.grib as grib
 from iris.tests import mock
 
 _message_length = 1000
@@ -87,90 +88,56 @@ class Test_edition(tests.IrisTest):
         self.assertEqual(wrapper.grib_message, grib_message)
 
 
-@tests.skip_biggus
-class Test_deferred(tests.IrisTest):
+@tests.skip_data
+class Test_deferred_data(tests.IrisTest):
+    def test_regular_data(self):
+        filename = tests.get_data_path(('GRIB', 'gaussian',
+                                        'regular_gg.grib1'))
+        messages = list(grib._load_generate(filename))
+        self.assertTrue(is_lazy_data(messages[0]._data))
+
+    def test_reduced_data(self):
+        filename = tests.get_data_path(('GRIB', 'reduced',
+                                        'reduced_ll.grib1'))
+        messages = list(grib._load_generate(filename))
+        self.assertTrue(is_lazy_data(messages[0]._data))
+
+
+class Test_deferred_proxy_args(tests.IrisTest):
     def setUp(self):
-        confirm_patch = mock.patch(
-            'iris.fileformats.grib.GribWrapper._confirm_in_scope')
-        compute_patch = mock.patch(
-            'iris.fileformats.grib.GribWrapper._compute_extra_keys')
-        long_patch = mock.patch('gribapi.grib_get_long', _mock_grib_get_long)
-        string_patch = mock.patch('gribapi.grib_get_string',
-                                  _mock_grib_get_string)
-        native_patch = mock.patch('gribapi.grib_get_native_type',
-                                  _mock_grib_get_native_type)
-        confirm_patch.start()
-        compute_patch.start()
-        long_patch.start()
-        string_patch.start()
-        native_patch.start()
-        self.addCleanup(confirm_patch.stop)
-        self.addCleanup(compute_patch.stop)
-        self.addCleanup(long_patch.stop)
-        self.addCleanup(string_patch.stop)
-        self.addCleanup(native_patch.stop)
-
-    def test_regular_sequential(self):
+        self.patch('iris.fileformats.grib.GribWrapper._confirm_in_scope')
+        self.patch('iris.fileformats.grib.GribWrapper._compute_extra_keys')
+        self.patch('gribapi.grib_get_long', _mock_grib_get_long)
+        self.patch('gribapi.grib_get_string', _mock_grib_get_string)
+        self.patch('gribapi.grib_get_native_type', _mock_grib_get_native_type)
         tell_tale = np.arange(1, 5) * _message_length
-        grib_fh = mock.Mock(tell=mock.Mock(side_effect=tell_tale))
+        self.expected = tell_tale - _message_length
+        self.grib_fh = mock.Mock(tell=mock.Mock(side_effect=tell_tale))
+        self.dtype = np.float64
+        self.fill_value = np.nan
+        self.path = self.grib_fh.name
+        self.lookup = _mock_grib_get_long
+
+    def test_regular_proxy_args(self):
         grib_message = 'regular_ll'
-        for i, _ in enumerate(tell_tale):
-            gw = GribWrapper(grib_message, grib_fh)
-            self.assertTrue(is_lazy_data(gw._data))
-            proxy = as_concrete_data(gw._data)
-            self.assertIsInstance(proxy, GribDataProxy)
-            self.assertEqual(proxy.shape, (10, 20))
-            self.assertEqual(proxy.dtype, np.float)
-            self.assertIs(proxy.fill_value, np.nan)
-            self.assertEqual(proxy.path, grib_fh.name)
-            self.assertEqual(proxy.offset, _message_length * i)
+        shape = (self.lookup(grib_message, 'Nj'),
+                 self.lookup(grib_message, 'Ni'))
+        for offset in self.expected:
+            with mock.patch('iris.fileformats.grib.GribDataProxy') as mock_gdp:
+                gw = GribWrapper(grib_message, self.grib_fh)
+            mock_gdp.assert_called_once_with(shape, self.dtype,
+                                             self.fill_value,
+                                             self.path, offset)
 
-    def test_regular_mixed(self):
-        tell_tale = np.arange(1, 5) * _message_length
-        expected = tell_tale - _message_length
-        grib_fh = mock.Mock(tell=mock.Mock(side_effect=tell_tale))
-        grib_message = 'regular_ll'
-        for offset in expected:
-            gw = GribWrapper(grib_message, grib_fh)
-            self.assertTrue(is_lazy_data(gw._data))
-            proxy = as_concrete_data(gw._data)
-            self.assertIsInstance(proxy, GribDataProxy)
-            self.assertEqual(proxy.shape, (10, 20))
-            self.assertEqual(proxy.dtype, np.float)
-            self.assertIs(proxy.fill_value, np.nan)
-            self.assertEqual(proxy.path, grib_fh.name)
-            self.assertEqual(proxy.offset, offset)
-
-    def test_reduced_sequential(self):
-        tell_tale = np.arange(1, 5) * _message_length
-        grib_fh = mock.Mock(tell=mock.Mock(side_effect=tell_tale))
+    def test_reduced_proxy_args(self):
         grib_message = 'reduced_gg'
-        for i, _ in enumerate(tell_tale):
-            gw = GribWrapper(grib_message, grib_fh)
-            self.assertTrue(is_lazy_data(gw._data))
-            proxy = as_concrete_data(gw._data)
-            self.assertIsInstance(proxy, GribDataProxy)
-            self.assertEqual(proxy.shape, (200,))
-            self.assertEqual(proxy.dtype, np.float)
-            self.assertIs(proxy.fill_value, np.nan)
-            self.assertEqual(proxy.path, grib_fh.name)
-            self.assertEqual(proxy.offset, _message_length * i)
-
-    def test_reduced_mixed(self):
-        tell_tale = np.arange(1, 5) * _message_length
-        expected = tell_tale - _message_length
-        grib_fh = mock.Mock(tell=mock.Mock(side_effect=tell_tale))
-        grib_message = 'reduced_gg'
-        for offset in expected:
-            gw = GribWrapper(grib_message, grib_fh)
-            self.assertTrue(is_lazy_data(gw._data))
-            proxy = as_concrete_data(gw._data)
-            self.assertIsInstance(proxy, GribDataProxy)
-            self.assertEqual(proxy.shape, (200,))
-            self.assertEqual(proxy.dtype, np.float)
-            self.assertIs(proxy.fill_value, np.nan)
-            self.assertEqual(proxy.path, grib_fh.name)
-            self.assertEqual(proxy.offset, offset)
+        shape = (self.lookup(grib_message, 'numberOfValues'))
+        for offset in self.expected:
+            with mock.patch('iris.fileformats.grib.GribDataProxy') as mock_gdp:
+                gw = GribWrapper(grib_message, self.grib_fh)
+            mock_gdp.assert_called_once_with((shape,), self.dtype,
+                                             self.fill_value,
+                                             self.path, offset)
 
 
 if __name__ == '__main__':
