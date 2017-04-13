@@ -2994,7 +2994,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         memo = {}
-        result = self._deepcopy(memo, data=data, realised_dtype=dtype,
+        result = self._deepcopy(memo, data=data, dtype=dtype,
                                 fill_value=fill_value)
 
     def __copy__(self):
@@ -3005,9 +3005,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __deepcopy__(self, memo):
         return self._deepcopy(memo)
 
-    def _deepcopy(self, memo, data=None, realised_dtype='none',
-                  fill_value='none'):
-        dm = self._data_manager.copy(data=data, realised_dtype=realised_dtype)
+    def _deepcopy(self, memo, data=None, dtype='none', fill_value='none'):
+        dm = self._data_manager.copy(data=data, realised_dtype=dtype)
 
         if isinstance(fill_value, six.string_types) and \
                 fill_value == 'none':

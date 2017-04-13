@@ -348,19 +348,26 @@ class Test__realised_dtype_setter(tests.IrisTest):
         self.lazy_array = as_lazy_data(self.real_array)
         self.dm = DataManager(self.lazy_array)
 
-    def test_with_none(self):
+    def test_lazy_with_none(self):
         self.assertIsNone(self.dm._realised_dtype)
         self.dm._realised_dtype_setter(None)
         self.assertIsNone(self.dm._realised_dtype)
 
-    def test_with_real_array_with_same_dtype(self):
+    def test_real_with_none(self):
+        self.dm._lazy_array = None
+        self.dm._real_array = self.real_array
+        self.assertIsNone(self.dm._realised_dtype)
+        self.dm._realised_dtype_setter(None)
+        self.assertIsNone(self.dm._realised_dtype)
+
+    def test_real_with_same_dtype(self):
         self.dm._lazy_array = None
         self.dm._real_array = self.real_array
         self.assertIsNone(self.dm._realised_dtype)
         self.dm._realised_dtype_setter(self.dm.dtype)
         self.assertIsNone(self.dm._realised_dtype)
 
-    def test_with_real_array_failure(self):
+    def test_real_array_failure(self):
         self.dm._lazy_array = None
         self.dm._real_array = self.real_array
         self.assertIsNone(self.dm._realised_dtype)
@@ -374,12 +381,20 @@ class Test__realised_dtype_setter(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, emsg):
             self.dm._realised_dtype_setter(np.dtype('float64'))
 
-    def test_realised_dtype(self):
+    def test_lazy_with_realised_dtype(self):
         dtypes = (np.dtype('bool'), np.dtype('int16'), np.dtype('uint16'))
         for dtype in dtypes:
             self.dm._realised_dtype = None
             self.dm._realised_dtype_setter(dtype)
             self.assertEqual(self.dm._realised_dtype, dtype)
+
+    def test_lazy_replace_with_none(self):
+        self.assertIsNone(self.dm._realised_dtype)
+        dtype = np.dtype('int16')
+        self.dm._realised_dtype_setter(dtype)
+        self.assertEqual(self.dm._realised_dtype, dtype)
+        self.dm._realised_dtype_setter(None)
+        self.assertIsNone(self.dm._realised_dtype)
 
 
 class Test_core_data(tests.IrisTest):
