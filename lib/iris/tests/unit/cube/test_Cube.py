@@ -23,6 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from itertools import permutations
+
 import biggus
 import numpy as np
 import numpy.ma as ma
@@ -418,16 +420,16 @@ class Test_slices_dim_order(tests.IrisTest):
         '''
         setup a 4D iris cube, each dimension is length 1.
         The dimensions are;
-            dim1: height
-            dim2: time
-            dim3: longitude
-            dim4: latitude
+            dim1: time
+            dim2: height
+            dim3: latitude
+            dim4: longitude
         '''
         self.cube = iris.cube.Cube(np.array([[[[8.]]]]))
-        self.cube.add_dim_coord(iris.coords.DimCoord([0], "height"), [0])
-        self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [1])
-        self.cube.add_dim_coord(iris.coords.DimCoord([0], "longitude"), [2])
-        self.cube.add_dim_coord(iris.coords.DimCoord([0], "latitude"), [3])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [0])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "height"), [1])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "latitude"), [2])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "longitude"), [3])
 
     @staticmethod
     def expected_cube_setup(dim1name, dim2name, dim3name):
@@ -478,71 +480,11 @@ class Test_slices_dim_order(tests.IrisTest):
         sliced_cube = next(self.cube.slices([dim1, dim2, dim3]))
         sliced_cube.remove_coord(dim_to_remove)
         expected_cube = self.expected_cube_setup(dim1, dim2, dim3)
-        return self.assertEqual(sliced_cube, expected_cube)
+        self.assertEqual(sliced_cube, expected_cube)
 
-
-    def test_height_long_lat(self):
-        '''
-        tests the slicing in this order:
-        height
-        longitude
-        latitude
-        '''
-        self.check_order("height", "longitude", "latitude", "time")
-
-    def test_long_height_lat(self):
-        '''
-        tests the slicing in this order:
-        longitude
-        height
-        latitude
-        '''
-        self.check_order("longitude", "height", "latitude", "time")
-
-    def test_time_height_lat(self):
-        '''
-        tests the slicing in this order:
-        time
-        height
-        latitude
-        '''
-        self.check_order("time", "height", "latitude", "longitude")
-
-    def test_time_height_long(self):
-        '''
-        tests the slicing in this order:
-        time
-        height
-        longitude
-        '''
-        self.check_order("time", "height", "longitude", "latitude")
-
-    def test_long_lat_height(self):
-        '''
-        tests the slicing in this order:
-        longitude
-        latitude
-        height
-        '''
-        self.check_order("longitude", "latitude", "height", "time")
-
-    def test_lat_height_time(self):
-        '''
-        tests the slicing in this order:
-        latitude
-        height
-        time
-        '''
-        self.check_order("latitude", "height", "time", "longitude")
-
-    def test_long_height_time(self):
-        '''
-        tests the slicing in this order:
-        longitude
-        height
-        time
-        '''
-        self.check_order("longitude", "height", "time", "latitude")
+    def test_all_permutations(self):
+        for perm in permutations(["time", "height", "latitude", "longitude"]):
+            self.check_order(*perm)
 
 
 @tests.skip_data
