@@ -2994,8 +2994,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         memo = {}
-        result = self._deepcopy(memo, data=data, dtype=dtype,
-                                fill_value=fill_value)
+        cube = self._deepcopy(memo, data=data, dtype=dtype,
+                              fill_value=fill_value)
+        return cube
 
     def __copy__(self):
         """Shallow copying is disallowed for Cubes."""

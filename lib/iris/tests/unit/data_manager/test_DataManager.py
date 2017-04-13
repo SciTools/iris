@@ -309,7 +309,7 @@ class Test__deepcopy(tests.IrisTest):
 
     def test_lazy_with_realised_dtype(self):
         dm = DataManager(as_lazy_data(self.real_array),
-                                      realised_dtype=np.dtype('int16'))
+                         realised_dtype=np.dtype('int16'))
         data = as_lazy_data(self.real_array) * 10
         dtype = np.dtype('int8')
         result = dm._deepcopy(self.memo, data=data, realised_dtype=dtype)
