@@ -1659,6 +1659,30 @@ def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
                           'after data cutoff".')
 
 
+def statistical_method_name(section):
+    # Decode the type of statistic as a cell_method 'method' string.
+    # Templates 8, 9, 10, 11 and 15 all use this type code, which is defined
+    # in table 4.10.
+    # However, the actual keyname is different for template 15.
+    section_number = section['productDefinitionTemplateNumber']
+    if section_number in (8, 9, 10, 11):
+        stat_keyname = 'typeOfStatisticalProcessing'
+    elif section_number == 15:
+        stat_keyname = 'statisticalProcess'
+    else:
+        # This should *never* happen, as only called by pdt 8 and 15.
+        msg = ("Internal error: can't get statistical method for unsupported "
+               "pdt : 4.{:d}.")
+        raise ValueError(msg.format(section_number))
+    statistic_code = section[stat_keyname]
+    statistic_name = _STATISTIC_TYPE_NAMES.get(statistic_code)
+    if statistic_name is None:
+        msg = ('Product definition section 4 contains an unsupported '
+               'statistical process type [{}] ')
+        raise TranslationError(msg.format(statistic_code))
+    return statistic_name
+
+
 def statistical_cell_method(section):
     """
     Create a cell method representing a time statistic.
@@ -1688,12 +1712,7 @@ def statistical_cell_method(section):
             raise TranslationError(msg)
 
     # Decode the type of statistic (aggregation method).
-    statistic_code = section['typeOfStatisticalProcessing']
-    statistic_name = _STATISTIC_TYPE_NAMES.get(statistic_code)
-    if statistic_name is None:
-        msg = ('grib statistical process type [{}] '
-               'is not supported'.format(statistic_code))
-        raise TranslationError(msg)
+    statistic_name = statistical_method_name(section)
 
     # Decode the type of time increment.
     increment_typecode = section['typeOfTimeIncrement']
@@ -1986,6 +2005,50 @@ def product_definition_template_11(section, metadata, frt_coord):
     metadata['aux_coords_and_dims'].append((realization, None))
 
 
+def product_definition_template_15(section, metadata, frt_coord):
+    """
+    Translate template representing : "average, accumulation, extreme values,
+    or other statistically processed values over a spatial area at a
+    horizontal level or in a horizontal layer at a point in time".
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    """
+    # Check unique keys for this template.
+    spatial_processing_code = section['spatialProcessing']
+
+    if spatial_processing_code != 0:
+        # For now, we only support the simplest case, representing a statistic
+        # over the whole notional area of a cell.
+        msg = ('Product definition section 4 contains an unsupported '
+               'spatial processing type [{}]'.format(spatial_processing_code))
+        raise TranslationError(msg)
+
+    # NOTE: PDT 4.15 alse defines a 'numberOfPointsUsed' key, but we think this
+    # is irrelevant to the currently supported spatial-processing types.
+
+    # Process parts in common with pdt 4.0.
+    product_definition_template_0(section, metadata, frt_coord)
+
+    # Decode the statistic method name.
+    cell_method_name = statistical_method_name(section)
+
+    # Record an 'area' cell-method using this statistic.
+    metadata['cell_methods'] = [CellMethod(coords=('area',),
+                                           method=cell_method_name)]
+
+
 def product_definition_template_31(section, metadata, rt_coord):
     """
     Translate template representing a satellite product.
@@ -2124,6 +2187,8 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
         product_definition_template_10(section, metadata, rt_coord)
     elif template == 11:
         product_definition_template_11(section, metadata, rt_coord)
+    elif template == 15:
+        product_definition_template_15(section, metadata, rt_coord)
     elif template == 31:
         # Process satellite product.
         product_definition_template_31(section, metadata, rt_coord)

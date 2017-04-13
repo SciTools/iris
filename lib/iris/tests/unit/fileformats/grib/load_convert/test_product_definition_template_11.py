@@ -63,7 +63,8 @@ class Test(tests.IrisTest):
         with mock.patch(grib_lconv_opt, warn_on_unsupported=request_warning):
             metadata = deepcopy(self.metadata)
             perturbationNumber = 666
-            section = {'perturbationNumber': perturbationNumber,
+            section = {'productDefinitionTemplateNumber': 11,
+                       'perturbationNumber': perturbationNumber,
                        'hoursAfterDataCutoff': 1,
                        'minutesAfterDataCutoff': 1,
                        'numberOfTimeRange': 1,

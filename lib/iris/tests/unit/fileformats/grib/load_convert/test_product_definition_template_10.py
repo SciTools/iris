@@ -50,7 +50,8 @@ class Test(tests.IrisTest):
     def test_percentile_coord(self):
         metadata = empty_metadata()
         percentileValue = 75
-        section = {'percentileValue': percentileValue,
+        section = {'productDefinitionTemplateNumber': 10,
+                   'percentileValue': percentileValue,
                    'hoursAfterDataCutoff': 1,
                    'minutesAfterDataCutoff': 1,
                    'numberOfTimeRange': 1,
