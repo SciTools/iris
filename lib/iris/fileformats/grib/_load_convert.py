@@ -23,10 +23,10 @@ cube metadata.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from argparse import Namespace
 from collections import namedtuple, Iterable, OrderedDict
 from datetime import datetime, timedelta
 import math
-import threading
 import warnings
 
 import cartopy.crs as ccrs
@@ -48,9 +48,9 @@ from iris.util import _is_circular
 # Restrict the names imported from this namespace.
 __all__ = ['convert']
 
-options = threading.local()
-options.warn_on_unsupported = False
-options.support_hindcast_values = True
+
+options = Namespace(warn_on_unsupported=False,
+                    support_hindcast_values=True)
 
 ScanningMode = namedtuple('ScanningMode', ['i_negative',
                                            'j_positive',
