@@ -1676,7 +1676,8 @@ class ProtoCube(object):
             dependencies = factory.dependencies
             for key in sorted(dependencies):
                 coord = dependencies[key]
-                dependency_defns.append((key, coord._as_defn()))
+                if coord is not None:
+                    dependency_defns.append((key, coord._as_defn()))
             factory_defn = _FactoryDefn(type(factory), dependency_defns)
             factory_defns.append(factory_defn)
 
