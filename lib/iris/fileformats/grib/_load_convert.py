@@ -1629,14 +1629,38 @@ def validity_time_coord(frt_coord, fp_coord):
     return coord
 
 
-def generating_process(section):
+def time_coords(section, metadata, rt_coord):
+    if 'forecastTime' in section.keys():
+        forecast_time = section['forecastTime']
+    # The gribapi encodes the forecast time as 'startStep' for pdt 4.4x;
+    # product_definition_template_40 makes use of this function. The
+    # following will be removed once the suspected bug is fixed.
+    elif 'startStep' in section.keys():
+        forecast_time = section['startStep']
+
+    # Calculate the forecast period coordinate.
+    fp_coord = forecast_period_coord(section['indicatorOfUnitOfTimeRange'],
+                                     forecast_time)
+    # Add the forecast period coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((fp_coord, None))
+    # Calculate the "other" time coordinate - i.e. whichever of 'time'
+    # or 'forecast_reference_time' we don't already have.
+    other_coord = other_time_coord(rt_coord, fp_coord)
+    # Add the time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((other_coord, None))
+    # Add the reference time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((rt_coord, None))
+
+
+def generating_process(section, include_forecast_process=True):
     if options.warn_on_unsupported:
         # Reference Code Table 4.3.
         warnings.warn('Unable to translate type of generating process.')
         warnings.warn('Unable to translate background generating '
                       'process identifier.')
-        warnings.warn('Unable to translate forecast generating '
-                      'process identifier.')
+        if include_forecast_process:
+            warnings.warn('Unable to translate forecast generating '
+                          'process identifier.')
 
 
 def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
@@ -1780,28 +1804,7 @@ def product_definition_template_0(section, metadata, rt_coord):
     data_cutoff(section['hoursAfterDataCutoff'],
                 section['minutesAfterDataCutoff'])
 
-    if 'forecastTime' in section.keys():
-        forecast_time = section['forecastTime']
-    # The gribapi encodes the forecast time as 'startStep' for pdt 4.4x;
-    # product_definition_template_40 makes use of this function. The
-    # following will be removed once the suspected bug is fixed.
-    elif 'startStep' in section.keys():
-        forecast_time = section['startStep']
-
-    # Calculate the forecast period coordinate.
-    fp_coord = forecast_period_coord(section['indicatorOfUnitOfTimeRange'],
-                                     forecast_time)
-    # Add the forecast period coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((fp_coord, None))
-
-    # Calculate the "other" time coordinate - i.e. whichever of 'time'
-    # or 'forecast_reference_time' we don't already have.
-    other_coord = other_time_coord(rt_coord, fp_coord)
-    # Add the time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((other_coord, None))
-
-    # Add the reference time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((rt_coord, None))
+    time_coords(section, metadata, rt_coord)
 
     # Check for vertical coordinates.
     vertical_coords(section, metadata)
@@ -2048,30 +2051,7 @@ def product_definition_template_15(section, metadata, frt_coord):
     metadata['cell_methods'] = [CellMethod(coords=('area',),
                                            method=cell_method_name)]
 
-
-def product_definition_template_31(section, metadata, rt_coord):
-    """
-    Translate template representing a satellite product.
-
-    Updates the metadata in-place with the translations.
-
-    Args:
-
-    * section:
-        Dictionary of coded key/value pairs from section 4 of the message.
-
-    * metadata:
-        :class:`collections.OrderedDict` of metadata.
-
-    * rt_coord:
-        The scalar observation time :class:`iris.coords.DimCoord'.
-
-    """
-    if options.warn_on_unsupported:
-        warnings.warn('Unable to translate type of generating process.')
-        warnings.warn('Unable to translate observation generating '
-                      'process identifier.')
-
+def satellite_common(section, metadata):
     # Number of contributing spectral bands.
     NB = section['NB']
 
@@ -2105,8 +2085,61 @@ def product_definition_template_31(section, metadata, rt_coord):
         # Add the central wave number coordinate to the metadata aux coords.
         metadata['aux_coords_and_dims'].append((coord, None))
 
-        # Add the observation time coordinate.
-        metadata['aux_coords_and_dims'].append((rt_coord, None))
+def product_definition_template_31(section, metadata, rt_coord):
+    """
+    Translate template representing a satellite product.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * rt_coord:
+        The scalar observation time :class:`iris.coords.DimCoord'.
+
+    """
+    generating_process(section, include_forecast_process=False)
+
+    satellite_common(section, metadata)
+
+    # Add the observation time coordinate.
+    metadata['aux_coords_and_dims'].append((rt_coord, None))
+
+
+def product_definition_template_32(section, metadata, rt_coord):
+    """
+    Translate template representing an analysis or forecast at a horizontal
+    level or in a horizontal layer at a point in time for simulated (synthetic)
+    satellite data.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * rt_coord:
+        The scalar observation time :class:`iris.coords.DimCoord'.
+
+    """
+    generating_process(section, include_forecast_process=False)
+
+    # Handle the data cutoff.
+    data_cutoff(section['hoursAfterDataCutoff'],
+                section['minutesAfterDataCutoff'])
+
+    time_coords(section, metadata, rt_coord)
+
+    satellite_common(section, metadata)
 
 
 def product_definition_template_40(section, metadata, frt_coord):
@@ -2192,6 +2225,8 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     elif template == 31:
         # Process satellite product.
         product_definition_template_31(section, metadata, rt_coord)
+    elif template == 32:
+        product_definition_template_32(section, metadata, rt_coord)
     elif template == 40:
         product_definition_template_40(section, metadata, rt_coord)
     else:
