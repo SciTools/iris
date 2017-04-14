@@ -2974,6 +2974,31 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return cube_xml_element
 
+    def replace(self, data, dtype=None, fill_value=None):
+        """
+        Perform an in-place replacement of the cube data.
+
+        Args:
+
+        * data:
+            Replace the data of the cube with the provided data payload.
+
+        Kwargs:
+
+        * dtype:
+            Replacement for the intended dtype of the realised lazy data.
+
+        * fill_value:
+            Replacement for the cube data fill-value.
+
+        .. note::
+            Data replacement alone will clear the intended dtype
+            of the realised lazy data and the fill-value.
+
+        """
+        self._data_manager.replace(data, realised_dtype=dtype)
+        self.fill_value = fill_value
+
     def copy(self, data=None, dtype='none', fill_value='none'):
         """
         Returns a deep copy of this cube.
@@ -3049,6 +3074,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if isinstance(other, Cube):
             result = self.metadata == other.metadata
+
+            # check the cube fill-value.
+            if result:
+                result = self.fill_value == other.fill_value
 
             # having checked the metadata, now check the coordinates
             if result:

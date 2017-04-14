@@ -1181,6 +1181,57 @@ class Test_regrid(tests.IrisTest):
         self.assertEqual(result, (scheme, cube, mock.sentinel.TARGET, cube))
 
 
+class Test_replace(tests.IrisTest):
+    def test(self):
+        cube = stock.simple_1d()
+        data = np.ones(cube.shape)
+        cube.replace(data)
+        self.assertIs(cube.core_data, data)
+
+    def test__lazy(self):
+        cube = stock.simple_1d()
+        data = as_lazy_data(cube.data)
+        cube.replace(data)
+        self.assertIs(cube.core_data, data)
+        self.assertTrue(cube.has_lazy_data())
+
+    def test__clearance(self):
+        real = np.array(10)
+        lazy = as_lazy_data(real)
+        dtype = np.dtype('int16')
+        fill_value = 10
+        cube = Cube(lazy, dtype=dtype, fill_value=fill_value)
+        self.assertEqual(cube.dtype, dtype)
+        self.assertEqual(cube.fill_value, fill_value)
+        cube.replace(real)
+        self.assertEqual(cube.dtype, real.dtype)
+        self.assertIsNone(cube.fill_value)
+        self.assertIs(cube.core_data, real)
+
+    def test__shape_failure(self):
+        cube = stock.simple_1d()
+        data = np.array([0])
+        emsg = 'Require data with shape \(11,\), got \(1,\).'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(data)
+
+    def test__lazy_failure(self):
+        cube = stock.simple_1d()
+        data = np.ones(cube.shape)
+        dtype = np.dtype('int16')
+        emsg = 'Cannot set realised dtype, no lazy data is available'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(data, dtype=dtype)
+
+    def test__dtype_failure(self):
+        lazy = as_lazy_data(np.array(10))
+        cube = Cube(lazy)
+        dtype = np.dtype('float32')
+        emsg = 'Can only cast lazy data to an integer or boolean dtype'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(lazy, dtype=dtype)
+
+
 class Test_copy(tests.IrisTest):
     def _check_copy(self, cube, cube_copy):
         self.assertIsNot(cube_copy, cube)
