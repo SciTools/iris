@@ -62,6 +62,8 @@ extensions = ['sphinx.ext.autodoc',
               'matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
 
+              #'matplotlib.sphinxext.github'
+              'github',
               #'matplotlib.sphinxext.plot_directive',
               'plot_directive',
 
@@ -166,6 +168,9 @@ autodoc_default_flags = ['show-inheritance']
 # include the __init__ method when documenting classes
 # document the init/new method at the top level of the class documentation rather than displaying the class docstring
 autoclass_content='init'
+
+# Github extension
+github_project_url = "http://github.com/scitools/iris/"
 
 # -- Options for HTML output ---------------------------------------------------
 
