@@ -300,7 +300,16 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
             raise TypeError('Cannot determine whether a point lies within '
                             'a bounded region for datetime-like objects.')
 
-        return np.min(self.bound) <= point <= np.max(self.bound)
+        min_bound = np.min(self.bound)
+        max_bound = np.max(self.bound)
+
+        if isinstance(point, iris.time.PartialDateTime):
+            res = ((min_bound <= point.blended(min_bound) <= max_bound) or
+                   (min_bound <= point.blended(max_bound) <= max_bound))
+        else:
+            res = min_bound <= point <= max_bound
+
+        return res
 
 
 class Coord(CFVariableMixin):
