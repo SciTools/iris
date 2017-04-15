@@ -137,6 +137,11 @@ Bugs fixed
 * :func:`iris.util.rolling_window` handling of masked arrays (degenerate
   masks) fixed.
 * Exception no longer raised for any ellipsoid definition in nimrod loading.
+* Interoperability of bounded time coordinates between PP and GRIB has been
+  fixed. PP fields are now loaded with the time point at the end of the bounds,
+  and GRIB fields are now loaded with the time point at the start. For both
+  formats, the forecast_period now matches the file and the cubes can be
+  correctly saved to either format.
 
 Incompatible changes
 ====================
