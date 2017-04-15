@@ -319,6 +319,20 @@ class TestCubeStringRepresentations(IrisDotTest):
         cube.add_aux_coord(aux, 0)
         self.assertString(str(cube), ('cdm', 'str_repr', 'simple.__str__.txt'))
 
+    def test_unicode_attribute(self):
+        unicode_str = unichr(40960) + u'abcd' + unichr(1972)
+        cube = iris.tests.stock.simple_1d()
+        cube.attributes['source'] = unicode_str
+        self.assertString(str(cube), ('cdm', 'str_repr',
+                                      'unicode_attribute.__str__.txt'))
+
+    def test_unicode_history(self):
+        unicode_str = unichr(40960) + u'wxyz' + unichr(1972)
+        cube = iris.tests.stock.simple_1d()
+        cube.add_history(unicode_str)
+        self.assertString(str(cube), ('cdm', 'str_repr',
+                                      'unicode_history.__str__.txt'))
+
 
 @iris.tests.skip_data
 class TestValidity(tests.IrisTest):
