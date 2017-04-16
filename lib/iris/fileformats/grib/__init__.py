@@ -28,13 +28,13 @@ import six
 import datetime
 import math  # for fmod
 
-import biggus
 import cartopy.crs as ccrs
 import cf_units
 import gribapi
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_lazy_data
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError, NotYetImplementedError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
@@ -182,7 +182,7 @@ class GribWrapper(object):
             proxy = GribDataProxy(shape, np.zeros(0).dtype, np.nan,
                                   grib_fh.name,
                                   offset - message_length)
-            self._data = biggus.NumpyArrayAdapter(proxy)
+            self._data = as_lazy_data(proxy)
         else:
             self.data = _message_values(grib_message, shape)
 
@@ -634,6 +634,20 @@ class GribWrapper(object):
             seconds=float(time_diff * interval_secs))
         # Return validity_time = (reference_time + start_offset*time_unit).
         return reference_date_time + interval_delta
+
+    @property
+    def bmdi(self):
+        # Not sure of any cases where GRIB provides a fill value.
+        # Default for fill value is None.
+        return None
+
+    @property
+    def core_data(self):
+        try:
+            data = self._data
+        except AttributeError:
+            data = self.data
+        return data
 
     def phenomenon_points(self, time_unit):
         """
