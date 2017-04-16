@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -44,11 +44,9 @@ RESOLUTION = 1e6
 
 class Test(tests.IrisTest):
     def setUp(self):
-        patch = []
-        patch.append(mock.patch('warnings.warn'))
+        self.patch('warnings.warn')
         module = 'iris.fileformats.grib._load_convert'
-        this = '{}._is_circular'.format(module)
-        patch.append(mock.patch(this, return_value=False))
+        self.patch('{}._is_circular'.format(module), return_value=False)
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
                          'long_name': None, 'units': None, 'attributes': {},
@@ -56,9 +54,6 @@ class Test(tests.IrisTest):
                          'aux_coords_and_dims': []}
         self.cs = mock.sentinel.coord_system
         self.data = np.arange(10, dtype=np.float64)
-        for p in patch:
-            p.start()
-            self.addCleanup(p.stop)
 
     def _check(self, section, request_warning,
                expect_warning=False, y_dim=0, x_dim=1):

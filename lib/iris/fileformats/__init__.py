@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,12 +28,9 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
 from . import abf
 from . import um
 try:
-    import iris_grib as igrib
+    from . import grib as igrib
 except ImportError:
-    try:
-        from . import grib as igrib
-    except ImportError:
-        igrib = None
+    igrib = None
 
 from . import name
 from . import netcdf

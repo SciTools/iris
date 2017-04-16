@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Module to support the loading and convertion of a GRIB2 message into
+Module to support the loading and conversion of a GRIB2 message into
 cube metadata.
 
 """
@@ -23,10 +23,10 @@ cube metadata.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from argparse import Namespace
 from collections import namedtuple, Iterable, OrderedDict
 from datetime import datetime, timedelta
 import math
-import threading
 import warnings
 
 import cartopy.crs as ccrs
@@ -39,6 +39,7 @@ import iris.coord_systems as icoord_systems
 from iris.coords import AuxCoord, DimCoord, CellMethod
 from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as itranslation
+from iris.fileformats.grib._grib1_load_rules import grib1_convert
 from iris.fileformats.rules import ConversionMetadata, Factory, Reference
 from iris.util import _is_circular
 
@@ -46,9 +47,9 @@ from iris.util import _is_circular
 # Restrict the names imported from this namespace.
 __all__ = ['convert']
 
-options = threading.local()
-options.warn_on_unsupported = False
-options.support_hindcast_values = True
+
+options = Namespace(warn_on_unsupported=False,
+                    support_hindcast_values=True)
 
 ScanningMode = namedtuple('ScanningMode', ['i_negative',
                                            'j_positive',
@@ -274,7 +275,7 @@ def reference_time_coord(section):
 
     """
     # Look-up standard name by significanceOfReferenceTime.
-    _lookup = {0: 'time',
+    _lookup = {0: 'forecast_reference_time',
                1: 'forecast_reference_time',
                2: 'time',
                3: 'time'}
@@ -1007,10 +1008,10 @@ def grid_definition_template_40_regular(section, metadata, cs):
 
     # Create lat/lon coordinates.
     x_coord = DimCoord(x_points, standard_name='longitude',
-                       units='degrees_east', coord_system=cs,
+                       units='degrees', coord_system=cs,
                        circular=circular)
     y_coord = DimCoord(y_points, standard_name='latitude',
-                       units='degrees_north', coord_system=cs)
+                       units='degrees', coord_system=cs)
 
     # Determine the lat/lon dimensions.
     y_dim, x_dim = 0, 1
@@ -1042,9 +1043,9 @@ def grid_definition_template_40_reduced(section, metadata, cs):
 
     # Create lat/lon coordinates.
     x_coord = AuxCoord(x_points, standard_name='longitude',
-                       units='degrees_east', coord_system=cs)
+                       units='degrees', coord_system=cs)
     y_coord = AuxCoord(y_points, standard_name='latitude',
-                       units='degrees_north', coord_system=cs)
+                       units='degrees', coord_system=cs)
 
     # Add the lat/lon coordinates to the metadata dim coords.
     metadata['aux_coords_and_dims'].append((y_coord, 0))
@@ -1348,7 +1349,7 @@ def hybrid_factories(section, metadata):
                              units='Pa')
             metadata['aux_coords_and_dims'].append((coord, None))
             # Create the sigma scalar coordinate.
-            offset += NV / 2
+            offset += NV // 2
             coord = AuxCoord(pv[offset], long_name='sigma')
             metadata['aux_coords_and_dims'].append((coord, None))
             # Create the associated factory reference.
@@ -1627,14 +1628,38 @@ def validity_time_coord(frt_coord, fp_coord):
     return coord
 
 
-def generating_process(section):
+def time_coords(section, metadata, rt_coord):
+    if 'forecastTime' in section.keys():
+        forecast_time = section['forecastTime']
+    # The gribapi encodes the forecast time as 'startStep' for pdt 4.4x;
+    # product_definition_template_40 makes use of this function. The
+    # following will be removed once the suspected bug is fixed.
+    elif 'startStep' in section.keys():
+        forecast_time = section['startStep']
+
+    # Calculate the forecast period coordinate.
+    fp_coord = forecast_period_coord(section['indicatorOfUnitOfTimeRange'],
+                                     forecast_time)
+    # Add the forecast period coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((fp_coord, None))
+    # Calculate the "other" time coordinate - i.e. whichever of 'time'
+    # or 'forecast_reference_time' we don't already have.
+    other_coord = other_time_coord(rt_coord, fp_coord)
+    # Add the time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((other_coord, None))
+    # Add the reference time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((rt_coord, None))
+
+
+def generating_process(section, include_forecast_process=True):
     if options.warn_on_unsupported:
         # Reference Code Table 4.3.
         warnings.warn('Unable to translate type of generating process.')
         warnings.warn('Unable to translate background generating '
                       'process identifier.')
-        warnings.warn('Unable to translate forecast generating '
-                      'process identifier.')
+        if include_forecast_process:
+            warnings.warn('Unable to translate forecast generating '
+                          'process identifier.')
 
 
 def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
@@ -1655,6 +1680,30 @@ def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
         if options.warn_on_unsupported:
             warnings.warn('Unable to translate "hours and/or minutes '
                           'after data cutoff".')
+
+
+def statistical_method_name(section):
+    # Decode the type of statistic as a cell_method 'method' string.
+    # Templates 8, 9, 10, 11 and 15 all use this type code, which is defined
+    # in table 4.10.
+    # However, the actual keyname is different for template 15.
+    section_number = section['productDefinitionTemplateNumber']
+    if section_number in (8, 9, 10, 11):
+        stat_keyname = 'typeOfStatisticalProcessing'
+    elif section_number == 15:
+        stat_keyname = 'statisticalProcess'
+    else:
+        # This should *never* happen, as only called by pdt 8 and 15.
+        msg = ("Internal error: can't get statistical method for unsupported "
+               "pdt : 4.{:d}.")
+        raise ValueError(msg.format(section_number))
+    statistic_code = section[stat_keyname]
+    statistic_name = _STATISTIC_TYPE_NAMES.get(statistic_code)
+    if statistic_name is None:
+        msg = ('Product definition section 4 contains an unsupported '
+               'statistical process type [{}] ')
+        raise TranslationError(msg.format(statistic_code))
+    return statistic_name
 
 
 def statistical_cell_method(section):
@@ -1686,12 +1735,7 @@ def statistical_cell_method(section):
             raise TranslationError(msg)
 
     # Decode the type of statistic (aggregation method).
-    statistic_code = section['typeOfStatisticalProcessing']
-    statistic_name = _STATISTIC_TYPE_NAMES.get(statistic_code)
-    if statistic_name is None:
-        msg = ('grib statistical process type [{}] '
-               'is not supported'.format(statistic_code))
-        raise TranslationError(msg)
+    statistic_name = statistical_method_name(section)
 
     # Decode the type of time increment.
     increment_typecode = section['typeOfTimeIncrement']
@@ -1759,28 +1803,7 @@ def product_definition_template_0(section, metadata, rt_coord):
     data_cutoff(section['hoursAfterDataCutoff'],
                 section['minutesAfterDataCutoff'])
 
-    if 'forecastTime' in section.keys():
-        forecast_time = section['forecastTime']
-    # The gribapi encodes the forecast time as 'startStep' for pdt 4.4x;
-    # product_definition_template_40 makes use of this function. The
-    # following will be removed once the suspected bug is fixed.
-    elif 'startStep' in section.keys():
-        forecast_time = section['startStep']
-
-    # Calculate the forecast period coordinate.
-    fp_coord = forecast_period_coord(section['indicatorOfUnitOfTimeRange'],
-                                     forecast_time)
-    # Add the forecast period coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((fp_coord, None))
-
-    # Calculate the "other" time coordinate - i.e. whichever of 'time'
-    # or 'forecast_reference_time' we don't already have.
-    other_coord = other_time_coord(rt_coord, fp_coord)
-    # Add the time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((other_coord, None))
-
-    # Add the reference time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((rt_coord, None))
+    time_coords(section, metadata, rt_coord)
 
     # Check for vertical coordinates.
     vertical_coords(section, metadata)
@@ -1847,8 +1870,11 @@ def product_definition_template_8(section, metadata, frt_coord):
     # Add the forecast cell method to the metadata.
     metadata['cell_methods'].append(time_statistic_cell_method)
 
-    # Add the forecast reference time coordinate to the metadata aux coords.
-    metadata['aux_coords_and_dims'].append((frt_coord, None))
+    # Add the forecast reference time coordinate to the metadata aux coords,
+    # if it is a forecast reference time, not a time coord, as defined by
+    # significanceOfReferenceTime.
+    if frt_coord.name() != 'time':
+        metadata['aux_coords_and_dims'].append((frt_coord, None))
 
     # Add a bounded forecast period coordinate.
     fp_coord = statistical_forecast_period_coord(section, frt_coord)
@@ -1923,6 +1949,35 @@ def product_definition_template_9(section, metadata, frt_coord):
     return probability_type
 
 
+def product_definition_template_10(section, metadata, frt_coord):
+    """
+    Translate template representing percentile forecasts at a horizontal level
+    or in a horizontal layer in a continuous or non-continuous time interval.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    """
+    product_definition_template_8(section, metadata, frt_coord)
+
+    percentile = DimCoord(section['percentileValue'],
+                          long_name='percentile_over_time',
+                          units='no_unit')
+
+    # Add the percentile data info
+    metadata['aux_coords_and_dims'].append((percentile, None))
+
+
 def product_definition_template_11(section, metadata, frt_coord):
     """
     Translate template representing individual ensemble forecast, control
@@ -1952,9 +2007,11 @@ def product_definition_template_11(section, metadata, frt_coord):
     metadata['aux_coords_and_dims'].append((realization, None))
 
 
-def product_definition_template_31(section, metadata, rt_coord):
+def product_definition_template_15(section, metadata, frt_coord):
     """
-    Translate template representing a satellite product.
+    Translate template representing : "average, accumulation, extreme values,
+    or other statistically processed values over a spatial area at a
+    horizontal level or in a horizontal layer at a point in time".
 
     Updates the metadata in-place with the translations.
 
@@ -1966,15 +2023,35 @@ def product_definition_template_31(section, metadata, rt_coord):
     * metadata:
         :class:`collections.OrderedDict` of metadata.
 
-    * rt_coord:
-        The scalar observation time :class:`iris.coords.DimCoord'.
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
 
     """
-    if options.warn_on_unsupported:
-        warnings.warn('Unable to translate type of generating process.')
-        warnings.warn('Unable to translate observation generating '
-                      'process identifier.')
+    # Check unique keys for this template.
+    spatial_processing_code = section['spatialProcessing']
 
+    if spatial_processing_code != 0:
+        # For now, we only support the simplest case, representing a statistic
+        # over the whole notional area of a cell.
+        msg = ('Product definition section 4 contains an unsupported '
+               'spatial processing type [{}]'.format(spatial_processing_code))
+        raise TranslationError(msg)
+
+    # NOTE: PDT 4.15 alse defines a 'numberOfPointsUsed' key, but we think this
+    # is irrelevant to the currently supported spatial-processing types.
+
+    # Process parts in common with pdt 4.0.
+    product_definition_template_0(section, metadata, frt_coord)
+
+    # Decode the statistic method name.
+    cell_method_name = statistical_method_name(section)
+
+    # Record an 'area' cell-method using this statistic.
+    metadata['cell_methods'] = [CellMethod(coords=('area',),
+                                           method=cell_method_name)]
+
+
+def satellite_common(section, metadata):
     # Number of contributing spectral bands.
     NB = section['NB']
 
@@ -2008,8 +2085,62 @@ def product_definition_template_31(section, metadata, rt_coord):
         # Add the central wave number coordinate to the metadata aux coords.
         metadata['aux_coords_and_dims'].append((coord, None))
 
-        # Add the observation time coordinate.
-        metadata['aux_coords_and_dims'].append((rt_coord, None))
+
+def product_definition_template_31(section, metadata, rt_coord):
+    """
+    Translate template representing a satellite product.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * rt_coord:
+        The scalar observation time :class:`iris.coords.DimCoord'.
+
+    """
+    generating_process(section, include_forecast_process=False)
+
+    satellite_common(section, metadata)
+
+    # Add the observation time coordinate.
+    metadata['aux_coords_and_dims'].append((rt_coord, None))
+
+
+def product_definition_template_32(section, metadata, rt_coord):
+    """
+    Translate template representing an analysis or forecast at a horizontal
+    level or in a horizontal layer at a point in time for simulated (synthetic)
+    satellite data.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * rt_coord:
+        The scalar observation time :class:`iris.coords.DimCoord'.
+
+    """
+    generating_process(section, include_forecast_process=False)
+
+    # Handle the data cutoff.
+    data_cutoff(section['hoursAfterDataCutoff'],
+                section['minutesAfterDataCutoff'])
+
+    time_coords(section, metadata, rt_coord)
+
+    satellite_common(section, metadata)
 
 
 def product_definition_template_40(section, metadata, frt_coord):
@@ -2035,6 +2166,7 @@ def product_definition_template_40(section, metadata, frt_coord):
     # Perform identical message processing.
     product_definition_template_0(section, metadata, frt_coord)
 
+    # Reference GRIB2 Code Table 4.230.
     constituent_type = section['constituentType']
 
     # Add the constituent type as  an attribute.
@@ -2085,11 +2217,17 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     elif template == 9:
         probability = \
             product_definition_template_9(section, metadata, rt_coord)
+    elif template == 10:
+        product_definition_template_10(section, metadata, rt_coord)
     elif template == 11:
         product_definition_template_11(section, metadata, rt_coord)
+    elif template == 15:
+        product_definition_template_15(section, metadata, rt_coord)
     elif template == 31:
         # Process satellite product.
         product_definition_template_31(section, metadata, rt_coord)
+    elif template == 32:
+        product_definition_template_32(section, metadata, rt_coord)
     elif template == 40:
         product_definition_template_40(section, metadata, rt_coord)
     else:
@@ -2220,24 +2358,38 @@ def convert(field):
         A :class:`iris.fileformats.rules.ConversionMetadata` object.
 
     """
-    editionNumber = field.sections[0]['editionNumber']
-    if editionNumber != 2:
-        msg = 'GRIB edition {} is not supported'.format(editionNumber)
-        raise TranslationError(msg)
+    if hasattr(field, 'sections'):
+        editionNumber = field.sections[0]['editionNumber']
 
-    # Initialise the cube metadata.
-    metadata = OrderedDict()
-    metadata['factories'] = []
-    metadata['references'] = []
-    metadata['standard_name'] = None
-    metadata['long_name'] = None
-    metadata['units'] = None
-    metadata['attributes'] = {}
-    metadata['cell_methods'] = []
-    metadata['dim_coords_and_dims'] = []
-    metadata['aux_coords_and_dims'] = []
+        if editionNumber != 2:
+            emsg = 'GRIB edition {} is not supported by {!r}.'
+            raise TranslationError(emsg.format(editionNumber,
+                                               type(field).__name__))
 
-    # Convert GRIB2 message to cube metadata.
-    grib2_convert(field, metadata)
+        # Initialise the cube metadata.
+        metadata = OrderedDict()
+        metadata['factories'] = []
+        metadata['references'] = []
+        metadata['standard_name'] = None
+        metadata['long_name'] = None
+        metadata['units'] = None
+        metadata['attributes'] = {}
+        metadata['cell_methods'] = []
+        metadata['dim_coords_and_dims'] = []
+        metadata['aux_coords_and_dims'] = []
 
-    return ConversionMetadata._make(metadata.values())
+        # Convert GRIB2 message to cube metadata.
+        grib2_convert(field, metadata)
+
+        result = ConversionMetadata._make(metadata.values())
+    else:
+        editionNumber = field.edition
+
+        if editionNumber != 1:
+            emsg = 'GRIB edition {} is not supported by {!r}.'
+            raise TranslationError(emsg.format(editionNumber,
+                                               type(field).__name__))
+
+        result = grib1_convert(field)
+
+    return result

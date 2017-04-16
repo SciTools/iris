@@ -128,10 +128,6 @@ grib-api 1.9.16 or later
     edition 2 messages. A compression library such as Jasper is required 
     to read JPEG2000 compressed GRIB2 files.
 
-iris-grib 0.9 or later
-    (https://github.com/scitools/iris-grib)
-    Iris interface to ECMWF's GRIB API
-
 matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
     Python package for 2D plotting.  
 

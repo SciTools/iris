@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,7 +27,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris.coord_systems import LambertConformal
+from iris.coord_systems import Orthographic
 from iris.exceptions import TranslationError
 from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
@@ -47,7 +47,7 @@ class Test(tests.IrisTest, GdtTestMixin):
             grid_definition_section(test_cube, self.mock_grib)
 
     def test__fail_unsupported_coord_system(self):
-        cs = LambertConformal()
+        cs = Orthographic(0, 0)
         test_cube = self._make_test_cube(cs=cs)
         with self.assertRaisesRegexp(
                 ValueError,

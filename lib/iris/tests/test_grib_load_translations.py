@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,24 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests for specific implementation aspects of the 'old' grib loaders.
-
-The class TestGribLoad has been moved to the separate source file
-'tests/integration/test_grib_load.py'.
-These tests are specific to the old internal grib module,
-:mod:`iris.fileformats.grib`, which will shortly be superceded by the separate
-'iris_grib' package, and will eventually be removed.
+Tests for specific implementation aspects of the grib loaders.
 
 """
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# Import iris tests first so that some things can be initialised before
+# Import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import datetime
-from distutils.version import StrictVersion
 
 import cf_units
 import numpy as np
@@ -302,15 +295,6 @@ class TestGribTimecodes(tests.IrisTest):
         )
         TestGribTimecodes._run_timetests(self, tests)
 
-    def test_timeunits_grib2_specific(self):
-        tests = (
-            (2, 13, None, 1.0, 'seconds'),
-            # check the extra grib1 keys FAIL
-            (2, 14, TestGribTimecodes._err_bad_timeunit(14), 0.0, '??'),
-            (2, 254, TestGribTimecodes._err_bad_timeunit(254), 0.0, '??'),
-        )
-        TestGribTimecodes._run_timetests(self, tests)
-
     def test_timeunits_calendar(self):
         tests = (
             (1, 3, TestGribTimecodes._err_bad_timeunit(3), 0.0, 'months'),
@@ -324,54 +308,8 @@ class TestGribTimecodes(tests.IrisTest):
     def test_timeunits_invalid(self):
         tests = (
             (1, 111, TestGribTimecodes._err_bad_timeunit(111), 1.0, '??'),
-            (2, 27, TestGribTimecodes._err_bad_timeunit(27), 1.0, '??'),
         )
         TestGribTimecodes._run_timetests(self, tests)
-
-    def test_load_probability_forecast(self):
-        # Test GribWrapper interpretation of PDT 4.9 data.
-        # NOTE:
-        #   Currently Iris has only partial support for PDT 4.9.
-        #   Though it can load the data, key metadata (thresholds) is lost.
-        #   At present, we are not testing for this.
-
-        # Make a testing grib message in memory, with gribapi.
-        grib_message = gribapi.grib_new_from_samples('GRIB2')
-        gribapi.grib_set_long(grib_message, 'productDefinitionTemplateNumber',
-                              9)
-        gribapi.grib_set_string(grib_message, 'stepRange', '10-55')
-        grib_wrapper = iris.fileformats.grib.GribWrapper(grib_message)
-
-        # Define two expected datetimes for _periodEndDateTime as
-        # gribapi v1.9.16 mis-calculates this.
-        # See https://software.ecmwf.int/wiki/display/GRIB/\
-        #     GRIB+API+version+1.9.18+released
-        try:
-            # gribapi v1.9.16 has no __version__ attribute.
-            gribapi_ver = gribapi.__version__
-        except AttributeError:
-            gribapi_ver = gribapi.grib_get_api_version()
-
-        if StrictVersion(gribapi_ver) < StrictVersion('1.9.18'):
-            exp_end_date = datetime.datetime(year=2007, month=3, day=25,
-                                             hour=12, minute=0, second=0)
-        else:
-            exp_end_date = datetime.datetime(year=2007, month=3, day=25,
-                                             hour=19, minute=0, second=0)
-
-        # Check that it captures the statistics time period info.
-        # (And for now, nothing else)
-        self.assertEqual(
-            grib_wrapper._referenceDateTime,
-            datetime.datetime(year=2007, month=3, day=23,
-                              hour=12, minute=0, second=0)
-        )
-        self.assertEqual(
-            grib_wrapper._periodStartDateTime,
-            datetime.datetime(year=2007, month=3, day=23,
-                              hour=22, minute=0, second=0)
-        )
-        self.assertEqual(grib_wrapper._periodEndDateTime, exp_end_date)
 
     def test_warn_unknown_pdts(self):
         # Test loading of an unrecognised GRIB Product Definition Template.
@@ -389,13 +327,10 @@ class TestGribTimecodes(tests.IrisTest):
             # Load the message from the file as a cube.
             cube_generator = iris.fileformats.grib.load_cubes(
                 temp_gribfile_path)
-            cube = next(cube_generator)
-
-            # Check the cube has an extra "warning" attribute.
-            self.assertEqual(
-                cube.attributes['GRIB_LOAD_WARNING'],
-                'unsupported GRIB2 ProductDefinitionTemplate: #4.5'
-            )
+            with self.assertRaises(iris.exceptions.TranslationError) as te:
+                cube = next(cube_generator)
+                self.assertEqual('Product definition template [5]'
+                                 ' is not supported', str(te.exception))
 
 
 @tests.skip_grib
@@ -421,7 +356,8 @@ class TestGribSimple(tests.IrisTest):
                 grib_message = FakeGribMessage(**grib.__dict__)
                 wrapped_msg = iris.fileformats.grib.GribWrapper(grib_message)
                 cube, _, _ = iris.fileformats.rules._make_cube(
-                    wrapped_msg, iris.fileformats.grib.load_rules.convert)
+                    wrapped_msg,
+                    iris.fileformats.grib._grib1_load_rules.grib1_convert)
         return cube
 
 
@@ -474,81 +410,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.known_grib1(11, 'air_temperature', 'kelvin')
         self.known_grib1(33, 'x_wind', 'm s-1')
         self.known_grib1(34, 'y_wind', 'm s-1')
-
-
-@tests.skip_grib
-class TestGrib2LoadPhenomenon(TestGribSimple):
-    # Test recognition of grib phenomenon types.
-    def mock_grib(self):
-        grib = super(TestGrib2LoadPhenomenon, self).mock_grib()
-        grib.edition = 2
-        grib._forecastTimeUnit = 'hours'
-        grib._forecastTime = 0.0
-        grib.phenomenon_points = lambda unit: [0.0]
-        return grib
-
-    def known_grib2(self, discipline, category, param,
-                    standard_name, long_name, units_str):
-        grib = self.mock_grib()
-        grib.discipline = discipline
-        grib.parameterCategory = category
-        grib.parameterNumber = param
-        cube = self.cube_from_message(grib)
-        try:
-            _cf_units = cf_units.Unit(units_str)
-        except ValueError:
-            _cf_units = cf_units.Unit('???')
-        self.assertEqual(cube.standard_name, standard_name)
-        self.assertEqual(cube.long_name, long_name)
-        self.assertEqual(cube.units, _cf_units)
-
-    def test_grib2_unknownparam(self):
-        grib = self.mock_grib()
-        grib.discipline = 999
-        grib.parameterCategory = 999
-        grib.parameterNumber = 9999
-        cube = self.cube_from_message(grib)
-        self.assertEqual(cube.standard_name, None)
-        self.assertEqual(cube.long_name, None)
-        self.assertEqual(cube.units, cf_units.Unit("???"))
-
-    def test_grib2_known_standard_params(self):
-        # check we know how to translate at least these params
-        # I.E. all the ones the older scheme provided.
-        full_set = [
-            (0, 0, 0, "air_temperature", None, "kelvin"),
-            (0, 0, 2, "air_potential_temperature", None, "K"),
-            (0, 1, 0, "specific_humidity", None, "kg kg-1"),
-            (0, 1, 1, "relative_humidity", None, "%"),
-            (0, 1, 3, None, "precipitable_water", "kg m-2"),
-            (0, 1, 22, None, "cloud_mixing_ratio", "kg kg-1"),
-            (0, 1, 13, "liquid_water_content_of_surface_snow", None, "kg m-2"),
-            (0, 2, 1, "wind_speed", None, "m s-1"),
-            (0, 2, 2, "x_wind", None, "m s-1"),
-            (0, 2, 3, "y_wind", None, "m s-1"),
-            (0, 2, 8, "lagrangian_tendency_of_air_pressure", None, "Pa s-1"),
-            (0, 2, 10, "atmosphere_absolute_vorticity", None, "s-1"),
-            (0, 3, 0, "air_pressure", None, "Pa"),
-            (0, 3, 1, "air_pressure_at_sea_level", None, "Pa"),
-            (0, 3, 3, None, "icao_standard_atmosphere_reference_height", "m"),
-            (0, 3, 5, "geopotential_height", None, "m"),
-            (0, 3, 9, "geopotential_height_anomaly", None, "m"),
-            (0, 6, 1, "cloud_area_fraction", None, "%"),
-            (0, 6, 6, "atmosphere_mass_content_of_cloud_liquid_water", None,
-                "kg m-2"),
-            (0, 7, 6,
-             "atmosphere_specific_convective_available_potential_energy",
-             None, "J kg-1"),
-            (0, 7, 7, None, "convective_inhibition", "J kg-1"),
-            (0, 7, 8, None, "storm_relative_helicity", "J kg-1"),
-            (0, 14, 0, "atmosphere_mole_content_of_ozone", None, "Dobson"),
-            (2, 0, 0, "land_area_fraction", None, "1"),
-            (10, 2, 0, "sea_ice_area_fraction", None, "1")]
-
-        for (discipline, category, number,
-             standard_name, long_name, units) in full_set:
-            self.known_grib2(discipline, category, number,
-                             standard_name, long_name, units)
 
 
 if __name__ == "__main__":

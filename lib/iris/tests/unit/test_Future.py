@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,12 +38,6 @@ class Test___setattr__(tests.IrisTest):
         new_value = not future.cell_datetime_objects
         future.cell_datetime_objects = new_value
         self.assertEqual(future.cell_datetime_objects, new_value)
-
-    def test_valid_strict_grib_load(self):
-        future = Future()
-        new_value = not future.strict_grib_load
-        future.strict_grib_load = new_value
-        self.assertEqual(future.strict_grib_load, new_value)
 
     def test_valid_clip_latitudes(self):
         future = Future()
