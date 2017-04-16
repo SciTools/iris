@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,10 +26,11 @@ import six
 from collections import namedtuple
 import re
 
-import biggus
 import gribapi
 import numpy as np
+import numpy.ma as ma
 
+from iris._lazy_data import array_masked_to_nans, as_lazy_data
 from iris.exceptions import TranslationError
 
 
@@ -88,7 +89,7 @@ class GribMessage(object):
         """
         # A RawGribMessage giving gribapi access to the original grib message.
         self._raw_message = raw_message
-        # A _MessageLocation which biggus uses to read the message data array,
+        # A _MessageLocation which dask uses to read the message data array,
         # by which time this message may be dead and the original grib file
         # closed.
         self._recreate_raw = recreate_raw
@@ -114,9 +115,19 @@ class GribMessage(object):
         return self._raw_message.sections
 
     @property
+    def bmdi(self):
+        # Not sure of any cases where GRIB provides a fill value.
+        # Default for fill value is None.
+        return None
+
+    @property
+    def core_data(self):
+        return self.data
+
+    @property
     def data(self):
         """
-        The data array from the GRIB message as a biggus Array.
+        The data array from the GRIB message as a dask Array.
 
         The shape of the array will match the logical shape of the
         message's grid. For example, a simple global grid would be
@@ -152,7 +163,7 @@ class GribMessage(object):
                 shape = (grid_section['Nj'], grid_section['Ni'])
             proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
                                self._recreate_raw)
-            data = biggus.NumpyArrayAdapter(proxy)
+            data = as_lazy_data(proxy)
         else:
             fmt = 'Grid definition template {} is not supported'
             raise TranslationError(fmt.format(template))
@@ -247,12 +258,16 @@ class _DataProxy(object):
                 _data[bitmap.astype(bool)] = data
                 # `np.ma.masked_array` masks where input = 1, the opposite of
                 # the behaviour specified by the GRIB spec.
-                data = np.ma.masked_array(_data, mask=np.logical_not(bitmap))
+                data = ma.masked_array(_data, mask=np.logical_not(bitmap))
             else:
                 msg = 'Shapes of data and bitmap do not match.'
                 raise TranslationError(msg)
 
         data = data.reshape(self.shape)
+
+        if ma.isMaskedArray(data):
+            data = array_masked_to_nans(data)
+
         return data.__getitem__(keys)
 
     def __repr__(self):

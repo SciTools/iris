@@ -26,9 +26,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from biggus import NumpyArrayAdapter
 import numpy as np
 
+from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.exceptions import TranslationError
 from iris.fileformats.grib import GribWrapper, GribDataProxy
 from iris.tests import mock
@@ -87,6 +87,7 @@ class Test_edition(tests.IrisTest):
         self.assertEqual(wrapper.grib_message, grib_message)
 
 
+@tests.skip_biggus
 class Test_deferred(tests.IrisTest):
     def setUp(self):
         confirm_patch = mock.patch(
@@ -115,8 +116,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'regular_ll'
         for i, _ in enumerate(tell_tale):
             gw = GribWrapper(grib_message, grib_fh)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertTrue(is_lazy_data(gw._data))
+            proxy = as_concrete_data(gw._data)
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (10, 20))
             self.assertEqual(proxy.dtype, np.float)
@@ -131,8 +132,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'regular_ll'
         for offset in expected:
             gw = GribWrapper(grib_message, grib_fh)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertTrue(is_lazy_data(gw._data))
+            proxy = as_concrete_data(gw._data)
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (10, 20))
             self.assertEqual(proxy.dtype, np.float)
@@ -146,8 +147,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'reduced_gg'
         for i, _ in enumerate(tell_tale):
             gw = GribWrapper(grib_message, grib_fh)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertTrue(is_lazy_data(gw._data))
+            proxy = as_concrete_data(gw._data)
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (200,))
             self.assertEqual(proxy.dtype, np.float)
@@ -162,8 +163,8 @@ class Test_deferred(tests.IrisTest):
         grib_message = 'reduced_gg'
         for offset in expected:
             gw = GribWrapper(grib_message, grib_fh)
-            self.assertIsInstance(gw._data, NumpyArrayAdapter)
-            proxy = gw._data.concrete
+            self.assertTrue(is_lazy_data(gw._data))
+            proxy = as_concrete_data(gw._data)
             self.assertIsInstance(proxy, GribDataProxy)
             self.assertEqual(proxy.shape, (200,))
             self.assertEqual(proxy.dtype, np.float)
