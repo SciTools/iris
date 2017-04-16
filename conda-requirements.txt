@@ -26,12 +26,12 @@ imagehash
 requests
 
 # Optional iris dependencies
-nc_time_axis
-iris-grib
+ecmwf_grib
 esmpy>=7.0
 gdal
 libmo_unpack
-pandas
-pyugrid
 mo_pack
+nc_time_axis
+pandas
 python-stratify
+pyugrid

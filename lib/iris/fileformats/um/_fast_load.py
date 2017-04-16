@@ -28,7 +28,7 @@ When enabled, that function calls private functions in this module, to replace
 the 'normal' calls with 'structured' loading.
 
 At present, there is *no* public low-level fields-to-cube interface, equivalent
-to the pp or iris_grib "as_pairs" functions.
+to the pp "as_pairs" functions.
 
 """
 
