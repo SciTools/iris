@@ -22,20 +22,18 @@ See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
 .. deprecated:: 1.10
 
     The module :mod:`iris.analysis.interpolate` is deprecated.
-    Please use :meth:`iris.cube.regrid` or :meth:`iris.cube.interpolate` with
-    the appropriate regridding and interpolation schemes from
-    :mod:`iris.analysis` instead.
-
-The actual content of this module is all taken from
-'iris.analysis._interpolate_backdoor'.
-The only difference is that this module also emits a deprecation warning when
-it is imported.
+    Please use :meth:`iris.cube.Cube.regrid` or
+    :meth:`iris.cube.Cube.interpolate` with the appropriate regridding and
+    interpolation schemes from :mod:`iris.analysis` instead.
 
 """
+# The actual content of this module is all taken from
+# 'iris.analysis._interpolate_backdoor'.
+# The only difference is that this module also emits a deprecation warning when
+# it is imported.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from iris.analysis._interpolate_backdoor import *
 from iris.analysis._interpolate_backdoor import _warn_deprecated
