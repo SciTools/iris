@@ -223,9 +223,9 @@ class DataManager(object):
 
             if isinstance(realised_dtype, six.string_types) and \
                     realised_dtype == 'none':
-                result = DataManager(data, realised_dtype=self._realised_dtype)
-            else:
-                result = DataManager(data, realised_dtype=realised_dtype)
+                realised_dtype = self._realised_dtype
+
+            result = DataManager(data, realised_dtype=realised_dtype)
         except ValueError as error:
             emsg = 'Cannot copy {!r} - {}'
             raise ValueError(emsg.format(type(self).__name__, error))
