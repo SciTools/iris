@@ -42,7 +42,6 @@ import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 import iris._merge
 import iris.analysis
