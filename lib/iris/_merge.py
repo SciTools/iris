@@ -1471,8 +1471,6 @@ class ProtoCube(object):
                                for coord, dim in self._dim_coords_and_dims]
         aux_coords_and_dims = [(deepcopy(coord), dims)
                                for coord, dims in self._aux_coords_and_dims]
-        fill_value = signature.fill_value
-        dtype = signature.data_type
         kwargs = dict(zip(iris.cube.CubeMetadata._fields, signature.defn))
 
         cms_and_dims = [(deepcopy(cm), dims)
@@ -1481,8 +1479,8 @@ class ProtoCube(object):
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
                               cell_measures_and_dims=cms_and_dims,
-                              fill_value=fill_value,
-                              dtype=dtype,
+                              fill_value=signature.fill_value,
+                              dtype=signature.data_type,
                               **kwargs)
 
         # Add on any aux coord factories.
