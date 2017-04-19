@@ -2181,6 +2181,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if ma.count_masked(data) == 0:
                 data = data.filled()
 
+        # XXX: Slicing a single item from a masked array that is masked,
+        #      results in numpy (v1.11.1) *always* returning a MaskedConstant
+        #      with a dtype of float64, regardless of the original masked
+        #      array dtype!
+        if isinstance(data, ma.core.MaskedConstant) and \
+                data.dtype != cube_data.dtype:
+            data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
+
         # Make the new cube slice
         cube = Cube(data,
                     fill_value=self.fill_value,
