@@ -826,8 +826,6 @@ class TestCubeAPI(TestCube2d):
         metadata.attributes = {'random': '12'}
         metadata.cell_methods = ()
         metadata.cell_measures_and_dims = []
-        metadata.fill_value = -99
-        metadata.dtype = np.dtype('f8')
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
@@ -837,8 +835,6 @@ class TestCubeAPI(TestCube2d):
         self.assertIsNot(self.t.attributes, metadata.attributes)
         self.assertEqual(self.t.cell_methods, ())
         self.assertEqual(self.t._cell_measures_and_dims, [])
-        self.assertEqual(self.t.fill_value, -99)
-        self.assertEqual(self.t.dtype, np.dtype('f8'))
 
     def test_metadata_fail(self):
         with self.assertRaises(TypeError):

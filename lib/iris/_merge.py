@@ -316,7 +316,7 @@ class _CoordSignature(namedtuple('CoordSignature',
 
 class _CubeSignature(namedtuple('CubeSignature',
                                 ['defn', 'data_shape', 'data_type',
-                                 'cell_measures_and_dims'])):
+                                 'fill_value', 'cell_measures_and_dims'])):
     """
     Criterion for identifying a specific type of :class:`iris.cube.Cube`
     based on its metadata.
@@ -331,6 +331,9 @@ class _CubeSignature(namedtuple('CubeSignature',
 
     * data_type:
         The data payload :class:`numpy.dtype` of a :class:`iris.cube.Cube`.
+
+    * fill_value:
+        The fill-value for the data payload of a :class:`iris.cube.Cube`.
 
     * cell_measures_and_dims:
         A list of cell_measures and dims for the cube.
@@ -399,11 +402,14 @@ class _CubeSignature(namedtuple('CubeSignature',
         """
         msgs = self._defn_msgs(other.defn)
         if self.data_shape != other.data_shape:
-            msgs.append('cube.shape differs: {} != {}'.format(
-                self.data_shape, other.data_shape))
+            msg = 'cube.shape differs: {} != {}'
+            msgs.append(msg.format(self.data_shape, other.data_shape))
         if self.data_type != other.data_type:
-            msgs.append('cube data dtype differs: {} != {}'.format(
-                self.data_type, other.data_type))
+            msg = 'cube data dtype differs: {} != {}'
+            msgs.append(msg.format(self.data_type, other.data_type))
+        if self.fill_value != other.fill_value:
+            msg = 'cube fill value differs: {} != {}'
+            msgs.append(msg.format(self.fill_value, other.fill_value))
         if (self.cell_measures_and_dims != other.cell_measures_and_dims):
             msgs.append('cube.cell_measures differ')
 
@@ -1463,6 +1469,8 @@ class ProtoCube(object):
                                for coord, dim in self._dim_coords_and_dims]
         aux_coords_and_dims = [(deepcopy(coord), dims)
                                for coord, dims in self._aux_coords_and_dims]
+        fill_value = signature.fill_value
+        dtype = signature.data_type
         kwargs = dict(zip(iris.cube.CubeMetadata._fields, signature.defn))
 
         cms_and_dims = [(deepcopy(cm), dims)
@@ -1471,6 +1479,8 @@ class ProtoCube(object):
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
                               cell_measures_and_dims=cms_and_dims,
+                              fill_value=fill_value,
+                              dtype=dtype,
                               **kwargs)
 
         # Add on any aux coord factories.
@@ -1578,9 +1588,8 @@ class ProtoCube(object):
 
     def _build_signature(self, cube):
         """Generate the signature that defines this cube."""
-        array = cube.lazy_data()
-        return _CubeSignature(cube.metadata, cube.shape, array.dtype,
-                              cube._cell_measures_and_dims)
+        return _CubeSignature(cube.metadata, cube.shape, cube.dtype,
+                              cube.fill_value, cube._cell_measures_and_dims)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""

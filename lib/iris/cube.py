@@ -2422,7 +2422,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 chunk_data = [chunk.data for chunk in chunks]
                 module = ma if ma.isMaskedArray(self.data) else np
             data = module.concatenate(chunk_data, dim)
-            result = iris.cube.Cube(data)
+            result = iris.cube.Cube(data,
+                                    fill_value=self.fill_value,
+                                    dtype=self.dtype)
             result.metadata = copy.deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,

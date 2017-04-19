@@ -602,6 +602,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     # Start with just the metadata and the re-sampled data...
     new_cube = iris.cube.Cube(new_data)
     new_cube.metadata = source_cube.metadata
+    new_cube.fill_value = source_cube.fill_value
 
     # ... and then copy across all the unaffected coordinates.
 
