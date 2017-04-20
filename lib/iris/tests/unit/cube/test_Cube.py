@@ -1565,7 +1565,7 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         self.assertArrayEqual(data, data_original)
 
     def test_lazydata_maskedints(self):
-        # Check that lazy masked ints dtype.
+        # Check lazy masked ints dtype.
         masked_data_original = self._sample_data(dtype=np.int32, masked=True)
         masked_data_lazy = as_lazy_data(masked_data_original)
         cube = Cube(masked_data_lazy, dtype=masked_data_original.dtype)
