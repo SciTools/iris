@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,7 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
-from iris.fileformats.grib._load_convert import unscale, _MDI as MDI
+from iris.fileformats.grib._load_convert import _MDI as MDI, unscale
 
 # Reference GRIB2 Regulation 92.1.12.
 

@@ -29,7 +29,7 @@ import iris.tests as tests
 
 import iris.coords
 from iris.fileformats.grib._load_convert import \
-    product_definition_template_40, _MDI
+    _MDI, product_definition_template_40
 from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 
 

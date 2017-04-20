@@ -30,10 +30,10 @@ from copy import deepcopy
 
 from iris.coords import DimCoord
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._load_convert import vertical_coords
 from iris.fileformats.grib._load_convert import \
+    _MDI as MISSING_LEVEL, \
     _TYPE_OF_FIXED_SURFACE_MISSING as MISSING_SURFACE, \
-    _MDI as MISSING_LEVEL
+    vertical_coords
 from iris.tests import mock
 
 

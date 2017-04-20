@@ -31,9 +31,8 @@ import numpy as np
 
 import iris.coords
 from iris.coord_systems import GeogCS, TransverseMercator
-from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
-
 from iris.fileformats.grib._save_rules import grid_definition_template_12
+from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 
 class FakeGribError(Exception):
