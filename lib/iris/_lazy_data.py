@@ -97,7 +97,7 @@ def as_concrete_data(data, **kwargs):
 
     .. note::
         Specific dask options for computation are controlled by
-        :class:`iris.options.Parallel`.
+        :class:`iris.config.Parallel`.
 
     """
     if is_lazy_data(data):

@@ -72,18 +72,17 @@ from six.moves import configparser
 import contextlib
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
-import re
 import os.path
+import re
 import warnings
 
 import dask
 import dask.multiprocessing
 
-DISTRIBUTED_AVAILABLE = True
 try:
     import distributed
 except ImportError:
-    DISTRIBUTED_AVAILABLE = False
+    distributed = None
 
 
 # Returns simple string options
@@ -184,10 +183,6 @@ class Option(object):
         raise NotImplementedError
 
     def __setattr__(self, name, value):
-        if name not in self.__dict__:
-            # Can't add new names.
-            msg = "'Option' object has no attribute {!r}".format(name)
-            raise AttributeError(msg)
         if value is None:
             # Set an explicitly unset value to the default value for the name.
             value = self._defaults_dict[name]['default']
@@ -264,19 +259,19 @@ class Parallel(Option):
         * Specify that we want to load a cube with dask parallel processing
         using multiprocessing with six worker processes::
 
-            iris.options.parallel(scheduler='multiprocessing', num_workers=6)
+            iris.config.parallel(scheduler='multiprocessing', num_workers=6)
             iris.load('my_dataset.nc')
 
         * Specify, with a context manager, that we want to load a cube with
         dask parallel processing using four worker threads::
 
-            with iris.options.parallel(scheduler='threaded', num_workers=4):
+            with iris.config.parallel(scheduler='threaded', num_workers=4):
                 iris.load('my_dataset.nc')
 
         * Run dask parallel processing using a distributed scheduler that has
         been set up at the IP address and port at ``192.168.0.219:8786``::
 
-            iris.options.parallel(scheduler='192.168.0.219:8786')
+            iris.config.parallel(scheduler='192.168.0.219:8786')
 
         """
         # Set `__dict__` keys first.
@@ -304,9 +299,13 @@ class Parallel(Option):
         return msg.format(joined)
 
     def __setattr__(self, name, value):
+        if name not in self.__dict__:
+            # Can't add new names.
+            msg = "{!r} object has no attribute {!r}"
+            raise AttributeError(msg.format(self.__class__.__name__, name))
         if value is None:
             value = self._defaults_dict[name]['default']
-        attr_setter = getattr(self, 'set_{}'.format(name))
+        attr_setter = self._defaults_dict[name]['setter']
         value = attr_setter(value)
         super(Parallel, self).__setattr__(name, value)
 
@@ -321,14 +320,18 @@ class Parallel(Option):
         the `'options'` were a range of numbers.
 
         """
-        return {'_scheduler': {'default': None, 'options': None},
+        return {'_scheduler': {'default': None, 'options': None,
+                               'setter': self.set__scheduler},
                 'scheduler': {'default': 'threaded',
                               'options': ['threaded',
                                           'multiprocessing',
                                           'async',
-                                          'distributed']},
-                'num_workers': {'default': 1, 'options': None},
-                'dask_scheduler': {'default': None, 'options': None},
+                                          'distributed'],
+                              'setter': self.set_scheduler},
+                'num_workers': {'default': 1, 'options': None,
+                                'setter': self.set_num_workers},
+                'dask_scheduler': {'default': None, 'options': None,
+                                   'setter': self.set_dask_scheduler},
                 }
 
     def set__scheduler(self, value):
@@ -339,7 +342,7 @@ class Parallel(Option):
         if value is None:
             value = default
         elif re.match(r'^(\d{1,3}\.){3}\d{1,3}:\d{1,5}$', value):
-            if DISTRIBUTED_AVAILABLE:
+            if distributed is not None:
                 value = 'distributed'
             else:
                 # Distributed not available.
@@ -404,7 +407,7 @@ class Parallel(Option):
         if scheduler in ['threaded', 'multiprocessing']:
             num_workers = self.get('num_workers')
             pool = ThreadPool(num_workers)
-        if scheduler == 'distributed':
+        elif scheduler == 'distributed':
             get = distributed.Client(get).get
 
         dask.set_options(get=get, pool=pool)

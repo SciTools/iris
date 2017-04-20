@@ -32,13 +32,22 @@ from iris.config import Parallel
 from iris.tests import mock
 
 
-class Test_operation(tests.IrisTest):
-    # Check that the options are passed through to 'real' code.
-    # NOTE: tests that call the option class directly and as a contextmgr.
+class Test__operation(tests.IrisTest):
+    def setUp(self):
+        self.parallel = Parallel()
+
+    def test_bad_name(self):
+        # Check we can't do `iris.config.parallel.foo = 'bar`.
+        exp_emsg = "'Parallel' object has no attribute 'foo'"
+        with self.assertRaisesRegexp(AttributeError, exp_emsg):
+            self.parallel.foo = 'bar'
 
     def test_bad_name__contextmgr(self):
-        # Check we can't do `with iris.options.parallel.context('foo'='bar')`.
-        pass
+        # Check we can't do `with iris.config.parallel.context('foo'='bar')`.
+        exp_emsg = "'Parallel' object has no attribute 'foo'"
+        with self.assertRaisesRegexp(AttributeError, exp_emsg):
+            with self.parallel.context(foo='bar'):
+                pass
 
 
 class Test__set_dask_options(tests.IrisTest):
