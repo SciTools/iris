@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,8 +33,8 @@ import numpy as np
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 from iris.fileformats.grib._load_convert import grid_definition_template_90
+from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 
 
 MDI = 2 ** 32 - 1

@@ -29,9 +29,8 @@ import iris.tests as tests
 
 from iris.coord_systems import Orthographic
 from iris.exceptions import TranslationError
-from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
-
 from iris.fileformats.grib._save_rules import grid_definition_section
+from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 
 class Test(tests.IrisTest, GdtTestMixin):

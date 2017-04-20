@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,8 +30,8 @@ import iris.tests as tests
 import gribapi
 import numpy as np
 
-import iris.cube
 import iris.coords
+import iris.cube
 from iris.fileformats.grib._save_rules import set_fixed_surfaces
 
 
