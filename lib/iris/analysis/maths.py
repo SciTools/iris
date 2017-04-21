@@ -344,8 +344,8 @@ def multiply(cube, other, dim=None, in_place=False):
         # If a coordinate is to be ignored - remove it
         ignore = filter(None, [coord_grp[0] for coord_grp
                         in coord_comp['ignorable']])
-    for coord in ignore:
-        new_cube.remove_coord(coord)
+        for coord in ignore:
+            new_cube.remove_coord(coord)
 
     return new_cube
 
@@ -402,8 +402,8 @@ def divide(cube, other, dim=None, in_place=False):
         # If a coordinate is to be ignored - remove it
         ignore = filter(None, [coord_grp[0] for coord_grp
                         in coord_comp['ignorable']])
-    for coord in ignore:
-        new_cube.remove_coord(coord)
+        for coord in ignore:
+            new_cube.remove_coord(coord)
 
     return new_cube
 

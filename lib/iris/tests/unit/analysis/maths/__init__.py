@@ -193,4 +193,3 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         reversed2 = Cube(data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
 
         return reversed1, reversed2
-
