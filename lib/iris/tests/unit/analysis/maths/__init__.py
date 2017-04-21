@@ -174,10 +174,10 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         x = DimCoord([4, 5, 6], long_name='x')
         y = DimCoord([5, 6, 7, 8], long_name='y')
 
-        self.nomatch1 = Cube(data, dim_coords_and_dims=[(a, 0), (b, 1)])
-        self.nomatch2 = Cube(data, dim_coords_and_dims=[(x, 0), (y, 1)])
+        nomatch1 = Cube(data, dim_coords_and_dims=[(a, 0), (b, 1)])
+        nomatch2 = Cube(data, dim_coords_and_dims=[(x, 0), (y, 1)])
 
-        return self.nomatch1, self.nomatch2
+        return nomatch1, nomatch2
 
     def SetUpReversed(self):
         # On this cube pair, the coordinates to perform operations on have
@@ -189,8 +189,8 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         a2 = DimCoord([3, 2, 1], long_name='a')
         b2 = DimCoord([1, 2, 3, 4], long_name='b')
 
-        self.reversed1 = Cube(data, dim_coords_and_dims=[(a1, 0), (b1, 1)])
-        self.reversed2 = Cube(data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
+        reversed1 = Cube(data, dim_coords_and_dims=[(a1, 0), (b1, 1)])
+        reversed2 = Cube(data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
 
-        return self.reversed1, self.reversed2
+        return reversed1, reversed2
 
