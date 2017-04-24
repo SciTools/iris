@@ -1,6 +1,7 @@
 Iris
 ====
 
+[![Join the chat at https://gitter.im/SciTools/iris](https://badges.gitter.im/SciTools/iris.svg)](https://gitter.im/SciTools/iris?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master)](https://travis-ci.org/SciTools/iris/branches)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.51860.svg)](https://dx.doi.org/10.5281/zenodo.51860)
 
