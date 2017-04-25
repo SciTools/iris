@@ -37,6 +37,9 @@ def _iris_dask_defaults():
     ensures that running Iris under "normal" conditions will not use up all
     available computational resource.
 
+    Otherwise, by default, `dask` will use a multi-threaded scheduler that uses
+    all available CPUs.
+
     .. note::
         We only want Iris to set dask options in the case where doing so will
         not change user-specified options that have already been set.
