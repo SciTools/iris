@@ -412,7 +412,7 @@ def ellipsoid(shapeOfTheEarth, major, minor, radius):
 
     """
     # Supported shapeOfTheEarth values.
-    if shapeOfTheEarth not in (0, 1, 3, 6, 7):
+    if shapeOfTheEarth not in (0, 1, 2, 3, 4, 5, 6, 7):
         msg = 'Grid definition section 3 contains an unsupported ' \
             'shape of the earth [{}]'.format(shapeOfTheEarth)
         raise TranslationError(msg)
@@ -428,6 +428,9 @@ def ellipsoid(shapeOfTheEarth, major, minor, radius):
                 'radius to be specified.'.format(shapeOfTheEarth)
             raise ValueError(msg)
         result = icoord_systems.GeogCS(radius)
+    if shapeOfTheEarth == 2:
+        # Earth assumed oblate spheroid with size as determined by IAU in 1965.
+        result = icoord_systems.GeogCS(6378160, inverse_flattening=297.0)
     elif shapeOfTheEarth in [3, 7]:
         # Earth assumed oblate spheroid with major and minor axes
         # specified (in km)/(in m) by data producer.
@@ -442,6 +445,14 @@ def ellipsoid(shapeOfTheEarth, major, minor, radius):
             major *= 1000
             minor *= 1000
         result = icoord_systems.GeogCS(major, minor)
+    if shapeOfTheEarth == 4:
+        # Earth assumed oblate spheroid as defined in IAG-GRS80 model.
+        result = icoord_systems.GeogCS(6378137,
+                                       inverse_flattening=298.257222101)
+    if shapeOfTheEarth == 5:
+        # Earth assumed represented by WGS84 (as used by ICAO since 1998).
+        result = icoord_systems.GeogCS(6378137,
+                                       inverse_flattening=298.257223563)
     elif shapeOfTheEarth == 6:
         # Earth assumed spherical with radius of 6 371 229.0m
         result = icoord_systems.GeogCS(6371229)
