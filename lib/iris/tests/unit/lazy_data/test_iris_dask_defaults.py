@@ -32,40 +32,30 @@ from iris._lazy_data import _iris_dask_defaults
 
 class Test__iris_dask_defaults(tests.IrisTest):
     def setUp(self):
-        self.context = 'dask.context'
-        self._globals = 'iris._lazy_data._globals'
         set_options = 'dask.set_options'
         self.patch_set_options = self.patch(set_options)
         get_sync = 'dask.async.get_sync'
         self.patch_get_sync = self.patch(get_sync)
 
     def test_no_user_options(self):
-        test_dict = {}
-        with self.patch(self.context, _globals=test_dict):
-            _iris_dask_defaults()
-            self.assertEqual(dask.context._globals, test_dict)
+        self.patch('dask.context._globals', {})
+        _iris_dask_defaults()
         self.patch_set_options.assert_called_once_with(get=self.patch_get_sync)
 
     def test_user_options__pool(self):
-        test_dict = {'pool': 5}
-        with self.patch(self.context, _globals=test_dict):
-            _iris_dask_defaults()
-            self.assertEqual(dask.context._globals, test_dict)
+        self.patch('dask.context._globals', {'pool': 5})
+        _iris_dask_defaults()
         self.assertEqual(self.patch_set_options.call_count, 0)
 
     def test_user_options__get(self):
-        test_dict = {'get': 'threaded'}
-        with self.patch(self.context, _globals=test_dict):
-            _iris_dask_defaults()
-            self.assertEqual(dask.context._globals, test_dict)
+        self.patch('dask.context._globals', {'get': 'threaded'})
+        _iris_dask_defaults()
         self.assertEqual(self.patch_set_options.call_count, 0)
 
     def test_user_options__wibble(self):
         # Test a user-specified dask option that does not affect Iris.
-        test_dict = {'wibble': 'foo'}
-        with self.patch(self.context, _globals=test_dict):
-            _iris_dask_defaults()
-            self.assertEqual(dask.context._globals, test_dict)
+        self.patch('dask.context._globals', {'wibble': 'foo'})
+        _iris_dask_defaults()
         self.patch_set_options.assert_called_once_with(get=self.patch_get_sync)
 
 
