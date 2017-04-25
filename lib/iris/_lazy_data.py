@@ -23,9 +23,32 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import dask
 import dask.array as da
+import dask.context
 import numpy as np
 import numpy.ma as ma
+
+
+def _iris_dask_defaults():
+    """
+    Set dask defaults for Iris. The current default dask operation mode for
+    Iris is running single-threaded using `dask.async.get_sync`. This default
+    ensures that running Iris under "normal" conditions will not use up all
+    available computational resource.
+
+    .. note::
+        We only want Iris to set dask options in the case where doing so will
+        not change user-specified options that have already been set.
+
+    """
+    if 'pool' not in dask.context._globals and \
+            'get' not in dask.context._globals:
+        dask.set_options(get=dask.async.get_sync)
+
+
+# Run this at import time to set dask options for Iris.
+_iris_dask_defaults()
 
 
 def is_lazy_data(data):
