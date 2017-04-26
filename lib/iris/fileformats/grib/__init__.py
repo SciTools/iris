@@ -34,7 +34,7 @@ import gribapi
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data
+from iris._lazy_data import as_lazy_data, convert_nans_array
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError, NotYetImplementedError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
@@ -94,12 +94,11 @@ unknown_string = "???"
 class GribDataProxy(object):
     """A reference to the data payload of a single Grib message."""
 
-    __slots__ = ('shape', 'dtype', 'fill_value', 'path', 'offset')
+    __slots__ = ('shape', 'dtype', 'path', 'offset')
 
-    def __init__(self, shape, dtype, fill_value, path, offset):
+    def __init__(self, shape, dtype, path, offset):
         self.shape = shape
         self.dtype = dtype
-        self.fill_value = fill_value
         self.path = path
         self.offset = offset
 
@@ -118,8 +117,7 @@ class GribDataProxy(object):
 
     def __repr__(self):
         msg = '<{self.__class__.__name__} shape={self.shape} ' \
-            'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
-            'path={self.path!r} offset={self.offset}>'
+              'dtype={self.dtype!r} path={self.path!r} offset={self.offset}>'
         return msg.format(self=self)
 
     def __getstate__(self):
@@ -179,12 +177,14 @@ class GribWrapper(object):
             # The byte offset requires to be reset back to the first byte
             # of this message. The file pointer offset is always at the end
             # of the current message due to the grib-api reading the message.
-            proxy = GribDataProxy(shape, np.array([0.]).dtype, np.nan,
-                                  grib_fh.name,
+            proxy = GribDataProxy(shape, np.array([0.]).dtype, grib_fh.name,
                                   offset - message_length)
             self._data = as_lazy_data(proxy)
         else:
-            self.data = _message_values(grib_message, shape)
+            values_array = _message_values(grib_message, shape)
+            # mask where the values are nan
+            self.data = convert_nans_array(values_array,
+                                           nans_replacement=ma.masked)
 
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
@@ -692,10 +692,6 @@ def _message_values(grib_message, shape):
     data = gribapi.grib_get_double_array(grib_message, 'values')
     data = data.reshape(shape)
 
-    # Handle missing values in a sensible way.
-    mask = np.isnan(data)
-    if mask.any():
-        data = ma.array(data, mask=mask, fill_value=np.nan)
     return data
 
 

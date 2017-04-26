@@ -114,7 +114,6 @@ class Test_deferred_proxy_args(tests.IrisTest):
         self.expected = tell_tale - _message_length
         self.grib_fh = mock.Mock(tell=mock.Mock(side_effect=tell_tale))
         self.dtype = np.float64
-        self.fill_value = np.nan
         self.path = self.grib_fh.name
         self.lookup = _mock_grib_get_long
 
@@ -126,7 +125,6 @@ class Test_deferred_proxy_args(tests.IrisTest):
             with mock.patch('iris.fileformats.grib.GribDataProxy') as mock_gdp:
                 gw = GribWrapper(grib_message, self.grib_fh)
             mock_gdp.assert_called_once_with(shape, self.dtype,
-                                             self.fill_value,
                                              self.path, offset)
 
     def test_reduced_proxy_args(self):
@@ -136,7 +134,6 @@ class Test_deferred_proxy_args(tests.IrisTest):
             with mock.patch('iris.fileformats.grib.GribDataProxy') as mock_gdp:
                 gw = GribWrapper(grib_message, self.grib_fh)
             mock_gdp.assert_called_once_with((shape,), self.dtype,
-                                             self.fill_value,
                                              self.path, offset)
 
 
