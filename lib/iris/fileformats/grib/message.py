@@ -191,12 +191,11 @@ class _MessageLocation(namedtuple('_MessageLocation', 'filename offset')):
 class _DataProxy(object):
     """A reference to the data payload of a single GRIB message."""
 
-    __slots__ = ('shape', 'dtype', 'fill_value', 'recreate_raw')
+    __slots__ = ('shape', 'dtype', 'recreate_raw')
 
     def __init__(self, shape, dtype, fill_value, recreate_raw):
         self.shape = shape
         self.dtype = dtype
-        self.fill_value = fill_value
         self.recreate_raw = recreate_raw
 
     @property
@@ -256,24 +255,21 @@ class _DataProxy(object):
                 # Only the non-masked values are included in codedValues.
                 _data = np.empty(shape=bitmap.shape)
                 _data[bitmap.astype(bool)] = data
-                # `np.ma.masked_array` masks where input = 1, the opposite of
-                # the behaviour specified by the GRIB spec.
-                data = ma.masked_array(_data, mask=np.logical_not(bitmap))
+                # Use nan where input = 1, the opposite of the behaviour
+                # specified by the GRIB spec.
+                _data[np.logical_not(bitmap.astype(bool))] = np.nan
+                data = _data
             else:
                 msg = 'Shapes of data and bitmap do not match.'
                 raise TranslationError(msg)
 
         data = data.reshape(self.shape)
 
-        if ma.isMaskedArray(data):
-            data = array_masked_to_nans(data)
-
         return data.__getitem__(keys)
 
     def __repr__(self):
         msg = '<{self.__class__.__name__} shape={self.shape} ' \
-            'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
-            'recreate_raw={self.recreate_raw!r} '
+              'dtype={self.dtype!r} recreate_raw={self.recreate_raw!r} '
         return msg.format(self=self)
 
     def __getstate__(self):

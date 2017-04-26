@@ -94,29 +94,35 @@ class Test_data__masked(tests.IrisTest):
     def test_bitmap_present_int_data(self):
         # Test the behaviour where bitmap and codedValues shapes
         # are not equal, and codedValues is integer data.
+        data_type = np.int64
         input_values = np.arange(5)
-        output_values = np.array([-1, -1, 0, 1, -1, -1, -1, 2, -1, 3, -1, 4])
+        output_values = np.array([-1, -1, 0, 1, -1, -1, -1, 2, -1, 3, -1, 4],
+                                 dtype=data_type)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
                                       7: {'codedValues': input_values}})
-        result = as_concrete_data(message.data, nans_replacement=ma.masked)
+        result = as_concrete_data(message.data, nans_replacement=ma.masked,
+                                  result_dtype=data_type)
         expected = ma.masked_array(output_values,
                                    np.logical_not(self.bitmap))
         expected = expected.reshape(self.shape)
         self.assertMaskedArrayEqual(result, expected)
+        self.assertEqual(result.dtype, data_type)
 
     def test_bitmap_present_float_data(self):
         # Test the behaviour where bitmap and codedValues shapes
         # are not equal, and codedValues is float data.
+        data_type = np.float32
         input_values = np.arange(5, dtype=np.float32) + 5
         output_values = np.array([-1, -1, 5, 6, -1, -1, -1, 7, -1, 8, -1, 9],
-                                 dtype=np.float32)
+                                 dtype=data_type)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
                                       7: {'codedValues': input_values}})
-        result = as_concrete_data(message.data, nans_replacement=ma.masked)
+        result = as_concrete_data(message.data, nans_replacement=ma.masked,
+                                  result_dtype=data_type)
         expected = ma.masked_array(output_values,
                                    np.logical_not(self.bitmap))
         expected = expected.reshape(self.shape)
