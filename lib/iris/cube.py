@@ -695,6 +695,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :mod:`iris.aux_factory`.
         * cell_measures_and_dims
             A list of CellMeasures with dimension mappings.
+        * fill_value
+            The intended fill-value of :class:`~iris.cube.Cube` masked data.
+            Note that, the fill-value is cast relative to the dtype of the
+            :class:`~iris.cube.Cube`.
+        * dtype
+            The intended dtype of the specified lazy data, which must be
+            either integer or boolean. This is to handle the case of lazy
+            integer or boolean masked data.
 
         For example::
             >>> from iris.coords import DimCoord
