@@ -1160,21 +1160,17 @@ def product_definition_section(cube, grib):
 def data_section(cube, grib):
     # Masked data?
     if ma.isMaskedArray(cube.data):
-        # What missing value shall we use?
-        if not np.isnan(cube.data.fill_value):
-            # Use the data's fill value.
-            fill_value = float(cube.data.fill_value)
-        else:
-            # We can't use the data's fill value if it's NaN,
+        fill_value = cube.fill_value
+        if fill_value is None or np.isnan(cube.fill_value):
+            # We can't use the cube's fill value if it's NaN,
             # the GRIB API doesn't like it.
             # Calculate an MDI outside the data range.
             min, max = cube.data.min(), cube.data.max()
             fill_value = min - (max - min) * 0.1
-        # Prepare the unmaksed data array, using fill_value as the MDI.
-        data = cube.data.filled(fill_value)
     else:
         fill_value = None
-        data = cube.data
+
+    data = cube.data
 
     # units scaling
     grib2_info = gptx.cf_phenom_to_grib2_info(cube.standard_name,
