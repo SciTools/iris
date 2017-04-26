@@ -1695,7 +1695,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        return self._data_manager.data
+        data = self._data_manager.data
+        if ma.isMaskedArray(data) and self.fill_value is not None:
+            # Align the numpy fill-value with the cube fill-value.
+            data.fill_value = self.fill_value
+        return data
 
     @data.setter
     def data(self, data):

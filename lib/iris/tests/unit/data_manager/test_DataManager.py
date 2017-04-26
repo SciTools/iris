@@ -458,6 +458,29 @@ class Test_data__getter(tests.IrisTest):
         self.assertEqual(dm.dtype, self.realised_dtype)
         self.assertArrayEqual(result, self.lazy_mask_array_masked.compute())
 
+    def test_with_real_masked_constant(self):
+        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype('f8'))
+        masked_constant = masked_data[0]
+        dm = DataManager(masked_constant)
+        result = dm.data
+        self.assertFalse(dm.has_lazy_data())
+        self.assertIsInstance(result, ma.MaskedArray)
+        self.assertNotIsInstance(result, ma.core.MaskedConstant)
+        self.assertMaskedArrayEqual(result, masked_data)
+
+    def test_with_lazy_masked_constant(self):
+        dtype = np.dtype('int16')
+        masked_data = ma.masked_array([666], mask=True, dtype=dtype)
+        masked_constant = masked_data[0]
+        lazy_masked_constant = as_lazy_data(masked_constant)
+        dm = DataManager(lazy_masked_constant, realised_dtype=dtype)
+        self.assertEqual(dm.dtype, dtype)
+        result = dm.data
+        self.assertFalse(dm.has_lazy_data())
+        self.assertIsInstance(result, ma.MaskedArray)
+        self.assertNotIsInstance(result, ma.core.MaskedConstant)
+        self.assertMaskedArrayEqual(result, masked_data)
+
 
 class Test_data__setter(tests.IrisTest):
     def test_zero_ndim_real_with_scalar_int(self):
@@ -628,6 +651,16 @@ class Test_data__setter(tests.IrisTest):
         self.assertIsInstance(dm._real_array, np.core.ndarray)
         self.assertIsInstance(dm.data, np.core.ndarray)
         self.assertArrayEqual(dm.data, real_array)
+
+    def test_real_masked_constant_to_array(self):
+        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype('f8'))
+        masked_constant = masked_data[0]
+        dm = DataManager(masked_constant)
+        self.assertIsInstance(dm._real_array, ma.MaskedArray)
+        self.assertNotIsInstance(dm._real_array, ma.core.MaskedConstant)
+        self.assertIsInstance(dm.data, ma.MaskedArray)
+        self.assertNotIsInstance(dm.data, ma.core.MaskedConstant)
+        self.assertMaskedArrayEqual(dm.data, masked_data)
 
 
 class Test_dtype(tests.IrisTest):

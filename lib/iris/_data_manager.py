@@ -355,6 +355,10 @@ class DataManager(object):
             if not ma.isMaskedArray(data):
                 # Coerce input data to ndarray (including ndarray subclasses).
                 data = np.asarray(data)
+            if isinstance(data, ma.core.MaskedConstant):
+                # Promote to a masked array so that the fill-value is
+                # writeable to the data owner.
+                data = ma.array(data.data, mask=data.mask, dtype=data.dtype)
             self._lazy_array = None
             self._real_array = data
 
