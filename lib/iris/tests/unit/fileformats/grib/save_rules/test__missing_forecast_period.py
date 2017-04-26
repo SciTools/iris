@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,8 +27,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import datetime
-
 from iris.cube import Cube
 from iris.coords import DimCoord
 from iris.fileformats.grib._save_rules import _missing_forecast_period
@@ -41,7 +39,7 @@ class TestNoForecastReferenceTime(tests.IrisTest):
         cube.add_aux_coord(t_coord)
 
         res = _missing_forecast_period(cube)
-        expected_rt = datetime.datetime(1970, 1, 1, 15, 0)
+        expected_rt = t_coord.units.num2date(15)
         expected_rt_type = 3
         expected_fp = 0
         expected_fp_type = 1
@@ -58,7 +56,7 @@ class TestNoForecastReferenceTime(tests.IrisTest):
         cube.add_aux_coord(t_coord)
 
         res = _missing_forecast_period(cube)
-        expected_rt = datetime.datetime(1970, 1, 1, 14, 0)
+        expected_rt = t_coord.units.num2date(14)
         expected_rt_type = 3
         expected_fp = 0
         expected_fp_type = 1
@@ -79,7 +77,7 @@ class TestWithForecastReferenceTime(tests.IrisTest):
         cube.add_aux_coord(frt_coord)
 
         res = _missing_forecast_period(cube)
-        expected_rt = datetime.datetime(1970, 1, 1, 8, 0)
+        expected_rt = frt_coord.units.num2date(8)
         expected_rt_type = 1
         expected_fp = 3 * 24 - 8
         expected_fp_type = 1
@@ -98,7 +96,7 @@ class TestWithForecastReferenceTime(tests.IrisTest):
         cube.add_aux_coord(frt_coord)
 
         res = _missing_forecast_period(cube)
-        expected_rt = datetime.datetime(1970, 1, 1, 8, 0)
+        expected_rt = frt_coord.units.num2date(8)
         expected_rt_type = 1
         expected_fp = 2 * 24 - 8
         expected_fp_type = 1

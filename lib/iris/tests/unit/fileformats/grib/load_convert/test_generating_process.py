@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,7 @@ Tests for function
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
@@ -38,18 +38,30 @@ class TestGeneratingProcess(tests.IrisTest):
         generating_process(None)
         self.assertEqual(self.warn_patch.call_count, 0)
 
-    def test_warn(self):
-        module = 'iris.fileformats.grib._load_convert'
+    def _check_warnings(self, with_forecast=True):
+        module = 'iris_grib._load_convert'
         self.patch(module + '.options.warn_on_unsupported', True)
-        generating_process(None)
+        call_args = [None]
+        call_kwargs = {}
+        expected_fragments = [
+            'Unable to translate type of generating process',
+            'Unable to translate background generating process']
+        if with_forecast:
+            expected_fragments.append(
+                'Unable to translate forecast generating process')
+        else:
+            call_kwargs['include_forecast_process'] = False
+        generating_process(*call_args, **call_kwargs)
         got_msgs = [call[0][0] for call in self.warn_patch.call_args_list]
-        expected_msgs = ['Unable to translate type of generating process',
-                         'Unable to translate background generating process',
-                         'Unable to translate forecast generating process']
-        for expect_msg in expected_msgs:
-            matches = [msg for msg in got_msgs if expect_msg in msg]
-            self.assertEqual(len(matches), 1)
-            got_msgs.remove(matches[0])
+        for got_msg, expected_fragment in zip(sorted(got_msgs),
+                                              sorted(expected_fragments)):
+            self.assertIn(expected_fragment, got_msg)
+
+    def test_warn_full(self):
+        self._check_warnings()
+
+    def test_warn_no_forecast(self):
+        self._check_warnings(with_forecast=False)
 
 
 if __name__ == '__main__':

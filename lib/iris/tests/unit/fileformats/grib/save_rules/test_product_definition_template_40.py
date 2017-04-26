@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,9 +31,9 @@ from cf_units import Unit
 import gribapi
 
 from iris.coords import DimCoord
+from iris.fileformats.grib._save_rules import product_definition_template_40
 from iris.tests import mock
 import iris.tests.stock as stock
-from iris.fileformats.grib._save_rules import product_definition_template_40
 
 
 class TestChemicalConstituentIdentifier(tests.IrisTest):
@@ -52,10 +52,10 @@ class TestChemicalConstituentIdentifier(tests.IrisTest):
 
         product_definition_template_40(cube, mock.sentinel.grib)
         mock_set.assert_any_call(mock.sentinel.grib,
-                                 "productDefinitionTemplateNumber", 40)
+                                 'productDefinitionTemplateNumber', 40)
         mock_set.assert_any_call(mock.sentinel.grib,
-                                 "constituentType", 0)
+                                 'constituentType', 0)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     tests.main()

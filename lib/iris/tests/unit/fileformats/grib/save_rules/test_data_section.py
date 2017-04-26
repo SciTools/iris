@@ -15,22 +15,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for
-:func:`iris.fileformats.grib._save_rules.data_section`.
+Unit tests for :func:`iris.fileformats.grib._save_rules.data_section`.
 
 """
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised before
+# import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import numpy as np
 
 import iris.cube
-
 from iris.fileformats.grib._save_rules import data_section
 from iris.tests import mock
 

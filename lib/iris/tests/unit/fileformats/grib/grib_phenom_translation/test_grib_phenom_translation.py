@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,29 +15,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 '''
-Created on Apr 26, 2013
+Unit tests for the mod:`iris.fileformats.grib.grib_phenom_translation` module.
 
-@author: itpp
 '''
-
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# Import iris tests first so that some things can be initialised before
-# importing anything else
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
 import iris.tests as tests
 
 import cf_units
 
-if tests.GRIB_AVAILABLE:
-    import gribapi
-    import iris.fileformats.grib.grib_phenom_translation as gptx
+import iris.fileformats.grib.grib_phenom_translation as gptx
 
 
-@tests.skip_grib
 class TestGribLookupTableType(tests.IrisTest):
     def test_lookuptable_type(self):
-        ll = gptx.LookupTable([('a', 1), ('b', 2)])
+        ll = gptx._LookupTable([('a', 1), ('b', 2)])
         assert ll['a'] == 1
         assert ll['q'] is None
         ll['q'] = 15
@@ -51,7 +46,6 @@ class TestGribLookupTableType(tests.IrisTest):
         assert ll['q'] == 7
 
 
-@tests.skip_grib
 class TestGribPhenomenonLookup(tests.IrisTest):
     def test_grib1_cf_lookup(self):
         def check_grib1_cf(param,

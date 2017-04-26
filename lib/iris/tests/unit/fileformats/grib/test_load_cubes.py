@@ -19,55 +19,31 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
 import iris.tests as tests
 
 import iris
 import iris.fileformats.grib
-import iris.fileformats.grib.load_rules
-import iris.fileformats.rules
-
 from iris.fileformats.grib import load_cubes
+from iris.fileformats.rules import Loader
 from iris.tests import mock
 
 
-class TestToggle(tests.IrisTest):
-    def _test(self, mode, generator, converter):
-        # Ensure that `load_cubes` defers to
-        # `iris.fileformats.rules.load_cubes`, passing a correctly
-        # configured `Loader` instance.
-        with iris.FUTURE.context(strict_grib_load=mode):
-            with mock.patch('iris.fileformats.rules.load_cubes') as rules_load:
-                rules_load.return_value = mock.sentinel.RESULT
-                result = load_cubes(mock.sentinel.FILES,
-                                    mock.sentinel.CALLBACK,
-                                    mock.sentinel.REGULARISE)
-                if mode:
-                    kw_args = {}
-                else:
-                    kw_args = {'auto_regularise': mock.sentinel.REGULARISE}
-                loader = iris.fileformats.rules.Loader(
-                    generator, kw_args,
-                    converter, None)
-                rules_load.assert_called_once_with(mock.sentinel.FILES,
-                                                   mock.sentinel.CALLBACK,
-                                                   loader)
-                self.assertIs(result, mock.sentinel.RESULT)
-
-    def test_sloppy_mode(self):
-        # Ensure that `load_cubes` uses:
-        #   iris.fileformats.grib.grib_generator
-        #   iris.fileformats.grib.load_rules.convert
-        self._test(False, iris.fileformats.grib.grib_generator,
-                   iris.fileformats.grib.load_rules.convert)
-
-    def test_strict_mode(self):
-        # Ensure that `load_cubes` uses:
-        #   iris.fileformats.grib.message.GribMessage.messages_from_filename
-        #   iris.fileformats.grib._load_convert.convert
-        self._test(
-            True,
-            iris.fileformats.grib.message.GribMessage.messages_from_filename,
-            iris.fileformats.grib._load_convert.convert)
+class Test(tests.IrisTest):
+    def test(self):
+        generator = iris.fileformats.grib._load_generate
+        converter = iris.fileformats.grib._load_convert.convert
+        files = mock.sentinel.FILES
+        callback = mock.sentinel.CALLBACK
+        expected_result = mock.sentinel.RESULT
+        with mock.patch('iris.fileformats.rules.load_cubes') as rules_load:
+            rules_load.return_value = expected_result
+            result = load_cubes(files, callback)
+            kwargs = {}
+            loader = Loader(generator, kwargs, converter, None)
+            rules_load.assert_called_once_with(files, callback, loader)
+            self.assertIs(result, expected_result)
 
 
 @tests.skip_data
@@ -79,7 +55,7 @@ class Test_load_cubes(tests.IrisTest):
         # interpolating to a regular grid.
         gribfile = tests.get_data_path(
             ("GRIB", "reduced", "reduced_gg.grib2"))
-        grib_generator = load_cubes(gribfile, auto_regularise=False)
+        grib_generator = load_cubes(gribfile)
         self.assertCML(next(grib_generator))
 
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,7 @@ Unit tests for
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
@@ -31,8 +31,8 @@ import numpy as np
 
 import iris.coord_systems
 import iris.coords
-from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 from iris.fileformats.grib._load_convert import grid_definition_template_40
+from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 
 
 MDI = 2 ** 32 - 1

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,10 +34,9 @@ class Test(tests.IrisTest):
     def test(self):
         message_location = _MessageLocation(mock.sentinel.filename,
                                             mock.sentinel.location)
-        patch_target = 'iris.fileformats.grib.message._RawGribMessage.' \
-                       'from_file_offset'
+        pt = 'iris.fileformats.grib.message._RawGribMessage.from_file_offset'
         expected = mock.sentinel.message
-        with mock.patch(patch_target, return_value=expected) as rgm:
+        with mock.patch(pt, return_value=expected) as rgm:
             result = message_location()
         rgm.assert_called_once_with(mock.sentinel.filename,
                                     mock.sentinel.location)
