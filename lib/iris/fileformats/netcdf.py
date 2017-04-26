@@ -1494,9 +1494,18 @@ class Saver(object):
         cf_dimensions = [dimension_names[dim] for dim in
                          cube.cell_measure_dims(cell_measure)]
 
+        # Get the data values
+        data = cell_measure.data
+
+        # Disallow saving of *masked* cell measures.
+        if ma.is_masked(data):
+            # We can't really save properly if there are masked points, because
+            # we don't (yet) record an appropriate fill_value property.
+            msg = "Currently cannot save cell measures with missing data."
+            raise ValueError(msg)
+
         # Get the values in a form which is valid for the file format.
-        data = self._ensure_valid_dtype(cell_measure.data, 'coordinate',
-                                        cell_measure)
+        data = self._ensure_valid_dtype(data, 'coordinate', cell_measure)
 
         # Create the CF-netCDF variable.
         cf_var = self._dataset.createVariable(
