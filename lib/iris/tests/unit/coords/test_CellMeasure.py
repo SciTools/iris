@@ -100,6 +100,14 @@ class Tests(tests.IrisTest):
         sub_measure = self.measure[2]
         self.assertArrayEqual(self.values[2], sub_measure.data)
 
+    def test___getitem__data_copy(self):
+        # Check that a sliced cell measure has independent data.
+        sub_measure = self.measure[1:3]
+        old_values = sub_measure.data.copy()
+        self.measure.data[:] = 0.0
+        new_values = sub_measure.data.copy()
+        self.assertArrayEqual(new_values, old_values)
+
     def test_copy(self):
         new_vals = np.array((7., 8.))
         copy_measure = self.measure.copy(new_vals)

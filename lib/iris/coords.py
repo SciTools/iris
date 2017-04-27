@@ -1813,11 +1813,14 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # each dimension of the cell_measure.
         full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
 
+        # Get the data, all or part of which will become the new data.
+        data = self._data_manager.core_data.copy()
+        # Copy the data to avoid making the new measure a view on the old one.
+        data = data.copy()
         # If it's a "null" indexing operation (e.g. cell_measure[:, :]) then
         # we can skip the indexing part.
         def is_full_slice(s):
             return isinstance(s, slice) and s == slice(None, None)
-        data = self._data_manager.core_data
         if not all(is_full_slice(s) for s in full_slice):
             # Slice on each column, using `iris.util.column_slices_generator`
             # (potentially slicing the data multiple times).
