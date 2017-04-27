@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,9 +25,8 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.coords import CellMeasure, AuxCoord
-from iris.tests import mock
-from iris.coord_systems import GeogCS
+from iris.coords import CellMeasure
+from iris._lazy_data import as_lazy_data
 
 
 class Tests(tests.IrisTest):
@@ -57,6 +56,33 @@ class Tests(tests.IrisTest):
         new_vals = np.array((1., 2., 3., 4.))
         self.measure.data = new_vals
         self.assertArrayEqual(self.measure.data, new_vals)
+
+    def test_set_data__int(self):
+        new_vals = np.array((1, 2, 3, 4), dtype=np.int32)
+        self.measure.data = new_vals
+        self.assertArrayEqual(self.measure.data, new_vals)
+
+    def test_set_data__uint(self):
+        new_vals = np.array((1, 2, 3, 4), dtype=np.uint32)
+        self.measure.data = new_vals
+        self.assertArrayEqual(self.measure.data, new_vals)
+
+    def test_set_data__lazy(self):
+        new_vals = as_lazy_data(np.array((1., 2., 3., 4.)))
+        self.measure.data = new_vals
+        self.assertArrayEqual(self.measure.data, new_vals)
+
+    def test_set_data__int__lazy(self):
+        new_vals = as_lazy_data(np.array((1, 2, 3, 4), dtype=np.int32))
+        exp_emsg = "Cannot create cell measure with lazy data of type int32"
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.measure.data = new_vals
+
+    def test_set_data__uint__lazy(self):
+        new_vals = as_lazy_data(np.array((1, 2, 3, 4), dtype=np.uint32))
+        exp_emsg = "Cannot create cell measure with lazy data of type uint32"
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.measure.data = new_vals
 
     def test_data_different_shape(self):
         new_vals = np.array((1., 2., 3.))
