@@ -1251,6 +1251,14 @@ class Test_replace(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, emsg):
             cube.replace(lazy, dtype=dtype)
 
+    def test__promote_shape_with_dtype_failure(self):
+        data = np.array(666)
+        cube = Cube(data)
+        emsg = 'Cannot set realised dtype, no lazy data is available'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(data, dtype=np.dtype('float32'))
+        self.assertArrayEqual(cube.data, data)
+
 
 class Test_copy(tests.IrisTest):
     def _check_copy(self, cube, cube_copy):

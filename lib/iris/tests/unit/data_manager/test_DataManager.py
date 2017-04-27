@@ -897,6 +897,15 @@ class Test_replace(tests.IrisTest):
         self.assertIs(dm._real_array, self.real_array)
         self.assertArrayEqual(dm.data, self.real_array)
 
+    def test_real_with_real__promote_shape_with_dtype_failure(self):
+        data = np.array(666)
+        dm = DataManager(data)
+        emsg = 'Cannot set realised dtype, no lazy data is available'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            dm.replace(np.array([999]),
+                       realised_dtype=np.dtype('float32'))
+        self.assertArrayEqual(dm.data, data)
+
 
 if __name__ == '__main__':
     tests.main()

@@ -479,5 +479,9 @@ class DataManager(object):
         except ValueError as error:
             # Backout the data replacement, and reinstate the cached
             # original managed data.
-            self.data = original_data
+            self._lazy_array = self._real_array = None
+            if is_lazy_data(original_data):
+                self._lazy_array = original_data
+            else:
+                self._real_array = original_data
             raise error
