@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -41,7 +41,7 @@ MDI = ma.masked
 
 class Test(tests.IrisTest):
     def test_shape_unsupported(self):
-        unsupported = [2, 4, 5, 8, 9, 10, MDI]
+        unsupported = [8, 9, 10, MDI]
         emsg = 'unsupported shape of the earth'
         for shape in unsupported:
             with self.assertRaisesRegexp(TranslationError, emsg):
