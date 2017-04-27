@@ -1658,6 +1658,24 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         cube.fill_value = None
         self.assertIsNone(cube.fill_value)
 
+    def test_realdata___getitem__(self):
+        fill_value = 123
+        cube = Cube(np.arange(10), fill_value=fill_value)
+        subcube = cube[5:]
+        self.assertArrayAllClose(subcube.fill_value, fill_value)
+
+    def test_lazydata___getitem__(self):
+        fill_value = 123
+        dtype = np.dtype('int16')
+        masked_array = ma.masked_array(np.arange(5),
+                                       mask=[0, 0, 1, 0, 0],
+                                       dtype=dtype)
+        lazy_masked_array = as_lazy_data(masked_array)
+        cube = Cube(lazy_masked_array, dtype=dtype, fill_value=fill_value)
+        subcube = cube[3:]
+        self.assertEqual(subcube.dtype, dtype)
+        self.assertArrayAllClose(subcube.fill_value, fill_value)
+
 
 class TestSubset(tests.IrisTest):
     def test_scalar_coordinate(self):
