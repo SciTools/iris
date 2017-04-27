@@ -612,5 +612,21 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         self._test(coord_system, expected)
 
 
+class Test__create_cf_cell_measure_variable(tests.IrisTest):
+    def test_masked_data(self):
+        # Saving of masked data is disallowed.
+        cube = stock.lat_lon_cube()
+        dim_map = ['latitude', 'longitude']
+        masked_array = np.ma.masked_array([0, 1, 2], mask=[True, False, True])
+        cm = iris.coords.CellMeasure(masked_array,
+                                     measure='area', var_name='cell_area')
+        cube.add_cell_measure(cm, data_dims=0)
+        exp_emsg = 'Cannot save cell measures with missing data.'
+        with self.temp_filename('.nc') as nc_path:
+            saver = Saver(nc_path, 'NETCDF4')
+            with self.assertRaisesRegexp(ValueError, exp_emsg):
+                saver._create_cf_cell_measure_variable(cube, dim_map, cm)
+
+
 if __name__ == "__main__":
     tests.main()
