@@ -1741,9 +1741,12 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: have no meaning to Iris.
         self.attributes = attributes
 
-        self.data = data
-
+        #: String naming the measure type.
         self.measure = measure
+
+        # Initialise data via the data setter code, which applies standard
+        # checks and ajustments.
+        self.data = data
 
     @property
     def measure(self):
@@ -1761,13 +1764,13 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if data is None:
             raise ValueError('The data payload of a CellMeasure may not be '
                              'None; it must be a numpy array or equivalent.')
-        if is_lazy_data(data) and data.dtype.kind in 'iu':
-            # Disallow lazy integer data.  Integer values would be very
-            # unexpected anyway, but this avoids the *even more obscure*
-            # possibility that there are masked values, because masked integer
-            # data would cause dask to return data with the wrong dtype.
-            # This can all be fixed, as for cube data, by adding fill_value and
-            # dtype support, but for now we prefer just not to support this.
+        if is_lazy_data(data) and data.dtype.kind in 'biu':
+            # Disallow lazy integral data, as it will cause problems with dask
+            # if it turns out to contain any masked points.
+            # Non-floating cell measures are not valid up to CF v1.7 anyway,
+            # but this avoids any possible problems with non-compliant files.
+            # Future usage could be supported by adding a fill_value and dtype
+            # as for cube data.  For now, disallowing it is just simpler.
             msg = ('Cannot create cell measure with lazy data of type {}, as '
                    'integer types are not currently supported.')
             raise ValueError(msg.format(data.dtype))
@@ -1785,17 +1788,12 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     @property
     def shape(self):
-        """The fundamental shape of the Cell Measure, expressed as a tuple."""
-        # Access the underlying _data_manager attribute to avoid triggering
-        # a deferred load unnecessarily.
+        """Returns the shape of the Cell Measure, expressed as a tuple."""
         return self._data_manager.shape
 
     @property
     def ndim(self):
-        """
-        Return the number of dimensions of the cell measure.
-
-        """
+        """Returns the number of dimensions of the cell measure."""
         return self._data_manager.ndim
 
     @measure.setter
@@ -1832,8 +1830,8 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
                         raise IndexError('Cannot index with zero length '
                                          'slice.')
 
-        new_cell_measure = self.copy(data=data)
-        return new_cell_measure
+        # The result is a copy with replacement data.
+        return self.copy(data=data)
 
     def copy(self, data=None):
         """
@@ -1848,10 +1846,11 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         new_cell_measure = copy.deepcopy(self)
         if data is not None:
-            # Remove the existing data manager so we can assign new data
-            # without it being limited to the existing shape.
+            # Remove the existing data manager, to prevent the data setter
+            # checking against existing content.
             new_cell_measure._data_manager = None
-            # Set the new data content.
+            # Set new data via the data setter code, which applies standard
+            # checks and ajustments.
             new_cell_measure.data = data
 
         return new_cell_measure
