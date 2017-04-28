@@ -1210,6 +1210,7 @@ class ProtoCube(object):
             # stacking an int + float yields an int! We need to ensure
             # that the largest dtype prevails i.e. float, in order to
             # support the masked case for dask.
+            # Reference https://github.com/dask/dask/issues/2273.
             dtype = None
             # Stack up all the data from all of the relevant source
             # cubes in a single dask "stacked" array.
@@ -1235,8 +1236,7 @@ class ProtoCube(object):
                 if dtype is None:
                     dtype = data.dtype
                 else:
-                    if data.dtype > dtype:
-                        dtype = data.dtype
+                    dtype = np.promote_types(data.dtype, dtype)
 
             # Coerce to the largest dtype.
             for nd_index in nd_indexes:
