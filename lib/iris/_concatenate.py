@@ -416,6 +416,7 @@ class _CubeSignature(object):
             - scalar coords
             - attributes
             - dtype
+            - fill_value
 
         Args:
 
@@ -466,8 +467,11 @@ class _CubeSignature(object):
 
         # Check fill value.
         if self.fill_value != other.fill_value:
-            msgs.append(msg_template.format('Fill values', '',
-                                            self.fill_value, other.fill_value))
+            # Allow fill-value promotion if either fill-value is None.
+            if self.fill_value is not None and other.fill_value is not None:
+                msgs.append(msg_template.format('Fill values', '',
+                                                self.fill_value,
+                                                other.fill_value))
 
         # Check _cell_measures_and_dims
         if self.cell_measures_and_dims != other.cell_measures_and_dims:
@@ -723,6 +727,10 @@ class _ProtoCube(object):
 
         # Check for compatible coordinate signatures.
         if match:
+            if self._cube_signature.fill_value is None and \
+                    cube_signature.fill_value is not None:
+                # Perform proto-cube fill-value promotion.
+                self._cube_signature.fill_value = cube_signature.fill_value
             coord_signature = _CoordSignature(cube_signature)
             candidate_axis = self._coord_signature.candidate_axis(
                 coord_signature)
