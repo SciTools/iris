@@ -1814,7 +1814,7 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
 
         # Get the data, all or part of which will become the new data.
-        data = self._data_manager.core_data.copy()
+        data = self._data_manager.core_data
         # Copy the data to avoid making the new measure a view on the old one.
         data = data.copy()
 

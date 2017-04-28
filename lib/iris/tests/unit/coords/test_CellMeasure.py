@@ -104,9 +104,10 @@ class Tests(tests.IrisTest):
         # Check that a sliced cell measure has independent data.
         sub_measure = self.measure[1:3]
         old_values = sub_measure.data.copy()
+        # Change the original one.
         self.measure.data[:] = 0.0
-        new_values = sub_measure.data.copy()
-        self.assertArrayEqual(new_values, old_values)
+        # Check the new one has not changed.
+        self.assertArrayEqual(sub_measure.data, old_values)
 
     def test_copy(self):
         new_vals = np.array((7., 8.))
