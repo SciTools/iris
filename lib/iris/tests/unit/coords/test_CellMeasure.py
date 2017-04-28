@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,9 +25,8 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.coords import CellMeasure, AuxCoord
-from iris.tests import mock
-from iris.coord_systems import GeogCS
+from iris.coords import CellMeasure
+from iris._lazy_data import as_lazy_data
 
 
 class Tests(tests.IrisTest):
@@ -58,6 +57,33 @@ class Tests(tests.IrisTest):
         self.measure.data = new_vals
         self.assertArrayEqual(self.measure.data, new_vals)
 
+    def test_set_data__int(self):
+        new_vals = np.array((1, 2, 3, 4), dtype=np.int32)
+        self.measure.data = new_vals
+        self.assertArrayEqual(self.measure.data, new_vals)
+
+    def test_set_data__uint(self):
+        new_vals = np.array((1, 2, 3, 4), dtype=np.uint32)
+        self.measure.data = new_vals
+        self.assertArrayEqual(self.measure.data, new_vals)
+
+    def test_set_data__lazy(self):
+        new_vals = as_lazy_data(np.array((1., 2., 3., 4.)))
+        self.measure.data = new_vals
+        self.assertArrayEqual(self.measure.data, new_vals)
+
+    def test_set_data__int__lazy(self):
+        new_vals = as_lazy_data(np.array((1, 2, 3, 4), dtype=np.int32))
+        exp_emsg = "Cannot create cell measure with lazy data of type int32"
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.measure.data = new_vals
+
+    def test_set_data__uint__lazy(self):
+        new_vals = as_lazy_data(np.array((1, 2, 3, 4), dtype=np.uint32))
+        exp_emsg = "Cannot create cell measure with lazy data of type uint32"
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.measure.data = new_vals
+
     def test_data_different_shape(self):
         new_vals = np.array((1., 2., 3.))
         msg = 'New data shape must match existing data shape.'
@@ -73,6 +99,15 @@ class Tests(tests.IrisTest):
     def test___getitem__(self):
         sub_measure = self.measure[2]
         self.assertArrayEqual(self.values[2], sub_measure.data)
+
+    def test___getitem__data_copy(self):
+        # Check that a sliced cell measure has independent data.
+        sub_measure = self.measure[1:3]
+        old_values = sub_measure.data.copy()
+        # Change the original one.
+        self.measure.data[:] = 0.0
+        # Check the new one has not changed.
+        self.assertArrayEqual(sub_measure.data, old_values)
 
     def test_copy(self):
         new_vals = np.array((7., 8.))

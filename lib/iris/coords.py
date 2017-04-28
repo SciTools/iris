@@ -35,7 +35,9 @@ import zlib
 import dask.array as da
 import netcdftime
 import numpy as np
+import numpy.ma as ma
 
+from iris._data_manager import DataManager
 from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.aux_factory
 import iris.exceptions
@@ -1726,6 +1728,8 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         * data:
             The values of the measure for each cell.
+            Either a 'real' array (:class:`numpy.ndarray`) or a 'lazy' array
+            (:class:`dask.array.Array`).
 
         Kwargs:
 
@@ -1761,9 +1765,12 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: have no meaning to Iris.
         self.attributes = attributes
 
-        self.data = data
-
+        #: String naming the measure type.
         self.measure = measure
+
+        # Initialise data via the data setter code, which applies standard
+        # checks and ajustments.
+        self.data = data
 
     @property
     def measure(self):
@@ -1772,12 +1779,7 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def data(self):
         """Property containing the data values as a numpy array"""
-        if is_lazy_data(self._data):
-            self._data = as_concrete_data(self._data,
-                                          nans_replacement=np.ma.masked)
-            # NOTE: like AuxCoords, we probably don't fully support masks, and
-            # we certainly don't handle any _FillValue attribute.
-        return self._data.view()
+        return self._data_manager.data
 
     @data.setter
     def data(self, data):
@@ -1786,30 +1788,37 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if data is None:
             raise ValueError('The data payload of a CellMeasure may not be '
                              'None; it must be a numpy array or equivalent.')
+        if is_lazy_data(data) and data.dtype.kind in 'biu':
+            # Disallow lazy integral data, as it will cause problems with dask
+            # if it turns out to contain any masked points.
+            # Non-floating cell measures are not valid up to CF v1.7 anyway,
+            # but this avoids any possible problems with non-compliant files.
+            # Future usage could be supported by adding a fill_value and dtype
+            # as for cube data.  For now, disallowing it is just simpler.
+            msg = ('Cannot create cell measure with lazy data of type {}, as '
+                   'integer types are not currently supported.')
+            raise ValueError(msg.format(data.dtype))
         if data.shape == ():
+            # If we have a scalar value, promote the shape from () to (1,).
+            # NOTE: this way also *realises* it.  Don't think that matters.
             data = np.array(data, ndmin=1)
-        if hasattr(self, '_data') and self._data is not None:
+        if hasattr(self, '_data_manager') and self._data_manager is not None:
             # Check that setting these data wouldn't change self.shape
             if data.shape != self.shape:
                 raise ValueError("New data shape must match existing data "
                                  "shape.")
 
-        self._data = data
+        self._data_manager = DataManager(data)
 
     @property
     def shape(self):
-        """The fundamental shape of the Cell Measure, expressed as a tuple."""
-        # Access the underlying _data attribute to avoid triggering
-        # a deferred load unnecessarily.
-        return self._data.shape
+        """Returns the shape of the Cell Measure, expressed as a tuple."""
+        return self._data_manager.shape
 
     @property
     def ndim(self):
-        """
-        Return the number of dimensions of the cell measure.
-
-        """
-        return self._data.ndim
+        """Returns the number of dimensions of the cell measure."""
+        return self._data_manager.ndim
 
     @measure.setter
     def measure(self, measure):
@@ -1828,18 +1837,19 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # each dimension of the cell_measure.
         full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
 
+        # Get the data, all or part of which will become the new data.
+        data = self._data_manager.core_data
+        # Copy the data to avoid making the new measure a view on the old one.
+        data = data.copy()
+
         # If it's a "null" indexing operation (e.g. cell_measure[:, :]) then
-        # we can preserve deferred loading by avoiding promoting _data
-        # and _bounds to full ndarray instances.
+        # we can skip the indexing part.
         def is_full_slice(s):
             return isinstance(s, slice) and s == slice(None, None)
-        data = self._data
-        if not all(is_full_slice(s) for s in full_slice):
-            data = self._data
 
-            # Make indexing on the cube column based by using the
-            # column_slices_generator (potentially requires slicing the
-            # data multiple times).
+        if not all(is_full_slice(s) for s in full_slice):
+            # Slice on each column, using `iris.util.column_slices_generator`
+            # (potentially slicing the data multiple times).
             _, slice_gen = iris.util.column_slices_generator(full_slice,
                                                              self.ndim)
             for keys in slice_gen:
@@ -1849,8 +1859,8 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
                         raise IndexError('Cannot index with zero length '
                                          'slice.')
 
-        new_cell_measure = self.copy(data=data)
-        return new_cell_measure
+        # The result is a copy with replacement data.
+        return self.copy(data=data)
 
     def copy(self, data=None):
         """
@@ -1865,10 +1875,11 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         new_cell_measure = copy.deepcopy(self)
         if data is not None:
-            # Explicitly not using the data property as we don't want the
-            # shape the new data to be constrained by the shape of
-            # self.data
-            new_cell_measure._data = None
+            # Remove the existing data manager, to prevent the data setter
+            # checking against existing content.
+            new_cell_measure._data_manager = None
+            # Set new data via the data setter code, which applies standard
+            # checks and ajustments.
             new_cell_measure.data = data
 
         return new_cell_measure
