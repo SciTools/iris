@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -366,6 +366,15 @@ class Test_DimCoord_copy(tests.IrisTest):
 
         with self.assertRaisesRegexp(ValueError, msg):
             coord2.bounds[:] = 0
+
+
+class Test_AuxCoord__getitem__(tests.IrisTest):
+    def test_data_copy(self):
+        original_coord = AuxCoord([1., 2., 3.])
+        sub_coord = original_coord[:1]
+        original_values = sub_coord.points.copy()
+        original_coord.points[:] = -999.9
+        self.assertArrayEqual(sub_coord.points, original_values)
 
 
 if __name__ == '__main__':

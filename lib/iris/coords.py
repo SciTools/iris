@@ -479,9 +479,17 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 # (if it hasn't already), which will also trigger any
                 # deferred loading of its dependencies.
                 points = points.view()
+            else:
+                # Take a copy to avoid making coords that are views on other
+                # coords.  This will not realise lazy data.
+                points = points.copy()
             bounds = self._bounds
             if isinstance(bounds, iris.aux_factory._LazyArray):
                 bounds = bounds.view()
+            elif bounds is not None:
+                # Take a copy to avoid making coords that are views on other
+                # coords.  This will not realise lazy data.
+                bounds = bounds.copy()
 
             # Make indexing on the cube column based by using the
             # column_slices_generator (potentially requires slicing the
