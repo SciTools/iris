@@ -696,6 +696,27 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
+def _slice_data_with_keys(data, keys, n_parent_dims):
+    # Combine _build_full_slice_given_keys and column_slices_generator to index
+    # any array-like object with arbitrary keys using an orthogonal indexing
+    # interpretation.
+    # This means that both numpy and lazy data will index in the same way.
+    # Return a dimension map, and the indexed data.
+    #
+    # NOTE: by using slicing on only one index at a time, this also generally
+    # avoids copying the data, except when a key contains a list of indices.
+    full_slice = _build_full_slice_given_keys(keys, n_parent_dims)
+
+    dims_mapping, slices_iter = column_slices_generator(full_slice,
+                                                        n_parent_dims)
+    for this_slice in slices_iter:
+        data = data[this_slice]
+        if data.ndim > 0 and min(data.shape) < 1:
+            raise IndexError('Cannot index with zero length slice.')
+
+    return dims_mapping, data
+
+
 def _wrap_function_for_method(function, docstring=None):
     """
     Returns a wrapper function modified to be suitable for use as a

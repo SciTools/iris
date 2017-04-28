@@ -195,7 +195,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         nd_shape = [1] * ndim + [coord.nbounds]
         for dim, size in zip(dims, coord.shape):
             nd_shape[dim] = size
-        bounds.shape = tuple(nd_shape)
+        bounds = bounds.reshape(nd_shape)
         return bounds
 
     @staticmethod
@@ -297,7 +297,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     # we just add an extra 1.
                     shape.append(1)
                 nd_values = np.array(nd_values)
-                nd_values.shape = shape
+                nd_values = nd_values.reshape(shape)
             else:
                 # If no coord, treat value as zero.
                 # Use a float16 to provide `shape` attribute and avoid
