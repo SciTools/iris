@@ -472,6 +472,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if all(is_full_slice(s) for s in full_slice):
             points = self._points
             bounds = self._bounds
+            # Take copies, to avoid making coords that are views on other ones.
+            if not isinstance(points, iris.aux_factory._LazyArray):
+                points = points.copy()
+            if bounds is not None:
+                if not isinstance(bounds, iris.aux_factory._LazyArray):
+                    bounds = bounds.copy()
         else:
             points = self._points
             if isinstance(points, iris.aux_factory._LazyArray):

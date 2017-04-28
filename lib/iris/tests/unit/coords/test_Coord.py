@@ -369,9 +369,16 @@ class Test_DimCoord_copy(tests.IrisTest):
 
 
 class Test_AuxCoord__getitem__(tests.IrisTest):
-    def test_data_copy(self):
+    def test_partial_slice_data_copy(self):
         original_coord = AuxCoord([1., 2., 3.])
         sub_coord = original_coord[:1]
+        original_values = sub_coord.points.copy()
+        original_coord.points[:] = -999.9
+        self.assertArrayEqual(sub_coord.points, original_values)
+
+    def test_full_slice_data_copy(self):
+        original_coord = AuxCoord([1., 2., 3.])
+        sub_coord = original_coord[:]
         original_values = sub_coord.points.copy()
         original_coord.points[:] = -999.9
         self.assertArrayEqual(sub_coord.points, original_values)

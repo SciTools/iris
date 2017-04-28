@@ -88,22 +88,6 @@ class TestLazy(tests.IrisTest):
         self.assertEqual(self.coord.shape, (3, 4))
         self._check_lazy(self.coord)
 
-    def _check_shared_data(self, coord):
-        # Updating the original coord's points should update the sliced
-        # coord's points too.
-        points = coord.points
-        new_points = coord[:].points
-        np.testing.assert_array_equal(points, new_points)
-        points[0, 0] = 999
-        self.assertEqual(points[0, 0], new_points[0, 0])
-
-    def test_concrete_shared_data(self):
-        coord = iris.coords.AuxCoord(np.arange(12).reshape((3, 4)))
-        self._check_shared_data(coord)
-
-    def test_lazy_shared_data(self):
-        self._check_shared_data(self.coord)
-
 
 @tests.skip_data
 class TestCoordSlicing(tests.IrisTest):
