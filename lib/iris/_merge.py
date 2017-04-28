@@ -408,8 +408,10 @@ class _CubeSignature(namedtuple('CubeSignature',
             msg = 'cube data dtype differs: {} != {}'
             msgs.append(msg.format(self.data_type, other.data_type))
         if self.fill_value != other.fill_value:
-            msg = 'cube fill value differs: {} != {}'
-            msgs.append(msg.format(self.fill_value, other.fill_value))
+            # Allow fill-value promotion if either fill-value is None.
+            if self.fill_value is not None and other.fill_value is not None:
+                msg = 'cube fill value differs: {} != {}'
+                msgs.append(msg.format(self.fill_value, other.fill_value))
         if (self.cell_measures_and_dims != other.cell_measures_and_dims):
             msgs.append('cube.cell_measures differ')
 
@@ -1094,6 +1096,9 @@ class ProtoCube(object):
         self._hints = ['time', 'forecast_reference_time', 'forecast_period',
                        'model_level_number']
 
+        # The proto-cube source.
+        self._source = cube
+
         # The cube signature is metadata that defines this ProtoCube.
         self._cube_signature = self._build_signature(cube)
 
@@ -1199,6 +1204,13 @@ class ProtoCube(object):
 
         # Generate group-depth merged cubes from the source-cubes.
         for level in range(group_depth):
+            # Track the largest dtype of the data to be merged.
+            # Unfortunately, da.stack() is not symmetric with regards
+            # to dtypes. So stacking float + int yields a float, but
+            # stacking an int + float yields an int! We need to ensure
+            # that the largest dtype prevails i.e. float, in order to
+            # support the masked case for dask.
+            dtype = None
             # Stack up all the data from all of the relevant source
             # cubes in a single dask "stacked" array.
             # If it turns out that all the source cubes already had
@@ -1219,6 +1231,16 @@ class ProtoCube(object):
                 else:
                     data = as_lazy_data(data, chunks=data.shape)
                 stack[nd_index] = data
+                # Determine the largest dtype.
+                if dtype is None:
+                    dtype = data.dtype
+                else:
+                    if data.dtype > dtype:
+                        dtype = data.dtype
+
+            # Coerce to the largest dtype.
+            for nd_index in nd_indexes:
+                stack[nd_index] = stack[nd_index].astype(dtype)
 
             merged_data = multidim_lazy_stack(stack)
             if all_have_data:
@@ -1263,9 +1285,15 @@ class ProtoCube(object):
             this :class:`ProtoCube`.
 
         """
-        match = self._cube_signature.match(self._build_signature(cube),
-                                           error_on_mismatch)
+        signature = self._cube_signature
+        other = self._build_signature(cube)
+        match = signature.match(other, error_on_mismatch)
         if match:
+            if signature.fill_value is None and other.fill_value is not None:
+                # Perform proto-cube fill-value promotion.
+                fv = other.fill_value
+                self._cube_signature = self._build_signature(self._source,
+                                                             fill_value=fv)
             coord_payload = self._extract_coord_payload(cube)
             match = coord_payload.match_signature(self._coord_signature,
                                                   error_on_mismatch)
@@ -1586,18 +1614,34 @@ class ProtoCube(object):
                               self._vector_aux_coords_dims):
             aux_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
-    def _build_signature(self, cube):
-        """Generate the signature that defines this cube."""
+    def _build_signature(self, cube, fill_value=None):
+        """
+        Generate the signature that defines this cube.
+
+        Args:
+
+        * cube:
+            The source cube to create the cube signature from.
+
+        Kwargs:
+
+        * fill_value:
+            Promoted fill-value to use instead of the source cube
+            fill-value.
+
+        Returns:
+            The cube signature.
+
+        """
+        if fill_value is None:
+            fill_value = cube.fill_value
         return _CubeSignature(cube.metadata, cube.shape, cube.dtype,
-                              cube.fill_value, cube._cell_measures_and_dims)
+                              fill_value, cube._cell_measures_and_dims)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""
-        if cube.has_lazy_data():
-            data = cube.lazy_data()
-        else:
-            data = cube.data
-        skeleton = _Skeleton(coord_payload.scalar.values, data)
+        skeleton = _Skeleton(coord_payload.scalar.values,
+                             cube.core_data)
         # Attempt to do something sensible with mixed scalar dtypes.
         for i, metadata in enumerate(coord_payload.scalar.metadata):
             if metadata.points_dtype > self._coord_metadata[i].points_dtype:

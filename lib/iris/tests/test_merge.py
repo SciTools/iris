@@ -26,13 +26,16 @@ import six
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+from collections import Iterable
+import itertools
 import numpy as np
+import numpy.ma as ma
 
 import iris
+from iris._lazy_data import as_lazy_data
 import iris.cube
-import iris.exceptions
 from iris.coords import DimCoord, AuxCoord
-import iris.coords
+import iris.exceptions
 import iris.tests.stock
 
 
@@ -103,6 +106,111 @@ class TestColpex(tests.IrisTest):
         cubes = iris.load(self._data_path)
         self.assertEqual(len(cubes), 3)
         self.assertCML(cubes, ('COLPEX', 'small_colpex_theta_p_alt.cml'))
+
+
+class TestDataMergeCombos(tests.IrisTest):
+    def _make_data(self, data, dtype=np.dtype('int32'), fill_value=None,
+                   mask=None, lazy=False, N=3):
+        if isinstance(data, Iterable):
+            shape = (len(data), N, N)
+            data = np.array(data).reshape(-1, 1, 1)
+        else:
+            shape = (N, N)
+        if mask is not None:
+            payload = ma.empty(shape, dtype=dtype, fill_value=fill_value)
+            payload.data[:] = data
+            if isinstance(mask, bool):
+                payload.mask = mask
+            else:
+                payload[mask] = ma.masked
+        else:
+            payload = np.empty(shape, dtype=dtype)
+            payload[:] = data
+        if lazy:
+            payload = as_lazy_data(payload)
+        return payload
+
+    def _make_cube(self, data, dtype=np.dtype('int32'), fill_value=None,
+                   mask=None, lazy=False, N=3):
+        x = np.arange(N)
+        y = np.arange(N)
+        payload = self._make_data(data, dtype=dtype, fill_value=fill_value,
+                                  mask=mask, lazy=lazy, N=N)
+        cube = iris.cube.Cube(payload, dtype=dtype, fill_value=fill_value)
+        lat = DimCoord(y, standard_name='latitude', units='degrees')
+        cube.add_dim_coord(lat, 0)
+        lon = DimCoord(x, standard_name='longitude', units='degrees')
+        cube.add_dim_coord(lon, 1)
+        height = DimCoord(data, standard_name='height', units='m')
+        cube.add_aux_coord(height)
+        return cube
+
+    def setUp(self):
+        self.dtype = np.dtype('int32')
+        self.fill_value = 1234
+        self.lazy_combos = itertools.product([False, True],
+                                             [False, True])
+
+    def test__ndarray_ndarray(self):
+        for lazy0, lazy1 in self.lazy_combos:
+            cubes = iris.cube.CubeList()
+            cubes.append(self._make_cube(0, dtype=self.dtype, lazy=lazy0))
+            cubes.append(self._make_cube(1, dtype=self.dtype, lazy=lazy1))
+            result = cubes.merge_cube()
+            expected = self._make_data([0, 1], dtype=self.dtype)
+            self.assertArrayEqual(result.data, expected)
+            self.assertEqual(result.dtype, self.dtype)
+
+    def test__masked_masked(self):
+        for lazy0, lazy1 in self.lazy_combos:
+            cubes = iris.cube.CubeList()
+            mask = [(0,), (0,)]
+            cubes.append(self._make_cube(0, mask=mask, lazy=lazy0,
+                                         dtype=self.dtype,
+                                         fill_value=self.fill_value))
+            mask = [(1,), (1,)]
+            cubes.append(self._make_cube(1, mask=mask, lazy=lazy1,
+                                         dtype=self.dtype,
+                                         fill_value=self.fill_value))
+            result = cubes.merge_cube()
+            mask = [(0, 1), (0, 1), (0, 1)]
+            expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
+                                       fill_value=self.fill_value)
+            self.assertMaskedArrayEqual(result.data, expected)
+            self.assertEqual(result.fill_value, self.fill_value)
+            self.assertEqual(result.dtype, self.dtype)
+
+    def test__ndarray_masked(self):
+        for lazy0, lazy1 in self.lazy_combos:
+            cubes = iris.cube.CubeList()
+            cubes.append(self._make_cube(0, lazy=lazy0, dtype=self.dtype))
+            mask = [(0, 1), (0, 1)]
+            cubes.append(self._make_cube(1, mask=mask, lazy=lazy1,
+                                         dtype=self.dtype,
+                                         fill_value=self.fill_value))
+            result = cubes.merge_cube()
+            mask = [(1, 1), (0, 1), (0, 1)]
+            expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
+                                       fill_value=self.fill_value)
+            self.assertMaskedArrayEqual(result.data, expected)
+            self.assertEqual(result.fill_value, self.fill_value)
+            self.assertEqual(result.dtype, self.dtype)
+
+    def test__masked_ndarray(self):
+        for lazy0, lazy1 in self.lazy_combos:
+            cubes = iris.cube.CubeList()
+            mask = [(0, 1), (0, 1)]
+            cubes.append(self._make_cube(0, mask=mask, lazy=lazy0,
+                                         dtype=self.dtype,
+                                         fill_value=self.fill_value))
+            cubes.append(self._make_cube(1, lazy=lazy1, dtype=self.dtype))
+            result = cubes.merge_cube()
+            mask = [(0, 0), (0, 1), (0, 1)]
+            expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
+                                       fill_value=self.fill_value)
+            self.assertMaskedArrayEqual(result.data, expected)
+            self.assertEqual(result.fill_value, self.fill_value)
+            self.assertEqual(result.dtype, self.dtype)
 
 
 @tests.skip_data
