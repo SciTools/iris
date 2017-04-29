@@ -48,6 +48,7 @@ import iris.coords
 from iris.exceptions import IrisError
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
+from iris.util import _num2date_to_nearest_second
 
 
 # Cynthia Brewer citation text.
@@ -406,7 +407,7 @@ def _fixup_dates(coord, values):
     if coord.units.calendar is not None and values.ndim == 1:
         # Convert coordinate values into tuples of
         # (year, month, day, hour, min, sec)
-        dates = [coord.units.num2date(val).timetuple()[0:6]
+        dates = [_num2date_to_nearest_second(val, coord.units).timetuple()[0:6]
                  for val in values]
         if coord.units.calendar == 'gregorian':
             r = [datetime.datetime(*date) for date in dates]

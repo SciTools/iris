@@ -40,7 +40,7 @@ from iris.coord_systems import GeogCS, RotatedGeogCS, TransverseMercator
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib._load_convert import (_STATISTIC_TYPE_NAMES,
                                                  _TIME_RANGE_UNITS)
-from iris.util import is_regular, regular_step
+from iris.util import is_regular, regular_step, _num2date_to_nearest_second
 
 
 # Invert code tables from :mod:`iris.fileformats.grib._load_convert`.
@@ -604,7 +604,7 @@ def _missing_forecast_period(cube):
         t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
         frt = frt_coord.points[0]
         # Calculate GRIB parameters.
-        rt = frt_coord.units.num2date(frt)
+        rt = _num2date_to_nearest_second(frt, frt_coord.units)
         rt_meaning = 1  # Forecast reference time.
         fp = t - frt
         integer_fp = int(fp)
@@ -619,7 +619,7 @@ def _missing_forecast_period(cube):
         # reference time significance of "Observation time" and set the
         # forecast period to 0h.
         t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
-        rt = t_coord.units.num2date(t)
+        rt = _num2date_to_nearest_second(t, t_coord.units)
         rt_meaning = 3  # Observation time
         fp = 0
         fp_meaning = 1  # Hours
