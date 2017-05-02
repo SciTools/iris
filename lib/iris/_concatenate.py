@@ -331,16 +331,7 @@ class _CubeSignature(object):
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
-        # Concatenation will generate resultant cubes that contain lazy data.
-        # We need to deal with the special case of preserving the dtype of a
-        # candidate cube with concrete masked integral data by ensuring that
-        # the cube metadata has the correct target dtype.
-        kwargs = self.defn._asdict()
-        if kwargs['dtype'] is None and not cube.has_lazy_data() and \
-                isinstance(cube.data, ma.masked_array) and \
-                cube.data.dtype.kind in 'biu':
-            kwargs['dtype'] = self.data_type
-            self.defn = iris.cube.CubeMetadata(**kwargs)
+        self.fill_value = cube.fill_value
 
         #
         # Collate the dimension coordinate metadata.
@@ -416,20 +407,6 @@ class _CubeSignature(object):
                       ', '.join(diff_names))
         return result
 
-    def promote_defn(self):
-        """
-        Update the metadata definition to match that of a similar but lazy
-        cube. A cube with lazy masked integral data must have its
-        :attr:`metadata.dtype` set appropriately.
-
-        """
-        defn = self.defn
-        kwargs = defn._asdict()
-        if kwargs['dtype'] is None and self.data_type.kind == 'i':
-            kwargs['dtype'] = self.data_type
-            defn = iris.cube.CubeMetadata(**kwargs)
-        return defn
-
     def match(self, other, error_on_mismatch):
         """
         Return whether this _CubeSignature equals another.
@@ -442,6 +419,7 @@ class _CubeSignature(object):
             - scalar coords
             - attributes
             - dtype
+            - fill_value
 
         Args:
 
@@ -461,17 +439,11 @@ class _CubeSignature(object):
 
         # Check cube definitions.
         if self.defn != other.defn:
-            # Attempt to match metadata for the lazy masked integral
-            # dtype case.
-            promoted = self.promote_defn()
-            if promoted != other.promote_defn():
-                # Note that the case of different phenomenon names is dealt
-                # with in :meth:`iris.cube.CubeList.concatenate_cube()`.
-                msg = 'Cube metadata differs for phenomenon: {}'
-                msgs.append(msg.format(self.defn.name()))
-            else:
-                # Persist the promoted metadata dtype match case.
-                self.defn = promoted
+            # Note that the case of different phenomenon names is dealt
+            # with in :meth:`iris.cube.CubeList.concatenate_cube()`.
+            msg = 'Cube metadata differs for phenomenon: {}'
+            msgs.append(msg.format(self.defn.name()))
+
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')
@@ -491,10 +463,18 @@ class _CubeSignature(object):
         if self.ndim != other.ndim:
             msgs.append(msg_template.format('Data dimensions', '',
                                             self.ndim, other.ndim))
-        # Check datatype.
+        # Check data type.
         if self.data_type != other.data_type:
-            msgs.append(msg_template.format('Datatypes', '',
+            msgs.append(msg_template.format('Data types', '',
                                             self.data_type, other.data_type))
+
+        # Check fill value.
+        if self.fill_value != other.fill_value:
+            # Allow fill-value promotion if either fill-value is None.
+            if self.fill_value is not None and other.fill_value is not None:
+                msgs.append(msg_template.format('Fill values', '',
+                                                self.fill_value,
+                                                other.fill_value))
 
         # Check _cell_measures_and_dims
         if self.cell_measures_and_dims != other.cell_measures_and_dims:
@@ -705,6 +685,8 @@ class _ProtoCube(object):
                                   dim_coords_and_dims=dim_coords_and_dims,
                                   aux_coords_and_dims=aux_coords_and_dims,
                                   cell_measures_and_dims=new_cm_and_dims,
+                                  dtype=cube_signature.data_type,
+                                  fill_value=cube_signature.fill_value,
                                   **kwargs)
         else:
             # There are no other source-cubes to concatenate
@@ -750,6 +732,10 @@ class _ProtoCube(object):
 
         # Check for compatible coordinate signatures.
         if match:
+            if self._cube_signature.fill_value is None and \
+                    cube_signature.fill_value is not None:
+                # Perform proto-cube fill-value promotion.
+                self._cube_signature.fill_value = cube_signature.fill_value
             coord_signature = _CoordSignature(cube_signature)
             candidate_axis = self._coord_signature.candidate_axis(
                 coord_signature)

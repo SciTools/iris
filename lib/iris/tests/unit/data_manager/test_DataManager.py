@@ -295,17 +295,27 @@ class Test__deepcopy(tests.IrisTest):
         self.assertEqual(result, expected)
         self.assertIs(result._lazy_array, data)
 
-    def test_real__realised_dtype_failure(self):
+    def test_real_with_realised_dtype_failure(self):
         dm = DataManager(self.real_array)
         emsg = 'Cannot copy'
         with self.assertRaisesRegexp(ValueError, emsg):
             dm._deepcopy(self.memo, realised_dtype=np.dtype('int16'))
 
-    def test_lazy__realised_dtype_failure(self):
+    def test_lazy_with_realised_dtype_failure(self):
         dm = DataManager(as_lazy_data(self.real_array))
         emsg = 'Cannot copy'
         with self.assertRaisesRegexp(ValueError, emsg):
             dm._deepcopy(self.memo, realised_dtype=np.dtype('float32'))
+
+    def test_lazy_with_realised_dtype(self):
+        dm = DataManager(as_lazy_data(self.real_array),
+                         realised_dtype=np.dtype('int16'))
+        data = as_lazy_data(self.real_array) * 10
+        dtype = np.dtype('int8')
+        result = dm._deepcopy(self.memo, data=data, realised_dtype=dtype)
+        expected = DataManager(data, realised_dtype=dtype)
+        self.assertEqual(result, expected)
+        self.assertIs(result._lazy_array, data)
 
     def test_real_with_real_failure(self):
         dm = DataManager(self.real_array)
@@ -338,30 +348,53 @@ class Test__realised_dtype_setter(tests.IrisTest):
         self.lazy_array = as_lazy_data(self.real_array)
         self.dm = DataManager(self.lazy_array)
 
-    def test_with_none(self):
+    def test_lazy_with_none(self):
         self.assertIsNone(self.dm._realised_dtype)
         self.dm._realised_dtype_setter(None)
         self.assertIsNone(self.dm._realised_dtype)
 
-    def test_with_real_array(self):
+    def test_real_with_none(self):
         self.dm._lazy_array = None
         self.dm._real_array = self.real_array
+        self.assertIsNone(self.dm._realised_dtype)
+        self.dm._realised_dtype_setter(None)
+        self.assertIsNone(self.dm._realised_dtype)
+
+    def test_real_with_same_dtype(self):
+        self.dm._lazy_array = None
+        self.dm._real_array = self.real_array
+        self.assertIsNone(self.dm._realised_dtype)
+        self.dm._realised_dtype_setter(self.dm.dtype)
+        self.assertIsNone(self.dm._realised_dtype)
+
+    def test_real_array_failure(self):
+        self.dm._lazy_array = None
+        self.dm._real_array = self.real_array
+        self.assertIsNone(self.dm._realised_dtype)
         emsg = 'Cannot set realised dtype, no lazy data is available'
         with self.assertRaisesRegexp(ValueError, emsg):
-            self.dm._realised_dtype_setter(np.dtype('int'))
+            self.dm._realised_dtype_setter(np.dtype('int16'))
 
-    def test_realised_dtype_bad(self):
+    def test_invalid_realised_dtype(self):
         emsg = ("Can only cast lazy data to an integer or boolean "
                 "dtype, got dtype\('float64'\)")
         with self.assertRaisesRegexp(ValueError, emsg):
             self.dm._realised_dtype_setter(np.dtype('float64'))
 
-    def test_realised_dtype(self):
-        dtypes = (np.dtype('bool'), np.dtype('int64'), np.dtype('uint64'))
+    def test_lazy_with_realised_dtype(self):
+        dtypes = (np.dtype('bool'), np.dtype('int16'), np.dtype('uint16'))
         for dtype in dtypes:
             self.dm._realised_dtype = None
             self.dm._realised_dtype_setter(dtype)
             self.assertEqual(self.dm._realised_dtype, dtype)
+
+    def test_lazy_replace_with_none(self):
+        self.assertIsNone(self.dm._realised_dtype)
+        dtype = np.dtype('int16')
+        self.dm._realised_dtype_setter(dtype)
+        self.assertEqual(self.dm._realised_dtype, dtype)
+        self.dm._realised_dtype_setter(None)
+        self.assertIsNone(self.dm._realised_dtype)
 
 
 class Test_core_data(tests.IrisTest):
@@ -424,6 +457,29 @@ class Test_data__getter(tests.IrisTest):
         self.assertIsNone(dm._realised_dtype)
         self.assertEqual(dm.dtype, self.realised_dtype)
         self.assertArrayEqual(result, self.lazy_mask_array_masked.compute())
+
+    def test_with_real_masked_constant(self):
+        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype('f8'))
+        masked_constant = masked_data[0]
+        dm = DataManager(masked_constant)
+        result = dm.data
+        self.assertFalse(dm.has_lazy_data())
+        self.assertIsInstance(result, ma.MaskedArray)
+        self.assertNotIsInstance(result, ma.core.MaskedConstant)
+        self.assertMaskedArrayEqual(result, masked_data)
+
+    def test_with_lazy_masked_constant(self):
+        dtype = np.dtype('int16')
+        masked_data = ma.masked_array([666], mask=True, dtype=dtype)
+        masked_constant = masked_data[0]
+        lazy_masked_constant = as_lazy_data(masked_constant)
+        dm = DataManager(lazy_masked_constant, realised_dtype=dtype)
+        self.assertEqual(dm.dtype, dtype)
+        result = dm.data
+        self.assertFalse(dm.has_lazy_data())
+        self.assertIsInstance(result, ma.MaskedArray)
+        self.assertNotIsInstance(result, ma.core.MaskedConstant)
+        self.assertMaskedArrayEqual(result, masked_data)
 
 
 class Test_data__setter(tests.IrisTest):
@@ -556,10 +612,25 @@ class Test_data__setter(tests.IrisTest):
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
+    def test_realised_dtype_none(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        mask_array = ma.arange(size).reshape(shape)
+        dtype = mask_array.dtype
+        lazy_array = as_lazy_data(mask_array)
+        dm = DataManager(lazy_array, realised_dtype=dtype)
+        self.assertIsNone(dm._realised_dtype)
+        self.assertEqual(dm.dtype, dtype)
+        dm.data = mask_array
+        self.assertIs(dm.data, mask_array)
+        self.assertIsNone(dm._realised_dtype)
+        self.assertEqual(dm.dtype, dtype)
+
     def test_realised_dtype_clearance(self):
         shape = (2, 3, 4)
         size = np.prod(shape)
         mask_array = ma.arange(size).reshape(shape)
+        mask_array[0, 0, 0] = ma.masked
         dtype = mask_array.dtype
         lazy_array = as_lazy_data(mask_array)
         dm = DataManager(lazy_array, realised_dtype=dtype)
@@ -580,6 +651,16 @@ class Test_data__setter(tests.IrisTest):
         self.assertIsInstance(dm._real_array, np.core.ndarray)
         self.assertIsInstance(dm.data, np.core.ndarray)
         self.assertArrayEqual(dm.data, real_array)
+
+    def test_real_masked_constant_to_array(self):
+        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype('f8'))
+        masked_constant = masked_data[0]
+        dm = DataManager(masked_constant)
+        self.assertIsInstance(dm._real_array, ma.MaskedArray)
+        self.assertNotIsInstance(dm._real_array, ma.core.MaskedConstant)
+        self.assertIsInstance(dm.data, ma.MaskedArray)
+        self.assertNotIsInstance(dm.data, ma.core.MaskedConstant)
+        self.assertMaskedArrayEqual(dm.data, masked_data)
 
 
 class Test_dtype(tests.IrisTest):
@@ -640,7 +721,20 @@ class Test_shape(tests.IrisTest):
 
 
 class Test_copy(tests.IrisTest):
-    def test(self):
+    def test_without_realised_dtype(self):
+        dm = DataManager(np.array(0))
+        method = 'iris._data_manager.DataManager._deepcopy'
+        data = mock.sentinel.data
+        return_value = mock.sentinel.return_value
+        memo = {}
+        kwargs = dict(data=data, realised_dtype='none')
+        with mock.patch(method) as mocker:
+            mocker.return_value = return_value
+            result = dm.copy(data=data)
+            mocker.assert_called_once_with(memo, **kwargs)
+        self.assertIs(result, return_value)
+
+    def test_with_realised_dtype(self):
         dm = DataManager(np.array(0))
         method = 'iris._data_manager.DataManager._deepcopy'
         data = mock.sentinel.data
@@ -731,8 +825,24 @@ class Test_replace(tests.IrisTest):
         self.assertIs(dm._lazy_array, lazy_array)
         self.assertArrayEqual(dm.data, self.real_array)
 
+    def test_lazy_with_real__realised_dtype_none(self):
+        mask_array = ma.arange(self.size).reshape(self.shape)
+        dtype = mask_array.dtype
+        lazy_array = as_lazy_data(mask_array)
+        dm = DataManager(lazy_array, realised_dtype=dtype)
+        self.assertTrue(dm.has_lazy_data())
+        self.assertIsNone(dm._realised_dtype, dtype)
+        self.assertEqual(dm.dtype, dtype)
+        dm.replace(mask_array)
+        self.assertFalse(dm.has_lazy_data())
+        self.assertIsNone(dm._realised_dtype)
+        self.assertEqual(dm.dtype, dtype)
+        self.assertIs(dm._real_array, mask_array)
+        self.assertIs(dm.data, mask_array)
+
     def test_lazy_with_real__realised_dtype_clearance(self):
         mask_array = ma.arange(self.size).reshape(self.shape)
+        mask_array[0, 0, 0] = ma.masked
         dtype = mask_array.dtype
         lazy_array = as_lazy_data(mask_array)
         dm = DataManager(lazy_array, realised_dtype=dtype)
@@ -746,7 +856,7 @@ class Test_replace(tests.IrisTest):
         self.assertIs(dm._real_array, mask_array)
         self.assertIs(dm.data, mask_array)
 
-    def test_real_with_lazy__realised_dtype_setter(self):
+    def test_real_with_lazy__realised_dtype_setter_none(self):
         mask_array = ma.masked_array(self.real_array) * 10
         dtype = mask_array.dtype
         lazy_array = as_lazy_data(mask_array)
@@ -756,8 +866,25 @@ class Test_replace(tests.IrisTest):
         self.assertEqual(dm.dtype, dtype)
         dm.replace(lazy_array, realised_dtype=dtype)
         self.assertTrue(dm.has_lazy_data())
-        self.assertEqual(dm._realised_dtype, dtype)
+        self.assertIsNone(dm._realised_dtype)
         self.assertEqual(dm.dtype, dtype)
+        self.assertIs(dm._lazy_array, lazy_array)
+        self.assertArrayEqual(dm.data, mask_array)
+
+    def test_real_with_lazy__realised_dtype_setter(self):
+        mask_array = ma.masked_array(self.real_array) * 10
+        mask_array[0, 0, 0] = ma.masked
+        dtype = mask_array.dtype
+        lazy_array = as_lazy_data(mask_array)
+        lazy_dtype = np.dtype('int16')
+        dm = DataManager(self.real_array)
+        self.assertFalse(dm.has_lazy_data())
+        self.assertIsNone(dm._realised_dtype)
+        self.assertEqual(dm.dtype, dtype)
+        dm.replace(lazy_array, realised_dtype=lazy_dtype)
+        self.assertTrue(dm.has_lazy_data())
+        self.assertEqual(dm._realised_dtype, lazy_dtype)
+        self.assertEqual(dm.dtype, lazy_dtype)
         self.assertIs(dm._lazy_array, lazy_array)
         self.assertArrayEqual(dm.data, mask_array)
 
@@ -766,9 +893,18 @@ class Test_replace(tests.IrisTest):
         emsg = 'Cannot set realised dtype, no lazy data is available.'
         with self.assertRaisesRegexp(ValueError, emsg):
             dm.replace(self.real_array * 10,
-                       realised_dtype=self.real_array.dtype)
+                       realised_dtype=np.dtype('int16'))
         self.assertIs(dm._real_array, self.real_array)
         self.assertArrayEqual(dm.data, self.real_array)
+
+    def test_real_with_real__promote_shape_with_dtype_failure(self):
+        data = np.array(666)
+        dm = DataManager(data)
+        emsg = 'Cannot set realised dtype, no lazy data is available'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            dm.replace(np.array([999]),
+                       realised_dtype=np.dtype('float32'))
+        self.assertArrayEqual(dm.data, data)
 
 
 if __name__ == '__main__':

@@ -1131,6 +1131,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     cube = iris.cube.Cube(weighted_mean.reshape(grid_cube.shape),
                           dim_coords_and_dims=dim_coords_and_dims)
     cube.metadata = copy.deepcopy(src_cube.metadata)
+    cube.fill_value = src_cube.fill_value
 
     for coord in src_cube.coords(dimensions=()):
         cube.add_aux_coord(coord.copy())
@@ -1493,6 +1494,7 @@ class _ProjectedUnstructuredRegridder(object):
         # Create a result cube with the appropriate metadata
         result = iris.cube.Cube(data)
         result.metadata = copy.deepcopy(src.metadata)
+        result.fill_value = src.fill_value
 
         # Copy across all the coordinates which don't span the grid.
         # Record a mapping from old coordinate IDs to new coordinates,

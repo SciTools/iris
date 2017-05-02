@@ -40,8 +40,8 @@ import numpy.ma as ma
 from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
+from iris._data_manager import DataManager
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 import iris._merge
 import iris.analysis
@@ -64,9 +64,7 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'var_name',
                                            'units',
                                            'attributes',
-                                           'cell_methods',
-                                           'dtype',
-                                           'fill_value'])):
+                                           'cell_methods'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -697,6 +695,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :mod:`iris.aux_factory`.
         * cell_measures_and_dims
             A list of CellMeasures with dimension mappings.
+        * fill_value
+            The intended fill-value of :class:`~iris.cube.Cube` masked data.
+            Note that, the fill-value is cast relative to the dtype of the
+            :class:`~iris.cube.Cube`.
+        * dtype
+            The intended dtype of the specified lazy data, which must be
+            either integer or boolean. This is to handle the case of lazy
+            integer or boolean masked data.
 
         For example::
             >>> from iris.coords import DimCoord
@@ -716,9 +722,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        self._dask_array = None
-        self._numpy_array = None
-        self.data = data
+        # Initialise the cube data manager.
+        self._data_manager = DataManager(data, realised_dtype=dtype)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -746,10 +751,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Cell Measures
         self._cell_measures_and_dims = []
 
-        # We need to set the dtype before the fill_value,
-        # as the fill_value is checked against self.dtype.
-        self._dtype = None
-        self.dtype = dtype
+        # Intended fill-value.
         self.fill_value = fill_value
 
         identities = set()
@@ -811,8 +813,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
-                            self.units, self.attributes, self.cell_methods,
-                            self._dtype, self.fill_value)
+                            self.units, self.attributes, self.cell_methods)
 
     @metadata.setter
     def metadata(self, value):
@@ -827,10 +828,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
-            alias = name
-            if name in ['dtype', 'fill_value']:
-                alias = '_{}'.format(name)
-            setattr(self, alias, getattr(value, name))
+            setattr(self, name, getattr(value, name))
 
     def is_compatible(self, other, ignore=None):
         """
@@ -1628,41 +1626,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         to be decided: should this be public??
 
         """
-        if self.has_lazy_data():
-            result = self._dask_array
-        else:
-            result = self._numpy_array
-        return result
+        return self._data_manager.core_data
 
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        return self.core_data.shape
+        return self._data_manager.shape
 
     @property
     def dtype(self):
-        if self._dtype is None:
-            result = self.core_data.dtype
-        else:
-            result = self._dtype
-        return result
-
-    @dtype.setter
-    def dtype(self, dtype):
-        if dtype is not None:
-            dtype = np.dtype(dtype)
-            if dtype != self.dtype:
-                if not self.has_lazy_data():
-                    emsg = 'Cube does not have lazy data, cannot set dtype.'
-                    raise ValueError(emsg)
-                if dtype.kind not in 'biu':
-                    emsg = ('Can only cast lazy data to an integer or boolean '
-                            'dtype, got {!r}.')
-                    raise ValueError(emsg.format(dtype))
-                self._fill_value = None
-                self._dtype = dtype
-        else:
-            self._dtype = None
+        return self._data_manager.dtype
 
     @property
     def fill_value(self):
@@ -1687,7 +1660,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
-        return len(self.shape)
+        return self._data_manager.ndim
 
     def lazy_data(self):
         """
@@ -1704,12 +1677,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             A lazy array, representing the Cube data array.
 
         """
-        if self.has_lazy_data():
-            result = self._dask_array
-        else:
-            data = self._numpy_array
-            result = as_lazy_data(data)
-        return result
+        return self._data_manager.lazy_data()
 
     @property
     def data(self):
@@ -1744,57 +1712,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        if self.has_lazy_data():
-            try:
-                # Realise the data, convert from a NaN array to a masked array,
-                # and if appropriate cast to the specified cube result dtype.
-                result = as_concrete_data(self._dask_array,
-                                          nans_replacement=ma.masked,
-                                          result_dtype=self.dtype)
-                self._numpy_array = result
-                self.dtype = None
-
-            except MemoryError:
-                msg = "Failed to create the cube's data as there was not" \
-                      " enough memory available.\n" \
-                      "The array shape would have been {0!r} and the data" \
-                      " type {1}.\n" \
-                      "Consider freeing up variables or indexing the cube" \
-                      " before getting its data."
-                msg = msg.format(self.shape, self.dtype)
-                raise MemoryError(msg)
-        return self._numpy_array
+        data = self._data_manager.data
+        if ma.isMaskedArray(data) and self.fill_value is not None:
+            # Align the numpy fill-value with the cube fill-value.
+            data.fill_value = self.fill_value
+        return data
 
     @data.setter
-    def data(self, value):
-        if not (hasattr(value, 'shape') and hasattr(value, 'dtype')):
-            value = np.asanyarray(value)
-
-        if self.core_data is not None and self.shape != value.shape:
-            # The _ONLY_ data reshape permitted is converting a 0-dimensional
-            # array i.e. self.shape == () into a 1-dimensional array of length
-            # one i.e. data.shape == (1,)
-            if self.shape or value.shape != (1,):
-                raise ValueError('Require cube data with shape %r, got '
-                                 '%r.' % (self.shape, value.shape))
-
-        # Set lazy or real data, and reset the other.
-        if is_lazy_data(value):
-            self._dask_array = value
-            self._numpy_array = None
-        else:
-            if not ma.isMaskedArray(value):
-                # Coerce input to ndarray (including ndarray subclasses).
-                value = np.asarray(value)
-            self._numpy_array = value
-            self._dask_array = None
-
-        # Cancel any 'realisation' datatype conversion, and fill value.
-        self.dtype = None
-        self.fill_value = None
+    def data(self, data):
+        # Assign the new data to the data manager.
+        self._data_manager.data = data
+        # Clear the cube fill-value.
+        self._fill_value = None
 
     def has_lazy_data(self):
-        return self._numpy_array is None
+        return self._data_manager.has_lazy_data()
 
     @property
     def dim_coords(self):
@@ -2258,10 +2190,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         except StopIteration:
             first_slice = Ellipsis if self.share_data else None
 
-        if self.has_lazy_data():
-            cube_data = self._dask_array
-        else:
-            cube_data = self._numpy_array
+        cube_data = self._data_manager.core_data
 
         if first_slice is not None:
             data = cube_data[first_slice]
@@ -2282,8 +2211,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if ma.count_masked(data) == 0:
                 data = data.filled()
 
+        # XXX: Slicing a single item from a masked array that is masked,
+        #      results in numpy (v1.11.1) *always* returning a MaskedConstant
+        #      with a dtype of float64, regardless of the original masked
+        #      array dtype!
+        if isinstance(data, ma.core.MaskedConstant) and \
+                data.dtype != cube_data.dtype:
+            data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
+
         # Make the new cube slice
-        cube = Cube(data)
+        cube = Cube(data,
+                    fill_value=self.fill_value,
+                    dtype=self._data_manager.dtype)
         cube.metadata = copy.deepcopy(self.metadata)
 
         # Record a mapping from old coordinate IDs to new coordinates,
@@ -2521,7 +2460,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 chunk_data = [chunk.data for chunk in chunks]
                 module = ma if ma.isMaskedArray(self.data) else np
             data = module.concatenate(chunk_data, dim)
-            result = iris.cube.Cube(data)
+            result = iris.cube.Cube(data,
+                                    fill_value=self.fill_value,
+                                    dtype=self.dtype)
             result.metadata = copy.deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
@@ -2904,10 +2845,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         elif len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        if self.has_lazy_data():
-            self._dask_array = self._dask_array.transpose(new_order)
-        else:
-            self._numpy_array = self.data.transpose(new_order)
+        # Transpose the data payload.
+        data = self._data_manager.core_data.transpose(new_order)
+        self._data_manager = DataManager(data, self._data_manager.dtype)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -3074,7 +3014,32 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return cube_xml_element
 
-    def copy(self, data=None):
+    def replace(self, data, dtype=None, fill_value=None):
+        """
+        Perform an in-place replacement of the cube data.
+
+        Args:
+
+        * data:
+            Replace the data of the cube with the provided data payload.
+
+        Kwargs:
+
+        * dtype:
+            Replacement for the intended dtype of the realised lazy data.
+
+        * fill_value:
+            Replacement for the cube data fill-value.
+
+        .. note::
+            Data replacement alone will clear the intended dtype
+            of the realised lazy data and the fill-value.
+
+        """
+        self._data_manager.replace(data, realised_dtype=dtype)
+        self.fill_value = fill_value
+
+    def copy(self, data=None, dtype='none', fill_value='none'):
         """
         Returns a deep copy of this cube.
 
@@ -3083,11 +3048,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * data:
             Replace the data of the cube copy with provided data payload.
 
+        * dtype:
+            Replacement for the intended dtype of the realised lazy data.
+
+        * fill_value:
+            Replacement fill-value.
+
         Returns:
             A copy instance of the :class:`Cube`.
 
         """
-        return self._deepcopy({}, data)
+        memo = {}
+        cube = self._deepcopy(memo, data=data, dtype=dtype,
+                              fill_value=fill_value)
+        return cube
 
     def __copy__(self):
         """Shallow copying is disallowed for Cubes."""
@@ -3097,26 +3071,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __deepcopy__(self, memo):
         return self._deepcopy(memo)
 
-    def _deepcopy(self, memo, data=None):
-        if data is None:
-            # Use a copy of the source cube data.
-            if self.has_lazy_data():
-                # Use copy.copy, as lazy arrays don't have a copy method.
-                new_cube_data = copy.copy(self.lazy_data())
-            else:
-                # Do *not* use copy.copy, as NumPy 0-d arrays do that wrong.
-                new_cube_data = self.data.copy()
-        else:
-            # Use the provided data (without copying it).
-            if not is_lazy_data(data):
-                data = np.asanyarray(data)
+    def _deepcopy(self, memo, data=None, dtype='none', fill_value='none'):
+        dm = self._data_manager.copy(data=data, realised_dtype=dtype)
 
-            if data.shape != self.shape:
-                msg = 'Cannot copy cube with new data of a different shape ' \
-                      '(slice or subset the cube first).'
-                raise ValueError(msg)
-
-            new_cube_data = data
+        if isinstance(fill_value, six.string_types) and \
+                fill_value == 'none':
+            fill_value = self.fill_value
 
         new_dim_coords_and_dims = copy.deepcopy(self._dim_coords_and_dims,
                                                 memo)
@@ -3126,16 +3086,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
         coord_mapping = {}
+
         for old_pair, new_pair in zip(self._dim_coords_and_dims,
                                       new_dim_coords_and_dims):
             coord_mapping[id(old_pair[0])] = new_pair[0]
+
         for old_pair, new_pair in zip(self._aux_coords_and_dims,
                                       new_aux_coords_and_dims):
             coord_mapping[id(old_pair[0])] = new_pair[0]
 
-        new_cube = Cube(new_cube_data,
+        new_cube = Cube(dm.core_data,
                         dim_coords_and_dims=new_dim_coords_and_dims,
-                        aux_coords_and_dims=new_aux_coords_and_dims)
+                        aux_coords_and_dims=new_aux_coords_and_dims,
+                        fill_value=fill_value,
+                        dtype=dm.dtype)
+
         new_cube.metadata = copy.deepcopy(self.metadata, memo)
 
         for factory in self.aux_factories:
@@ -3149,6 +3114,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if isinstance(other, Cube):
             result = self.metadata == other.metadata
+
+            # check the cube fill-value.
+            if result:
+                result = self.fill_value == other.fill_value
 
             # having checked the metadata, now check the coordinates
             if result:
