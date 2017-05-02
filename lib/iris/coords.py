@@ -470,8 +470,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         # Track whether we need to copy data after any indexing operation.
         # NOTE: when we get rid of LazyArray-s, we can remove this bit.
-        points_copied = False
-        bounds_copied = False
+        points_copy_needed = True
+        bounds_copy_needed = True
 
         # If it's a "null" indexing operation (e.g. coord[:, :]) then we can
         # avoid all the indexing.  This is desirable if we have LazyArray-s,
@@ -484,20 +484,20 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             # If we have Lazy Arrays, don't copy but just allow the new coord
             # to share the same LazyArray object.
             if isinstance(points, iris.aux_factory._LazyArray):
-                points_copied = True
+                points_copy_needed = False
             if bounds is not None:
                 if isinstance(bounds, iris.aux_factory._LazyArray):
-                    bounds_copied = True
+                    bounds_copy_needed = False
         else:
             if isinstance(points, iris.aux_factory._LazyArray):
                 # This triggers the LazyArray to compute its values
                 # (if it hasn't already), which will also trigger any
                 # deferred loading of its dependencies.
                 points = points.view()
-                points_copied = True
+                points_copy_needed = False
             if isinstance(bounds, iris.aux_factory._LazyArray):
                 bounds = bounds.view()
-                bounds_copied = True
+                bounds_copy_needed = False
 
             # Make indexing on the cube column based by using the
             # column_slices_generator (potentially requires slicing the
@@ -515,9 +515,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         # Copy data after indexing, if needed, to avoid making coords that are
         # views on other coords.  This will not realise lazy data.
-        if not points_copied:
+        if points_copy_needed:
             points = points.copy()
-        if bounds is not None and not bounds_copied:
+        if bounds is not None and bounds_copy_needed:
             bounds = bounds.copy()
 
         # The new coordinate is a copy of the old one with replaced content.
