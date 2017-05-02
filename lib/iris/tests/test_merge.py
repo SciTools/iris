@@ -212,6 +212,15 @@ class TestDataMergeCombos(tests.IrisTest):
             self.assertEqual(result.fill_value, self.fill_value)
             self.assertEqual(result.dtype, self.dtype)
 
+    def test_merge_fail_on_different_fill_values(self):
+        pairs = [(0, 1234), (1, 4321)]
+        cubes = iris.cube.CubeList()
+        for data, fill_value in pairs:
+            cubes.append(self._make_cube(data, fill_value=fill_value))
+        emsg = 'cube fill value differs'
+        with self.assertRaisesRegexp(iris.exceptions.MergeError, emsg):
+            cubes.merge_cube()
+
 
 @tests.skip_data
 class TestDataMerge(tests.IrisTest):

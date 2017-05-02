@@ -347,6 +347,19 @@ class TestNoConcat(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
+    def test_masked_fill_value_difference__exception(self):
+        cubes = iris.cube.CubeList()
+        y = (0, 2)
+        cube = _make_cube((0, 2), y, 1, mask=True)
+        cube.fill_value = 10
+        cubes.append(cube)
+        cube = _make_cube((2, 4), y, 1, mask=True)
+        cube.fill_value = 20
+        cubes.append(cube)
+        emsg = 'Fill values differ'
+        with self.assertRaisesRegexp(iris.exceptions.ConcatenateError, emsg):
+            cubes.concatenate_cube()
+
 
 class Test2D(tests.IrisTest):
     def test_masked_and_unmasked(self):
