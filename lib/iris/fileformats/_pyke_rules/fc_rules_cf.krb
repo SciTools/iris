@@ -1648,7 +1648,7 @@ fc_extras
             # dimension names.
             if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
                 # Resolving the data to a numpy array (i.e. *not* masked) for
-                # compatibility with array creators (i.e. LazyArray or Dask)
+                # compatibility with array creators (i.e. dask)
                 bounds_data = np.asarray(bounds_data)
                 bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var,
                                                   cf_coord_var)

@@ -468,37 +468,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         points = self._points
         bounds = self._bounds
 
-        # Track whether we need to copy data after any indexing operation.
-        # NOTE: when we get rid of LazyArray-s, we can remove this bit.
-        points_copy_needed = True
-        bounds_copy_needed = True
-
-        # If it's a "null" indexing operation (e.g. coord[:, :]) then we can
-        # avoid all the indexing.  This is desirable if we have LazyArray-s,
-        # as they must be fetched first (you can't index them).
         def is_full_slice(s):
             return isinstance(s, slice) and s == slice(None, None)
-        null_operation = all(is_full_slice(s) for s in full_slice)
 
-        if null_operation:
-            # If we have Lazy Arrays, don't copy but just allow the new coord
-            # to share the same LazyArray object.
-            if isinstance(points, iris.aux_factory._LazyArray):
-                points_copy_needed = False
-            if bounds is not None:
-                if isinstance(bounds, iris.aux_factory._LazyArray):
-                    bounds_copy_needed = False
-        else:
-            if isinstance(points, iris.aux_factory._LazyArray):
-                # This triggers the LazyArray to compute its values
-                # (if it hasn't already), which will also trigger any
-                # deferred loading of its dependencies.
-                points = points.view()
-                points_copy_needed = False
-            if isinstance(bounds, iris.aux_factory._LazyArray):
-                bounds = bounds.view()
-                bounds_copy_needed = False
-
+        if not all(is_full_slice(s) for s in full_slice):
             # Make indexing on the cube column based by using the
             # column_slices_generator (potentially requires slicing the
             # data multiple times).
@@ -513,11 +486,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 if bounds is not None:
                     bounds = bounds[keys + (Ellipsis, )]
 
-        # Copy data after indexing, if needed, to avoid making coords that are
-        # views on other coords.  This will not realise lazy data.
-        if points_copy_needed:
-            points = points.copy()
-        if bounds is not None and bounds_copy_needed:
+        # Copy data after indexing to avoid making coords that are
+        # views on other coords. This will not realise lazy data.
+        points = points.copy()
+        if bounds is not None:
             bounds = bounds.copy()
 
         # The new coordinate is a copy of the old one with replaced content.
@@ -1648,14 +1620,13 @@ class AuxCoord(Coord):
     def points(self, points):
         # Set the points to a new array - as long as it's the same shape.
 
-        # With the exception of LazyArrays, ensure points has an ndmin
-        # of 1 and is either a numpy or lazy array.
+        # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
         # This will avoid Scalar coords with points of shape () rather
-        # than the desired (1,)
+        # than the desired (1,).
         if is_lazy_data(points):
             if points.shape == ():
                 points = da.reshape(points, (1,))
-        elif not isinstance(points, iris.aux_factory._LazyArray):
+        else:
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
         if hasattr(self, '_points') and self._points is not None:
@@ -1695,8 +1666,7 @@ class AuxCoord(Coord):
     def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is not None:
-            if not (isinstance(bounds, iris.aux_factory._LazyArray) or
-                    is_lazy_data(bounds)):
+            if not is_lazy_data(bounds):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
             if self._points.shape != bounds.shape[:-1]:
