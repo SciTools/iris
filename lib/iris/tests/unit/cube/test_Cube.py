@@ -1181,6 +1181,85 @@ class Test_regrid(tests.IrisTest):
         self.assertEqual(result, (scheme, cube, mock.sentinel.TARGET, cube))
 
 
+class Test_replace(tests.IrisTest):
+    def test(self):
+        cube = stock.simple_1d()
+        data = np.ones(cube.shape)
+        cube.replace(data)
+        self.assertIs(cube.core_data, data)
+
+    def test__lazy(self):
+        cube = stock.simple_1d()
+        data = as_lazy_data(cube.data)
+        cube.replace(data)
+        self.assertIs(cube.core_data, data)
+        self.assertTrue(cube.has_lazy_data())
+
+    def test__lazy_with_dtype_change(self):
+        lazy = as_lazy_data(np.array(10))
+        dtype = np.dtype('int16')
+        cube = Cube(lazy)
+        cube.replace(lazy * 10, dtype=dtype)
+        self.assertEqual(cube.dtype, dtype)
+        self.assertEqual(cube.core_data.dtype, lazy.dtype)
+
+    def test__lazy_masked_with_dtype_change(self):
+        real = ma.array(10)
+        real.mask = True
+        lazy = as_lazy_data(real)
+        dtype = np.dtype('int16')
+        cube = Cube(lazy, dtype=real.dtype)
+        self.assertEqual(cube.dtype, real.dtype)
+        self.assertEqual(cube.core_data.dtype, lazy.dtype)
+        cube.replace(lazy * 10, dtype=dtype)
+        self.assertEqual(cube.dtype, dtype)
+        self.assertEqual(cube.core_data.dtype, lazy.dtype)
+
+    def test__dtype_fill_value_clearance(self):
+        real = np.array(10)
+        lazy = as_lazy_data(real)
+        dtype = np.dtype('int16')
+        fill_value = 10
+        cube = Cube(lazy, dtype=dtype, fill_value=fill_value)
+        self.assertEqual(cube.dtype, dtype)
+        self.assertEqual(cube.fill_value, fill_value)
+        cube.replace(real)
+        self.assertEqual(cube.dtype, real.dtype)
+        self.assertIsNone(cube.fill_value)
+        self.assertIs(cube.core_data, real)
+
+    def test__shape_failure(self):
+        cube = stock.simple_1d()
+        data = np.array([0])
+        emsg = 'Require data with shape \(11,\), got \(1,\).'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(data)
+
+    def test__lazy_failure(self):
+        cube = stock.simple_1d()
+        data = np.ones(cube.shape)
+        dtype = np.dtype('int16')
+        emsg = 'Cannot set realised dtype, no lazy data is available'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(data, dtype=dtype)
+
+    def test__dtype_failure(self):
+        lazy = as_lazy_data(np.array(10))
+        cube = Cube(lazy)
+        dtype = np.dtype('float32')
+        emsg = 'Can only cast lazy data to an integer or boolean dtype'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(lazy, dtype=dtype)
+
+    def test__promote_shape_with_dtype_failure(self):
+        data = np.array(666)
+        cube = Cube(data)
+        emsg = 'Cannot set realised dtype, no lazy data is available'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cube.replace(data, dtype=np.dtype('float32'))
+        self.assertArrayEqual(cube.data, data)
+
+
 class Test_copy(tests.IrisTest):
     def _check_copy(self, cube, cube_copy):
         self.assertIsNot(cube_copy, cube)
@@ -1399,7 +1478,7 @@ class Test_dtype(tests.IrisTest):
     def test_real_data_with_dtype_different(self):
         for dtype in self.dtypes:
             data = np.array([0, 1], dtype=dtype)
-            emsg = 'Cube does not have lazy data, cannot set dtype'
+            emsg = 'Cannot set realised dtype, no lazy data is available'
             with self.assertRaisesRegexp(ValueError, emsg):
                 Cube(data, dtype=np.complex)
 
@@ -1454,20 +1533,25 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
 
     def test_realise_masked(self):
         # Check that touching masked lazy data retains the fill_value.
-        cube = self._sample_cube(cube_fill_value=27.3, masked=True, lazy=True)
+        fill_value = 27.3
+        cube = self._sample_cube(cube_fill_value=fill_value, masked=True,
+                                 lazy=True)
         data = cube.data
         self.assertIs(cube.core_data, data)
-        self.assertArrayAllClose(cube.fill_value, 27.3)
+        self.assertArrayAllClose(cube.fill_value, fill_value)
+        self.assertArrayAllClose(data.fill_value, fill_value)
 
     def test_realise_maskedints(self):
         # Check that touching masked integer lazy data retains the fill_value.
+        fill_value = 999
         cube = self._sample_cube(dtype=np.int16, masked=True, lazy=True,
-                                 cube_fill_value=999)
+                                 cube_fill_value=fill_value)
         self.assertIs(cube.core_data.dtype, np.dtype('f8'))
         data = cube.data
         self.assertIs(cube.core_data.dtype, np.dtype('i2'))
         self.assertEqual(cube.fill_value.dtype, np.dtype('i2'))
-        self.assertArrayAllClose(cube.fill_value, 999)
+        self.assertArrayAllClose(cube.fill_value, fill_value)
+        self.assertArrayAllClose(data.fill_value, fill_value)
 
     def test_lazydata_change(self):
         # Check that re-assigning lazy data resets dtype and fill_value.
@@ -1483,12 +1567,6 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         self.assertEqual(cube.dtype, np.dtype('f8'))
         self.assertIsNone(cube.fill_value)
 
-    def test_realdata_dtype_change(self):
-        # Check that cannot change real data dtype.
-        cube = self._sample_cube()
-        with self.assertRaisesRegexp(ValueError, "cannot set dtype"):
-            cube.dtype = np.dtype('i8')
-
     def test_lazydata_nonmaskedints(self):
         # Check that lazy ints retain their dtype.
         data_original = self._sample_data(dtype=np.int32)
@@ -1500,47 +1578,48 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         self.assertArrayEqual(data, data_original)
 
     def test_lazydata_maskedints(self):
-        # Check that lazy masked ints have a modified dtype.
+        # Check lazy masked ints dtype.
+        fill_value = 1234
         masked_data_original = self._sample_data(dtype=np.int32, masked=True)
         masked_data_lazy = as_lazy_data(masked_data_original)
-        cube = Cube(masked_data_lazy)
-        cube.dtype = masked_data_original.dtype
+        cube = Cube(masked_data_lazy, dtype=masked_data_original.dtype,
+                    fill_value=fill_value)
         self.assertEqual(cube.dtype, np.dtype('i4'))
         self.assertEqual(cube.core_data.dtype, np.dtype('f8'))
         data = cube.data
         self.assertTrue(ma.is_masked(data))
         self.assertMaskedArrayEqual(data, masked_data_original)
+        self.assertArrayAllClose(cube.fill_value, fill_value)
+        self.assertArrayAllClose(data.fill_value, fill_value)
 
-    def test_lazydata_floating_dtype_change(self):
-        # Check that re-assigning dtype won't allow a floating type.
-        cube = self._sample_cube(dtype=np.float32, lazy=True,
-                                 cube_fill_value=23.7)
-        self.assertArrayAllClose(cube.fill_value, 23.7)
-        msg = "Can only cast lazy data to an integer or boolean dtype"
-        with self.assertRaisesRegexp(ValueError, msg):
-            cube.dtype = np.float64
+    def test_realdata_maskedconstantint(self):
+        fill_value = 1234
+        masked_data = ma.masked_array([666], mask=True)
+        masked_constant = masked_data[0]
+        cube = Cube(masked_constant, fill_value=fill_value)
+        self.assertArrayAllClose(cube.fill_value, fill_value)
+        data = cube.data
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertArrayAllClose(cube.fill_value, fill_value)
+        self.assertArrayAllClose(data.fill_value, fill_value)
+        self.assertNotIsInstance(data, ma.core.MaskedConstant)
 
-    def test_lazydata_dtype_change(self):
-        # Check that re-assigning dtype resets fill_value.
-        cube = self._sample_cube(dtype=np.float32, lazy=True,
-                                 cube_fill_value=23.7)
-        self.assertArrayAllClose(cube.fill_value, 23.7)
-        cube.dtype = np.int16
-        self.assertEqual(cube.dtype, np.dtype('i2'))
-        self.assertEqual(cube.core_data.dtype, np.dtype('f4'))
-        self.assertIsNone(cube.fill_value)
-
-    def test_lazydata_maskedints_dtype_change(self):
-        # Check that re-assigning dtype resets fill_value.
-        cube = self._sample_cube(dtype=np.int16, masked=True, lazy=True,
-                                 cube_fill_value=199)
-        self.assertEqual(cube.dtype, np.dtype('i2'))
+    def test_lazydata_maskedconstantint(self):
+        fill_value = 1234
+        dtype = np.dtype('i2')
+        masked_data = ma.masked_array([666], mask=True, dtype=dtype)
+        masked_constant = masked_data[0]
+        masked_constant_lazy = as_lazy_data(masked_constant)
+        cube = Cube(masked_constant_lazy, dtype=dtype, fill_value=fill_value)
+        self.assertArrayAllClose(cube.fill_value, fill_value)
+        self.assertEqual(cube.dtype, dtype)
         self.assertEqual(cube.core_data.dtype, np.dtype('f8'))
-        self.assertArrayAllClose(cube.fill_value, 199)
-        cube.dtype = np.int64
-        self.assertEqual(cube.dtype, np.dtype('i8'))
-        self.assertEqual(cube.core_data.dtype, np.dtype('f8'))
-        self.assertIsNone(cube.fill_value)
+        data = cube.data
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertArrayAllClose(cube.fill_value, fill_value)
+        self.assertArrayAllClose(data.fill_value, fill_value)
+        self.assertEqual(data.dtype, dtype)
+        self.assertNotIsInstance(data, ma.core.MaskedConstant)
 
     def test_fill_value__int_dtype_to_float(self):
         # Check that fill_value is cast to dtype, e.g. float --> int.
@@ -1578,6 +1657,24 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         cube = self._sample_cube(cube_fill_value=123.768)
         cube.fill_value = None
         self.assertIsNone(cube.fill_value)
+
+    def test_realdata___getitem__(self):
+        fill_value = 123
+        cube = Cube(np.arange(10), fill_value=fill_value)
+        subcube = cube[5:]
+        self.assertArrayAllClose(subcube.fill_value, fill_value)
+
+    def test_lazydata___getitem__(self):
+        fill_value = 123
+        dtype = np.dtype('int16')
+        masked_array = ma.masked_array(np.arange(5),
+                                       mask=[0, 0, 1, 0, 0],
+                                       dtype=dtype)
+        lazy_masked_array = as_lazy_data(masked_array)
+        cube = Cube(lazy_masked_array, dtype=dtype, fill_value=fill_value)
+        subcube = cube[3:]
+        self.assertEqual(subcube.dtype, dtype)
+        self.assertArrayAllClose(subcube.fill_value, fill_value)
 
 
 class TestSubset(tests.IrisTest):

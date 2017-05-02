@@ -390,6 +390,7 @@ class RectilinearRegridder(object):
         # Create a result cube with the appropriate metadata
         result = iris.cube.Cube(data)
         result.metadata = copy.deepcopy(src.metadata)
+        result.fill_value = src.fill_value
 
         # Copy across all the coordinates which don't span the grid.
         # Record a mapping from old coordinate IDs to new coordinates,

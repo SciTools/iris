@@ -1086,14 +1086,17 @@ def new_axis(src_cube, scalar_coord=None):
     # If the source cube is a Masked Constant, it is changed here to a Masked
     # Array to allow the mask to gain an extra dimension with the data.
     if src_cube.has_lazy_data():
-        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+        new_cube = iris.cube.Cube(src_cube.lazy_data()[None],
+                                  dtype=src_cube.dtype)
     else:
         if isinstance(src_cube.data, ma.core.MaskedConstant):
             new_data = ma.array([np.nan], mask=[True])
         else:
             new_data = src_cube.data[None]
         new_cube = iris.cube.Cube(new_data)
+
     new_cube.metadata = src_cube.metadata
+    new_cube.fill_value = src_cube.fill_value
 
     for coord in src_cube.aux_coords:
         if scalar_coord and scalar_coord == coord:
@@ -1175,7 +1178,9 @@ def as_compatible_shape(src_cube, target_cube):
         new_order = [order.index(i) for i in range(len(order))]
         new_data = np.transpose(new_data, new_order).copy()
 
-    new_cube = iris.cube.Cube(new_data.reshape(new_shape))
+    new_cube = iris.cube.Cube(new_data.reshape(new_shape),
+                              fill_value=src_cube.fill_value,
+                              dtype=src_cube.dtype)
     new_cube.metadata = copy.deepcopy(src_cube.metadata)
 
     # Record a mapping from old coordinate IDs to new coordinates,

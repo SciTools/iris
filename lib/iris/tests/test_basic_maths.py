@@ -39,11 +39,8 @@ import iris.tests.stock
 class TestBasicMaths(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
-        # We require to preserve the cube fill_value
-        # across the cube data setter operation.
-        fill_value = self.cube.fill_value
-        self.cube.data = self.cube.data - 260
-        self.cube.fill_value = fill_value
+        self.cube.replace(self.cube.data - 260,
+                          fill_value=self.cube.fill_value)
 
     def test_abs(self):
         a = self.cube

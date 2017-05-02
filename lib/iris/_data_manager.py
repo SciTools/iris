@@ -184,7 +184,7 @@ class DataManager(object):
                 'real data and realised {!r}.')
         assert state, emsg.format(self._realised_dtype)
 
-    def _deepcopy(self, memo, data=None, realised_dtype=None):
+    def _deepcopy(self, memo, data=None, realised_dtype='none'):
         """
         Perform a deepcopy of the :class:`~iris._data_manager.DataManager`
         instance.
@@ -221,6 +221,10 @@ class DataManager(object):
                 # If the replacement data is valid, then use it but
                 # without copying it.
 
+            if isinstance(realised_dtype, six.string_types) and \
+                    realised_dtype == 'none':
+                realised_dtype = self._realised_dtype
+
             result = DataManager(data, realised_dtype=realised_dtype)
         except ValueError as error:
             emsg = 'Cannot copy {!r} - {}'
@@ -243,18 +247,20 @@ class DataManager(object):
         if realised_dtype is None:
             self._realised_dtype = None
         else:
-            if not self.has_lazy_data():
-                emsg = 'Cannot set realised dtype, no lazy data is available.'
-                raise ValueError(emsg)
             realised_dtype = np.dtype(realised_dtype)
-            if realised_dtype.kind not in 'biu':
-                emsg = ('Can only cast lazy data to an integer or boolean '
-                        'dtype, got {!r}.')
-                raise ValueError(emsg.format(realised_dtype))
-            self._realised_dtype = realised_dtype
+            if realised_dtype != self.dtype:
+                if not self.has_lazy_data():
+                    emsg = ('Cannot set realised dtype, no lazy data '
+                            'is available.')
+                    raise ValueError(emsg)
+                if realised_dtype.kind not in 'biu':
+                    emsg = ('Can only cast lazy data to an integer or boolean '
+                            'dtype, got {!r}.')
+                    raise ValueError(emsg.format(realised_dtype))
+                self._realised_dtype = realised_dtype
 
-            # Check the manager contract, as the managed dtype has changed.
-            self._assert_axioms()
+                # Check the manager contract, as the managed dtype has changed.
+                self._assert_axioms()
 
     @property
     def core_data(self):
@@ -349,6 +355,10 @@ class DataManager(object):
             if not ma.isMaskedArray(data):
                 # Coerce input data to ndarray (including ndarray subclasses).
                 data = np.asarray(data)
+            if isinstance(data, ma.core.MaskedConstant):
+                # Promote to a masked array so that the fill-value is
+                # writeable to the data owner.
+                data = ma.array(data.data, mask=data.mask, dtype=data.dtype)
             self._lazy_array = None
             self._real_array = data
 
@@ -387,7 +397,7 @@ class DataManager(object):
         """
         return self.core_data.shape
 
-    def copy(self, data=None, realised_dtype=None):
+    def copy(self, data=None, realised_dtype='none'):
         """
         Returns a deep copy of this :class:`~iris._data_manager.DataManager`
         instance.
@@ -469,5 +479,9 @@ class DataManager(object):
         except ValueError as error:
             # Backout the data replacement, and reinstate the cached
             # original managed data.
-            self.data = original_data
+            self._lazy_array = self._real_array = None
+            if is_lazy_data(original_data):
+                self._lazy_array = original_data
+            else:
+                self._real_array = original_data
             raise error
