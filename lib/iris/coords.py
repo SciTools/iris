@@ -464,24 +464,40 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # each dimension of the coord.
         full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
 
-        # If it's a "null" indexing operation (e.g. coord[:, :]) then
-        # we can preserve deferred loading by avoiding promoting _points
-        # and _bounds to full ndarray instances.
+        # Fetch the points and bounds.
+        points = self._points
+        bounds = self._bounds
+
+        # Track whether we need to copy data after any indexing operation.
+        # NOTE: when we get rid of LazyArray-s, we can remove this bit.
+        points_copy_needed = True
+        bounds_copy_needed = True
+
+        # If it's a "null" indexing operation (e.g. coord[:, :]) then we can
+        # avoid all the indexing.  This is desirable if we have LazyArray-s,
+        # as they must be fetched first (you can't index them).
         def is_full_slice(s):
             return isinstance(s, slice) and s == slice(None, None)
-        if all(is_full_slice(s) for s in full_slice):
-            points = self._points
-            bounds = self._bounds
+        null_operation = all(is_full_slice(s) for s in full_slice)
+
+        if null_operation:
+            # If we have Lazy Arrays, don't copy but just allow the new coord
+            # to share the same LazyArray object.
+            if isinstance(points, iris.aux_factory._LazyArray):
+                points_copy_needed = False
+            if bounds is not None:
+                if isinstance(bounds, iris.aux_factory._LazyArray):
+                    bounds_copy_needed = False
         else:
-            points = self._points
             if isinstance(points, iris.aux_factory._LazyArray):
                 # This triggers the LazyArray to compute its values
                 # (if it hasn't already), which will also trigger any
                 # deferred loading of its dependencies.
                 points = points.view()
-            bounds = self._bounds
+                points_copy_needed = False
             if isinstance(bounds, iris.aux_factory._LazyArray):
                 bounds = bounds.view()
+                bounds_copy_needed = False
 
             # Make indexing on the cube column based by using the
             # column_slices_generator (potentially requires slicing the
@@ -497,6 +513,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 if bounds is not None:
                     bounds = bounds[keys + (Ellipsis, )]
 
+        # Copy data after indexing, if needed, to avoid making coords that are
+        # views on other coords.  This will not realise lazy data.
+        if points_copy_needed:
+            points = points.copy()
+        if bounds is not None and bounds_copy_needed:
+            bounds = bounds.copy()
+
+        # The new coordinate is a copy of the old one with replaced content.
         new_coord = self.copy(points=points, bounds=bounds)
         return new_coord
 
