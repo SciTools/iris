@@ -63,9 +63,7 @@ class TestPickle(tests.IrisTest):
             self.assertCubeData(cube, recon_cube)
 
     @tests.skip_data
-    def test_cube_with_deferred_coord_points(self):
-        # Data with 2d lats and lons that when loaded results in points that
-        # are LazyArray objects.
+    def test_cube_with_coord_points(self):
         filename = tests.get_data_path(('NetCDF',
                                         'rotated',
                                         'xy',

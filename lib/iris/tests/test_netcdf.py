@@ -32,6 +32,7 @@ import os.path
 import shutil
 import stat
 import tempfile
+from unittest import skip
 
 import netCDF4 as nc
 import numpy as np
@@ -106,6 +107,7 @@ class TestNetCDFLoad(tests.IrisTest):
             self.assertCML(cube, ('netcdf',
                                   'netcdf_global_xyzt_gems_iter_%d.cml' % i))
 
+    @skip("Deferred loading of coordinates is temporarily removed.")
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.
         cube = iris.load_cube(tests.get_data_path(
