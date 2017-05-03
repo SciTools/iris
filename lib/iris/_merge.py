@@ -407,11 +407,6 @@ class _CubeSignature(namedtuple('CubeSignature',
         if self.data_type != other.data_type:
             msg = 'cube data dtype differs: {} != {}'
             msgs.append(msg.format(self.data_type, other.data_type))
-        if self.fill_value != other.fill_value:
-            # Allow fill-value promotion if either fill-value is None.
-            if self.fill_value is not None and other.fill_value is not None:
-                msg = 'cube fill value differs: {} != {}'
-                msgs.append(msg.format(self.fill_value, other.fill_value))
         if (self.cell_measures_and_dims != other.cell_measures_and_dims):
             msgs.append('cube.cell_measures differ')
 
@@ -1285,15 +1280,19 @@ class ProtoCube(object):
             this :class:`ProtoCube`.
 
         """
-        signature = self._cube_signature
+        cube_signature = self._cube_signature
         other = self._build_signature(cube)
-        match = signature.match(other, error_on_mismatch)
+        match = cube_signature.match(other, error_on_mismatch)
         if match:
-            if signature.fill_value is None and other.fill_value is not None:
-                # Perform proto-cube fill-value promotion.
-                fv = other.fill_value
-                self._cube_signature = self._build_signature(self._source,
-                                                             fill_value=fv)
+            # Determine whether the fill value requires to be demoted
+            # to the default value.
+            if cube_signature.fill_value is not None:
+                if other.fill_value is None or \
+                        cube_signature.fill_value != other.fill_value:
+                    # Demote the fill value to the default.
+                    signature = self._build_signature(self._source,
+                                                      default_fill_value=True)
+                    self._cube_signature = signature
             coord_payload = self._extract_coord_payload(cube)
             match = coord_payload.match_signature(self._coord_signature,
                                                   error_on_mismatch)
@@ -1614,7 +1613,7 @@ class ProtoCube(object):
                               self._vector_aux_coords_dims):
             aux_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
-    def _build_signature(self, cube, fill_value=None):
+    def _build_signature(self, cube, default_fill_value=False):
         """
         Generate the signature that defines this cube.
 
@@ -1625,16 +1624,18 @@ class ProtoCube(object):
 
         Kwargs:
 
-        * fill_value:
-            Promoted fill-value to use instead of the source cube
-            fill-value.
+        * default_fill_value:
+            Override the cube fill value with the default fill value of None.
+            Default is False i.e. use the provided cube.fill_value when
+            constructing the cube signature.
 
         Returns:
             The cube signature.
 
         """
-        if fill_value is None:
-            fill_value = cube.fill_value
+        fill_value = cube.fill_value
+        if default_fill_value:
+            fill_value = None
         return _CubeSignature(cube.metadata, cube.shape, cube.dtype,
                               fill_value, cube._cell_measures_and_dims)
 
