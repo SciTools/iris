@@ -1599,7 +1599,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def cell_methods(self, cell_methods):
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
-    @property
     def core_data(self):
         """
         The data at the core of this cube.
@@ -2874,7 +2873,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cube_xml_element.setAttribute('fill_value', str(self.fill_value))
         cube_xml_element.setAttribute('dtype', self.dtype.name)
         cube_xml_element.setAttribute('core-dtype',
-                                      self.core_data.dtype.name)
+                                      self.core_data().dtype.name)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
