@@ -95,7 +95,6 @@ class FieldCollation(object):
             self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
 
-    @property
     def core_data(self):
         return self.data
 

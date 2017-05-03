@@ -35,7 +35,8 @@ class Test__create_field_data(tests.IrisTest):
         # Check that a field with LoadedArrayBytes in core_data gets the
         # result of a suitable call to _data_bytes_to_shaped_array().
         mock_loaded_bytes = mock.Mock(spec=pp.LoadedArrayBytes)
-        field = mock.Mock(core_data=mock_loaded_bytes)
+        core_data = mock.MagicMock(return_value=mock_loaded_bytes)
+        field = mock.Mock(core_data=core_data)
         data_shape = mock.Mock()
         land_mask = mock.Mock()
         with mock.patch('iris.fileformats.pp._data_bytes_to_shaped_array') as \
@@ -60,7 +61,8 @@ class Test__create_field_data(tests.IrisTest):
         newbyteorder = mock.Mock(return_value=mock.sentinel.dtype)
         dtype = mock.Mock(newbyteorder=newbyteorder)
         deferred_bytes = (fname, position, n_bytes, dtype)
-        field = mock.Mock(core_data=deferred_bytes)
+        core_data = mock.MagicMock(return_value=deferred_bytes)
+        field = mock.Mock(core_data=core_data)
         data_shape = (100, 120)
         land_mask = mock.Mock()
         proxy = mock.Mock(dtype=np.dtype('f4'), shape=data_shape,
