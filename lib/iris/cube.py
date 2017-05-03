@@ -2169,7 +2169,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Index with the keys, using orthogonal slicing.
         dimension_mapping, data = iris.util._slice_data_with_keys(
-            cube_data, keys, self.ndim)
+            cube_data, keys)
 
         # We don't want a view of the data, so take a copy of it.
         data = copy.deepcopy(data)

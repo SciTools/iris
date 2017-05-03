@@ -466,10 +466,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         # Index both points and bounds with the keys.
         _, points = iris.util._slice_data_with_keys(
-            points, keys, self.ndim)
+            points, keys)
         if bounds is not None:
             _, bounds = iris.util._slice_data_with_keys(
-                bounds, keys, self.ndim + 1)
+                bounds, keys)
 
         # Copy data after indexing, to avoid making coords that are
         # views on other coords.  This will not realise lazy data.
@@ -1481,8 +1481,7 @@ class DimCoord(Coord):
     @property
     def points(self):
         """The local points values as a read-only NumPy array."""
-        points = self._points
-        return points
+        return self._points
 
     @points.setter
     def points(self, points):
@@ -1790,7 +1789,7 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         # Index data with the keys.
         # Note: does not copy data unless it has to.
-        _, data = iris.util._slice_data_with_keys(data, keys, self.ndim)
+        _, data = iris.util._slice_data_with_keys(data, keys)
 
         # Always copy data, to avoid making the new measure a view onto the old
         # one.
