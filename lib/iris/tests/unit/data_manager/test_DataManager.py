@@ -401,12 +401,12 @@ class Test_core_data(tests.IrisTest):
     def test_real_array(self):
         real_array = np.array(0)
         dm = DataManager(real_array)
-        self.assertIs(dm.core_data, real_array)
+        self.assertIs(dm.core_data(), real_array)
 
     def test_lazy_array(self):
         lazy_array = as_lazy_data(np.array(0))
         dm = DataManager(lazy_array)
-        self.assertIs(dm.core_data, lazy_array)
+        self.assertIs(dm.core_data(), lazy_array)
 
 
 class Test_data__getter(tests.IrisTest):

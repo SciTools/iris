@@ -1609,7 +1609,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         to be decided: should this be public??
 
         """
-        return self._data_manager.core_data
+        return self._data_manager.core_data()
 
     @property
     def shape(self):
@@ -2173,7 +2173,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         except StopIteration:
             first_slice = None
 
-        cube_data = self._data_manager.core_data
+        cube_data = self._data_manager.core_data()
 
         if first_slice is not None:
             data = cube_data[first_slice]
@@ -2827,7 +2827,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('Incorrect number of dimensions.')
 
         # Transpose the data payload.
-        data = self._data_manager.core_data.transpose(new_order)
+        data = self._data_manager.core_data().transpose(new_order)
         self._data_manager = DataManager(data, self._data_manager.dtype)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
@@ -2873,7 +2873,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.fill_value is not None:
             cube_xml_element.setAttribute('fill_value', str(self.fill_value))
         cube_xml_element.setAttribute('dtype', self.dtype.name)
-        cube_xml_element.setAttribute('core-dtype', self.core_data.dtype.name)
+        cube_xml_element.setAttribute('core-dtype',
+                                      self.core_data.dtype.name)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
@@ -3076,7 +3077,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                       new_aux_coords_and_dims):
             coord_mapping[id(old_pair[0])] = new_pair[0]
 
-        new_cube = Cube(dm.core_data,
+        new_cube = Cube(dm.core_data(),
                         dim_coords_and_dims=new_dim_coords_and_dims,
                         aux_coords_and_dims=new_aux_coords_and_dims,
                         fill_value=fill_value,

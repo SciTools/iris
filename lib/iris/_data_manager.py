@@ -117,7 +117,7 @@ class DataManager(object):
             same_realised_dtype = self._realised_dtype == other._realised_dtype
             same_dtype = self.dtype == other.dtype
             if same_lazy and same_realised_dtype and same_dtype:
-                result = array_equal(self.core_data, other.core_data)
+                result = array_equal(self.core_data(), other.core_data())
 
         return result
 
@@ -149,13 +149,14 @@ class DataManager(object):
         Returns an string representation of the instance.
 
         """
-        fmt = '{cls}({self.core_data!r}{dtype})'
+        fmt = '{cls}({data!r}{dtype})'
         dtype = ''
 
         if self._realised_dtype is not None:
             dtype = ', realised_dtype={!r}'.format(self._realised_dtype)
 
-        result = fmt.format(self=self, cls=type(self).__name__, dtype=dtype)
+        result = fmt.format(data=self.core_data(), cls=type(self).__name__,
+                            dtype=dtype)
 
         return result
 
@@ -217,7 +218,7 @@ class DataManager(object):
             else:
                 # Check that the replacement data is valid relative to
                 # the currently managed data.
-                DataManager(self.core_data).replace(data)
+                DataManager(self.core_data()).replace(data)
                 # If the replacement data is valid, then use it but
                 # without copying it.
 
@@ -262,7 +263,6 @@ class DataManager(object):
                 # Check the manager contract, as the managed dtype has changed.
                 self._assert_axioms()
 
-    @property
     def core_data(self):
         """
         If real data is being managed, then return the :class:`~numpy.ndarray`
@@ -377,7 +377,7 @@ class DataManager(object):
         if self._realised_dtype is not None:
             result = self._realised_dtype
         else:
-            result = self.core_data.dtype
+            result = self.core_data().dtype
 
         return result
 
@@ -387,7 +387,7 @@ class DataManager(object):
         The number of dimensions covered by the data being managed.
 
         """
-        return self.core_data.ndim
+        return self.core_data().ndim
 
     @property
     def shape(self):
@@ -395,7 +395,7 @@ class DataManager(object):
         The shape of the data being managed.
 
         """
-        return self.core_data.shape
+        return self.core_data().shape
 
     def copy(self, data=None, realised_dtype='none'):
         """
@@ -471,7 +471,7 @@ class DataManager(object):
 
         """
         # Snapshot the currently managed data.
-        original_data = self.core_data
+        original_data = self.core_data()
         # Perform in-place data assignment.
         self.data = data
         try:
