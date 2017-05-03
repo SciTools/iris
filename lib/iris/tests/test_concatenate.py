@@ -26,6 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
+import itertools
 import numpy as np
 import numpy.ma as ma
 
@@ -728,6 +729,49 @@ class Test2D(tests.IrisTest):
                                 'concat_2x2d_aux_xy_bounds.cml'))
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (2, 4))
+
+    def test_fill_value_invariant_to_order__same_non_None(self):
+        y = (0, 2)
+        fill_value = 1234
+        cubes = [_make_cube((i*2, i*2+2), y, i, mask=True,
+                            fill_value=fill_value) for i in range(3)]
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).concatenate_cube()
+            self.assertEqual(result.fill_value, fill_value)
+            self.assertEqual(result.data.fill_value, fill_value)
+
+    def test_fill_value_invariant_to_order__all_None(self):
+        y = (0, 2)
+        cubes = [_make_cube((i*2, i*2+2), y, i, mask=True,
+                            fill_value=None) for i in range(3)]
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).concatenate_cube()
+            self.assertIsNone(result.fill_value)
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
+    def test_fill_value_invariant_to_order__different_non_None(self):
+        y = (0, 2)
+        cubes = [_make_cube((0, 2), y, 0, mask=True, fill_value=1234)]
+        cubes.append(_make_cube((2, 4), y, 1, mask=True, fill_value=2341))
+        cubes.append(_make_cube((4, 6), y, 2, mask=True, fill_value=3412))
+        cubes.append(_make_cube((6, 8), y, 3, mask=True, fill_value=4123))
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).concatenate_cube()
+            self.assertIsNone(result.fill_value)
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
+    def test_fill_value_invariant_to_order__mixed(self):
+        y = (0, 2)
+        cubes = [_make_cube((0, 2), y, 0, mask=True, fill_value=None)]
+        cubes.append(_make_cube((2, 4), y, 1, mask=True, fill_value=1234))
+        cubes.append(_make_cube((4, 6), y, 2, mask=True, fill_value=4321))
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).concatenate_cube()
+            self.assertIsNone(result.fill_value)
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
 
 
 class TestMulti2D(tests.IrisTest):
