@@ -244,6 +244,45 @@ class TestDataMergeCombos(tests.IrisTest):
             self.assertEqual(result.dtype, self.dtype)
             self._check_fill_value(result, fill0, fill1)
 
+    def test_fill_value_invariant_to_order__same_non_None(self):
+        fill_value = 1234
+        cubes = [self._make_cube(i, mask=True,
+                                 fill_value=fill_value) for i in range(3)]
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            self.assertEqual(result.fill_value, fill_value)
+            self.assertEqual(result.data.fill_value, fill_value)
+
+    def test_fill_value_invariant_to_order__all_None(self):
+        cubes = [self._make_cube(i, mask=True,
+                                 fill_value=None) for i in range(3)]
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            self.assertIsNone(result.fill_value)
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
+    def test_fill_value_invariant_to_order__different_non_None(self):
+        cubes = [self._make_cube(0, mask=True, fill_value=1234)]
+        cubes.append(self._make_cube(1, mask=True, fill_value=2341))
+        cubes.append(self._make_cube(2, mask=True, fill_value=3412))
+        cubes.append(self._make_cube(3, mask=True, fill_value=4123))
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            self.assertIsNone(result.fill_value)
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
+    def test_fill_value_invariant_to_order__mixed(self):
+        cubes = [self._make_cube(0, mask=True, fill_value=None)]
+        cubes.append(self._make_cube(1, mask=True, fill_value=1234))
+        cubes.append(self._make_cube(2, mask=True, fill_value=4321))
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            self.assertIsNone(result.fill_value)
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
 
 @tests.skip_data
 class TestDataMerge(tests.IrisTest):
