@@ -1578,7 +1578,6 @@ class OceanSg2Factory(AuxCoordFactory):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-            bounds_shape = self._shape(nd_values_by_key)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
