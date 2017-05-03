@@ -39,56 +39,6 @@ import iris.tests.stock
 logger = logging.getLogger('tests')
 
 
-class TestLazy(tests.IrisTest):
-    def setUp(self):
-        # Start with a coord with LazyArray points.
-        shape = (3, 4)
-        dtype = np.int64
-        point_func = lambda: np.arange(12, dtype=dtype).reshape(shape)
-        points = iris.aux_factory._LazyArray(shape, point_func, dtype)
-        self.coord = iris.coords.AuxCoord(points=points)
-
-    def _check_lazy(self, coord):
-        self.assertIsInstance(self.coord._points, iris.aux_factory._LazyArray)
-        self.assertIsNone(self.coord._points._array)
-
-    def test_nop(self):
-        self._check_lazy(self.coord)
-
-    def _check_both_lazy(self, new_coord):
-        # Make sure both coords have an "empty" LazyArray.
-        self._check_lazy(self.coord)
-        self._check_lazy(new_coord)
-
-    def test_lazy_slice1(self):
-        self._check_both_lazy(self.coord[:])
-
-    def test_lazy_slice2(self):
-        self._check_both_lazy(self.coord[:, :])
-
-    def test_lazy_slice3(self):
-        self._check_both_lazy(self.coord[...])
-
-    def _check_concrete(self, new_coord):
-        # Taking a genuine subset slice should trigger the evaluation
-        # of the original LazyArray, and result in a normal ndarray for
-        # the new coord.
-        self.assertIsInstance(self.coord._points, iris.aux_factory._LazyArray)
-        self.assertIsInstance(self.coord._points._array, np.ndarray)
-        self.assertIsInstance(new_coord._points, np.ndarray)
-
-    def test_concrete_slice1(self):
-        self._check_concrete(self.coord[0])
-
-    def test_concrete_slice2(self):
-        self._check_concrete(self.coord[0, :])
-
-    def test_shape(self):
-        # Checking the shape shouldn't trigger a lazy load.
-        self.assertEqual(self.coord.shape, (3, 4))
-        self._check_lazy(self.coord)
-
-
 @tests.skip_data
 class TestCoordSlicing(tests.IrisTest):
     def setUp(self):

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,121 +25,11 @@ import six
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
-import zlib
 
-import cf_units
 import numpy as np
 
-from iris._deprecation import warn_deprecated
 from iris._cube_coord_common import CFVariableMixin
 import iris.coords
-import iris.util
-
-
-class _LazyArray(object):
-    """
-    Represents a simplified NumPy array which is only computed on demand.
-
-    It provides the :meth:`view()` and :meth:`reshape()` methods so it
-    can be used in place of a standard NumPy array under some
-    circumstances.
-
-    The first use of either of these methods causes the array to be
-    computed and cached for any subsequent access.
-
-    """
-    def __init__(self, shape, func, dtype=None):
-        """
-        Args:
-
-        * shape (tuple):
-            The shape of the array which will be created.
-        * func:
-            The function which will be called to supply the real array.
-
-        Kwargs:
-
-        * dtype (np.dtype):
-            The numpy dtype of the array which will be created.
-            Defaults to None to signify the dtype is unknown.
-
-        """
-        self.shape = tuple(shape)
-        self._func = func
-        self.dtype = dtype
-        self._array = None
-
-    def __repr__(self):
-        return '<LazyArray(shape={}, dtype={!r})>'.format(self.shape,
-                                                          self.dtype)
-
-    def _cached_array(self):
-        if self._array is None:
-            self._array = np.asarray(self._func())
-            del self._func
-        return self._array
-
-    def reshape(self, *args, **kwargs):
-        """
-        Returns a view of this array with the given shape.
-
-        See :meth:`numpy.ndarray.reshape()` for argument details.
-
-        """
-        return self._cached_array().reshape(*args, **kwargs)
-
-    def to_xml_attr(self):
-        """
-        Returns a string describing this array, suitable for use in CML.
-
-        """
-        crc = zlib.crc32(np.array(self._cached_array(), order='C'))
-        crc &= 0xffffffff
-        return 'LazyArray(shape={}, checksum=0x{:08x})'.format(self.shape, crc)
-
-    def view(self, *args, **kwargs):
-        """
-        Returns a view of this array.
-
-        See :meth:`numpy.ndarray.view()` for argument details.
-
-        """
-        return self._cached_array().view(*args, **kwargs)
-
-
-class LazyArray(_LazyArray):
-    """
-    Represents a simplified NumPy array which is only computed on demand.
-
-    It provides the :meth:`view()` and :meth:`reshape()` methods so it
-    can be used in place of a standard NumPy array under some
-    circumstances.
-
-    The first use of either of these methods causes the array to be
-    computed and cached for any subsequent access.
-
-    .. deprecated:: 1.9
-
-    """
-    def __init__(self, shape, func, dtype=None):
-        """
-        Args:
-
-        * shape (tuple):
-            The shape of the array which will be created.
-        * func:
-            The function which will be called to supply the real array.
-
-        Kwargs:
-
-        * dtype (np.dtype):
-            The numpy dtype of the array which will be created.
-            Defaults to None to signify the dtype is unknown.
-
-        """
-        warn_deprecated('LazyArray is deprecated and will be removed '
-                        'in a future release.', stacklevel=2)
-        super(LazyArray, self).__init__(shape, func, dtype)
 
 
 class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
@@ -507,8 +397,7 @@ class HybridHeightFactory(AuxCoordFactory):
                 'orography': self.orography}
 
     def _derive(self, delta, sigma, orography):
-        temp = delta + sigma * orography
-        return temp
+        return delta + sigma * orography
 
     def make_coord(self, coord_dims_func):
         """
@@ -525,25 +414,18 @@ class HybridHeightFactory(AuxCoordFactory):
         """
         # Which dimensions are relevant?
         derived_dims = self.derived_dims(coord_dims_func)
-
         dependency_dims = self._dependency_dims(coord_dims_func)
 
-        # Build a "lazy" points array.
+        # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-
-        # Define the function here to obtain a closure.
-        def calc_points():
-            return self._derive(nd_points_by_key['delta'],
-                                nd_points_by_key['sigma'],
-                                nd_points_by_key['orography'])
-        shape = self._shape(nd_points_by_key)
-        dtype = self._dtype(nd_points_by_key)
-        points = _LazyArray(shape, calc_points, dtype)
+        points = self._derive(nd_points_by_key['delta'],
+                              nd_points_by_key['sigma'],
+                              nd_points_by_key['orography'])
 
         bounds = None
         if ((self.delta and self.delta.nbounds) or
                 (self.sigma and self.sigma.nbounds)):
-            # Build a "lazy" bounds array.
+            # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
 
@@ -566,9 +448,7 @@ class HybridHeightFactory(AuxCoordFactory):
                     orography = orography_pts.reshape(
                         orography_pts_shape.append(1))
                 return self._derive(delta, sigma, orography)
-            b_shape = self._shape(nd_values_by_key)
-            b_dtype = self._dtype(nd_values_by_key)
-            bounds = _LazyArray(b_shape, calc_bounds, b_dtype)
+            bounds = calc_bounds()
 
         hybrid_height = iris.coords.AuxCoord(points,
                                              standard_name=self.standard_name,
@@ -707,8 +587,7 @@ class HybridPressureFactory(AuxCoordFactory):
                 'surface_air_pressure': self.surface_air_pressure}
 
     def _derive(self, delta, sigma, surface_air_pressure):
-        temp = delta + sigma * surface_air_pressure
-        return temp
+        return delta + sigma * surface_air_pressure
 
     def make_coord(self, coord_dims_func):
         """
@@ -725,25 +604,18 @@ class HybridPressureFactory(AuxCoordFactory):
         """
         # Which dimensions are relevant?
         derived_dims = self.derived_dims(coord_dims_func)
-
         dependency_dims = self._dependency_dims(coord_dims_func)
 
-        # Build a "lazy" points array.
+        # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-
-        # Define the function here to obtain a closure.
-        def calc_points():
-            return self._derive(nd_points_by_key['delta'],
-                                nd_points_by_key['sigma'],
-                                nd_points_by_key['surface_air_pressure'])
-        shape = self._shape(nd_points_by_key)
-        dtype = self._dtype(nd_points_by_key)
-        points = _LazyArray(shape, calc_points, dtype)
+        points = self._derive(nd_points_by_key['delta'],
+                              nd_points_by_key['sigma'],
+                              nd_points_by_key['surface_air_pressure'])
 
         bounds = None
         if ((self.delta and self.delta.nbounds) or
                 (self.sigma and self.sigma.nbounds)):
-            # Build a "lazy" bounds array.
+            # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
 
@@ -767,9 +639,7 @@ class HybridPressureFactory(AuxCoordFactory):
                     surface_air_pressure = surface_air_pressure_pts.reshape(
                         surface_air_pressure_pts_shape.append(1))
                 return self._derive(delta, sigma, surface_air_pressure)
-            b_shape = self._shape(nd_values_by_key)
-            b_dtype = self._dtype(nd_values_by_key)
-            bounds = _LazyArray(b_shape, calc_bounds, b_dtype)
+            bounds = calc_bounds()
 
         hybrid_pressure = iris.coords.AuxCoord(
             points, standard_name=self.standard_name, long_name=self.long_name,
@@ -914,7 +784,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                     depth_c=self.depth_c, nsigma=self.nsigma, zlev=self.zlev)
 
     def _derive(self, sigma, eta, depth, depth_c,
-                nsigma, zlev, shape, nsigma_slice):
+                zlev, shape, nsigma_slice):
         # Perform the ocean sigma over z coordinate nsigma slice.
         if eta.ndim:
             eta = eta[nsigma_slice]
@@ -945,10 +815,9 @@ class OceanSigmaZFactory(AuxCoordFactory):
         derived_dims = self.derived_dims(coord_dims_func)
         dependency_dims = self._dependency_dims(coord_dims_func)
 
-        # Build a "lazy" points array.
+        # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
         points_shape = self._shape(nd_points_by_key)
-        points_dtype = self._dtype(nd_points_by_key, shape=(), nsigma_slice=())
 
         # Calculate the nsigma slice.
         nsigma_slice = [slice(None)] * len(derived_dims)
@@ -957,27 +826,20 @@ class OceanSigmaZFactory(AuxCoordFactory):
         nsigma_slice[index] = slice(0, int(nd_points_by_key['nsigma']))
         nsigma_slice = tuple(nsigma_slice)
 
-        # Define the function here to obtain a closure.
-        def calc_points():
-            return self._derive(nd_points_by_key['sigma'],
-                                nd_points_by_key['eta'],
-                                nd_points_by_key['depth'],
-                                nd_points_by_key['depth_c'],
-                                nd_points_by_key['nsigma'],
-                                nd_points_by_key['zlev'],
-                                points_shape,
-                                nsigma_slice)
-
-        points = _LazyArray(points_shape, calc_points, points_dtype)
+        points = self._derive(nd_points_by_key['sigma'],
+                              nd_points_by_key['eta'],
+                              nd_points_by_key['depth'],
+                              nd_points_by_key['depth_c'],
+                              nd_points_by_key['zlev'],
+                              points_shape,
+                              nsigma_slice)
 
         bounds = None
         if self.zlev.nbounds or (self.sigma and self.sigma.nbounds):
-            # Build a "lazy" bounds array.
+            # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
             bounds_shape = self._shape(nd_values_by_key)
-            bounds_dtype = self._dtype(nd_values_by_key, shape=(),
-                                       nsigma_slice=())
             nsigma_slice_bounds = nsigma_slice + (slice(None),)
 
             # Define the function here to obtain a closure.
@@ -1004,12 +866,10 @@ class OceanSigmaZFactory(AuxCoordFactory):
                                     nd_values_by_key['eta'],
                                     nd_values_by_key['depth'],
                                     nd_values_by_key['depth_c'],
-                                    nd_values_by_key['nsigma'],
                                     nd_values_by_key['zlev'],
                                     bounds_shape,
                                     nsigma_slice_bounds)
-
-            bounds = _LazyArray(bounds_shape, calc_bounds, bounds_dtype)
+            bounds = calc_bounds()
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1122,8 +982,7 @@ class OceanSigmaFactory(AuxCoordFactory):
         return dict(sigma=self.sigma, eta=self.eta, depth=self.depth)
 
     def _derive(self, sigma, eta, depth):
-        result = eta + sigma * (depth + eta)
-        return result
+        return eta + sigma * (depth + eta)
 
     def make_coord(self, coord_dims_func):
         """
@@ -1140,24 +999,17 @@ class OceanSigmaFactory(AuxCoordFactory):
         derived_dims = self.derived_dims(coord_dims_func)
         dependency_dims = self._dependency_dims(coord_dims_func)
 
-        # Build a "lazy" points array.
+        # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points_shape = self._shape(nd_points_by_key)
-
-        # Define the function here to obtain a closure.
-        def calc_points():
-            return self._derive(nd_points_by_key['sigma'],
-                                nd_points_by_key['eta'],
-                                nd_points_by_key['depth'])
-
-        points = _LazyArray(points_shape, calc_points)
+        points = self._derive(nd_points_by_key['sigma'],
+                              nd_points_by_key['eta'],
+                              nd_points_by_key['depth'])
 
         bounds = None
         if self.sigma and self.sigma.nbounds:
-            # Build a "lazy" bounds array.
+            # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-            bounds_shape = self._shape(nd_values_by_key)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
@@ -1181,10 +1033,9 @@ class OceanSigmaFactory(AuxCoordFactory):
                         nd_values_by_key[key] = bounds
                 return self._derive(nd_values_by_key['sigma'],
                                     nd_values_by_key['eta'],
-                                    nd_values_by_key['depth'],
-                                    bounds_shape)
+                                    nd_values_by_key['depth'])
 
-            bounds = _LazyArray(bounds_shape, calc_bounds)
+            bounds = calc_bounds()
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1317,8 +1168,7 @@ class OceanSg1Factory(AuxCoordFactory):
 
     def _derive(self, s, c, eta, depth, depth_c):
         S = depth_c * s + (depth - depth_c) * c
-        result = S + eta * (1 + S / depth)
-        return result
+        return S + eta * (1 + S / depth)
 
     def make_coord(self, coord_dims_func):
         """
@@ -1335,26 +1185,19 @@ class OceanSg1Factory(AuxCoordFactory):
         derived_dims = self.derived_dims(coord_dims_func)
         dependency_dims = self._dependency_dims(coord_dims_func)
 
-        # Build a "lazy" points array.
+        # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points_shape = self._shape(nd_points_by_key)
-
-        # Define the function here to obtain a closure.
-        def calc_points():
-            return self._derive(nd_points_by_key['s'],
-                                nd_points_by_key['c'],
-                                nd_points_by_key['eta'],
-                                nd_points_by_key['depth'],
-                                nd_points_by_key['depth_c'])
-
-        points = _LazyArray(points_shape, calc_points)
+        points = self._derive(nd_points_by_key['s'],
+                              nd_points_by_key['c'],
+                              nd_points_by_key['eta'],
+                              nd_points_by_key['depth'],
+                              nd_points_by_key['depth_c'])
 
         bounds = None
         if self.s.nbounds or (self.c and self.c.nbounds):
-            # Build a "lazy" bounds array.
+            # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-            bounds_shape = self._shape(nd_values_by_key)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
@@ -1380,10 +1223,8 @@ class OceanSg1Factory(AuxCoordFactory):
                                     nd_values_by_key['c'],
                                     nd_values_by_key['eta'],
                                     nd_values_by_key['depth'],
-                                    nd_values_by_key['depth_c'],
-                                    bounds_shape)
-
-            bounds = _LazyArray(bounds_shape, calc_bounds)
+                                    nd_values_by_key['depth_c'])
+            bounds = calc_bounds()
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1514,8 +1355,7 @@ class OceanSFactory(AuxCoordFactory):
     def _derive(self, s, eta, depth, a, b, depth_c):
         c = ((1 - b) * np.sinh(a * s) / np.sinh(a) + b *
              (np.tanh(a * (s + 0.5)) / (2 * np.tanh(0.5 * a)) - 0.5))
-        result = eta * (1 + s) + depth_c * s + (depth - depth_c) * c
-        return result
+        return eta * (1 + s) + depth_c * s + (depth - depth_c) * c
 
     def make_coord(self, coord_dims_func):
         """
@@ -1532,27 +1372,20 @@ class OceanSFactory(AuxCoordFactory):
         derived_dims = self.derived_dims(coord_dims_func)
         dependency_dims = self._dependency_dims(coord_dims_func)
 
-        # Build a "lazy" points array.
+        # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points_shape = self._shape(nd_points_by_key)
-
-        # Define the function here to obtain a closure.
-        def calc_points():
-            return self._derive(nd_points_by_key['s'],
-                                nd_points_by_key['eta'],
-                                nd_points_by_key['depth'],
-                                nd_points_by_key['a'],
-                                nd_points_by_key['b'],
-                                nd_points_by_key['depth_c'])
-
-        points = _LazyArray(points_shape, calc_points)
+        points = self._derive(nd_points_by_key['s'],
+                              nd_points_by_key['eta'],
+                              nd_points_by_key['depth'],
+                              nd_points_by_key['a'],
+                              nd_points_by_key['b'],
+                              nd_points_by_key['depth_c'])
 
         bounds = None
         if self.s.nbounds:
-            # Build a "lazy" bounds array.
+            # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-            bounds_shape = self._shape(nd_values_by_key)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
@@ -1579,10 +1412,8 @@ class OceanSFactory(AuxCoordFactory):
                                     nd_values_by_key['depth'],
                                     nd_values_by_key['a'],
                                     nd_values_by_key['b'],
-                                    nd_values_by_key['depth_c'],
-                                    bounds_shape)
-
-            bounds = _LazyArray(bounds_shape, calc_bounds)
+                                    nd_values_by_key['depth_c'])
+            bounds = calc_bounds()
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1716,8 +1547,7 @@ class OceanSg2Factory(AuxCoordFactory):
 
     def _derive(self, s, c, eta, depth, depth_c):
         S = (depth_c * s + depth * c) / (depth_c + depth)
-        result = eta + (eta + depth) * S
-        return result
+        return eta + (eta + depth) * S
 
     def make_coord(self, coord_dims_func):
         """
@@ -1734,26 +1564,19 @@ class OceanSg2Factory(AuxCoordFactory):
         derived_dims = self.derived_dims(coord_dims_func)
         dependency_dims = self._dependency_dims(coord_dims_func)
 
-        # Build a "lazy" points array.
+        # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points_shape = self._shape(nd_points_by_key)
-
-        # Define the function here to obtain a closure.
-        def calc_points():
-            return self._derive(nd_points_by_key['s'],
-                                nd_points_by_key['c'],
-                                nd_points_by_key['eta'],
-                                nd_points_by_key['depth'],
-                                nd_points_by_key['depth_c'])
-
-        points = _LazyArray(points_shape, calc_points)
+        points = self._derive(nd_points_by_key['s'],
+                              nd_points_by_key['c'],
+                              nd_points_by_key['eta'],
+                              nd_points_by_key['depth'],
+                              nd_points_by_key['depth_c'])
 
         bounds = None
         if self.s.nbounds or (self.c and self.c.nbounds):
-            # Build a "lazy" bounds array.
+            # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-            bounds_shape = self._shape(nd_values_by_key)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
@@ -1779,10 +1602,8 @@ class OceanSg2Factory(AuxCoordFactory):
                                     nd_values_by_key['c'],
                                     nd_values_by_key['eta'],
                                     nd_values_by_key['depth'],
-                                    nd_values_by_key['depth_c'],
-                                    bounds_shape)
-
-            bounds = _LazyArray(bounds_shape, calc_bounds)
+                                    nd_values_by_key['depth_c'])
+            bounds = calc_bounds()
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,

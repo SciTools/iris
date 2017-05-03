@@ -23,12 +23,15 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import skip
+
 import iris
 from iris.analysis import MEAN
 from iris._lazy_data import is_lazy_data
 
 
 class Test_aggregated_by(tests.IrisTest):
+    @skip("Deferred loading of coordinates is temporarily removed.")
     @tests.skip_data
     def test_agg_by_aux_coord(self):
         problem_test_file = tests.get_data_path(('NetCDF', 'testing',

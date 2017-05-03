@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ import six
 # importing anything else
 import iris.tests as tests
 
+from unittest import skip
 import warnings
 
 import numpy as np
@@ -143,6 +144,7 @@ class TestRealistic4d(tests.GraphicsTest):
             with self.assertRaises(UserWarning):
                 factory = HybridHeightFactory(orography=sigma)
 
+    @skip("Deferred loading of coordinates is temporarily removed.")
     def test_bounded_orography(self):
         # Start with everything normal
         orog = self.cube.coord('surface_altitude')
@@ -157,8 +159,9 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Make sure altitude.bounds now raises an error.
         altitude = self.cube.coord('altitude')
-        with self.assertRaises(ValueError):
-            bounds = altitude.bounds
+        exp_emsg = 'operands could not be broadcast together'
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            altitude.bounds
 
 
 @tests.skip_data
@@ -222,6 +225,7 @@ class TestHybridPressure(tests.IrisTest):
                 factory = HybridPressureFactory(
                     sigma=sigma, surface_air_pressure=sigma)
 
+    @skip("Deferred loading of coordinates is temporarily removed.")
     def test_bounded_surface_pressure(self):
         # Start with everything normal
         surface_pressure = self.cube.coord('surface_air_pressure')
@@ -236,8 +240,9 @@ class TestHybridPressure(tests.IrisTest):
 
         # Make sure pressure.bounds now raises an error.
         pressure = self.cube.coord('air_pressure')
-        with self.assertRaises(ValueError):
-            bounds = pressure.bounds
+        exp_emsg = 'operands could not be broadcast together'
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            pressure.bounds
 
 
 if __name__ == "__main__":
