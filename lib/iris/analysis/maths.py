@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -318,11 +318,36 @@ def multiply(cube, other, dim=None, in_place=False):
 
     """
     _assert_is_cube(cube)
+    op = operator.imul if in_place else operator.mul
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
-    op = operator.imul if in_place else operator.mul
-    return _binary_op_common(op, 'multiply', cube, other, new_unit, dim,
-                             in_place=in_place)
+
+    if isinstance(other, iris.cube.Cube):
+        # get a coordinate comparison of this cube and the cube to do the
+        # operation with
+        coord_comp = iris.analysis.coord_comparison(cube, other)
+        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
+                          coord_comp['resamplable'])
+        if bad_coord_grps:
+            raise ValueError('This operation cannot be performed as there are '
+                             'differing coordinates (%s) remaining '
+                             'which cannot be ignored.'
+                             % ', '.join({coord_grp.name() for coord_grp
+                                          in bad_coord_grps}))
+    else:
+        coord_comp = None
+
+    new_cube = _binary_op_common(op, 'multiply', cube, other, new_unit, dim,
+                                 in_place=in_place)
+
+    if coord_comp:
+        # If a coordinate is to be ignored - remove it
+        ignore = filter(None, [coord_grp[0] for coord_grp
+                        in coord_comp['ignorable']])
+        for coord in ignore:
+            new_cube.remove_coord(coord)
+
+    return new_cube
 
 
 def divide(cube, other, dim=None, in_place=False):
@@ -348,14 +373,39 @@ def divide(cube, other, dim=None, in_place=False):
 
     """
     _assert_is_cube(cube)
-    other_unit = getattr(other, 'units', '1')
-    new_unit = cube.units / other_unit
     try:
         op = operator.idiv if in_place else operator.div
     except AttributeError:
         op = operator.itruediv if in_place else operator.truediv
-    return _binary_op_common(op, 'divide', cube, other, new_unit, dim,
-                             in_place=in_place)
+    other_unit = getattr(other, 'units', '1')
+    new_unit = cube.units / other_unit
+
+    if isinstance(other, iris.cube.Cube):
+        # get a coordinate comparison of this cube and the cube to do the
+        # operation with
+        coord_comp = iris.analysis.coord_comparison(cube, other)
+        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
+                          coord_comp['resamplable'])
+        if bad_coord_grps:
+            raise ValueError('This operation cannot be performed as there are '
+                             'differing coordinates (%s) remaining '
+                             'which cannot be ignored.'
+                             % ', '.join({coord_grp.name() for coord_grp
+                                          in bad_coord_grps}))
+    else:
+        coord_comp = None
+
+    new_cube = _binary_op_common(op, 'divide', cube, other, new_unit, dim,
+                                 in_place=in_place)
+
+    if coord_comp:
+        # If a coordinate is to be ignored - remove it
+        ignore = filter(None, [coord_grp[0] for coord_grp
+                        in coord_comp['ignorable']])
+        for coord in ignore:
+            new_cube.remove_coord(coord)
+
+    return new_cube
 
 
 def exponentiate(cube, exponent, in_place=False):
@@ -450,7 +500,7 @@ def log2(cube, in_place=False):
     * cube:
         An instance of :class:`iris.cube.Cube`.
 
-    Kwargs:
+    Kwargs:lib/iris/tests/unit/analysis/maths/test_subtract.py
 
     * in_place:
         Whether to create a new Cube, or alter the given "cube".
