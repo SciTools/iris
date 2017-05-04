@@ -767,6 +767,7 @@ def load_pairs_from_fields(grib_messages):
 
         >>> from iris.fileformats.grib import load_pairs_from_fields
         >>> cleaned_messages = GribMessage.messages_from_filename(filename)
+        >>> cleaned_messages = list(cleaned_messages)
         >>> for message in cleaned_messages:
         ...     if message.sections[1]['productionStatusOfProcessedData'] == 0:
         ...         message.sections[1]['productionStatusOfProcessedData'] = 4
