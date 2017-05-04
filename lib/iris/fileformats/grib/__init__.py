@@ -641,7 +641,6 @@ class GribWrapper(object):
         # Default for fill value is None.
         return None
 
-    @property
     def core_data(self):
         try:
             data = self._data

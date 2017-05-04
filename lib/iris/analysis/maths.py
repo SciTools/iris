@@ -629,7 +629,7 @@ def _binary_op_common(operation_function, operation_name, cube, other,
             broadcast_shapes(cube.shape, other.shape)
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube)
-        other = other.core_data
+        other = other.core_data()
     else:
         other = np.asanyarray(other)
 
@@ -702,7 +702,7 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
                 # Non ufunc function
                 operation_function(cube.data)
     else:
-        new_cube = cube.copy(data=operation_function(cube.core_data))
+        new_cube = cube.copy(data=operation_function(cube.core_data()))
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
