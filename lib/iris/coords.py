@@ -893,8 +893,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         nbounds = 0
-        if self.bounds is not None:
-            nbounds = self.bounds.shape[-1]
+        if self._bounds is not None:
+            nbounds = self._bounds.shape[-1]
         return nbounds
 
     def has_bounds(self):
