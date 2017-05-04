@@ -390,7 +390,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None):
+                 coord_system=None, points_fill_value=None, points_dtype=None,
+                 bounds_fill_value=None, bounds_dtype=None):
 
         """
         Constructs a single coordinate.
@@ -418,12 +419,27 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             points.shape + (n,). For example, a 1d coordinate with 100 points
             and two bounds per cell would have a bounds array of shape
             (100, 2)
-
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
             A :class:`~iris.coord_systems.CoordSystem`,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
+        * points_fill_value
+            The intended fill-value of coordinate points masked data.
+            Note that the fill-value is cast relative to the dtype of the
+            coordinate points.
+        * points_dtype
+            The intended dtype of the lazy points, used when the points are
+            either integer or boolean. This is to handle the case of lazy
+            integer or boolean masked points.
+        * bounds_fill_value
+            The intended fill-value of coordinate bounds masked data.
+            Note that the fill-value is cast relative to the dtype of the
+            coordinate bounds.
+        * bounds_dtype
+            The intended dtype of the lazy bounds, used when the bounds are
+            either integer or boolean. This is to handle the case of lazy
+            integer or boolean masked bounds.
 
         """
         #: CF standard name of the quantity that the coordinate represents.
@@ -445,8 +461,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: Relevant CoordSystem (if any).
         self.coord_system = coord_system
 
-        self.points = points
-        self.bounds = bounds
+        self._points_dm = DataManager(points, realised_dtype=points_dtype)
+        if bounds is not None:
+            self._bounds_dm = DataManager(bounds, realised_dtype=bounds_dtype)
+        else:
+            self._bounds_dm = None
 
     def __getitem__(self, keys):
         """
@@ -461,8 +480,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         # Fetch the points and bounds.
-        points = self._points
-        bounds = self._bounds
+        points = self._points_dm.core_data()
+        bounds = self._bounds_dm.core_data()
 
         # Index both points and bounds with the keys.
         _, points = iris.util._slice_data_with_keys(
@@ -481,7 +500,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         new_coord = self.copy(points=points, bounds=bounds)
         return new_coord
 
-    def copy(self, points=None, bounds=None):
+    def copy(self, points=None, bounds=None,
+             points_dtype='none', points_fill_value='none',
+             bounds_dtype='none', bounds_fill_value='none'):
         """
         Returns a copy of this coordinate.
 
@@ -501,10 +522,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                   resulting coordinate will have no bounds.
 
         """
-
         if points is None and bounds is not None:
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
+
+        points_dm = self._points_dm.copy(data=points,
+                                         realised_dtype=points_dtype)
+        bounds_dm = self._bounds_dm.copy(data=bounds,
+                                         realised_dtype=bounds_dtype)
 
         new_coord = copy.deepcopy(self)
         if points is not None:
@@ -512,11 +537,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             # shape the new points to be constrained by the shape of
             # self.points
             new_coord._points = None
-            new_coord.points = points
+            new_coord.points = points_dm.core_data()
             # Regardless of whether bounds are provided as an argument, new
             # points will result in new bounds, discarding those copied from
             # self.
-            new_coord.bounds = bounds
+            new_coord.bounds = bounds_dm.core_data()
 
         return new_coord
 
@@ -527,6 +552,22 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @abstractproperty
     def bounds(self):
         """Property containing the bound values as a numpy array"""
+
+    def core_points(self):
+        """
+        The points array at the core of this coord, which may be a NumPy array
+        or a dask array.
+
+        """
+        return self._points_dm.core_data()
+
+    def core_bounds(self):
+        """
+        The points array at the core of this coord, which may be a NumPy array
+        or a dask array.
+
+        """
+        return self._bounds_dm.core_data()
 
     def _repr_other_metadata(self):
         fmt = ''
@@ -544,15 +585,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     def _str_dates(self, dates_as_numbers):
         date_obj_array = self.units.num2date(dates_as_numbers)
         kwargs = {'separator': ', ', 'prefix': '      '}
-        try:
-            # With NumPy 1.7 we need to ask for 'str' formatting.
-            result = np.core.arrayprint.array2string(
-                date_obj_array, formatter={'numpystr': str}, **kwargs)
-        except TypeError:
-            # But in 1.6 we don't need to ask, and the option doesn't
-            # even exist!
-            result = np.core.arrayprint.array2string(date_obj_array, **kwargs)
-        return result
+        return np.core.arrayprint.array2string(date_obj_array,
+                                               formatter={'numpystr': str},
+                                               **kwargs)
 
     def __str__(self):
         if self.units.is_time_reference():
@@ -603,7 +638,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         return eq
 
-    # Must supply __ne__, Python does not defer to __eq__ for negative equality
     def __ne__(self, other):
         result = self.__eq__(other)
         if result is not NotImplemented:
@@ -617,7 +651,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def __binary_operator__(self, other, mode_constant):
         """
-        Common code which is called by add, sub, mult and div
+        Common code which is called by add, sub, mul and div
 
         Mode constant is one of ADD, SUB, MUL, DIV, RDIV
 
@@ -632,37 +666,42 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         if isinstance(other, Coord):
-            raise iris.exceptions.NotYetImplementedError(
-                'coord %s coord' % Coord._MODE_SYMBOL[mode_constant])
+            emsg = 'coord {} coord'.format(Coord._MODE_SYMBOL[mode_constant])
+            raise iris.exceptions.NotYetImplementedError(emsg)
 
         elif isinstance(other, (int, float, np.number)):
+            points = self._points_dm.core_data()
 
             if mode_constant == Coord._MODE_ADD:
-                points = self.points + other
+                new_points = points + other
             elif mode_constant == Coord._MODE_SUB:
-                points = self.points - other
+                new_points = points - other
             elif mode_constant == Coord._MODE_MUL:
-                points = self.points * other
+                new_points = points * other
             elif mode_constant == Coord._MODE_DIV:
-                points = self.points / other
+                new_points = points / other
             elif mode_constant == Coord._MODE_RDIV:
-                points = other / self.points
+                new_points = other / points
 
-            if self.bounds is not None:
+            if self._bounds_dm is not None:
+                bounds = self._bounds_dm.core_data()
+
                 if mode_constant == Coord._MODE_ADD:
-                    bounds = self.bounds + other
+                    new_bounds = bounds + other
                 elif mode_constant == Coord._MODE_SUB:
-                    bounds = self.bounds - other
+                    new_bounds = bounds - other
                 elif mode_constant == Coord._MODE_MUL:
-                    bounds = self.bounds * other
+                    new_bounds = bounds * other
                 elif mode_constant == Coord._MODE_DIV:
-                    bounds = self.bounds / other
+                    new_bounds = bounds / other
                 elif mode_constant == Coord._MODE_RDIV:
-                    bounds = other / self.bounds
+                    new_bounds = other / bounds
+
             else:
-                bounds = None
-            new_coord = self.copy(points, bounds)
+                new_bounds = None
+            new_coord = self.copy(new_points, new_bounds)
             return new_coord
+
         else:
             return NotImplemented
 
@@ -860,7 +899,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Abstract property which returns the Numpy data type of the Coordinate.
 
         """
-        return self.points.dtype
+        return self._points_dm.dtype
 
     @property
     def ndim(self):
@@ -869,7 +908,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         bounded dimension).
 
         """
-        return len(self.shape)
+        return self._points_dm.ndim
 
     @property
     def nbounds(self):
@@ -878,19 +917,19 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         nbounds = 0
-        if self._bounds is not None:
-            nbounds = self._bounds.shape[-1]
+        if self._bounds_dm is not None:
+            nbounds = self._bounds_dm.shape[-1]
         return nbounds
 
     def has_bounds(self):
-        return self.bounds is not None
+        return self._bounds_dm is not None
 
     @property
     def shape(self):
         """The fundamental shape of the Coord, expressed as a tuple."""
         # Access the underlying _points attribute to avoid triggering
         # a deferred load unnecessarily.
-        return self._points.shape
+        return self._points_dm.shape
 
     def cell(self, index):
         """
@@ -952,8 +991,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 return '|'.join([str(i) for i in x.flatten()])
             bounds = None
             string_type_fmt = 'S{}' if six.PY2 else 'U{}'
-            if self.bounds is not None:
-                shape = self.bounds.shape[1:]
+            if self._bounds_dm is not None:
+                shape = self._bounds_dm.shape[1:]
                 bounds = []
                 for index in np.ndindex(shape):
                     index_slice = (slice(None),) + tuple(index)
@@ -1035,7 +1074,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                              'before guessing new ones.')
 
         if getattr(self, 'circular', False):
-            points = np.empty(self.points.shape[0] + 2)
+            points = np.empty(self.shape[0] + 2)
             points[1:-1] = self.points
             direction = 1 if self.points[-1] > self.points[0] else -1
             points[0] = self.points[-1] - (self.units.modulus * direction)
@@ -1481,7 +1520,8 @@ class DimCoord(Coord):
     @property
     def points(self):
         """The local points values as a read-only NumPy array."""
-        return self._points
+        points = self._points.view()
+        return points
 
     @points.setter
     def points(self, points):
@@ -1514,7 +1554,7 @@ class DimCoord(Coord):
         """
         bounds = None
         if self._bounds is not None:
-            bounds = self._bounds
+            bounds = self._bounds.view()
         return bounds
 
     @bounds.setter
@@ -1584,6 +1624,9 @@ class AuxCoord(Coord):
         # Ensure the array has enough dimensions.
         # NB. Returns the *same object* if result.ndim >= ndmin
         result = np.array(result, ndmin=ndmin, copy=False)
+        # We don't need to copy the data, but we do need to have our
+        # own view so we can control the shape, etc.
+        result = result.view()
         return result
 
     @property
@@ -1595,7 +1638,7 @@ class AuxCoord(Coord):
             # NOTE: we probably don't have full support for masked aux-coords.
             # We certainly *don't* handle a _FillValue attribute (and possibly
             # the loader will throw one away ?)
-        return self._points
+        return self._points.view()
 
     @points.setter
     def points(self, points):
@@ -1637,7 +1680,7 @@ class AuxCoord(Coord):
                 # We certainly *don't* handle a _FillValue attribute (and
                 # possibly the loader will throw one away ?)
                 self._bounds = bounds
-            bounds = bounds
+            bounds = bounds.view()
         else:
             bounds = None
 
