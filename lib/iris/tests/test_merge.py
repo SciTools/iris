@@ -153,18 +153,19 @@ class TestDataMergeCombos(tests.IrisTest):
         return result
 
     def _check_fill_value(self, result, fill0, fill1):
-        fill_value = self._expected_fill_value(fill0, fill1)
-        if fill_value is None:
-            fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+        expected_fill_value = self._expected_fill_value(fill0, fill1)
+        if expected_fill_value is None:
             self.assertIsNone(result.fill_value)
             data = result.data
             if ma.isMaskedArray(data):
-                self.assertEqual(data.fill_value, fill_value)
+                np_fill_value = ma.masked_array(0,
+                                                dtype=result.dtype).fill_value
+                self.assertEqual(data.fill_value, np_fill_value)
         else:
-            self.assertEqual(result.fill_value, fill_value)
+            self.assertEqual(result.fill_value, expected_fill_value)
             data = result.data
             if ma.isMaskedArray(data):
-                self.assertEqual(data.fill_value, fill_value)
+                self.assertEqual(data.fill_value, expected_fill_value)
 
     def setUp(self):
         self.dtype = np.dtype('int32')
@@ -201,9 +202,9 @@ class TestDataMergeCombos(tests.IrisTest):
                                          fill_value=fill1))
             result = cubes.merge_cube()
             mask = [(0, 1), (0, 1), (0, 1)]
-            fill_value = self._expected_fill_value(fill0, fill1)
+            expected_fill_value = self._expected_fill_value(fill0, fill1)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
-                                       fill_value=fill_value)
+                                       fill_value=expected_fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
             self.assertEqual(result.dtype, self.dtype)
             self._check_fill_value(result, fill0, fill1)
@@ -219,9 +220,9 @@ class TestDataMergeCombos(tests.IrisTest):
                                          fill_value=fill1))
             result = cubes.merge_cube()
             mask = [(1, 1), (0, 1), (0, 1)]
-            fill_value = self._expected_fill_value(fill0, fill1)
+            expected_fill_value = self._expected_fill_value(fill0, fill1)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
-                                       fill_value=fill_value)
+                                       fill_value=expected_fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
             self.assertEqual(result.dtype, self.dtype)
             self._check_fill_value(result, fill0, fill1)
@@ -237,9 +238,9 @@ class TestDataMergeCombos(tests.IrisTest):
                                          fill_value=fill1))
             result = cubes.merge_cube()
             mask = [(0, 0), (0, 1), (0, 1)]
-            fill_value = self._expected_fill_value(fill0, fill1)
+            expected_fill_value = self._expected_fill_value(fill0, fill1)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
-                                       fill_value=fill_value)
+                                       fill_value=expected_fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
             self.assertEqual(result.dtype, self.dtype)
             self._check_fill_value(result, fill0, fill1)
