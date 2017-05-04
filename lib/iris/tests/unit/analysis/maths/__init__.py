@@ -23,6 +23,7 @@ import six
 from abc import ABCMeta, abstractproperty
 
 import numpy as np
+from numpy import ma
 
 from iris.analysis import MEAN
 from iris.cube import Cube
@@ -135,8 +136,8 @@ class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
 
     def _test_partial_mask(self, in_place):
         # Helper method for masked data tests.
-        dat_a = np.ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
-        dat_b = np.ma.array([2., 2., 2., 2.], mask=[1, 1, 0, 0])
+        dat_a = ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
+        dat_b = ma.array([2., 2., 2., 2.], mask=[1, 1, 0, 0])
 
         cube_a = Cube(dat_a)
         cube_b = Cube(dat_b)
@@ -168,10 +169,10 @@ class CubeArithmeticMaskedConstantTestMixin(
         # Cube in_place arithmetic operation.
         dtype = np.int64
         fill_value = 12345
-        dat = np.ma.masked_array(0, 1, dtype)
+        dat = ma.masked_array(0, 1, dtype)
         cube = Cube(dat, fill_value=fill_value)
         res = self.cube_func(cube, 5, in_place=True)
-        self.assertMaskedArrayEqual(np.ma.masked_array(0, 1), res.data)
+        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
         self.assertEqual(dtype, res.dtype)
         # self.assertEqual(fill_value, res.fill_value)
         self.assertIs(res, cube)
@@ -180,10 +181,10 @@ class CubeArithmeticMaskedConstantTestMixin(
         # Cube in_place arithmetic operation.
         dtype = np.int64
         fill_value = 12345
-        dat = np.ma.masked_array(0, 1, dtype)
+        dat = ma.masked_array(0, 1, dtype)
         cube = Cube(dat, fill_value=fill_value)
         res = self.cube_func(cube, 5, in_place=False)
-        self.assertMaskedArrayEqual(np.ma.masked_array(0, 1), res.data)
+        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
         self.assertEqual(dtype, res.dtype)
         # self.assertEqual(fill_value, res.fill_value)
         self.assertIsNot(res, cube)
