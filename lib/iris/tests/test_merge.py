@@ -146,14 +146,14 @@ class TestDataMergeCombos(tests.IrisTest):
         return cube
 
     @staticmethod
-    def _expected_fill(fill0, fill1):
+    def _expected_fill_value(fill0, fill1):
         result = None
         if fill0 == fill1:
             result = fill0
         return result
 
     def _check_fill_value(self, result, fill0, fill1):
-        fill_value = self._expected_fill(fill0, fill1)
+        fill_value = self._expected_fill_value(fill0, fill1)
         if fill_value is None:
             fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
             self.assertIsNone(result.fill_value)
@@ -201,7 +201,7 @@ class TestDataMergeCombos(tests.IrisTest):
                                          fill_value=fill1))
             result = cubes.merge_cube()
             mask = [(0, 1), (0, 1), (0, 1)]
-            fill_value = self._expected_fill(fill0, fill1)
+            fill_value = self._expected_fill_value(fill0, fill1)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
                                        fill_value=fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
@@ -219,7 +219,7 @@ class TestDataMergeCombos(tests.IrisTest):
                                          fill_value=fill1))
             result = cubes.merge_cube()
             mask = [(1, 1), (0, 1), (0, 1)]
-            fill_value = self._expected_fill(fill0, fill1)
+            fill_value = self._expected_fill_value(fill0, fill1)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
                                        fill_value=fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
@@ -237,7 +237,7 @@ class TestDataMergeCombos(tests.IrisTest):
                                          fill_value=fill1))
             result = cubes.merge_cube()
             mask = [(0, 0), (0, 1), (0, 1)]
-            fill_value = self._expected_fill(fill0, fill1)
+            fill_value = self._expected_fill_value(fill0, fill1)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
                                        fill_value=fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
