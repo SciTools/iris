@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float64" dtype="float64" standard_name="air_temperature" units="K">
+  <cube core-dtype="float64" dtype="float64" fill_value="999999.0" standard_name="air_temperature" units="K">
     <coords>
       <coord datadims="[1, 2]">
         <auxCoord id="9041e969" points="[[-660.0, -610.0, -560.0, -510.0, -460.0, -410.0],
