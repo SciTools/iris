@@ -722,8 +722,7 @@ class _ProtoCube(object):
             # Determine whether the fill value requires to be
             # demoted to the default value.
             if fill_value is not None:
-                if cube_signature.fill_value is None or \
-                        cube_signature.fill_value != fill_value:
+                if cube_signature.fill_value != fill_value:
                     # Demote the fill value to the default.
                     self._cube_signature.fill_value = None
             coord_signature = _CoordSignature(cube_signature)

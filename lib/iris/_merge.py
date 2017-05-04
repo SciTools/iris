@@ -1287,8 +1287,7 @@ class ProtoCube(object):
             # Determine whether the fill value requires to be demoted
             # to the default value.
             if cube_signature.fill_value is not None:
-                if other.fill_value is None or \
-                        cube_signature.fill_value != other.fill_value:
+                if cube_signature.fill_value != other.fill_value:
                     # Demote the fill value to the default.
                     signature = self._build_signature(self._source,
                                                       default_fill_value=True)
