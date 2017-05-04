@@ -698,8 +698,15 @@ def _build_full_slice_given_keys(keys, ndim):
 
 def _slice_data_with_keys(data, keys):
     """
+    Index an array-like object as "data[keys]", with orthogonal indexing.
 
-    Index an array-like object with orthogonal keys.
+    Args:
+
+    * data (array-like):
+        array to index.
+
+    * keys (list):
+        list of indexes, as received from a __getitem__ call.
 
     This enforces an orthogonal interpretation of indexing, which means that
     both 'real' (numpy) arrays and other array-likes index in the same way,
@@ -707,8 +714,9 @@ def _slice_data_with_keys(data, keys):
 
     Returns (dim_map, data_region), where :
 
-    *  dim_map (dict) :
-        A dimension map, as for :func:`column_slices_generator`.
+    * dim_map (dict) :
+        A dimension map, as returned by :func:`column_slices_generator`.
+        i.e. "dim_map[old_dim_index]" --> "new_dim_index" or None.
 
     * data_region (array-like) :
         The sub-array.
