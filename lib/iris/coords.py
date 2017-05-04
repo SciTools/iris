@@ -1018,7 +1018,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds = [lower, upper]
             # Create points for the new collapsed coordinate.
             points_dtype = self.points.dtype
-            points = [(lower + upper) * 0.5]
+            points = [(float(lower) + float(upper)) * 0.5]
 
             # Create the new collapsed coordinate.
             coord = self.copy(points=np.array(points, dtype=points_dtype),
