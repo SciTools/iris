@@ -1293,7 +1293,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
     def data(self, value):
         self._data = value
 
-    @property
     def core_data(self):
         return self._data
 
@@ -1866,8 +1865,8 @@ def _create_field_data(field, data_shape, land_mask):
      * converting LoadedArrayBytes into an actual numpy array.
 
     """
-    if isinstance(field.core_data, LoadedArrayBytes):
-        loaded_bytes = field.core_data
+    if isinstance(field.core_data(), LoadedArrayBytes):
+        loaded_bytes = field.core_data()
         field.data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
                                                  field.lbpack,
                                                  field.boundary_packing,
@@ -1877,7 +1876,7 @@ def _create_field_data(field, data_shape, land_mask):
     else:
         # Wrap the reference to the data payload within a data proxy
         # in order to support deferred data loading.
-        fname, position, n_bytes, dtype = field.core_data
+        fname, position, n_bytes, dtype = field.core_data()
         proxy = PPDataProxy(data_shape, dtype,
                             fname, position, n_bytes,
                             field.raw_lbpack,

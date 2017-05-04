@@ -32,18 +32,19 @@ from iris.tests import mock
 
 class Test__interpret_fields__land_packed_fields(tests.IrisTest):
     def setUp(self):
+        return_value = ('dummy', 0, 0, np.dtype('f4'))
+        core_data = mock.MagicMock(return_value=return_value)
         # A field packed using a land/sea mask.
         self.pp_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0] * 7,
                                   lbrow=0, lbnpt=0,
                                   raw_lbpack=20,
-                                  core_data=('dummy', 0, 0, np.dtype('f4')))
+                                  core_data=core_data)
         # The field specifying the land/seamask.
         lbuser = [None, None, None, 30, None, None, 1]  # m01s00i030
         self.land_mask_field = mock.Mock(lblrec=1, lbext=0, lbuser=lbuser,
                                          lbrow=3, lbnpt=4,
                                          raw_lbpack=0,
-                                         core_data=('dummy', 0, 0,
-                                                    np.dtype('f4')))
+                                         core_data=core_data)
 
     def test_non_deferred_fix_lbrow_lbnpt(self):
         # Checks the fix_lbrow_lbnpt is applied to fields which are not

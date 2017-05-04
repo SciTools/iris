@@ -1641,7 +1641,7 @@ class ProtoCube(object):
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""
         skeleton = _Skeleton(coord_payload.scalar.values,
-                             cube.core_data)
+                             cube.core_data())
         # Attempt to do something sensible with mixed scalar dtypes.
         for i, metadata in enumerate(coord_payload.scalar.metadata):
             if metadata.points_dtype > self._coord_metadata[i].points_dtype:

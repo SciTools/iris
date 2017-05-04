@@ -120,7 +120,6 @@ class GribMessage(object):
         # Default for fill value is None.
         return None
 
-    @property
     def core_data(self):
         return self.data
 
