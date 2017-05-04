@@ -205,8 +205,7 @@ class DataManager(object):
         assert state, emsg.format(self._realised_dtype)
 
         # Ensure validity of lazy data with realised dtype.
-        state = not (not self.has_lazy_data() and
-                     self._realised_dtype is not None)
+        state = self.has_lazy_data() or self._realised_dtype is None
         emsg = ('Unexpected real data with realised dtype, got '
                 'real data and realised {!r}.')
         assert state, emsg.format(self._realised_dtype)
