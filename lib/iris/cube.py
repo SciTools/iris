@@ -1705,8 +1705,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def data(self, data):
         # Assign the new data to the data manager.
         self._data_manager.data = data
-        # Clear the cube fill-value.
-        self._fill_value = None
+        if ma.isMaskedArray(data):
+            # Set the cube fill-value.
+            self.fill_value = data.fill_value
+        else:
+            # Clear the cube fill-value.
+            self.fill_value = None
 
     def has_lazy_data(self):
         return self._data_manager.has_lazy_data()

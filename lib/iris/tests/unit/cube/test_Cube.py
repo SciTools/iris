@@ -1323,12 +1323,19 @@ class Test_fill_value(tests.IrisTest):
         cube.fill_value = fill_value
         self.assertEqual(cube.fill_value, fill_value)
 
-    def test_cube_data_setter_with_none(self):
+    def test_cube_data_setter_with_ndarray(self):
         fill_value = 123
         cube = Cube(np.array(0), fill_value=fill_value)
         self.assertEqual(cube.fill_value, fill_value)
         cube.data = np.array(1)
-        self.assertEqual(cube.fill_value, None)
+        self.assertIsNone(cube.fill_value)
+
+    def test_cube_data_setter_with_masked_array(self):
+        fill_value = 123
+        cube = Cube(np.array(0))
+        self.assertIsNone(cube.fill_value)
+        cube.data = ma.masked_array(1, fill_value=fill_value)
+        self.assertEqual(cube.fill_value, fill_value)
 
     def test_fill_value_bool(self):
         fill_value = np.bool_(True)
@@ -1675,6 +1682,21 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
         subcube = cube[3:]
         self.assertEqual(subcube.dtype, dtype)
         self.assertArrayAllClose(subcube.fill_value, fill_value)
+
+    def test_data_getter__masked_with_fill_value(self):
+        fill_value = 1234
+        cube = self._sample_cube(masked=True,
+                                 cube_fill_value=fill_value)
+        self.assertEqual(cube.fill_value, fill_value)
+        data = cube.data
+        self.assertEqual(data.fill_value, fill_value)
+
+    def test_data_getter__masked_with_fill_value_default(self):
+        cube = self._sample_cube(masked=True)
+        self.assertIsNone(cube.fill_value)
+        data = cube.data
+        np_fill_value = ma.masked_array(0, dtype=cube.dtype).fill_value
+        self.assertEqual(data.fill_value, np_fill_value)
 
 
 class TestSubset(tests.IrisTest):
