@@ -1619,17 +1619,15 @@ class DimCoord(Coord):
             result += ', circular=%r' % self.circular
         return result
 
-    @property
-    def points(self):
-        """The local points values as a read-only NumPy array."""
-        return self._points_dm.data
+    def _new_points_requirements(self, points):
+        """
+        Confirm that a new set of coord points adheres to the requirements for
+        :class:`~iris.coords.DimCoord` points, being:
+            * points are 1D,
+            * points are numeric, and
+            * points are monotonic.
 
-    @points.setter
-    def points(self, points):
-        # We must realise points to check monotonicity.
-        points = as_concrete_data(points, result_dtype=self.dtype)
-
-        # Checks for 1d, numeric, monotonic
+        """
         if points.ndim != 1:
             raise ValueError('The points array must be 1-dimensional.')
         if not np.issubdtype(points.dtype, np.number):
@@ -1637,10 +1635,58 @@ class DimCoord(Coord):
         if len(points) > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
 
+    @property
+    def points(self):
+        """The local points values as a read-only NumPy array."""
+        return self._points_dm.data
+
+    @points.setter
+    def points(self, points):
+        # Checks for 1d, numeric, monotonic
+        self._new_points_requirements(points)
+
+        # We must realise points to check monotonicity.
+        points = as_concrete_data(points, result_dtype=self.dtype)
+
         # Make the array read-only.
         points.flags.writeable = False
 
         self._points_dm.data = points
+
+    def _new_bounds_requirements(self, bounds):
+        """
+        Confirm that a new set of coord points adheres to the requirements for
+        :class:`~iris.coords.DimCoord` points, being:
+            * points are 1D,
+            * points are numeric, and
+            * points are monotonic.
+
+        """
+        # Ensure the bounds are a compatible shape.
+        if self.shape != bounds.shape[:-1]:
+            raise ValueError(
+                "The shape of the bounds array should be "
+                "points.shape + (n_bounds,)")
+        # Checks for numeric and monotonic.
+        if not np.issubdtype(bounds.dtype, np.number):
+            raise ValueError('The bounds array must be numeric.')
+
+        n_bounds = bounds.shape[-1]
+        n_points = bounds.shape[0]
+        if n_points > 1:
+
+            directions = set()
+            for b_index in range(n_bounds):
+                monotonic, direction = iris.util.monotonic(
+                    bounds[:, b_index], strict=True, return_direction=True)
+                if not monotonic:
+                    raise ValueError('The bounds array must be strictly '
+                                     'monotonic.')
+                directions.add(direction)
+
+            if len(directions) != 1:
+                raise ValueError('The direction of monotonicity must be '
+                                 'consistent across all bounds')
 
     @property
     def bounds(self):
@@ -1659,31 +1705,8 @@ class DimCoord(Coord):
         if bounds is None:
             self._bounds_dm = None
         else:
-            # Ensure the bounds are a compatible shape.
-            if self.shape != bounds.shape[:-1]:
-                raise ValueError(
-                    "The shape of the bounds array should be "
-                    "points.shape + (n_bounds,)")
-            # Checks for numeric and monotonic.
-            if not np.issubdtype(bounds.dtype, np.number):
-                raise ValueError('The bounds array must be numeric.')
-
-            n_bounds = bounds.shape[-1]
-            n_points = bounds.shape[0]
-            if n_points > 1:
-
-                directions = set()
-                for b_index in range(n_bounds):
-                    monotonic, direction = iris.util.monotonic(
-                        bounds[:, b_index], strict=True, return_direction=True)
-                    if not monotonic:
-                        raise ValueError('The bounds array must be strictly '
-                                         'monotonic.')
-                    directions.add(direction)
-
-                if len(directions) != 1:
-                    raise ValueError('The direction of monotonicity must be '
-                                     'consistent across all bounds')
+            # Checks for appropriate values for the new bounds.
+            self._new_bounds_requirements(bounds)
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
@@ -1694,11 +1717,14 @@ class DimCoord(Coord):
 
     def replace_points(self, points, dtype=None, fill_value=None):
         # Cannot set fill_value for a `DimCoord`.
+        self._new_points_requirements(points)
         super(DimCoord, self).replace_points(points,
                                              dtype=dtype, fill_value=None)
 
     def replace_bounds(self, bounds=None, dtype=None, fill_value=None):
         # Cannot set fill_value for a `DimCoord`.
+        if bounds is not None:
+            self._new_bounds_requirements(bounds)
         super(DimCoord, self).replace_bounds(bounds=bounds,
                                              dtype=dtype, fill_value=None)
 
