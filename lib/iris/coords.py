@@ -459,7 +459,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         self.points = points
         self.bounds = bounds
 
-    def __getitem__(self, key):
+    def __getitem__(self, keys):
         """
         Returns a new Coord whose values are obtained by conventional array
         indexing.
@@ -471,42 +471,19 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             indexing.
 
         """
-        # Turn the key(s) into a full slice spec - i.e. one entry for
-        # each dimension of the coord.
-        full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
-
         # Fetch the points and bounds.
         points = self._points
         bounds = self._bounds
 
-        def is_full_slice(s):
-            return isinstance(s, slice) and s == slice(None, None)
+        # Index both points and bounds with the keys.
+        _, points = iris.util._slice_data_with_keys(
+            points, keys)
+        if bounds is not None:
+            _, bounds = iris.util._slice_data_with_keys(
+                bounds, keys)
 
-        if not all(is_full_slice(s) for s in full_slice):
-            # Make indexing on the cube column based by using the
-            # column_slices_generator (potentially requires slicing the
-            # data multiple times).
-            _, slice_gen = iris.util.column_slices_generator(full_slice,
-                                                             self.ndim)
-            for keys in slice_gen:
-                if points is not None:
-                    points = points[keys]
-                    if points.shape and min(points.shape) == 0:
-                        raise IndexError('Cannot index with zero length '
-                                         'slice.')
-                if bounds is not None:
-                    # Bounds will generally have an extra dimension compared
-                    # to points, so add an Ellipsis at the end, unless there
-                    # is already one, as numpy does not support double
-                    # Ellipsis.
-                    if (not isinstance(keys[-1], np.ndarray) and
-                       keys[-1] == Ellipsis):
-                        bounds = bounds[keys]
-                    else:
-                        bounds = bounds[keys + (Ellipsis, )]
-
-        # Copy data after indexing to avoid making coords that are
-        # views on other coords. This will not realise lazy data.
+        # Copy data after indexing, to avoid making coords that are
+        # views on other coords.  This will not realise lazy data.
         points = points.copy()
         if bounds is not None:
             bounds = bounds.copy()
@@ -917,8 +894,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         nbounds = 0
-        if self.bounds is not None:
-            nbounds = self.bounds.shape[-1]
+        if self._bounds is not None:
+            nbounds = self._bounds.shape[-1]
         return nbounds
 
     def has_bounds(self):
@@ -1520,8 +1497,7 @@ class DimCoord(Coord):
     @property
     def points(self):
         """The local points values as a read-only NumPy array."""
-        points = self._points.view()
-        return points
+        return self._points
 
     @points.setter
     def points(self, points):
@@ -1554,7 +1530,7 @@ class DimCoord(Coord):
         """
         bounds = None
         if self._bounds is not None:
-            bounds = self._bounds.view()
+            bounds = self._bounds
         return bounds
 
     @bounds.setter
@@ -1624,9 +1600,6 @@ class AuxCoord(Coord):
         # Ensure the array has enough dimensions.
         # NB. Returns the *same object* if result.ndim >= ndmin
         result = np.array(result, ndmin=ndmin, copy=False)
-        # We don't need to copy the data, but we do need to have our
-        # own view so we can control the shape, etc.
-        result = result.view()
         return result
 
     @property
@@ -1638,7 +1611,7 @@ class AuxCoord(Coord):
             # NOTE: we probably don't have full support for masked aux-coords.
             # We certainly *don't* handle a _FillValue attribute (and possibly
             # the loader will throw one away ?)
-        return self._points.view()
+        return self._points
 
     @points.setter
     def points(self, points):
@@ -1680,7 +1653,7 @@ class AuxCoord(Coord):
                 # We certainly *don't* handle a _FillValue attribute (and
                 # possibly the loader will throw one away ?)
                 self._bounds = bounds
-            bounds = bounds.view()
+            bounds = bounds
         else:
             bounds = None
 
@@ -1821,37 +1794,22 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
                              "not {}".format(measure))
         self._measure = measure
 
-    def __getitem__(self, key):
+    def __getitem__(self, keys):
         """
         Returns a new CellMeasure whose values are obtained by
         conventional array indexing.
 
         """
-        # Turn the key(s) into a full slice spec - i.e. one entry for
-        # each dimension of the cell_measure.
-        full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
-
         # Get the data, all or part of which will become the new data.
         data = self._data_manager.core_data()
-        # Copy the data to avoid making the new measure a view on the old one.
+
+        # Index data with the keys.
+        # Note: does not copy data unless it has to.
+        _, data = iris.util._slice_data_with_keys(data, keys)
+
+        # Always copy data, to avoid making the new measure a view onto the old
+        # one.
         data = data.copy()
-
-        # If it's a "null" indexing operation (e.g. cell_measure[:, :]) then
-        # we can skip the indexing part.
-        def is_full_slice(s):
-            return isinstance(s, slice) and s == slice(None, None)
-
-        if not all(is_full_slice(s) for s in full_slice):
-            # Slice on each column, using `iris.util.column_slices_generator`
-            # (potentially slicing the data multiple times).
-            _, slice_gen = iris.util.column_slices_generator(full_slice,
-                                                             self.ndim)
-            for keys in slice_gen:
-                if data is not None:
-                    data = data[keys]
-                    if data.shape and min(data.shape) == 0:
-                        raise IndexError('Cannot index with zero length '
-                                         'slice.')
 
         # The result is a copy with replacement data.
         return self.copy(data=data)

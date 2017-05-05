@@ -696,6 +696,52 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
+def _slice_data_with_keys(data, keys):
+    """
+    Index an array-like object as "data[keys]", with orthogonal indexing.
+
+    Args:
+
+    * data (array-like):
+        array to index.
+
+    * keys (list):
+        list of indexes, as received from a __getitem__ call.
+
+    This enforces an orthogonal interpretation of indexing, which means that
+    both 'real' (numpy) arrays and other array-likes index in the same way,
+    instead of numpy arrays doing 'fancy indexing'.
+
+    Returns (dim_map, data_region), where :
+
+    * dim_map (dict) :
+        A dimension map, as returned by :func:`column_slices_generator`.
+        i.e. "dim_map[old_dim_index]" --> "new_dim_index" or None.
+
+    * data_region (array-like) :
+        The sub-array.
+
+    .. Note::
+
+        Avoids copying the data, where possible.
+
+    """
+    # Combines the use of _build_full_slice_given_keys and
+    # column_slices_generator.
+    # By slicing on only one index at a time, this also mostly avoids copying
+    # the data, except some cases when a key contains a list of indices.
+    n_dims = len(data.shape)
+    full_slice = _build_full_slice_given_keys(keys, n_dims)
+    dims_mapping, slices_iter = column_slices_generator(full_slice, n_dims)
+    for this_slice in slices_iter:
+        data = data[this_slice]
+        if data.ndim > 0 and min(data.shape) < 1:
+            # Disallow slicings where a dimension has no points, like "[5:5]".
+            raise IndexError('Cannot index with zero length slice.')
+
+    return dims_mapping, data
+
+
 def _wrap_function_for_method(function, docstring=None):
     """
     Returns a wrapper function modified to be suitable for use as a
