@@ -1691,7 +1691,11 @@ class AuxCoord(Coord):
                              var_name=coord.var_name,
                              units=coord.units, bounds=coord.bounds,
                              attributes=coord.attributes,
-                             coord_system=copy.deepcopy(coord.coord_system))
+                             coord_system=copy.deepcopy(coord.coord_system),
+                             points_fill_value=coord.points_fill_value,
+                             points_dtype=coord.points_dtype,
+                             bounds_fill_value=coord.bounds_fill_value,
+                             bounds_dtype=coord.bounds_dtype)
 
         return new_coord
 
@@ -1710,13 +1714,7 @@ class AuxCoord(Coord):
     @property
     def points(self):
         """Property containing the points values as a numpy array"""
-        if is_lazy_data(self._points):
-            self._points = as_concrete_data(self._points,
-                                            nans_replacement=np.ma.masked)
-            # NOTE: we probably don't have full support for masked aux-coords.
-            # We certainly *don't* handle a _FillValue attribute (and possibly
-            # the loader will throw one away ?)
-        return self._points.view()
+        return self._points_dm.data.view()
 
     @points.setter
     def points(self, points):
@@ -1730,14 +1728,13 @@ class AuxCoord(Coord):
                 points = da.reshape(points, (1,))
         else:
             points = self._sanitise_array(points, 1)
-        # If points are already defined for this coordinate,
-        if hasattr(self, '_points') and self._points is not None:
-            # Check that setting these points wouldn't change self.shape
-            if points.shape != self.shape:
-                raise ValueError("New points shape must match existing points "
-                                 "shape.")
 
-        self._points = points
+        # Check that setting these points wouldn't change self.shape
+        if points.shape != self._points_dm.shape:
+            raise ValueError("New points shape must match existing points "
+                             "shape.")
+
+        self._points_dm.data = points
 
     @property
     def bounds(self):
@@ -1749,20 +1746,10 @@ class AuxCoord(Coord):
             (n_bounds, )``.
 
         """
-        if self._bounds is not None:
-            bounds = self._bounds
-            if is_lazy_data(bounds):
-                bounds = as_concrete_data(bounds,
-                                          nans_replacement=np.ma.masked)
-                # NOTE: we probably don't fully support for masked aux-coords.
-                # We certainly *don't* handle a _FillValue attribute (and
-                # possibly the loader will throw one away ?)
-                self._bounds = bounds
-            bounds = bounds.view()
+        if self._bounds_dm is not None:
+            return self._bounds_dm.data.view()
         else:
-            bounds = None
-
-        return bounds
+            return None
 
     @bounds.setter
     def bounds(self, bounds):
@@ -1771,10 +1758,15 @@ class AuxCoord(Coord):
             if not is_lazy_data(bounds):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
-            if self._points.shape != bounds.shape[:-1]:
+            if self._points_dm.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
-        self._bounds = bounds
+            if self._bounds_dm is None:
+                self._bounds_dm = DataManager(bounds)
+            else:
+                self._bounds_dm.data = bounds
+        else:
+            self._bounds_dm = None
 
     # This is necessary for merging, but probably shouldn't be used otherwise.
     # See #962 and #1772.
