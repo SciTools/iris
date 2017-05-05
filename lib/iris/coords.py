@@ -461,11 +461,16 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: Relevant CoordSystem (if any).
         self.coord_system = coord_system
 
+        # Contain points and bounds in `DataManager` objects.
         self._points_dm = DataManager(points, realised_dtype=points_dtype)
         if bounds is not None:
             self._bounds_dm = DataManager(bounds, realised_dtype=bounds_dtype)
         else:
             self._bounds_dm = None
+
+        # `fill_value`s are used when realising lazy masked bool/int data.
+        self.points_fill_value = points_fill_value
+        self.bounds_fill_value = bounds_fill_value
 
     def __getitem__(self, keys):
         """
@@ -501,8 +506,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return new_coord
 
     def copy(self, points=None, bounds=None,
-             points_dtype='none', points_fill_value='none',
-             bounds_dtype='none', bounds_fill_value='none'):
+             points_dtype='none', bounds_dtype='none'):
         """
         Returns a copy of this coordinate.
 
@@ -526,22 +530,23 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        points_dm = self._points_dm.copy(data=points,
-                                         realised_dtype=points_dtype)
-        bounds_dm = self._bounds_dm.copy(data=bounds,
-                                         realised_dtype=bounds_dtype)
+        if points is not None:
+            points_dm = self._points_dm.copy(data=points,
+                                             realised_dtype=points_dtype)
+        if bounds is not None:
+            bounds_dm = self._bounds_dm.copy(data=bounds,
+                                             realised_dtype=bounds_dtype)
 
         new_coord = copy.deepcopy(self)
         if points is not None:
-            # Explicitly not using the points property as we don't want the
-            # shape the new points to be constrained by the shape of
-            # self.points
-            new_coord._points = None
             new_coord.points = points_dm.core_data()
             # Regardless of whether bounds are provided as an argument, new
             # points will result in new bounds, discarding those copied from
             # self.
-            new_coord.bounds = bounds_dm.core_data()
+            if bounds is not None:
+                new_coord.bounds = bounds_dm.core_data()
+            else:
+                new_coord.bounds = None
 
         return new_coord
 
@@ -567,7 +572,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         or a dask array.
 
         """
-        return self._bounds_dm.core_data()
+        result = None
+        if self._bounds_dm is not None:
+            result = self._bounds_dm.core_data()
+        return result
 
     def _repr_other_metadata(self):
         fmt = ''
@@ -894,12 +902,23 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return compatible
 
     @property
-    def dtype(self):
+    def points_dtype(self):
         """
         Abstract property which returns the Numpy data type of the Coordinate.
 
         """
         return self._points_dm.dtype
+
+    @property
+    def bounds_dtype(self):
+        """
+        Abstract property which returns the Numpy data type of the Coordinate.
+
+        """
+        result = None
+        if self._bounds_dm is not None:
+            result = self._bounds_dm.dtype
+        return result
 
     @property
     def ndim(self):
@@ -930,6 +949,66 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Access the underlying _points attribute to avoid triggering
         # a deferred load unnecessarily.
         return self._points_dm.shape
+
+    def replace_points(self, points, dtype=None, fill_value=None):
+        """
+        Perform an in-place replacement of the coord points.
+
+        Args:
+
+        * points:
+            Replace the points of the coord with the provided points values.
+
+        Kwargs:
+
+        * dtype:
+            Replacement for the intended dtype of the realised lazy points.
+
+        * fill_value:
+            Replacement for the coord points fill-value.
+
+        .. note::
+            Data replacement alone will clear the intended dtype
+            of the realised lazy points and the fill-value.
+
+        .. note::
+            Replacing the coord points will clear any coord bounds set, as the
+            existing bounds may not be appropriate for the new points.
+            Appropriate bounds can be reinstated with
+            :meth:`~iris.coords.Coord.replace_bounds`.
+
+        """
+        self._points_dm.replace(points, realised_dtype=dtype)
+        # Update fill_value.
+        self.points_fill_value = fill_value
+        # If we replace the points we must unset any bounds too.
+        self.replace_bounds()
+
+    def replace_bounds(self, bounds=None, dtype=None, fill_value=None):
+        """
+        Perform an in-place replacement of the coord bounds.
+
+        Args:
+
+        * bounds:
+            Replace the bounds of the coord with the provided bounds values.
+
+        Kwargs:
+
+        * dtype:
+            Replacement for the intended dtype of the realised lazy bounds.
+
+        * fill_value:
+            Replacement for the coord bounds fill-value.
+
+        .. note::
+            Data replacement alone will clear the intended dtype
+            of the realised lazy bounds and the fill-value.
+
+        """
+        self._bounds_dm.replace(bounds, realised_dtype=dtype)
+        # Update fill_value.
+        self.bounds_fill_value = fill_value
 
     def cell(self, index):
         """
@@ -1377,17 +1456,20 @@ class DimCoord(Coord):
     @staticmethod
     def from_coord(coord):
         """Create a new DimCoord from the given coordinate."""
-        return DimCoord(coord.points, standard_name=coord.standard_name,
+        return DimCoord(coord.core_points(), standard_name=coord.standard_name,
                         long_name=coord.long_name, var_name=coord.var_name,
-                        units=coord.units, bounds=coord.bounds,
+                        units=coord.units, bounds=coord.core_bounds(),
                         attributes=coord.attributes,
                         coord_system=copy.deepcopy(coord.coord_system),
-                        circular=getattr(coord, 'circular', False))
+                        circular=getattr(coord, 'circular', False),
+                        points_dtype=coord.points_dtype,
+                        bounds_dtype=coord.bounds_dtype)
 
     @classmethod
     def from_regular(cls, zeroth, step, count, standard_name=None,
                      long_name=None, var_name=None, units='1', attributes=None,
-                     coord_system=None, circular=False, with_bounds=False):
+                     coord_system=None, circular=False, points_dtype=None,
+                     bounds_dtype=None, with_bounds=False):
         """
         Create a :class:`DimCoord` with regularly spaced points, and
         optionally bounds.
@@ -1422,36 +1504,52 @@ class DimCoord(Coord):
         coord.coord_system = coord_system
         coord.circular = circular
 
-        points = (zeroth+step) + step*np.arange(count, dtype=np.float32)
+        points = (zeroth+step) + step*np.arange(count, dtype=points_dtype)
         points.flags.writeable = False
-        coord._points = points
         if not is_regular(coord) and count > 1:
-            points = (zeroth+step) + step*np.arange(count, dtype=np.float64)
+            points = (zeroth+step) + step*np.arange(count, dtype=points_dtype)
             points.flags.writeable = False
-            coord._points = points
+        coord._points_dm = DataManager(points,
+                                       realised_dtype=points_dtype)
 
         if with_bounds:
             delta = 0.5 * step
             bounds = np.concatenate([[points - delta], [points + delta]]).T
+            bounds = bounds.astype(bounds_dtype)
             bounds.flags.writeable = False
-            coord._bounds = bounds
+            coord._bounds_dm = DataManager(bounds, realised_dtype=bounds_dtype)
         else:
-            coord._bounds = None
+            coord._bounds_dm = None
 
         return coord
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None, circular=False):
+                 coord_system=None, circular=False, points_fill_value=None,
+                 points_dtype=None, bounds_fill_value=None, bounds_dtype=None):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
 
         """
-        Coord.__init__(self, points, standard_name=standard_name,
-                       long_name=long_name, var_name=var_name,
-                       units=units, bounds=bounds, attributes=attributes,
-                       coord_system=coord_system)
+        super(DimCoord, self).__init__(points, standard_name=standard_name,
+                                       long_name=long_name, var_name=var_name,
+                                       units=units, bounds=bounds,
+                                       attributes=attributes,
+                                       coord_system=coord_system,
+                                       points_fill_value=points_fill_value,
+                                       points_dtype=points_dtype,
+                                       bounds_fill_value=bounds_fill_value,
+                                       bounds_dtype=bounds_dtype)
+
+        # Run setter checks on points and bounds values.
+        self.points = points
+        self.bounds = bounds
+
+        # DimCoords cannot have masked points/bounds, so have no need of
+        # non-None `fill_value`s.
+        self.points_fill_value = None
+        self.bounds_fill_value = None
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
@@ -1463,19 +1561,22 @@ class DimCoord(Coord):
         Used if copy.deepcopy is called on a coordinate.
 
         """
-        new_coord = copy.deepcopy(super(Coord, self), memo)
-        # Ensure points and bounds arrays are read-only
-        new_coord._points.flags.writeable = False
-        if new_coord._bounds is not None:
-            new_coord._bounds.flags.writeable = False
+        new_coord = copy.deepcopy(super(DimCoord, self), memo)
+        # Ensure points and bounds arrays are read-only.
+        new_coord.points.flags.writeable = False
+        if new_coord.bounds is not None:
+            new_coord.bounds.flags.writeable = False
         return new_coord
 
-    def copy(self, points=None, bounds=None):
-        new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
+    def copy(self, points=None, bounds=None,
+             points_dtype=None, bounds_dtype=None):
+        new_coord = super(DimCoord, self).copy(points=points, bounds=bounds,
+                                               points_dtype=points_dtype,
+                                               bounds_dtype=bounds_dtype)
         # Make the array read-only.
-        new_coord._points.flags.writeable = False
-        if new_coord._bounds is not None:
-            new_coord._bounds.flags.writeable = False
+        new_coord.points.flags.writeable = False
+        if bounds is not None:
+            new_coord.bounds.flags.writeable = False
         return new_coord
 
     def __eq__(self, other):
@@ -1520,18 +1621,12 @@ class DimCoord(Coord):
     @property
     def points(self):
         """The local points values as a read-only NumPy array."""
-        points = self._points.view()
-        return points
+        return self._points_dm.data
 
     @points.setter
     def points(self, points):
-        points = np.array(points, ndmin=1)
-        # If points are already defined for this coordinate,
-        if hasattr(self, '_points') and self._points is not None:
-            # Check that setting these points wouldn't change self.shape
-            if points.shape != self.shape:
-                raise ValueError("New points shape must match existing points "
-                                 "shape.")
+        # We must realise points to check monotonicity.
+        points = as_concrete_data(points, result_dtype=self.dtype)
 
         # Checks for 1d, numeric, monotonic
         if points.ndim != 1:
@@ -1540,10 +1635,11 @@ class DimCoord(Coord):
             raise ValueError('The points array must be numeric.')
         if len(points) > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
+
         # Make the array read-only.
         points.flags.writeable = False
 
-        self._points = points
+        self._points_dm.data = points
 
     @property
     def bounds(self):
@@ -1553,20 +1649,21 @@ class DimCoord(Coord):
 
         """
         bounds = None
-        if self._bounds is not None:
-            bounds = self._bounds.view()
+        if self._bounds_dm is not None:
+            bounds = self._bounds_dm.data
         return bounds
 
     @bounds.setter
     def bounds(self, bounds):
-        if bounds is not None:
+        if bounds is None:
+            self._bounds_dm = None
+        else:
             # Ensure the bounds are a compatible shape.
-            bounds = np.array(bounds, ndmin=2)
             if self.shape != bounds.shape[:-1]:
                 raise ValueError(
                     "The shape of the bounds array should be "
                     "points.shape + (n_bounds,)")
-            # Checks for numeric and monotonic
+            # Checks for numeric and monotonic.
             if not np.issubdtype(bounds.dtype, np.number):
                 raise ValueError('The bounds array must be numeric.')
 
@@ -1589,11 +1686,20 @@ class DimCoord(Coord):
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
-
-        self._bounds = bounds
+            self._bounds_dm.data = bounds
 
     def is_monotonic(self):
         return True
+
+    def replace_points(self, points, dtype=None, fill_value=None):
+        # Cannot set fill_value for a `DimCoord`.
+        super(DimCoord, self).replace_points(points,
+                                             dtype=dtype, fill_value=None)
+
+    def replace_bounds(self, bounds=None, dtype=None, fill_value=None):
+        # Cannot set fill_value for a `DimCoord`.
+        super(DimCoord, self).replace_bounds(bounds=bounds,
+                                             dtype=dtype, fill_value=None)
 
     def xml_element(self, doc):
         """Return DOM element describing this :class:`iris.coords.DimCoord`."""
