@@ -904,7 +904,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def points_dtype(self):
         """
-        Abstract property which returns the Numpy data type of the Coordinate.
+        The NumPy data type of the coord's points.
 
         """
         return self._points_dm.dtype
@@ -912,7 +912,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def bounds_dtype(self):
         """
-        Abstract property which returns the Numpy data type of the Coordinate.
+        The NumPy data type of the coord's bounds. Will be `None` if the coord
+        does not have bounds.
 
         """
         result = None
