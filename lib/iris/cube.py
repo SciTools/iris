@@ -2152,14 +2152,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # turn the keys into a full slice spec (all dims)
-        full_slice = iris.util._build_full_slice_given_keys(keys,
-                                                            len(self.shape))
-
-        # make indexing on the cube column based by using the
-        # column_slices_generator (potentially requires slicing the data
-        # multiple times)
-        dimension_mapping, slice_gen = iris.util.column_slices_generator(
-            full_slice, len(self.shape))
+        full_slice = iris.util._build_full_slice_given_keys(keys, self.ndim)
 
         def new_coord_dims(coord_):
             return [dimension_mapping[d]
@@ -2171,23 +2164,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     for d in self.cell_measure_dims(cm_)
                     if dimension_mapping[d] is not None]
 
-        try:
-            first_slice = next(slice_gen)
-        except StopIteration:
-            first_slice = None
-
+        # Fetch the data as a generic array-like object.
         cube_data = self._data_manager.core_data()
 
-        if first_slice is not None:
-            data = cube_data[first_slice]
-        else:
-            data = copy.deepcopy(cube_data)
+        # Index with the keys, using orthogonal slicing.
+        dimension_mapping, data = iris.util._slice_data_with_keys(
+            cube_data, keys)
 
-        for other_slice in slice_gen:
-            data = data[other_slice]
-
-        # We don't want a view of the data, so take a copy of it if it's
-        # not already our own.
+        # We don't want a view of the data, so take a copy of it.
         data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
