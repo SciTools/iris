@@ -902,9 +902,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return compatible
 
     @property
-    def points_dtype(self):
+    def dtype(self):
         """
-        The NumPy data type of the coord's points.
+        The NumPy data type of the coord, as specified by it's points.
 
         """
         return self._points_dm.dtype
@@ -1101,7 +1101,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds_dtype = item.dtype
             bounds = [lower, upper]
             # Create points for the new collapsed coordinate.
-            points_dtype = self.points.dtype
+            points_dtype = self.dtype
             points = [(lower + upper) * 0.5]
 
             # Create the new collapsed coordinate.
