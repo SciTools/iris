@@ -1746,10 +1746,10 @@ class AuxCoord(Coord):
             (n_bounds, )``.
 
         """
+        bounds = None
         if self._bounds_dm is not None:
-            return self._bounds_dm.data.view()
-        else:
-            return None
+            bounds = self._bounds_dm.data
+        return bounds
 
     @bounds.setter
     def bounds(self, bounds):
@@ -1758,7 +1758,7 @@ class AuxCoord(Coord):
             if not is_lazy_data(bounds):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
-            if self._points_dm.shape != bounds.shape[:-1]:
+            if self.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
             if self._bounds_dm is None:
