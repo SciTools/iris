@@ -140,7 +140,7 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
 
     # The dimensions of cube and src_data must be broadcastable.
     try:
-        cube_data, src_data = np.broadcast_arrays(cube.data, src_data)
+        np.broadcast_arrays(cube.data, src_data)
     except ValueError:
         emsg = ('Cannot broadcast the cube and src_levels with '
                 'shapes {} and {}.')
@@ -152,12 +152,12 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
         # The dimensions of tgt_levels must be broadcastable to cube
         # in everything but the interpolation axis - otherwise raise
         # an exception.
-        dim_delta = cube_data.ndim - tgt_levels.ndim
+        dim_delta = cube.data.ndim - tgt_levels.ndim
         # The axis is relative to the cube. Calculate the axis of
         # interplation relative to the tgt_levels.
         tgt_axis = axis - dim_delta
         # Calculate the cube shape without the axis of interpolation.
-        data_shape = list(cube_data.shape)
+        data_shape = list(cube.data.shape)
         data_shape.pop(axis)
         # Calculate the tgt_levels shape without the axis of interpolation.
         target_shape = list(tgt_levels.shape)
@@ -168,9 +168,9 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
         except ValueError:
             emsg = ('Cannot broadcast the cube and tgt_levels with '
                     'shapes {} and {}, whilst ignoring axis of interpolation.')
-            raise ValueError(emsg.format(cube_data.shape, tgt_levels.shape))
+            raise ValueError(emsg.format(cube.data.shape, tgt_levels.shape))
         # Calculate the dimensions over the cube that the tgt_levels span.
-        tgt_aux_dims = list(range(cube_data.ndim))[dim_delta:]
+        tgt_aux_dims = list(range(cube.data.ndim))[dim_delta:]
 
     if interpolator is None:
         # Use the default stratify interpolator.
@@ -178,7 +178,7 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
                                interpolation='linear', extrapolation='nan')
 
     # Now perform the interpolation.
-    new_data = interpolator(tgt_levels, src_data, cube_data, axis=axis)
+    new_data = interpolator(tgt_levels, src_data, cube.data, axis=axis)
 
     # Create a result cube with the correct shape and metadata.
     result = Cube(new_data, **cube.copy().metadata._asdict())

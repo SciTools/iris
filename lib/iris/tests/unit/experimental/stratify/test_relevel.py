@@ -135,6 +135,89 @@ class Test(tests.IrisTest):
             assert_array_equal(result.data.flatten(), np.array([0, 120]))
             self.assertCML(result)
 
+    def test_multi_dim_target_levels_broadcasted(self):
+        """"
+
+        Source::
+
+        air_temperature / (K)               (time: 1; model_level_number: 4; \
+                grid_latitude: 5; grid_longitude: 6)
+             Dimension coordinates:
+                  time                           x                      -    \
+                          -                  -
+                  model_level_number             -                      x    \
+                          -                  -
+                  grid_latitude                  -                      -    \
+                          x                  -
+                  grid_longitude                 -                      -    \
+                          -                  x
+             Auxiliary coordinates:
+                  level_height                   -                      x    \
+                          -                  -
+                  sigma                          -                      x    \
+                          -                  -
+                  surface_altitude               -                      -    \
+                          x                  x
+             Derived coordinates:
+                  altitude                       -                      x    \
+                          x                  x
+
+        Target::
+                  altitude shape (4, 5, 6)
+
+        """
+        interpolator = partial(stratify.interpolate,
+                               interpolation='linear',
+                               extrapolation='linear')
+
+        source = stock.simple_4d_with_hybrid_height()[0:1]
+        target = source.copy()[0]
+        source_zcoord = source.coord('altitude')
+        target_zcoord = target.coord(source_zcoord.name())
+        relevel(source, source_zcoord, target_zcoord.points,
+                axis='model_level_number', interpolator=interpolator)
+
+    def test_single_dim_target_level_broadcasted(self):
+        """
+        Source::
+
+        air_temperature / (K)               (time: 1; grid_latitude: 5; \
+                grid_longitude: 6; model_level_number: 4)
+             Dimension coordinates:
+                  time                           x                 -    \
+                          -                      -
+                  grid_latitude                  -                 x    \
+                          -                      -
+                  grid_longitude                 -                 -    \
+                          x                      -
+                  model_level_number             -                 -    \
+                          -                      x
+             Auxiliary coordinates:
+                  level_height                   -                 -    \
+                          -                      x
+                  sigma                          -                 -    \
+                          -                      x
+
+        Target::
+                  level_height shape (4,)
+
+        """
+        interpolator = partial(stratify.interpolate,
+                               interpolation='linear',
+                               extrapolation='linear')
+
+        source = stock.simple_4d_with_hybrid_height()[0:1]
+        source.transpose((0, 2, 3, 1))
+        source.remove_aux_factory(source.aux_factories[0])
+        source.remove_coord('surface_altitude')
+        target = source.copy()[0]
+
+        source_zcoord = source.coord('level_height')
+        target_zcoord = target.coord(source_zcoord.name())
+
+        relevel(source, source_zcoord, target_zcoord.points,
+                axis='model_level_number', interpolator=interpolator)
+
 
 if __name__ == "__main__":
     tests.main()
