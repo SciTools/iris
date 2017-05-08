@@ -390,8 +390,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None, points_fill_value=None, points_dtype=None,
-                 bounds_fill_value=None, bounds_dtype=None):
+                 coord_system=None):
 
         """
         Constructs a single coordinate.
@@ -424,22 +423,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         * coord_system
             A :class:`~iris.coord_systems.CoordSystem`,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
-        * points_fill_value
-            The intended fill-value of coordinate points masked data.
-            Note that the fill-value is cast relative to the dtype of the
-            coordinate points.
-        * points_dtype
-            The intended dtype of the lazy points, used when the points are
-            either integer or boolean. This is to handle the case of lazy
-            integer or boolean masked points.
-        * bounds_fill_value
-            The intended fill-value of coordinate bounds masked data.
-            Note that the fill-value is cast relative to the dtype of the
-            coordinate bounds.
-        * bounds_dtype
-            The intended dtype of the lazy bounds, used when the bounds are
-            either integer or boolean. This is to handle the case of lazy
-            integer or boolean masked bounds.
 
         """
         #: CF standard name of the quantity that the coordinate represents.
@@ -462,15 +445,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         self.coord_system = coord_system
 
         # Contain points and bounds in `DataManager` objects.
-        self._points_dm = DataManager(points, realised_dtype=points_dtype)
+        self._points_dm =\
+            DataManager(points, realised_dtype=np.asanyarray(points).dtype)
         if bounds is not None:
-            self._bounds_dm = DataManager(bounds, realised_dtype=bounds_dtype)
+            self._bounds_dm =\
+                DataManager(bounds, realised_dtype=np.asanyarray(bounds).dtype)
         else:
             self._bounds_dm = None
-
-        # `fill_value`s are used when realising lazy masked bool/int data.
-        self.points_fill_value = points_fill_value
-        self.bounds_fill_value = bounds_fill_value
 
     def __getitem__(self, keys):
         """
@@ -486,7 +467,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         # Fetch the points and bounds.
         points = self._points_dm.core_data()
-        bounds = self._bounds_dm.core_data()
+        if self._bounds_dm is not None:
+            bounds = self._bounds_dm.core_data()
+        else:
+            bounds = None
 
         # Index both points and bounds with the keys.
         _, points = iris.util._slice_data_with_keys(
@@ -558,6 +542,40 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     def bounds(self):
         """Property containing the bound values as a numpy array"""
 
+    def lazy_points(self):
+        """
+        Return a lazy array representing the coord points.
+
+        Accessing this method will never cause the points values to be loaded.
+        Similarly, calling methods on, or indexing, the returned Array
+        will not cause the coord to have loaded points.
+
+        If the data have already been loaded for the coord, the returned
+        Array will be a new lazy array wrapper.
+
+        Returns:
+            A lazy array, representing the coord points array.
+
+        """
+        return self._points_dm.lazy_data()
+
+    def lazy_bounds(self):
+        """
+        Return a lazy array representing the coord bounds.
+
+        Accessing this method will never cause the bounds values to be loaded.
+        Similarly, calling methods on, or indexing, the returned Array
+        will not cause the coord to have loaded bounds.
+
+        If the data have already been loaded for the coord, the returned
+        Array will be a new lazy array wrapper.
+
+        Returns:
+            A lazy array, representing the coord bounds array.
+
+        """
+        return self._bounds_dm.lazy_data()
+
     def core_points(self):
         """
         The points array at the core of this coord, which may be a NumPy array
@@ -576,6 +594,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self._bounds_dm is not None:
             result = self._bounds_dm.core_data()
         return result
+
+    def has_lazy_points(self):
+        return self._points_dm.has_lazy_data()
+
+    def has_lazy_bounds(self):
+        return self._bounds_dm.has_lazy_data()
 
     def _repr_other_metadata(self):
         fmt = ''
@@ -937,7 +961,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         nbounds = 0
-        if self._bounds_dm is not None:
+        if self.has_bounds():
             nbounds = self._bounds_dm.shape[-1]
         return nbounds
 
@@ -950,66 +974,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Access the underlying _points attribute to avoid triggering
         # a deferred load unnecessarily.
         return self._points_dm.shape
-
-    def replace_points(self, points, dtype=None, fill_value=None):
-        """
-        Perform an in-place replacement of the coord points.
-
-        Args:
-
-        * points:
-            Replace the points of the coord with the provided points values.
-
-        Kwargs:
-
-        * dtype:
-            Replacement for the intended dtype of the realised lazy points.
-
-        * fill_value:
-            Replacement for the coord points fill-value.
-
-        .. note::
-            Data replacement alone will clear the intended dtype
-            of the realised lazy points and the fill-value.
-
-        .. note::
-            Replacing the coord points will clear any coord bounds set, as the
-            existing bounds may not be appropriate for the new points.
-            Appropriate bounds can be reinstated with
-            :meth:`~iris.coords.Coord.replace_bounds`.
-
-        """
-        self._points_dm.replace(points, realised_dtype=dtype)
-        # Update fill_value.
-        self.points_fill_value = fill_value
-        # If we replace the points we must unset any bounds too.
-        self.replace_bounds()
-
-    def replace_bounds(self, bounds=None, dtype=None, fill_value=None):
-        """
-        Perform an in-place replacement of the coord bounds.
-
-        Args:
-
-        * bounds:
-            Replace the bounds of the coord with the provided bounds values.
-
-        Kwargs:
-
-        * dtype:
-            Replacement for the intended dtype of the realised lazy bounds.
-
-        * fill_value:
-            Replacement for the coord bounds fill-value.
-
-        .. note::
-            Data replacement alone will clear the intended dtype
-            of the realised lazy bounds and the fill-value.
-
-        """
-        self._bounds_dm.replace(bounds, realised_dtype=dtype)
-        # Update fill_value.
-        self.bounds_fill_value = fill_value
 
     def cell(self, index):
         """
@@ -1071,7 +1035,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 return '|'.join([str(i) for i in x.flatten()])
             bounds = None
             string_type_fmt = 'S{}' if six.PY2 else 'U{}'
-            if self._bounds_dm is not None:
+            if self.has_bounds():
                 shape = self._bounds_dm.shape[1:]
                 bounds = []
                 for index in np.ndindex(shape):
@@ -1462,9 +1426,7 @@ class DimCoord(Coord):
                         units=coord.units, bounds=coord.core_bounds(),
                         attributes=coord.attributes,
                         coord_system=copy.deepcopy(coord.coord_system),
-                        circular=getattr(coord, 'circular', False),
-                        points_dtype=coord.points_dtype,
-                        bounds_dtype=coord.bounds_dtype)
+                        circular=getattr(coord, 'circular', False))
 
     @classmethod
     def from_regular(cls, zeroth, step, count, standard_name=None,
@@ -1526,8 +1488,7 @@ class DimCoord(Coord):
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None, circular=False, points_fill_value=None,
-                 points_dtype=None, bounds_fill_value=None, bounds_dtype=None):
+                 coord_system=None, circular=False):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
@@ -1537,20 +1498,11 @@ class DimCoord(Coord):
                                        long_name=long_name, var_name=var_name,
                                        units=units, bounds=bounds,
                                        attributes=attributes,
-                                       coord_system=coord_system,
-                                       points_fill_value=points_fill_value,
-                                       points_dtype=points_dtype,
-                                       bounds_fill_value=bounds_fill_value,
-                                       bounds_dtype=bounds_dtype)
+                                       coord_system=coord_system)
 
         # Run setter checks on points and bounds values.
         self.points = points
         self.bounds = bounds
-
-        # DimCoords cannot have masked points/bounds, so have no need of
-        # non-None `fill_value`s.
-        self.points_fill_value = None
-        self.bounds_fill_value = None
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
@@ -1575,8 +1527,10 @@ class DimCoord(Coord):
                                                points_dtype=points_dtype,
                                                bounds_dtype=bounds_dtype)
         # Make the array read-only.
+        self._new_points_requirements(points)
         new_coord.points.flags.writeable = False
         if bounds is not None:
+            self._new_bounds_requirements(bounds)
             new_coord.bounds.flags.writeable = False
         return new_coord
 
@@ -1642,16 +1596,15 @@ class DimCoord(Coord):
 
     @points.setter
     def points(self, points):
-        # Checks for 1d, numeric, monotonic
-        self._new_points_requirements(points)
-
         # We must realise points to check monotonicity.
         points = as_concrete_data(points, result_dtype=self.dtype)
+        self._points_dm.data = points
+
+        # Checks for 1d, numeric, monotonic
+        self._new_points_requirements(self._points_dm.data)
 
         # Make the array read-only.
-        points.flags.writeable = False
-
-        self._points_dm.data = points
+        self._points_dm.data.flags.writeable = False
 
     def _new_bounds_requirements(self, bounds):
         """
@@ -1696,7 +1649,7 @@ class DimCoord(Coord):
 
         """
         bounds = None
-        if self._bounds_dm is not None:
+        if self.has_bounds():
             bounds = self._bounds_dm.data
         return bounds
 
@@ -1714,19 +1667,6 @@ class DimCoord(Coord):
 
     def is_monotonic(self):
         return True
-
-    def replace_points(self, points, dtype=None, fill_value=None):
-        # Cannot set fill_value for a `DimCoord`.
-        self._new_points_requirements(points)
-        super(DimCoord, self).replace_points(points,
-                                             dtype=dtype, fill_value=None)
-
-    def replace_bounds(self, bounds=None, dtype=None, fill_value=None):
-        # Cannot set fill_value for a `DimCoord`.
-        if bounds is not None:
-            self._new_bounds_requirements(bounds)
-        super(DimCoord, self).replace_bounds(bounds=bounds,
-                                             dtype=dtype, fill_value=None)
 
     def xml_element(self, doc):
         """Return DOM element describing this :class:`iris.coords.DimCoord`."""
