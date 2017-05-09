@@ -45,6 +45,7 @@ import numpy.ma as ma
 import iris.cube
 import iris.analysis.cartography as cartography
 import iris.coords
+import iris.coord_systems
 from iris.exceptions import IrisError
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
@@ -662,7 +663,18 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     # Ensure the current axes are a cartopy.mpl.GeoAxes instance.
     axes = kwargs.get('axes')
     if axes is None:
-        _replace_axes_with_cartopy_axes(cartopy_proj)
+        if (isinstance(cs, iris.coord_systems.RotatedGeogCS) and
+           x_coord.points.max() > 180 and x_coord.points.max() < 360 and
+           x_coord.points.min() > 0):
+            # The RotatedGeogCS has 0 - 360 extent, different from the
+            # assumptions made by Cartopy: rebase longitudes for the map axes
+            # to set the datum longitude to the International Date Line.
+            cs_kwargs = cs._ccrs_kwargs()
+            cs_kwargs['central_rotated_longitude'] = 180.0
+            adapted_cartopy_proj = ccrs.RotatedPole(**cs_kwargs)
+            _replace_axes_with_cartopy_axes(adapted_cartopy_proj)
+        else:
+            _replace_axes_with_cartopy_axes(cartopy_proj)
     elif axes and not isinstance(axes, cartopy.mpl.geoaxes.GeoAxes):
         raise TypeError("The supplied axes instance must be a cartopy "
                         "GeoAxes instance.")
