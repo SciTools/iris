@@ -444,6 +444,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: Relevant CoordSystem (if any).
         self.coord_system = coord_system
 
+        # TODO: how to set `realised_dtype`?
+        #   - Would like to use `np.asanyarray(points/bounds).dtype` - SLOW!
+        #   - Can't use `points/bounds.dtype` as might not be an array.
+        #   - Could not set realised_dtype? Or could pass it in.
         # Contain points and bounds in `DataManager` objects.
         self._points_dm =\
             DataManager(points, realised_dtype=np.asanyarray(points).dtype)
@@ -971,8 +975,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def shape(self):
         """The fundamental shape of the Coord, expressed as a tuple."""
-        # Access the underlying _points attribute to avoid triggering
-        # a deferred load unnecessarily.
         return self._points_dm.shape
 
     def cell(self, index):
@@ -1428,8 +1430,8 @@ class DimCoord(Coord):
                         coord_system=copy.deepcopy(coord.coord_system),
                         circular=getattr(coord, 'circular', False))
 
-    @classmethod
-    def from_regular(cls, zeroth, step, count, standard_name=None,
+    @staticmethod
+    def from_regular(zeroth, step, count, standard_name=None,
                      long_name=None, var_name=None, units='1', attributes=None,
                      coord_system=None, circular=False, points_dtype=None,
                      bounds_dtype=None, with_bounds=False):
@@ -1457,34 +1459,21 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        coord = DimCoord.__new__(cls)
-
-        coord.standard_name = standard_name
-        coord.long_name = long_name
-        coord.var_name = var_name
-        coord.units = units
-        coord.attributes = attributes
-        coord.coord_system = coord_system
-        coord.circular = circular
-
-        points = (zeroth+step) + step*np.arange(count, dtype=points_dtype)
+        points = (zeroth + step) + step * np.arange(count, dtype=points_dtype)
         points.flags.writeable = False
-        if not is_regular(coord) and count > 1:
-            points = (zeroth+step) + step*np.arange(count, dtype=points_dtype)
-            points.flags.writeable = False
-        coord._points_dm = DataManager(points,
-                                       realised_dtype=points_dtype)
 
         if with_bounds:
             delta = 0.5 * step
             bounds = np.concatenate([[points - delta], [points + delta]]).T
             bounds = bounds.astype(bounds_dtype)
             bounds.flags.writeable = False
-            coord._bounds_dm = DataManager(bounds, realised_dtype=bounds_dtype)
         else:
-            coord._bounds_dm = None
+            bounds = None
 
-        return coord
+        return DimCoord(points, standard_name=standard_name,
+                        long_name=long_name, var_name=var_name, units=units,
+                        bounds=bounds, attributes=attributes,
+                        coord_system=coord_system, circular=circular)
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None, attributes=None,
@@ -1598,6 +1587,9 @@ class DimCoord(Coord):
     def points(self, points):
         # We must realise points to check monotonicity.
         points = as_concrete_data(points, result_dtype=self.dtype)
+        points = np.asarray(points)
+        if points.ndim == 0:
+            points = points.reshape(1,)
         self._points_dm.data = points
 
         # Checks for 1d, numeric, monotonic
@@ -1658,12 +1650,21 @@ class DimCoord(Coord):
         if bounds is None:
             self._bounds_dm = None
         else:
+            # Ensure we have a realised array of new bounds values.
+            bounds = as_concrete_data(bounds, result_dtype=self.dtype)
+            bounds = np.asarray(bounds)
+            if bounds.ndim == 1:
+                bounds = bounds.reshape(self.shape[0], bounds.shape[0])
             # Checks for appropriate values for the new bounds.
             self._new_bounds_requirements(bounds)
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
-            self._bounds_dm.data = bounds
+            if self._bounds_dm is None:
+                self._bounds_dm = DataManager(bounds,
+                                              realised_dtype=bounds.dtype)
+            else:
+                self._bounds_dm.replace(bounds)
 
     def is_monotonic(self):
         return True
