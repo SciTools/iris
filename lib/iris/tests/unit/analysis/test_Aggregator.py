@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,10 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
-from iris.analysis import Aggregator
+from iris import coord_categorisation
+from iris.analysis import Aggregator, MEAN
+from iris.coords import DimCoord
+from iris.cube import Cube
 from iris.exceptions import LazyAggregatorError
 from iris.tests import mock
 
@@ -314,6 +317,30 @@ class Test_lazy_aggregate(tests.IrisTest):
         expected_kwargs = init_kwargs.copy()
         expected_kwargs.update(call_kwargs)
         lazy_func.assert_called_once_with(data, axis, **expected_kwargs)
+
+class Test_aggregated_by(tests.IrisTest):
+    def setUp(self):
+        latitude = DimCoord(np.linspace(-90, 90, 4),
+                            standard_name='latitude',
+                            units='degrees')
+        longitude = DimCoord(np.linspace(45, 360, 8),
+                             standard_name='longitude',
+                             units='degrees')
+        time = DimCoord(np.linspace(104040, 122040, 26),
+                        standard_name='time',
+                        units='hours since 1970-01-01 00:00:00')
+        self.time_cube = Cube(np.zeros((26, 4, 8), np.float32),
+                               dim_coords_and_dims=[(time, 0),
+                                                    (latitude, 1),
+                                                    (longitude, 2)])
+
+    def test_month_name(self):
+        coord_categorisation.add_month_number(self.time_cube, 'time',
+                                              name='month')
+        agg_cube = self.time_cube.aggregated_by('time', MEAN)
+        coord_categorisation.add_month(agg_cube, 'time', name='month_name')
+        self.assertEquals(agg_cube.coord('month_name').points[0], 'Jan')
+        self.assertEquals(agg_cube.coord('month_name').points[2], 'Mar')
 
 
 if __name__ == "__main__":
