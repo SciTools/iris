@@ -134,6 +134,10 @@ def as_concrete_data(data, **kwargs):
     return data
 
 
+def nan_array_type(dtype):
+    return np.dtype('f8') if dtype.kind in 'biu' else dtype
+
+
 def array_masked_to_nans(array):
     """
     Convert a masked array to a NumPy `ndarray` filled with NaN values. Input
@@ -163,10 +167,8 @@ def array_masked_to_nans(array):
     else:
         if ma.is_masked(array):
             mask = array.mask
-            if array.dtype.kind in 'biu':
-                result = array.data.astype(np.dtype('f8'))
-            else:
-                result = array.data.copy()
+            new_dtype = nan_array_type(array.data.dtype)
+            result = array.data.astype(new_dtype)
             result[mask] = np.nan
         else:
             result = array.data

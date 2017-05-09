@@ -57,7 +57,7 @@ import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
 from iris._lazy_data import (array_masked_to_nans, as_lazy_data,
-                             convert_nans_array)
+                             convert_nans_array, nan_array_type)
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -378,7 +378,7 @@ class NetCDFDataProxy(object):
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
         self.shape = shape
-        self.dtype = dtype
+        self.dtype = nan_array_type(dtype)
         self.path = path
         self.variable_name = variable_name
         self.fill_value = fill_value
