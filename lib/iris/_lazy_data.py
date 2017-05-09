@@ -29,6 +29,22 @@ import dask.context
 import numpy as np
 import numpy.ma as ma
 
+class _DtypeWrapper(object):
+    def __init__(self, array, dtype):
+        self.dtype = dtype
+        self.array = array
+
+    @property
+    def shape(self):
+        return self.array.shape
+
+    @property
+    def ndim(self):
+        return self.array.ndim
+
+    def __getitem__(self, item):
+        return self.array.__getitem__(item)
+
 
 def _iris_dask_defaults():
     """
@@ -94,7 +110,10 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
     """
     if not is_lazy_data(data):
         if ma.isMaskedArray(data):
-            data = array_masked_to_nans(data)
+            new_data = array_masked_to_nans(data)
+            if new_data.dtype != data.dtype:
+                new_data = _DtypeWrapper(new_data, data.dtype)
+            data = new_data
         data = da.from_array(data, chunks=chunks)
     return data
 
