@@ -1697,15 +1697,25 @@ class AuxCoord(Coord):
         return new_coord
 
     def _sanitise_array(self, src, ndmin):
-        # Ensure the array is writeable.
-        # NB. Returns the *same object* if src is already writeable.
-        result = np.require(src, requirements='W')
-        # Ensure the array has enough dimensions.
-        # NB. Returns the *same object* if result.ndim >= ndmin
-        result = np.array(result, ndmin=ndmin, copy=False)
-        # We don't need to copy the data, but we do need to have our
-        # own view so we can control the shape, etc.
-        result = result.view()
+        if is_lazy_data(src):
+            # Lazy data : just ensure ndmin requirement.
+            ndims_missing = ndmin - src.ndim
+            if ndims_missing <= 0:
+                result = src
+            else:
+                extended_shape = tuple([1] * ndims_missing + list(src.shape))
+                result = src.reshape(extended_shape)
+        else:
+            # Real data : a few more things to do in this case.
+            # Ensure the array is writeable.
+            # NB. Returns the *same object* if src is already writeable.
+            result = np.require(src, requirements='W')
+            # Ensure the array has enough dimensions.
+            # NB. Returns the *same object* if result.ndim >= ndmin
+            result = np.array(result, ndmin=ndmin, copy=False)
+            # We don't need to copy the data, but we do need to have our
+            # own view so we can control the shape, etc.
+            result = result.view()
         return result
 
     @property
@@ -1720,11 +1730,7 @@ class AuxCoord(Coord):
         # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
         # This will avoid Scalar coords with points of shape () rather
         # than the desired (1,).
-        if is_lazy_data(points):
-            if points.shape == ():
-                points = points.reshape(1,)
-        else:
-            points = self._sanitise_array(points, 1)
+        points = self._sanitise_array(points, 1)
 
         # Set or update DataManager.
         if self._points_dm is None:
@@ -1753,8 +1759,7 @@ class AuxCoord(Coord):
         if bounds is None:
             self._bounds_dm = None
         else:
-            if not is_lazy_data(bounds):
-                bounds = self._sanitise_array(bounds, 2)
+            bounds = self._sanitise_array(bounds, 2)
             if self.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
