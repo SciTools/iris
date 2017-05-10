@@ -1193,7 +1193,10 @@ def _proportion(array, function, axis, **kwargs):
     else:
         total_non_masked = array.shape[axis]
 
-    return _count(array, function, axis=axis, **kwargs) / total_non_masked
+    numerator = _count(array, function, axis=axis, **kwargs)
+    result = ma.asarray(numerator / total_non_masked)
+
+    return result
 
 
 def _rms(array, axis, **kwargs):

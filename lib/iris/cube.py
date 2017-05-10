@@ -25,7 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
-import copy
+from copy import deepcopy
 import datetime
 from functools import reduce
 import operator
@@ -723,7 +723,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         # Initialise the cube data manager.
-        self._data_manager = DataManager(data, realised_dtype=dtype)
+        self._data_manager = DataManager(data, fill_value=fill_value,
+                                         realised_dtype=dtype)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -750,9 +751,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Cell Measures
         self._cell_measures_and_dims = []
-
-        # Intended fill-value.
-        self.fill_value = fill_value
 
         identities = set()
         if dim_coords_and_dims:
@@ -1621,23 +1619,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @property
     def fill_value(self):
-        return self._fill_value
+        return self._data_manager.fill_value
 
     @fill_value.setter
     def fill_value(self, fill_value):
-        if fill_value is not None:
-            # Convert the given value to the dtype of the cube.
-            fill_value = np.asarray([fill_value])[0]
-            target_dtype = self.dtype
-            if fill_value.dtype.kind == 'f' and target_dtype.kind in 'biu':
-                # Perform rounding when converting floats to ints.
-                fill_value = np.rint(fill_value)
-            try:
-                [fill_value] = np.asarray([fill_value], dtype=target_dtype)
-            except OverflowError:
-                emsg = 'Fill value of {!r} invalid for cube {!r}.'
-                raise ValueError(emsg.format(fill_value, self.dtype))
-        self._fill_value = fill_value
+        self._data_manager.fill_value = fill_value
 
     @property
     def ndim(self):
@@ -1694,22 +1680,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        data = self._data_manager.data
-        if ma.isMaskedArray(data) and self.fill_value is not None:
-            # Align the numpy fill-value with the cube fill-value.
-            data.fill_value = self.fill_value
-        return data
+        return self._data_manager.data
 
     @data.setter
     def data(self, data):
-        # Assign the new data to the data manager.
         self._data_manager.data = data
-        if ma.isMaskedArray(data):
-            # Set the cube fill-value.
-            self.fill_value = data.fill_value
-        else:
-            # Clear the cube fill-value.
-            self.fill_value = None
 
     def has_lazy_data(self):
         return self._data_manager.has_lazy_data()
@@ -2172,7 +2147,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cube_data, keys)
 
         # We don't want a view of the data, so take a copy of it.
-        data = copy.deepcopy(data)
+        data = deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
         if ma.isMaskedArray(data):
@@ -2191,7 +2166,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         cube = Cube(data,
                     fill_value=self.fill_value,
                     dtype=self._data_manager.dtype)
-        cube.metadata = copy.deepcopy(self.metadata)
+        cube.metadata = deepcopy(self.metadata)
 
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
@@ -2431,7 +2406,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = iris.cube.Cube(data,
                                     fill_value=self.fill_value,
                                     dtype=self.dtype)
-            result.metadata = copy.deepcopy(self.metadata)
+            result.metadata = deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
             # for subsequent use in creating updated aux_factories.
@@ -2814,8 +2789,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('Incorrect number of dimensions.')
 
         # Transpose the data payload.
-        data = self._data_manager.core_data().transpose(new_order)
-        self._data_manager = DataManager(data, self._data_manager.dtype)
+        dm = self._data_manager
+        data = dm.core_data().transpose(new_order)
+        self._data_manager = DataManager(data, fill_value=dm.fill_value,
+                                         realised_dtype=dm.dtype)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -3005,8 +2982,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             of the realised lazy data and the fill-value.
 
         """
-        self._data_manager.replace(data, realised_dtype=dtype)
-        self.fill_value = fill_value
+        self._data_manager.replace(data, fill_value=fill_value,
+                                   realised_dtype=dtype)
 
     def copy(self, data=None, dtype='none', fill_value='none'):
         """
@@ -3041,16 +3018,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return self._deepcopy(memo)
 
     def _deepcopy(self, memo, data=None, dtype='none', fill_value='none'):
-        dm = self._data_manager.copy(data=data, realised_dtype=dtype)
+        dm = self._data_manager.copy(data=data, fill_value=fill_value,
+                                     realised_dtype=dtype)
 
-        if isinstance(fill_value, six.string_types) and \
-                fill_value == 'none':
-            fill_value = self.fill_value
-
-        new_dim_coords_and_dims = copy.deepcopy(self._dim_coords_and_dims,
-                                                memo)
-        new_aux_coords_and_dims = copy.deepcopy(self._aux_coords_and_dims,
-                                                memo)
+        new_dim_coords_and_dims = deepcopy(self._dim_coords_and_dims, memo)
+        new_aux_coords_and_dims = deepcopy(self._aux_coords_and_dims, memo)
 
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
@@ -3067,10 +3039,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         new_cube = Cube(dm.core_data(),
                         dim_coords_and_dims=new_dim_coords_and_dims,
                         aux_coords_and_dims=new_aux_coords_and_dims,
-                        fill_value=fill_value,
+                        fill_value=dm.fill_value,
                         dtype=dm.dtype)
 
-        new_cube.metadata = copy.deepcopy(self.metadata, memo)
+        new_cube.metadata = deepcopy(self.metadata, memo)
 
         for factory in self.aux_factories:
             new_cube.add_aux_factory(factory.updated(coord_mapping))
