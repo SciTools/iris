@@ -620,7 +620,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                   ', calendar={self.units.calendar!r}{other_metadata})'
             points = self._str_dates(self.points)
             bounds = ''
-            if self.bounds is not None:
+            if self.has_bounds():
                 bounds = ', bounds=' + self._str_dates(self.bounds)
             result = fmt.format(self=self, cls=type(self).__name__,
                                 points=points, bounds=bounds,
@@ -634,7 +634,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
               ', standard_name={self.standard_name!r}, units={self.units!r}' \
               '{other_metadata})'
         bounds = ''
-        if self.bounds is not None:
+        if self.has_bounds():
             bounds = ', bounds=' + repr(self.bounds)
         result = fmt.format(self=self, cls=type(self).__name__,
                             bounds=bounds,
@@ -655,7 +655,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 eq = iris.util.array_equal(self.points, other.points)
             # bounds comparison
             if eq:
-                if self.bounds is not None and other.bounds is not None:
+                if self.has_bounds() and other.has_bounds():
                     eq = iris.util.array_equal(self.bounds, other.bounds)
                 else:
                     eq = self.bounds is None and other.bounds is None
@@ -760,8 +760,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return self * other
 
     def __neg__(self):
-        return self.copy(-self.points, -self.bounds if self.bounds is not
-                         None else None)
+        return self.copy(-self.core_points(),
+                         -self.core_bounds() if self.has_bounds() else None)
 
     def convert_units(self, unit):
         """
@@ -783,7 +783,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # present).
         if not self.units.is_unknown():
             self.points = self.units.convert(self.points, unit)
-            if self.bounds is not None:
+            if self.has_bounds():
                 self.bounds = self.units.convert(self.bounds, unit)
         self.units = unit
 
@@ -826,7 +826,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             Boolean.
 
         """
-        if self.bounds is not None:
+        if self.has_bounds():
             self._sanity_check_contiguous()
             return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
                                rtol=rtol, atol=atol)
@@ -844,7 +844,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             return bounds positioned halfway between the coordinate's points.
 
         """
-        if self.bounds is None:
+        if not self.has_bounds():
             warnings.warn('Coordinate {!r} is not bounded, guessing '
                           'contiguous bounds.'.format(self.name()))
             bounds = self._guess_bounds()
@@ -869,7 +869,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             if not iris.util.monotonic(self.points, strict=True):
                 return False
 
-        if self.bounds is not None:
+        if self.has_bounds():
             for b_index in range(self.nbounds):
                 if not iris.util.monotonic(self.bounds[..., b_index],
                                            strict=True):
@@ -986,7 +986,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                              'point to create a cell with.' % (index, ))
 
         bound = None
-        if self.bounds is not None:
+        if self.has_bounds():
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
 
         if iris.FUTURE.cell_datetime_objects:
@@ -1104,7 +1104,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('Cannot guess bounds for a coordinate of length '
                              '1.')
 
-        if self.bounds is not None:
+        if self.has_bounds():
             raise ValueError('Coord already has bounds. Remove the bounds '
                              'before guessing new ones.')
 
@@ -1351,7 +1351,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         else:
             element.setAttribute('points', iris.util.format_array(self.points))
 
-        if self.bounds is not None:
+        if self.has_bounds():
             if hasattr(self.bounds, 'to_xml_attr'):
                 element.setAttribute('bounds', self.bounds.to_xml_attr())
             else:
@@ -1383,8 +1383,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         values.
 
         """
-        values = self.points
-        dtype = values.dtype
+        dtype = self.core_points().dtype
         kind = dtype.kind
         if kind in 'SU':
             # Establish the basic type name for 'string' type data.
@@ -1734,7 +1733,8 @@ class AuxCoord(Coord):
             if self.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
-            if not self.has_bounds() or self.bounds.shape != bounds.shape:
+            if not self.has_bounds() \
+                    or self.core_bounds().shape != bounds.shape:
                 # Construct a new bounds DataManager.
                 self._bounds_dm = DataManager(bounds)
             else:
