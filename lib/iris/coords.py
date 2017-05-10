@@ -443,18 +443,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: Relevant CoordSystem (if any).
         self.coord_system = coord_system
 
-        # TODO: how to set `realised_dtype`?
-        #   - Would like to use `np.asanyarray(points/bounds).dtype` - SLOW!
-        #   - Can't use `points/bounds.dtype` as might not be an array.
-        #   - Could not set realised_dtype? Or could pass it in.
-        # Contain points and bounds in `DataManager` objects.
-        self._points_dm =\
-            DataManager(points, realised_dtype=np.asanyarray(points).dtype)
-        if bounds is not None:
-            self._bounds_dm =\
-                DataManager(bounds, realised_dtype=np.asanyarray(bounds).dtype)
-        else:
-            self._bounds_dm = None
+        # Set up DataManager attributes and points and bounds values.
+        self._points_dm = None
+        self._bounds_dm = None
+        self.points = points
+        self.bounds = bounds
 
     def __getitem__(self, keys):
         """
@@ -470,7 +463,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         # Fetch the points and bounds.
         points = self._points_dm.core_data()
-        if self._bounds_dm is not None:
+        if self.has_bounds():
             bounds = self._bounds_dm.core_data()
         else:
             bounds = None
@@ -492,8 +485,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         new_coord = self.copy(points=points, bounds=bounds)
         return new_coord
 
-    def copy(self, points=None, bounds=None,
-             points_dtype='none', bounds_dtype='none'):
+    def copy(self, points=None, bounds=None):
         """
         Returns a copy of this coordinate.
 
@@ -517,23 +509,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        if points is not None:
-            points_dm = self._points_dm.copy(data=points,
-                                             realised_dtype=points_dtype)
-        if bounds is not None:
-            bounds_dm = self._bounds_dm.copy(data=bounds,
-                                             realised_dtype=bounds_dtype)
-
         new_coord = copy.deepcopy(self)
         if points is not None:
-            new_coord.points = points_dm.core_data()
+            new_coord._points_dm = None
+            new_coord.points = points
             # Regardless of whether bounds are provided as an argument, new
             # points will result in new bounds, discarding those copied from
             # self.
-            if bounds is not None:
-                new_coord.bounds = bounds_dm.core_data()
-            else:
-                new_coord.bounds = None
+            new_coord.bounds = bounds
 
         return new_coord
 
@@ -577,7 +560,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             A lazy array, representing the coord bounds array.
 
         """
-        return self._bounds_dm.lazy_data()
+        lazy_bounds = None
+        if self.has_bounds():
+            lazy_bounds = self._bounds_dm.lazy_data()
+        return lazy_bounds
 
     def core_points(self):
         """
@@ -594,7 +580,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         result = None
-        if self._bounds_dm is not None:
+        if self.has_bounds():
             result = self._bounds_dm.core_data()
         return result
 
@@ -602,7 +588,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return self._points_dm.has_lazy_data()
 
     def has_lazy_bounds(self):
-        return self._bounds_dm.has_lazy_data()
+        result = False
+        if self.has_bounds():
+            result = self._bounds_dm.has_lazy_data()
+        return result
 
     def _repr_other_metadata(self):
         fmt = ''
@@ -718,7 +707,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             elif mode_constant == Coord._MODE_RDIV:
                 new_points = other / points
 
-            if self._bounds_dm is not None:
+            if self.has_bounds():
                 bounds = self._bounds_dm.core_data()
 
                 if mode_constant == Coord._MODE_ADD:
@@ -931,7 +920,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def dtype(self):
         """
-        The NumPy data type of the coord, as specified by it's points.
+        The NumPy data type of the coord, as specified by its points.
 
         """
         return self._points_dm.dtype
@@ -944,7 +933,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         result = None
-        if self._bounds_dm is not None:
+        if self.has_bounds():
             result = self._bounds_dm.dtype
         return result
 
@@ -1061,8 +1050,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 warnings.warn(msg.format(self.name()))
 
             # Create bounds for the new collapsed coordinate.
-            item = self.bounds if self.bounds is not None else self.points
-            lower, upper = np.min(item), np.max(item)
+            item = self.core_bounds() if self.has_bounds() \
+                else self.core_points()
+            lower, upper = item.min(), item.max()
             bounds_dtype = item.dtype
             bounds = [lower, upper]
             # Create points for the new collapsed coordinate.
@@ -1432,8 +1422,7 @@ class DimCoord(Coord):
     @staticmethod
     def from_regular(zeroth, step, count, standard_name=None,
                      long_name=None, var_name=None, units='1', attributes=None,
-                     coord_system=None, circular=False, points_dtype=None,
-                     bounds_dtype=None, with_bounds=False):
+                     coord_system=None, circular=False, with_bounds=False):
         """
         Create a :class:`DimCoord` with regularly spaced points, and
         optionally bounds.
@@ -1458,13 +1447,12 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = (zeroth + step) + step * np.arange(count, dtype=points_dtype)
+        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
         points.flags.writeable = False
 
         if with_bounds:
             delta = 0.5 * step
             bounds = np.concatenate([[points - delta], [points + delta]]).T
-            bounds = bounds.astype(bounds_dtype)
             bounds.flags.writeable = False
         else:
             bounds = None
@@ -1488,10 +1476,6 @@ class DimCoord(Coord):
                                        attributes=attributes,
                                        coord_system=coord_system)
 
-        # Run setter checks on points and bounds values.
-        self.points = points
-        self.bounds = bounds
-
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
 
@@ -1509,16 +1493,11 @@ class DimCoord(Coord):
             new_coord.bounds.flags.writeable = False
         return new_coord
 
-    def copy(self, points=None, bounds=None,
-             points_dtype=None, bounds_dtype=None):
-        new_coord = super(DimCoord, self).copy(points=points, bounds=bounds,
-                                               points_dtype=points_dtype,
-                                               bounds_dtype=bounds_dtype)
-        # Make the array read-only.
-        self._new_points_requirements(points)
+    def copy(self, points=None, bounds=None):
+        new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
+        # Make the arrays read-only.
         new_coord.points.flags.writeable = False
         if bounds is not None:
-            self._new_bounds_requirements(bounds)
             new_coord.bounds.flags.writeable = False
         return new_coord
 
@@ -1585,11 +1564,15 @@ class DimCoord(Coord):
     @points.setter
     def points(self, points):
         # We must realise points to check monotonicity.
-        points = as_concrete_data(points, result_dtype=self.dtype)
-        points = np.asarray(points)
-        if points.ndim == 0:
-            points = points.reshape(1,)
-        self._points_dm.data = points
+        copy = is_lazy_data(points)
+        points = as_concrete_data(points)
+        points = np.array(points, copy=copy, ndmin=1)
+
+        # Set or update DataManager.
+        if self._points_dm is None:
+            self._points_dm = DataManager(points)
+        else:
+            self._points_dm.data = points
 
         # Checks for 1d, numeric, monotonic
         self._new_points_requirements(self._points_dm.data)
@@ -1650,22 +1633,17 @@ class DimCoord(Coord):
             self._bounds_dm = None
         else:
             # Ensure we have a realised array of new bounds values.
-            bounds = as_concrete_data(bounds, result_dtype=self.dtype)
-            bounds = np.asarray(bounds)
-            shape_2d = (self.shape[0], bounds.shape[0])
-            if bounds.ndim == 1:
-                bounds = bounds.reshape(shape_2d)
+            copy = is_lazy_data(bounds)
+            bounds = as_concrete_data(bounds)
+            bounds = np.array(bounds, copy=copy, ndmin=2)
             # Checks for appropriate values for the new bounds.
             self._new_bounds_requirements(bounds)
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
-            if self._bounds_dm is None or bounds.shape == shape_2d:
-                # Construct a new bounds DataManager iff:
-                #  * there wasn't a bounds DataManager before, or
-                #  * we've increased the dimensionality of the new bounds.
-                self._bounds_dm = DataManager(bounds,
-                                              realised_dtype=bounds.dtype)
+            if not self.has_bounds() or self.bounds.shape != bounds.shape:
+                # Construct a new bounds DataManager.
+                self._bounds_dm = DataManager(bounds)
             else:
                 self._bounds_dm.data = bounds
 
@@ -1718,13 +1696,17 @@ class AuxCoord(Coord):
         # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
         # This will avoid Scalar coords with points of shape () rather
         # than the desired (1,).
-        if self.has_lazy_points():
+        if is_lazy_data(points):
             if points.shape == ():
                 points = points.reshape(1,)
         else:
             points = self._sanitise_array(points, 1)
 
-        self._points_dm.data = points
+        # Set or update DataManager.
+        if self._points_dm is None:
+            self._points_dm = DataManager(points)
+        else:
+            self._points_dm.data = points
 
     @property
     def bounds(self):
@@ -1737,7 +1719,7 @@ class AuxCoord(Coord):
 
         """
         bounds = None
-        if self._bounds_dm is not None:
+        if self.has_bounds():
             bounds = self._bounds_dm.data
         return bounds
 
@@ -1749,12 +1731,12 @@ class AuxCoord(Coord):
         else:
             if not self.has_lazy_bounds():
                 bounds = self._sanitise_array(bounds, 2)
-            if self.shape != bounds.shape[0]:
+            if self.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
-            if self._bounds_dm is None:
-                self._bounds_dm = DataManager(bounds,
-                                              realised_dtype=bounds.dtype)
+            if not self.has_bounds() or self.bounds.shape != bounds.shape:
+                # Construct a new bounds DataManager.
+                self._bounds_dm = DataManager(bounds)
             else:
                 self._bounds_dm.data = bounds
 
