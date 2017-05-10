@@ -32,7 +32,6 @@ import operator
 import warnings
 import zlib
 
-import dask.array as da
 import netcdftime
 import numpy as np
 import numpy.ma as ma
@@ -1691,11 +1690,7 @@ class AuxCoord(Coord):
                              var_name=coord.var_name,
                              units=coord.units, bounds=coord.bounds,
                              attributes=coord.attributes,
-                             coord_system=copy.deepcopy(coord.coord_system),
-                             points_fill_value=coord.points_fill_value,
-                             points_dtype=coord.points_dtype,
-                             bounds_fill_value=coord.bounds_fill_value,
-                             bounds_dtype=coord.bounds_dtype)
+                             coord_system=copy.deepcopy(coord.coord_system))
 
         return new_coord
 
@@ -1713,8 +1708,8 @@ class AuxCoord(Coord):
 
     @property
     def points(self):
-        """Property containing the points values as a numpy array"""
-        return self._points_dm.data.view()
+        """The local points values as a read-only NumPy array."""
+        return self._points_dm.data
 
     @points.setter
     def points(self, points):
@@ -1723,23 +1718,18 @@ class AuxCoord(Coord):
         # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
         # This will avoid Scalar coords with points of shape () rather
         # than the desired (1,).
-        if is_lazy_data(points):
+        if self.has_lazy_points():
             if points.shape == ():
-                points = da.reshape(points, (1,))
+                points = points.reshape(1,)
         else:
             points = self._sanitise_array(points, 1)
-
-        # Check that setting these points wouldn't change self.shape
-        if points.shape != self._points_dm.shape:
-            raise ValueError("New points shape must match existing points "
-                             "shape.")
 
         self._points_dm.data = points
 
     @property
     def bounds(self):
         """
-        Property containing the bound values, as a numpy array,
+        Property containing the bound values, as a NumPy array,
         or None if no bound values are defined.
 
         .. note:: The shape of the bound array should be: ``points.shape +
@@ -1754,19 +1744,19 @@ class AuxCoord(Coord):
     @bounds.setter
     def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
-        if bounds is not None:
-            if not is_lazy_data(bounds):
+        if bounds is None:
+            self._bounds_dm = None
+        else:
+            if not self.has_lazy_bounds():
                 bounds = self._sanitise_array(bounds, 2)
-            # NB. Use _points to avoid triggering any lazy array.
-            if self.shape != bounds.shape[:-1]:
+            if self.shape != bounds.shape[0]:
                 raise ValueError("Bounds shape must be compatible with points "
                                  "shape.")
             if self._bounds_dm is None:
-                self._bounds_dm = DataManager(bounds)
+                self._bounds_dm = DataManager(bounds,
+                                              realised_dtype=bounds.dtype)
             else:
                 self._bounds_dm.data = bounds
-        else:
-            self._bounds_dm = None
 
     # This is necessary for merging, but probably shouldn't be used otherwise.
     # See #962 and #1772.
