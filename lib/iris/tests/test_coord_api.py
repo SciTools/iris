@@ -579,26 +579,41 @@ class TestGetterSetter(tests.IrisTest):
 
 class TestGuessBounds(tests.IrisTest):
     def test_guess_bounds(self):
-        coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]), long_name="foo", units="1")
+        coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]),
+                                     long_name="foo", units="1")
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]))
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]))
+
         coord.bounds = None
         coord.guess_bounds(0.25)
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) + 2.5)
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5],
+                                        [5, 15],
+                                        [15, 25],
+                                        [25, 35]]) + 2.5)
+
         coord.bounds = None
         coord.guess_bounds(0.75)
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) - 2.5)
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5],
+                                        [5, 15],
+                                        [15, 25],
+                                        [25, 35]]) - 2.5)
 
         points = coord.points.copy()
         points[2] = 25
         coord.points = points
         coord.bounds = None
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5., 5.], [5., 17.5], [17.5, 27.5], [27.5, 32.5]]))
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5., 5.],
+                                        [5., 17.5],
+                                        [17.5, 27.5],
+                                        [27.5, 32.5]]))
+
         # if the points are not monotonic, then guess_bounds should fail
+        points = coord.points.copy()
         points[2] = 32
         coord = iris.coords.AuxCoord.from_coord(coord)
         coord.points = points
