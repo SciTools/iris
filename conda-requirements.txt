@@ -30,7 +30,7 @@ iris-grib
 esmpy>=7.0
 gdal
 libmo_unpack
-pandas
+pandas<0.20
 pyugrid
 mo_pack
 python-stratify
