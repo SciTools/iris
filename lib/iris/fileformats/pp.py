@@ -862,7 +862,8 @@ class PPDataProxy(object):
 
     @property
     def dtype(self):
-        return self.src_dtype.newbyteorder('=')
+        return np.dtype('f8') if self.src_dtype.kind == 'i' \
+                 else self.src_dtype.newbyteorder('=')
 
     @property
     def fill_value(self):

@@ -378,7 +378,7 @@ class NetCDFDataProxy(object):
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
         self.shape = shape
-        self.dtype = nan_array_type(dtype)
+        self.dtype = dtype
         self.path = path
         self.variable_name = variable_name
         self.fill_value = fill_value
@@ -396,6 +396,11 @@ class NetCDFDataProxy(object):
         finally:
             dataset.close()
         if ma.isMaskedArray(var):
+            if self.dtype.kind in 'biu':
+                msg = "NetCDF variable '{}' has masked data, which is not " \
+                      "supported for declared dtype '{}'."
+                raise TypeError(
+                    msg.format(self.variable_name, self.dtype.name))
             var = array_masked_to_nans(var)
         return var
 
@@ -505,7 +510,8 @@ def _load_cube(engine, cf, cf_var, filename):
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue', None)
 
-    proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
+    dtype = nan_array_type(dummy_data.dtype)
+    proxy = NetCDFDataProxy(cf_var.shape, dtype,
                             filename, cf_var.cf_name, fill_value)
     data = as_lazy_data(proxy, chunks=cf_var.shape)
     cube = iris.cube.Cube(data, fill_value=fill_value, dtype=dummy_data.dtype)
