@@ -1278,7 +1278,7 @@ class Test_replace(tests.IrisTest):
         self.assertTrue(cube.has_lazy_data())
 
     def test__lazy_with_dtype_change(self):
-        lazy = as_lazy_data(np.array(10))
+        lazy = as_lazy_data(np.array(10.0))
         dtype = np.dtype('int16')
         cube = Cube(lazy)
         cube.replace(lazy * 10, dtype=dtype)
@@ -1298,7 +1298,7 @@ class Test_replace(tests.IrisTest):
         self.assertEqual(cube.core_data().dtype, lazy.dtype)
 
     def test__dtype_fill_value_clearance(self):
-        real = np.array(10)
+        real = np.array(10.0)
         lazy = as_lazy_data(real)
         dtype = np.dtype('int16')
         fill_value = 10
@@ -1326,7 +1326,7 @@ class Test_replace(tests.IrisTest):
             cube.replace(data, dtype=dtype)
 
     def test__dtype_failure(self):
-        lazy = as_lazy_data(np.array(10))
+        lazy = as_lazy_data(np.array(10.0, dtype=np.dtype('float64')))
         cube = Cube(lazy)
         dtype = np.dtype('float32')
         emsg = 'Can only cast lazy data to an integer or boolean dtype'
@@ -1460,7 +1460,7 @@ class Test_fill_value(tests.IrisTest):
     def test_fill_value_overflow(self):
         fill_value = np.float_(1e+20)
         data = np.array([0], dtype=np.int)
-        emsg = 'Fill value of .* invalid for cube dtype'
+        emsg = 'Fill value of .* invalid for dtype'
         with self.assertRaisesRegexp(ValueError, emsg):
             Cube(data, fill_value=fill_value)
 
@@ -1571,9 +1571,19 @@ class Test_dtype(tests.IrisTest):
             with self.assertRaisesRegexp(ValueError, emsg):
                 Cube(data, dtype=np.complex)
 
-    def test_lazy_data_with_dtype_non_integral(self):
+    def test_lazy_data_masked_with_dtype__non_float_lazy_dtype(self):
         for dtype in self.dtypes:
-            data = np.array([0, 1], dtype=dtype)
+            if dtype != np.dtype('float'):
+                data = ma.array([0, 1], dtype=dtype)
+                emsg = ("Cannot set realised dtype for lazy data "
+                        "with dtype\('{}'\)")
+                with self.assertRaisesRegexp(ValueError, emsg.format(dtype)):
+                    Cube(as_lazy_data(data), dtype=np.dtype('int16'))
+
+    def test_lazy_data_masked_with_dtype_non_integral(self):
+        for dtype in self.dtypes:
+            data = ma.array([0, 1], dtype=dtype)
+            data[0] = ma.masked
             emsg = 'Can only cast lazy data to an integer or boolean dtype'
             with self.assertRaisesRegexp(ValueError, emsg):
                 Cube(as_lazy_data(data), dtype=np.complex)
@@ -1736,7 +1746,7 @@ class Test_data_dtype_fillvalue(tests.IrisTest):
 
     def test_set_fill_value__casterror(self):
         cube = self._sample_cube(dtype=np.int16)
-        msg = "invalid for cube dtype\('int16'\)"
+        msg = "Fill value of .* invalid for dtype\('int16'\)"
         with self.assertRaisesRegexp(ValueError, msg):
             # NOTE: this doesn't actually work properly in most cases.
             # E.G. it will happily assign 1e12 to an int16 and gets 4096.
