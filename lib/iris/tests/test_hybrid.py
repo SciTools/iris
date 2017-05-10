@@ -27,7 +27,6 @@ import six
 # importing anything else
 import iris.tests as tests
 
-from unittest import skip
 import warnings
 
 import numpy as np
@@ -144,7 +143,6 @@ class TestRealistic4d(tests.GraphicsTest):
             with self.assertRaises(UserWarning):
                 factory = HybridHeightFactory(orography=sigma)
 
-    @skip("Deferred loading of coordinates is temporarily removed.")
     def test_bounded_orography(self):
         # Start with everything normal
         orog = self.cube.coord('surface_altitude')
@@ -158,10 +156,9 @@ class TestRealistic4d(tests.GraphicsTest):
         self.assertIsInstance(altitude.bounds, np.ndarray)
 
         # Make sure altitude.bounds now raises an error.
-        altitude = self.cube.coord('altitude')
         exp_emsg = 'operands could not be broadcast together'
         with self.assertRaisesRegexp(ValueError, exp_emsg):
-            altitude.bounds
+            self.cube.coord('altitude')
 
 
 @tests.skip_data
@@ -225,7 +222,6 @@ class TestHybridPressure(tests.IrisTest):
                 factory = HybridPressureFactory(
                     sigma=sigma, surface_air_pressure=sigma)
 
-    @skip("Deferred loading of coordinates is temporarily removed.")
     def test_bounded_surface_pressure(self):
         # Start with everything normal
         surface_pressure = self.cube.coord('surface_air_pressure')
@@ -239,10 +235,9 @@ class TestHybridPressure(tests.IrisTest):
         self.assertIsInstance(pressure.bounds, np.ndarray)
 
         # Make sure pressure.bounds now raises an error.
-        pressure = self.cube.coord('air_pressure')
         exp_emsg = 'operands could not be broadcast together'
         with self.assertRaisesRegexp(ValueError, exp_emsg):
-            pressure.bounds
+            self.cube.coord('air_pressure')
 
 
 if __name__ == "__main__":
