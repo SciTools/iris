@@ -1653,18 +1653,22 @@ class DimCoord(Coord):
             # Ensure we have a realised array of new bounds values.
             bounds = as_concrete_data(bounds, result_dtype=self.dtype)
             bounds = np.asarray(bounds)
+            shape_2d = (self.shape[0], bounds.shape[0])
             if bounds.ndim == 1:
-                bounds = bounds.reshape(self.shape[0], bounds.shape[0])
+                bounds = bounds.reshape(shape_2d)
             # Checks for appropriate values for the new bounds.
             self._new_bounds_requirements(bounds)
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
-            if self._bounds_dm is None:
+            if self._bounds_dm is None or bounds.shape == shape_2d:
+                # Construct a new bounds DataManager iff:
+                #  * there wasn't a bounds DataManager before, or
+                #  * we've increased the dimensionality of the new bounds.
                 self._bounds_dm = DataManager(bounds,
                                               realised_dtype=bounds.dtype)
             else:
-                self._bounds_dm.replace(bounds)
+                self._bounds_dm.data = bounds
 
     def is_monotonic(self):
         return True
