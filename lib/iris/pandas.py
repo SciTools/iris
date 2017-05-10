@@ -30,10 +30,11 @@ import cf_units
 from cf_units import Unit
 import netcdftime
 import numpy as np
+import pandas
 try:
-    from pandas.core.indexes.datetimes import DatetimeIndex
+    from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
 except ImportError:
-    from pandas.tseries.index import DatetimeIndex
+    from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
 from iris.coords import AuxCoord, DimCoord
