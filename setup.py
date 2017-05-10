@@ -194,7 +194,7 @@ def extract_version():
 
 
 setup(
-    name='Iris',
+    name='iris-scitools',
     version=extract_version(),
     url='http://scitools.org.uk/iris/',
     author='UK Met Office',
