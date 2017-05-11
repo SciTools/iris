@@ -557,7 +557,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Array will be a new lazy array wrapper.
 
         Returns:
-            A lazy array, representing the coord bounds array.
+            A lazy array representing the coord bounds array or `None` if the
+            coord does not have bounds.
 
         """
         lazy_bounds = None
@@ -585,9 +586,19 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return result
 
     def has_lazy_points(self):
+        """
+        Return a boolean indicating whether the coord's points array is a
+        lazy dask array or not.
+
+        """
         return self._points_dm.has_lazy_data()
 
     def has_lazy_bounds(self):
+        """
+        Return a boolean indicating whether the coord's bounds array is a
+        lazy dask array or not.
+
+        """
         result = False
         if self.has_bounds():
             result = self._bounds_dm.has_lazy_data()
@@ -920,7 +931,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def dtype(self):
         """
-        The NumPy data type of the coord, as specified by its points.
+        The NumPy dtype of the coord, as specified by its points.
 
         """
         return self._points_dm.dtype
@@ -928,7 +939,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @property
     def bounds_dtype(self):
         """
-        The NumPy data type of the coord's bounds. Will be `None` if the coord
+        The NumPy dtype of the coord's bounds. Will be `None` if the coord
         does not have bounds.
 
         """
@@ -958,6 +969,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return nbounds
 
     def has_bounds(self):
+        """Return a boolean indicating whether the coord has a bounds array."""
         return self._bounds_dm is not None
 
     @property
@@ -1059,7 +1071,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds[1] = upper
             # Create points for the new collapsed coordinate.
             points_dtype = self.dtype
-            points = [(lower + upper) * 0.5]
+            points = (lower + upper) * 0.5
 
             # Create the new collapsed coordinate.
             if is_lazy_data(item):
@@ -1067,8 +1079,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 coord = self.copy(points=points, bounds=bounds)
             else:
                 bounds = np.concatenate(bounds)
+                bounds = np.array(bounds, dtype=bounds_dtype)
                 coord = self.copy(points=np.array(points, dtype=points_dtype),
-                                  bounds=np.array(bounds, dtype=bounds_dtype))
+                                  bounds=bounds)
         return coord
 
     def _guess_bounds(self, bound_position=0.5):
@@ -1425,8 +1438,8 @@ class DimCoord(Coord):
                         coord_system=copy.deepcopy(coord.coord_system),
                         circular=getattr(coord, 'circular', False))
 
-    @staticmethod
-    def from_regular(zeroth, step, count, standard_name=None,
+    @classmethod
+    def from_regular(cls, zeroth, step, count, standard_name=None,
                      long_name=None, var_name=None, units='1', attributes=None,
                      coord_system=None, circular=False, with_bounds=False):
         """
@@ -1467,10 +1480,10 @@ class DimCoord(Coord):
         else:
             bounds = None
 
-        return DimCoord(points, standard_name=standard_name,
-                        long_name=long_name, var_name=var_name, units=units,
-                        bounds=bounds, attributes=attributes,
-                        coord_system=coord_system, circular=circular)
+        return cls(points, standard_name=standard_name,
+                   long_name=long_name, var_name=var_name, units=units,
+                   bounds=bounds, attributes=attributes,
+                   coord_system=coord_system, circular=circular)
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None, attributes=None,
