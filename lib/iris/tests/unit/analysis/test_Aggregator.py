@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import cf_units as unit
 import numpy as np
 import numpy.ma as ma
 
@@ -326,9 +327,11 @@ class Test_aggregated_by(tests.IrisTest):
         longitude = DimCoord(np.linspace(45, 360, 8),
                              standard_name='longitude',
                              units='degrees')
+        time_unit = unit.Unit('hours since epoch',
+                              calendar=unit.CALENDAR_360_DAY)
         time = DimCoord(np.linspace(104040, 122040, 26),
                         standard_name='time',
-                        units='hours since 1970-01-01 00:00:00')
+                        units=time_unit)
         self.time_cube = Cube(np.zeros((26, 4, 8), np.float32),
                                dim_coords_and_dims=[(time, 0),
                                                     (latitude, 1),
@@ -337,7 +340,7 @@ class Test_aggregated_by(tests.IrisTest):
     def test_month_name(self):
         coord_categorisation.add_month_number(self.time_cube, 'time',
                                               name='month')
-        agg_cube = self.time_cube.aggregated_by('time', MEAN)
+        agg_cube = self.time_cube.aggregated_by('month', MEAN)
         coord_categorisation.add_month(agg_cube, 'time', name='month_name')
         self.assertEquals(agg_cube.coord('month_name').points[0], 'Jan')
         self.assertEquals(agg_cube.coord('month_name').points[2], 'Mar')
