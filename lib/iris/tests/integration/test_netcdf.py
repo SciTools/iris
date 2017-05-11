@@ -211,8 +211,8 @@ class TestLazySave(tests.IrisTest):
         self.assertTrue(acube.has_lazy_data())
 
     def test_lazy_mask_preserve_fill_value(self):
-        cube = iris.cube.Cube(np.ma.array([0, 1], mask=[False, True],
-                                          fill_value=-1))
+        data = ma.array([0, 1], mask=[False, True])
+        cube = iris.cube.Cube(data, fill_value=-1)
         with self.temp_filename(suffix='.nc') as filename, \
                 self.temp_filename(suffix='.nc') as other_filename:
             iris.save(cube, filename, unlimited_dimensions=[])

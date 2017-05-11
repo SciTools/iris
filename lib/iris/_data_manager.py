@@ -37,7 +37,7 @@ class DataManager(object):
 
     """
 
-    def __init__(self, data, realised_dtype=None):
+    def __init__(self, data, fill_value=None, realised_dtype=None):
         """
         Create a data manager for the specified data.
 
@@ -49,6 +49,11 @@ class DataManager(object):
             managed.
 
         Kwargs:
+
+        * fill_value:
+            The intended fill-value of :class:`~iris._data_manager.DataManager`
+            masked data. Note that, the fill-value is cast relative to the
+            dtype of the :class:`~iris._data_manager.DataManager`.
 
         * realised_dtype:
             The intended dtype of the specified lazy data, which must be
@@ -62,6 +67,9 @@ class DataManager(object):
 
         self._realised_dtype = None
         self._realised_dtype_setter(realised_dtype)
+
+        # Must be set after the realised dtype.
+        self.fill_value = fill_value
 
         # Enforce the manager contract.
         self._assert_axioms()
@@ -97,7 +105,8 @@ class DataManager(object):
         lazy payload to determine the equality result.
 
         Comparison is strict with regards to lazy or real managed payload,
-        the realised_dtype, the dtype of the payload and the payload content.
+        the realised_dtype, the dtype of the payload, the fill-value and the
+        payload content.
 
         Args:
 
@@ -114,9 +123,11 @@ class DataManager(object):
         if isinstance(other, type(self)):
             result = False
             same_lazy = self.has_lazy_data() == other.has_lazy_data()
+            same_fill_value = self.fill_value == other.fill_value
             same_realised_dtype = self._realised_dtype == other._realised_dtype
             same_dtype = self.dtype == other.dtype
-            if same_lazy and same_realised_dtype and same_dtype:
+            if same_lazy and same_fill_value and same_realised_dtype \
+                    and same_dtype:
                 result = array_equal(self.core_data(), other.core_data())
 
         return result
@@ -149,14 +160,18 @@ class DataManager(object):
         Returns an string representation of the instance.
 
         """
-        fmt = '{cls}({data!r}{dtype})'
+        fmt = '{cls}({data!r}{fill_value}{dtype})'
+        fill_value = ''
         dtype = ''
+
+        if self.fill_value is not None:
+            fill_value = ', fill_value={!r}'.format(self.fill_value)
 
         if self._realised_dtype is not None:
             dtype = ', realised_dtype={!r}'.format(self._realised_dtype)
 
         result = fmt.format(data=self.core_data(), cls=type(self).__name__,
-                            dtype=dtype)
+                            fill_value=fill_value, dtype=dtype)
 
         return result
 
@@ -185,7 +200,15 @@ class DataManager(object):
                 'real data and realised {!r}.')
         assert state, emsg.format(self._realised_dtype)
 
-    def _deepcopy(self, memo, data=None, realised_dtype='none'):
+        state = not (self.has_lazy_data() and
+                     self._lazy_array.dtype.kind != 'f' and
+                     self._realised_dtype is not None)
+        emsg = ('Unexpected lazy data dtype with realised dtype, got '
+                'lazy data {!r} and realised {!r}.')
+        assert state, emsg.format(self._lazy_array.dtype, self._realised_dtype)
+
+    def _deepcopy(self, memo, data=None, fill_value='none',
+                  realised_dtype='none'):
         """
         Perform a deepcopy of the :class:`~iris._data_manager.DataManager`
         instance.
@@ -200,6 +223,9 @@ class DataManager(object):
         * data:
             Replacement data to substitute the currently managed
             data with.
+
+        * fill_value:
+            Replacement fill-value.
 
         * realised_dtype:
             Replacement for the intended dtype of the realised lazy data.
@@ -222,11 +248,16 @@ class DataManager(object):
                 # If the replacement data is valid, then use it but
                 # without copying it.
 
+            if isinstance(fill_value, six.string_types) and \
+                    fill_value == 'none':
+                fill_value = self.fill_value
+
             if isinstance(realised_dtype, six.string_types) and \
                     realised_dtype == 'none':
                 realised_dtype = self._realised_dtype
 
-            result = DataManager(data, realised_dtype=realised_dtype)
+            result = DataManager(data, fill_value=fill_value,
+                                 realised_dtype=realised_dtype)
         except ValueError as error:
             emsg = 'Cannot copy {!r} - {}'
             raise ValueError(emsg.format(type(self).__name__, error))
@@ -254,6 +285,10 @@ class DataManager(object):
                     emsg = ('Cannot set realised dtype, no lazy data '
                             'is available.')
                     raise ValueError(emsg)
+                if self._lazy_array.dtype.kind != 'f':
+                    emsg = ('Cannot set realised dtype for lazy data '
+                            'with {!r}.')
+                    raise ValueError(emsg.format(self._lazy_array.dtype))
                 if realised_dtype.kind not in 'biu':
                     emsg = ('Can only cast lazy data to an integer or boolean '
                             'dtype, got {!r}.')
@@ -262,23 +297,6 @@ class DataManager(object):
 
                 # Check the manager contract, as the managed dtype has changed.
                 self._assert_axioms()
-
-    def core_data(self):
-        """
-        If real data is being managed, then return the :class:`~numpy.ndarray`
-        or :class:`numpy.ma.core.MaskedArray`. Otherwise, return the lazy
-        :class:`~dask.array.core.Array`.
-
-        Returns:
-            The real or lazy data.
-
-        """
-        if self.has_lazy_data():
-            result = self._lazy_array
-        else:
-            result = self._real_array
-
-        return result
 
     @property
     def data(self):
@@ -308,8 +326,12 @@ class DataManager(object):
                         'before trying again.')
                 raise MemoryError(emsg.format(self.shape, self.dtype))
 
-            # Check the manager contract, as the managed data has changed.
-            self._assert_axioms()
+        if ma.isMaskedArray(self._real_array):
+            # Align the numpy fill-value with the data manager fill-value.
+            self._real_array.fill_value = self.fill_value
+
+        # Check the manager contract, as the managed data has changed.
+        self._assert_axioms()
 
         return self._real_array
 
@@ -365,6 +387,14 @@ class DataManager(object):
         # Always reset the realised dtype, as the managed data has changed.
         self._realised_dtype = None
 
+        # Reset the fill-value appropriately.
+        if ma.isMaskedArray(data):
+            # Align the data manager fill-value with the numpy fill-value.
+            self.fill_value = data.fill_value
+        else:
+            # Clear the data manager fill-value.
+            self.fill_value = None
+
         # Check the manager contract, as the managed data has changed.
         self._assert_axioms()
 
@@ -382,6 +412,26 @@ class DataManager(object):
         return result
 
     @property
+    def fill_value(self):
+        return self._fill_value
+
+    @fill_value.setter
+    def fill_value(self, fill_value):
+        if fill_value is not None:
+            # Convert the given value to the dtype of the data manager.
+            fill_value = np.asarray([fill_value])[0]
+            target_dtype = self.dtype
+            if fill_value.dtype.kind == 'f' and target_dtype.kind in 'biu':
+                # Perform rounding when converting floats to ints.
+                fill_value = np.rint(fill_value)
+            try:
+                [fill_value] = np.asarray([fill_value], dtype=target_dtype)
+            except OverflowError:
+                emsg = 'Fill value of {!r} invalid for {!r}.'
+                raise ValueError(emsg.format(fill_value, self.dtype))
+        self._fill_value = fill_value
+
+    @property
     def ndim(self):
         """
         The number of dimensions covered by the data being managed.
@@ -397,7 +447,7 @@ class DataManager(object):
         """
         return self.core_data().shape
 
-    def copy(self, data=None, realised_dtype='none'):
+    def copy(self, data=None, fill_value='none', realised_dtype='none'):
         """
         Returns a deep copy of this :class:`~iris._data_manager.DataManager`
         instance.
@@ -406,6 +456,9 @@ class DataManager(object):
 
         * data:
             Replace the data of the copy with this data.
+
+        * fill_value:
+            Replacement fill-value.
 
         * realised_dtype:
             Replace the intended dtype of the lazy data
@@ -416,7 +469,25 @@ class DataManager(object):
 
         """
         memo = {}
-        return self._deepcopy(memo, data=data, realised_dtype=realised_dtype)
+        return self._deepcopy(memo, data=data, fill_value=fill_value,
+                              realised_dtype=realised_dtype)
+
+    def core_data(self):
+        """
+        If real data is being managed, then return the :class:`~numpy.ndarray`
+        or :class:`numpy.ma.core.MaskedArray`. Otherwise, return the lazy
+        :class:`~dask.array.core.Array`.
+
+        Returns:
+            The real or lazy data.
+
+        """
+        if self.has_lazy_data():
+            result = self._lazy_array
+        else:
+            result = self._real_array
+
+        return result
 
     def has_lazy_data(self):
         """
@@ -449,7 +520,7 @@ class DataManager(object):
 
         return result
 
-    def replace(self, data, realised_dtype=None):
+    def replace(self, data, fill_value=None, realised_dtype=None):
         """
         Perform an in-place replacement of the managed data.
 
@@ -462,12 +533,16 @@ class DataManager(object):
 
         Kwargs:
 
+        * fill_value:
+            Replacement for the :class:`~iris._data_manager.DataManager`
+            fill-value.
+
         * realised_dtype:
             The intended dtype of the specified lazy data.
 
         .. note::
             Data replacement alone will clear the intended dtype
-            of the realised lazy data.
+            of the realised lazy data, and the fill-value.
 
         """
         # Snapshot the currently managed data.
@@ -476,6 +551,7 @@ class DataManager(object):
         self.data = data
         try:
             self._realised_dtype_setter(realised_dtype)
+            self.fill_value = fill_value
         except ValueError as error:
             # Backout the data replacement, and reinstate the cached
             # original managed data.

@@ -1193,7 +1193,16 @@ def _proportion(array, function, axis, **kwargs):
     else:
         total_non_masked = array.shape[axis]
 
-    return _count(array, function, axis=axis, **kwargs) / total_non_masked
+    # Sanitise the result of this operation thru ma.asarray to ensure that
+    # the dtype of the fill-value and the dtype of the array are aligned.
+    # Otherwise, it is possible for numpy to return a masked array that has
+    # a dtype for its data that is different to the dtype of the fill-value,
+    # which can cause issues outside this function.
+    # Reference - tests/unit/analyis/test_PROPORTION.py Test_masked.test_ma
+    numerator = _count(array, function, axis=axis, **kwargs)
+    result = ma.asarray(numerator / total_non_masked)
+
+    return result
 
 
 def _rms(array, axis, **kwargs):
