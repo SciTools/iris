@@ -1066,9 +1066,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 else self.core_points()
             lower, upper = item.min(), item.max()
             bounds_dtype = item.dtype
-            bounds = np.empty((2,), 'object')
-            bounds[0] = lower
-            bounds[1] = upper
+            # Ensure 2D shape of new bounds.
+            bounds = np.empty((1, 2), 'object')
+            bounds[0, 0] = lower
+            bounds[0, 1] = upper
             # Create points for the new collapsed coordinate.
             points_dtype = self.dtype
             points = (lower + upper) * 0.5
