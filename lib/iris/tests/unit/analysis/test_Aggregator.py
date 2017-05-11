@@ -321,15 +321,19 @@ class Test_lazy_aggregate(tests.IrisTest):
 
 class Test_aggregated_by(tests.IrisTest):
     def setUp(self):
+        # This sets up a cube with a time coordinate containing two years and
+        # two months.
+        # This will test the ability of the aggregator to correctly calculate
+        # the order of months in the new coordinate array.
         latitude = DimCoord(np.linspace(-90, 90, 4),
                             standard_name='latitude',
                             units='degrees')
         longitude = DimCoord(np.linspace(45, 360, 8),
                              standard_name='longitude',
                              units='degrees')
-        time_unit = unit.Unit('hours since epoch',
+        time_unit = unit.Unit('days since epoch',
                               calendar=unit.CALENDAR_360_DAY)
-        time = DimCoord(np.linspace(104040, 122040, 26),
+        time = DimCoord(np.linspace(0, 750, 26),
                         standard_name='time',
                         units=time_unit)
         self.time_cube = Cube(np.zeros((26, 4, 8), np.float32),
@@ -343,7 +347,8 @@ class Test_aggregated_by(tests.IrisTest):
         agg_cube = self.time_cube.aggregated_by('month', MEAN)
         coord_categorisation.add_month(agg_cube, 'time', name='month_name')
         self.assertEquals(agg_cube.coord('month_name').points[0], 'Jan')
-        self.assertEquals(agg_cube.coord('month_name').points[2], 'Mar')
+        self.assertEquals(agg_cube.coord('month_name').points[4], 'May')
+        self.assertEquals(agg_cube.coord('month_name').points[8], 'Sep')
 
 
 if __name__ == "__main__":
