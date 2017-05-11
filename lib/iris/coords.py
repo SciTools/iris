@@ -1728,7 +1728,7 @@ class AuxCoord(Coord):
         if bounds is None:
             self._bounds_dm = None
         else:
-            if not self.has_lazy_bounds():
+            if not is_lazy_data(bounds):
                 bounds = self._sanitise_array(bounds, 2)
             if self.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points "
