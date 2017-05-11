@@ -566,8 +566,16 @@ class Test_data__getter(tests.IrisTest):
         self.assertArrayEqual(result, self.real_array)
 
     def test_with_real_mask_array__default_fill_value(self):
-        self.mask_array.fill_value = 1234
+        fill_value = 1234
+        self.mask_array.fill_value = fill_value
         dm = DataManager(self.mask_array)
+        self.assertEqual(dm.fill_value, fill_value)
+        self.assertEqual(dm.data.fill_value, fill_value)
+
+    def test_with_real_mask_array__with_fill_value_None(self):
+        fill_value = 1234
+        self.mask_array.fill_value = fill_value
+        dm = DataManager(self.mask_array, fill_value=None)
         self.assertIsNone(dm.fill_value)
         np_fill_value = ma.array(0, dtype=dm.dtype).fill_value
         self.assertEqual(dm.data.fill_value, np_fill_value)
@@ -580,6 +588,14 @@ class Test_data__getter(tests.IrisTest):
 
     def test_with_lazy_mask_array__masked_default_fill_value(self):
         dm = DataManager(self.lazy_mask_array_masked,
+                         realised_dtype=self.realised_dtype)
+        self.assertIsNone(dm.fill_value)
+        np_fill_value = ma.array(0, dtype=dm.dtype).fill_value
+        self.assertEqual(dm.data.fill_value, np_fill_value)
+
+    def test_with_lazy_mask_array__masked_fill_value_None(self):
+        dm = DataManager(self.lazy_mask_array_masked,
+                         fill_value=None,
                          realised_dtype=self.realised_dtype)
         self.assertIsNone(dm.fill_value)
         np_fill_value = ma.array(0, dtype=dm.dtype).fill_value
@@ -839,7 +855,7 @@ class Test_data__setter(tests.IrisTest):
         self.assertIsNone(dm.fill_value)
         data = ma.array(1)
         dm.data = data
-        self.assertEqual(dm.fill_value, data.fill_value)
+        self.assertIsNone(dm.fill_value)
 
     def test_mask_array__with_fill_value(self):
         dm = DataManager(np.array(0))
