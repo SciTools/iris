@@ -77,7 +77,7 @@ class DataManager(object):
         if ma.isMaskedArray(data) and \
                 isinstance(fill_value, six.string_types) and \
                 fill_value == 'none':
-            self._propogate_masked_data_fill_value()
+            self._propagate_masked_data_fill_value()
         else:
             if isinstance(fill_value, six.string_types) and \
                     fill_value == 'none':
@@ -277,7 +277,7 @@ class DataManager(object):
 
         return result
 
-    def _propogate_masked_data_fill_value(self):
+    def _propagate_masked_data_fill_value(self):
         """
         Align the data manager fill-value with the real masked array
         fill-value.
@@ -292,7 +292,7 @@ class DataManager(object):
                 # represent this by clearing the data manager fill-value.
                 self.fill_value = None
             else:
-                # Propogate the masked array fill-value to the data manager.
+                # Propagate the masked array fill-value to the data manager.
                 self.fill_value = data.fill_value
 
     def _realised_dtype_setter(self, realised_dtype):
@@ -421,7 +421,7 @@ class DataManager(object):
         # Reset the fill-value appropriately.
         if ma.isMaskedArray(data):
             # Align the data manager fill-value with the numpy fill-value.
-            self._propogate_masked_data_fill_value()
+            self._propagate_masked_data_fill_value()
         else:
             # Clear the data manager fill-value.
             self.fill_value = None

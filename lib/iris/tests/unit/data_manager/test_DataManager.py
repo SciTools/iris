@@ -471,7 +471,7 @@ class Test__deepcopy(tests.IrisTest):
             dm._deepcopy(self.memo, fill_value=1e+20)
 
 
-class Test__propogate_masked_data_fill_value(tests.IrisTest):
+class Test__propagate_masked_data_fill_value(tests.IrisTest):
     def setUp(self):
         self.real_array = np.array(0)
         self.mask_array = ma.array(0)
@@ -486,21 +486,21 @@ class Test__propogate_masked_data_fill_value(tests.IrisTest):
         dm = DataManager(self.real_array)
         dm.fill_value = 1234
         self.assertEqual(dm.fill_value, fill_value)
-        dm._propogate_masked_data_fill_value()
+        dm._propagate_masked_data_fill_value()
         self.assertEqual(dm.fill_value, fill_value)
 
     def test_clear_fill_value__with_np_default(self):
         fill_value = 1234
         self.dm.fill_value = fill_value
         self.assertEqual(self.dm.fill_value, fill_value)
-        self.dm._propogate_masked_data_fill_value()
+        self.dm._propagate_masked_data_fill_value()
         self.assertIsNone(self.dm.fill_value)
 
     def test_set_fill_value(self):
         fill_value = 1234
         self.assertIsNone(self.dm.fill_value)
         self.dm._real_array.fill_value = fill_value
-        self.dm._propogate_masked_data_fill_value()
+        self.dm._propagate_masked_data_fill_value()
         self.assertEqual(self.dm.fill_value, fill_value)
 
 
