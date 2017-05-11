@@ -33,6 +33,7 @@ import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris._data_manager import DataManager
 import iris.tests.stock
 
 
@@ -538,64 +539,81 @@ class TestGetterSetter(tests.IrisTest):
     def test_get_set_points_and_bounds(self):
         cube = iris.tests.stock.realistic_4d()
         coord = cube.coord("grid_latitude")
-        
+
         # get bounds
         bounds = coord.bounds
         self.assertEqual(bounds.shape, (100, 2))
-        
+
         self.assertEqual(bounds.shape[-1], coord.nbounds)
-        
+
         # set bounds
         coord.bounds = bounds + 1
-        
+
         np.testing.assert_array_equal(coord.bounds, bounds + 1)
 
         # set bounds - different length to existing points
         with self.assertRaises(ValueError):
             coord.bounds = bounds[::2, :]
-        
+
         # set points/bounds to None
         with self.assertRaises(ValueError):
             coord.points = None
         coord.bounds = None
-        
-        # set bounds from non-numpy pair
-        coord._points = None  # reset the undelying shape of the coordinate
+
+        # set bounds from non-numpy pair.
+        # First reset the underlying shape of the coordinate.
+        coord._points_dm = DataManager(1)
         coord.points = 1
         coord.bounds = [123, 456]
         self.assertEqual(coord.shape, (1, ))
         self.assertEqual(coord.bounds.shape, (1, 2))
-        
+
         # set bounds from non-numpy pairs
-        coord._points = None # reset the undelying shape of the coordinate
-        coord.points = list(range(3))
+        # First reset the underlying shape of the coord's points and bounds.
+        coord._points_dm = DataManager(np.arange(3))
+        coord.bounds = None
         coord.bounds = [[123, 456], [234, 567], [345, 678]]
         self.assertEqual(coord.shape, (3, ))
         self.assertEqual(coord.bounds.shape, (3, 2))
-        
+
 
 class TestGuessBounds(tests.IrisTest):
     def test_guess_bounds(self):
-        coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]), long_name="foo", units="1")
+        coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]),
+                                     long_name="foo", units="1")
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]))
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]))
+
         coord.bounds = None
         coord.guess_bounds(0.25)
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) + 2.5)
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5],
+                                        [5, 15],
+                                        [15, 25],
+                                        [25, 35]]) + 2.5)
+
         coord.bounds = None
         coord.guess_bounds(0.75)
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) - 2.5)
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5],
+                                        [5, 15],
+                                        [15, 25],
+                                        [25, 35]]) - 2.5)
 
         points = coord.points.copy()
         points[2] = 25
         coord.points = points
         coord.bounds = None
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5., 5.], [5., 17.5], [17.5, 27.5], [27.5, 32.5]]))
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5., 5.],
+                                        [5., 17.5],
+                                        [17.5, 27.5],
+                                        [27.5, 32.5]]))
+
         # if the points are not monotonic, then guess_bounds should fail
+        points = coord.points.copy()
         points[2] = 32
         coord = iris.coords.AuxCoord.from_coord(coord)
         coord.points = points

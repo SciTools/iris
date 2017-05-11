@@ -59,10 +59,10 @@ class Test__nd_points(tests.IrisTest):
         raw_points = np.arange(12).reshape(4, 3)
         points = as_lazy_data(raw_points, 1)
         coord = iris.coords.AuxCoord(points)
-        self.assertTrue(is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(coord.core_points()))
         result = AuxCoordFactory._nd_points(coord, (0, 1), 2)
         # Check we haven't triggered the loading of the coordinate values.
-        self.assertTrue(is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(coord.core_points()))
         self.assertTrue(is_lazy_data(result))
         expected = raw_points
         self.assertArrayEqual(result, expected)
@@ -71,10 +71,10 @@ class Test__nd_points(tests.IrisTest):
         raw_points = np.arange(12).reshape(4, 3)
         points = as_lazy_data(raw_points, 1)
         coord = iris.coords.AuxCoord(points)
-        self.assertTrue(is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(coord.core_points()))
         result = AuxCoordFactory._nd_points(coord, (3, 2), 5)
         # Check we haven't triggered the loading of the coordinate values.
-        self.assertTrue(is_lazy_data(coord._points))
+        self.assertTrue(is_lazy_data(coord.core_points()))
         self.assertTrue(is_lazy_data(result))
         expected = raw_points.T[np.newaxis, np.newaxis, ..., np.newaxis]
         self.assertArrayEqual(result, expected)

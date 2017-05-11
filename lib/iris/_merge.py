@@ -1685,7 +1685,7 @@ class ProtoCube(object):
         # the CoordDefn used by scalar_defns: `coord.points.dtype` and
         # `type(coord)`.
         def key_func(coord):
-            points_dtype = coord._points.dtype
+            points_dtype = coord.dtype
             return (not np.issubdtype(points_dtype, np.number),
                     not isinstance(coord, iris.coords.DimCoord),
                     hint_dict.get(coord.name(), len(hint_dict) + 1),
