@@ -37,7 +37,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._data_manager import DataManager
-from iris._lazy_data import as_concrete_data, is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data, multidim_lazy_stack
 import iris.aux_factory
 import iris.exceptions
 import iris.time
@@ -1054,14 +1054,21 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 else self.core_points()
             lower, upper = item.min(), item.max()
             bounds_dtype = item.dtype
-            bounds = [lower, upper]
+            bounds = np.empty((2,), 'object')
+            bounds[0] = lower
+            bounds[1] = upper
             # Create points for the new collapsed coordinate.
             points_dtype = self.dtype
             points = [(lower + upper) * 0.5]
 
             # Create the new collapsed coordinate.
-            coord = self.copy(points=np.array(points, dtype=points_dtype),
-                              bounds=np.array(bounds, dtype=bounds_dtype))
+            if is_lazy_data(item):
+                bounds = multidim_lazy_stack(bounds)
+                coord = self.copy(points=points, bounds=bounds)
+            else:
+                bounds = np.concatenate(bounds)
+                coord = self.copy(points=np.array(points, dtype=points_dtype),
+                                  bounds=np.array(bounds, dtype=bounds_dtype))
         return coord
 
     def _guess_bounds(self, bound_position=0.5):
