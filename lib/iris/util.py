@@ -1379,13 +1379,20 @@ def regular_step(coord):
     if coord.shape[0] < 2:
         raise ValueError("Expected a non-scalar coord")
 
-    diffs = coord.points[1:] - coord.points[:-1]
-    avdiff = np.mean(diffs)
-    if not np.allclose(diffs, avdiff, rtol=0.001):
-        # TODO: This value is set for test_analysis to pass...
+    avdiff, regular = points_step(coord.points)
+    if not regular:
         msg = "Coord %s is not regular" % coord.name()
         raise iris.exceptions.CoordinateNotRegularError(msg)
     return avdiff.astype(coord.points.dtype)
+
+
+def points_step(points):
+    """Determine whether a NumPy array has a regular step."""
+    diffs = np.diff(points)
+    avdiff = np.mean(diffs)
+    # TODO: This value for `rtol` is set for test_analysis to pass...
+    regular = np.allclose(diffs, avdiff, rtol=0.001)
+    return avdiff, regular
 
 
 def unify_time_units(cubes):
