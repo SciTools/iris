@@ -73,7 +73,7 @@ class Test_regular_step(tests.IrisTest):
         coord = DimCoord(points)
         expected = np.mean(np.diff(points))
         result = regular_step(coord)
-        self.assertArrayEqual(expected, result)
+        self.assertEqual(expected, result)
         self.assertEqual(result.dtype, dtype)
 
     def test_2d_coord(self):
@@ -101,14 +101,14 @@ class Test_points_step(tests.IrisTest):
         regular_points = np.arange(5)
         exp_avdiff = np.mean(np.diff(regular_points))
         result_avdiff, result = points_step(regular_points)
-        self.assertArrayEqual(exp_avdiff, result_avdiff)
+        self.assertEqual(exp_avdiff, result_avdiff)
         self.assertTrue(result)
 
     def test_irregular_points(self):
         irregular_points = np.array([2, 5, 1, 4])
         exp_avdiff = np.mean(np.diff(irregular_points))
         result_avdiff, result = points_step(irregular_points)
-        self.assertArrayEqual(exp_avdiff, result_avdiff)
+        self.assertEqual(exp_avdiff, result_avdiff)
         self.assertFalse(result)
 
 
