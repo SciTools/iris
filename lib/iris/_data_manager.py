@@ -294,10 +294,6 @@ class DataManager(object):
             else:
                 # Propogate the masked array fill-value to the data manager.
                 self.fill_value = data.fill_value
-                # Catch the case where numpy has a fill-value (default, or
-                # otherwise) that is invalid for the underlying dtype.
-                if self.fill_value != data.fill_value:
-                    self.fill_value = None
 
     def _realised_dtype_setter(self, realised_dtype):
         """

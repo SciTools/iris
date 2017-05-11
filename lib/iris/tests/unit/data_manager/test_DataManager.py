@@ -471,6 +471,39 @@ class Test__deepcopy(tests.IrisTest):
             dm._deepcopy(self.memo, fill_value=1e+20)
 
 
+class Test__propogate_masked_data_fill_value(tests.IrisTest):
+    def setUp(self):
+        self.real_array = np.array(0)
+        self.mask_array = ma.array(0)
+        np_fill_value = ma.array(0, dtype=self.mask_array.dtype).fill_value
+        assert np_fill_value == self.mask_array.fill_value
+        self.np_fill_value = np_fill_value
+        self.dm = DataManager(self.mask_array)
+        self.dm.fill_value = None
+
+    def test_nop__with_real_array(self):
+        fill_value = 1234
+        dm = DataManager(self.real_array)
+        dm.fill_value = 1234
+        self.assertEqual(dm.fill_value, fill_value)
+        dm._propogate_masked_data_fill_value()
+        self.assertEqual(dm.fill_value, fill_value)
+
+    def test_clear_fill_value__with_np_default(self):
+        fill_value = 1234
+        self.dm.fill_value = fill_value
+        self.assertEqual(self.dm.fill_value, fill_value)
+        self.dm._propogate_masked_data_fill_value()
+        self.assertIsNone(self.dm.fill_value)
+
+    def test_set_fill_value(self):
+        fill_value = 1234
+        self.assertIsNone(self.dm.fill_value)
+        self.dm._real_array.fill_value = fill_value
+        self.dm._propogate_masked_data_fill_value()
+        self.assertEqual(self.dm.fill_value, fill_value)
+
+
 class Test__realised_dtype_setter(tests.IrisTest):
     def setUp(self):
         self.real_array = np.array(0.0)
