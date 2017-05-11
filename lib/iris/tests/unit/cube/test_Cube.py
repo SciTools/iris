@@ -23,6 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from itertools import permutations
+
 import biggus
 import numpy as np
 import numpy.ma as ma
@@ -407,6 +409,82 @@ class Test_rolling_window(tests.IrisTest):
                                       mask=[True, False, False, True, True],
                                       dtype=np.float64)
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
+
+
+class Test_slices_dim_order(tests.IrisTest):
+    '''
+    This class tests the capability of iris.cube.Cube.slices(), including its
+    ability to correctly re-order the dimensions.
+    '''
+    def setUp(self):
+        '''
+        setup a 4D iris cube, each dimension is length 1.
+        The dimensions are;
+            dim1: time
+            dim2: height
+            dim3: latitude
+            dim4: longitude
+        '''
+        self.cube = iris.cube.Cube(np.array([[[[8.]]]]))
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [0])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "height"), [1])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "latitude"), [2])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "longitude"), [3])
+
+    @staticmethod
+    def expected_cube_setup(dim1name, dim2name, dim3name):
+        '''
+        input:
+        ------
+            dim1name: str
+                name of the first dimension coordinate
+            dim2name: str
+                name of the second dimension coordinate
+            dim3name: str
+                name of the third dimension coordinate
+        output:
+        ------
+            cube: iris cube
+                iris cube with the specified axis holding the data 8
+        '''
+        cube = iris.cube.Cube(np.array([[[8.]]]))
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim1name), [0])
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim2name), [1])
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim3name), [2])
+        return cube
+
+    def check_order(self, dim1, dim2, dim3, dim_to_remove):
+        '''
+        does two things:
+        (1) slices the 4D cube in dim1, dim2, dim3 (and removes the scalar
+        coordinate) and
+        (2) sets up a 3D cube with dim1, dim2, dim3.
+        input:
+        -----
+            dim1: str
+                name of first dimension
+            dim2: str
+                name of second dimension
+            dim3: str
+                name of third dimension
+            dim_to_remove: str
+                name of the dimension that transforms into a scalar coordinate
+                when slicing the cube.
+        output:
+        ------
+            sliced_cube: 3D cube
+                the cube that results if slicing the original cube
+            expected_cube: 3D cube
+                a cube set up with the axis corresponding to the dims
+        '''
+        sliced_cube = next(self.cube.slices([dim1, dim2, dim3]))
+        sliced_cube.remove_coord(dim_to_remove)
+        expected_cube = self.expected_cube_setup(dim1, dim2, dim3)
+        self.assertEqual(sliced_cube, expected_cube)
+
+    def test_all_permutations(self):
+        for perm in permutations(["time", "height", "latitude", "longitude"]):
+            self.check_order(*perm)
 
 
 @tests.skip_data

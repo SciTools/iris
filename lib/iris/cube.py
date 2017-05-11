@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -3940,7 +3940,10 @@ class _SliceIterator(collections.Iterator):
 
         if self._ordered:
             if any(self._mod_requested_dims != list(range(len(cube.shape)))):
-                cube.transpose(self._mod_requested_dims)
+                n = len(self._mod_requested_dims)
+                sliced_dims = np.empty(n, dtype=int)
+                sliced_dims[self._mod_requested_dims] = np.arange(n)
+                cube.transpose(sliced_dims)
 
         return cube
 
