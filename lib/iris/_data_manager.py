@@ -37,7 +37,7 @@ class DataManager(object):
 
     """
 
-    def __init__(self, data, fill_value=None, realised_dtype=None):
+    def __init__(self, data, fill_value='none', realised_dtype=None):
         """
         Create a data manager for the specified data.
 
@@ -74,9 +74,14 @@ class DataManager(object):
         self._realised_dtype_setter(realised_dtype)
 
         # Set the fill-value, must be set after the realised dtype.
-        if ma.isMaskedArray(data) and fill_value is None:
+        if ma.isMaskedArray(data) and \
+                isinstance(fill_value, six.string_types) and \
+                fill_value == 'none':
             self._propogate_masked_data_fill_value()
         else:
+            if isinstance(fill_value, six.string_types) and \
+                    fill_value == 'none':
+                fill_value = None
             self.fill_value = fill_value
 
         # Enforce the manager contract.
