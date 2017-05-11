@@ -1387,7 +1387,7 @@ def regular_step(coord):
 
 
 def points_step(points):
-    """Determine whether a set of points has a regular step."""
+    """Determine whether a NumPy array has a regular step."""
     diffs = np.diff(points)
     avdiff = np.mean(diffs)
     # TODO: This value for `rtol` is set for test_analysis to pass...
