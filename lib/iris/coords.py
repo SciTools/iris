@@ -44,7 +44,7 @@ import iris.time
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
-from iris.util import is_regular
+from iris.util import points_step
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',
@@ -1446,7 +1446,11 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
+        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+        _, regular = points_step(points)
+        if not regular:
+            points = (zeroth + step) + step * np.arange(count,
+                                                        dtype=np.float64)
         points.flags.writeable = False
 
         if with_bounds:
