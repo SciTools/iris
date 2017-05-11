@@ -105,7 +105,8 @@ class DataManager(object):
         lazy payload to determine the equality result.
 
         Comparison is strict with regards to lazy or real managed payload,
-        the realised_dtype, the dtype of the payload and the payload content.
+        the realised_dtype, the dtype of the payload, the fill-value and the
+        payload content.
 
         Args:
 
