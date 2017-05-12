@@ -520,13 +520,95 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         return new_coord
 
-    @abstractproperty
-    def points(self):
-        """Property containing the points values as a numpy array"""
+    @classmethod
+    def from_coord(cls, coord):
+        """Create a new Coord of this type, from the given coordinate."""
+        kwargs = {'points': coord.core_points(),
+                  'bounds': coord.core_bounds(),
+                  'standard_name': coord.standard_name,
+                  'long_name': coord.long_name,
+                  'var_name': coord.var_name,
+                  'units': coord.units,
+                  'attributes': coord.attributes,
+                  'coord_system': copy.deepcopy(coord.coord_system)}
+        if issubclass(cls, DimCoord):
+            # DimCoord introduces an extra constructor keyword.
+            kwargs['circular'] = getattr(coord, 'circular', False)
+        return cls(**kwargs)
 
-    @abstractproperty
-    def bounds(self):
-        """Property containing the bound values as a numpy array"""
+    def _sanitise_array(self, src, ndmin):
+        if is_lazy_data(src):
+            # Lazy data : just ensure ndmin requirement.
+            ndims_missing = ndmin - src.ndim
+            if ndims_missing <= 0:
+                result = src
+            else:
+                extended_shape = tuple([1] * ndims_missing + list(src.shape))
+                result = src.reshape(extended_shape)
+        else:
+            # Real data : a few more things to do in this case.
+            # Ensure the array is writeable.
+            # NB. Returns the *same object* if src is already writeable.
+            result = np.require(src, requirements='W')
+            # Ensure the array has enough dimensions.
+            # NB. Returns the *same object* if result.ndim >= ndmin
+            result = np.array(result, ndmin=ndmin, copy=False)
+            # We don't need to copy the data, but we do need to have our
+            # own view so we can control the shape, etc.
+            result = result.view()
+        return result
+
+    def _points_getter(self):
+        """The coordinate points values as a NumPy array."""
+        return self._points_dm.data
+
+    def _points_setter(self, points):
+        # Set the points to a new array - as long as it's the same shape.
+
+        # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
+        # This will avoid Scalar coords with points of shape () rather
+        # than the desired (1,).
+        points = self._sanitise_array(points, 1)
+
+        # Set or update DataManager.
+        if self._points_dm is None:
+            self._points_dm = DataManager(points)
+        else:
+            self._points_dm.data = points
+
+    points = property(_points_getter, _points_setter)
+
+    def _bounds_getter(self):
+        """
+        The coordinate bounds values, as a NumPy array,
+        or None if no bound values are defined.
+
+        .. note:: The shape of the bound array should be: ``points.shape +
+            (n_bounds, )``.
+
+        """
+        bounds = None
+        if self.has_bounds():
+            bounds = self._bounds_dm.data
+        return bounds
+
+    def _bounds_setter(self, bounds):
+        # Ensure the bounds are a compatible shape.
+        if bounds is None:
+            self._bounds_dm = None
+        else:
+            bounds = self._sanitise_array(bounds, 2)
+            if self.shape != bounds.shape[:-1]:
+                raise ValueError("Bounds shape must be compatible with points "
+                                 "shape.")
+            if not self.has_bounds() \
+                    or self.core_bounds().shape != bounds.shape:
+                # Construct a new bounds DataManager.
+                self._bounds_dm = DataManager(bounds)
+            else:
+                self._bounds_dm.data = bounds
+
+    bounds = property(_bounds_getter, _bounds_setter)
 
     def lazy_points(self):
         """
@@ -1429,16 +1511,6 @@ class DimCoord(Coord):
     A coordinate that is 1D, numeric, and strictly monotonic.
 
     """
-    @staticmethod
-    def from_coord(coord):
-        """Create a new DimCoord from the given coordinate."""
-        return DimCoord(coord.core_points(), standard_name=coord.standard_name,
-                        long_name=coord.long_name, var_name=coord.var_name,
-                        units=coord.units, bounds=coord.core_bounds(),
-                        attributes=coord.attributes,
-                        coord_system=copy.deepcopy(coord.coord_system),
-                        circular=getattr(coord, 'circular', False))
-
     @classmethod
     def from_regular(cls, zeroth, step, count, standard_name=None,
                      long_name=None, var_name=None, units='1', attributes=None,
@@ -1580,29 +1652,28 @@ class DimCoord(Coord):
         if len(points) > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
 
-    @property
-    def points(self):
-        """The local points values as a read-only NumPy array."""
-        return self._points_dm.data
-
-    @points.setter
-    def points(self, points):
-        # We must realise points to check monotonicity.
+    def _points_setter(self, points):
+        # DimCoord always realises the points, to allow monotonicity checks.
         copy = is_lazy_data(points)
         points = as_concrete_data(points)
-        points = np.array(points, copy=copy, ndmin=1)
+        # Ensure it is an array..
+        # .. and always a distinct view, so that we can make it read-only.
+        points = np.array(points, copy=copy)
 
-        # Set or update DataManager.
-        if self._points_dm is None:
-            self._points_dm = DataManager(points)
-        else:
-            self._points_dm.data = points
+        # Invoke the generic points setter.
+        super(DimCoord, self)._points_setter(points)
 
-        # Checks for 1d, numeric, monotonic
-        self._new_points_requirements(self._points_dm.data)
+        if self._points_dm is not None:
+            # Fetch the new core array, as the parent can change it.
+            points = self._points_dm._real_array
 
-        # Make the array read-only.
-        self._points_dm.data.flags.writeable = False
+            # Check validity requirements for dimension-coordinate points.
+            self._new_points_requirements(points)
+
+            # Make the array read-only.
+            self._points_dm.data.flags.writeable = False
+
+    points = property(Coord._points_getter, _points_setter)
 
     def _new_bounds_requirements(self, bounds):
         """
@@ -1639,37 +1710,27 @@ class DimCoord(Coord):
                 raise ValueError('The direction of monotonicity must be '
                                  'consistent across all bounds')
 
-    @property
-    def bounds(self):
-        """
-        The bounds values as a read-only NumPy array, or None if no
-        bounds have been set.
-
-        """
-        bounds = None
-        if self.has_bounds():
-            bounds = self._bounds_dm.data
-        return bounds
-
-    @bounds.setter
-    def bounds(self, bounds):
-        if bounds is None:
-            self._bounds_dm = None
-        else:
+    def _bounds_setter(self, bounds):
+        if bounds is not None:
             # Ensure we have a realised array of new bounds values.
             copy = is_lazy_data(bounds)
             bounds = as_concrete_data(bounds)
             bounds = np.array(bounds, copy=copy, ndmin=2)
-            # Checks for appropriate values for the new bounds.
+
+        # Invoke the generic bounds setter.
+        super(DimCoord, self)._bounds_setter(bounds)
+
+        if self._bounds_dm is not None:
+            # Fetch the new core array, as the parent can change it.
+            bounds = self._bounds_dm._real_array
+
+            # Check validity requirements for dimension-coordinate bounds.
             self._new_bounds_requirements(bounds)
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
-            if not self.has_bounds() or self.bounds.shape != bounds.shape:
-                # Construct a new bounds DataManager.
-                self._bounds_dm = DataManager(bounds)
-            else:
-                self._bounds_dm.data = bounds
+
+    bounds = property(Coord._bounds_getter, _bounds_setter)
 
     def is_monotonic(self):
         return True
@@ -1684,92 +1745,6 @@ class DimCoord(Coord):
 
 class AuxCoord(Coord):
     """A CF auxiliary coordinate."""
-    @staticmethod
-    def from_coord(coord):
-        """Create a new AuxCoord from the given coordinate."""
-        new_coord = AuxCoord(coord.points, standard_name=coord.standard_name,
-                             long_name=coord.long_name,
-                             var_name=coord.var_name,
-                             units=coord.units, bounds=coord.bounds,
-                             attributes=coord.attributes,
-                             coord_system=copy.deepcopy(coord.coord_system))
-
-        return new_coord
-
-    def _sanitise_array(self, src, ndmin):
-        if is_lazy_data(src):
-            # Lazy data : just ensure ndmin requirement.
-            ndims_missing = ndmin - src.ndim
-            if ndims_missing <= 0:
-                result = src
-            else:
-                extended_shape = tuple([1] * ndims_missing + list(src.shape))
-                result = src.reshape(extended_shape)
-        else:
-            # Real data : a few more things to do in this case.
-            # Ensure the array is writeable.
-            # NB. Returns the *same object* if src is already writeable.
-            result = np.require(src, requirements='W')
-            # Ensure the array has enough dimensions.
-            # NB. Returns the *same object* if result.ndim >= ndmin
-            result = np.array(result, ndmin=ndmin, copy=False)
-            # We don't need to copy the data, but we do need to have our
-            # own view so we can control the shape, etc.
-            result = result.view()
-        return result
-
-    @property
-    def points(self):
-        """The local points values as a read-only NumPy array."""
-        return self._points_dm.data
-
-    @points.setter
-    def points(self, points):
-        # Set the points to a new array - as long as it's the same shape.
-
-        # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
-        # This will avoid Scalar coords with points of shape () rather
-        # than the desired (1,).
-        points = self._sanitise_array(points, 1)
-
-        # Set or update DataManager.
-        if self._points_dm is None:
-            self._points_dm = DataManager(points)
-        else:
-            self._points_dm.data = points
-
-    @property
-    def bounds(self):
-        """
-        Property containing the bound values, as a NumPy array,
-        or None if no bound values are defined.
-
-        .. note:: The shape of the bound array should be: ``points.shape +
-            (n_bounds, )``.
-
-        """
-        bounds = None
-        if self.has_bounds():
-            bounds = self._bounds_dm.data
-        return bounds
-
-    @bounds.setter
-    def bounds(self, bounds):
-        # Ensure the bounds are a compatible shape.
-        if bounds is None:
-            self._bounds_dm = None
-        else:
-            bounds = self._sanitise_array(bounds, 2)
-            if self.shape != bounds.shape[:-1]:
-                raise ValueError("Bounds shape must be compatible with points "
-                                 "shape.")
-            if not self.has_bounds() \
-                    or self.core_bounds().shape != bounds.shape:
-                # Construct a new bounds DataManager.
-                self._bounds_dm = DataManager(bounds)
-            else:
-                self._bounds_dm.data = bounds
-
     # This is necessary for merging, but probably shouldn't be used otherwise.
     # See #962 and #1772.
     def __hash__(self):
