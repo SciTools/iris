@@ -1526,7 +1526,7 @@ class DimCoord(Coord):
 
     @points.setter
     def points(self, points):
-        points = np.array(points, ndmin=1, copy=False)
+        points = np.array(points, ndmin=1)
         # If points are already defined for this coordinate,
         if hasattr(self, '_points') and self._points is not None:
             # Check that setting these points wouldn't change self.shape
@@ -1562,7 +1562,7 @@ class DimCoord(Coord):
     def bounds(self, bounds):
         if bounds is not None:
             # Ensure the bounds are a compatible shape.
-            bounds = np.array(bounds, ndmin=2, copy=False)
+            bounds = np.array(bounds, ndmin=2)
             if self.shape != bounds.shape[:-1]:
                 raise ValueError(
                     "The shape of the bounds array should be "
