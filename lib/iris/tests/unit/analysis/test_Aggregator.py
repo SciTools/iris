@@ -348,9 +348,10 @@ class Test_aggregated_by(tests.IrisTest):
                                               name='month')
         agg_cube = self.time_cube.aggregated_by('month', MEAN)
         coord_categorisation.add_month(agg_cube, 'time', name='month_name')
-        self.assertEquals(agg_cube.coord('month_name').points[0], 'Jan')
-        self.assertEquals(agg_cube.coord('month_name').points[4], 'May')
-        self.assertEquals(agg_cube.coord('month_name').points[8], 'Sep')
+        month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+                       'Sep', 'Oct', 'Nov', 'Dec']
+        for i, month in enumerate(month_order):
+            self.assertEquals(agg_cube.coord('month_name').points[i], month)
 
 
 if __name__ == "__main__":
