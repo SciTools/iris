@@ -188,12 +188,15 @@ class Test_anonymous_dims(tests.IrisTest):
         result = concatenate([cube1, cube2])
         self.assertEqual(len(result), 2)
 
-    def _get_3d_cube(self):
-        cube = stock.simple_3d()
-        coord = cube.coord('wibble')
-        cube.remove_coord(coord)
-        cube.add_aux_coord(coord, 0)
-        return cube
+
+class Test_anonymous_dims_alternate_mapping(tests.IrisTest):
+    # Ensure that anonymous concatenation is not sensitive to dimension mapping
+    # of the anonymous dimension.
+    def setUp(self):
+        self.cube = stock.simple_3d()
+        coord = self.cube.coord('wibble')
+        self.cube.remove_coord(coord)
+        self.cube.add_aux_coord(coord, 0)
 
     def test_concatenate_anom_1st_dim(self):
         # Check that concatenation along a non anonymous dimension is
@@ -201,9 +204,8 @@ class Test_anonymous_dims(tests.IrisTest):
         # Concatenate along longitude.
         # DIM: cube(--, lat, lon)   & cube(--, lat, lon')
         # AUX: cube(wibble, --, --) & cube(wibble, --, --)
-        cube = self._get_3d_cube()
-        cube1 = cube[..., :2]
-        cube2 = cube[..., 2:]
+        cube1 = self.cube[..., :2]
+        cube2 = self.cube[..., 2:]
         result = concatenate([cube1, cube2])
         self.assertEqual(len(result), 1)
 
@@ -213,9 +215,8 @@ class Test_anonymous_dims(tests.IrisTest):
         # Concatenate along longitude.
         # DIM: cube(lon, --, lat)   & cube(lon', ---, lat)
         # AUX: cube(--, wibble, --) & cube(--, wibble, --)
-        cube = self._get_3d_cube()
-        cube1 = cube[..., :2]
-        cube2 = cube[..., 2:]
+        cube1 = self.cube[..., :2]
+        cube2 = self.cube[..., 2:]
         cube1.transpose((2, 0, 1))
         cube2.transpose((2, 0, 1))
         result = concatenate([cube1, cube2])
@@ -227,9 +228,8 @@ class Test_anonymous_dims(tests.IrisTest):
         # Concatenate along longitude.
         # DIM: cube(lat, lon, --)   & cube(lat, lon', --)
         # AUX: cube(--, --, wibble) & cube(--, --, wibble)
-        cube = self._get_3d_cube()
-        cube1 = cube[..., :2]
-        cube2 = cube[..., 2:]
+        cube1 = self.cube[..., :2]
+        cube2 = self.cube[..., 2:]
         cube1.transpose((1, 2, 0))
         cube2.transpose((1, 2, 0))
         result = concatenate([cube1, cube2])
