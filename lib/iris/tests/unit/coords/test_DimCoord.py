@@ -31,7 +31,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import dask.array as da
 import numpy as np
 
 from iris.tests.unit.coords import (CoordTestMixin,

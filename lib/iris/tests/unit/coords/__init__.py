@@ -17,7 +17,9 @@
 """
 Unit tests for the :mod:`iris.coords` module.
 
-Provides test methods and classes common to test_AuxCoord and test_DimCoord.
+Provides test methods and classes common to
+:class:`~iris.tests.unit.coords.test_AuxCoord` and 
+:class:`~iris.tests.unit.coords.test_DimCoord`.
 
 """
 from __future__ import (absolute_import, division, print_function)
@@ -46,7 +48,7 @@ def setup_test_arrays(self, shape):
 
 
 def is_real_data(array):
-    # A parallel to 'is_lazy_data'.
+    # A parallel to :func:`iris._lazy_data.is_lazy_data`.
     # Not just "not lazy" : ensure it is a 'real' array (i.e. numpy).
     return isinstance(array, np.ndarray)
 
