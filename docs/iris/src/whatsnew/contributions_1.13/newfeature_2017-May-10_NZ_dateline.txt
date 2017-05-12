@@ -1,0 +1,1 @@
+* A new capability has been added which recognises where rotated pole limited area datasets are using a 0<=lambda<360 extent and provides a useful base projection to enable them to display with a reasonable extent.
