@@ -323,15 +323,13 @@ class Test_aggregated_by(tests.IrisTest):
     def setUp(self):
         # This sets up a cube with a time coordinate containing two years and
         # two months.
-        # This will test the ability of the aggregator to correctly calculate
-        # the order of months in the new coordinate array.
         latitude = DimCoord(np.linspace(-90, 90, 4),
                             standard_name='latitude',
                             units='degrees')
         longitude = DimCoord(np.linspace(45, 360, 8),
                              standard_name='longitude',
                              units='degrees')
-        time_unit = unit.Unit('days since epoch',
+        time_unit = unit.Unit('days since 1970-01-01 00:00:00',
                               calendar=unit.CALENDAR_360_DAY)
         time = DimCoord(np.linspace(0, 750, 26),
                         standard_name='time',
@@ -342,6 +340,10 @@ class Test_aggregated_by(tests.IrisTest):
                                                     (longitude, 2)])
 
     def test_month_name(self):
+        # This will test the ability of the aggregator to correctly calculate
+        # the order of months in the new coordinate array.
+        # The month names should appear in chronological order from January
+        # through to December.
         coord_categorisation.add_month_number(self.time_cube, 'time',
                                               name='month')
         agg_cube = self.time_cube.aggregated_by('month', MEAN)
