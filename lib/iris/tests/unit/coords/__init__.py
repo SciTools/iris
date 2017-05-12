@@ -68,17 +68,22 @@ def lazyness_string(data):
     return 'lazy' if is_lazy_data(data) else 'real'
 
 
-def coords_all_dtypes_and_lazynesses(self, coord_class,
-                                     dtypes=(np.float64, np.int16)):
+def coords_all_dtypes_and_lazynesses(self, coord_class):
     # Generate coords with all possible types of points and bounds, and all
     # of the given dtypes.
     points_types = ['real', 'lazy']
     bounds_types = ['no', 'real', 'lazy']
-    for dtype in dtypes:
+    # Test a few specific combinations of points+bounds dtypes, including
+    # cases where they are different.
+    dtype_pairs = [(np.float64, np.float64),
+                   (np.int16, np.int16),
+                   (np.int16, np.float32),
+                   (np.float64, np.int32)]
+    for pts_dtype, bds_dtype in dtype_pairs:
         for points_type_name in points_types:
             for bounds_type_name in bounds_types:
-                pts = np.asarray(self.pts_real, dtype=dtype)
-                bds = np.asarray(self.bds_real, dtype=dtype)
+                pts = np.asarray(self.pts_real, dtype=pts_dtype)
+                bds = np.asarray(self.bds_real, dtype=bds_dtype)
                 if points_type_name == 'lazy':
                     pts = da.from_array(pts, pts.shape)
                 if bounds_type_name == 'lazy':
