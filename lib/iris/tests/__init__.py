@@ -49,6 +49,7 @@ import logging
 import math
 import os
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -127,6 +128,13 @@ try:
     STRATIFY_AVAILABLE = True
 except ImportError:
     STRATIFY_AVAILABLE = False
+
+#: CDL history attribute regular expression pattern for ISO8601 timestamp.
+iso8601 = '(?P<lhs>\s*:history = ")' \
+    '(?P<timestamp>\d{4}\-?\d{2}\-?\d{2}' \
+    '(T\d{2}\:?\d{2}\:?\d{2}(\.\d{3})?(([\+\-]\d{2}\:?\d{2})|Z)?)?: )' \
+    '(?P<rhs>.*)'
+iso8601 = re.compile(iso8601)
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
@@ -488,10 +496,21 @@ class IrisTest_nometa(unittest.TestCase):
         self.assertString(repr(obj), reference_filename)
 
     def _check_same(self, item, reference_path, type_comparison_name='CML'):
+        def _patch_history_attr(cdl):
+            result = iso8601.search(cdl)
+            if result:
+                start = result.start('timestamp')
+                end = result.end('timestamp')
+                cdl = cdl[:start] + cdl[end:]
+            return cdl
+
         if self._check_reference_file(reference_path):
             with open(reference_path, 'rb') as reference_fh:
                 reference = ''.join(part.decode('utf-8')
                                     for part in reference_fh.readlines())
+            if type_comparison_name == 'CDL':
+                item = _patch_history_attr(item)
+                reference = _patch_history_attr(reference)
             self._assert_str_same(reference, item, reference_path,
                                   type_comparison_name)
         else:
