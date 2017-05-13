@@ -535,13 +535,26 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         .. note:: If the points argument is specified and bounds are not, the
                   resulting coordinate will have no bounds.
 
+        .. deprecated:: 1.10
+
+            By default the new coordinate's `points` and `bounds` will
+            be independent copies of the corresponding attributes of the
+            source coordinate.
+            The `share_data` attribute of `iris.FUTURE` can be used to
+            switch to the new data-sharing behaviour.
+
         """
 
         if points is None and bounds is not None:
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        new_coord = copy.deepcopy(self)
+        if iris.FUTURE.share_data:
+            new_coord = copy.copy(self)
+            new_coord.attributes = copy.deepcopy(self.attributes)
+            new_coord.coord_system = copy.deepcopy(self.coord_system)
+        else:
+            new_coord = copy.deepcopy(self)
         if points is not None:
             # Explicitly not using the points property as we don't want the
             # shape the new points to be constrained by the shape of

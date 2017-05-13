@@ -1,0 +1,3 @@
+* Deprecated the data-copying behaviour of Cube indexing and `Coord.copy()`.
+ The `share_data` attribute of `iris.FUTURE` can be used to switch to
+ the new data-sharing behaviour.
