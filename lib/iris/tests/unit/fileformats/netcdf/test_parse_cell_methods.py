@@ -36,6 +36,7 @@ class Test(tests.IrisTest):
         cell_method_strings = [
             'time: mean',
             'time : mean',
+            'time :mean',
             ]
         expected = (CellMethod(method='mean', coords='time'),)
         for cell_method_str in cell_method_strings:
