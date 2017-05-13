@@ -25,6 +25,7 @@ import six
 
 import collections
 import operator
+import warnings
 
 import numpy as np
 
@@ -248,6 +249,8 @@ class _CoordConstraint(object):
         try:
             coord = cube.coord(self.coord_name)
         except iris.exceptions.CoordinateNotFoundError:
+            warnings.warn(
+                "Constrained coord {} not found".format(self.coord_name))
             cube_cim.all_false()
             return cube_cim
         dims = cube.coord_dims(coord)
