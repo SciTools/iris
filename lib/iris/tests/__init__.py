@@ -49,6 +49,7 @@ import logging
 import math
 import os
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -237,6 +238,19 @@ class IrisTest_nometa(unittest.TestCase):
         iris.site_configuration['cf_profile'] = None
 
     def _assert_str_same(self, reference_str, test_str, reference_filename, type_comparison_name='Strings'):
+        # Work around to deal with alterations to attribute typing in
+        # netcdf4python, introduced in 1.1 and present in 1.2. see:
+        # https://github.com/Unidata/netcdf-c/issues/298
+        # https://github.com/Unidata/netcdf4-python/issues/529
+        # https://github.com/Unidata/netcdf4-python/issues/575
+        # amongst others for further details.
+        if type_comparison_name == 'CDL' and reference_str != test_str:
+            # Match where a new line contains only:
+            # tab|tab|string |attr_definition.
+            pattern = re.compile('(^\t\t)string (.+)$', re.MULTILINE)
+            # Replace with tab|tab|attr_definition.
+            replacement = r'\t\t\2'
+            test_str = re.sub(pattern, replacement, test_str)
         if reference_str != test_str:
             diff = ''.join(difflib.unified_diff(reference_str.splitlines(1), test_str.splitlines(1),
                                                  'Reference', 'Test result', '', '', 0))
