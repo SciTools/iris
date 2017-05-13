@@ -1,0 +1,1 @@
+* Saving multiple cubes with netCDF4 protected attributes should now work as expected.

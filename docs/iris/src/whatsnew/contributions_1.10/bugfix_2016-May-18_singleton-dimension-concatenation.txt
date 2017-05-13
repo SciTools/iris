@@ -1,0 +1,1 @@
+* Concatenating cubes with singleton dimensions (dimensions of size one) now works properly.

@@ -1,0 +1,1 @@
+* It is now clear that repeated values will form a group under `aggregated_by` even if they aren't consecutive. Hence, the documentation for `iris.cube` has been changed to reflect this.

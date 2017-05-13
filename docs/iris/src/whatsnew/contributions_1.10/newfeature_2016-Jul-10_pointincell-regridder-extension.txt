@@ -1,0 +1,1 @@
+* PointInCell regridder now works across coordinate systems, including non latlon systems. Additionally, the requirement that the source data X and Y coordinates be 2D has been removed. NB: some aspects of this change are backwards incompatible (see below for details).
