@@ -1,0 +1,4 @@
+* Optional dependency on the ECMWF GRIB API `gribapi`.
+    Previous versions of Iris required `gribapi` to be installed, but
+    that is now optional and only necessary when reading/writing GRIB
+    files.
