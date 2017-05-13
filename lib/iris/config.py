@@ -73,6 +73,8 @@ import contextlib
 import os.path
 import warnings
 
+from iris._deprecation import warn_deprecated
+
 
 # Returns simple string options
 def get_option(section, option, default=None):
@@ -95,6 +97,11 @@ def get_dir_option(section, option, default=None):
     or does not represent a valid directory.
 
     """
+    if option == 'sample_data_dir':
+        wmsg = ('iris.config.SAMPLE_DATA_DIR was deprecated in v1.10.0 and '
+                'will be removed in a future Iris release. Install the '
+                'iris_sample_data package.')
+        warn_deprecated(wmsg)
     path = default
     if config.has_option(section, option):
         c_path = config.get(section, option)
