@@ -73,16 +73,14 @@ class DataManager(object):
         # Set the lazy data realised dtype, if appropriate.
         self._realised_dtype_setter(realised_dtype)
 
+        default_fill_value = (isinstance(fill_value, six.string_types) and
+                              fill_value == 'none')
+
         # Set the fill-value, must be set after the realised dtype.
-        if ma.isMaskedArray(data) and \
-                isinstance(fill_value, six.string_types) and \
-                fill_value == 'none':
+        if ma.isMaskedArray(data) and default_fill_value:
             self._propagate_masked_data_fill_value()
         else:
-            if isinstance(fill_value, six.string_types) and \
-                    fill_value == 'none':
-                fill_value = None
-            self.fill_value = fill_value
+            self.fill_value = None if default_fill_value else fill_value
 
         # Enforce the manager contract.
         self._assert_axioms()
@@ -419,12 +417,13 @@ class DataManager(object):
         self._realised_dtype = None
 
         # Reset the fill-value appropriately.
-        if ma.isMaskedArray(data):
-            # Align the data manager fill-value with the numpy fill-value.
-            self._propagate_masked_data_fill_value()
-        else:
-            # Clear the data manager fill-value.
-            self.fill_value = None
+        if init_done:
+            if ma.isMaskedArray(data):
+                # Align the data manager fill-value with the numpy fill-value.
+                self._propagate_masked_data_fill_value()
+            else:
+                # Clear the data manager fill-value.
+                self.fill_value = None
 
         # Check the manager contract, as the managed data has changed.
         self._assert_axioms()
