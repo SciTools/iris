@@ -37,7 +37,7 @@ class DataManager(object):
 
     """
 
-    def __init__(self, data, fill_value=None, realised_dtype=None):
+    def __init__(self, data, fill_value='none', realised_dtype=None):
         """
         Create a data manager for the specified data.
 
@@ -61,15 +61,26 @@ class DataManager(object):
             integer or boolean masked data.
 
         """
+        # Initialise the instance.
+        self._fill_value = None
         self._lazy_array = None
         self._real_array = None
+        self._realised_dtype = None
+
+        # Assign the data payload to be managed.
         self.data = data
 
-        self._realised_dtype = None
+        # Set the lazy data realised dtype, if appropriate.
         self._realised_dtype_setter(realised_dtype)
 
-        # Must be set after the realised dtype.
-        self.fill_value = fill_value
+        default_fill_value = (isinstance(fill_value, six.string_types) and
+                              fill_value == 'none')
+
+        # Set the fill-value, must be set after the realised dtype.
+        if ma.isMaskedArray(data) and default_fill_value:
+            self._propagate_masked_data_fill_value()
+        else:
+            self.fill_value = None if default_fill_value else fill_value
 
         # Enforce the manager contract.
         self._assert_axioms()
@@ -264,6 +275,24 @@ class DataManager(object):
 
         return result
 
+    def _propagate_masked_data_fill_value(self):
+        """
+        Align the data manager fill-value with the real masked array
+        fill-value.
+
+        """
+        data = self._real_array
+        if ma.isMaskedArray(data):
+            # Determine the default numpy fill-value.
+            np_fill_value = ma.masked_array(0, dtype=data.dtype).fill_value
+            if data.fill_value == np_fill_value:
+                # Never store the numpy default fill-value, rather
+                # represent this by clearing the data manager fill-value.
+                self.fill_value = None
+            else:
+                # Propagate the masked array fill-value to the data manager.
+                self.fill_value = data.fill_value
+
     def _realised_dtype_setter(self, realised_dtype):
         """
         Set the intended dtype of the realised lazy data. This is to support
@@ -388,12 +417,13 @@ class DataManager(object):
         self._realised_dtype = None
 
         # Reset the fill-value appropriately.
-        if ma.isMaskedArray(data):
-            # Align the data manager fill-value with the numpy fill-value.
-            self.fill_value = data.fill_value
-        else:
-            # Clear the data manager fill-value.
-            self.fill_value = None
+        if init_done:
+            if ma.isMaskedArray(data):
+                # Align the data manager fill-value with the numpy fill-value.
+                self._propagate_masked_data_fill_value()
+            else:
+                # Clear the data manager fill-value.
+                self.fill_value = None
 
         # Check the manager contract, as the managed data has changed.
         self._assert_axioms()
