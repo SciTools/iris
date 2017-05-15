@@ -402,7 +402,7 @@ class NetCDFDataProxy(object):
                 raise TypeError(
                     msg.format(self.variable_name, self.dtype.name))
             var = array_masked_to_nans(var)
-        return var
+        return var.astype(self.dtype, copy=False)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \

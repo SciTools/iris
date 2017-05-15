@@ -882,7 +882,8 @@ class PPDataProxy(object):
                                                self.boundary_packing,
                                                self.shape, self.src_dtype,
                                                self.mdi, self.mask)
-        return data.__getitem__(keys)
+        return data.__getitem__(keys).astype(self.dtype, copy=False)
+
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
