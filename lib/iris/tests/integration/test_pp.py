@@ -47,18 +47,17 @@ class TestVertical(tests.IrisTest):
         if bounds is not None:
             self.assertArrayEqual(coords[0].bounds, [bounds])
 
-    # hits a segfault, very odd
-#    @tests.skip_biggus
     def test_soil_level_round_trip(self):
         # Use pp.load_cubes() to convert a fake PPField into a Cube.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         soil_level = 1234
+        mock_core_data = mock.MagicMock(return_value=np.zeros(1))
         field = mock.MagicMock(lbvc=6, lblev=soil_level,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
                                brsvd=[0] * 4, brlev=0,
-                               _data=np.zeros(1))
+                               core_data=mock_core_data)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -82,19 +81,18 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(field.brsvd[0], 0)
         self.assertEqual(field.brlev, 0)
 
-    # hits a segfault, very odd
-#    @tests.skip_biggus
     def test_soil_depth_round_trip(self):
         # Use pp.load_cubes() to convert a fake PPField into a Cube.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         lower, point, upper = 1.2, 3.4, 5.6
         brsvd = [lower, 0, 0, 0]
+        mock_core_data = mock.MagicMock(return_value=np.zeros(1))
         field = mock.MagicMock(lbvc=6, blev=point,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
                                brsvd=brsvd, brlev=upper,
-                               _data=np.zeros(1))
+                               core_data=mock_core_data)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -118,8 +116,6 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(field.brsvd[0], lower)
         self.assertEqual(field.brlev, upper)
 
-    # hits a segfault, very odd
-#    @tests.skip_biggus
     def test_potential_temperature_level_round_trip(self):
         # Check save+load for data on 'potential temperature' levels.
 
@@ -127,9 +123,10 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         potm_value = 22.5
+        mock_core_data = mock.MagicMock(return_value=np.zeros(1))
         field = mock.MagicMock(lbvc=19, blev=potm_value,
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
-                               _data=np.zeros(1))
+                               core_data=mock_core_data)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load):
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
