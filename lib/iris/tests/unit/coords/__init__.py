@@ -18,7 +18,7 @@
 Unit tests for the :mod:`iris.coords` module.
 
 Provides test methods and classes common to
-:class:`~iris.tests.unit.coords.test_AuxCoord` and 
+:class:`~iris.tests.unit.coords.test_AuxCoord` and
 :class:`~iris.tests.unit.coords.test_DimCoord`.
 
 """
