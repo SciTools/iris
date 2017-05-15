@@ -18,9 +18,7 @@
 Unit tests for the :class:`iris.coords.DimCoord` class.
 
 Note: a lot of these methods are actually defined by the :class:`Coord` class,
-but can only be tested on concrete DimCoord/AuxCoord instances.
-In addition, the DimCoord class has little behaviour for some of these, as it
-cannot contain lazy points or bounds data.
+but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 """
 
@@ -86,7 +84,8 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         bds_shape = list(self.bds_real.shape)
         bds_shape[0] += 1
         bds_wrong = np.zeros(bds_shape)
-        msg = 'shape'
+        msg = ('The shape of the bounds array should be '
+               'points.shape \+ \(n_bounds,\)')
         with self.assertRaisesRegexp(ValueError, msg):
             DimCoord(self.pts_real, bounds=bds_wrong)
 
@@ -234,8 +233,8 @@ class Test__getitem__(tests.IrisTest, DimCoordTestMixin):
     def test_dtypes(self):
         # Index coords with all combinations of real+lazy points+bounds, and
         # either an int or floating dtype.
-        # Check that dtypes are preserved in all cases, taking dtypes directly
-        # from the core points and bounds arrays (as we have no masking).
+        # Check that dtypes remain the same in all cases, taking the dtypes
+        # directly from the core points and bounds (as we have no masking).
         for (main_coord, points_type_name, bounds_type_name) in \
                 coords_all_dtypes_and_lazynesses(self, DimCoord):
 
@@ -265,7 +264,7 @@ class Test__getitem__(tests.IrisTest, DimCoordTestMixin):
     def test_lazyness(self):
         # Index coords with all combinations of real+lazy points+bounds, and
         # either an int or floating dtype.
-        # Check that lazyness/reality is preserved in all cases.
+        # Check that lazy data stays lazy and real stays real, in all cases.
         for (main_coord, points_type_name, bounds_type_name) in \
                 coords_all_dtypes_and_lazynesses(self, DimCoord):
             # N.B. 'points_type_name' and 'bounds_type_name' in the iteration
@@ -359,22 +358,14 @@ class Test_copy(tests.IrisTest, DimCoordTestMixin):
 
             copied_coord = main_coord.copy()
 
-            msg = ('Copied coord with {} points and {} bounds '
-                   'does not have read-only {}.')
-
             copied_points = copied_coord.core_points()
-            with self.assertRaisesRegexp(ValueError, 'read-only',
-                                         msg=msg.format(points_type_name,
-                                                        bounds_type_name,
-                                                        'points')):
+            expected_error_msg = 'output array is read-only'
+            with self.assertRaisesRegexp(ValueError, expected_error_msg):
                 copied_points[:1] += 33
 
             if bounds_type_name != 'no':
                 copied_bounds = copied_coord.core_bounds()
-                with self.assertRaisesRegexp(ValueError, 'read-only',
-                                             msg=msg.format(points_type_name,
-                                                            bounds_type_name,
-                                                            'bounds')):
+                with self.assertRaisesRegexp(ValueError, expected_error_msg):
                     copied_bounds[:1] += 33
 
 
@@ -408,7 +399,7 @@ class Test_points__setter(tests.IrisTest, DimCoordTestMixin):
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = DimCoord([1.0, 2.0])
-        msg = 'shape'
+        msg = 'Require data with shape \(2,\), got \(3,\)'
         with self.assertRaisesRegexp(ValueError, msg):
             coord.points = np.array([1.0, 2.0, 3.0])
 
@@ -451,7 +442,8 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
-        msg = 'shape'
+        msg = ('The shape of the bounds array should be '
+               'points.shape \+ \(n_bounds,\)')
         with self.assertRaisesRegexp(ValueError, msg):
             coord.bounds = np.array([1.0, 2.0, 3.0])
 

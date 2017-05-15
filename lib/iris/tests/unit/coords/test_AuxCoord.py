@@ -18,9 +18,7 @@
 Unit tests for the :class:`iris.coords.AuxCoord` class.
 
 Note: a lot of these methods are actually defined by the :class:`Coord` class,
-but can only be tested on concrete DimCoord/AuxCoord instances.
-In addition, the DimCoord class has little behaviour for some of these, as it
-cannot contain lazy points or bounds data.
+but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 """
 
@@ -191,11 +189,6 @@ class Test_lazy_bounds(tests.IrisTest, AuxCoordTestMixin):
         result = coord.lazy_bounds()
         self.assertIs(result, self.bds_lazy)
 
-    def test_none(self):
-        coord = AuxCoord(self.pts_real)
-        result = coord.lazy_bounds()
-        self.assertIsNone(result)
-
 
 class Test_has_lazy_points(tests.IrisTest, AuxCoordTestMixin):
     def setUp(self):
@@ -281,8 +274,8 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
     def test_dtypes(self):
         # Index coords with all combinations of real+lazy points+bounds, and
         # either an int or floating dtype.
-        # Check that dtypes are preserved in all cases, taking dtypes directly
-        # from the core points and bounds arrays (as we have no masking).
+        # Check that dtypes remain the same in all cases, taking the dtypes
+        # directly from the core points and bounds (as we have no masking).
         for (main_coord, points_type_name, bounds_type_name) in \
                 coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
@@ -312,7 +305,7 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
     def test_lazyness(self):
         # Index coords with all combinations of real+lazy points+bounds, and
         # either an int or floating dtype.
-        # Check that laziness is preserved in all cases.
+        # Check that lazy data stays lazy and real stays real, in all cases.
         for (main_coord, points_type_name, bounds_type_name) in \
                 coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
@@ -376,7 +369,7 @@ class Test_copy(tests.IrisTest, AuxCoordTestMixin):
     def test_lazyness(self):
         # Copy coords with all combinations of real+lazy points+bounds, and
         # either an int or floating dtype.
-        # In all cases, check that real/lazy status is preserved..
+        # Check that lazy data stays lazy and real stays real, in all cases.
         for (main_coord, points_lazyness, bounds_lazyness) in \
                 coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
@@ -506,7 +499,7 @@ class Test_points__setter(tests.IrisTest, AuxCoordTestMixin):
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = AuxCoord([1.0, 2.0])
-        msg = 'shape'
+        msg = 'Require data with shape \(2,\), got \(3,\)'
         with self.assertRaisesRegexp(ValueError, msg):
             coord.points = np.array([1.0, 2.0, 3.0])
 
