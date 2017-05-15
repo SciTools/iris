@@ -64,7 +64,8 @@ class TestBoundedTime(TestField):
                       '_forecastTimeUnit': 'hours',
                       'phenomenon_bounds': lambda u: (80, 120),
                       '_phenomenonDateTime': -1,
-                      'table2Version': 9999}
+                      'table2Version': 9999,
+                      '_originatingCentre': 'xxx'}
         attributes.update(kwargs)
         message = mock.Mock(**attributes)
         self._test_for_coord(message, grib1_convert, self.is_forecast_period,
