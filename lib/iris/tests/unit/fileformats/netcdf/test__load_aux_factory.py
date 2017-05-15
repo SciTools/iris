@@ -109,12 +109,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
                 'coordinate {!r} bounds.'.format(coord_p0.name())
             self.assertEqual(msg, str(warn[0].message))
 
-    def test_formula_terms_ap_missing_coords(self):
-        self.requires['formula_terms'] = dict(ap='ap', b='b', ps='ps')
-        with mock.patch('warnings.warn') as warn:
-            _load_aux_factory(self.engine, self.cube)
-        warn.assert_called_once_with("Unable to find coordinate for variable "
-                                     "'ap'")
+    def _check_no_delta(self):
         # Check cube.add_aux_coord method.
         self.assertEqual(self.cube.add_aux_coord.call_count, 0)
         # Check cube.add_aux_factory method.
@@ -127,20 +122,32 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.assertEqual(factory.sigma, mock.sentinel.b)
         self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
 
+    def test_formula_terms_ap_missing_coords(self):
+        self.requires['formula_terms'] = dict(ap='ap', b='b', ps='ps')
+        with mock.patch('warnings.warn') as warn:
+            _load_aux_factory(self.engine, self.cube)
+        warn.assert_called_once_with("Unable to find coordinate for variable "
+                                     "'ap'")
+        self._check_no_delta()
+
     def test_formula_terms_no_delta_terms(self):
         self.requires['formula_terms'] = dict(b='b', ps='ps')
         _load_aux_factory(self.engine, self.cube)
-        # Check cube.add_aux_coord method.
-        self.assertEqual(self.cube.add_aux_coord.call_count, 0)
-        # Check cube.add_aux_factory method.
-        self.assertEqual(self.cube.add_aux_factory.call_count, 1)
-        args, _ = self.cube.add_aux_factory.call_args
-        self.assertEqual(len(args), 1)
-        factory = args[0]
-        # Check that the factory has no delta term
-        self.assertEqual(factory.delta, None)
-        self.assertEqual(factory.sigma, mock.sentinel.b)
-        self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
+        self._check_no_delta()
+
+    def test_formula_terms_no_p0_term(self):
+        coord_a = DimCoord(np.arange(5), units='Pa')
+        self.provides['coordinates'].append((coord_a, 'a'))
+        self.requires['formula_terms'] = dict(a='a', b='b', ps='ps')
+        _load_aux_factory(self.engine, self.cube)
+        self._check_no_delta()
+
+    def test_formula_terms_no_a_term(self):
+        coord_p0 = DimCoord(10, units='1')
+        self.provides['coordinates'].append((coord_p0, 'p0'))
+        self.requires['formula_terms'] = dict(a='p0', b='b', ps='ps')
+        _load_aux_factory(self.engine, self.cube)
+        self._check_no_delta()
 
 
 if __name__ == '__main__':
