@@ -67,7 +67,6 @@ class TestPPField(PPField):
 
 
 class Test_save(tests.IrisTest):
-    @tests.skip_biggus
     def test_float64(self):
         # Tests down-casting of >f8 data to >f4.
 
