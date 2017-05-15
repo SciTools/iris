@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -1676,7 +1676,8 @@ class ProtoCube(object):
             dependencies = factory.dependencies
             for key in sorted(dependencies):
                 coord = dependencies[key]
-                dependency_defns.append((key, coord._as_defn()))
+                if coord is not None:
+                    dependency_defns.append((key, coord._as_defn()))
             factory_defn = _FactoryDefn(type(factory), dependency_defns)
             factory_defns.append(factory_defn)
 

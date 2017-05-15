@@ -575,12 +575,13 @@ def _load_aux_factory(engine, cube):
                         'ocean_s_coordinate_g2']:
         def coord_from_term(term):
             # Convert term names to coordinates (via netCDF variable names).
-            name = engine.requires['formula_terms'][term]
-            for coord, cf_var_name in engine.provides['coordinates']:
-                if cf_var_name == name:
-                    return coord
-            warnings.warn('Unable to find coordinate for variable '
-                          '{!r}'.format(name))
+            name = engine.requires['formula_terms'].get(term, None)
+            if name is not None:
+                for coord, cf_var_name in engine.provides['coordinates']:
+                    if cf_var_name == name:
+                        return coord
+                warnings.warn('Unable to find coordinate for variable '
+                              '{!r}'.format(name))
 
         if formula_type == 'atmosphere_hybrid_height_coordinate':
             delta = coord_from_term('a')
@@ -591,28 +592,31 @@ def _load_aux_factory(engine, cube):
             # Hybrid pressure has two valid versions of its formula terms:
             # "p0: var1 a: var2 b: var3 ps: var4" or
             # "ap: var1 b: var2 ps: var3" where "ap = p0 * a"
-            try:
-                # Attempt to get the "ap" term.
-                delta = coord_from_term('ap')
-            except (KeyError, ValueError):
+            # Attempt to get the "ap" term.
+            delta = coord_from_term('ap')
+            if delta is None:
                 # The "ap" term is unavailable, so try getting terms "p0"
                 # and "a" terms in order to derive an "ap" equivalent term.
                 coord_p0 = coord_from_term('p0')
-                if coord_p0.shape != (1,):
-                    msg = 'Expecting {!r} to be a scalar reference pressure ' \
-                        'coordinate, got shape {!r}'.format(coord_p0.var_name,
-                                                            coord_p0.shape)
-                    raise ValueError(msg)
-                if coord_p0.has_bounds():
-                    msg = 'Ignoring atmosphere hybrid sigma pressure scalar ' \
-                        'coordinate {!r} bounds.'.format(coord_p0.name())
-                    warnings.warn(msg)
-                coord_a = coord_from_term('a')
-                delta = coord_a * coord_p0.points[0]
-                delta.units = coord_a.units * coord_p0.units
-                delta.rename('vertical pressure')
-                delta.var_name = 'ap'
-                cube.add_aux_coord(delta, cube.coord_dims(coord_a))
+                if coord_p0 is not None:
+                    if coord_p0.shape != (1,):
+                        msg = 'Expecting {!r} to be a scalar reference ' \
+                            'pressure coordinate, got shape {!r}'.format(
+                                coord_p0.var_name,
+                                coord_p0.shape)
+                        raise ValueError(msg)
+                    if coord_p0.has_bounds():
+                        msg = 'Ignoring atmosphere hybrid sigma pressure ' \
+                            'scalar coordinate {!r} bounds.'.format(
+                                coord_p0.name())
+                        warnings.warn(msg)
+                    coord_a = coord_from_term('a')
+                    if coord_a is not None:
+                        delta = coord_a * coord_p0.points[0]
+                        delta.units = coord_a.units * coord_p0.units
+                        delta.rename('vertical pressure')
+                        delta.var_name = 'ap'
+                        cube.add_aux_coord(delta, cube.coord_dims(coord_a))
 
             sigma = coord_from_term('b')
             surface_air_pressure = coord_from_term('ps')

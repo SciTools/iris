@@ -359,6 +359,14 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         self.cube1.add_aux_factory(mock.MagicMock(spec=HybridPressureFactory))
         self.check_fail("cube.aux_factories", "differ")
 
+    def test_factory_defns_one_missing_term(self):
+        self.cube1.add_aux_factory(mock.MagicMock(spec=HybridPressureFactory))
+        no_delta_factory = mock.MagicMock(spec=HybridPressureFactory)
+        no_delta_factory.delta = None
+        self.cube2.add_aux_factory(no_delta_factory)
+
+        self.check_fail("cube.aux_factories", "differ")
+
     def test_noise(self):
         cube2 = self.cube2
 
