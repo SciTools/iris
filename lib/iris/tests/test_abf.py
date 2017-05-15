@@ -28,7 +28,6 @@ import iris
 import iris.fileformats.abf
 
 
-@tests.skip_biggus
 @tests.skip_data
 class TestAbfLoad(tests.IrisTest):
     def setUp(self):
