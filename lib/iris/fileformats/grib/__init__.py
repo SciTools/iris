@@ -177,7 +177,7 @@ class GribWrapper(object):
             # The byte offset requires to be reset back to the first byte
             # of this message. The file pointer offset is always at the end
             # of the current message due to the grib-api reading the message.
-            proxy = GribDataProxy(shape, np.zeros(0).dtype, grib_fh.name,
+            proxy = GribDataProxy(shape, np.array([0.]).dtype, grib_fh.name,
                                   offset - message_length)
             self._data = as_lazy_data(proxy)
         else:
