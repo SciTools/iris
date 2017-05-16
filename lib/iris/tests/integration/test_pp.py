@@ -715,7 +715,7 @@ class TestZonalMeanBounds(tests.IrisTest):
 class TestLoadPartialMask(tests.IrisTest):
     def test_data(self):
         # Ensure that fields merge correctly where one has a mask and one
-        # doesn't
+        # doesn't.
         filename = tests.get_data_path(['PP', 'simple_pp', 'partial_mask.pp'])
 
         expected_data = np.ma.masked_array([[[0,  1],

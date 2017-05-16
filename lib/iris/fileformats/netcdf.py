@@ -397,8 +397,8 @@ class NetCDFDataProxy(object):
             dataset.close()
         if ma.isMaskedArray(var):
             if self.dtype.kind in 'biu':
-                msg = "NetCDF variable '{}' has masked data, which is not " \
-                      "supported for declared dtype '{}'."
+                msg = "NetCDF variable {!r} has masked data, which is not " \
+                      "supported for declared dtype {!r}."
                 raise TypeError(
                     msg.format(self.variable_name, self.dtype.name))
             var = array_masked_to_nans(var)
