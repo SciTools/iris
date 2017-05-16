@@ -30,9 +30,9 @@ import six.moves.cPickle as pickle
 import io
 
 import cf_units
-import numpy as np
 
 import iris
+from iris._lazy_data import as_concrete_data
 
 
 class TestPickle(tests.IrisTest):
@@ -51,8 +51,16 @@ class TestPickle(tests.IrisTest):
 
             yield protocol, reconstructed_obj
 
+    @staticmethod
+    def _real_data(cube):
+        # Get the concrete data of the cube for performing data values
+        # comparison checks.
+        return as_concrete_data(cube.core_data(),
+                                nans_replacement=cube.fill_value,
+                                result_dtype=cube.dtype)
+
     def assertCubeData(self, cube1, cube2):
-        self.assertArrayEqual(cube1.data, cube2.data)
+        self.assertArrayEqual(self._real_data(cube1), self._real_data(cube2))
 
     @tests.skip_data
     def test_cube_pickle(self):
@@ -67,7 +75,7 @@ class TestPickle(tests.IrisTest):
             self.assertTrue(recon_cube.has_lazy_data())
             self.assertCML(recon_cube, ('cube_io', 'pickling', 'theta.cml'),
                            checksum=False)
-            self.assertCubeData(cube.copy(), recon_cube)
+            self.assertCubeData(cube, recon_cube)
 
     @tests.skip_data
     def test_cube_with_coord_points(self):
