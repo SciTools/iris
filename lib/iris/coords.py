@@ -541,17 +541,22 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        new_coord = copy.deepcopy(self)
         if points is not None:
+            # We do not perform a deepcopy when we supply new points so as to
+            # not unncessarily copy the old points.
+            new_coord = copy.copy(self)
+            new_coord.attributes = copy.deepcopy(self.attributes)
+            new_coord.coord_system = copy.deepcopy(self.coord_system)
+
             # Explicitly not using the points property as we don't want the
             # shape the new points to be constrained by the shape of
             # self.points
             new_coord._points = None
             new_coord.points = points
-            # Regardless of whether bounds are provided as an argument, new
-            # points will result in new bounds, discarding those copied from
-            # self.
+            # new points will result in new bounds.
             new_coord.bounds = bounds
+        else:
+            new_coord = copy.deepcopy(self)
 
         return new_coord
 
