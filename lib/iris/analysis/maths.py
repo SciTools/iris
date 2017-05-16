@@ -853,13 +853,16 @@ def _math_op_common(cube, operation_function, new_unit, new_dtype=None,
     else:
         new_cube = cube.copy(data=operation_function(cube.core_data()))
 
-    # If the result of the operation is scalar and masked, we need to fix up
-    # the dtype
-    if new_dtype is not None \
-            and not new_cube.has_lazy_data() \
-            and new_cube.data.shape == () \
-            and ma.is_masked(new_cube.data):
-        new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
+    if new_dtype is not None:
+        # If the result of the operation is scalar and masked, we need to fix
+        # up the dtype
+        if not new_cube.has_lazy_data() \
+                and new_cube.data.shape == () \
+                and ma.is_masked(new_cube.data):
+            new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
+        # Ensure the cube has the correct dtype
+        if new_cube.has_lazy_data():
+            new_cube.replace(new_cube.core_data(), dtype=new_dtype)
 
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
