@@ -781,6 +781,27 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for cell_measure, dims in cell_measures_and_dims:
                 self.add_cell_measure(cell_measure, dims)
 
+        # When True indexing may result in a view onto the original data array,
+        # to avoid unnecessary copying.
+        self._share_data = False
+
+    @property
+    def share_data(self):
+        """
+        Share cube data when slicing/indexing cube if True.
+        Setting this flag to True will realise the data payload,
+        if it is lazy, as lazy data cannot currently be shared across cubes.
+        """
+        return self._share_data
+
+    @share_data.setter
+    def share_data(self, value):
+        # If value is True: realise the data (if is hasn't already been) as
+        # sharing lazy data is not possible.
+        if value and self.has_lazy_data():
+            _ = self.data
+        self._share_data = bool(value)
+
     @property
     def metadata(self):
         """
@@ -2173,8 +2194,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimension_mapping, data = iris.util._slice_data_with_keys(
             cube_data, keys)
 
-        # We don't want a view of the data, so take a copy of it.
-        data = deepcopy(data)
+        # We don't want a view of the data, so take a copy of it, unless
+        # self.share_data is True.
+        if not self.share_data:
+            data = deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
         if ma.isMaskedArray(data):
