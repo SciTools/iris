@@ -59,7 +59,7 @@ def _output_dtype(op, operand_dtypes, in_place):
 
 def _get_dtype(operand):
     """
-    Get the numpy dtype corresponsing to the numeric data in the object
+    Get the numpy dtype corresponding to the numeric data in the object
     provided.
 
     Args:

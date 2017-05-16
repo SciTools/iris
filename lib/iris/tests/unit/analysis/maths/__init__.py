@@ -168,23 +168,19 @@ class CubeArithmeticMaskedConstantTestMixin(
     def test_masked_constant_in_place(self):
         # Cube in_place arithmetic operation.
         dtype = np.int64
-        fill_value = 12345
         dat = ma.masked_array(0, 1, dtype)
-        cube = Cube(dat, fill_value=fill_value)
+        cube = Cube(dat)
         res = self.cube_func(cube, 5, in_place=True)
         self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
         self.assertEqual(dtype, res.dtype)
-        # self.assertEqual(fill_value, res.fill_value)
         self.assertIs(res, cube)
 
     def test_masked_constant_not_in_place(self):
         # Cube in_place arithmetic operation.
         dtype = np.int64
-        fill_value = 12345
         dat = ma.masked_array(0, 1, dtype)
-        cube = Cube(dat, fill_value=fill_value)
+        cube = Cube(dat)
         res = self.cube_func(cube, 5, in_place=False)
         self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
         self.assertEqual(dtype, res.dtype)
-        # self.assertEqual(fill_value, res.fill_value)
         self.assertIsNot(res, cube)
