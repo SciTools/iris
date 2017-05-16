@@ -36,6 +36,9 @@ import matplotlib.colors as mcols
 
 
 def main():
+    # Use new behaviour of data-sharing behaviour on indexing.
+    iris.FUTURE.share_data = True
+
     # Enable a future option, to ensure that the netcdf load works the same way
     # as in future Iris versions.
     iris.FUTURE.netcdf_promote = True

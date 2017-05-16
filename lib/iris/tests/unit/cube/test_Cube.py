@@ -1407,6 +1407,54 @@ class Test_remove_metadata(tests.IrisTest):
                          [[self.b_cell_measure, (0, 1)]])
 
 
+class Test___getitem__nofuture(tests.IrisTest):
+    def setUp(self):
+        patch = mock.patch('iris.FUTURE.share_data', new=False)
+        self.mock_fshare = patch.start()
+        self.addCleanup(patch.stop)
+
+    def test_lazy_array(self):
+        cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
+        cube2 = cube[1:]
+        self.assertTrue(cube2.has_lazy_data())
+        cube.data
+        self.assertTrue(cube2.has_lazy_data())
+
+    def test_ndarray(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        cube2 = cube[1:]
+        self.assertIsNot(cube.data.base, cube2.data.base)
+
+    def test_deprecation_warning(self):
+        warn_call = mock.patch('iris.cube.warn_deprecated')
+        cube = Cube(np.arange(6).reshape(2, 3))
+        with warn_call as mocked_warn_call:
+            cube[1:]
+        msg = ('The `data` attribute of the indexing result is currently a '
+               'copy of the original data array.  This behaviour was '
+               'deprecated in v1.13.0')
+        self.assertIn(msg, mocked_warn_call.call_args[0][0])
+
+
+class Test___getitem__future(tests.IrisTest):
+    def setUp(self):
+        patch = mock.patch('iris.FUTURE.share_data', new=True)
+        self.mock_fshare = patch.start()
+        self.addCleanup(patch.stop)
+
+    def test_lazy_array(self):
+        cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
+        cube2 = cube[1:]
+        self.assertTrue(cube2.has_lazy_data())
+        cube.data
+        self.assertTrue(cube2.has_lazy_data())
+
+    def test_ndarray(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        cube2 = cube[1:]
+        self.assertIs(cube.data.base, cube2.data.base)
+
+
 class Test__getitem_CellMeasure(tests.IrisTest):
     def setUp(self):
         cube = Cube(np.arange(6).reshape(2, 3))

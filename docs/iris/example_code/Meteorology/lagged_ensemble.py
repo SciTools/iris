@@ -44,6 +44,9 @@ def realization_metadata(cube, field, fname):
 
 
 def main():
+    # Use new behaviour of data-sharing behaviour on indexing.
+    iris.FUTURE.share_data = True
+
     # extract surface temperature cubes which have an ensemble member
     # coordinate, adding appropriate lagged ensemble metadata
     surface_temp = iris.load_cube(

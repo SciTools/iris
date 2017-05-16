@@ -2153,6 +2153,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         requested must be applicable directly to the cube.data attribute. All
         metadata will be subsequently indexed appropriately.
 
+        .. deprecated:: 1.13
+            In future, the `data` attribute of the indexing result may be a
+            view onto the original data array, to avoid unnecessary copying.
+            For the present, however, indexing always produces a full
+            independent copy.  The `share_data` attribute of `iris.FUTURE`
+            should be set to True to enable this new data-sharing behaviour
+            (if not, a deprecation warning will be issued).
+
         """
         # turn the keys into a full slice spec (all dims)
         full_slice = iris.util._build_full_slice_given_keys(keys,
@@ -2177,7 +2185,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         try:
             first_slice = next(slice_gen)
         except StopIteration:
-            first_slice = None
+            first_slice = Ellipsis if iris.FUTURE.share_data else None
 
         if first_slice is not None:
             data = self._my_data[first_slice]
@@ -2187,10 +2195,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for other_slice in slice_gen:
             data = data[other_slice]
 
-        # We don't want a view of the data, so take a copy of it if it's
-        # not already our own.
-        if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
-            data = copy.deepcopy(data)
+        if not iris.FUTURE.share_data:
+            # We don't want a view of the data, so take a copy of it if it's
+            # not already our own.
+            msg = ('The `data` attribute of the indexing result is currently '
+                   'a copy of the original data array.  This behaviour was '
+                   'deprecated in v1.13.0 and will be replaced with views '
+                   'onto the original data array where possible.  Set '
+                   'iris.FUTURE.share_data=True to switch to the new '
+                   'behaviour.')
+            warn_deprecated(msg)
+            if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
+                    data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
@@ -3108,7 +3124,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. deprecated:: 1.6
             Add/modify history metadata within
-            attr:`~iris.cube.Cube.attributes` as needed.
+            :attr:`~iris.cube.Cube.attributes` as needed.
 
         """
         warn_deprecated("Cube.add_history() has been deprecated - "

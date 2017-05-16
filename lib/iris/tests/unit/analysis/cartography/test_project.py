@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -151,9 +151,9 @@ class TestAll(tests.IrisTest):
         cube.coord('grid_latitude').coord_system = None
         with iris.tests.mock.patch('warnings.warn') as warn:
             _, _ = project(cube, ROBINSON)
-        warn.assert_called_once_with('Coordinate system of latitude and '
-                                     'longitude coordinates is not specified. '
-                                     'Assuming WGS84 Geodetic.')
+        msg = ('Coordinate system of latitude and longitude coordinates is '
+               'not specified. Assuming WGS84 Geodetic.')
+        self.assertIn(msg, warn.call_args_list[0][0][0])
 
 
 if __name__ == '__main__':
