@@ -1,6 +1,0 @@
-* A skip pattern is introduced to the fields file loader, such that fields
-  which cannot be turned into iris PPField instances are skipped and the
-  remaining fields are loaded.  This especially applies to certain types of
-  files that can contain fields with a non-standard LBREL value : Iris can now
-  load such a file, skipping the unreadable field and printing a warning
-  message.

@@ -1,3 +1,0 @@
-* The :mod:`iris.experimental.fieldsfile` has been deprecated, in favour of the
-  new fast-loading mechanism provided by
-  :meth:`iris.fileformats.um.structured_um_loading`.

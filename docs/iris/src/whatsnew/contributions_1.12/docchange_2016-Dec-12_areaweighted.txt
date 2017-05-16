@@ -1,1 +1,0 @@
-* Corrected documentation of :class:`iris.analysis.AreaWeighted` scheme to make the usage scope clearer.
