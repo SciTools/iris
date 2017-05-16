@@ -164,7 +164,7 @@ class GribMessage(object):
                 shape = (grid_section['numberOfDataPoints'],)
             else:
                 shape = (grid_section['Nj'], grid_section['Ni'])
-            proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
+            proxy = _DataProxy(shape, self.data_dtype, np.nan,
                                self._recreate_raw)
             data = as_lazy_data(proxy)
         else:
