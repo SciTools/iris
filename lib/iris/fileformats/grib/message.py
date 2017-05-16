@@ -120,6 +120,10 @@ class GribMessage(object):
         # Default for fill value is None.
         return None
 
+    @property
+    def data_dtype(self):
+        return np.dtype('f8')
+
     def core_data(self):
         return self.data
 
