@@ -49,6 +49,8 @@ class Test_conventions(tests.IrisTest):
             res = ds.getncattr('Conventions')
             ds.close()
         print('testing here')
+        print('res ' + res)
+        print('CF_CONVENTIONS_VERSION ' + CF_CONVENTIONS_VERSION)
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
 
     def test_custom_conventions__allowed(self):
