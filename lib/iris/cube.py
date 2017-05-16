@@ -786,7 +786,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Realise the data if is hasn't already been as sharing lazy data is
         # not right now possible or a usecase understood.
         if self.has_lazy_data():
-            self.data
+            _ = self.data
         self._share_data = bool(value)
 
     @property
