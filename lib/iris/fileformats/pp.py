@@ -1081,7 +1081,7 @@ def _pp_attribute_names(header_defn):
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
-                          'boundary_packing', '_data_dtype']
+                          'boundary_packing', '_realised_dtype']
     return normal_headers + special_headers + extra_data + special_attributes
 
 
@@ -1114,7 +1114,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         self.raw_lbtim = None
         self.raw_lbpack = None
         self.boundary_packing = None
-        self._data_dtype = None
+        self._realised_dtype = None
         if header is not None:
             self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
@@ -1285,12 +1285,12 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         """
         # Cache the real data on first use
-        if self.data_dtype.kind == 'i' and self.bmdi == -1e30:
+        if self.realised_dtype.kind == 'i' and self.bmdi == -1e30:
             self.bmdi = -9999
         if is_lazy_data(self._data):
             self._data = as_concrete_data(self._data,
                                           nans_replacement=ma.masked,
-                                          result_dtype=self.data_dtype)
+                                          result_dtype=self.realised_dtype)
         return self._data
 
     @data.setter
@@ -1301,14 +1301,14 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         return self._data
 
     @property
-    def data_dtype(self):
+    def realised_dtype(self):
         return self._data.dtype \
-            if self._data_dtype is None \
-            else self._data_dtype
+            if self._realised_dtype is None \
+            else self._realised_dtype
 
-    @data_dtype.setter
-    def data_dtype(self, value):
-        self._data_dtype = value
+    @realised_dtype.setter
+    def realised_dtype(self, value):
+        self._realised_dtype = value
 
     @property
     def calendar(self):
@@ -1896,7 +1896,7 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field.data_dtype = dtype.newbyteorder('=')
+        field.realised_dtype = dtype.newbyteorder('=')
         block_shape = data_shape if 0 not in data_shape else (1, 1)
         field.data = as_lazy_data(proxy, chunks=block_shape)
 
