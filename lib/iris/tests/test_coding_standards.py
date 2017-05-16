@@ -121,7 +121,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_iterate.py',
         '*/iris/tests/test_load.py',
         '*/iris/tests/test_merge.py',
-        '*/iris/tests/test_pickling.py',
         '*/iris/tests/test_pp_cf.py',
         '*/iris/tests/test_pp_module.py',
         '*/iris/tests/test_pp_stash.py',
