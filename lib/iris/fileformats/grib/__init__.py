@@ -652,11 +652,11 @@ class GribWrapper(object):
             pdt = self.productDefinitionTemplateNumber
 
             #pdt 4.0? (standard forecast)
-            if pdt == 0:
+            if pdt in (0, 1): # Need for NCMRWF
                 processingDone = 'none'
 
             #pdt 4.8 or 4.9? (time-processed)
-            elif pdt in (8, 9):
+            elif pdt in (8, 9, 11): # Need for NCMRWF
                 typeOfStatisticalProcessing = self.typeOfStatisticalProcessing
                 processingDone = PROCESSING_TYPES.get(typeOfStatisticalProcessing,
                                     'time _grib2_process_unknown_%i' % typeOfStatisticalProcessing)

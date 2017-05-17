@@ -162,9 +162,10 @@ def identification(cube, grib):
     centre(cube, grib)
     reference_time(cube, grib)
 
-    # operational product, operational test, research product, etc
-    # (missing for now)
-    gribapi.grib_set_long(grib, "productionStatusOfProcessedData", 255)
+    # operational product, operational test, research product, etc table 1.3
+    # http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table1-3.shtml   
+    gribapi.grib_set_long(grib, "productionStatusOfProcessedData", 0) # required 0 for NCMRWF
+    # set it as operational product
 
     # Code table 1.4
     # analysis, forecast, processed satellite, processed radar,
@@ -571,7 +572,7 @@ def _non_missing_forecast_period(cube):
     if fp - int(fp):
         warnings.warn("forecast_period encoding problem: "
                       "scaling required.")
-    fp = int(fp)
+    fp = round(fp) # required for NCMRWF
 
     # Turn negative forecast times into grib negative numbers?
     from iris.fileformats.grib import hindcast_workaround
@@ -607,7 +608,7 @@ def _missing_forecast_period(cube):
         rt = frt_coord.units.num2date(frt)
         rt_meaning = 1  # Forecast reference time.
         fp = t - frt
-        integer_fp = int(fp)
+        integer_fp = round(fp) # required for NCMRWF
         if integer_fp != fp:
             msg = 'Truncating floating point forecast period {} to ' \
                   'integer value {}'
@@ -670,6 +671,18 @@ def set_fixed_surfaces(cube, grib):
         grib_v_code = 103
         output_unit = cf_units.Unit("m")
         v_coord = cube.coord("height")
+    
+    # depth
+    elif cube.coords("depth"):
+        grib_v_code = 106   # required for NCMRWF NCUM 10.2  
+        output_unit = cf_units.Unit("m")
+        v_coord = cube.coord("depth")
+        
+    # depth_below_land_surface
+    elif cube.coords("depth_below_land_surface"):
+        grib_v_code = 106   # required for NCMRWF NCUM 8.5 
+        output_unit = cf_units.Unit("m")
+        v_coord = cube.coord("depth_below_land_surface")
 
     elif cube.coords("air_potential_temperature"):
         grib_v_code = 107
@@ -706,7 +719,7 @@ def set_fixed_surfaces(cube, grib):
         output_v = v_coord.units.convert(v_coord.points[0], output_unit)
         if output_v - abs(output_v):
             warnings.warn("Vertical level encoding problem: scaling required.")
-        output_v = int(output_v)
+        output_v = round(output_v) # we must round it, so that WRF/TIGGE able understand! # required for NCMRWF
 
         gribapi.grib_set(grib, "typeOfFirstFixedSurface", grib_v_code)
         gribapi.grib_set(grib, "scaleFactorOfFirstFixedSurface", 0)
@@ -755,7 +768,7 @@ def set_time_range(time_coord, grib):
     # point value. The grib_api will do the cast from float to int, but it
     # cannot handle numpy floats.
     time_range_in_hours = end_hours - start_hours
-    integer_hours = int(time_range_in_hours)
+    integer_hours = round(time_range_in_hours) # required for NCMRWF
     if integer_hours != time_range_in_hours:
         msg = 'Truncating floating point lengthOfTimeRange {} to ' \
               'integer value {}'
@@ -794,7 +807,7 @@ def set_time_increment(cell_method, grib):
             units_type = 255
         else:
             # Cast to int as timeIncrement key is a 4 byte integer.
-            integer_inc = int(inc)
+            integer_inc = round(inc) # required for NCMRWF
             if integer_inc != inc:
                 warnings.warn('Truncating floating point timeIncrement {} to '
                               'integer value {}'.format(inc, integer_inc))
@@ -844,12 +857,13 @@ def product_definition_template_common(cube, grib):
 
     """
     set_discipline_and_parameter(cube, grib)
-
-    # Various missing values.
-    gribapi.grib_set(grib, "typeOfGeneratingProcess", 255)
-    gribapi.grib_set(grib, "backgroundProcess", 255)
-    gribapi.grib_set(grib, "generatingProcessIdentifier", 255)
-
+    
+    # http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table4-3.shtml 2 would be applicable even for analysis (since analysis also short forecast)
+    gribapi.grib_set(grib, "typeOfGeneratingProcess", 2) # required for NCMRWF
+    gribapi.grib_set(grib, "backgroundProcess", 255) # set missing values.
+    # http://www.nco.ncep.noaa.gov/pmb/docs/on388/tablea.html 96 would be more appropriate 
+    gribapi.grib_set(grib, "generatingProcessIdentifier", 96)  # required for NCMRWF
+    
     # Generic time handling.
     set_forecast_time(cube, grib)
 
