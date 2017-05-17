@@ -43,6 +43,7 @@ import iris.config as config
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+from iris.util import is_regular, regular_step
 
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
