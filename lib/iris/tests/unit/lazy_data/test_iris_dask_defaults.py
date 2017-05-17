@@ -26,7 +26,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import dask.context
 from iris._lazy_data import _iris_dask_defaults
 
 

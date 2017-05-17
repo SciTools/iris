@@ -29,7 +29,6 @@ import six
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
-import dask.array as da
 import numpy as np
 import numpy.ma as ma
 

@@ -22,7 +22,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from copy import deepcopy
-import dask
 import os
 from types import GeneratorType
 import unittest
