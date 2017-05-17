@@ -2255,6 +2255,10 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         else:
             conventions = CF_CONVENTIONS_VERSION
 
+        # Prioritise cube attributes conventions over the default.
+        if 'Conventions' in cube.attributes:
+            conventions = cube.attributes['Conventions']
+
         # Perform a CF patch of the conventions attribute.
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
                                 in [None, False])
