@@ -711,5 +711,27 @@ class TestZonalMeanBounds(tests.IrisTest):
         self.assertTrue(cube.coord('longitude').has_bounds())
 
 
+@tests.skip_data
+class TestLoadPartialMask(tests.IrisTest):
+    def test_data(self):
+        # Ensure that fields merge correctly where one has a mask and one
+        # doesn't.
+        filename = tests.get_data_path(['PP', 'simple_pp', 'partial_mask.pp'])
+
+        expected_data = np.ma.masked_array([[[0,  1],
+                                             [11, 12]],
+                                            [[99, 100],
+                                             [-1, -1]]],
+                                           [[[0, 0],
+                                             [0, 0]],
+                                            [[0, 0],
+                                             [1, 1]]],
+                                           dtype=np.int32)
+        cube = iris.load_cube(filename)
+
+        self.assertEqual(expected_data.dtype, cube.data.dtype)
+        self.assertMaskedArrayEqual(expected_data, cube.data, strict=False)
+
+
 if __name__ == "__main__":
     tests.main()

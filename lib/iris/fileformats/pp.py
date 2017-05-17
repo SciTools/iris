@@ -862,7 +862,8 @@ class PPDataProxy(object):
 
     @property
     def dtype(self):
-        return self.src_dtype.newbyteorder('=')
+        return np.dtype('f8') if self.src_dtype.kind == 'i' \
+                 else self.src_dtype.newbyteorder('=')
 
     @property
     def fill_value(self):
@@ -881,7 +882,8 @@ class PPDataProxy(object):
                                                self.boundary_packing,
                                                self.shape, self.src_dtype,
                                                self.mdi, self.mask)
-        return data.__getitem__(keys)
+        data = data.__getitem__(keys)
+        return np.asanyarray(data, dtype=self.dtype)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
@@ -1079,7 +1081,7 @@ def _pp_attribute_names(header_defn):
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
-                          'boundary_packing']
+                          'boundary_packing', '_realised_dtype']
     return normal_headers + special_headers + extra_data + special_attributes
 
 
@@ -1112,6 +1114,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         self.raw_lbtim = None
         self.raw_lbpack = None
         self.boundary_packing = None
+        self._realised_dtype = None
         if header is not None:
             self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
@@ -1282,11 +1285,12 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         """
         # Cache the real data on first use
-        if self._data.dtype.kind == 'i' and self.bmdi == -1e30:
+        if self.realised_dtype.kind == 'i' and self.bmdi == -1e30:
             self.bmdi = -9999
         if is_lazy_data(self._data):
             self._data = as_concrete_data(self._data,
-                                          nans_replacement=ma.masked)
+                                          nans_replacement=ma.masked,
+                                          result_dtype=self.realised_dtype)
         return self._data
 
     @data.setter
@@ -1295,6 +1299,16 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
     def core_data(self):
         return self._data
+
+    @property
+    def realised_dtype(self):
+        return self._data.dtype \
+            if self._realised_dtype is None \
+            else self._realised_dtype
+
+    @realised_dtype.setter
+    def realised_dtype(self, value):
+        self._realised_dtype = value
 
     @property
     def calendar(self):
@@ -1882,6 +1896,7 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
+        field.realised_dtype = dtype.newbyteorder('=')
         block_shape = data_shape if 0 not in data_shape else (1, 1)
         field.data = as_lazy_data(proxy, chunks=block_shape)
 

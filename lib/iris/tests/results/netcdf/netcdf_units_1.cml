@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="int32" dtype="int32" standard_name="air_temperature" units="unknown" var_name="cube_1">
+  <cube core-dtype="float64" dtype="int32" standard_name="air_temperature" units="unknown" var_name="cube_1">
     <attributes>
       <attribute name="invalid_units" value="kevin"/>
     </attributes>
