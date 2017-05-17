@@ -201,6 +201,25 @@ def multidim_lazy_stack(stack):
     return result
 
 
+def lazy_concat(data, axis):
+    """
+    Concatenate dask arrays along a given axis.
+
+    Args:
+
+    * data:
+        An iterable of dask arrays.
+
+    * axis:
+        The data dimension along which to perform the concatenation.
+
+    Returns:
+        The input data concatenated along the specified axis.s
+
+    """
+    return da.concatenate(data, axis)
+
+
 def convert_nans_array(array, nans_replacement=None, result_dtype=None):
     """
     Convert a :class:`~numpy.ndarray` that may contain one or more NaN values

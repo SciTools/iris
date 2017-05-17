@@ -26,11 +26,11 @@ import six
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 
-import dask.array as da
 import numpy as np
 
 import iris.coords
 import iris.cube
+from iris._lazy_data import lazy_concat
 from iris.util import guess_coord_axis, array_equal
 
 
@@ -853,7 +853,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        data = da.concatenate(data, self.axis)
+        data = lazy_concat(data, self.axis)
 
         return data
 
