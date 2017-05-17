@@ -766,6 +766,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                          self.units, self.attributes, self.coord_system)
         return defn
 
+    # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
+    # NOTE: Violates "objects which compare equal must have the same hash".
+    # Currently needed, but not really correct and should be fixed.
+    # See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
+
     def __binary_operator__(self, other, mode_constant):
         """
         Common code which is called by add, sub, mul and div
@@ -1608,11 +1615,6 @@ class DimCoord(Coord):
 
     # The __ne__ operator from Coord implements the not __eq__ method.
 
-    # This is necessary for merging, but probably shouldn't be used otherwise.
-    # See #962 and #1772.
-    def __hash__(self):
-        return hash(id(self))
-
     def __getitem__(self, key):
         coord = super(DimCoord, self).__getitem__(key)
         coord.circular = self.circular and coord.shape == self.shape
@@ -1656,22 +1658,23 @@ class DimCoord(Coord):
         # DimCoord always realises the points, to allow monotonicity checks.
         copy = is_lazy_data(points)
         points = as_concrete_data(points)
-        # Ensure it is an array..
-        # .. and always a distinct view, so that we can make it read-only.
+        # Ensure it is an actual array, and also make our own distinct view
+        # so that we can make it read-only.
         points = np.array(points, copy=copy)
 
         # Invoke the generic points setter.
         super(DimCoord, self)._points_setter(points)
 
         if self._points_dm is not None:
-            # Fetch the new core array, as the parent can change it.
-            points = self._points_dm._real_array
+            # Re-fetch the core array, as the super call may replace it.
+            points = self._points_dm.core_data()
+            # N.B. always a *real* array, as we realised 'points' at the start.
 
             # Check validity requirements for dimension-coordinate points.
             self._new_points_requirements(points)
 
             # Make the array read-only.
-            self._points_dm.data.flags.writeable = False
+            points.flags.writeable = False
 
     points = property(Coord._points_getter, _points_setter)
 
@@ -1715,14 +1718,15 @@ class DimCoord(Coord):
             # Ensure we have a realised array of new bounds values.
             copy = is_lazy_data(bounds)
             bounds = as_concrete_data(bounds)
-            bounds = np.array(bounds, copy=copy, ndmin=2)
+            bounds = np.array(bounds, copy=copy)
 
         # Invoke the generic bounds setter.
         super(DimCoord, self)._bounds_setter(bounds)
 
         if self._bounds_dm is not None:
-            # Fetch the new core array, as the parent can change it.
-            bounds = self._bounds_dm._real_array
+            # Re-fetch the core array, as the super call may replace it.
+            bounds = self._bounds_dm.core_data()
+            # N.B. always a *real* array, as we realised 'bounds' at the start.
 
             # Check validity requirements for dimension-coordinate bounds.
             self._new_bounds_requirements(bounds)
@@ -1744,11 +1748,21 @@ class DimCoord(Coord):
 
 
 class AuxCoord(Coord):
-    """A CF auxiliary coordinate."""
-    # This is necessary for merging, but probably shouldn't be used otherwise.
-    # See #962 and #1772.
-    def __hash__(self):
-        return hash(id(self))
+    """
+    A CF auxiliary coordinate.
+
+    .. note::
+
+        There are currently no specific properties of :class:`AuxCoord`,
+        everything is inherited from :class:`Coord`.
+
+    """
+    # Logically, :class:`Coord` is an abstract class and all actual coords must
+    # be members of some concrete subclass, i.e. an :class:`AuxCoord` or
+    # a :class:`DimCoord`.
+    # So we retain :class:`AuxCoord` as a distinct concrete subclass.
+    # This provides clarity, backwards compatibility, and so we can add
+    # AuxCoord-specific code if needed in future.
 
 
 class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
