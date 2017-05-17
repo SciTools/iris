@@ -26,7 +26,7 @@ import iris.tests as tests
 import dask.array as da
 import numpy as np
 
-from iris._lazy_data import as_lazy_data, is_lazy_data, _MAX_CHUNK_SIZE
+from iris._lazy_data import is_lazy_data, _MAX_CHUNK_SIZE
 
 
 class Test_is_lazy_data(tests.IrisTest):

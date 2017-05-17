@@ -33,13 +33,9 @@ import os
 import os.path
 import platform
 import sys
-import types
 import warnings
 
 import cf_units
-import dask.array as da
-import numpy as np
-import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris.analysis._interpolate_private import linear as regrid_linear
@@ -47,7 +43,6 @@ import iris.config as config
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
-from iris.util import is_regular, regular_step
 
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])

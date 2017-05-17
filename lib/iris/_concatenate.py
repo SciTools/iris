@@ -28,11 +28,10 @@ from copy import deepcopy
 
 import dask.array as da
 import numpy as np
-import numpy.ma as ma
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal, unify_time_units
+from iris.util import guess_coord_axis, array_equal
 
 
 #

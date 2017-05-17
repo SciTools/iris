@@ -28,7 +28,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import itertools
 
-import dask.array as da
 from netCDF4 import netcdftime
 import numpy as np
 
