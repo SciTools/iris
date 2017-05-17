@@ -1284,10 +1284,8 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         of the pp file
 
         """
-        # Cache the real data on first use
-        if self.realised_dtype.kind == 'i' and self.bmdi == -1e30:
-            self.bmdi = -9999
         if is_lazy_data(self._data):
+            # Replace with real data on the first access.
             self._data = as_concrete_data(self._data,
                                           nans_replacement=ma.masked,
                                           result_dtype=self.realised_dtype)
@@ -1398,8 +1396,14 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # Before we can actually write to file, we need to calculate the header
         # elements. First things first, make sure the data is big-endian
         data = self.data
-        if ma.isMaskedArray(data):
-            data = data.filled(fill_value=self.bmdi)
+        if ma.is_masked(data):
+            if data.dtype.kind in 'biu':
+                # Integer or Boolean data : No masking is supported.
+                msg = 'Non-floating masked data cannot be saved to PP.'
+                raise ValueError(msg)
+            # Fill missing data points with the MDI value from the header.
+            fill_value = self.bmdi
+            data = data.filled(fill_value=fill_value)
 
         if data.dtype.newbyteorder('>') != data.dtype:
             # take a copy of the data when byteswapping
