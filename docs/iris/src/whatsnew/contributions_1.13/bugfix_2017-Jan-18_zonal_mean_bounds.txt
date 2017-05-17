@@ -1,2 +1,0 @@
-The bounds are now set on the longitude coordinate if a zonal mean
-diagnostic has been loaded from a PP file as per the CF Standard.
