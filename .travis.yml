@@ -20,7 +20,7 @@ git:
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="7c0e32c8812b464e467a9555bdc25dc1e0c5be0c"
+  - export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
