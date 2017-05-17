@@ -385,14 +385,12 @@ def _inplace_common_checks(cube, other, math_op):
     cast back to the integer data of `cube`.
 
     """
-    if cube.dtype.kind in 'iu':
-        other_kind = _get_dtype(other).kind
-        if other_kind not in 'iu':
-            # Cannot coerce math op between int `cube` and float `other`
-            # back to int.
+    other_dtype = _get_dtype(other)
+    if not np.can_cast(other_dtype, cube.dtype, 'same_kind'):
             aemsg = ('Cannot perform inplace {} between {!r} '
-                     'with integer data and {!r} with floating-point data.')
-            raise ArithmeticError(aemsg.format(math_op, cube, other))
+                     'with {} data and {!r} with {} data.')
+            raise ArithmeticError(
+                aemsg.format(math_op, cube, cube.dtype, other, other_dtype))
 
 
 def divide(cube, other, dim=None, in_place=False):

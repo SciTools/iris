@@ -124,9 +124,8 @@ class Test(tests.IrisTest):
         self.assertIsNone(result)
 
     def test_uint_cube_int_cube(self):
-        result = _inplace_common_checks(self.uint_cube, self.int_cube,
-                                        self.op)
-        self.assertIsNone(result)
+        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+            _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
 
     def test_int_cube__scalar_float(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
@@ -145,8 +144,8 @@ class Test(tests.IrisTest):
             _inplace_common_checks(self.uint_cube, self.scalar_float, self.op)
 
     def test_uint_cube__int_array(self):
-        result = _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
-        self.assertIsNone(result)
+        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+            _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
 
     def test_uint_cube__float_array(self):
         with self.assertRaisesRegexp(ArithmeticError, self.emsg):
