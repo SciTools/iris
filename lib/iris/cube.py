@@ -2396,13 +2396,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if len(chunks) == 1:
             result = chunks[0]
         else:
+            chunk_data = [chunk.core_data() for chunk in chunks]
             if self.has_lazy_data():
-                module = da
-                chunk_data = [chunk.lazy_data()for chunk in chunks]
+                func = da.concatenate
             else:
-                chunk_data = [chunk.data for chunk in chunks]
                 module = ma if ma.isMaskedArray(self.data) else np
-            data = module.concatenate(chunk_data, dim)
+                func = module.concatenate
+            data = func(chunk_data, dim)
             result = iris.cube.Cube(data,
                                     fill_value=self.fill_value,
                                     dtype=self.dtype)
