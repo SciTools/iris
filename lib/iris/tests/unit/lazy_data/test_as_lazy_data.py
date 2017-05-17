@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import dask.array as da
 import numpy as np
 
 from iris._lazy_data import as_lazy_data, _MAX_CHUNK_SIZE
