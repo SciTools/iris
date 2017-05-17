@@ -28,6 +28,8 @@ import iris.tests as tests
 
 import types
 
+import numpy as np
+
 from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
 from iris.fileformats.rules import (ConcreteReferenceTarget,
@@ -107,10 +109,16 @@ class TestLoadCubes(tests.IrisTest):
 
         # The fake PPField which will be supplied to our converter.
         field = mock.Mock()
-        field.core_data = mock.Mock()
+
+        # Construct a mock content array.
+        core_data_array = mock.Mock()
         # Add a compute attribute so that the data will be treated as lazy.
-        field.core_data.compute = None
-        field.core_data.dtype = None
+        core_data_array.compute = None
+        # It must also have a recognisable dtype.
+        core_data_array.dtype = np.dtype('f4')
+        # Make field.core_data() return the mock data array.
+        field.core_data = mock.Mock(return_value=core_data_array)
+
         field.bmdi = None
 
         def field_generator(filename):
@@ -176,10 +184,10 @@ class TestLoadCubes(tests.IrisTest):
 
         # The fake PPFields which will be supplied to our converter.
         press_field = mock.Mock()
-        press_field.core_data = param_cube.data
+        press_field.core_data = mock.Mock(return_value=param_cube.data)
         press_field.bmdi = -1e20
         orog_field = mock.Mock()
-        orog_field.core_data = orog_cube.data
+        orog_field.core_data = mock.Mock(return_value=orog_cube.data)
         orog_field.bmdi = -1e20
 
         def field_generator(filename):
