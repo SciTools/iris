@@ -1617,6 +1617,14 @@ class DimCoord(Coord):
 
     # The __ne__ operator from Coord implements the not __eq__ method.
 
+    # For Python 3, we must explicitly re-implement the '__hash__' method, as
+    # defining an '__eq__' has blocked its inheritance.  See ...
+    # https://docs.python.org/3.1/reference/datamodel.html#object.__hash__
+    # "If a class that overrides __eq__() needs to retain the
+    # implementation of __hash__() from a parent class, the interpreter
+    # must be told this explicitly".
+    __hash__ = Coord.__hash__
+
     def __getitem__(self, key):
         coord = super(DimCoord, self).__getitem__(key)
         coord.circular = self.circular and coord.shape == self.shape
