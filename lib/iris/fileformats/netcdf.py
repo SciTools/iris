@@ -57,7 +57,7 @@ import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
 from iris._lazy_data import (array_masked_to_nans, as_lazy_data,
-                             convert_nans_array)
+                             convert_nans_array, nan_array_type)
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -396,8 +396,13 @@ class NetCDFDataProxy(object):
         finally:
             dataset.close()
         if ma.isMaskedArray(var):
+            if self.dtype.kind in 'biu':
+                msg = "NetCDF variable {!r} has masked data, which is not " \
+                      "supported for declared dtype {!r}."
+                raise TypeError(
+                    msg.format(self.variable_name, self.dtype.name))
             var = array_masked_to_nans(var)
-        return var
+        return np.asanyarray(var, dtype=self.dtype)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
@@ -505,7 +510,8 @@ def _load_cube(engine, cf, cf_var, filename):
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue', None)
 
-    proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
+    dtype = nan_array_type(dummy_data.dtype)
+    proxy = NetCDFDataProxy(cf_var.shape, dtype,
                             filename, cf_var.cf_name, fill_value)
     data = as_lazy_data(proxy, chunks=cf_var.shape)
     cube = iris.cube.Cube(data, fill_value=fill_value, dtype=dummy_data.dtype)

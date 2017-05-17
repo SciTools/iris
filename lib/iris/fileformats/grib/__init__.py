@@ -139,6 +139,7 @@ class GribWrapper(object):
     def __init__(self, grib_message, grib_fh=None):
         """Store the grib message and compute our extra keys."""
         self.grib_message = grib_message
+        self.realised_dtype = np.array([0.]).dtype
 
         if self.edition != 1:
             emsg = 'GRIB edition {} is not supported by {!r}.'
@@ -177,7 +178,7 @@ class GribWrapper(object):
             # The byte offset requires to be reset back to the first byte
             # of this message. The file pointer offset is always at the end
             # of the current message due to the grib-api reading the message.
-            proxy = GribDataProxy(shape, np.array([0.]).dtype, grib_fh.name,
+            proxy = GribDataProxy(shape, self.realised_dtype, grib_fh.name,
                                   offset - message_length)
             self._data = as_lazy_data(proxy)
         else:

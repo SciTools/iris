@@ -906,7 +906,7 @@ def _make_cube(field, converter):
                           cell_methods=metadata.cell_methods,
                           dim_coords_and_dims=metadata.dim_coords_and_dims,
                           aux_coords_and_dims=metadata.aux_coords_and_dims,
-                          fill_value=field.bmdi, dtype=field.core_data().dtype)
+                          fill_value=field.bmdi, dtype=field.realised_dtype)
     
 
     # Temporary code to deal with invalid standard names in the

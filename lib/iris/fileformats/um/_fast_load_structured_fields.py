@@ -99,6 +99,11 @@ class FieldCollation(object):
         return self.data
 
     @property
+    def realised_dtype(self):
+        return np.result_type(*[field.realised_dtype
+                                for field in self._fields])
+
+    @property
     def data_proxy(self):
         return self.data
 

@@ -120,6 +120,10 @@ class GribMessage(object):
         # Default for fill value is None.
         return None
 
+    @property
+    def realised_dtype(self):
+        return np.dtype('f8')
+
     def core_data(self):
         return self.data
 
@@ -160,7 +164,7 @@ class GribMessage(object):
                 shape = (grid_section['numberOfDataPoints'],)
             else:
                 shape = (grid_section['Nj'], grid_section['Ni'])
-            proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
+            proxy = _DataProxy(shape, self.realised_dtype, np.nan,
                                self._recreate_raw)
             data = as_lazy_data(proxy)
         else:
