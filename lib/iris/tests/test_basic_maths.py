@@ -494,15 +494,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         b = iris.analysis.maths.multiply(a, 5, in_place=False)
         self.assertIsNot(a, b)
 
-    def test_type_error(self):
-        with self.assertRaises(TypeError):
-            iris.analysis.maths.multiply('not a cube', 2)
-        with self.assertRaises(TypeError):
-            iris.analysis.maths.multiply(self.cube, 'not a cube')
-        with self.assertRaises(TypeError):
-            iris.analysis.maths.multiply(self.cube, 'not a cube',
-                                         in_place=True)
-
 
 @tests.skip_data
 class TestExponentiate(tests.IrisTest):

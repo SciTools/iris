@@ -45,7 +45,9 @@ from dask.array.core import broadcast_shapes
 _output_dtype_cache = {}
 
 
-def _output_dtype(op, operand_dtypes, in_place):
+def _output_dtype(op, left_dtype, right_dtype=None, in_place=False):
+    operand_dtypes = [left_dtype, right_dtype] if right_dtype is not None \
+                      else [left_dtype]
     if in_place:
         return operand_dtypes[0]
     key = (op, tuple(operand_dtypes))
@@ -72,10 +74,8 @@ def _get_dtype(operand):
         An instance of :class:`numpy.dtype`
 
     """
-    if np.isscalar(operand):
-        operand = np.asanyarray(operand)
-
-    return operand.dtype
+    return np.min_scalar_type(operand) if np.isscalar(operand) \
+        else operand.dtype
 
 
 def abs(cube, in_place=False):
@@ -97,7 +97,7 @@ def abs(cube, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(np.abs, [cube.dtype], in_place)
+    new_dtype = _output_dtype(np.abs, cube.dtype, in_place=in_place)
     op = da.absolute if cube.has_lazy_data() else np.abs
     return _math_op_common(cube, op, cube.units, new_dtype, in_place=in_place)
 
@@ -224,8 +224,8 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(operator.add, [cube.dtype, _get_dtype(other)],
-                              in_place)
+    new_dtype = _output_dtype(operator.add, cube.dtype, _get_dtype(other),
+                              in_place=in_place)
     if in_place:
         _inplace_common_checks(cube, other, 'addition')
         op = operator.iadd
@@ -267,8 +267,8 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(operator.sub, [cube.dtype, _get_dtype(other)],
-                              in_place)
+    new_dtype = _output_dtype(operator.sub, cube.dtype, _get_dtype(other),
+                              in_place=in_place)
     if in_place:
         _inplace_common_checks(cube, other, 'subtraction')
         op = operator.isub
@@ -364,8 +364,8 @@ def multiply(cube, other, dim=None, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(operator.mul, [cube.dtype, _get_dtype(other)],
-                              in_place)
+    new_dtype = _output_dtype(operator.mul, cube.dtype, _get_dtype(other),
+                              in_place=in_place)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
     if in_place:
@@ -417,7 +417,7 @@ def divide(cube, other, dim=None, in_place=False):
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(operator.truediv,
-                              [cube.dtype, _get_dtype(other)], in_place)
+                              cube.dtype, _get_dtype(other), in_place=in_place)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
     if in_place:
@@ -460,8 +460,8 @@ def exponentiate(cube, exponent, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(operator.pow, [cube.dtype, _get_dtype(exponent)],
-                              in_place)
+    new_dtype = _output_dtype(operator.pow, cube.dtype, _get_dtype(exponent),
+                              in_place=in_place)
     if cube.has_lazy_data():
         def power(data):
             return operator.pow(data, exponent)
@@ -496,7 +496,7 @@ def exp(cube, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(np.exp, [cube.dtype], in_place)
+    new_dtype = _output_dtype(np.exp, cube.dtype, in_place=in_place)
     op = da.exp if cube.has_lazy_data() else np.exp
     return _math_op_common(cube, op, cf_units.Unit('1'), new_dtype,
                            in_place=in_place)
@@ -521,7 +521,7 @@ def log(cube, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(np.log, [cube.dtype], in_place)
+    new_dtype = _output_dtype(np.log, cube.dtype, in_place=in_place)
     op = da.log if cube.has_lazy_data() else np.log
     return _math_op_common(cube, op, cube.units.log(math.e), new_dtype,
                            in_place=in_place)
@@ -546,7 +546,7 @@ def log2(cube, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(np.log2, [cube.dtype], in_place)
+    new_dtype = _output_dtype(np.log2, cube.dtype, in_place=in_place)
     op = da.log2 if cube.has_lazy_data() else np.log2
     return _math_op_common(cube, op, cube.units.log(2), new_dtype,
                            in_place=in_place)
@@ -571,7 +571,7 @@ def log10(cube, in_place=False):
 
     """
     _assert_is_cube(cube)
-    new_dtype = _output_dtype(np.log10, [cube.dtype], in_place)
+    new_dtype = _output_dtype(np.log10, cube.dtype, in_place=in_place)
     op = da.log10 if cube.has_lazy_data() else np.log10
     return _math_op_common(cube, op, cube.units.log(10), new_dtype,
                            in_place=in_place)
@@ -641,14 +641,14 @@ def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
                                  ufunc.__name__))
 
         _assert_is_cube(other_cube)
-        new_dtype = _output_dtype(ufunc, [cube.dtype, other_cube.dtype],
-                                  in_place)
+        new_dtype = _output_dtype(ufunc, cube.dtype, other_cube.dtype,
+                                  in_place=in_place)
 
         new_cube = _binary_op_common(ufunc, ufunc.__name__, cube, other_cube,
                                      new_unit, new_dtype, in_place=in_place)
 
     elif ufunc.nin == 1:
-        new_dtype = _output_dtype(ufunc, [cube.dtype], in_place)
+        new_dtype = _output_dtype(ufunc, cube.dtype, in_place=in_place)
 
         new_cube = _math_op_common(cube, ufunc, new_unit, new_dtype,
                                    in_place=in_place)
