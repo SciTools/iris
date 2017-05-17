@@ -768,8 +768,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
     # NOTE: Violates "objects which compare equal must have the same hash".
-    # Currently needed, but not really correct and should be fixed.
-    # See #962 and #1772.
+    # We ought to remove this, as equality of two coords can *change*, so they
+    # really should not be hashable.
+    # However, current code needs it, e.g. so we can put them in sets.
+    # Fixing it will require changing those uses.  See #962 and #1772.
     def __hash__(self):
         return hash(id(self))
 
