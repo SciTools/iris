@@ -27,7 +27,8 @@ import operator
 
 from iris.analysis.maths import add
 from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
+    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin, \
+    CubeArithmeticMaskedConstantTestMixin
 
 
 @tests.skip_data
@@ -53,6 +54,17 @@ class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     def cube_func(self):
         return add
 
+
+@tests.iristest_timing_decorator
+class TestMaskedConstant(tests.IrisTest_nometa,
+                         CubeArithmeticMaskedConstantTestMixin):
+    @property
+    def data_op(self):
+        return operator.add
+
+    @property
+    def cube_func(self):
+        return add
 
 if __name__ == "__main__":
     tests.main()

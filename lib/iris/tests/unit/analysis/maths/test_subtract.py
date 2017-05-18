@@ -27,7 +27,8 @@ import operator
 
 from iris.analysis.maths import subtract
 from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
+    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin, \
+    CubeArithmeticMaskedConstantTestMixin
 
 
 @tests.skip_data
@@ -45,6 +46,18 @@ class TestBroadcasting(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
+    @property
+    def data_op(self):
+        return operator.sub
+
+    @property
+    def cube_func(self):
+        return subtract
+
+
+@tests.iristest_timing_decorator
+class TestMaskedConstant(tests.IrisTest_nometa,
+                         CubeArithmeticMaskedConstantTestMixin):
     @property
     def data_op(self):
         return operator.sub
