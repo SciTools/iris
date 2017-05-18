@@ -384,21 +384,24 @@ def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
         Numpy array (possibly masked) or scalar.
 
     """
-    res = ma.average(data, weights=weights, axis=axis)
-    if ma.isMaskedArray(data) and mdtol < 1:
-        weights_total = weights.sum(axis=axis)
-        masked_weights = weights.copy()
-        masked_weights[~ma.getmaskarray(data)] = 0
-        masked_weights_total = masked_weights.sum(axis=axis)
-        frac_masked = np.true_divide(masked_weights_total, weights_total)
-        mask_pt = frac_masked > mdtol
-        if np.any(mask_pt):
-            if np.isscalar(res):
-                res = ma.masked
-            elif ma.isMaskedArray(res):
-                res.mask |= mask_pt
-            else:
-                res = ma.masked_array(res, mask=mask_pt)
+    if ma.is_masked(data):
+        res = ma.average(data, weights=weights, axis=axis, returned=True)
+        if mdtol < 1:
+            weights_total = weights.sum(axis=axis)
+            masked_weights = weights.copy()
+            masked_weights[~ma.getmaskarray(data)] = 0
+            masked_weights_total = masked_weights.sum(axis=axis)
+            frac_masked = np.true_divide(masked_weights_total, weights_total)
+            mask_pt = frac_masked > mdtol
+            if np.any(mask_pt):
+                if np.isscalar(res):
+                    res = ma.masked
+                elif ma.isMaskedArray(res):
+                    res.mask |= mask_pt
+                else:
+                    res = ma.masked_array(res, mask=mask_pt)
+    else:
+        res = np.average(data, weights=weights, axis=axis)
     return res
 
 
