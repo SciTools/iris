@@ -42,12 +42,17 @@ class Test(tests.IrisTest):
                                 operator.sub,
                                 operator.mul,
                                 operator.pow,
-                                operator.div,
+                                operator.floordiv,
                                 np.add,
                                 np.subtract,
                                 np.multiply,
                                 np.power,
                                 np.divide]
+        try:
+            self.same_result_ops.append(operator.div)
+        except AttributeError:
+            # operator.div doesn't exist in Python 3
+            pass
 
         self.unary_same_result_ops = [np.abs]
 
