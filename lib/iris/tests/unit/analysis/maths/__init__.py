@@ -23,6 +23,7 @@ import six
 from abc import ABCMeta, abstractproperty
 
 import numpy as np
+from numpy import ma
 
 from iris.analysis import MEAN
 from iris.coords import DimCoord
@@ -137,8 +138,8 @@ class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
 
     def _test_partial_mask(self, in_place):
         # Helper method for masked data tests.
-        dat_a = np.ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
-        dat_b = np.ma.array([2., 2., 2., 2.], mask=[1, 1, 0, 0])
+        dat_a = ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
+        dat_b = ma.array([2., 2., 2., 2.], mask=[1, 1, 0, 0])
 
         cube_a = Cube(dat_a)
         cube_b = Cube(dat_b)
@@ -194,3 +195,27 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         reversed2 = Cube(data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
 
         return reversed1, reversed2
+
+
+class CubeArithmeticMaskedConstantTestMixin(
+        six.with_metaclass(ABCMeta, object)):
+
+    def test_masked_constant_in_place(self):
+        # Cube in_place arithmetic operation.
+        dtype = np.int64
+        dat = ma.masked_array(0, 1, dtype)
+        cube = Cube(dat)
+        res = self.cube_func(cube, 5, in_place=True)
+        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
+        self.assertEqual(dtype, res.dtype)
+        self.assertIs(res, cube)
+
+    def test_masked_constant_not_in_place(self):
+        # Cube in_place arithmetic operation.
+        dtype = np.int64
+        dat = ma.masked_array(0, 1, dtype)
+        cube = Cube(dat)
+        res = self.cube_func(cube, 5, in_place=False)
+        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
+        self.assertEqual(dtype, res.dtype)
+        self.assertIsNot(res, cube)

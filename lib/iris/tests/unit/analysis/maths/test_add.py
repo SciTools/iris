@@ -27,8 +27,8 @@ import operator
 
 from iris.analysis.maths import add
 from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin, \
-    CubeArithmeticCoordsTest
+    CubeArithmeticBroadcastingTestMixin, CubeArithmeticCoordsTest, \
+    CubeArithmeticMaskedConstantTestMixin, CubeArithmeticMaskingTestMixin
 
 
 @tests.skip_data
@@ -65,6 +65,18 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
         cube1, cube2 = self.SetUpReversed()
         with self.assertRaises(ValueError):
             add(cube1, cube2)
+
+
+@tests.iristest_timing_decorator
+class TestMaskedConstant(tests.IrisTest_nometa,
+                         CubeArithmeticMaskedConstantTestMixin):
+    @property
+    def data_op(self):
+        return operator.add
+
+    @property
+    def cube_func(self):
+        return add
 
 
 if __name__ == "__main__":
