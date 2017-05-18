@@ -52,12 +52,14 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         soil_level = 1234
-        mock_core_data = mock.MagicMock(return_value=np.zeros(1))
+        mock_data = np.zeros(1)
+        mock_core_data = mock.MagicMock(return_value=mock_data)
         field = mock.MagicMock(lbvc=6, lblev=soil_level,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
                                brsvd=[0] * 4, brlev=0,
-                               core_data=mock_core_data)
+                               core_data=mock_core_data,
+                               realised_dtype=mock_data.dtype)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -87,12 +89,14 @@ class TestVertical(tests.IrisTest):
         # LBCODE, support len().
         lower, point, upper = 1.2, 3.4, 5.6
         brsvd = [lower, 0, 0, 0]
-        mock_core_data = mock.MagicMock(return_value=np.zeros(1))
+        mock_data = np.zeros(1)
+        mock_core_data = mock.MagicMock(return_value=mock_data)
         field = mock.MagicMock(lbvc=6, blev=point,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
                                brsvd=brsvd, brlev=upper,
-                               core_data=mock_core_data)
+                               core_data=mock_core_data,
+                               realised_dtype=mock_data.dtype)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -123,10 +127,12 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         potm_value = 22.5
-        mock_core_data = mock.MagicMock(return_value=np.zeros(1))
+        mock_data = np.zeros(1)
+        mock_core_data = mock.MagicMock(return_value=mock_data)
         field = mock.MagicMock(lbvc=19, blev=potm_value,
                                lbuser=[0] * 7, lbrsvd=[0] * 4,
-                               core_data=mock_core_data)
+                               core_data=mock_core_data,
+                               realised_dtype=mock_data.dtype)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load):
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -151,12 +157,15 @@ class TestVertical(tests.IrisTest):
         # LBCODE, support len().
         def field_with_data(scale=1):
             x, y = 40, 30
-            return_value = np.arange(1200).reshape(y, x) * scale
-            core_data = mock.MagicMock(return_value=return_value)
-            field = mock.MagicMock(core_data=core_data, lbcode=[1],
+            mock_data = np.arange(1200).reshape(y, x) * scale
+            mock_core_data = mock.MagicMock(return_value=mock_data)
+            field = mock.MagicMock(core_data=mock_core_data,
+                                   realised_dtype=mock_data.dtype,
+                                   lbcode=[1],
                                    lbnpt=x, lbrow=y, bzx=350, bdx=1.5,
                                    bzy=40, bdy=1.5, lbuser=[0] * 7,
                                    lbrsvd=[0] * 4)
+
             field._x_coord_name = lambda: 'longitude'
             field._y_coord_name = lambda: 'latitude'
             field.coord_system = lambda: None
@@ -232,9 +241,11 @@ class TestVertical(tests.IrisTest):
     def test_hybrid_pressure_with_duplicate_references(self):
         def field_with_data(scale=1):
             x, y = 40, 30
-            return_value = np.arange(1200).reshape(y, x) * scale
-            core_data = mock.MagicMock(return_value=return_value)
-            field = mock.MagicMock(core_data=core_data, lbcode=[1],
+            mock_data = np.arange(1200).reshape(y, x) * scale
+            mock_core_data = mock.MagicMock(return_value=mock_data)
+            field = mock.MagicMock(core_data=mock_core_data,
+                                   realised_dtype=mock_data.dtype,
+                                   lbcode=[1],
                                    lbnpt=x, lbrow=y, bzx=350, bdx=1.5,
                                    bzy=40, bdy=1.5, lbuser=[0] * 7,
                                    lbrsvd=[0] * 4)
@@ -347,9 +358,11 @@ class TestVertical(tests.IrisTest):
         # LBCODE, support len().
         def field_with_data(scale=1):
             x, y = 40, 30
-            return_value = np.arange(1200).reshape(y, x) * scale
-            core_data = mock.MagicMock(return_value=return_value)
-            field = mock.MagicMock(core_data=core_data, lbcode=[1],
+            mock_data = np.arange(1200).reshape(y, x) * scale
+            mock_core_data = mock.MagicMock(return_value=mock_data)
+            field = mock.MagicMock(core_data=mock_core_data,
+                                   realised_dtype=mock_data.dtype,
+                                   lbcode=[1],
                                    lbnpt=x, lbrow=y, bzx=350, bdx=1.5,
                                    bzy=40, bdy=1.5, lbuser=[0] * 7,
                                    lbrsvd=[0] * 4)

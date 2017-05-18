@@ -118,7 +118,7 @@ class TestLoadCubes(tests.IrisTest):
         core_data_array.dtype = np.dtype('f4')
         # Make field.core_data() return the mock data array.
         field.core_data = mock.Mock(return_value=core_data_array)
-
+        field.realised_dtype = np.dtype('f4')
         field.bmdi = None
 
         def field_generator(filename):
@@ -186,9 +186,12 @@ class TestLoadCubes(tests.IrisTest):
         press_field = mock.Mock()
         press_field.core_data = mock.Mock(return_value=param_cube.data)
         press_field.bmdi = -1e20
+        press_field.realised_dtype = np.dtype('f4')
+
         orog_field = mock.Mock()
         orog_field.core_data = mock.Mock(return_value=orog_cube.data)
         orog_field.bmdi = -1e20
+        orog_field.realised_dtype = np.dtype('f4')
 
         def field_generator(filename):
             return [press_field, orog_field]
