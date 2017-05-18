@@ -899,7 +899,7 @@ def _make_cube(field, converter):
 
     cube_data = field.core_data()
     cube_dtype = field.realised_dtype
-    if cube_dtype.kind in 'bui':
+    if cube_dtype.kind in 'biu':
         # Don't adopt BMDI as a fill value for integer data.
         cube_fill_value = None
     else:

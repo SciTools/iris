@@ -1393,18 +1393,18 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         """
 
-        # Before we can actually write to file, we need to calculate the header
-        # elements. First things first, make sure the data is big-endian
+        # Get the actual data content.
         data = self.data
         if ma.is_masked(data):
+            # Fill missing data points with the MDI value from the header.
             if data.dtype.kind in 'biu':
                 # Integer or Boolean data : No masking is supported.
                 msg = 'Non-floating masked data cannot be saved to PP.'
                 raise ValueError(msg)
-            # Fill missing data points with the MDI value from the header.
             fill_value = self.bmdi
             data = data.filled(fill_value=fill_value)
 
+        # Make sure the data is big-endian
         if data.dtype.newbyteorder('>') != data.dtype:
             # take a copy of the data when byteswapping
             data = data.byteswap(False)
@@ -1416,7 +1416,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         b = np.empty(shape=NUM_FLOAT_HEADERS,
                      dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
-        # Populate the arrays from the PPField
+        # Fill in the header elements from the PPField
         for name, pos in self.HEADER_DEFN:
             try:
                 header_elem = getattr(self, name)

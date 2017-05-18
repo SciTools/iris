@@ -107,19 +107,12 @@ class TestLoadCubes(tests.IrisTest):
         # Test the creation process for a factory definition which only
         # uses simple dict arguments.
 
-        # The fake PPField which will be supplied to our converter.
-        field = mock.Mock()
-
-        # Construct a mock content array.
-        core_data_array = mock.Mock()
-        # Add a compute attribute so that the data will be treated as lazy.
-        core_data_array.compute = None
-        # It must also have a recognisable dtype.
-        core_data_array.dtype = np.dtype('f4')
-        # Make field.core_data() return the mock data array.
-        field.core_data = mock.Mock(return_value=core_data_array)
-        field.realised_dtype = np.dtype('f4')
-        field.bmdi = None
+        # Make a minimal fake data object that passes as lazy data.
+        core_data_array = mock.Mock(compute=None, dtype=np.dtype('f4'))
+        # Make a fake PPField which will be supplied to our converter.
+        field = mock.Mock(core_data=mock.Mock(return_value=core_data_array),
+                          realised_dtype=np.dtype('f4'),
+                          bmdi=None)
 
         def field_generator(filename):
             return [field]
@@ -183,15 +176,13 @@ class TestLoadCubes(tests.IrisTest):
         assert not param_cube.coords('surface_altitude')
 
         # The fake PPFields which will be supplied to our converter.
-        press_field = mock.Mock()
-        press_field.core_data = mock.Mock(return_value=param_cube.data)
-        press_field.bmdi = -1e20
-        press_field.realised_dtype = np.dtype('f4')
+        press_field = mock.Mock(
+            core_data=mock.Mock(return_value=param_cube.data),
+            bmdi=-1e20, realised_dtype=param_cube.dtype)
 
-        orog_field = mock.Mock()
-        orog_field.core_data = mock.Mock(return_value=orog_cube.data)
-        orog_field.bmdi = -1e20
-        orog_field.realised_dtype = np.dtype('f4')
+        orog_field = mock.Mock(
+            core_data=mock.Mock(return_value=orog_cube.data),
+            bmdi=-1e20, realised_dtype=orog_cube.dtype)
 
         def field_generator(filename):
             return [press_field, orog_field]
