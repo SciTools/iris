@@ -47,7 +47,7 @@ class Test(tests.IrisTest):
                                 np.subtract,
                                 np.multiply,
                                 np.power,
-                                np.divide]
+                                np.floor_divide]
         try:
             self.same_result_ops.append(operator.div)
         except AttributeError:
@@ -71,21 +71,21 @@ class Test(tests.IrisTest):
         self.dtypes = [np.dtype('i2'), np.dtype('i4'), np.dtype('i8'),
                        np.dtype('f2'), np.dtype('f4'), np.dtype('f8')]
 
-    def _binary_error_message(self, op, left_dtype, right_dtype,
+    def _binary_error_message(self, op, first_dtype, second_dtype,
                               expected_dtype, result_dtype, in_place=False):
         msg = "Output for {op.__class__.__name__} {op.__name__!r} and " \
-              "arguments ({lhs!r}, {rhs!r}, in_place={in_place}) " \
+              "arguments ({dt1!r}, {dt2!r}, in_place={in_place}) " \
               "was {res!r}. Expected {exp!r}."
-        return msg.format(op=op, lhs=left_dtype, rhs=right_dtype,
+        return msg.format(op=op, dt1=first_dtype, dt2=second_dtype,
                           exp=expected_dtype, res=result_dtype,
                           in_place=in_place)
 
     def _unary_error_message(self, op, dtype, expected_dtype, result_dtype,
                              in_place=False):
         msg = "Output for {op.__class__.__name__} {op.__name__!r} and " \
-              "arguments ({arg!r}, in_place={in_place}) was {res!r}. " \
+              "arguments ({dt!r}, in_place={in_place}) was {res!r}. " \
               "Expected {exp!r}."
-        return msg.format(op=op, arg=dtype,
+        return msg.format(op=op, dt=dtype,
                           exp=expected_dtype, res=result_dtype,
                           in_place=in_place)
 
@@ -95,10 +95,15 @@ class Test(tests.IrisTest):
         for dtype in self.dtypes:
             for op in self.same_result_ops:
                 result_dtype = _output_dtype(op, dtype, dtype)
-                self.assertEqual(dtype, result_dtype)
+                self.assertEqual(dtype, result_dtype,
+                                 self._binary_error_message(op, dtype, dtype,
+                                                            dtype,
+                                                            result_dtype))
             for op in self.unary_same_result_ops:
                 result_dtype = _output_dtype(op, dtype)
-                self.assertEqual(dtype, result_dtype)
+                self.assertEqual(dtype, result_dtype,
+                                 self._unary_error_message(op, dtype, dtype,
+                                                           result_dtype))
 
     def test_binary_float(self):
         # Check that the result dtype is a float for relevant operators.
@@ -112,11 +117,11 @@ class Test(tests.IrisTest):
                  (np.dtype('f2'), np.dtype('f2'), np.dtype('f2')),
                  (np.dtype('f4'), np.dtype('f4'), np.dtype('f4')),
                  (np.dtype('f2'), np.dtype('f4'), np.dtype('f4'))]
-        for ldtype, rdtype, expected_dtype in cases:
+        for dtype1, dtype2, expected_dtype in cases:
             for op in self.float_ops:
-                result_dtype = _output_dtype(op, ldtype, rdtype)
+                result_dtype = _output_dtype(op, dtype1, dtype2)
                 self.assertEqual(expected_dtype, result_dtype,
-                                 self._binary_error_message(op, ldtype, rdtype,
+                                 self._binary_error_message(op, dtype1, dtype2,
                                                             expected_dtype,
                                                             result_dtype))
 
@@ -154,12 +159,12 @@ class Test(tests.IrisTest):
     def test_in_place(self):
         # Check that when the in_place argument is True, the result is always
         # the same as first operand.
-        for ldtype, rdtype in product(self.dtypes, self.dtypes):
+        for dtype1, dtype2 in product(self.dtypes, self.dtypes):
             for op in self.all_binary_ops:
-                result_dtype = _output_dtype(op, ldtype, rdtype, in_place=True)
-                self.assertEqual(result_dtype, ldtype,
-                                 self._binary_error_message(op, ldtype, rdtype,
-                                                            ldtype,
+                result_dtype = _output_dtype(op, dtype1, dtype2, in_place=True)
+                self.assertEqual(result_dtype, dtype1,
+                                 self._binary_error_message(op, dtype1, dtype2,
+                                                            dtype1,
                                                             result_dtype,
                                                             in_place=True))
         for dtype in self.dtypes:

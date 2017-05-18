@@ -63,6 +63,10 @@ class Test(tests.IrisTest):
         n = 65000.0
         self._check_call(n, np.float32)
 
+    def test_float64(self):
+        n = 1e40
+        self._check_call(n, np.float64)
+
     def test_scalar_demote(self):
         n = np.int64(10)
         self._check_call(n, np.uint8)
@@ -72,28 +76,33 @@ class Test(tests.IrisTest):
         self._check_call(a, np.int16)
 
     def test_scalar_array(self):
-        a = np.array(1, dtype=np.int32)
-        self._check_call(a, np.int32)
+        dtype = np.int32
+        a = np.array(1, dtype=dtype)
+        self._check_call(a, dtype)
 
     def test_masked_array(self):
-        m = ma.masked_array([1, 2, 3], [1, 0, 1], dtype=np.float16)
-        self._check_call(m, np.float16)
+        dtype = np.float16
+        m = ma.masked_array([1, 2, 3], [1, 0, 1], dtype=dtype)
+        self._check_call(m, dtype)
 
     def test_masked_constant(self):
         m = ma.masked
         self._check_call(m, m.dtype)
 
     def test_cube(self):
-        data = np.array([1, 2, 3], dtype=np.float32)
+        dtype = np.float32
+        data = np.array([1, 2, 3], dtype=dtype)
         cube = Cube(data)
-        self._check_call(cube, np.float32)
+        self._check_call(cube, dtype)
 
     def test_aux_coord(self):
-        points = np.array([1, 2, 3], dtype=np.int64)
+        dtype = np.int64
+        points = np.array([1, 2, 3], dtype=dtype)
         aux_coord = AuxCoord(points)
-        self._check_call(aux_coord, np.int64)
+        self._check_call(aux_coord, dtype)
 
     def test_dim_coord(self):
-        points = np.array([1, 2, 3], dtype=np.float16)
+        dtype = np.float16
+        points = np.array([1, 2, 3], dtype=dtype)
         dim_coord = DimCoord(points)
-        self._check_call(dim_coord, np.float16)
+        self._check_call(dim_coord, dtype)

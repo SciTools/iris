@@ -45,19 +45,50 @@ from dask.array.core import broadcast_shapes
 _output_dtype_cache = {}
 
 
-def _output_dtype(op, left_dtype, right_dtype=None, in_place=False):
-    operand_dtypes = [left_dtype, right_dtype] if right_dtype is not None \
-                      else [left_dtype]
+def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
+    """
+    Get the numpy dtype corresponding to the result of applying a unary or
+    binary operation to arguments of specified dtype.
+
+    Args:
+
+    * op:
+        A unary or binary operator which can be applied to array-like objects.
+    * first_dtype:
+        The dtype of the first or only argument to the operator.
+
+    Kwargs:
+
+    * second_dtype:
+        The dtype of the second argument to the operator.
+
+    * in_place:
+        Whether the operation is to be performed in place.
+
+    Returns:
+        An instance of :class:`numpy.dtype`
+
+    .. note::
+
+        The function always returns the dtype which would result if the
+        operation were successful, even if the operation could fail due to
+        casting restrictions for in place operations.
+
+    """
     if in_place:
         # Always return the first dtype, even if the operation would fail due
         # to failure to cast the result.
-        return operand_dtypes[0]
-    key = (op, tuple(operand_dtypes))
-    result = _output_dtype_cache.get(key, None)
-    if result is None:
-        arrays = [np.array([1], dtype=dtype) for dtype in operand_dtypes]
-        result = op(*arrays).dtype
-        _output_dtype_cache[key] = result
+        result = first_dtype
+    else:
+        operand_dtypes = (first_dtype, second_dtype) \
+            if second_dtype is not None \
+            else (first_dtype,)
+        key = (op, operand_dtypes)
+        result = _output_dtype_cache.get(key, None)
+        if result is None:
+            arrays = [np.array([1], dtype=dtype) for dtype in operand_dtypes]
+            result = op(*arrays).dtype
+            _output_dtype_cache[key] = result
     return result
 
 
