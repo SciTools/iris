@@ -230,10 +230,6 @@ class FakePPEnvironment(object):
 
 
 class TestPPSaveRules(tests.IrisTest, pp.PPTest):
-    # Skip this test, there appears to be a long standing bug in PP saving
-    # for int32, which is made worse by assigning the 'default' bmdi of
-    # 1e30 into int arrays
-    @tests.skip_biggus
     def test_default_coord_system(self):
         GeogCS = iris.coord_systems.GeogCS
         cube = iris.tests.stock.lat_lon_cube()
@@ -266,8 +262,6 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
         field = next(pp_file)
         return field.lbproc
 
-    # see related comment #236
-    @tests.skip_biggus
     def test_pp_save_rules(self):
         # Test single process flags
         for _, process_desc in iris.fileformats.pp.LBPROC_PAIRS[1:]:
