@@ -772,7 +772,7 @@ def _math_op_common(cube, operation_function, new_unit, new_dtype=None,
             and not new_cube.has_lazy_data() \
             and new_cube.data.shape == () \
             and ma.is_masked(new_cube.data):
-        new_cube.data = np.asanyarray(new_cube.data, dtype=new_dtype)
+        new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
 
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
