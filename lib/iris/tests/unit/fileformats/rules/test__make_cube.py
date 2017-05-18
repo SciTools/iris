@@ -23,13 +23,16 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris.fileformats.rules import _make_cube
-import iris.fileformats.rules
+import warnings
+
+from iris.fileformats.rules import ConversionMetadata
 from iris.tests import mock
+import numpy as np
+
+from iris.fileformats.rules import _make_cube
 
 
 class Test(tests.IrisTest):
-    @tests.skip_biggus
     def test_invalid_units(self):
         # Mock converter() function that returns an invalid
         # units string amongst the collection of other elements.
@@ -42,13 +45,15 @@ class Test(tests.IrisTest):
         cell_methods = None
         dim_coords_and_dims = None
         aux_coords_and_dims = None
-        metadata = iris.fileformats.rules.ConversionMetadata(
-            factories, references, standard_name, long_name, units, attributes,
-            cell_methods, dim_coords_and_dims, aux_coords_and_dims)
+        metadata = ConversionMetadata(factories, references,
+                                      standard_name, long_name, units,
+                                      attributes, cell_methods,
+                                      dim_coords_and_dims, aux_coords_and_dims)
         converter = mock.Mock(return_value=metadata)
 
-        field = mock.Mock()
-        with mock.patch('warnings.warn') as warn:
+        field = mock.Mock(core_data=lambda: np.arange(3.), bmdi=9999.)
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter("always")
             cube, factories, references = _make_cube(field, converter)
 
         # Check attributes dictionary is correctly populated.
@@ -57,9 +62,9 @@ class Test(tests.IrisTest):
         self.assertEqual(cube.attributes, expected_attributes)
 
         # Check warning was raised.
-        self.assertEqual(warn.call_count, 1)
-        warning_msg = warn.call_args[0][0]
-        self.assertIn('invalid units', warning_msg)
+        self.assertEqual(len(warn), 1)
+        exp_emsg = 'invalid units {!r}'.format(units)
+        self.assertRegexpMatches(str(warn[0]), exp_emsg)
 
 
 if __name__ == "__main__":
