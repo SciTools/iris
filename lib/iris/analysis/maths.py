@@ -49,6 +49,8 @@ def _output_dtype(op, left_dtype, right_dtype=None, in_place=False):
     operand_dtypes = [left_dtype, right_dtype] if right_dtype is not None \
                       else [left_dtype]
     if in_place:
+        # Always return the first dtype, even if the operation would fail due
+        # to failure to cast the result.
         return operand_dtypes[0]
     key = (op, tuple(operand_dtypes))
     result = _output_dtype_cache.get(key, None)

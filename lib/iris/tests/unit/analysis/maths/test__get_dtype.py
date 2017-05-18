@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the function :func:`iris.analysis.maths._inplace_common_checks`.
+Unit tests for the function :func:`iris.analysis.maths._get_dtype`.
 
 """
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the function :func:`iris.analysis.maths._inplace_common_checks`.
+Unit tests for the function :func:`iris.analysis.maths._output_dtype`.
 
 """
 
@@ -157,7 +157,6 @@ class Test(tests.IrisTest):
                                                             ldtype,
                                                             result_dtype,
                                                             in_place=True))
-
         for dtype in self.dtypes:
             for op in self.all_unary_ops:
                 result_dtype = _output_dtype(op, dtype, in_place=True)
