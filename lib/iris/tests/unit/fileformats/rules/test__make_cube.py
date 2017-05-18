@@ -51,7 +51,10 @@ class Test(tests.IrisTest):
                                       dim_coords_and_dims, aux_coords_and_dims)
         converter = mock.Mock(return_value=metadata)
 
-        field = mock.Mock(core_data=lambda: np.arange(3.), bmdi=9999.)
+        test_data = np.arange(3.)
+        field = mock.Mock(core_data=lambda: test_data,
+                          bmdi=9999.,
+                          realised_dtype=test_data.dtype)
         with warnings.catch_warnings(record=True) as warn:
             warnings.simplefilter("always")
             cube, factories, references = _make_cube(field, converter)

@@ -80,8 +80,6 @@ def callback_aaxzc_n10r13xy_b_pp(cube, field, filename):
     cube.add_aux_coord(height_coord)
 
 
-# XXX: Issue with integer.b.pp and invalid bmdi fill_value for int32 dtype
-@tests.skip_biggus
 @tests.skip_data
 class TestAll(tests.IrisTest, pp.PPTest):
     _ref_dir = ('usecases', 'pp_to_cf_conversion')
