@@ -60,14 +60,14 @@ def is_lazy_data(data):
 
     At present, this means simply a Dask array.
     We determine this by checking for a "compute" property.
-    NOTE: ***for now only*** accept Biggus arrays also.
 
     """
     result = hasattr(data, 'compute')
     return result
 
 
-# A magic value, borrowed from biggus
+# A magic value, chosen to minimise chunk creation time and chunk processing
+# time within dask.
 _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
 
