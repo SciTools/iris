@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,6 +29,7 @@ import warnings
 import iris.tests as tests
 
 import numpy as np
+import six
 
 from iris.coord_systems import Stereographic
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
@@ -81,7 +82,7 @@ class TestHasSupportedStereographicParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegexpMatches(str(warns[0]), 'Scale factor')
+        six.assertRegex(self, str(warns[0]), 'Scale factor')
 
 
 if __name__ == "__main__":
