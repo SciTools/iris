@@ -232,7 +232,8 @@ class CubeArithmeticMaskedConstantTestMixin(
         self.assertIsNot(res, cube)
 
 
-class CubeArithmeticLazyCastingTestMixin(six.with_metaclass(ABCMeta, object)):
+class CubeArithmeticMaskedLazyCastingTestMixin(
+        six.with_metaclass(ABCMeta, object)):
     @abstractproperty
     def data_op(self):
         # Define an operator to be called, I.E. 'operator.xx'.
@@ -250,7 +251,7 @@ class CubeArithmeticLazyCastingTestMixin(six.with_metaclass(ABCMeta, object)):
         pass
 
     def _test(self, dtype_cube, dtype_other):
-        dat = np.array([1], dtype=dtype_cube)
+        dat = ma.masked_array([1, 2], [1, 0], dtype=dtype_cube)
         cube = Cube(as_lazy_data(dat.copy()), dtype=dtype_cube, units='1')
 
         other, other_dat = self.make_other(dtype_other)
@@ -282,17 +283,17 @@ class CubeArithmeticLazyCastingTestMixin(six.with_metaclass(ABCMeta, object)):
         self._test(np.dtype('f4'), np.dtype('f8'))
 
 
-class CubeArithmeticLazyCastingCubeTestMixin(
-        CubeArithmeticLazyCastingTestMixin):
+class CubeArithmeticMaskedLazyCastingCubeTestMixin(
+        CubeArithmeticMaskedLazyCastingTestMixin):
 
     def make_other(self, dtype):
-        dat = np.array([1], dtype=dtype)
+        dat = np.array([1, 2], dtype=dtype)
         cube = Cube(dat, units='1')
         return cube, dat
 
 
-class CubeArithmeticLazyCastingCoordTestMixin(
-        CubeArithmeticLazyCastingTestMixin):
+class CubeArithmeticMaskedLazyCastingCoordTestMixin(
+        CubeArithmeticMaskedLazyCastingTestMixin):
 
     def make_other(self, dtype):
         dat = np.array([1], dtype=dtype)
@@ -300,16 +301,16 @@ class CubeArithmeticLazyCastingCoordTestMixin(
         return coord, dat
 
 
-class CubeArithmeticLazyCastingArrayTestMixin(
-        CubeArithmeticLazyCastingTestMixin):
+class CubeArithmeticMaskedLazyCastingArrayTestMixin(
+        CubeArithmeticMaskedLazyCastingTestMixin):
 
     def make_other(self, dtype):
-        dat = np.array([1], dtype=dtype)
+        dat = np.array([1, 2], dtype=dtype)
         return dat, dat
 
 
-class CubeArithmeticLazyCastingScalarTestMixin(
-        CubeArithmeticLazyCastingTestMixin):
+class CubeArithmeticMaskedLazyCastingScalarTestMixin(
+        CubeArithmeticMaskedLazyCastingTestMixin):
 
     def make_other(self, dtype):
         dat = dtype.type(1)

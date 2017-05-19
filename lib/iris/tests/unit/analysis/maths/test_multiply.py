@@ -29,10 +29,10 @@ from iris.analysis.maths import multiply
 from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticCoordsTest, \
     CubeArithmeticMaskedConstantTestMixin, CubeArithmeticMaskingTestMixin
-    CubeArithmeticLazyCastingCubeTestMixin, \
-    CubeArithmeticLazyCastingCoordTestMixin, \
-    CubeArithmeticLazyCastingArrayTestMixin, \
-    CubeArithmeticLazyCastingScalarTestMixin
+    CubeArithmeticMaskedLazyCastingCubeTestMixin, \
+    CubeArithmeticMaskedLazyCastingCoordTestMixin, \
+    CubeArithmeticMaskedLazyCastingArrayTestMixin, \
+    CubeArithmeticMaskedLazyCastingScalarTestMixin
 
 
 @tests.skip_data
@@ -85,7 +85,7 @@ class TestMaskedConstant(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestLazyCastingCube(tests.IrisTest_nometa,
-                          CubeArithmeticLazyCastingCubeTestMixin):
+                          CubeArithmeticMaskedLazyCastingCubeTestMixin):
     @property
     def data_op(self):
         return operator.mul
@@ -97,7 +97,7 @@ class TestLazyCastingCube(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestLazyCastingCoord(tests.IrisTest_nometa,
-                           CubeArithmeticLazyCastingCoordTestMixin):
+                           CubeArithmeticMaskedLazyCastingCoordTestMixin):
     @property
     def data_op(self):
         return operator.mul
@@ -109,7 +109,7 @@ class TestLazyCastingCoord(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestLazyCastingArray(tests.IrisTest_nometa,
-                           CubeArithmeticLazyCastingArrayTestMixin):
+                           CubeArithmeticMaskedLazyCastingArrayTestMixin):
     @property
     def data_op(self):
         return operator.mul
@@ -121,7 +121,7 @@ class TestLazyCastingArray(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestLazyCastingScalar(tests.IrisTest_nometa,
-                            CubeArithmeticLazyCastingScalarTestMixin):
+                            CubeArithmeticMaskedLazyCastingScalarTestMixin):
     @property
     def data_op(self):
         return operator.mul

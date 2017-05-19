@@ -31,10 +31,10 @@ from iris.cube import Cube
 from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin, \
     CubeArithmeticCoordsTest
-    CubeArithmeticLazyCastingCubeTestMixin, \
-    CubeArithmeticLazyCastingCoordTestMixin, \
-    CubeArithmeticLazyCastingArrayTestMixin, \
-    CubeArithmeticLazyCastingScalarTestMixin
+    CubeArithmeticMaskedLazyCastingCubeTestMixin, \
+    CubeArithmeticMaskedLazyCastingCoordTestMixin, \
+    CubeArithmeticMaskedLazyCastingArrayTestMixin, \
+    CubeArithmeticMaskedLazyCastingScalarTestMixin
 
 
 @tests.skip_data
@@ -109,7 +109,7 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
 
 @tests.iristest_timing_decorator
 class TestLazyCastingCube(tests.IrisTest_nometa,
-                          CubeArithmeticLazyCastingCubeTestMixin):
+                          CubeArithmeticMaskedLazyCastingCubeTestMixin):
     @property
     def data_op(self):
         return operator.truediv
@@ -121,7 +121,7 @@ class TestLazyCastingCube(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestLazyCastingCoord(tests.IrisTest_nometa,
-                           CubeArithmeticLazyCastingCoordTestMixin):
+                           CubeArithmeticMaskedLazyCastingCoordTestMixin):
     @property
     def data_op(self):
         return operator.truediv
@@ -133,7 +133,7 @@ class TestLazyCastingCoord(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestLazyCastingArray(tests.IrisTest_nometa,
-                           CubeArithmeticLazyCastingArrayTestMixin):
+                           CubeArithmeticMaskedLazyCastingArrayTestMixin):
     @property
     def data_op(self):
         return operator.truediv
@@ -145,7 +145,7 @@ class TestLazyCastingArray(tests.IrisTest_nometa,
 
 @tests.iristest_timing_decorator
 class TestLazyCastingScalar(tests.IrisTest_nometa,
-                            CubeArithmeticLazyCastingScalarTestMixin):
+                            CubeArithmeticMaskedLazyCastingScalarTestMixin):
     @property
     def data_op(self):
         return operator.truediv
