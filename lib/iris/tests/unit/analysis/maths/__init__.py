@@ -25,8 +25,9 @@ from abc import ABCMeta, abstractproperty
 import numpy as np
 from numpy import ma
 
+from iris._lazy_data import as_lazy_data
 from iris.analysis import MEAN
-from iris.coords import DimCoord
+from iris.coords import DimCoord, AuxCoord
 from iris.cube import Cube
 import iris.tests as tests
 import iris.tests.stock as stock
@@ -199,6 +200,16 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
 
 class CubeArithmeticMaskedConstantTestMixin(
         six.with_metaclass(ABCMeta, object)):
+    @abstractproperty
+    def data_op(self):
+        # Define an operator to be called, I.E. 'operator.xx'.
+        pass
+
+    @abstractproperty
+    def cube_func(self):
+        # Define an iris arithmetic function to be called
+        # I.E. 'iris.analysis.maths.xx'.
+        pass
 
     def test_masked_constant_in_place(self):
         # Cube in_place arithmetic operation.
@@ -219,3 +230,87 @@ class CubeArithmeticMaskedConstantTestMixin(
         self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
         self.assertEqual(dtype, res.dtype)
         self.assertIsNot(res, cube)
+
+
+class CubeArithmeticLazyCastingTestMixin(six.with_metaclass(ABCMeta, object)):
+    @abstractproperty
+    def data_op(self):
+        # Define an operator to be called, I.E. 'operator.xx'.
+        pass
+
+    @abstractproperty
+    def cube_func(self):
+        # Define an iris arithmetic function to be called
+        # I.E. 'iris.analysis.maths.xx'.
+        pass
+
+    def make_other(self, dtype):
+        # Create the other object on which to apply the operation, and return
+        # a tuple containing the object and its data
+        pass
+
+    def _test(self, dtype_cube, dtype_other):
+        dat = np.array([1], dtype=dtype_cube)
+        cube = Cube(as_lazy_data(dat.copy()), dtype=dtype_cube, units='1')
+
+        other, other_dat = self.make_other(dtype_other)
+
+        com = self.data_op(dat, other_dat)
+        res = self.cube_func(cube, other)
+
+        self.assertEqual(com.dtype, res.dtype)
+
+    def test_int_int(self):
+        self._test(np.dtype('i8'), np.dtype('i8'))
+
+    def test_int_int_upcast(self):
+        self._test(np.dtype('i8'), np.dtype('i4'))
+
+    def test_int_int_downcast(self):
+        self._test(np.dtype('i4'), np.dtype('i8'))
+
+    def test_float_int(self):
+        self._test(np.dtype('f8'), np.dtype('i8'))
+
+    def test_float_float(self):
+        self._test(np.dtype('f8'), np.dtype('f8'))
+
+    def test_float_float_upcast(self):
+        self._test(np.dtype('f8'), np.dtype('f4'))
+
+    def test_float_float_downcast(self):
+        self._test(np.dtype('f4'), np.dtype('f8'))
+
+
+class CubeArithmeticLazyCastingCubeTestMixin(
+        CubeArithmeticLazyCastingTestMixin):
+
+    def make_other(self, dtype):
+        dat = np.array([1], dtype=dtype)
+        cube = Cube(dat, units='1')
+        return cube, dat
+
+
+class CubeArithmeticLazyCastingCoordTestMixin(
+        CubeArithmeticLazyCastingTestMixin):
+
+    def make_other(self, dtype):
+        dat = np.array([1], dtype=dtype)
+        coord = AuxCoord(dat, units='1')
+        return coord, dat
+
+
+class CubeArithmeticLazyCastingArrayTestMixin(
+        CubeArithmeticLazyCastingTestMixin):
+
+    def make_other(self, dtype):
+        dat = np.array([1], dtype=dtype)
+        return dat, dat
+
+
+class CubeArithmeticLazyCastingScalarTestMixin(
+        CubeArithmeticLazyCastingTestMixin):
+
+    def make_other(self, dtype):
+        dat = dtype.type(1)
+        return dat, dat

@@ -29,6 +29,10 @@ from iris.analysis.maths import subtract
 from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticCoordsTest, \
     CubeArithmeticMaskedConstantTestMixin, CubeArithmeticMaskingTestMixin
+    CubeArithmeticLazyCastingCubeTestMixin, \
+    CubeArithmeticLazyCastingCoordTestMixin, \
+    CubeArithmeticLazyCastingArrayTestMixin, \
+    CubeArithmeticLazyCastingScalarTestMixin
 
 
 @tests.skip_data
@@ -70,6 +74,54 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
 @tests.iristest_timing_decorator
 class TestMaskedConstant(tests.IrisTest_nometa,
                          CubeArithmeticMaskedConstantTestMixin):
+    @property
+    def data_op(self):
+        return operator.sub
+
+    @property
+    def cube_func(self):
+        return subtract
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingCube(tests.IrisTest_nometa,
+                          CubeArithmeticLazyCastingCubeTestMixin):
+    @property
+    def data_op(self):
+        return operator.sub
+
+    @property
+    def cube_func(self):
+        return subtract
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingCoord(tests.IrisTest_nometa,
+                           CubeArithmeticLazyCastingCoordTestMixin):
+    @property
+    def data_op(self):
+        return operator.sub
+
+    @property
+    def cube_func(self):
+        return subtract
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingArray(tests.IrisTest_nometa,
+                           CubeArithmeticLazyCastingArrayTestMixin):
+    @property
+    def data_op(self):
+        return operator.sub
+
+    @property
+    def cube_func(self):
+        return subtract
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingScalar(tests.IrisTest_nometa,
+                            CubeArithmeticLazyCastingScalarTestMixin):
     @property
     def data_op(self):
         return operator.sub

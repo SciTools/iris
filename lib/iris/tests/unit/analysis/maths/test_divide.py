@@ -31,6 +31,10 @@ from iris.cube import Cube
 from iris.tests.unit.analysis.maths import \
     CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin, \
     CubeArithmeticCoordsTest
+    CubeArithmeticLazyCastingCubeTestMixin, \
+    CubeArithmeticLazyCastingCoordTestMixin, \
+    CubeArithmeticLazyCastingArrayTestMixin, \
+    CubeArithmeticLazyCastingScalarTestMixin
 
 
 @tests.skip_data
@@ -101,6 +105,54 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
         cube1, cube2 = self.SetUpReversed()
         with self.assertRaises(ValueError):
             divide(cube1, cube2)
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingCube(tests.IrisTest_nometa,
+                          CubeArithmeticLazyCastingCubeTestMixin):
+    @property
+    def data_op(self):
+        return operator.truediv
+
+    @property
+    def cube_func(self):
+        return divide
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingCoord(tests.IrisTest_nometa,
+                           CubeArithmeticLazyCastingCoordTestMixin):
+    @property
+    def data_op(self):
+        return operator.truediv
+
+    @property
+    def cube_func(self):
+        return divide
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingArray(tests.IrisTest_nometa,
+                           CubeArithmeticLazyCastingArrayTestMixin):
+    @property
+    def data_op(self):
+        return operator.truediv
+
+    @property
+    def cube_func(self):
+        return divide
+
+
+@tests.iristest_timing_decorator
+class TestLazyCastingScalar(tests.IrisTest_nometa,
+                            CubeArithmeticLazyCastingScalarTestMixin):
+    @property
+    def data_op(self):
+        return operator.truediv
+
+    @property
+    def cube_func(self):
+        return divide
 
 
 if __name__ == "__main__":

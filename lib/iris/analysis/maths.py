@@ -862,7 +862,8 @@ def _math_op_common(cube, operation_function, new_unit, new_dtype=None,
             new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
         # Ensure the cube has the correct dtype
         if new_cube.has_lazy_data():
-            new_cube.replace(new_cube.core_data(), dtype=new_dtype)
+            new_cube.replace(new_cube.core_data(), dtype=new_dtype,
+                             fill_value=new_cube.fill_value)
 
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
