@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import six
 import warnings
 
 from iris.fileformats.rules import ConversionMetadata
@@ -51,10 +52,10 @@ class Test(tests.IrisTest):
                                       dim_coords_and_dims, aux_coords_and_dims)
         converter = mock.Mock(return_value=metadata)
 
-        test_data = np.arange(3.)
-        field = mock.Mock(core_data=lambda: test_data,
+        data = np.arange(3.)
+        field = mock.Mock(core_data=lambda: data,
                           bmdi=9999.,
-                          realised_dtype=test_data.dtype)
+                          realised_dtype=data.dtype)
         with warnings.catch_warnings(record=True) as warn:
             warnings.simplefilter("always")
             cube, factories, references = _make_cube(field, converter)
@@ -67,7 +68,7 @@ class Test(tests.IrisTest):
         # Check warning was raised.
         self.assertEqual(len(warn), 1)
         exp_emsg = 'invalid units {!r}'.format(units)
-        self.assertRegexpMatches(str(warn[0]), exp_emsg)
+        six.assertRegex(self, str(warn[0]), exp_emsg)
 
 
 if __name__ == "__main__":
