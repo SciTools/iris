@@ -306,33 +306,34 @@ def interpolate(cube, sample_points, method=None):
                        'selection indices should all have the same form.')
                 raise ValueError(msg)
 
-            fancy_source_indices.append(fancy_index)
-            region_slices.append(region_slice)
+                fancy_source_indices.append(fancy_index)
+                region_slices.append(region_slice)
 
-        # Fetch the required (square-section) region of the source data.
-        # NOTE: This is not quite as good as only fetching the individual
-        # points used, but it avoids creating a sub-cube for each point,
-        # which is very slow, especially when points are re-used a lot ...
-        source_area_indices = tuple(region_slices)
-        source_data = cube[source_area_indices].data
+            # Fetch the required (square-section) region of the source data.
+            # NOTE: This is not quite as good as only fetching the individual
+            # points used, but it avoids creating a sub-cube for each point,
+            # which is very slow, especially when points are re-used a lot ...
+            source_area_indices = tuple(region_slices)
+            source_data = cube[source_area_indices].data
 
-        # Transpose source data before indexing it to get the final result.
-        # Because.. the fancy indexing will replace the indexed (horizontal)
-        # dimensions with a new single dimension over trajectory points.
-        # Move those dimensions to the end *first* : this ensures that the new
-        # dimension also appears at the end, which is where we want it.
-        # Make a list of dims with the reduced ones last.
-        dims_reduced = np.array(dims_reduced)
-        dims_order = np.arange(n_index_length)
-        dims_order = np.concatenate((dims_order[~dims_reduced],
-                                     dims_order[dims_reduced]))
-        # Rearrange the data dimensions and the fancy indices into that order.
-        source_data = source_data.transpose(dims_order)
-        fancy_source_indices = [fancy_source_indices[i_dim]
-                                for i_dim in dims_order]
+            # Transpose source data before indexing it to get the final result.
+            # Because.. the fancy indexing will replace the indexed (horizontal)
+            # dimensions with a new single dimension over trajectory points.
+            # Move those dimensions to the end *first* : this ensures that the
+            # new dimension also appears at the end, which is where we want it.
+            # Make a list of dims with the reduced ones last.
+            dims_reduced = np.array(dims_reduced)
+            dims_order = np.arange(n_index_length)
+            dims_order = np.concatenate((dims_order[~dims_reduced],
+                                         dims_order[dims_reduced]))
+            # Rearrange the data dimensions and the fancy indices into that
+            # order.
+            source_data = source_data.transpose(dims_order)
+            fancy_source_indices = [fancy_source_indices[i_dim]
+                                    for i_dim in dims_order]
 
-        # Apply the fancy indexing to get all the result data points.
-        source_data = source_data[fancy_source_indices]
+            # Apply the fancy indexing to get all the result data points.
+            source_data = source_data[fancy_source_indices]
 
         # "Fix" problems with missing datapoints producing odd values
         # when copied from a masked into an unmasked array.
