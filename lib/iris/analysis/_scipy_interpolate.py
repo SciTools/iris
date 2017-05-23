@@ -223,9 +223,9 @@ class _RegularGridInterpolator(object):
 
             for i, corner in enumerate(corners):
                 corner_indices = [ci for ci, cw in corner]
-                n_indices = np.ravel_multi_index(corner_indices, shape,
-                                                 mode='wrap')
-                col_indices[i::n_src_values_per_result_value] = n_indices
+                col_indices[i::n_src_values_per_result_value] = \
+                    np.ravel_multi_index(corner_indices, shape,
+                                         mode='wrap')
                 for ci, cw in corner:
                     weights[i::n_src_values_per_result_value] *= cw
 
