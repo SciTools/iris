@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -119,6 +119,60 @@ class Test(tests.IrisTest):
         unify_time_units(cubelist)
         self._common(expected, cubelist)
 
+    def test_time_dtype(self):
+        cubelist = self.simple_1d_time_cubes()
+        for cube in cubelist:
+            cube.coord('time').points = cube.coord('time').points.astype(int)
+        unify_time_units(cubelist)
+        for cube in cubelist:
+            self.assertEqual(cube.coord('time').points.dtype, int)
+
+    def test_int32_overflow_points(self):
+        coord_points = [9000]
+        data_points = [273]
+        reftimes = ['seconds since 1970-01-01 00:00:00',
+                    'days since 2015-01-27 10:21:17']
+        list_of_cubes = []
+        for reftime in reftimes:
+            cube = iris.cube.Cube(np.array(data_points, dtype=np.float32),
+                                  standard_name='air_temperature',
+                                  units='K')
+            unit = cf_units.Unit(reftime, calendar='gregorian')
+            coord = iris.coords.DimCoord(points=np.array(coord_points,
+                                                         dtype=np.int32),
+                                         standard_name='time',
+                                         units=unit)
+            cube.add_dim_coord(coord, 0)
+            list_of_cubes.append(cube)
+        expected = ('Unifying units would have altered the points array of the'
+                    ' time coord')
+        with self.assertRaisesRegexp(ValueError, expected):
+            unify_time_units(list_of_cubes)
+
+    def test_int32_overflow_bounds(self):
+        coord_points = [8000]
+        data_points = [273]
+        bounds = [7000, 9000]
+        reftimes = ['seconds since 1970-01-01 00:00:00',
+                    'days since 2015-01-27 10:21:17']
+        list_of_cubes = []
+        for reftime in reftimes:
+            cube = iris.cube.Cube(np.array(data_points, dtype=np.float32),
+                                  standard_name='air_temperature',
+                                  units='K')
+            unit = cf_units.Unit(reftime, calendar='gregorian')
+            coord = iris.coords.DimCoord(points=np.array(coord_points,
+                                                         dtype=np.int32),
+                                         bounds=np.array(bounds,
+                                                         dtype=np.int32),
+                                         standard_name='time',
+                                         units=unit)
+            cube.add_dim_coord(coord, 0)
+            list_of_cubes.append(cube)
+        expected = ('Unifying units would have altered the bounds array of the'
+                    ' time coord')
+        with self.assertRaisesRegexp(ValueError, expected):
+            unify_time_units(list_of_cubes)
 
 if __name__ == '__main__':
     tests.main()
