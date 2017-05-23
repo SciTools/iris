@@ -715,7 +715,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if not isinstance(data, (biggus.Array, ma.MaskedArray)):
             data = np.asarray(data)
-        self._my_data = data
+        self._my_data = self.array_masked_to_nans(data)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1664,6 +1664,29 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 array = biggus.NumpyArrayAdapter(array)
         return array
 
+    @staticmethod
+    def array_masked_to_nans(array):
+        if np.ma.is_masked(array):
+            # Array has some masked points : use unmasked near-equivalent.
+            if array.dtype.kind == 'f':
+                # Floating : convert the masked points to NaNs.
+                array = array.filled(np.nan)
+            else:
+                # Integer : no conversion (i.e. do *NOT* fill with fill value)
+                # array = array.filled()
+                array = array.data
+        return array
+
+    @staticmethod
+    def array_nans_to_masked(array):
+        if (not isinstance(array, np.ma.masked_array) and
+                array.dtype.kind == 'f'):
+            mask = np.isnan(array)
+            if np.any(mask):
+                # Turn any unmasked array with NaNs into a masked array.
+                array = np.ma.masked_array(array, mask=mask)
+        return array
+
     @property
     def data(self):
         """
@@ -1699,6 +1722,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         data = self._my_data
         if not isinstance(data, np.ndarray):
+            # Must be lazy : realise + replace the inner data now.
             try:
                 data = data.masked_array()
             except MemoryError:
@@ -1714,8 +1738,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if isinstance(data, np.ndarray) and ma.count_masked(data) == 0:
                 data = data.data
             # data may be a numeric type, so ensure an np.ndarray is returned
-            self._my_data = np.asanyarray(data)
-        return self._my_data
+            data = np.asanyarray(data)
+            # Update inner record (lose the lazy one).
+            self._my_data = data
+
+        # Always convert NaNarrays back into masked ones for output.
+        data = self.array_nans_to_masked(data)
+        return data
 
     @data.setter
     def data(self, value):
@@ -1729,7 +1758,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
 
-        self._my_data = data
+        # Perform nanarray conversion before storing
+        self._my_data = self.array_masked_to_nans(data)
 
     def has_lazy_data(self):
         return isinstance(self._my_data, biggus.Array)
