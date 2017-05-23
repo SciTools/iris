@@ -133,7 +133,7 @@ class Trajectory(object):
                                                     self.sample_count)
 
 
-def interpolate(cube, sample_points, method=None):
+def interpolate(cube, sample_points, method=None, index_only=False):
     """
     Extract a sub-cube at the given n-dimensional points.
 
@@ -151,6 +151,13 @@ def interpolate(cube, sample_points, method=None):
         Request "linear" interpolation (default) or "nearest" neighbour.
         Only nearest neighbour is available when specifying multi-dimensional
         coordinates.
+
+    * index_only
+        Return only the array indices of the interpolated points if 'True'.
+        .. note:: This is only used in the case of nearest neighbour
+        interpolation.  When linear interpolation is performed, the
+        interpolated points are returned with the original array indices,
+        so the keyword is ignored.
 
 
     For example::
@@ -272,112 +279,115 @@ def interpolate(cube, sample_points, method=None):
         cache = {}
         column_indexes = _nearest_neighbour_indices_ndcoords(
             cube, sample_points, cache=cache)
+        if index_only:
+            return column_indexes
+        else:
+            # Construct "fancy" indexes, so we can create the result data array in
+            # a single numpy indexing operation.
+            # ALSO: capture the index range in each dimension, so that we can fetch
+            # only a required (square) sub-region of the source data.
+            fancy_source_indices = []
+            region_slices = []
+            n_index_length = len(column_indexes[0])
+            dims_reduced = [False] * n_index_length
+            for i_ind in range(n_index_length):
+                contents = [column_index[i_ind]
+                            for column_index in column_indexes]
+                each_used = [content != slice(None) for content in contents]
+                if np.all(each_used):
+                    # This dimension is addressed : use a list of indices.
+                    dims_reduced[i_ind] = True
+                    # Select the region by min+max indices.
+                    start_ind = np.min(contents)
+                    stop_ind = 1 + np.max(contents)
+                    region_slice = slice(start_ind, stop_ind)
+                    # Record point indices with start subtracted from all of them.
+                    fancy_index = list(np.array(contents) - start_ind)
+                elif not np.any(each_used):
+                    # This dimension is not addressed by the operation.
+                    # Use a ":" as the index.
+                    fancy_index = slice(None)
+                    # No sub-region selection for this dimension.
+                    region_slice = slice(None)
+                else:
+                    # Should really never happen, if _ndcoords is right.
+                    msg = ('Internal error in trajectory interpolation : point '
+                           'selection indices should all have the same form.')
+                    raise ValueError(msg)
 
-        # Construct "fancy" indexes, so we can create the result data array in
-        # a single numpy indexing operation.
-        # ALSO: capture the index range in each dimension, so that we can fetch
-        # only a required (square) sub-region of the source data.
-        fancy_source_indices = []
-        region_slices = []
-        n_index_length = len(column_indexes[0])
-        dims_reduced = [False] * n_index_length
-        for i_ind in range(n_index_length):
-            contents = [column_index[i_ind]
-                        for column_index in column_indexes]
-            each_used = [content != slice(None) for content in contents]
-            if np.all(each_used):
-                # This dimension is addressed : use a list of indices.
-                dims_reduced[i_ind] = True
-                # Select the region by min+max indices.
-                start_ind = np.min(contents)
-                stop_ind = 1 + np.max(contents)
-                region_slice = slice(start_ind, stop_ind)
-                # Record point indices with start subtracted from all of them.
-                fancy_index = list(np.array(contents) - start_ind)
-            elif not np.any(each_used):
-                # This dimension is not addressed by the operation.
-                # Use a ":" as the index.
-                fancy_index = slice(None)
-                # No sub-region selection for this dimension.
-                region_slice = slice(None)
-            else:
-                # Should really never happen, if _ndcoords is right.
-                msg = ('Internal error in trajectory interpolation : point '
-                       'selection indices should all have the same form.')
-                raise ValueError(msg)
+                fancy_source_indices.append(fancy_index)
+                region_slices.append(region_slice)
 
-            fancy_source_indices.append(fancy_index)
-            region_slices.append(region_slice)
+            # Fetch the required (square-section) region of the source data.
+            # NOTE: This is not quite as good as only fetching the individual
+            # points used, but it avoids creating a sub-cube for each point,
+            # which is very slow, especially when points are re-used a lot ...
+            source_area_indices = tuple(region_slices)
+            source_data = cube[source_area_indices].data
 
-        # Fetch the required (square-section) region of the source data.
-        # NOTE: This is not quite as good as only fetching the individual
-        # points used, but it avoids creating a sub-cube for each point,
-        # which is very slow, especially when points are re-used a lot ...
-        source_area_indices = tuple(region_slices)
-        source_data = cube[source_area_indices].data
+            # Transpose source data before indexing it to get the final result.
+            # Because.. the fancy indexing will replace the indexed (horizontal)
+            # dimensions with a new single dimension over trajectory points.
+            # Move those dimensions to the end *first* : this ensures that the new
+            # dimension also appears at the end, which is where we want it.
+            # Make a list of dims with the reduced ones last.
+            dims_reduced = np.array(dims_reduced)
+            dims_order = np.arange(n_index_length)
+            dims_order = np.concatenate((dims_order[~dims_reduced],
+                                         dims_order[dims_reduced]))
+            # Rearrange the data dimensions and the fancy indices into that order.
+            source_data = source_data.transpose(dims_order)
+            fancy_source_indices = [fancy_source_indices[i_dim]
+                                    for i_dim in dims_order]
 
-        # Transpose source data before indexing it to get the final result.
-        # Because.. the fancy indexing will replace the indexed (horizontal)
-        # dimensions with a new single dimension over trajectory points.
-        # Move those dimensions to the end *first* : this ensures that the new
-        # dimension also appears at the end, which is where we want it.
-        # Make a list of dims with the reduced ones last.
-        dims_reduced = np.array(dims_reduced)
-        dims_order = np.arange(n_index_length)
-        dims_order = np.concatenate((dims_order[~dims_reduced],
-                                     dims_order[dims_reduced]))
-        # Rearrange the data dimensions and the fancy indices into that order.
-        source_data = source_data.transpose(dims_order)
-        fancy_source_indices = [fancy_source_indices[i_dim]
-                                for i_dim in dims_order]
+            # Apply the fancy indexing to get all the result data points.
+            source_data = source_data[fancy_source_indices]
 
-        # Apply the fancy indexing to get all the result data points.
-        source_data = source_data[fancy_source_indices]
+            # "Fix" problems with missing datapoints producing odd values
+            # when copied from a masked into an unmasked array.
+            # TODO: proper masked data handling.
+            if np.ma.isMaskedArray(source_data):
+                # This is **not** proper mask handling, because we cannot produce a
+                # masked result, but it ensures we use a "filled" version of the
+                # input in this case.
+                source_data = source_data.filled()
+            new_cube.data[:] = source_data
+            # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
+            # because the existing code produces a default dtype from 'np.empty'
+            # instead of preserving the input dtype.
+            # TODO: maybe this should be fixed -- i.e. to preserve input dtype ??
 
-        # "Fix" problems with missing datapoints producing odd values
-        # when copied from a masked into an unmasked array.
-        # TODO: proper masked data handling.
-        if np.ma.isMaskedArray(source_data):
-            # This is **not** proper mask handling, because we cannot produce a
-            # masked result, but it ensures we use a "filled" version of the
-            # input in this case.
-            source_data = source_data.filled()
-        new_cube.data[:] = source_data
-        # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
-        # because the existing code produces a default dtype from 'np.empty'
-        # instead of preserving the input dtype.
-        # TODO: maybe this should be fixed -- i.e. to preserve input dtype ??
+            # Fill in the empty squashed (non derived) coords.
+            column_coords = [coord
+                             for coord in cube.dim_coords + cube.aux_coords
+                             if not squish_my_dims.isdisjoint(
+                                 cube.coord_dims(coord))]
+            new_cube_coords = [new_cube.coord(column_coord.name())
+                               for column_coord in column_coords]
+            all_point_indices = np.array(column_indexes)
+            single_point_test_cube = cube[column_indexes[0]]
+            for new_cube_coord, src_coord in zip(new_cube_coords, column_coords):
+                # Check structure of the indexed coord (at one selected point).
+                point_coord = single_point_test_cube.coord(src_coord)
+                if len(point_coord.points) != 1:
+                    msg = ('Coord {} at one x-y position has the shape {}, '
+                           'instead of being a single point. ')
+                    raise ValueError(msg.format(src_coord.name(), src_coord.shape))
 
-        # Fill in the empty squashed (non derived) coords.
-        column_coords = [coord
-                         for coord in cube.dim_coords + cube.aux_coords
-                         if not squish_my_dims.isdisjoint(
-                             cube.coord_dims(coord))]
-        new_cube_coords = [new_cube.coord(column_coord.name())
-                           for column_coord in column_coords]
-        all_point_indices = np.array(column_indexes)
-        single_point_test_cube = cube[column_indexes[0]]
-        for new_cube_coord, src_coord in zip(new_cube_coords, column_coords):
-            # Check structure of the indexed coord (at one selected point).
-            point_coord = single_point_test_cube.coord(src_coord)
-            if len(point_coord.points) != 1:
-                msg = ('Coord {} at one x-y position has the shape {}, '
-                       'instead of being a single point. ')
-                raise ValueError(msg.format(src_coord.name(), src_coord.shape))
+                # Work out which indices apply to the input coord.
+                # NOTE: we know how to index the source cube to get a cube with a
+                # single point for each coord, but this is very inefficient.
+                # So here, we translate cube indexes into *coord* indexes.
+                src_coord_dims = cube.coord_dims(src_coord)
+                fancy_coord_index_arrays = [list(all_point_indices[:, src_dim])
+                                            for src_dim in src_coord_dims]
 
-            # Work out which indices apply to the input coord.
-            # NOTE: we know how to index the source cube to get a cube with a
-            # single point for each coord, but this is very inefficient.
-            # So here, we translate cube indexes into *coord* indexes.
-            src_coord_dims = cube.coord_dims(src_coord)
-            fancy_coord_index_arrays = [list(all_point_indices[:, src_dim])
-                                        for src_dim in src_coord_dims]
+                # Fill the new coord with all the correct points from the old one.
+                new_cube_coord.points = src_coord.points[fancy_coord_index_arrays]
+                # NOTE: the new coords do *not* have bounds.
 
-            # Fill the new coord with all the correct points from the old one.
-            new_cube_coord.points = src_coord.points[fancy_coord_index_arrays]
-            # NOTE: the new coords do *not* have bounds.
-
-    return new_cube
+    if not index_only:
+        return new_cube
 
 
 class UnstructuredNearestNeigbourRegridder(object):
