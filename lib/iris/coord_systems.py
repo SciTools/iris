@@ -31,6 +31,30 @@ import cartopy
 import cartopy.crs as ccrs
 
 
+def _dict_nearly_equal(dict1, dict2):
+    # Allow coordinate system comparison (floating point numbers with
+    # tolerance).
+    for key, value in dict1.iteritems():
+        if key not in dict2:
+            result = False
+            break
+        if hasattr(dict2[key], '__dict__') and hasattr(value, '__dict__'):
+            result = _dict_nearly_equal(dict2[key].__dict__,
+                                        value.__dict__)
+        elif hasattr(dict2[key], '__dict__') != hasattr(value, '__dict__'):
+            result = False
+        else:
+            # We intentionally do not use a global tolerance for coordinate
+            # system comparison.
+            try:
+                result = np.allclose(dict2[key], value, 1e-5)
+            except (TypeError, ValueError):
+                result = dict2[key] == value
+        if not result:
+            break
+    return result
+
+
 class CoordSystem(six.with_metaclass(ABCMeta, object)):
     """
     Abstract base class for coordinate systems.
@@ -40,8 +64,10 @@ class CoordSystem(six.with_metaclass(ABCMeta, object)):
     grid_mapping_name = None
 
     def __eq__(self, other):
-        return (self.__class__ == other.__class__ and
-                self.__dict__ == other.__dict__)
+        res = False
+        if other is not None:
+            res = _dict_nearly_equal(self.__dict__, other.__dict__)
+        return res
 
     def __ne__(self, other):
         # Must supply __ne__, Python does not defer to __eq__ for
