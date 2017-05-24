@@ -2782,10 +2782,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if new_order is None:
-            # Passing NumPy arrays as new_order works in NumPy but not in dask.
-            # Dask docs specify a list, so ensure a list is used.
-            new_order = list(np.arange(self.ndim)[::-1])
-        elif len(new_order) != self.ndim:
+            new_order = np.arange(self.ndim)[::-1]
+
+        # `new_order` must be an iterable for checking with `self.ndim`.
+        # Dask transpose only supports lists, so ensure `new_order` is
+        # always a list.
+        new_order = list(new_order)
+
+        if len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
         # Transpose the data payload.
