@@ -1880,20 +1880,50 @@ class TestCellMeasures(tests.IrisTest):
 
 
 class Test_transpose(tests.IrisTest):
+    def setUp(self):
+        self.data = np.arange(24).reshape(3, 2, 4)
+        self.cube = Cube(self.data)
+        self.lazy_cube = Cube(as_lazy_data(self.data))
+
     def test_lazy_data(self):
-        data = np.arange(12).reshape(3, 4)
-        cube = Cube(as_lazy_data(data))
+        cube = self.lazy_cube
         cube.transpose()
         self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(data.T, cube.data)
+        self.assertArrayEqual(self.data.T, cube.data)
 
-    def test_not_lazy_data(self):
-        data = np.arange(12).reshape(3, 4)
-        cube = Cube(data)
-        cube.transpose()
-        self.assertFalse(cube.has_lazy_data())
-        self.assertIs(data.base, cube.data.base)
-        self.assertArrayEqual(data.T, cube.data)
+    def test_real_data(self):
+        self.cube.transpose()
+        self.assertFalse(self.cube.has_lazy_data())
+        self.assertIs(self.data.base, self.cube.data.base)
+        self.assertArrayEqual(self.data.T, self.cube.data)
+
+    def test_real_data__new_order(self):
+        new_order = [2, 0, 1]
+        self.cube.transpose(new_order)
+        self.assertFalse(self.cube.has_lazy_data())
+        self.assertIs(self.data.base, self.cube.data.base)
+        self.assertArrayEqual(self.data.transpose(new_order), self.cube.data)
+
+    def test_lazy_data__new_order(self):
+        new_order = [2, 0, 1]
+        cube = self.lazy_cube
+        cube.transpose(new_order)
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayEqual(self.data.transpose(new_order), cube.data)
+
+    def test_lazy_data__transpose_order_ndarray(self):
+        # Check that a transpose order supplied as an array does not trip up
+        # a dask transpose operation.
+        new_order = np.array([2, 0, 1])
+        cube = self.lazy_cube
+        cube.transpose(new_order)
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayEqual(self.data.transpose(new_order), cube.data)
+
+    def test_bad_transpose_order(self):
+        exp_emsg = 'Incorrect number of dimensions'
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.cube.transpose([1])
 
 
 if __name__ == '__main__':
