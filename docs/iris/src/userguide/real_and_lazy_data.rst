@@ -30,47 +30,126 @@ realized.
 You can check whether the data array on your cube is lazy using the Iris
 function 'has_lazy_data'.  For example:
 
->>> import iris
->>> filename = iris.sample_data_path('uk_hires.pp')
->>> cube = iris.load_cube(filename, 'air_potential_temperature')
->>> cube.has_lazy_data()
-True
->>> _ = cube.data
->>> cube.has_lazy_data()
-False
+.. doctest::
+
+    >>> import iris
+    >>> cube = iris.load_cube(filename, 'air_temp.pp')
+    >>> cube.has_lazy_data()
+    True
+    >>> _ = cube.data
+    >>> cube.has_lazy_data()
+    False
 
 Assigning the data array to a variable causes the real data to be realized, at
 which point the array ceases to be lazy.  Any action which requires the use of
 actual data values (such as cube maths) will have this effect, although data
 realization is always deferred until the last possible moment:
 
->>> my_cube = iris.load_cube(iris.sample_data_path('rotated_pole.nc'))
->>> my_cube.has_lazy_data()
-True
->>> my_cube += 5
->>> my_cube.has_lazy_data()
-True
->>> my_cube.data
->>> my_cube.has_lazy_data()
-False
+.. doctest::
+
+    >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+    >>> cube.has_lazy_data()
+    True
+    >>> cube += 5
+    >>> cube.has_lazy_data()
+    True
+    >>> cube.data
+    >>> cube.has_lazy_data()
+    False
+
+You can also convert realized data back into a lazy array:
+
+.. doctest::
+
+    >>> cube.has_lazy_data()
+    False
+    >>> cube.data = cube.lazy_data()
+    >>> cube.has_lazy_data()
+    True
+
+
 
 Core data refers to the current state of the cube's data, be it real or
 lazy.  This can be used if you wish to refer to the data array but are
 indifferent to its current state.  If the cube's data is lazy, it will not be
 realized when you reference the core data attribute (?):
 
->>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
->>> cube.has_lazy_data()
-True
->>> the_data = cube.core_data
->>> cube.has_lazy_data()
-True
->>> real_data = cube.data
->>> cube.has_lazy_data()
-False
+.. doctest::
+
+    >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+    >>> cube.has_lazy_data()
+    True
+    >>> the_data = cube.core_data
+    >>> cube.has_lazy_data()
+    True
+    >>> real_data = cube.data
+    >>> cube.has_lazy_data()
+    False
 
 
 Changing a Cube's Data
 ----------------------
 
+There are several methods of modifying a cube's data array, each one subtly
+different from the others.
+
+Maths
+^^^^^
+
+You can use :ref:`cube maths <cube_maths>` to make in-place modifications to
+each point in a cube's existing data array.  Provided you do not directly
+reference the cube's data, the array will remain lazy:
+
+.. doctest::
+
+    >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+    >>> cube.has_lazy_data()
+    True
+    >>> cube *= 10
+    >>> cube.has_lazy_data()
+    True
+
+Copy
+^^^^
+
+You can copy a cube and assign a completely new data array to the copy. All the
+original cube's metadata will be the same as the new cube's metadata.  However,
+the new cube's data array will not be lazy if you replace it with a real array:
+
+.. doctest::
+
+    >>> import numpy as np
+    >>> data = np.zeros((73, 96))
+    >>> new_cube = cube.copy(data=data)
+    >>> new_cube.has_lazy_data()
+    False
+
+Replace
+^^^^^^^
+
+This does essentially the same thing as `cube.copy()`, except that it provides
+a safe method of doing so for the specific edge case of a lazy masked integer
+array:
+
+.. doctest::
+
+    >>> values = np.zeros((73, 96), dtype=int)
+    >>> data =np.ma.masked_values(values, 0)
+    >>> print(data)
+    [[-- -- -- ..., -- -- --]
+     [-- -- -- ..., -- -- --]
+     [-- -- -- ..., -- -- --]
+     ...,
+     [-- -- -- ..., -- -- --]
+     [-- -- -- ..., -- -- --]
+     [-- -- -- ..., -- -- --]]
+    >>> new_cube = cube.copy(data=data)
+    >>> new_cube.has_lazy_data()
+    False
+    >>> new_cube.data = new_cube.lazy_data()
+    >>> new_cube.has_lazy_data()
+    True
+
+This method is necessary as dask is currently unable to handle masked arrays.
+Please refer to the Whitepaper for further details.
 
