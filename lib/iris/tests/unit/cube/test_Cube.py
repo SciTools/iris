@@ -1926,6 +1926,5 @@ class Test_transpose(tests.IrisTest):
             self.cube.transpose([1])
 
 
-
 if __name__ == '__main__':
     tests.main()
