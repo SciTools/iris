@@ -198,7 +198,13 @@ setup(
     version=extract_version(),
     url='http://scitools.org.uk/iris/',
     author='UK Met Office',
-
+    license='LGPLv3',
+    platforms='any',
+    description='Data interoperability library',
+    long_description=('Data interoperability library for meteorological and \n'
+                      'oceanographic data formats, providing \n'
+                      'data analysis and visualisation capabilities.'),
+    author_email='https://groups.google.com/forum/#!forum/scitools-iris',
     packages=find_package_tree('lib/iris', 'iris'),
     package_dir={'': 'lib'},
     package_data={
