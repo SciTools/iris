@@ -169,6 +169,9 @@ Here are some examples of the options that you may wish to change:
 
 You can set the number of threads on which to work like this:
 
+.. doctest::
+
+    >>> import dask
     >>> from multiprocessing.pool import ThreadPool
     >>> with dask.set_options(pool=ThreadPool(4)):
     ...     x.compute()
@@ -179,6 +182,8 @@ Multiple threads work well with heavy computation.
 You can change the default option between threaded scheduler and
 multiprocessing scheduler, for example:
 
+.. doctest::
+
     >>> with dask.set_options(get=dask.multiprocessing.get):
     ...     x.sum().compute()
 
@@ -188,6 +193,8 @@ Multiprocessing works well with strings, lists or custom Dask objects.
 You can choose to run all processes in serial (which is currently the Iris
 default):
 
+.. doctest::
+
     >>> dask.set_options(get=dask.get)
 
 This option is particularly good for debugging scripts.
@@ -196,9 +203,23 @@ This option is particularly good for debugging scripts.
 Further Reading
 ---------------
 
+Dask offers much more fine control than is described in this user guide,
+although a good understanding of the package would be required to properly
+utilize it.
 
+For example, it is possible to write callback functions to customize processing
+options, of which there are many more than we have outlined.  Also, you may
+wish to use some of the available Dask functionality regarding deferred
+operations for your own scripts and objects.
 
-Stuff still to add (?):
-- Links to dask docs and distributed docs
+For more information about these tools, how they work and what you can do with
+them, please visit the following package documentation pages:
+
+.. _Dask: http://dask.pydata.org/en/latest/
+.. _Dask.distributed: http://distributed.readthedocs.io/en/latest/
+
+`Dask`_
+`Dask.distributed`_
+
 
 
