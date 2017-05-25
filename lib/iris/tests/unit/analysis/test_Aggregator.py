@@ -339,19 +339,23 @@ class Test_aggregated_by(tests.IrisTest):
                                                     (latitude, 1),
                                                     (longitude, 2)])
 
-    def test_month_name(self):
-        # This will test the ability of the aggregator to correctly calculate
-        # the order of months in the new coordinate array.
-        # The month names should appear in chronological order from January
-        # through to December.
+    def test_date_aggregator(self):
+        # Test the ability of the aggregator to correctly calculate
+        # the new points array of an aggregated time coordinate.
         coord_categorisation.add_month_number(self.time_cube, 'time',
                                               name='month')
         agg_cube = self.time_cube.aggregated_by('month', MEAN)
-        coord_categorisation.add_month(agg_cube, 'time', name='month_name')
-        month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
-                       'Sep', 'Oct', 'Nov', 'Dec']
-        for i, month in enumerate(month_order):
-            self.assertEquals(agg_cube.coord('month_name').points[i], month)
+        # Get a list of point values for the aggregated month coordinate (this
+        # should be 1 to 12):
+        month_numbers = agg_cube.coord('month').points
+        # Get a list of point values in number format for the month on the
+        # aggregated time coordinate (this should also be 1 to 12):
+        months = [agg_cube.coord('time').units.num2date(point).month
+                  for point in agg_cube.coord('time').points]
+        # Check that the months are the same for the aggregated time
+        # coordinate and the aggregated month coordinate:
+        for month_number, month in zip(month_numbers, months):
+            self.assertEquals(month_number, month)
 
 
 if __name__ == "__main__":
