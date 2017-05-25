@@ -197,7 +197,14 @@ class Future(threading.local):
         return msg.format(self.cell_datetime_objects, self.netcdf_promote,
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
+    deprecated_options = {}
+
     def __setattr__(self, name, value):
+        if name in self.deprecated_options:
+            reason = self.deprecated_options[name]
+            msg = ("the 'Future' object property {!r} is now deprecated. "
+                   "Please remove code which uses this.  {}")
+            warn_deprecated(msg.format(name, reason))
         if name not in self.__dict__:
             msg = "'Future' object has no attribute {!r}".format(name)
             raise AttributeError(msg)
