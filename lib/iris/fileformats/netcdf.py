@@ -1387,6 +1387,9 @@ class Saver(object):
                                  self._dataset.file_format)
                 raise ValueError(msg)
             values = values.astype(np.int32)
+        # NetCDF does not support booleans, so save them as bytes.
+        if values.dtype == np.dtype('bool'):
+            values = values.astype(np.byte)
         return values
 
     def _create_cf_bounds(self, coord, cf_var, cf_name):
