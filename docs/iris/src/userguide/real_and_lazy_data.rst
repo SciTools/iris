@@ -16,7 +16,7 @@ allocation of memory.  This generally takes the form of a numpy array.
 
 Lazy data is contained in a conceptual array which retains the information
 about its real counterpart but has no actual data points, so its memory
-allocation is much smaller.  This will be in the form of a dask array.
+allocation is much smaller.  This will be in the form of a Dask array.
 
 Arrays in Iris can be converted flexibly(?) between their real and lazy states,
 although there are some limits to this process.  The advantage of using lazy
@@ -150,6 +150,55 @@ array:
     >>> new_cube.has_lazy_data()
     True
 
-This method is necessary as dask is currently unable to handle masked arrays.
+This method is necessary as Dask is currently unable to handle masked arrays.
 Please refer to the Whitepaper for further details.
+
+
+Dask Processing Options
+-----------------------
+
+As well as Dask offering the benefit of a smaller memory footprint through the
+handling of lazy arrays, it can significantly speed up performance by allowing
+Iris to use multiprocessing.
+
+There are some default values which are set by Dask and passed through to Iris.
+If you wish to change these options, you can override them globally or using a
+context manager.
+
+Here are some examples of the options that you may wish to change:
+
+You can set the number of threads on which to work like this:
+
+    >>> from multiprocessing.pool import ThreadPool
+    >>> with dask.set_options(pool=ThreadPool(4)):
+    ...     x.compute()
+
+Multiple threads work well with heavy computation.
+
+
+You can change the default option between threaded scheduler and
+multiprocessing scheduler, for example:
+
+    >>> with dask.set_options(get=dask.multiprocessing.get):
+    ...     x.sum().compute()
+
+Multiprocessing works well with strings, lists or custom Dask objects.
+
+
+You can choose to run all processes in serial (which is currently the Iris
+default):
+
+    >>> dask.set_options(get=dask.get)
+
+This option is particularly good for debugging scripts.
+
+
+Further Reading
+---------------
+
+
+
+Stuff still to add (?):
+- Links to dask docs and distributed docs
+
 
