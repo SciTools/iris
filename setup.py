@@ -194,11 +194,21 @@ def extract_version():
 
 
 setup(
-    name='Iris',
+    name='iris-scitools',
     version=extract_version(),
     url='http://scitools.org.uk/iris/',
-    author='UK Met Office',
-
+    author='Iris, SciTools, UK Met Office',
+    maintainer='Iris, SciTools',
+    license='LGPLv3',
+    platforms='any',
+    summary='iris',
+    keywords='iris',
+    description='Iris: a data interoperability library.',
+    long_description=('Iris: a data interoperability library for\n'
+                      'meteorological and oceanographic data formats, \n'
+                      'providing data analysis and visualisation capabilities.'
+                      ),
+    author_email='https://groups.google.com/forum/#!forum/scitools-iris',
     packages=find_package_tree('lib/iris', 'iris'),
     package_dir={'': 'lib'},
     package_data={
