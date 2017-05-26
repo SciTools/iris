@@ -778,14 +778,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @property
     def share_data(self):
-        """Share cube data when slicing/indexing cube if True."""
+        """
+        Share cube data when slicing/indexing cube if True.
+        Setting this flag to True will realise the data payload,
+        if it is lazy, as lazy data cannot currently be shared across cubes.
+
+        """
         return self._share_data
 
     @share_data.setter
     def share_data(self, value):
-        # Realise the data if is hasn't already been as sharing lazy data is
-        # not right now possible or a usecase understood.
-        if self.has_lazy_data():
+        # If value is True: realise the data (if is hasn't already been) as
+        # sharing lazy data is not possible.
+        if value and self.has_lazy_data():
             _ = self.data
         self._share_data = bool(value)
 
