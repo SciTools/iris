@@ -4,7 +4,7 @@
 Real and Lazy Data
 ==================
 
-What is Real and Lazy Data?
+What is real and lazy data?
 ---------------------------
 
 Every Iris cube contains an n-dimensional data array, which could be real or
@@ -45,7 +45,7 @@ function 'has_lazy_data'.  For example:
     >>> cube.has_lazy_data()
     False
 
-When does my Data Become Real?
+When does my data become real?
 ------------------------------
 
 If the data on your cube is in its lazy state, it will only become real if you
@@ -96,7 +96,7 @@ realized when you reference the core data attribute (?):
     False
 
 
-Changing a Cube's Data
+Changing a cube's data
 ----------------------
 
 There are several methods of modifying a cube's data array, each one subtly
@@ -163,8 +163,8 @@ This method is necessary as Dask is currently unable to handle masked arrays.
 Please refer to the Whitepaper for further details.
 
 
-Coordinate Arrays
------------------
+Coordinates
+-----------
 
 Cubes possess coordinate arrays as well as data arrays, so these also benefit
 from Dask's functionality, although there are some distinctions between how
@@ -176,8 +176,9 @@ undergo monotonicity checks which cause the arrays to be realized upon
 construction, so they can only contain real arrays.
 
 
-Dask Processing Options
+Dask processing options
 -----------------------
+
 Dask applies some default values to certain aspects of the parallel processing
 that it offers with Iris. It is possible to change these values and override
 the defaults by using 'dask.set_options(option)' in your script.
@@ -221,7 +222,7 @@ default):
 This option is particularly good for debugging scripts.
 
 
-Further Reading
+Further reading
 ---------------
 
 Dask offers much more fine control than is described in this user guide,
