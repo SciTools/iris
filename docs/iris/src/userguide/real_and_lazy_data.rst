@@ -1,5 +1,13 @@
 .. _real_and_lazy_data:
 
+
+.. testsetup:: *
+
+    import dask.array as da
+    import iris
+    import numpy as np
+
+
 ==================
 Real and Lazy Data
 ==================
@@ -33,11 +41,8 @@ using Dask's parallel processing schedulers.  The combination of these two
 behaviours can offer a significant performance boost.
 
 You can check whether the data array on your cube is lazy using the Iris
-function 'has_lazy_data'.  For example:
+function 'has_lazy_data'.  For example::
 
-.. doctest::
-
-    >>> import iris
     >>> cube = iris.load_cube(filename, 'air_temp.pp')
     >>> cube.has_lazy_data()
     True
@@ -54,9 +59,7 @@ assigning it to a variable or simply using 'cube.data' as in the example above.
 
 Any action which requires the use of actual data values (such as cube maths)
 will also cause the data to be loaded into memory, although data realization
-is always deferred until the result is requested:
-
-.. doctest::
+is always deferred until the result is requested::
 
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
@@ -68,9 +71,7 @@ is always deferred until the result is requested:
     >>> cube.has_lazy_data()
     False
 
-You can also convert realized data back into a lazy array:
-
-.. doctest::
+You can also convert realized data back into a lazy array::
 
     >>> cube.has_lazy_data()
     False
@@ -81,9 +82,7 @@ You can also convert realized data back into a lazy array:
 Core data refers to the current state of the cube's data, be it real or
 lazy.  This can be used if you wish to refer to the data array but are
 indifferent to its current state.  If the cube's data is lazy, it will not be
-realized when you reference the core data attribute (?):
-
-.. doctest::
+realized when you reference the core data attribute (?)::
 
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
@@ -107,9 +106,7 @@ Maths
 
 You can use :ref:`cube maths <cube_maths>` to make in-place modifications to
 each point in a cube's existing data array.  Provided you do not directly
-reference the cube's data, the array will remain lazy:
-
-.. doctest::
+reference the cube's data, the array will remain lazy::
 
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
@@ -123,9 +120,7 @@ Copy
 
 You can copy a cube and assign a completely new data array to the copy. All the
 original cube's metadata will be the same as the new cube's metadata.  However,
-the new cube's data array will not be lazy if you replace it with a real array:
-
-.. doctest::
+the new cube's data array will not be lazy if you replace it with a real array::
 
     >>> import numpy as np
     >>> data = np.zeros((73, 96))
@@ -138,9 +133,7 @@ Replace
 
 This does essentially the same thing as `cube.copy()`, except that it provides
 a safe method of doing so for the specific edge case of a lazy masked integer
-array:
-
-.. doctest::
+array::
 
     >>> values = np.zeros((73, 96), dtype=int)
     >>> data =np.ma.masked_values(values, 0)
@@ -189,9 +182,7 @@ control the span of the option.
 
 Here are some examples of the options that you may wish to change.
 
-You can set the number of threads on which to work like this:
-
-.. doctest::
+You can set the number of threads on which to work like this::
 
     >>> import dask
     >>> from multiprocessing.pool import ThreadPool
@@ -202,9 +193,7 @@ Multiple threads work well with heavy computation.
 
 
 You can change the default option between threaded scheduler and
-multiprocessing scheduler, for example:
-
-.. doctest::
+multiprocessing scheduler, for example::
 
     >>> with dask.set_options(get=dask.multiprocessing.get):
     ...     x.sum().compute()
@@ -213,9 +202,7 @@ Multiprocessing works well with strings, lists or custom Dask objects.
 
 
 You can choose to run all processes in serial (which is currently the Iris
-default):
-
-.. doctest::
+default)::
 
     >>> dask.set_options(get=dask.async.get_sync)
 
