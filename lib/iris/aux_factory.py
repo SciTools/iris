@@ -187,7 +187,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Transpose to be consistent with the Cube.
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs] + [len(dims)]
-        bounds = coord.bounds
+        bounds = coord.core_bounds()
         if dims:
             bounds = bounds.transpose(transpose_order)
 
