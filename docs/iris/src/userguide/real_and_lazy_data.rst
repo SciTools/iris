@@ -12,36 +12,40 @@
 Real and Lazy Data
 ==================
 
+We have seen in the :doc:`user_guide_introduction` section of the user guide that
+Iris cubes contain data and metadata about a phenomenon. The data attribute of a
+cube contains the actual numerical values recorded for the phenomenon the cube describes.
+The data element of a cube is always an array, but the array may be either
+"real" or "lazy".
+
+In this section of the user guide we will look specifically at the concepts of
+real and lazy data as they apply to the cube and other data structures in Iris.
+
+
 What is real and lazy data?
 ---------------------------
 
-Every Iris cube contains an n-dimensional data array, which could be real or
-lazy.
+In Iris, we use the term **real data** to describe data arrays that are loaded
+into memory. Real data is typically provided as a
+`NumPy array <https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html>`_,
+which has a shape and data type that are used to describe the array's data points.
+Each data point takes up a small amount of memory, which means large NumPy arrays can
+take up a large amount of memory.
 
-Real data is contained in a NumPy array which has a shape, a data type, some
-other useful information and many data points, each of which use up a small
-allocation of memory.
+Conversely, we use the term **lazy data** to describe data that is not loaded into memory.
+(This is sometimes also referred to as **deferred data**.)
+In Iris, lazy data is provided as a
+`dask array <http://dask.pydata.org/en/latest/array-overview.html>`_.
+A dask array also has a shape and data type
+but typically the dask array's data points are not loaded into memory.
+Instead the data points are stored on disk and only loaded into memory in
+small chunks when absolutely necessary.
 
-Lazy data is contained in a conceptual array which retains the information
-about its real counterpart but has no actual data points, so its memory
-allocation is much smaller.  This will be in the form of a Dask array.
+The primary advantage of using lazy data is that it enables the loading and manipulating
+of datasets that would otherwise not fit into memory.
 
-Arrays in Iris can be converted between their real and lazy states,
-although there are some limits to this process (*explain this better - what
-limits?*).
-
-The advantage of using lazy data is that it has a small memory footprint which
-enables the user to load and manipulate datasets that you would otherwise not
-be able to fit into memory.
-
-However, in order to execute certain operations (such as calculations on actual
-data values) the real data must be realized.  Using Dask, the operation will
-be deferred until you request the result, at which point it will be executed
-using Dask's parallel processing schedulers.  The combination of these two
-behaviours can offer a significant performance boost.
-
-You can check whether the data array on your cube is lazy using the Iris
-function 'has_lazy_data'.  For example::
+You can check whether a cube has real data or lazy data by using the method
+:meth:`~iris.cube.Cube.has_lazy_data`. For example::
 
     >>> cube = iris.load_cube(filename, 'air_temp.pp')
     >>> cube.has_lazy_data()
@@ -53,13 +57,12 @@ function 'has_lazy_data'.  For example::
 When does my data become real?
 ------------------------------
 
-If the data on your cube is in its lazy state, it will only become real if you
-'touch' the data.  This means any way of directly accessing the data, such as
-assigning it to a variable or simply using 'cube.data' as in the example above.
-
-Any action which requires the use of actual data values (such as cube maths)
-will also cause the data to be loaded into memory, although data realization
-is always deferred until the result is requested::
+Most operations on data arrays can be run equivalently on both real and lazy data.
+If the data array is real then the operation will be run on the data array
+immediately with the results becoming available as soon as processing is completed.
+If the data array is lazy then the operation will be deferred until you request
+the result (such as when you call ``cube.data``). In this case the data array will
+remain lazy::
 
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
@@ -67,168 +70,142 @@ is always deferred until the result is requested::
     >>> cube += 5
     >>> cube.has_lazy_data()
     True
-    >>> cube.data
-    >>> cube.has_lazy_data()
-    False
 
-You can also convert realized data back into a lazy array::
+This is referred to as **lazy evaluation**.
 
-    >>> cube.has_lazy_data()
-    False
-    >>> cube.data = cube.lazy_data()
-    >>> cube.has_lazy_data()
-    True
+Certain operations, including regridding and plotting, can only be run on real data.
+Calling such operations on lazy data will automatically realise your lazy data.
 
-Core data refers to the current state of the cube's data, be it real or
-lazy.  This can be used if you wish to refer to the data array but are
-indifferent to its current state.  If the cube's data is lazy, it will not be
-realized when you reference the core data attribute (?)::
+You can also realise (and so load into memory) your cube's lazy if you 'touch' the data.
+This means directly accessing the data by calling ``cube.data``, as in the previous example.
+
+Core data
+^^^^^^^^^
+
+Cubes have the concept of "core data". This returns the cube's data in its
+current state. If a cube has lazy data, calling the cube's
+:meth:`~iris.cube.Cube.core_data` method will return the cube's lazy dask array.
+If the cube has real data, calling the cube's
+:meth:`~iris.cube.Cube.core_data` method will return the cube's real NumPy array.
+
+Calling the cube's :meth:`~iris.cube.Cube.core_data` method will not change the
+state of the cube's data.  Thus, if the cube's data is lazy then calling
+:meth:`~iris.cube.Cube.core_data` will return the cube's lazy data and not
+realise it.
+
+For example::
 
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
     True
     >>> the_data = cube.core_data()
+    >>> type(the_data)
+    <class 'dask.array.core.Array'>
     >>> cube.has_lazy_data()
     True
-    >>> real_data = cube.data
+    >>> cube.data
+    >>> the_data = cube.core_data()
+    >>> type(the_data)
+    <type 'numpy.ndarray'>
     >>> cube.has_lazy_data()
     False
-
-
-Changing a cube's data
-----------------------
-
-There are several methods of modifying a cube's data array, each one subtly
-different from the others.
-
-Maths
-^^^^^
-
-You can use :ref:`cube maths <cube_maths>` to make in-place modifications to
-each point in a cube's existing data array.  Provided you do not directly
-reference the cube's data, the array will remain lazy::
-
-    >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-    >>> cube.has_lazy_data()
-    True
-    >>> cube *= 10
-    >>> cube.has_lazy_data()
-    True
-
-Copy
-^^^^
-
-You can copy a cube and assign a completely new data array to the copy. All the
-original cube's metadata will be the same as the new cube's metadata.  However,
-the new cube's data array will not be lazy if you replace it with a real array::
-
-    >>> import numpy as np
-    >>> data = np.zeros((73, 96))
-    >>> new_cube = cube.copy(data=data)
-    >>> new_cube.has_lazy_data()
-    False
-
-Replace
-^^^^^^^
-
-This does essentially the same thing as `cube.copy()`, except that it provides
-a safe method of doing so for the specific edge case of a lazy masked integer
-array::
-
-    >>> values = np.zeros((73, 96), dtype=int)
-    >>> data =np.ma.masked_values(values, 0)
-    >>> print(data)
-    [[-- -- -- ..., -- -- --]
-     [-- -- -- ..., -- -- --]
-     [-- -- -- ..., -- -- --]
-     ...,
-     [-- -- -- ..., -- -- --]
-     [-- -- -- ..., -- -- --]
-     [-- -- -- ..., -- -- --]]
-    >>> new_cube = cube.copy(data=data)
-    >>> new_cube.has_lazy_data()
-    False
-    >>> new_cube.data = new_cube.lazy_data()
-    >>> new_cube.has_lazy_data()
-    True
-
-This method is necessary as Dask is currently unable to handle masked arrays.
-Please refer to the Whitepaper for further details.
 
 
 Coordinates
 -----------
 
-Cubes possess coordinate arrays as well as data arrays, so these also benefit
-from Dask's functionality, although there are some distinctions between how
-the different coordinate types are treated.
+In the same way that Iris cubes contain a data array, Iris coordinates contain
+points and bounds arrays. Coordinate points and bounds arrays can also be real or lazy:
 
-Auxiliary coordinates can now contain lazy arrays, so they will adhere to the
-same rules and behaviour as the data arrays.  Dimension coordinates, however,
-undergo monotonicity checks which cause the arrays to be realized upon
-construction, so they can only contain real arrays.
+ * A :class:`~iris.coords.DimCoord` will only ever have **real** points and bounds
+   arrays because of monotonicity checks that realise lazy arrays. 
+ * An :class:`~iris.coords.AuxCoord` can have **real or lazy** points and bounds.
+ * An :class:`~iris.aux_factory.AuxCoordFactory` (or derived coordinate) 
+   can have **real or lazy** points and bounds. If all of the 
+   :class:`~iris.coords.AuxCoord` instances that the coordinate is derived from have
+   real points and bounds then the derived coordinate will also have real points
+   and bounds, otherwise the derived coordinate will have lazy points and bounds.
+
+Iris cubes and coordinates have very similar interfaces, which extends to accessing
+coordinates' lazy points and bounds:
+
+.. doctest::
+
+    >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'))
+    >>> dim_coord = cube.coord('model_level_number')
+    >>> print dim_coord.has_lazy_points()
+    False
+    >>> print dim_coord.has_bounds()
+    False
+    >>> print dim_coord.has_lazy_bounds()
+    False
+    >>> aux_coord = cube.coord('sigma')
+    >>> print aux_coord.has_lazy_points()
+    True
+    >>> print aux_coord.has_bounds()
+    True
+    >>> print aux_coord.has_lazy_bounds()
+    False
+    >>> points = aux_coord.points
+    >>> print aux_coord.has_lazy_points()
+    False
+    >>> print derived_coord.has_lazy_points()
+    True
+    >>> print derived_coord.has_bounds()
+    True
+    >>> print derived_coord.has_lazy_bounds()
+    False
+
+.. note::
+    Printing a lazy :class:`~iris.coords.AuxCoord` will realise its points and bounds arrays!
+
+Derived coordinates (also called aux factories) .
 
 
 Dask processing options
 -----------------------
 
-Dask applies some default values to certain aspects of the parallel processing
-that it offers with Iris. It is possible to change these values and override
-the defaults by using 'dask.set_options(option)' in your script.
+As stated earlier in this user guide section, Iris uses dask to provide
+lazy data arrays for both Iris cubes and coordinates. Iris also uses dask
+functionality for processing deferred operations on lazy arrays.
 
-You can use this as a global variable if you wish to use your chosen option for
-the full length of the script, or you can use it with a context manager to
-control the span of the option.
+There are a wide range of dask processing options that can be adjusted to
+control how dask processes deferred operations on lazy arrays. You can make use
+of these dask processing options to control how lazy arrays within Iris are
+processed as well.
 
-Here are some examples of the options that you may wish to change.
+Iris by default applies a single dask processing option. This specifies that
+all dask processing in Iris should be run in serial (that is, without any
+parallel processing enabled).
 
-You can set the number of threads on which to work like this::
+The dask processing option applied by Iris can be overridden by manually setting
+dask processing options for either or both of:
 
-    >>> import dask
+ * the number of parallel workers to use,
+ * the scheduler to use.
+
+This must be done **before** importing Iris. For example, to specify that dask
+processing within Iris should use four workers in a thread pool::
+
     >>> from multiprocessing.pool import ThreadPool
-    >>> with dask.set_options(pool=ThreadPool(4)):
-    ...     x.compute()
+    >>> import dask
+    >>> dask.set_options(get=dask.threaded.get, pool=ThreadPool(4))
+    
+    >>> import iris
+    >>> # Iris processing here...
 
-Multiple threads work well with heavy computation.
+.. note::
+    These dask processing options will last for the lifetime of the Python session
+    and must be re-applied in other or subsequent sessions.
 
-
-You can change the default option between threaded scheduler and
-multiprocessing scheduler, for example::
-
-    >>> with dask.set_options(get=dask.multiprocessing.get):
-    ...     x.sum().compute()
-
-Multiprocessing works well with strings, lists or custom Dask objects.
-
-
-You can choose to run all processes in serial (which is currently the Iris
-default)::
-
-    >>> dask.set_options(get=dask.async.get_sync)
-
-This option is particularly good for debugging scripts.
+See the
+`dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
+for more information on setting dask processing options.
 
 
 Further reading
 ---------------
 
-Dask offers much more fine control than is described in this user guide,
-although a good understanding of the package would be required to properly
-utilize it.
-
-For example, it is possible to write callback functions to customize processing
-options, of which there are many more than we have outlined.  Also, you may
-wish to use some of the available Dask functionality regarding deferred
-operations for your own scripts and objects.
-
-For more information about these tools, how they work and what you can do with
-them, please visit the following package documentation pages:
-
-.. _Dask: http://dask.pydata.org/en/latest/
-.. _Dask.distributed: http://distributed.readthedocs.io/en/latest/
-
-`Dask`_
-`Dask.distributed`_
-
-
-
+This section of the user guide has been designed to give a quick overview of the
+key concepts of real and lazy data within Iris. If you require more detail, we
+have produced a much more detailed whitepaper on the subject.
