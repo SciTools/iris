@@ -13,10 +13,8 @@ Real and Lazy Data
 ==================
 
 We have seen in the :doc:`user_guide_introduction` section of the user guide that
-Iris cubes contain data and metadata about a phenomenon. The data attribute of a
-cube contains the actual numerical values recorded for the phenomenon the cube describes.
-The data element of a cube is always an array, but the array may be either
-"real" or "lazy".
+Iris cubes contain data and metadata about a phenomenon. The data element of a cube
+is always an array, but the array may be either "real" or "lazy".
 
 In this section of the user guide we will look specifically at the concepts of
 real and lazy data as they apply to the cube and other data structures in Iris.
@@ -59,10 +57,9 @@ When does my data become real?
 
 Most operations on data arrays can be run equivalently on both real and lazy data.
 If the data array is real then the operation will be run on the data array
-immediately with the results becoming available as soon as processing is completed.
-If the data array is lazy then the operation will be deferred until you request
-the result (such as when you call ``cube.data``). In this case the data array will
-remain lazy::
+immediately. The results of the operation will be available as soon as processing is completed.
+If the data array is lazy then the operation will be deferred and the data array will
+remain lazy until you request the result (such as when you call ``cube.data``)::
 
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
@@ -71,27 +68,27 @@ remain lazy::
     >>> cube.has_lazy_data()
     True
 
-This is referred to as **lazy evaluation**.
+The process by which the operation is deferred until the result is requested is
+referred to as **lazy evaluation**.
 
 Certain operations, including regridding and plotting, can only be run on real data.
 Calling such operations on lazy data will automatically realise your lazy data.
 
 You can also realise (and so load into memory) your cube's lazy if you 'touch' the data.
-This means directly accessing the data by calling ``cube.data``, as in the previous example.
+To 'touch' the data means directly accessing the data by calling ``cube.data``,
+as in the previous example.
 
 Core data
 ^^^^^^^^^
 
 Cubes have the concept of "core data". This returns the cube's data in its
-current state. If a cube has lazy data, calling the cube's
-:meth:`~iris.cube.Cube.core_data` method will return the cube's lazy dask array.
-If the cube has real data, calling the cube's
-:meth:`~iris.cube.Cube.core_data` method will return the cube's real NumPy array.
+current state:
 
-Calling the cube's :meth:`~iris.cube.Cube.core_data` method will not change the
-state of the cube's data.  Thus, if the cube's data is lazy then calling
-:meth:`~iris.cube.Cube.core_data` will return the cube's lazy data and not
-realise it.
+ * If a cube has lazy data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
+   will return the cube's lazy dask array. Calling the cube's
+   :meth:`~iris.cube.Cube.core_data` method **will not realise** the cube's data.
+ * If a cube has real data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
+   will return the cube's real NumPy array.
 
 For example::
 
@@ -145,7 +142,7 @@ coordinates' lazy points and bounds:
     >>> print aux_coord.has_bounds()
     True
     >>> print aux_coord.has_lazy_bounds()
-    False
+    True
     >>> points = aux_coord.points
     >>> print aux_coord.has_lazy_points()
     False
@@ -154,12 +151,10 @@ coordinates' lazy points and bounds:
     >>> print derived_coord.has_bounds()
     True
     >>> print derived_coord.has_lazy_bounds()
-    False
+    True
 
 .. note::
     Printing a lazy :class:`~iris.coords.AuxCoord` will realise its points and bounds arrays!
-
-Derived coordinates (also called aux factories) .
 
 
 Dask processing options
@@ -169,10 +164,11 @@ As stated earlier in this user guide section, Iris uses dask to provide
 lazy data arrays for both Iris cubes and coordinates. Iris also uses dask
 functionality for processing deferred operations on lazy arrays.
 
-There are a wide range of dask processing options that can be adjusted to
-control how dask processes deferred operations on lazy arrays. You can make use
-of these dask processing options to control how lazy arrays within Iris are
-processed as well.
+Dask provides processing options to control how deferred operations on lazy arrays
+are computed. This is provided via the ``dask.set_options`` interface.
+We can make use of this functionality in Iris. This means we can
+control how dask arrays in Iris are processed, for example giving us power to
+run Iris processing in parallel.
 
 Iris by default applies a single dask processing option. This specifies that
 all dask processing in Iris should be run in serial (that is, without any
@@ -198,7 +194,7 @@ processing within Iris should use four workers in a thread pool::
     These dask processing options will last for the lifetime of the Python session
     and must be re-applied in other or subsequent sessions.
 
-See the
+Other dask processing options are also available. See the
 `dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
 for more information on setting dask processing options.
 
@@ -206,6 +202,7 @@ for more information on setting dask processing options.
 Further reading
 ---------------
 
-This section of the user guide has been designed to give a quick overview of the
-key concepts of real and lazy data within Iris. If you require more detail, we
-have produced a much more detailed whitepaper on the subject.
+This section of the user guide is intended as a quick overview of the
+key concepts of real and lazy data within Iris. For more detail and more in-depth
+discussions on the concepts introduced here and related concepts, see the related
+whitepaper.
