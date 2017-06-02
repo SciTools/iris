@@ -99,11 +99,13 @@ For example::
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
     True
+
     >>> the_data = cube.core_data()
     >>> type(the_data)
     <class 'dask.array.core.Array'>
     >>> cube.has_lazy_data()
     True
+
     >>> cube.data
     >>> the_data = cube.core_data()
     >>> type(the_data)
@@ -133,6 +135,7 @@ coordinates' lazy points and bounds:
 .. doctest::
 
     >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'))
+
     >>> dim_coord = cube.coord('model_level_number')
     >>> print dim_coord.has_lazy_points()
     False
@@ -140,6 +143,7 @@ coordinates' lazy points and bounds:
     False
     >>> print dim_coord.has_lazy_bounds()
     False
+
     >>> aux_coord = cube.coord('sigma')
     >>> print aux_coord.has_lazy_points()
     True
@@ -150,6 +154,8 @@ coordinates' lazy points and bounds:
     >>> points = aux_coord.points
     >>> print aux_coord.has_lazy_points()
     False
+
+    >>> derived_coord = cube.coord('altitude')
     >>> print derived_coord.has_lazy_points()
     True
     >>> print derived_coord.has_bounds()
