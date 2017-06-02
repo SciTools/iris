@@ -55,6 +55,10 @@ You can check whether a cube has real data or lazy data by using the method
 When does my data become real?
 ------------------------------
 
+When you load a dataset using Iris the data array will almost always initially be
+a lazy array. This section details some operations that will realise lazy data
+as well as some operations that will maintain lazy data.
+
 Most operations on data arrays can be run equivalently on both real and lazy data.
 If the data array is real then the operation will be run on the data array
 immediately. The results of the operation will be available as soon as processing is completed.
@@ -74,7 +78,7 @@ referred to as **lazy evaluation**.
 Certain operations, including regridding and plotting, can only be run on real data.
 Calling such operations on lazy data will automatically realise your lazy data.
 
-You can also realise (and so load into memory) your cube's lazy if you 'touch' the data.
+You can also realise (and so load into memory) your cube's lazy data if you 'touch' the data.
 To 'touch' the data means directly accessing the data by calling ``cube.data``,
 as in the previous example.
 
@@ -115,10 +119,10 @@ In the same way that Iris cubes contain a data array, Iris coordinates contain
 points and bounds arrays. Coordinate points and bounds arrays can also be real or lazy:
 
  * A :class:`~iris.coords.DimCoord` will only ever have **real** points and bounds
-   arrays because of monotonicity checks that realise lazy arrays. 
+   arrays because of monotonicity checks that realise lazy arrays.
  * An :class:`~iris.coords.AuxCoord` can have **real or lazy** points and bounds.
- * An :class:`~iris.aux_factory.AuxCoordFactory` (or derived coordinate) 
-   can have **real or lazy** points and bounds. If all of the 
+ * An :class:`~iris.aux_factory.AuxCoordFactory` (or derived coordinate)
+   can have **real or lazy** points and bounds. If all of the
    :class:`~iris.coords.AuxCoord` instances that the coordinate is derived from have
    real points and bounds then the derived coordinate will also have real points
    and bounds, otherwise the derived coordinate will have lazy points and bounds.
@@ -186,7 +190,7 @@ processing within Iris should use four workers in a thread pool::
     >>> from multiprocessing.pool import ThreadPool
     >>> import dask
     >>> dask.set_options(get=dask.threaded.get, pool=ThreadPool(4))
-    
+
     >>> import iris
     >>> # Iris processing here...
 
@@ -202,7 +206,6 @@ for more information on setting dask processing options.
 Further reading
 ---------------
 
-This section of the user guide is intended as a quick overview of the
-key concepts of real and lazy data within Iris. For more detail and more in-depth
-discussions on the concepts introduced here and related concepts, see the related
-whitepaper.
+This section of the Iris user guide provides a quick overview of real and lazy
+data within Iris. For more details on these and related concepts,
+see the whitepaper on lazy data.
