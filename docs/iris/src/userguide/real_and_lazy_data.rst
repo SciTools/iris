@@ -37,10 +37,12 @@ In Iris, lazy data is provided as a
 A dask array also has a shape and data type
 but typically the dask array's data points are not loaded into memory.
 Instead the data points are stored on disk and only loaded into memory in
-small chunks when absolutely necessary.
+small chunks when absolutely necessary (see the section :ref:`when_real_data`
+for examples of when this might happen).
 
-The primary advantage of using lazy data is that it enables the loading and manipulating
-of datasets that would otherwise not fit into memory.
+The primary advantage of using lazy data is that it enables
+`out-of-core processing <https://en.wikipedia.org/wiki/Out-of-core_algorithm>`_;
+that is, the loading and manipulating of datasets that otherwise would not fit into memory.
 
 You can check whether a cube has real data or lazy data by using the method
 :meth:`~iris.cube.Cube.has_lazy_data`. For example::
@@ -48,16 +50,21 @@ You can check whether a cube has real data or lazy data by using the method
     >>> cube = iris.load_cube(filename, 'air_temp.pp')
     >>> cube.has_lazy_data()
     True
+    # Realise the lazy data.
     >>> cube.data
     >>> cube.has_lazy_data()
     False
+
+
+.. _when_real_data:
 
 When does my data become real?
 ------------------------------
 
 When you load a dataset using Iris the data array will almost always initially be
 a lazy array. This section details some operations that will realise lazy data
-as well as some operations that will maintain lazy data.
+as well as some operations that will maintain lazy data. We use the term **realise**
+to mean converting lazy data into real data.
 
 Most operations on data arrays can be run equivalently on both real and lazy data.
 If the data array is real then the operation will be run on the data array
@@ -90,7 +97,7 @@ current state:
 
  * If a cube has lazy data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
    will return the cube's lazy dask array. Calling the cube's
-   :meth:`~iris.cube.Cube.core_data` method **will not realise** the cube's data.
+   :meth:`~iris.cube.Cube.core_data` method **will never realise** the cube's data.
  * If a cube has real data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
    will return the cube's real NumPy array.
 
@@ -106,6 +113,7 @@ For example::
     >>> cube.has_lazy_data()
     True
 
+    # Realise the lazy data.
     >>> cube.data
     >>> the_data = cube.core_data()
     >>> type(the_data)
@@ -117,16 +125,17 @@ For example::
 Coordinates
 -----------
 
-In the same way that Iris cubes contain a data array, Iris coordinates contain
-points and bounds arrays. Coordinate points and bounds arrays can also be real or lazy:
+In the same way that Iris cubes contain a data array, Iris coordinates contain a
+points array and an optional bounds array.
+Coordinate points and bounds arrays can also be real or lazy:
 
  * A :class:`~iris.coords.DimCoord` will only ever have **real** points and bounds
    arrays because of monotonicity checks that realise lazy arrays.
  * An :class:`~iris.coords.AuxCoord` can have **real or lazy** points and bounds.
  * An :class:`~iris.aux_factory.AuxCoordFactory` (or derived coordinate)
    can have **real or lazy** points and bounds. If all of the
-   :class:`~iris.coords.AuxCoord` instances that the coordinate is derived from have
-   real points and bounds then the derived coordinate will also have real points
+   :class:`~iris.coords.AuxCoord` instances used to construct the derived coordinate
+   have real points and bounds then the derived coordinate will have real points
    and bounds, otherwise the derived coordinate will have lazy points and bounds.
 
 Iris cubes and coordinates have very similar interfaces, which extends to accessing
@@ -151,9 +160,12 @@ coordinates' lazy points and bounds:
     True
     >>> print aux_coord.has_lazy_bounds()
     True
+    # Realise the lazy points. This will **not** realise the lazy bounds.
     >>> points = aux_coord.points
     >>> print aux_coord.has_lazy_points()
     False
+    >>> print aux_coord.has_lazy_bounds()
+    True
 
     >>> derived_coord = cube.coord('altitude')
     >>> print derived_coord.has_lazy_points()
