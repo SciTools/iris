@@ -106,3 +106,7 @@ class Test(tests.IrisTest):
         points = np.array([1, 2, 3], dtype=dtype)
         dim_coord = DimCoord(points)
         self._check_call(dim_coord, dtype)
+
+
+if __name__ == '__main__':
+    tests.main()

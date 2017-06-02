@@ -189,3 +189,7 @@ class Test(tests.IrisTest):
                                                          dtype2,
                                                          result_dtype1,
                                                          result_dtype2))
+
+
+if __name__ == '__main__':
+    tests.main()
