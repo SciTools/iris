@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="1">
+  <cube core-dtype="float64" dtype="float64" units="1">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[90]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="int64"/>
