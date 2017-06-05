@@ -258,9 +258,11 @@ class TestAuxCoordCreation(tests.IrisTest):
 
     def test_lazy_bounds(self):
         # Make sure that bounds arrays loaded as lazy do not get realised
-        # by the loading process.
-        cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'))
-        cube
+        # when the cube is printed.
+        cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
+                                                   'small_theta_colpex.nc']))
+        self.assertTrue(cube.coord('sigma').has_lazy_bounds())
+        printed_cube = str(cube)
         self.assertTrue(cube.coord('sigma').has_lazy_bounds())
         
     def test_string_coord_equality(self):
