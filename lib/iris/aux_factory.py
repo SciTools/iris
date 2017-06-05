@@ -297,7 +297,6 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     # extra dimension to make the shape compatible, so
                     # we just add an extra 1.
                     shape.append(1)
-                nd_values = np.array(nd_values)
                 nd_values = nd_values.reshape(shape)
             else:
                 # If no coord, treat value as zero.
