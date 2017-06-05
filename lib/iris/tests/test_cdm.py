@@ -1029,12 +1029,14 @@ class TestCubeCollapsed(tests.IrisTest):
         # fix up the dtype here if it is promotable from cube.dtype. We still
         # want to catch cases where there is a loss of precision however.
         if dual_stage.dtype > cube.dtype:
-            dual_stage.data = dual_stage.data.astype(cube.dtype)
+            data = dual_stage.data.astype(cube.dtype)
+            dual_stage.replace(data, fill_value=dual_stage.fill_value)
         self.assertCMLApproxData(dual_stage, ('cube_collapsed', '%s_%s_dual_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         single_stage = cube.collapsed([a_name, b_name], iris.analysis.MEAN)
         if single_stage.dtype > cube.dtype:
-            single_stage.data = single_stage.data.astype(cube.dtype)
+            data = single_stage.data.astype(cube.dtype)
+            single_stage.replace(data, fill_value=single_stage.fill_value)
         self.assertCMLApproxData(single_stage, ('cube_collapsed', '%s_%s_single_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         # Compare the cube bits that should match
