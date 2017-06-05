@@ -256,6 +256,7 @@ class TestAuxCoordCreation(tests.IrisTest):
                   )
         self.assertEqual(result, str(a))
 
+    @tests.skip_data
     def test_lazy_bounds(self):
         # Make sure that bounds arrays loaded as lazy do not get realised
         # when the cube is printed.
