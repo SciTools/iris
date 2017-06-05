@@ -47,7 +47,7 @@ that is, the loading and manipulating of datasets that otherwise would not fit i
 You can check whether a cube has real data or lazy data by using the method
 :meth:`~iris.cube.Cube.has_lazy_data`. For example::
 
-    >>> cube = iris.load_cube(filename, 'air_temp.pp')
+    >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
     True
     # Realise the lazy data.
