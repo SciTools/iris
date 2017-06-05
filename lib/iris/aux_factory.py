@@ -836,7 +836,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         self.nsigma = nsigma
         self.zlev = zlev
 
-        self.standard_name = 'sea_surface_height_above_reference_ellipsoid'
+        self.standard_name = 'altitude'
         self.attributes = {'positive': 'up'}
 
     @property
@@ -1069,7 +1069,7 @@ class OceanSigmaFactory(AuxCoordFactory):
         self.eta = eta
         self.depth = depth
 
-        self.standard_name = 'sea_surface_height_above_reference_ellipsoid'
+        self.standard_name = 'altitude'
         self.attributes = {'positive': 'up'}
 
     @property
@@ -1248,7 +1248,7 @@ class OceanSg1Factory(AuxCoordFactory):
         self.depth = depth
         self.depth_c = depth_c
 
-        self.standard_name = 'sea_surface_height_above_reference_ellipsoid'
+        self.standard_name = 'altitude'
         self.attributes = {'positive': 'up'}
 
     @property
@@ -1451,7 +1451,7 @@ class OceanSFactory(AuxCoordFactory):
         self.b = b
         self.depth_c = depth_c
 
-        self.standard_name = 'sea_surface_height_above_reference_ellipsoid'
+        self.standard_name = 'altitude'
         self.attributes = {'positive': 'up'}
 
     @property
@@ -1647,7 +1647,7 @@ class OceanSg2Factory(AuxCoordFactory):
         self.depth = depth
         self.depth_c = depth_c
 
-        self.standard_name = 'sea_surface_height_above_reference_ellipsoid'
+        self.standard_name = 'altitude'
         self.attributes = {'positive': 'up'}
 
     @property
