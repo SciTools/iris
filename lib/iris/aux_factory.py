@@ -170,7 +170,8 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 dependency_dims[key] = coord_dims_func(coord)
         return dependency_dims
 
-    def _nd_bounds(self, coord, dims, ndim):
+    @staticmethod
+    def _nd_bounds(coord, dims, ndim):
         """
         Returns the coord's bounds in Cube-orientation and
         broadcastable to N dimensions.

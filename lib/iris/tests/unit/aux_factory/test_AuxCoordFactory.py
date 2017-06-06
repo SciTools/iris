@@ -34,7 +34,7 @@ from iris.aux_factory import AuxCoordFactory
 
 
 class Test__nd_points(tests.IrisTest):
-    def test_numpy_scalar_cooord(self):
+    def test_numpy_scalar_coord(self):
         points = np.arange(1)
         coord = iris.coords.AuxCoord(points)
         result = AuxCoordFactory._nd_points(coord, (), 2)
@@ -79,6 +79,59 @@ class Test__nd_points(tests.IrisTest):
         expected = raw_points.T[np.newaxis, np.newaxis, ..., np.newaxis]
         self.assertArrayEqual(result, expected)
 
+
+
+class Test__nd_bounds(tests.IrisTest):
+    def test_numpy_scalar_coord(self):
+        bounds = np.arange(2).reshape(1, 2)
+        coord = iris.coords.AuxCoord(np.arange(1), bounds=bounds)
+        result = AuxCoordFactory._nd_bounds(coord, (), 2)
+        expected = bounds[np.newaxis]
+        self.assertArrayEqual(result, expected)
+
+    def test_numpy_simple(self):
+        points = np.arange(12).reshape(4, 3)
+        bounds = np.arange(24).reshape(4, 3, 2)
+        coord = iris.coords.AuxCoord(points, bounds=bounds)
+        result = AuxCoordFactory._nd_bounds(coord, (0, 1), 2)
+        expected = bounds
+        self.assertArrayEqual(result, expected)
+
+    def test_numpy_complex(self):
+        points = np.arange(12).reshape(4, 3)
+        bounds = np.arange(24).reshape(4, 3, 2)
+        coord = iris.coords.AuxCoord(points, bounds=bounds)
+        result = AuxCoordFactory._nd_bounds(coord, (3, 2), 5)
+        expected = bounds.T[np.newaxis, np.newaxis, ..., np.newaxis]
+        self.assertArrayEqual(result, expected)
+
+    def test_lazy_simple(self):
+        raw_points = np.arange(12).reshape(4, 3)
+        points = as_lazy_data(raw_points, 1)
+        raw_bounds = np.arange(24).reshape(4, 3, 2)
+        bounds = as_lazy_data(raw_bounds, 1)
+        coord = iris.coords.AuxCoord(points, bounds=bounds)
+        self.assertTrue(is_lazy_data(coord.core_bounds()))
+        result = AuxCoordFactory._nd_bounds(coord, (0, 1), 2)
+        # Check we haven't triggered the loading of the coordinate values.
+        self.assertTrue(is_lazy_data(coord.core_bounds()))
+        self.assertTrue(is_lazy_data(result))
+        expected = raw_bounds
+        self.assertArrayEqual(result, expected)
+
+    def test_lazy_complex(self):
+        raw_points = np.arange(12).reshape(4, 3)
+        points = as_lazy_data(raw_points, 1)
+        raw_bounds = np.arange(24).reshape(4, 3, 2)
+        bounds = as_lazy_data(raw_bounds, 1)
+        coord = iris.coords.AuxCoord(points, bounds=bounds)
+        self.assertTrue(is_lazy_data(coord.core_bounds()))
+        result = AuxCoordFactory._nd_bounds(coord, (3, 2), 5)
+        # Check we haven't triggered the loading of the coordinate values.
+        self.assertTrue(is_lazy_data(coord.core_bounds()))
+        self.assertTrue(is_lazy_data(result))
+        expected = raw_bounds.T[np.newaxis, np.newaxis, ..., np.newaxis]
+        self.assertArrayEqual(result, expected)
 
 @tests.skip_data
 class Test_lazy_aux_coords(tests.IrisTest):
