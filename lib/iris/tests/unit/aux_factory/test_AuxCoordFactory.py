@@ -80,5 +80,27 @@ class Test__nd_points(tests.IrisTest):
         self.assertArrayEqual(result, expected)
 
 
+@tests.skip_data
+class Test_lazy_aux_coords(tests.IrisTest):
+    def test_lazy_coord_loading(self):
+        # Test that points and bounds arrays stay lazy upon cube loading
+        cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
+                                                   'small_theta_colpex.nc']))
+        for coord in cube.aux_coords:
+            self.assertTrue(coord.has_lazy_points())
+            if coord.has_bounds():
+                self.assertTrue(coord.has_lazy_bounds())
+
+    def test_lazy_coord_printing(self):
+        # Test that points and bounds arrays stay lazy upon cube printing
+        cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
+                                                   'small_theta_colpex.nc']))
+        printed_cube = str(cube)
+        for coord in cube.aux_coords:
+            self.assertTrue(coord.has_lazy_points())
+            if coord.has_bounds():
+                self.assertTrue(coord.has_lazy_bounds())
+
+
 if __name__ == '__main__':
     tests.main()

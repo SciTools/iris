@@ -255,16 +255,6 @@ class TestAuxCoordCreation(tests.IrisTest):
                   ", standard_name='air_temperature', units=Unit('kelvin'))"
                   )
         self.assertEqual(result, str(a))
-
-    @tests.skip_data
-    def test_lazy_bounds(self):
-        # Make sure that bounds arrays loaded as lazy do not get realised
-        # when the cube is printed.
-        cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
-                                                   'small_theta_colpex.nc']))
-        self.assertTrue(cube.coord('sigma').has_lazy_bounds())
-        printed_cube = str(cube)
-        self.assertTrue(cube.coord('sigma').has_lazy_bounds())
         
     def test_string_coord_equality(self):
         b = iris.coords.AuxCoord(['Jan', 'Feb', 'March'], units='no_unit')
