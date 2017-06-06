@@ -83,8 +83,9 @@ class Test__nd_points(tests.IrisTest):
 @tests.skip_data
 class Test_lazy_aux_coords(tests.IrisTest):
     def setUp(self):
-        self.cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
-                                                   'small_theta_colpex.nc']))
+        self.cube = iris.load_cube(tests.get_data_path
+                                   (['NetCDF', 'testing',
+                                     'small_theta_colpex.nc']))
 
     def test_lazy_coord_loading(self):
         # Test that points and bounds arrays stay lazy upon cube loading
