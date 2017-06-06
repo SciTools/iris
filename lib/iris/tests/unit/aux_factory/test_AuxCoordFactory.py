@@ -82,21 +82,22 @@ class Test__nd_points(tests.IrisTest):
 
 @tests.skip_data
 class Test_lazy_aux_coords(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
+                                                   'small_theta_colpex.nc']))
+
     def test_lazy_coord_loading(self):
         # Test that points and bounds arrays stay lazy upon cube loading
-        cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
-                                                   'small_theta_colpex.nc']))
-        for coord in cube.aux_coords:
+        for coord in self.cube.aux_coords and self.cube.derived_coords:
             self.assertTrue(coord.has_lazy_points())
             if coord.has_bounds():
                 self.assertTrue(coord.has_lazy_bounds())
 
     def test_lazy_coord_printing(self):
         # Test that points and bounds arrays stay lazy upon cube printing
-        cube = iris.load_cube(tests.get_data_path(['NetCDF', 'testing',
-                                                   'small_theta_colpex.nc']))
+        cube = self.cube
         printed_cube = str(cube)
-        for coord in cube.aux_coords:
+        for coord in cube.aux_coords and cube.derived_coords:
             self.assertTrue(coord.has_lazy_points())
             if coord.has_bounds():
                 self.assertTrue(coord.has_lazy_bounds())
