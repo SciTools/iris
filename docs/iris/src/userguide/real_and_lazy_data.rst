@@ -160,6 +160,7 @@ coordinates' lazy points and bounds:
     True
     >>> print aux_coord.has_lazy_bounds()
     True
+
     # Realise the lazy points. This will **not** realise the lazy bounds.
     >>> points = aux_coord.points
     >>> print aux_coord.has_lazy_points()
