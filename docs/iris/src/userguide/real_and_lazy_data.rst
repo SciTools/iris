@@ -146,34 +146,34 @@ coordinates' lazy points and bounds:
     >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'))
 
     >>> dim_coord = cube.coord('model_level_number')
-    >>> print dim_coord.has_lazy_points()
+    >>> print(dim_coord.has_lazy_points())
     False
-    >>> print dim_coord.has_bounds()
+    >>> print(dim_coord.has_bounds())
     False
-    >>> print dim_coord.has_lazy_bounds()
+    >>> print(dim_coord.has_lazy_bounds())
     False
 
     >>> aux_coord = cube.coord('sigma')
-    >>> print aux_coord.has_lazy_points()
+    >>> print(aux_coord.has_lazy_points())
     True
-    >>> print aux_coord.has_bounds()
+    >>> print(aux_coord.has_bounds())
     True
-    >>> print aux_coord.has_lazy_bounds()
+    >>> print(aux_coord.has_lazy_bounds())
     True
 
     # Realise the lazy points. This will **not** realise the lazy bounds.
     >>> points = aux_coord.points
-    >>> print aux_coord.has_lazy_points()
+    >>> print(aux_coord.has_lazy_points())
     False
-    >>> print aux_coord.has_lazy_bounds()
+    >>> print(aux_coord.has_lazy_bounds())
     True
 
     >>> derived_coord = cube.coord('altitude')
-    >>> print derived_coord.has_lazy_points()
+    >>> print(derived_coord.has_lazy_points())
     True
-    >>> print derived_coord.has_bounds()
+    >>> print(derived_coord.has_bounds())
     True
-    >>> print derived_coord.has_lazy_bounds()
+    >>> print(derived_coord.has_lazy_bounds())
     True
 
 .. note::
