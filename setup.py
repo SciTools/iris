@@ -200,7 +200,6 @@ setup(
     author='Iris, SciTools, UK Met Office',
     maintainer='Iris, SciTools',
     license='LGPLv3',
-    platforms='any',
     summary='iris',
     keywords='iris',
     description='Iris: a data interoperability library.',
