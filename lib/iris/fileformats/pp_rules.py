@@ -971,10 +971,10 @@ def _all_other_rules(f):
         zone_method = 'mean'
 
     if time_method is not None:
-        if f.lbtim.ia != 0:
-            intervals = '{} hour'.format(f.lbtim.ia)
-        else:
-            intervals = None
+        time_unit = f.time_unit('hours')
+        t1_num = time_unit.date2num(f.t1)
+        t2_num = time_unit.date2num(f.t2)
+        intervals = '{} hour'.format(t2_num - t1_num)
 
         if f.lbtim.ib == 2:
             # Aggregation over a period of time.
