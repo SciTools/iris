@@ -56,7 +56,7 @@ class Test_as_concrete_data(tests.IrisTest):
         self.assertEqual(sentinel, result)
 
         # Check call to convert_nans_array
-        conv_nans.assert_called_once()
+        self.assertEqual(conv_nans.call_count, 1)
         args, kwargs = conv_nans.call_args
         arg, = args
         self.assertFalse(is_lazy_data(arg))
@@ -80,7 +80,7 @@ class Test_as_concrete_data(tests.IrisTest):
         self.assertEqual(sentinel, result)
 
         # Check call to convert_nans_array
-        conv_nans.assert_called_once()
+        self.assertEqual(conv_nans.call_count, 1)
         args, kwargs = conv_nans.call_args
         arg, = args
         self.assertFalse(is_lazy_data(arg))
