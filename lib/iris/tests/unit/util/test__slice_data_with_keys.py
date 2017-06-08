@@ -32,6 +32,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
+import warnings
 
 from iris.util import _slice_data_with_keys
 from iris._lazy_data import as_lazy_data, as_concrete_data
@@ -112,9 +113,28 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
                    [(2,)])
 
     def test_1d_float(self):
-        # Number types are not cast.
-        self.check((4,), Index[3.1],
-                   [(3.1,)])
+        # Indexing with a float was deprecated in numpy v1.11.0, and
+        # no longer supported from numpy v1.12.0.
+        kwargs = dict(shape=(4,), keys=Index[3.1], expect_call_keys=[(3.1,)])
+
+        try:
+            with warnings.catch_warnings(record=True) as warn:
+                warnings.simplefilter('always')
+                emsg = 'only integers, .* are valid indices'
+                with self.assertRaisesRegexp(IndexError, emsg):
+                    self.check(**kwargs)
+        except AssertionError as error:
+            amsg = 'IndexError not raised'
+            if str(error) == amsg:
+                if len(warn) > 0:
+                    [warn] = warn
+                    self.assertEqual(warn.category,
+                                     np.VisibleDeprecationWarning)
+                    wmsg = ('using a non-integer number instead of an integer '
+                            'will result in an error in the future')
+                    self.assertEqual(str(warn.message), wmsg)
+            else:
+                raise error
 
     def test_1d_all(self):
         self.check((3,), Index[:],
