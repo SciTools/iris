@@ -1,0 +1,28 @@
+What's New in Iris 2.0
+***********************
+
+:Release: 2.0
+:Date: 2017-06-08
+
+This document explains the new/changed features of Iris in version 2.0
+(:doc:`View all changes <index>`.)
+
+Iris 1.12 Features
+==================
+.. _showcase:
+
+.. admonition:: Showcase Feature - Dask Interfacing
+
+  Iris' data processing sidekick Biggus has been replaced by the titan of
+  parallel processing, dask.
+
+  This change will not affect Iris' API or behaviour unless the user
+  specifically requests it by interfacing with dask's user options (see
+  :doc:`user_guide_real_and_lazy_data` and the accompanying Whitepaper for
+  full details).
+
+  If you wanted to make use of the extra functionality that dask can offer,
+  here are some of the features which you could benefit from:
+
+  *
+
