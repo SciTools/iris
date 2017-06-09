@@ -170,7 +170,8 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 dependency_dims[key] = coord_dims_func(coord)
         return dependency_dims
 
-    def _nd_bounds(self, coord, dims, ndim):
+    @staticmethod
+    def _nd_bounds(coord, dims, ndim):
         """
         Returns the coord's bounds in Cube-orientation and
         broadcastable to N dimensions.
@@ -187,7 +188,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Transpose to be consistent with the Cube.
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs] + [len(dims)]
-        bounds = coord.bounds
+        bounds = coord.core_bounds()
         if dims:
             bounds = bounds.transpose(transpose_order)
 
@@ -296,7 +297,6 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     # extra dimension to make the shape compatible, so
                     # we just add an extra 1.
                     shape.append(1)
-                nd_values = np.array(nd_values)
                 nd_values = nd_values.reshape(shape)
             else:
                 # If no coord, treat value as zero.
