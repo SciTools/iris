@@ -25,12 +25,24 @@ Iris 1.12 Features
   here are some of the features which you could benefit from:
 
   * Ability to load and manipulate larger datasets
-
   * Options for parallel processing (scheduler type, number of processors etc.)
-
   * Parallelization of simple computations using dask.bag and/or dask.chunks
-
   * Dask graphs?
 
 
+Bug Fixes
+=========
+* New cell measures are now constructed as copies of the parent data rather than views of them.
+* Sliced coordinates no longer share data with their parent coordinate.
+
+
+Deprecations
+============
+* Iris-grib as an external package?
+* Something about iris.FUTURE stuff?
+
+
+Documentation Changes
+=====================
+* New User Guide section about real and lazy data added.
 
