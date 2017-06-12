@@ -24,5 +24,13 @@ Iris 1.12 Features
   If you wanted to make use of the extra functionality that dask can offer,
   here are some of the features which you could benefit from:
 
-  *
+  * Ability to load and manipulate larger datasets
+
+  * Options for parallel processing (scheduler type, number of processors etc.)
+
+  * Parallelization of simple computations using dask.bag and/or dask.chunks
+
+  * Dask graphs?
+
+
 
