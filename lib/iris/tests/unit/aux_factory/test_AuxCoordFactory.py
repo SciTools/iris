@@ -157,10 +157,10 @@ class Test_lazy_aux_coords(tests.IrisTest):
         self.cube = iris.load_cube(tests.get_data_path
                                    (['NetCDF', 'testing',
                                      'small_theta_colpex.nc']))
-        self.coords = self.cube.aux_coords + self.cube.derived_coords
 
     def _check_lazy(self):
-        for coord in self.coords:
+        coords = self.cube.aux_coords + self.cube.derived_coords
+        for coord in coords:
             self.assertTrue(coord.has_lazy_points())
             if coord.has_bounds():
                 self.assertTrue(coord.has_lazy_bounds())
