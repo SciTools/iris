@@ -430,7 +430,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
-            A :class:`~iris.coord_systems.CoordSystem`,
+            A :class:`~iris.coord_systems.CoordSystem` representing the
+            coordinate system of the coordinate,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
 
         """
@@ -450,7 +451,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: have no meaning to Iris.
         self.attributes = attributes
 
-        #: Relevant CoordSystem (if any).
+        #: Relevant coordinate system (if any).
         self.coord_system = coord_system
 
         self.points = points
