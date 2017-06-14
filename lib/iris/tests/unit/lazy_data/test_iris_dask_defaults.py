@@ -33,8 +33,9 @@ class Test__iris_dask_defaults(tests.IrisTest):
     def setUp(self):
         set_options = 'dask.set_options'
         self.patch_set_options = self.patch(set_options)
-        get_sync = 'dask.async.get_sync'
-        self.patch_get_sync = self.patch(get_sync)
+        self.mock_get_sync = tests.mock.sentinel.get_sync
+        get_sync = 'iris._lazy_data.dget_sync'
+        self.patch_get_sync = self.patch(get_sync, self.mock_get_sync)
 
     def test_no_user_options(self):
         self.patch('dask.context._globals', {})

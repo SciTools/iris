@@ -29,11 +29,18 @@ import dask.context
 import numpy as np
 import numpy.ma as ma
 
+try:
+    # dask >= v0.15
+    from dask.local import get_sync as dget_sync
+except ImportError:
+    # dask < v0.15
+    from dask.async import get_sync as dget_sync
+
 
 def _iris_dask_defaults():
     """
     Set dask defaults for Iris. The current default dask operation mode for
-    Iris is running single-threaded using `dask.async.get_sync`. This default
+    Iris is running single-threaded using `dask.local.get_sync`. This default
     ensures that running Iris under "normal" conditions will not use up all
     available computational resource.
 
@@ -47,7 +54,7 @@ def _iris_dask_defaults():
     """
     if 'pool' not in dask.context._globals and \
             'get' not in dask.context._globals:
-        dask.set_options(get=dask.async.get_sync)
+        dask.set_options(get=dget_sync)
 
 
 # Run this at import time to set dask options for Iris.
