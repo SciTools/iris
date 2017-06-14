@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -223,7 +223,7 @@ class RectilinearRegridder(object):
             if dtype.kind == 'i':
                 dtype = np.promote_types(dtype, np.float16)
 
-        if isinstance(src_data, ma.MaskedArray):
+        if ma.isMaskedArray(src_data):
             data = ma.empty(shape, dtype=dtype)
             data.mask = np.zeros(data.shape, dtype=np.bool)
         else:
@@ -319,7 +319,7 @@ class RectilinearRegridder(object):
             interpolator.fill_value = mode.fill_value
             data[tuple(index)] = interpolate(src_subset)
 
-            if isinstance(data, ma.MaskedArray) or mode.force_mask:
+            if ma.isMaskedArray(data) or mode.force_mask:
                 # NB. np.ma.getmaskarray returns an array of `False` if
                 # `src_subset` is not a masked array.
                 src_mask = np.ma.getmaskarray(src_subset)
@@ -390,6 +390,7 @@ class RectilinearRegridder(object):
         # Create a result cube with the appropriate metadata
         result = iris.cube.Cube(data)
         result.metadata = copy.deepcopy(src.metadata)
+        result.fill_value = src.fill_value
 
         # Copy across all the coordinates which don't span the grid.
         # Record a mapping from old coordinate IDs to new coordinates,

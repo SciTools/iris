@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,6 @@ import six
 
 import glob
 import os.path
-import types
 import re
 import collections
 
@@ -246,14 +245,11 @@ def _grib_save(cube, target, append=False, **kwargs):
     # A simple wrapper for the grib save routine, which allows the saver to be
     # registered without having the grib implementation installed.
     try:
-        import iris_grib as igrib
+        import gribapi
     except ImportError:
-        try:
-            import gribapi
-        except ImportError:
-            raise RuntimeError('Unable to save GRIB file - the ECMWF '
-                               '`gribapi` package is not installed.')
-        from iris.fileformats import grib as igrib
+        raise RuntimeError('Unable to save GRIB file - the ECMWF '
+                           '`gribapi` package is not installed.')
+    from iris.fileformats import grib as igrib
 
     return igrib.save_grib2(cube, target, append, **kwargs)
 
@@ -324,7 +320,7 @@ def save(source, target, saver=None, **kwargs):
         * netCDF - the Unidata network Common Data Format:
             * see :func:`iris.fileformats.netcdf.save`
         * GRIB2 - the WMO GRIdded Binary data format:
-            * see :func:`iris-grib.save_grib2`.
+            * see :func:`iris.fileformats.grib.save_grib2`.
         * PP - the Met Office UM Post Processing Format:
             * see :func:`iris.fileformats.pp.save`
 

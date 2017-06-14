@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_temperature" units="K">
+  <cube core-dtype="int64" dtype="int64" standard_name="air_temperature" units="K">
     <coords>
       <coord datadims="[1, 2, 3]">
         <auxCoord id="9041e969" points="[[[5040, 5090, 5140, 5190, 5240, 5290],
@@ -60,7 +60,7 @@
     <cellMethods/>
     <data checksum="0x2acdccca" dtype="int64" shape="(3, 4, 5, 6)"/>
   </cube>
-  <cube standard_name="air_temperature" units="K">
+  <cube core-dtype="float64" dtype="float64" standard_name="air_temperature" units="K">
     <coords>
       <coord datadims="[1, 2]">
         <auxCoord id="9041e969" points="[[5090, 5740, 6090, 6440],

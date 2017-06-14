@@ -26,12 +26,12 @@ import six
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 
-import biggus
+import dask.array as da
 import numpy as np
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal, unify_time_units
+from iris.util import guess_coord_axis, array_equal
 
 
 #
@@ -330,6 +330,7 @@ class _CubeSignature(object):
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
+        self.fill_value = cube.fill_value
 
         #
         # Collate the dimension coordinate metadata.
@@ -436,10 +437,11 @@ class _CubeSignature(object):
 
         # Check cube definitions.
         if self.defn != other.defn:
-            # Note that the case of different phenomenon names is dealt with
-            # in :meth:`iris.cube.CubeList.concatenate_cube()`.
+            # Note that the case of different phenomenon names is dealt
+            # with in :meth:`iris.cube.CubeList.concatenate_cube()`.
             msg = 'Cube metadata differs for phenomenon: {}'
             msgs.append(msg.format(self.defn.name()))
+
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')
@@ -459,9 +461,9 @@ class _CubeSignature(object):
         if self.ndim != other.ndim:
             msgs.append(msg_template.format('Data dimensions', '',
                                             self.ndim, other.ndim))
-        # Check datatype.
+        # Check data type.
         if self.data_type != other.data_type:
-            msgs.append(msg_template.format('Datatypes', '',
+            msgs.append(msg_template.format('Data types', '',
                                             self.data_type, other.data_type))
 
         # Check _cell_measures_and_dims
@@ -673,6 +675,8 @@ class _ProtoCube(object):
                                   dim_coords_and_dims=dim_coords_and_dims,
                                   aux_coords_and_dims=aux_coords_and_dims,
                                   cell_measures_and_dims=new_cm_and_dims,
+                                  dtype=cube_signature.data_type,
+                                  fill_value=cube_signature.fill_value,
                                   **kwargs)
         else:
             # There are no other source-cubes to concatenate
@@ -718,6 +722,13 @@ class _ProtoCube(object):
 
         # Check for compatible coordinate signatures.
         if match:
+            fill_value = self._cube_signature.fill_value
+            # Determine whether the fill value requires to be
+            # demoted to the default value.
+            if fill_value is not None:
+                if cube_signature.fill_value != fill_value:
+                    # Demote the fill value to the default.
+                    self._cube_signature.fill_value = None
             coord_signature = _CoordSignature(cube_signature)
             candidate_axis = self._coord_signature.candidate_axis(
                 coord_signature)
@@ -849,7 +860,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        data = biggus.LinearMosaic(tuple(data), axis=self.axis)
+        data = da.concatenate(data, self.axis)
 
         return data
 

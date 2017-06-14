@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -92,7 +92,7 @@ class Test(tests.IrisTest):
         with open_fh as open_fh_ctx:
             expected_deferred_bytes = ('mocked', open_fh_ctx.tell(),
                                        4, np.dtype('>f4'))
-        self.assertEqual(pp_field._data, expected_deferred_bytes)
+        self.assertEqual(pp_field.data, expected_deferred_bytes)
 
     def test_read_data_call(self):
         # Checks that data is read if read_data is True.
@@ -106,7 +106,7 @@ class Test(tests.IrisTest):
         with open_fh as open_fh_ctx:
             expected_loaded_bytes = pp.LoadedArrayBytes(open_fh_ctx.read(),
                                                         np.dtype('>f4'))
-        self.assertEqual(pp_field._data, expected_loaded_bytes)
+        self.assertEqual(pp_field.data, expected_loaded_bytes)
 
     def test_invalid_header_release(self):
         # Check that an unknown LBREL value just results in a warning

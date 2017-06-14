@@ -80,9 +80,6 @@ numpy 1.9 or later (http://numpy.scipy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
-biggus 0.14 or later (https://github.com/SciTools/biggus)
-    Virtual large arrays and lazy evaluation.
-
 scipy 0.10 or later (http://www.scipy.org/)
     Python package for scientific computing.
 
@@ -127,10 +124,6 @@ grib-api 1.9.16 or later
     API for the encoding and decoding WMO FM-92 GRIB edition 1 and 
     edition 2 messages. A compression library such as Jasper is required 
     to read JPEG2000 compressed GRIB2 files.
-
-iris-grib 0.9 or later
-    (https://github.com/scitools/iris-grib)
-    Iris interface to ECMWF's GRIB API
 
 matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
     Python package for 2D plotting.  

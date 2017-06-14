@@ -31,11 +31,9 @@ import itertools
 from netCDF4 import netcdftime
 import numpy as np
 
+from iris._lazy_data import as_lazy_data, multidim_lazy_stack
 from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
-
-from biggus import ArrayStack
-from iris.fileformats.pp import PPField3
 
 
 class FieldCollation(object):
@@ -88,11 +86,32 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            data_arrays = [f._data for f in self.fields]
-            self._data_cache = \
-                ArrayStack.multidim_array_stack(data_arrays,
-                                                self.vector_dims_shape)
+            stack = np.empty(self.vector_dims_shape, 'object')
+            for nd_index, field in zip(np.ndindex(self.vector_dims_shape),
+                                       self.fields):
+                stack[nd_index] = as_lazy_data(field._data,
+                                               chunks=field._data.shape)
+            self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
+
+    def core_data(self):
+        return self.data
+
+    @property
+    def realised_dtype(self):
+        return np.result_type(*[field.realised_dtype
+                                for field in self._fields])
+
+    @property
+    def data_proxy(self):
+        return self.data
+
+    @property
+    def bmdi(self):
+        bmdis = set([f.bmdi for f in self.fields])
+        if len(bmdis) != 1:
+            raise ValueError('Multiple bmdi values defined in FieldCollection')
+        return bmdis.pop()
 
     @property
     def vector_dims_shape(self):

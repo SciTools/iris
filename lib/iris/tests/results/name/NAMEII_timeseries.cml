@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
+  <cube core-dtype="float64" dtype="float64" long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
     <attributes>
       <attribute name="End of release" value="0830UTC 28/03/2022"/>
       <attribute name="Forecast duration" value="87648 hours"/>
@@ -45,7 +45,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(132,)" state="loaded"/>
   </cube>
-  <cube long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
+  <cube core-dtype="float64" dtype="float64" long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
     <attributes>
       <attribute name="End of release" value="0830UTC 28/03/2022"/>
       <attribute name="Forecast duration" value="87648 hours"/>

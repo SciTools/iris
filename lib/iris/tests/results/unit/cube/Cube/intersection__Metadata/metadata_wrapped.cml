@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="x_wind" units="ms-1">
+  <cube core-dtype="float32" dtype="float32" standard_name="x_wind" units="ms-1">
     <coords>
       <coord datadims="[0, 1, 2]">
         <auxCoord id="9041e969" points="[[[3500.0, 3510.0, 3520.0, ..., 80.0, 90.0, 100.0],

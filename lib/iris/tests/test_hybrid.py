@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -156,9 +156,9 @@ class TestRealistic4d(tests.GraphicsTest):
         self.assertIsInstance(altitude.bounds, np.ndarray)
 
         # Make sure altitude.bounds now raises an error.
-        altitude = self.cube.coord('altitude')
-        with self.assertRaises(ValueError):
-            bounds = altitude.bounds
+        exp_emsg = 'operands could not be broadcast together'
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.cube.coord('altitude')
 
 
 @tests.skip_data
@@ -235,9 +235,9 @@ class TestHybridPressure(tests.IrisTest):
         self.assertIsInstance(pressure.bounds, np.ndarray)
 
         # Make sure pressure.bounds now raises an error.
-        pressure = self.cube.coord('air_pressure')
-        with self.assertRaises(ValueError):
-            bounds = pressure.bounds
+        exp_emsg = 'operands could not be broadcast together'
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.cube.coord('air_pressure')
 
 
 if __name__ == "__main__":

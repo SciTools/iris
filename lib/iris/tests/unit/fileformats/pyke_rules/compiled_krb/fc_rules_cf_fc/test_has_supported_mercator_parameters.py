@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,6 +29,7 @@ import warnings
 import iris.tests as tests
 
 import numpy as np
+import six
 
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     has_supported_mercator_parameters
@@ -79,7 +80,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegexpMatches(str(warns[0]), 'Scale factor')
+        six.assertRegex(self, str(warns[0]), 'Scale factor')
 
     def test_invalid_standard_parallel(self):
         # Iris does not yet support standard parallels other than zero for
@@ -101,7 +102,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegexpMatches(str(warns[0]), 'Standard parallel')
+        six.assertRegex(self, str(warns[0]), 'Standard parallel')
 
     def test_invalid_false_easting(self):
         # Iris does not yet support false eastings other than zero for
@@ -123,7 +124,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegexpMatches(str(warns[0]), 'False easting')
+        six.assertRegex(self, str(warns[0]), 'False easting')
 
     def test_invalid_false_northing(self):
         # Iris does not yet support false northings other than zero for
@@ -145,7 +146,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegexpMatches(str(warns[0]), 'False northing')
+        six.assertRegex(self, str(warns[0]), 'False northing')
 
 if __name__ == "__main__":
     tests.main()

@@ -128,12 +128,14 @@ class TestAnalysisWeights(tests.IrisTest):
         # fix up the dtype here if it is promotable from float32. We still want
         # to catch cases where there is a loss of precision however.
         if a.dtype > np.float32:
-            a.data = a.data.astype(np.float32)
+            cast_data = a.data.astype(np.float32)
+            a.replace(cast_data, fill_value=a.fill_value)
         self.assertCMLApproxData(a, ('analysis', 'weighted_mean_lat.cml'))
 
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
         if b.dtype > np.float32:
-            b.data = b.data.astype(np.float32)
+            cast_data = b.data.astype(np.float32)
+            b.replace(cast_data, fill_value=b.fill_value)
         b.data = np.asarray(b.data)
         self.assertCMLApproxData(b, ('analysis', 'weighted_mean_lon.cml'))
         self.assertEqual(b.coord('dummy').shape, (1, ))
@@ -141,7 +143,8 @@ class TestAnalysisWeights(tests.IrisTest):
         # test collapsing multiple coordinates (and the fact that one of the coordinates isn't the same coordinate instance as on the cube)
         c = cube.collapsed([lat_coord[:], lon_coord], iris.analysis.MEAN, weights=weights)
         if c.dtype > np.float32:
-            c.data = c.data.astype(np.float32)
+            cast_data = c.data.astype(np.float32)
+            c.replace(cast_data, fill_value=c.fill_value)
         self.assertCMLApproxData(c, ('analysis', 'weighted_mean_latlon.cml'))
         self.assertEqual(c.coord('dummy').shape, (1, ))
 
@@ -202,10 +205,12 @@ class TestAnalysisBasic(tests.IrisTest):
         file = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         cubes = iris.load(file)
         self.cube = cubes[0]
+        self.cube_fill_val = self.cube.fill_value
         self.assertCML(self.cube, ('analysis', 'original.cml'))
 
     def _common(self, name, aggregate, original_name='original_common.cml', *args, **kwargs):
         self.cube.data = self.cube.data.astype(np.float64)
+        self.cube.fill_value = self.cube_fill_val
 
         self.assertCML(self.cube, ('analysis', original_name))
 
@@ -231,6 +236,7 @@ class TestAnalysisBasic(tests.IrisTest):
     def test_hmean(self):
         # harmonic mean requires data > 0
         self.cube.data *= self.cube.data
+        self.cube.fill_value = self.cube_fill_val
         self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', rtol=1e-05)
 
     def test_gmean(self):

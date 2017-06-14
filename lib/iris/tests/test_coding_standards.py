@@ -18,7 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised before
+# import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
@@ -85,9 +85,8 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/analysis/_interpolate_private.py',
         '*/iris/fileformats/cf.py',
         '*/iris/fileformats/dot.py',
-        '*/iris/fileformats/grib/__init__.py',
         '*/iris/fileformats/grib/_grib_cf_map.py',
-        '*/iris/fileformats/grib/load_rules.py',
+        '*/iris/fileformats/grib/_grib1_load_rules.py',
         '*/iris/fileformats/pp_rules.py',
         '*/iris/fileformats/rules.py',
         '*/iris/fileformats/um_cf_map.py',
@@ -122,7 +121,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_iterate.py',
         '*/iris/tests/test_load.py',
         '*/iris/tests/test_merge.py',
-        '*/iris/tests/test_pickling.py',
         '*/iris/tests/test_pp_cf.py',
         '*/iris/tests/test_pp_module.py',
         '*/iris/tests/test_pp_stash.py',

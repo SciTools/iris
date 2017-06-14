@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,39 +15,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests for `iris.fileformats.grib._load_convert.product_definition_template_31`.
+Tests for
+:func:`iris.fileformats.grib._load_convert.product_definition_template_31`.
 
 """
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
-from copy import deepcopy
-import warnings
-
-import numpy as np
-
-from iris.coords import AuxCoord
 from iris.fileformats.grib._load_convert import product_definition_template_31
 from iris.tests import mock
+from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
 
 
 class Test(tests.IrisTest):
     def setUp(self):
-        patch = mock.patch('warnings.warn')
-        patch.start()
-        self.addCleanup(patch.stop)
-        self.metadata = {'factories': [], 'references': [],
-                         'standard_name': None,
-                         'long_name': None, 'units': None, 'attributes': None,
-                         'cell_methods': [], 'dim_coords_and_dims': [],
-                         'aux_coords_and_dims': []}
+        self.patch('warnings.warn')
+        self.satellite_common_patch = self.patch(
+            'iris.fileformats.grib._load_convert.satellite_common')
+        self.generating_process_patch = self.patch(
+            'iris.fileformats.grib._load_convert.generating_process')
 
-    def _check(self, request_warning=False, value=10, factor=1):
+    def test(self):
         # Prepare the arguments.
         series = mock.sentinel.satelliteSeries
         number = mock.sentinel.satelliteNumber
@@ -57,54 +50,19 @@ class Test(tests.IrisTest):
                    'satelliteSeries': series,
                    'satelliteNumber': number,
                    'instrumentType': instrument,
-                   'scaleFactorOfCentralWaveNumber': factor,
-                   'scaledValueOfCentralWaveNumber': value}
-        metadata = deepcopy(self.metadata)
-        this = 'iris.fileformats.grib._load_convert.options'
-        with mock.patch(this, warn_on_unsupported=request_warning):
-            # The call being tested.
-            product_definition_template_31(section, metadata, rt_coord)
+                   'scaleFactorOfCentralWaveNumber': 1,
+                   'scaledValueOfCentralWaveNumber': 12}
 
-        # Check the result.
-        def unscale(v, f):
-            return v / 10.0 ** f
+        # Call the function.
+        metadata = empty_metadata()
+        product_definition_template_31(section, metadata, rt_coord)
 
-        expected = deepcopy(self.metadata)
-        coord = AuxCoord(series, long_name='satellite_series')
-        expected['aux_coords_and_dims'].append((coord, None))
-        coord = AuxCoord(number, long_name='satellite_number')
-        expected['aux_coords_and_dims'].append((coord, None))
-        coord = AuxCoord(instrument, long_name='instrument_type')
-        expected['aux_coords_and_dims'].append((coord, None))
-        standard_name = 'sensor_band_central_radiation_wavenumber'
-        coord = AuxCoord(unscale(value, factor),
-                         standard_name=standard_name,
-                         units='m-1')
-        expected['aux_coords_and_dims'].append((coord, None))
-        expected['aux_coords_and_dims'].append((rt_coord, None))
-        self.assertEqual(metadata, expected)
-        if request_warning:
-            warn_msgs = [arg[1][0] for arg in warnings.warn.mock_calls]
-            expected_msgs = ['type of generating process',
-                             'observation generating process identifier']
-            for emsg in expected_msgs:
-                matches = [wmsg for wmsg in warn_msgs if emsg in wmsg]
-                self.assertEqual(len(matches), 1)
-                warn_msgs.remove(matches[0])
-        else:
-            self.assertEqual(len(warnings.warn.mock_calls), 0)
-
-    def test_pdt_no_warn(self):
-        self._check(request_warning=False)
-
-    def test_pdt_warn(self):
-        self._check(request_warning=True)
-
-    def test_wavelength_array(self):
-        value = np.array([1, 10, 100, 1000])
-        for i in range(value.size):
-            factor = np.ones(value.shape) * i
-            self._check(value=value, factor=factor)
+        # Check that 'satellite_common' was called.
+        self.assertEqual(self.satellite_common_patch.call_count, 1)
+        # Check that 'generating_process' was called.
+        self.assertEqual(self.generating_process_patch.call_count, 1)
+        # Check that the scalar time coord was added in.
+        self.assertIn((rt_coord, None), metadata['aux_coords_and_dims'])
 
 
 if __name__ == '__main__':

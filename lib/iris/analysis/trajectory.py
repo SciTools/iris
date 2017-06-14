@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -341,6 +341,8 @@ def interpolate(cube, sample_points, method=None):
             # This is **not** proper mask handling, because we cannot produce a
             # masked result, but it ensures we use a "filled" version of the
             # input in this case.
+            if cube.fill_value is not None:
+                source_data.fill_value = cube.fill_value
             source_data = source_data.filled()
         new_cube.data[:] = source_data
         # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
@@ -376,6 +378,9 @@ def interpolate(cube, sample_points, method=None):
             # Fill the new coord with all the correct points from the old one.
             new_cube_coord.points = src_coord.points[fancy_coord_index_arrays]
             # NOTE: the new coords do *not* have bounds.
+
+    # Set the fill-value last, as any previous data setter will clear it.
+    new_cube.fill_value = cube.fill_value
 
     return new_cube
 
@@ -541,6 +546,7 @@ class UnstructuredNearestNeigbourRegridder(object):
         # Make a new result cube with the reshaped data.
         result_cube = iris.cube.Cube(data_2d_x_and_y)
         result_cube.metadata = src_cube.metadata
+        result_cube.fill_value = src_cube.fill_value
 
         # Copy all the coords from the trajectory result.
         i_trajectory_dim = result_trajectory_cube.ndim - 1

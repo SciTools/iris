@@ -38,3 +38,4 @@
    tests.rst
    deprecations.rst
    release.rst
+   dask_interface.rst

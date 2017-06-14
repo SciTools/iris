@@ -26,7 +26,6 @@ import os
 from types import GeneratorType
 import unittest
 
-import biggus
 import netcdftime
 from numpy.testing import assert_array_equal
 
@@ -34,7 +33,6 @@ import iris.fileformats
 import iris.fileformats.pp as pp
 from iris.tests import mock
 import iris.util
-
 
 @tests.skip_data
 class TestPPCopy(tests.IrisTest):
@@ -44,7 +42,6 @@ class TestPPCopy(tests.IrisTest):
     def test_copy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = field.copy()
-        self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -52,7 +49,6 @@ class TestPPCopy(tests.IrisTest):
     def test_deepcopy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = deepcopy(field)
-        self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -696,6 +696,52 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
+def _slice_data_with_keys(data, keys):
+    """
+    Index an array-like object as "data[keys]", with orthogonal indexing.
+
+    Args:
+
+    * data (array-like):
+        array to index.
+
+    * keys (list):
+        list of indexes, as received from a __getitem__ call.
+
+    This enforces an orthogonal interpretation of indexing, which means that
+    both 'real' (numpy) arrays and other array-likes index in the same way,
+    instead of numpy arrays doing 'fancy indexing'.
+
+    Returns (dim_map, data_region), where :
+
+    * dim_map (dict) :
+        A dimension map, as returned by :func:`column_slices_generator`.
+        i.e. "dim_map[old_dim_index]" --> "new_dim_index" or None.
+
+    * data_region (array-like) :
+        The sub-array.
+
+    .. Note::
+
+        Avoids copying the data, where possible.
+
+    """
+    # Combines the use of _build_full_slice_given_keys and
+    # column_slices_generator.
+    # By slicing on only one index at a time, this also mostly avoids copying
+    # the data, except some cases when a key contains a list of indices.
+    n_dims = len(data.shape)
+    full_slice = _build_full_slice_given_keys(keys, n_dims)
+    dims_mapping, slices_iter = column_slices_generator(full_slice, n_dims)
+    for this_slice in slices_iter:
+        data = data[this_slice]
+        if data.ndim > 0 and min(data.shape) < 1:
+            # Disallow slicings where a dimension has no points, like "[5:5]".
+            raise IndexError('Cannot index with zero length slice.')
+
+    return dims_mapping, data
+
+
 def _wrap_function_for_method(function, docstring=None):
     """
     Returns a wrapper function modified to be suitable for use as a
@@ -931,7 +977,7 @@ def ensure_array(a):
     """.. deprecated:: 1.7"""
     warn_deprecated('ensure_array() is deprecated and will be removed '
                     'in a future release.')
-    if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
+    if not isinstance(a, np.ndarray) and not ma.isMaskedArray(a):
         a = np.array([a])
     return a
 
@@ -1086,14 +1132,17 @@ def new_axis(src_cube, scalar_coord=None):
     # If the source cube is a Masked Constant, it is changed here to a Masked
     # Array to allow the mask to gain an extra dimension with the data.
     if src_cube.has_lazy_data():
-        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+        new_cube = iris.cube.Cube(src_cube.lazy_data()[None],
+                                  dtype=src_cube.dtype)
     else:
         if isinstance(src_cube.data, ma.core.MaskedConstant):
             new_data = ma.array([np.nan], mask=[True])
         else:
             new_data = src_cube.data[None]
         new_cube = iris.cube.Cube(new_data)
+
     new_cube.metadata = src_cube.metadata
+    new_cube.fill_value = src_cube.fill_value
 
     for coord in src_cube.aux_coords:
         if scalar_coord and scalar_coord == coord:
@@ -1175,7 +1224,9 @@ def as_compatible_shape(src_cube, target_cube):
         new_order = [order.index(i) for i in range(len(order))]
         new_data = np.transpose(new_data, new_order).copy()
 
-    new_cube = iris.cube.Cube(new_data.reshape(new_shape))
+    new_cube = iris.cube.Cube(new_data.reshape(new_shape),
+                              fill_value=src_cube.fill_value,
+                              dtype=src_cube.dtype)
     new_cube.metadata = copy.deepcopy(src_cube.metadata)
 
     # Record a mapping from old coordinate IDs to new coordinates,
@@ -1328,13 +1379,20 @@ def regular_step(coord):
     if coord.shape[0] < 2:
         raise ValueError("Expected a non-scalar coord")
 
-    diffs = coord.points[1:] - coord.points[:-1]
-    avdiff = np.mean(diffs)
-    if not np.allclose(diffs, avdiff, rtol=0.001):
-        # TODO: This value is set for test_analysis to pass...
+    avdiff, regular = points_step(coord.points)
+    if not regular:
         msg = "Coord %s is not regular" % coord.name()
         raise iris.exceptions.CoordinateNotRegularError(msg)
     return avdiff.astype(coord.points.dtype)
+
+
+def points_step(points):
+    """Determine whether a NumPy array has a regular step."""
+    diffs = np.diff(points)
+    avdiff = np.mean(diffs)
+    # TODO: This value for `rtol` is set for test_analysis to pass...
+    regular = np.allclose(diffs, avdiff, rtol=0.001)
+    return avdiff, regular
 
 
 def unify_time_units(cubes):

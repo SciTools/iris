@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,13 +23,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import biggus
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_lazy_data, as_concrete_data
 from iris.analysis import VARIANCE
 import iris.cube
 from iris.coords import DimCoord
+
 from iris.tests import mock
 
 
@@ -68,24 +69,17 @@ class Test_masked(tests.IrisTest):
 
 
 class Test_lazy_aggregate(tests.IrisTest):
-    def test_unsupported_mdtol(self):
-        # The VARIANCE aggregator supports lazy_aggregation but does
-        # not provide mdtol handling. Check that a TypeError is raised
-        # if this unsupported kwarg is specified.
-        array = biggus.NumpyArrayAdapter(np.arange(8))
-        msg = "unexpected keyword argument 'mdtol'"
-        with self.assertRaisesRegexp(TypeError, msg):
-            VARIANCE.lazy_aggregate(array, axis=0, mdtol=0.8)
-
     def test_ddof_one(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = as_lazy_data(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=1)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(6.0))
+        result = as_concrete_data(var)
+        self.assertArrayAlmostEqual(result, np.array(6.0))
 
     def test_ddof_zero(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = as_lazy_data(np.arange(8))
         var = VARIANCE.lazy_aggregate(array, axis=0, ddof=0)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(5.25))
+        result = as_concrete_data(var)
+        self.assertArrayAlmostEqual(result, np.array(5.25))
 
 
 class Test_name(tests.IrisTest):

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="geopotential" units="m2 s-2">
+  <cube core-dtype="float64" dtype="float64" standard_name="geopotential" units="m2 s-2">
     <attributes>
       <attribute name="centre" value="European Centre for Medium Range Weather Forecasts"/>
     </attributes>
