@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,10 +28,12 @@ import os.path
 import numpy as np
 import numpy.ma as ma
 
+from cf_units import Unit
 from iris.cube import Cube
 import iris.aux_factory
 import iris.coords
 import iris.coords as icoords
+from iris.coords import DimCoord, AuxCoord
 import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
 
@@ -482,7 +484,6 @@ def realistic_4d():
     level_height_bnds, model_level_pts, sigma_pts, sigma_bnds, time_pts, \
     _source_pts, forecast_period_pts, data, orography = arrays
 
-
     ll_cs = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
 
     lat = icoords.DimCoord(lat_pts, standard_name='grid_latitude', units='degrees',
@@ -557,4 +558,59 @@ def realistic_4d_w_missing_data():
 def global_grib2():
     path = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
     cube = iris.load_cube(path)
+    return cube
+
+
+def ocean_sigma_z():
+    """
+    Return a sample cube with an
+    :class:`iris.aux_factory.OceanSigmaZFactory` vertical coordinate.
+
+    This is a fairly small cube with real coordinate arrays.  The coordinate
+    values are derived from the sample data linked at
+    https://github.com/SciTools/iris/pull/509#issuecomment-23565381.
+
+    """
+    co_time = DimCoord([0.0, 1.0], standard_name='time', units='')
+    co_lats = DimCoord([-58.1, -52.7, -46.9],
+                       standard_name='latitude', units=Unit('degrees'))
+    co_lons = DimCoord([65.1,   72.9,   83.7,  96.5],
+                       standard_name='longitude', units=Unit('degrees'))
+    co_ssh = AuxCoord([[[-0.63157895, -0.52631579, -0.42105263, -0.31578947],
+                        [-0.78947368, -0.68421053, -0.57894737, -0.47368421],
+                        [-0.94736842, -0.84210526, -0.73684211, -0.63157895]],
+                       [[-0.84210526, -0.73684211, -0.63157895, -0.52631579],
+                        [-1.00000000, -0.89473684, -0.78947368, -0.68421053],
+                        [-1.15789474, -1.05263158, -0.94736842, -0.84210526]]],
+                      standard_name=u'sea_surface_height', units=Unit('m'))
+
+    co_sigma = AuxCoord([0., -0.1, -0.6, -1., -1.],
+                        standard_name=u'ocean_sigma_z_coordinate',
+                        units=Unit('1'),
+                        attributes={'positive': 'up'})
+
+    co_zlay = AuxCoord([-137.2, -137.3, -137.4, -368.4, -1495.6],
+                       long_name='layer_depth', units=Unit('m'))
+    co_depth = AuxCoord([[1625.7, 3921.2, 4106.4, 5243.5],
+                         [3615.4, 4942.6, 3883.6, 4823.1],
+                         [3263.2, 2816.3, 2741.8, 3883.6]],
+                        standard_name=u'depth', units=Unit('m'))
+    co_depthc = DimCoord(137.9, long_name='depth_c', units=Unit('m'))
+    co_nsigma = DimCoord(3, long_name='nsigma')
+
+    cube = Cube(np.zeros((2, 5, 3, 4)))
+    cube.add_dim_coord(co_time, 0)
+    cube.add_dim_coord(co_lats, 2)
+    cube.add_dim_coord(co_lons, 3)
+    cube.add_aux_coord(co_zlay, 1)
+    cube.add_aux_coord(co_sigma, 1)
+    cube.add_aux_coord(co_ssh, (0, 2, 3))
+    cube.add_aux_coord(co_depth, (2, 3))
+    cube.add_aux_coord(co_depthc)
+    cube.add_aux_coord(co_nsigma)
+
+    fact = iris.aux_factory.OceanSigmaZFactory(
+        depth=co_depth, eta=co_ssh, depth_c=co_depthc, zlev=co_zlay,
+        sigma=co_sigma, nsigma=co_nsigma)
+    cube.add_aux_factory(fact)
     return cube
