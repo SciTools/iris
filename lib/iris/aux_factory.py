@@ -307,31 +307,6 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             nd_values_by_key[key] = nd_values
         return nd_values_by_key
 
-    def _shape(self, nd_values_by_key):
-        nd_values = sorted(nd_values_by_key.values(),
-                           key=lambda value: value.ndim)
-        shape = list(nd_values.pop().shape)
-        for array in nd_values:
-            for i, size in enumerate(array.shape):
-                if size > 1:
-                    # NB. If there's an inconsistency it can only come
-                    # from a mismatch in the number of bounds (the Cube
-                    # ensures the other dimensions must match).
-                    # But we can't afford to raise an error now - it'd
-                    # break Cube.derived_coords. Instead, we let the
-                    # error happen when the derived coordinate's bounds
-                    # are accessed.
-                    shape[i] = size
-        return shape
-
-    def _dtype(self, arrays_by_key, **other_args):
-        dummy_args = {}
-        for key, array in six.iteritems(arrays_by_key):
-            dummy_args[key] = np.zeros(1, dtype=array.dtype)
-        dummy_args.update(other_args)
-        dummy_data = self._derive(**dummy_args)
-        return dummy_data.dtype
-
 
 class HybridHeightFactory(AuxCoordFactory):
     """
@@ -783,7 +758,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         return dict(sigma=self.sigma, eta=self.eta, depth=self.depth,
                     depth_c=self.depth_c, nsigma=self.nsigma, zlev=self.zlev)
 
-    def _derive(self, sigma, eta, depth, depth_c,
+    def _old_derive(self, sigma, eta, depth, depth_c,
                 zlev, shape, nsigma_slice):
         # Perform the ocean sigma over z coordinate nsigma slice.
         if eta.ndim:
@@ -798,6 +773,73 @@ class OceanSigmaZFactory(AuxCoordFactory):
         result = np.ones(shape, dtype=temp.dtype) * zlev
         result[nsigma_slice] = temp
 
+        return result
+
+    def _derive(self, sigma, eta, depth, depth_c,
+                zlev, nsigma, coord_dims_func):
+        i_levels_dim, = coord_dims_func(self.dependencies['zlev'])
+        allshapes = np.array(
+            [el.shape
+             for el in (sigma, eta, depth, depth_c, zlev)
+             if el.ndim])
+        shape = list(np.max(allshapes, axis=0))
+        ndims = len(shape)
+        # Make a slice tuple to index the first nsigma z-levels.
+        nsigma_slice = [slice(None)] * ndims
+        nsigma_slice[i_levels_dim] = slice(0, int(nsigma))
+        nsigma_slice = tuple(nsigma_slice)
+        # Perform the ocean sigma over z coordinate nsigma slice.
+        if eta.ndim:
+            eta = eta[nsigma_slice]
+        if sigma.ndim:
+            sigma = sigma[nsigma_slice]
+        if depth.ndim:
+            depth = depth[nsigma_slice]
+        # Note that, this performs a point-wise minimum.
+        temp = eta + sigma * (np.minimum(depth_c, depth) + eta)
+        # Calculate the final derived result.
+        result = np.ones(shape, dtype=temp.dtype) * zlev
+        result[nsigma_slice] = temp
+
+        return result
+
+    def _new_derive(self, sigma, eta, depth, depth_c,
+                zlev, nsigma, coord_dims_func):
+        i_levels_dim, = coord_dims_func(self.dependencies['zlev'])
+        allshapes = np.array(
+            [el.shape
+             for el in (sigma, eta, depth, depth_c, zlev)
+             if el.ndim])
+        result_shape = list(np.max(allshapes, axis=0))
+        ndims = len(result_shape)
+        # Make a slice tuple to index the first nsigma z-levels.
+        z_slices_nsigma = [slice(None)] * ndims
+        z_slices_nsigma[i_levels_dim] = slice(0, int(nsigma))
+        z_slices_nsigma = tuple(z_slices_nsigma)
+        # Make a slice tuple to index the remaining z-levels.
+        z_slices_rest = [slice(None)] * ndims
+        z_slices_rest[i_levels_dim] = slice(int(nsigma), None)
+        z_slices_rest = tuple(z_slices_rest)
+        # Perform the ocean sigma over z coordinate nsigma slice.
+        if eta.ndim:
+            eta = eta[z_slices_nsigma]
+        if sigma.ndim:
+            sigma = sigma[z_slices_nsigma]
+        if depth.ndim:
+            depth = depth[z_slices_nsigma]
+        # Note that, this performs a point-wise minimum.
+        nsigma_levs = eta + sigma * (np.minimum(depth_c, depth) + eta)
+        # Expand shape to nsigma z-levels, as it can have lower dimensionality.
+        ones_full_result = np.ones(result_shape, dtype=np.int16)
+        ones_nsigma_result = ones_full_result[z_slices_nsigma]
+        result_nsigma_levs = nsigma_levs * ones_nsigma_result
+        # Likewise, expand zlev to a full result shape.
+        zlev = zlev * ones_full_result
+        # From this, take the 'remaining' levels for the result.
+        result_rest_levs = zlev[z_slices_rest]
+        # Combine nsigma and 'rest' levels for final result.
+        result = np.concatenate([result_nsigma_levs, result_rest_levs],
+                                axis=i_levels_dim)
         return result
 
     def make_coord(self, coord_dims_func):
@@ -817,30 +859,21 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points_shape = self._shape(nd_points_by_key)
 
-        # Calculate the nsigma slice.
-        nsigma_slice = [slice(None)] * len(derived_dims)
-        dim, = dependency_dims['zlev']
-        index = derived_dims.index(dim)
-        nsigma_slice[index] = slice(0, int(nd_points_by_key['nsigma']))
-        nsigma_slice = tuple(nsigma_slice)
-
+        nsigma, = nd_points_by_key['nsigma']
         points = self._derive(nd_points_by_key['sigma'],
                               nd_points_by_key['eta'],
                               nd_points_by_key['depth'],
                               nd_points_by_key['depth_c'],
                               nd_points_by_key['zlev'],
-                              points_shape,
-                              nsigma_slice)
+                              nsigma,
+                              coord_dims_func)
 
         bounds = None
         if self.zlev.nbounds or (self.sigma and self.sigma.nbounds):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-            bounds_shape = self._shape(nd_values_by_key)
-            nsigma_slice_bounds = nsigma_slice + (slice(None),)
 
             # Define the function here to obtain a closure.
             def calc_bounds():
@@ -867,8 +900,8 @@ class OceanSigmaZFactory(AuxCoordFactory):
                                     nd_values_by_key['depth'],
                                     nd_values_by_key['depth_c'],
                                     nd_values_by_key['zlev'],
-                                    bounds_shape,
-                                    nsigma_slice_bounds)
+                                    nsigma,
+                                    coord_dims_func)
             bounds = calc_bounds()
 
         coord = iris.coords.AuxCoord(points,
