@@ -307,6 +307,23 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             nd_values_by_key[key] = nd_values
         return nd_values_by_key
 
+#    def _shape(self, nd_values_by_key):
+#        nd_values = sorted(nd_values_by_key.values(),
+#                           key=lambda value: value.ndim)
+#        shape = list(nd_values.pop().shape)
+#        for array in nd_values:
+#            for i, size in enumerate(array.shape):
+#                if size > 1:
+#                    # NB. If there's an inconsistency it can only come
+#                    # from a mismatch in the number of bounds (the Cube
+#                    # ensures the other dimensions must match).
+#                    # But we can't afford to raise an error now - it'd
+#                    # break Cube.derived_coords. Instead, we let the
+#                    # error happen when the derived coordinate's bounds
+#                    # are accessed.
+#                    shape[i] = size
+#        return shape
+
 
 class HybridHeightFactory(AuxCoordFactory):
     """
@@ -758,7 +775,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         return dict(sigma=self.sigma, eta=self.eta, depth=self.depth,
                     depth_c=self.depth_c, nsigma=self.nsigma, zlev=self.zlev)
 
-    def _old_derive(self, sigma, eta, depth, depth_c,
+    def _original_derive(self, sigma, eta, depth, depth_c,
                 zlev, shape, nsigma_slice):
         # Perform the ocean sigma over z coordinate nsigma slice.
         if eta.ndim:
@@ -775,15 +792,27 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         return result
 
-    def _derive(self, sigma, eta, depth, depth_c,
+    def _oldstyle_derive(self, sigma, eta, depth, depth_c,
                 zlev, nsigma, coord_dims_func):
-        i_levels_dim, = coord_dims_func(self.dependencies['zlev'])
+        derived_cubedims = self.derived_dims(coord_dims_func)
+        i_levels_cubedim, = coord_dims_func(self.dependencies['zlev'])
+        i_levels_dim = i_levels_cubedim - sum(
+            i_dim not in derived_cubedims
+            for i_dim in range(i_levels_cubedim))
         allshapes = np.array(
             [el.shape
              for el in (sigma, eta, depth, depth_c, zlev)
              if el.ndim])
         shape = list(np.max(allshapes, axis=0))
         ndims = len(shape)
+
+        # N.B. it is not a problem forming 'shape': following checks out ok.
+        #    derived_dims = self.derived_dims(coord_dims_func)
+        #    dependency_dims = self._dependency_dims(coord_dims_func)
+        #    nd_points_by_key = self._remap(dependency_dims, derived_dims)
+        #    orig_shape = self._shape(nd_points_by_key)
+        #    assert orig_shape == shape
+
         # Make a slice tuple to index the first nsigma z-levels.
         nsigma_slice = [slice(None)] * ndims
         nsigma_slice[i_levels_dim] = slice(0, int(nsigma))
@@ -803,9 +832,18 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         return result
 
-    def _new_derive(self, sigma, eta, depth, depth_c,
+    def _derive(self, sigma, eta, depth, depth_c,
                 zlev, nsigma, coord_dims_func):
-        i_levels_dim, = coord_dims_func(self.dependencies['zlev'])
+        # Calculate the index of the 'z' dimension in the inputs.
+        # Get the cube dimension...
+        i_levels_cubedim, = coord_dims_func(self.dependencies['zlev'])
+        # ...subtract any previous dimensions not used in the calculation.
+        derived_cubedims = self.derived_dims(coord_dims_func)
+        i_levels_dim = i_levels_cubedim - sum(
+            i_dim not in derived_cubedims
+            for i_dim in range(i_levels_cubedim))
+
+        # Calculate the result shape as a combination of all the inputs.
         allshapes = np.array(
             [el.shape
              for el in (sigma, eta, depth, depth_c, zlev)
@@ -829,7 +867,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
             depth = depth[z_slices_nsigma]
         # Note that, this performs a point-wise minimum.
         nsigma_levs = eta + sigma * (np.minimum(depth_c, depth) + eta)
-        # Expand shape to nsigma z-levels, as it can have lower dimensionality.
+        # Expand to full shape, as it may sometimes have lower dimensionality.
         ones_full_result = np.ones(result_shape, dtype=np.int16)
         ones_nsigma_result = ones_full_result[z_slices_nsigma]
         result_nsigma_levs = nsigma_levs * ones_nsigma_result
@@ -837,7 +875,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         zlev = zlev * ones_full_result
         # From this, take the 'remaining' levels for the result.
         result_rest_levs = zlev[z_slices_rest]
-        # Combine nsigma and 'rest' levels for final result.
+        # Combine nsigma and 'rest' levels for the final result.
         result = np.concatenate([result_nsigma_levs, result_rest_levs],
                                 axis=i_levels_dim)
         return result
