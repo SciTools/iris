@@ -33,6 +33,7 @@ import numpy as np
 
 from iris._lazy_data import as_lazy_data
 from iris.tests.stock import ocean_sigma_z as stock_sample_osz
+import iris.util
 
 
 class Test_sample(tests.IrisTest):
@@ -126,6 +127,18 @@ class Test_sample(tests.IrisTest):
             msg = msg.format(dims_list)
             self._check_result(cube, expected,
                                err_msg=msg)
+
+    def test_extra_dims(self):
+        # Insert extra cube dimensions + check it still works.
+        cube = self.cube
+        cube = iris.util.new_axis(cube)
+        cube = iris.util.new_axis(cube)
+        cube = iris.util.new_axis(cube)
+        # N.B. shape is now (1, 1, 1, t, z, y, x)
+        cube.transpose((0, 3, 1, 4, 5, 2, 6))
+        # N.B. shape is now (1, t, 1, z, y, 1, x)
+        # Should get same original result, as derived dims are the same.
+        self._check_result(cube)
 
     def test_no_sigma(self):
         # Check it still works when 'sigma' is removed ...
