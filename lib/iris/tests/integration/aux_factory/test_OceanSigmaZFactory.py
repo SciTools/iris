@@ -96,14 +96,24 @@ class Test_sample(tests.IrisTest):
             coord.points = as_lazy_data(coord.points, coord.shape)
         return cube
 
-    def test_lazy(self):
+    def test_nonlazy_cube_has_lazy_derived(self):
         # Check same results when key coords are made lazy.
         cube = self.cube
-        self.assertFalse(
-            cube.coord(self.derived_coord_name).has_lazy_points())
+        self.assertEqual(
+            cube.coord('depth').has_lazy_points(),
+            False)
+        self.assertEqual(
+            cube.coord(self.derived_coord_name).has_lazy_points(),
+            True)
+
+    def test_lazy_cube_same_result(self):
         cube = self._lazy_testcube()
-        self.assertTrue(
-            cube.coord(self.derived_coord_name).has_lazy_points())
+        self.assertEqual(
+            cube.coord('depth').has_lazy_points(),
+            True)
+        self.assertEqual(
+            cube.coord(self.derived_coord_name).has_lazy_points(),
+            True)
         self._check_result(cube)
 
     def test_transpose(self):
@@ -120,7 +130,7 @@ class Test_sample(tests.IrisTest):
     def test_lazy_transpose(self):
         # Check lazy calc works with all possible dimension orders.
         for dims_list in itertools.permutations(range(self.cube.ndim)):
-            cube = self._lazy_testcube()
+            cube = self._lazy_testcube().copy()
             cube.transpose(dims_list)
             expected = self.basic_derived_result.transpose(dims_list)
             msg = 'Unexpected result when cube transposed by {}'
@@ -129,7 +139,7 @@ class Test_sample(tests.IrisTest):
                                err_msg=msg)
 
     def test_extra_dims(self):
-        # Insert extra cube dimensions + check it still works.
+        # Insert some extra cube dimensions + check it still works.
         cube = self.cube
         cube = iris.util.new_axis(cube)
         cube = iris.util.new_axis(cube)
@@ -142,10 +152,12 @@ class Test_sample(tests.IrisTest):
 
     def test_no_sigma(self):
         # Check it still works when 'sigma' is removed ...
+
         # Set all sigma points to zero + snapshot the resulting derived points.
         trial_cube = self.cube.copy()
         trial_cube.coord('ocean_sigma_z_coordinate').points[:] = 0.0
         expected = trial_cube.coord(self.derived_coord_name).points
+
         # Remove sigma altogether + check the result is the same.
         cube = self.cube
         cube.remove_coord('ocean_sigma_z_coordinate')
@@ -163,7 +175,7 @@ class Test_sample(tests.IrisTest):
         # Take first time, as no sigma --> result *has* no time dimension.
         expected = expected[0]
 
-        # Remove sigma altogether + check the result is the same.
+        # Remove eta altogether + check the result is the same.
         cube = self.cube
         cube.remove_coord('sea_surface_height')
         self._check_result(cube, expected)

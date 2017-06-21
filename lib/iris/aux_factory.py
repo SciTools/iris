@@ -26,6 +26,7 @@ import six
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
 
+import dask.array as da
 import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin
@@ -188,7 +189,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Transpose to be consistent with the Cube.
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs] + [len(dims)]
-        bounds = coord.core_bounds()
+        bounds = coord.lazy_bounds()
         if dims:
             bounds = bounds.transpose(transpose_order)
 
@@ -216,7 +217,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Transpose to be consistent with the Cube.
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs]
-        points = coord.core_points()
+        points = coord.lazy_points()
         if dims and transpose_order != list(range(len(dims))):
             points = points.transpose(transpose_order)
 
@@ -866,7 +867,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         if depth.ndim:
             depth = depth[z_slices_nsigma]
         # Note that, this performs a point-wise minimum.
-        nsigma_levs = eta + sigma * (np.minimum(depth_c, depth) + eta)
+        nsigma_levs = eta + sigma * (da.minimum(depth_c, depth) + eta)
         # Expand to full shape, as it may sometimes have lower dimensionality.
         ones_full_result = np.ones(result_shape, dtype=np.int16)
         ones_nsigma_result = ones_full_result[z_slices_nsigma]
@@ -876,7 +877,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         # From this, take the 'remaining' levels for the result.
         result_rest_levs = zlev[z_slices_rest]
         # Combine nsigma and 'rest' levels for the final result.
-        result = np.concatenate([result_nsigma_levs, result_rest_levs],
+        result = da.concatenate([result_nsigma_levs, result_rest_levs],
                                 axis=i_levels_dim)
         return result
 
@@ -1424,8 +1425,8 @@ class OceanSFactory(AuxCoordFactory):
                     b=self.b, depth_c=self.depth_c)
 
     def _derive(self, s, eta, depth, a, b, depth_c):
-        c = ((1 - b) * np.sinh(a * s) / np.sinh(a) + b *
-             (np.tanh(a * (s + 0.5)) / (2 * np.tanh(0.5 * a)) - 0.5))
+        c = ((1 - b) * da.sinh(a * s) / da.sinh(a) + b *
+             (da.tanh(a * (s + 0.5)) / (2 * da.tanh(0.5 * a)) - 0.5))
         return eta * (1 + s) + depth_c * s + (depth - depth_c) * c
 
     def make_coord(self, coord_dims_func):
