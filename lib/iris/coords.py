@@ -715,7 +715,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         date_obj_array = self.units.num2date(dates_as_numbers)
         kwargs = {'separator': ', ', 'prefix': '      '}
         return np.core.arrayprint.array2string(date_obj_array,
-                                               formatter={'numpystr': str},
+                                               formatter={'all': str},
                                                **kwargs)
 
     def __str__(self):
