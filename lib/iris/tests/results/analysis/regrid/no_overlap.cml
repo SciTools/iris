@@ -6,54 +6,54 @@
     </attributes>
     <coords>
       <coord datadims="[1, 2, 3]">
-        <auxCoord bounds="[[[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]],
+        <auxCoord bounds="[[[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]],
 
- 		[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]],
+ 		[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]],
 
- 		[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]],
+ 		[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]],
 
- 		[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]]],
+ 		[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]]],
 
 
-		[[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]],
+		[[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]],
 
- 		[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]],
+ 		[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]],
 
- 		[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]],
+ 		[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]],
 
- 		[[nan, nan],
-  		[nan, nan],
-  		[nan, nan],
-  		[nan, nan]]]]" id="9041e969" points="[[[nan, nan, nan, nan],
- 		[nan, nan, nan, nan],
- 		[nan, nan, nan, nan],
- 		[nan, nan, nan, nan]],
+ 		[[--, --],
+  		[--, --],
+  		[--, --],
+  		[--, --]]]]" id="9041e969" points="[[[--, --, --, --],
+ 		[--, --, --, --],
+ 		[--, --, --, --],
+ 		[--, --, --, --]],
 
-		[[nan, nan, nan, nan],
- 		[nan, nan, nan, nan],
- 		[nan, nan, nan, nan],
- 		[nan, nan, nan, nan]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
+		[[--, --, --, --],
+ 		[--, --, --, --],
+ 		[--, --, --, --],
+ 		[--, --, --, --]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
