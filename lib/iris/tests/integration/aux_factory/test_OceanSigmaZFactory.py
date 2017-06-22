@@ -151,7 +151,9 @@ class Test_sample(tests.IrisTest):
         self._check_result(cube)
 
     def test_no_sigma(self):
-        # Check it still works when 'sigma' is removed ...
+        # Check it still works when 'sigma' is removed.
+        # NOTE: the unit test for this does not cover all cases because it
+        # doesn't provide a time dimension.
 
         # Set all sigma points to zero + snapshot the resulting derived points.
         trial_cube = self.cube.copy()
@@ -164,7 +166,9 @@ class Test_sample(tests.IrisTest):
         self._check_result(cube, expected)
 
     def test_no_eta(self):
-        # Check it still works when 'eta' is removed ...
+        # Check it still works when 'eta' is removed.
+        # NOTE: the unit test for this does not cover all cases because it
+        # doesn't provide a time dimension.
 
         # Set all sigma points to zero + snapshot the resulting derived points.
         trial_cube = self.cube.copy()
