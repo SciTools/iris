@@ -239,6 +239,24 @@ def _xy_range(cube, mode=None):
     return (x_range, y_range)
 
 
+def _meshgrid(x, y):
+    """
+    @numpy v1.13, the dtype of each output nD coordinate is the same as its
+    associated input 1D coordinate. This is not the case prior to numpy v1.13,
+    where the output dtype is cast up to its highest resolution, regardlessly.
+
+    This convenience function ensures consistent meshgrid behaviour across
+    numpy versions.
+
+    """
+    mx, my = np.meshgrid(x, y)
+    if mx.dtype != x.dtype:
+        mx = mx.astype(x.dtype)
+    if my.dtype != y.dtype:
+        my = my.astype(y.dtype)
+    return mx, my
+
+
 def get_xy_grids(cube):
     """
     Return 2D X and Y points for a given cube.
@@ -259,7 +277,7 @@ def get_xy_grids(cube):
 
     if x.ndim == y.ndim == 1:
         # Convert to 2D.
-        x, y = np.meshgrid(x, y)
+        x, y = _meshgrid(x, y)
     elif x.ndim == y.ndim == 2:
         # They are already in the correct shape.
         pass
@@ -284,7 +302,7 @@ def get_xy_contiguous_bounded_grids(cube):
 
     x = x_coord.contiguous_bounds()
     y = y_coord.contiguous_bounds()
-    x, y = np.meshgrid(x, y)
+    x, y = _meshgrid(x, y)
 
     return (x, y)
 
@@ -608,7 +626,7 @@ def project(cube, target_proj, nx=None, ny=None):
     source_x = lon_coord.points
     source_y = lat_coord.points
     if source_x.ndim != 2 or source_y.ndim != 2:
-        source_x, source_y = np.meshgrid(source_x, source_y)
+        source_x, source_y = _meshgrid(source_x, source_y)
 
     # Calculate target grid
     target_cs = None
@@ -1062,7 +1080,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
     # Convert points to 2D, if not already, and determine dims.
     if x.ndim == y.ndim == 1:
-        x, y = np.meshgrid(x, y)
+        x, y = _meshgrid(x, y)
         dims = (y_dims[0], x_dims[0])
     else:
         dims = x_dims

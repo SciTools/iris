@@ -30,6 +30,7 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           extend_circular_coord_and_data,
                                           get_xy_dim_coords, snapshot_grid)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+from iris.analysis.cartography import _meshgrid
 import iris.cube
 
 
@@ -124,7 +125,7 @@ class RectilinearRegridder(object):
             arrays.
 
         """
-        grid_x, grid_y = np.meshgrid(grid_x_coord.points, grid_y_coord.points)
+        grid_x, grid_y = _meshgrid(grid_x_coord.points, grid_y_coord.points)
         # Skip the CRS transform if we can to avoid precision problems.
         if src_coord_system == grid_x_coord.coord_system:
             sample_grid_x = grid_x
