@@ -308,23 +308,6 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             nd_values_by_key[key] = nd_values
         return nd_values_by_key
 
-#    def _shape(self, nd_values_by_key):
-#        nd_values = sorted(nd_values_by_key.values(),
-#                           key=lambda value: value.ndim)
-#        shape = list(nd_values.pop().shape)
-#        for array in nd_values:
-#            for i, size in enumerate(array.shape):
-#                if size > 1:
-#                    # NB. If there's an inconsistency it can only come
-#                    # from a mismatch in the number of bounds (the Cube
-#                    # ensures the other dimensions must match).
-#                    # But we can't afford to raise an error now - it'd
-#                    # break Cube.derived_coords. Instead, we let the
-#                    # error happen when the derived coordinate's bounds
-#                    # are accessed.
-#                    shape[i] = size
-#        return shape
-
 
 class HybridHeightFactory(AuxCoordFactory):
     """
@@ -437,9 +420,8 @@ class HybridHeightFactory(AuxCoordFactory):
                                   'These are being disregarded.',
                                   UserWarning, stacklevel=2)
                     orography_pts = nd_points_by_key['orography']
-                    orography_pts_shape = list(orography_pts.shape)
-                    orography = orography_pts.reshape(
-                        orography_pts_shape.append(1))
+                    bds_shape = list(orography_pts.shape) + [1]
+                    orography = orography_pts.reshape(bds_shape)
                 return self._derive(delta, sigma, orography)
             bounds = calc_bounds()
 
@@ -627,10 +609,9 @@ class HybridPressureFactory(AuxCoordFactory):
                                   'These are being disregarded.')
                     surface_air_pressure_pts = nd_points_by_key[
                         'surface_air_pressure']
-                    surface_air_pressure_pts_shape = list(
-                        surface_air_pressure_pts.shape)
+                    bds_shape = list(surface_air_pressure_pts.shape) + [1]
                     surface_air_pressure = surface_air_pressure_pts.reshape(
-                        surface_air_pressure_pts_shape.append(1))
+                        bds_shape)
                 return self._derive(delta, sigma, surface_air_pressure)
             bounds = calc_bounds()
 
@@ -776,63 +757,6 @@ class OceanSigmaZFactory(AuxCoordFactory):
         return dict(sigma=self.sigma, eta=self.eta, depth=self.depth,
                     depth_c=self.depth_c, nsigma=self.nsigma, zlev=self.zlev)
 
-    def _original_derive(self, sigma, eta, depth, depth_c,
-                zlev, shape, nsigma_slice):
-        # Perform the ocean sigma over z coordinate nsigma slice.
-        if eta.ndim:
-            eta = eta[nsigma_slice]
-        if sigma.ndim:
-            sigma = sigma[nsigma_slice]
-        if depth.ndim:
-            depth = depth[nsigma_slice]
-        # Note that, this performs a point-wise minimum.
-        temp = eta + sigma * (np.minimum(depth_c, depth) + eta)
-        # Calculate the final derived result.
-        result = np.ones(shape, dtype=temp.dtype) * zlev
-        result[nsigma_slice] = temp
-
-        return result
-
-    def _oldstyle_derive(self, sigma, eta, depth, depth_c,
-                zlev, nsigma, coord_dims_func):
-        derived_cubedims = self.derived_dims(coord_dims_func)
-        i_levels_cubedim, = coord_dims_func(self.dependencies['zlev'])
-        i_levels_dim = i_levels_cubedim - sum(
-            i_dim not in derived_cubedims
-            for i_dim in range(i_levels_cubedim))
-        allshapes = np.array(
-            [el.shape
-             for el in (sigma, eta, depth, depth_c, zlev)
-             if el.ndim])
-        shape = list(np.max(allshapes, axis=0))
-        ndims = len(shape)
-
-        # N.B. it is not a problem forming 'shape': following checks out ok.
-        #    derived_dims = self.derived_dims(coord_dims_func)
-        #    dependency_dims = self._dependency_dims(coord_dims_func)
-        #    nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        #    orig_shape = self._shape(nd_points_by_key)
-        #    assert orig_shape == shape
-
-        # Make a slice tuple to index the first nsigma z-levels.
-        nsigma_slice = [slice(None)] * ndims
-        nsigma_slice[i_levels_dim] = slice(0, int(nsigma))
-        nsigma_slice = tuple(nsigma_slice)
-        # Perform the ocean sigma over z coordinate nsigma slice.
-        if eta.ndim:
-            eta = eta[nsigma_slice]
-        if sigma.ndim:
-            sigma = sigma[nsigma_slice]
-        if depth.ndim:
-            depth = depth[nsigma_slice]
-        # Note that, this performs a point-wise minimum.
-        temp = eta + sigma * (np.minimum(depth_c, depth) + eta)
-        # Calculate the final derived result.
-        result = np.ones(shape, dtype=temp.dtype) * zlev
-        result[nsigma_slice] = temp
-
-        return result
-
     def _derive(self, sigma, eta, depth, depth_c,
                 zlev, nsigma, coord_dims_func):
         # Calculate the index of the 'z' dimension in the inputs.
@@ -931,8 +855,8 @@ class OceanSigmaZFactory(AuxCoordFactory):
                             'These are being disregarded.'.format(key, name)
                         warnings.warn(msg, UserWarning, stacklevel=2)
                         # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
+                        bds_shape = list(nd_points_by_key[key].shape) + [1]
+                        bounds = nd_points_by_key[key].reshape(bds_shape)
                         nd_values_by_key[key] = bounds
                 return self._derive(nd_values_by_key['sigma'],
                                     nd_values_by_key['eta'],
@@ -1100,8 +1024,8 @@ class OceanSigmaFactory(AuxCoordFactory):
                             'These are being disregarded.'.format(key, name)
                         warnings.warn(msg, UserWarning, stacklevel=2)
                         # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
+                        bds_shape = list(nd_points_by_key[key].shape) + [1]
+                        bounds = nd_points_by_key[key].reshape(bds_shape)
                         nd_values_by_key[key] = bounds
                 return self._derive(nd_values_by_key['sigma'],
                                     nd_values_by_key['eta'],
@@ -1288,8 +1212,8 @@ class OceanSg1Factory(AuxCoordFactory):
                             'These are being disregarded.'.format(key, name)
                         warnings.warn(msg, UserWarning, stacklevel=2)
                         # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
+                        bds_shape = list(nd_points_by_key[key].shape) + [1]
+                        bounds = nd_points_by_key[key].reshape(bds_shape)
                         nd_values_by_key[key] = bounds
                 return self._derive(nd_values_by_key['s'],
                                     nd_values_by_key['c'],
@@ -1476,8 +1400,8 @@ class OceanSFactory(AuxCoordFactory):
                             'These are being disregarded.'.format(key, name)
                         warnings.warn(msg, UserWarning, stacklevel=2)
                         # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
+                        bds_shape = list(nd_points_by_key[key].shape) + [1]
+                        bounds = nd_points_by_key[key].reshape(bds_shape)
                         nd_values_by_key[key] = bounds
                 return self._derive(nd_values_by_key['s'],
                                     nd_values_by_key['eta'],
@@ -1667,8 +1591,8 @@ class OceanSg2Factory(AuxCoordFactory):
                             'These are being disregarded.'.format(key, name)
                         warnings.warn(msg, UserWarning, stacklevel=2)
                         # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
+                        bds_shape = list(nd_points_by_key[key].shape) + [1]
+                        bounds = nd_points_by_key[key].reshape(bds_shape)
                         nd_values_by_key[key] = bounds
                 return self._derive(nd_values_by_key['s'],
                                     nd_values_by_key['c'],
