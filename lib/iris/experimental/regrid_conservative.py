@@ -28,7 +28,7 @@ import numpy as np
 import iris
 from iris.analysis._interpolation import get_xy_dim_coords
 from iris.analysis._regrid import RectilinearRegridder
-from iris.analysis.cartography import _meshgrid
+from iris.util import _meshgrid
 
 
 #: A static Cartopy Geodetic() instance for transforming to true-lat-lons.

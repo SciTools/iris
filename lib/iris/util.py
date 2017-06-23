@@ -1657,3 +1657,23 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.remove_coord(dim_coord)
 
     cube.add_aux_coord(dim_coord, coord_dim)
+
+
+@functools.wraps(np.meshgrid)
+def _meshgrid(*xi, **kwargs):
+    """
+    @numpy v1.13, the dtype of each output nD coordinate is the same as its
+    associated input 1D coordinate. This is not the case prior to numpy v1.13,
+    where the output dtype is cast up to its highest resolution, regardlessly.
+
+    This convenience function ensures consistent meshgrid behaviour across
+    numpy versions.
+
+    Reference: https://github.com/numpy/numpy/pull/5302
+
+    """
+    mxi = np.meshgrid(*xi, **kwargs)
+    for i, (mxii, xii) in enumerate(zip(mxi, xi)):
+        if mxii.dtype != xii.dtype:
+            mxi[i] = mxii.astype(xii.dtype)
+    return mxi

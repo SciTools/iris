@@ -30,8 +30,8 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           extend_circular_coord_and_data,
                                           get_xy_dim_coords, snapshot_grid)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.analysis.cartography import _meshgrid
 import iris.cube
+from iris.util import _meshgrid
 
 
 class RectilinearRegridder(object):

@@ -36,6 +36,7 @@ import iris.analysis
 import iris.coords
 import iris.coord_systems
 import iris.exceptions
+from iris.util import _meshgrid
 
 
 # This value is used as a fall-back if the cube does not define the earth
@@ -237,24 +238,6 @@ def _xy_range(cube, mode=None):
     y_range = (np.min(y), np.max(y))
 
     return (x_range, y_range)
-
-
-def _meshgrid(x, y):
-    """
-    @numpy v1.13, the dtype of each output nD coordinate is the same as its
-    associated input 1D coordinate. This is not the case prior to numpy v1.13,
-    where the output dtype is cast up to its highest resolution, regardlessly.
-
-    This convenience function ensures consistent meshgrid behaviour across
-    numpy versions.
-
-    """
-    mx, my = np.meshgrid(x, y)
-    if mx.dtype != x.dtype:
-        mx = mx.astype(x.dtype)
-    if my.dtype != y.dtype:
-        my = my.astype(y.dtype)
-    return mx, my
 
 
 def get_xy_grids(cube):
