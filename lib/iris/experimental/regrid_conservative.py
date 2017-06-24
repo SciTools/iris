@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,9 +25,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import cartopy.crs as ccrs
 import numpy as np
 
-from iris.analysis._interpolation import get_xy_dim_coords
 import iris
+from iris.analysis._interpolation import get_xy_dim_coords
 from iris.analysis._regrid import RectilinearRegridder
+from iris.util import _meshgrid
 
 
 #: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
@@ -81,8 +82,8 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     grid = ESMF.Grid(dims)
 
     # Get all cell corner coordinates as true-lat-lons
-    x_bounds, y_bounds = np.meshgrid(x_coord.contiguous_bounds(),
-                                     y_coord.contiguous_bounds())
+    x_bounds, y_bounds = _meshgrid(x_coord.contiguous_bounds(),
+                                   y_coord.contiguous_bounds())
     grid_crs = x_coord.coord_system.as_cartopy_crs()
     lon_bounds, lat_bounds = _convert_latlons(grid_crs, x_bounds, y_bounds)
 
@@ -113,7 +114,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     x_centres = 0.5 * (x_centres[:-1] + x_centres[1:])
     y_centres = y_coord.contiguous_bounds()
     y_centres = 0.5 * (y_centres[:-1] + y_centres[1:])
-    x_points, y_points = np.meshgrid(x_centres, y_centres)
+    x_points, y_points = _meshgrid(x_centres, y_centres)
     lon_points, lat_points = _convert_latlons(grid_crs, x_points, y_points)
 
     # Add grid 'coord' element for centres + fill with centre-points values.

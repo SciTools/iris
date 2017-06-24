@@ -662,7 +662,7 @@ class Test_data__getter(tests.IrisTest):
         self.assertIsInstance(result, ma.MaskedArray)
         self.assertIsNone(dm._realised_dtype)
         self.assertEqual(dm.dtype, self.realised_dtype)
-        self.assertArrayEqual(result, self.lazy_mask_array_masked.compute())
+        self.assertArrayEqual(result, self.mask_array_masked)
 
     def test_with_real_masked_constant(self):
         masked_data = ma.masked_array([666], mask=True, dtype=np.dtype('f8'))

@@ -36,6 +36,7 @@ import iris.coords
 from iris.analysis._interpolate_private import \
     _nearest_neighbour_indices_ndcoords, linear as linear_regrid
 from iris.analysis._interpolation import snapshot_grid
+from iris.util import _meshgrid
 
 
 class _Segment(object):
@@ -504,7 +505,7 @@ class UnstructuredNearestNeigbourRegridder(object):
         self.tgt_grid_shape = tgt_y_coord.shape + tgt_x_coord.shape
 
         # Calculate sample points as 2d arrays, like broadcast (NY,1)*(1,NX).
-        x_2d, y_2d = np.meshgrid(tgt_x_coord.points, tgt_y_coord.points)
+        x_2d, y_2d = _meshgrid(tgt_x_coord.points, tgt_y_coord.points)
         # Cast as a "trajectory", to suit the method used.
         self.trajectory = ((tgt_x_coord.name(), x_2d.flatten()),
                            (tgt_y_coord.name(), y_2d.flatten()))

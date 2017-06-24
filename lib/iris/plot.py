@@ -49,6 +49,7 @@ import iris.coord_systems
 from iris.exceptions import IrisError
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
+from iris.util import _meshgrid
 
 
 # Cynthia Brewer citation text.
@@ -703,7 +704,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
     y_coord, x_coord = plot_defn.coords
     if mode == iris.coords.POINT_MODE:
         if x_coord.ndim == y_coord.ndim == 1:
-            x, y = np.meshgrid(x_coord.points, y_coord.points)
+            x, y = _meshgrid(x_coord.points, y_coord.points)
         elif x_coord.ndim == y_coord.ndim == 2:
             x = x_coord.points
             y = y_coord.points
@@ -711,8 +712,8 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
             raise ValueError("Expected 1D or 2D XY coords")
     else:
         try:
-            x, y = np.meshgrid(x_coord.contiguous_bounds(),
-                               y_coord.contiguous_bounds())
+            x, y = _meshgrid(x_coord.contiguous_bounds(),
+                             y_coord.contiguous_bounds())
         # Exception translation.
         except iris.exceptions.CoordinateMultiDimError:
             raise ValueError("Could not get XY grid from bounds. "
