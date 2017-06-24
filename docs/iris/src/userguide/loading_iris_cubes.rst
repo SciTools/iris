@@ -130,6 +130,11 @@ star wildcards can be used::
     cubes = iris.load(filename)
 
 
+.. note::
+
+     The cubes returned will not necessarily be in the same order as the 
+     order of the filenames.
+
 Constrained loading
 -----------------------
 Given a large dataset, it is possible to restrict or constrain the load 
