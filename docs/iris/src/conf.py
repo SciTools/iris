@@ -153,11 +153,12 @@ highlight_language = 'python'
 modindex_common_prefix = ['iris']
 
 intersphinx_mapping = {
-   'python': ('http://docs.python.org/2.7', None),
-   'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-   'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
-   'matplotlib': ('http://matplotlib.org/', None),
-   'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
+    'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
+    'iris-grib': ('http://iris-grib.readthedocs.io/en/latest/', None),
+    'matplotlib': ('http://matplotlib.org/', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+    'python': ('http://docs.python.org/2.7', None),
+    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
 }
 
 

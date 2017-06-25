@@ -28,7 +28,7 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
 from . import abf
 from . import um
 try:
-    from . import grib as igrib
+    import iris_grib as igrib
 except ImportError:
     igrib = None
 

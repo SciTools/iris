@@ -38,8 +38,7 @@ import iris.tests as tests
 
 
 if tests.GRIB_AVAILABLE:
-    import gribapi
-    import iris.fileformats.grib as grib
+    import iris_grib as igrib
 
 
 class SystemInitialTest(tests.IrisTest):
