@@ -26,31 +26,6 @@ import iris.tests as tests
 import six.moves.cPickle as pickle
 
 import iris
-if tests.GRIB_AVAILABLE:
-    import gribapi
-    from iris.fileformats.grib.message import GribMessage
-
-
-@tests.skip_data
-@tests.skip_grib
-class TestGribMessage(tests.IrisTest):
-    def test(self):
-        # Check that a GribMessage pickles without errors.
-        path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
-        messages = GribMessage.messages_from_filename(path)
-        message = next(messages)
-        with self.temp_filename('.pkl') as filename:
-            with open(filename, 'wb') as f:
-                pickle.dump(message, f)
-
-    def test_data(self):
-        # Check that GribMessage.data pickles without errors.
-        path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
-        messages = GribMessage.messages_from_filename(path)
-        message = next(messages)
-        with self.temp_filename('.pkl') as filename:
-            with open(filename, 'wb') as f:
-                pickle.dump(message.data, f)
 
 
 class Common(object):

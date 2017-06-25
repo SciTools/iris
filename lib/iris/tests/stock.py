@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -551,10 +551,4 @@ def realistic_4d_w_missing_data():
                           dim_coords_and_dims=[(time, 0), (pressure, 1), (lat, 2), (lon, 3)],
                           aux_coords_and_dims=[(forecast_period, 0)],
                           attributes={'source':'Iris test case'})
-    return cube
-
-
-def global_grib2():
-    path = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
-    cube = iris.load_cube(path)
     return cube

@@ -1117,7 +1117,7 @@ def skip_plot(fn):
     return skip(fn)
 
 
-skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
+skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "iris_grib", '
                                                 'which is not available.')
 
 
