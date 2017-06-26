@@ -1,0 +1,120 @@
+What's New in Iris 2.0a0
+************************
+
+:Release: 2.0a0 (**alpha pre-release**)
+:Date: 2017-06-XX
+
+
+This document explains the new/changed features of Iris in version 2.0a0
+(:doc:`View all changes <index>`).
+
+
+Iris 2.0a0 Features
+===================
+.. _showcase:
+
+.. admonition:: Showcase Feature - Dask Integration
+
+  The use of `biggus`_ to provide support for *virtual array* and
+  *lazy evaluation* within iris has been replaced with `dask`_.
+
+  This is a major feature enhancement, which extends the concept of *lazy data*
+  available in a :class:`~iris.cube.Cube` with a `dask Array`_ to an
+  :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure` and
+  :class:`~iris.aux_factory.AuxCoordFactory`. Building upon `dask`_ allows
+  iris to easily leverage its rich functionality and capabilities. Most
+  notably, iris can employ either of its *threaded*, *multi-processor* or
+  *distributed* `schedulers`_ in order to fully exploit the available compute
+  resource. Also, you can use `dask Bags`_ or `dask Delayed`_ to easily
+  parallelise your algorithms.
+
+* Changes to the :class:`iris.cube.Cube`:
+
+  * A :class:`~iris.cube.Cube` now accepts the *new* kwargs :data:`dtype` and
+    :data:`fill_value`.
+
+  * The :meth:`~iris.cube.Cube.copy` method now accepts the *new* kwargs
+    :data:`dtype` and :data:`fill_value`.
+
+  * The *new* :meth:`~iris.cube.Cube.core_data` method returns the *real* or
+    *lazy* :class:`~iris.cube.Cube` :data:`data`.
+
+  * The *new* :meth:`~iris.cube.Cube.fill_value` property (read-write) controls
+    the :data:`fill_value` used for any masked :class:`~iris.cube.Cube`
+    :data:`data`.
+
+  * The *new* :meth:`~iris.cube.Cube.replace` method performs in-place
+    replacement of :class:`~iris.cube.Cube` :data:`data`.
+
+  * The *new* in-place arithmetic operators :data:`__iadd__`, :data:`__idiv__`,
+    :data:`__imul__`, :data:`__isub__`, and :data:`__itruediv__` have been
+    added to support :class:`~iris.cube.Cube` operations :data:`+=`,
+    :data:`/=`, :data:`*=`, and :data:`-=`. Note that, for **divison**
+    *__future__.division* is always in effect.
+
+* Changes to the :class:`iris.coords.Coord`:
+
+  * The *new* :meth:`~iris.coords.Coord.bounds_dtype` property (read-only)
+    provides the :data:`dtype` of the coordinate bounds, if they exist.
+
+  * The *new* :meth:`~iris.coords.Coord.core_points` and
+    :meth:`~iris.coords.Coord.core_bounds` methods return the *real* or *lazy*
+    :class:`~iris.coords.Coord` :data:`points` and :data:`bounds` data,
+    respectively.
+
+  * The *new* :meth:`~iris.coords.Coord.has_lazy_points` and
+    :meth:`~iris.coords.Coord.has_lazy_bounds` boolean methods return whether
+    the coordinate has *lazy* :data:`points` and *lazy* :data:`bounds` data,
+    respectively.
+
+  * The *new* :meth:`~iris.coords.Coord.lazy_points` and
+    :meth:`~iris.coords.Coord.lazy_bounds` methods return the *lazy*
+    representation of the coordinate :data:`points` and :data:`bounds` data,
+    respectively.
+
+
+Bugs Fixed
+==========
+
+* Indexing or slicing a coordinate will return a *new* coordinate with
+  :data:`points` and :data:`bounds` data that are no longer a view from
+  the original parent coordinate.
+
+* Indexing or slicing a cell measure will return a *new* cell measure with
+  :data:`data` that is no longer a view from the original parent cell measure.
+
+* Performing an in-place arithmetic :func:`~iris.analysis.maths.add`,
+  :func:`~iris.analysis.maths.divide`, :func:`~iris.analysis.maths.multiply`,
+  or :func:`~iris.analysis.maths.subtract` operation on a
+  :class:`~iris.cube.Cube` with :data:`integer` or :data:`boolean` data with
+  a :data:`float` result will raise an :data:`ArithmeticError` exception.
+
+
+Incompatible Changes
+====================
+
+* The :meth:`~iris.cube.Cube.lazy_data` method no longer accepts any arguments.
+
+
+Deprecations
+============
+
+* The :mod:`iris.fileformats.grib` module previously deprecated in
+  :doc:`Iris 1.10 </whatsnew/1.10>` has been reinstated. The use of the
+  `iris_grib`_ package has now been deprecated.
+
+
+Documentation Changes
+=====================
+
+* A new chapter on :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`
+  has been added to the :doc:`Iris user guide </userguide/index>`.
+
+
+.. _biggus: https://biggus.readthedocs.io/en/latest/
+.. _dask: http://dask.pydata.org/en/latest/
+.. _iris_grib: https://github.com/SciTools/iris-grib/
+.. _dask Array: http://dask.pydata.org/en/latest/array.html
+.. _dask Bags: http://dask.pydata.org/en/latest/bag.html
+.. _dask Delayed: http://dask.pydata.org/en/latest/delayed.html
+.. _schedulers: http://dask.pydata.org/en/latest/scheduler-overview.html
