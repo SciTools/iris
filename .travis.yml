@@ -12,11 +12,16 @@ python:
 sudo: false
 
 env:
-  - TEST_TARGET=default
-  - TEST_TARGET=default TEST_MINIMAL=true
-  - TEST_TARGET=coding
-  - TEST_TARGET=example
-  - TEST_TARGET=doctest
+  matrix:
+    - TEST_TARGET=default
+    - TEST_TARGET=default TEST_MINIMAL=true
+    - TEST_TARGET=coding
+    - TEST_TARGET=example
+    - TEST_TARGET=doctest
+
+  global:
+    # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
+    - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
 
 git:
   depth: 10000
@@ -117,15 +122,30 @@ script:
   # spuriously. The echo-backtick workaround gets around this error,
   # which should be investigated further in the future.
   - if [[ $TEST_TARGET == 'doctest' ]]; then
-      cd $(pwd)/docs/iris;
+      cd docs/iris;
       echo `make clean html`;
       make doctest;
+      cd ../../;
     fi
+
+  # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
+  - ORG=(${TRAVIS_REPO_SLUG//\// })
+
+  # When we merge a change, and we are running in python 3, push some docs. 
+  - if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_EVENT_TYPE} == 'push' && ${TRAVIS_PYTHON_VERSION} == 3* && ${ORG} == "SciTools" ]]; then
+      pip install doctr;
+      doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
+        --key-path .github/deploy_key.scitools-docs.enc
+        --no-require-master
+        ${TRAVIS_BRANCH:-${TRAVIS_TAG}};
+    fi
+
   # An extra call to check "whatsnew" contributions are valid, because the
   # Iris test for it needs a *developer* install to be able to find the docs.
   - if [[ $TEST_TARGET == 'doctest' ]]; then
-      cd ./src/whatsnew;
+      cd docs/iris/src/whatsnew;
       python aggregate_directory.py --checkonly;
+      cd ../../../../;
     fi
   - if [[ $TEST_TARGET == 'coding' ]]; then
       python setup.py test --coding-tests;
