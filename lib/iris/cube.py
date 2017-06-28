@@ -1603,7 +1603,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         current state, which will be either real or lazy.
 
         If this :class:`~iris.cube.Cube` has lazy data, accessing its data
-        array via this method **will not** realise the data array.
+        array via this method **will not** realise the data array. This means
+        you can perform operations using this method that work equivalently
+        on real or lazy data, and will maintain lazy data if present.
 
         """
         return self._data_manager.core_data()
@@ -1616,7 +1618,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def dtype(self):
         """
-        The data type of the values in data array of this
+        The data type of the values in the data array of this
         :class:`~iris.cube.Cube`.
 
         """
@@ -1626,8 +1628,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def fill_value(self):
         """
         The fill value for the masked data array of this
-        :class:`~iris.cube.Cube`. Will be ``None`` if the data array is
-        not masked.
+        :class:`~iris.cube.Cube`. If ``None``, the default NumPy fill value for
+        the dtype of the masked data array will be used.
 
         """
         return self._data_manager.fill_value
