@@ -92,6 +92,9 @@ Each cube also has a :mod:`numpy` array which represents the phenomenon of the c
        print(cube.shape)
        print(cube.ndim)
 
+    For more on the benefits, handling and uses of lazy data, see the whitepaper
+    :doc:`"Real and Lazy Data" </whitepapers/real_and_lazy_data>`
+  
 You can change the units of a cube using the :meth:`~iris.cube.Cube.convert_units` method. For example::
 
     cube.convert_units('celsius')
