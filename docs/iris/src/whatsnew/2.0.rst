@@ -1,0 +1,45 @@
+What's New in Iris 2.0
+***********************
+
+:Release: 2.0
+:Date: 2017-06-08
+
+This document explains the new/changed features of Iris in version 2.0
+(:doc:`View all changes <index>`.)
+
+Iris 1.12 Features
+==================
+.. _showcase:
+
+.. admonition:: Showcase Feature - Iris-Dask Interfacing
+
+  **Iris' data processing sidekick Biggus has been replaced by the titan of
+  parallel processing, dask.**
+
+  The primary advantage of this replacement is the ability to load and
+  manipulate larger datasets than ever before.  However, it also gives users
+  the ability to apply other dask features (such as parallelisation) to Iris.
+
+  This change will not affect Iris' API or behaviour unless the user
+  specifically requests it by interfacing with dask's user options (see
+  :doc:`user_guide_real_and_lazy_data` and the accompanying Whitepaper for
+  full details).
+
+
+Bug Fixes
+=========
+* New cell measures are now constructed as copies of their parent data rather than views of them.
+* Sliced coordinates no longer share data with their parent coordinate.
+
+
+Deprecations
+============
+* The previously deprecated use of Iris internal Grib loading has been reinstated.  The use of Iris-grib as an external package is now deprecated instead.
+* The ability to share data between cubes using the :meth:`iris.cube.share_data` flag has been temporarily removed pending a compatible implementation.
+* Something about iris.FUTURE stuff?
+
+
+Documentation Changes
+=====================
+* New User Guide section about real and lazy data added.
+
