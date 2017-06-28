@@ -26,6 +26,7 @@ import six
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
 
+import dask.array as da
 import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin
@@ -110,7 +111,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def derived_dims(self, coord_dims_func):
         """
-        Returns the virtual dim-mapping for the derived coordinate.
+        Returns the cube dimensions for the derived coordinate.
 
         Args:
 
@@ -118,6 +119,10 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             A callable which can return the list of dimensions relevant
             to a given coordinate.
             See :meth:`iris.cube.Cube.coord_dims()`.
+
+        Returns:
+
+            A sorted list of cube dimension numbers.
 
         """
         # Which dimensions are relevant?
@@ -173,8 +178,15 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @staticmethod
     def _nd_bounds(coord, dims, ndim):
         """
-        Returns the coord's bounds in Cube-orientation and
-        broadcastable to N dimensions.
+        Return a lazy bounds array for a dependency coordinate, 'coord'.
+
+        The result is aligned to the first 'ndim' cube dimensions, and
+        expanded to the full ('ndim'+1)-dimensional shape.
+
+        The value of 'ndim' must be >= the highest cube dimension of the
+        dependency coordinate.
+
+        The extra final result dimension ('ndim'-th) is the bounds dimension.
 
         Example:
             coord.shape == (70,)
@@ -188,8 +200,8 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Transpose to be consistent with the Cube.
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs] + [len(dims)]
-        bounds = coord.core_bounds()
-        if dims:
+        bounds = coord.lazy_bounds()
+        if dims and transpose_order != list(range(len(dims))):
             bounds = bounds.transpose(transpose_order)
 
         # Figure out the n-dimensional shape.
@@ -202,8 +214,13 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
     @staticmethod
     def _nd_points(coord, dims, ndim):
         """
-        Returns the coord's points in Cube-orientation and
-        broadcastable to N dimensions.
+        Return a lazy points array for a dependency coordinate, 'coord'.
+
+        The result is aligned to the first 'ndim' cube dimensions, and
+        expanded to the full 'ndim'-dimensional shape.
+
+        The value of 'ndim' must be >= the highest cube dimension of the
+        dependency coordinate.
 
         Example:
             coord.shape == (4, 3)
@@ -216,7 +233,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Transpose to be consistent with the Cube.
         sorted_pairs = sorted(enumerate(dims), key=lambda pair: pair[1])
         transpose_order = [pair[0] for pair in sorted_pairs]
-        points = coord.core_points()
+        points = coord.lazy_points()
         if dims and transpose_order != list(range(len(dims))):
             points = points.transpose(transpose_order)
 
@@ -235,6 +252,16 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return points
 
     def _remap(self, dependency_dims, derived_dims):
+        """
+        Return a mapping from dependency names to coordinate points arrays.
+
+        For dependencies that are present, the values are all expanded and
+        aligned to the same dimensions, which is the full set of all the
+        dependency dimensions.
+        These non-missing values are all lazy arrays.
+        Missing dependencies, however, are assigned a scalar value of 0.0.
+
+        """
         if derived_dims:
             ndim = max(derived_dims) + 1
         else:
@@ -263,6 +290,20 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return nd_points_by_key
 
     def _remap_with_bounds(self, dependency_dims, derived_dims):
+        """
+        Return a mapping from dependency names to coordinate bounds arrays.
+
+        For dependencies that are present, the values are all expanded and
+        aligned to the same dimensions, which is the full set of all the
+        dependency dimensions, plus an extra bounds dimension.
+        These non-missing values are all lazy arrays.
+        Missing dependencies, however, are assigned a scalar value of 0.0.
+
+        Where a dependency coordinate has no bounds, then the associated value
+        is taken from its points array, but reshaped to have an extra bounds
+        dimension of length 1.
+
+        """
         if derived_dims:
             ndim = max(derived_dims) + 1
         else:
@@ -306,31 +347,6 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
             nd_values_by_key[key] = nd_values
         return nd_values_by_key
-
-    def _shape(self, nd_values_by_key):
-        nd_values = sorted(nd_values_by_key.values(),
-                           key=lambda value: value.ndim)
-        shape = list(nd_values.pop().shape)
-        for array in nd_values:
-            for i, size in enumerate(array.shape):
-                if size > 1:
-                    # NB. If there's an inconsistency it can only come
-                    # from a mismatch in the number of bounds (the Cube
-                    # ensures the other dimensions must match).
-                    # But we can't afford to raise an error now - it'd
-                    # break Cube.derived_coords. Instead, we let the
-                    # error happen when the derived coordinate's bounds
-                    # are accessed.
-                    shape[i] = size
-        return shape
-
-    def _dtype(self, arrays_by_key, **other_args):
-        dummy_args = {}
-        for key, array in six.iteritems(arrays_by_key):
-            dummy_args[key] = np.zeros(1, dtype=array.dtype)
-        dummy_args.update(other_args)
-        dummy_data = self._derive(**dummy_args)
-        return dummy_data.dtype
 
 
 class HybridHeightFactory(AuxCoordFactory):
@@ -428,27 +444,23 @@ class HybridHeightFactory(AuxCoordFactory):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
+            delta = nd_values_by_key['delta']
+            sigma = nd_values_by_key['sigma']
+            orography = nd_values_by_key['orography']
+            ok_bound_shapes = [(), (1,), (2,)]
+            if delta.shape[-1:] not in ok_bound_shapes:
+                raise ValueError('Invalid delta coordinate bounds.')
+            if sigma.shape[-1:] not in ok_bound_shapes:
+                raise ValueError('Invalid sigma coordinate bounds.')
+            if orography.shape[-1:] not in [(), (1,)]:
+                warnings.warn('Orography coordinate has bounds. '
+                              'These are being disregarded.',
+                              UserWarning, stacklevel=2)
+                orography_pts = nd_points_by_key['orography']
+                bds_shape = list(orography_pts.shape) + [1]
+                orography = orography_pts.reshape(bds_shape)
 
-            # Define the function here to obtain a closure.
-            def calc_bounds():
-                delta = nd_values_by_key['delta']
-                sigma = nd_values_by_key['sigma']
-                orography = nd_values_by_key['orography']
-                ok_bound_shapes = [(), (1,), (2,)]
-                if delta.shape[-1:] not in ok_bound_shapes:
-                    raise ValueError('Invalid delta coordinate bounds.')
-                if sigma.shape[-1:] not in ok_bound_shapes:
-                    raise ValueError('Invalid sigma coordinate bounds.')
-                if orography.shape[-1:] not in [(), (1,)]:
-                    warnings.warn('Orography coordinate has bounds. '
-                                  'These are being disregarded.',
-                                  UserWarning, stacklevel=2)
-                    orography_pts = nd_points_by_key['orography']
-                    orography_pts_shape = list(orography_pts.shape)
-                    orography = orography_pts.reshape(
-                        orography_pts_shape.append(1))
-                return self._derive(delta, sigma, orography)
-            bounds = calc_bounds()
+            bounds = self._derive(delta, sigma, orography)
 
         hybrid_height = iris.coords.AuxCoord(points,
                                              standard_name=self.standard_name,
@@ -618,28 +630,24 @@ class HybridPressureFactory(AuxCoordFactory):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
+            delta = nd_values_by_key['delta']
+            sigma = nd_values_by_key['sigma']
+            surface_air_pressure = nd_values_by_key['surface_air_pressure']
+            ok_bound_shapes = [(), (1,), (2,)]
+            if delta.shape[-1:] not in ok_bound_shapes:
+                raise ValueError('Invalid delta coordinate bounds.')
+            if sigma.shape[-1:] not in ok_bound_shapes:
+                raise ValueError('Invalid sigma coordinate bounds.')
+            if surface_air_pressure.shape[-1:] not in [(), (1,)]:
+                warnings.warn('Surface pressure coordinate has bounds. '
+                              'These are being disregarded.')
+                surface_air_pressure_pts = nd_points_by_key[
+                    'surface_air_pressure']
+                bds_shape = list(surface_air_pressure_pts.shape) + [1]
+                surface_air_pressure = surface_air_pressure_pts.reshape(
+                    bds_shape)
 
-            # Define the function here to obtain a closure.
-            def calc_bounds():
-                delta = nd_values_by_key['delta']
-                sigma = nd_values_by_key['sigma']
-                surface_air_pressure = nd_values_by_key['surface_air_pressure']
-                ok_bound_shapes = [(), (1,), (2,)]
-                if delta.shape[-1:] not in ok_bound_shapes:
-                    raise ValueError('Invalid delta coordinate bounds.')
-                if sigma.shape[-1:] not in ok_bound_shapes:
-                    raise ValueError('Invalid sigma coordinate bounds.')
-                if surface_air_pressure.shape[-1:] not in [(), (1,)]:
-                    warnings.warn('Surface pressure coordinate has bounds. '
-                                  'These are being disregarded.')
-                    surface_air_pressure_pts = nd_points_by_key[
-                        'surface_air_pressure']
-                    surface_air_pressure_pts_shape = list(
-                        surface_air_pressure_pts.shape)
-                    surface_air_pressure = surface_air_pressure_pts.reshape(
-                        surface_air_pressure_pts_shape.append(1))
-                return self._derive(delta, sigma, surface_air_pressure)
-            bounds = calc_bounds()
+            bounds = self._derive(delta, sigma, surface_air_pressure)
 
         hybrid_pressure = iris.coords.AuxCoord(
             points, standard_name=self.standard_name, long_name=self.long_name,
@@ -784,20 +792,65 @@ class OceanSigmaZFactory(AuxCoordFactory):
                     depth_c=self.depth_c, nsigma=self.nsigma, zlev=self.zlev)
 
     def _derive(self, sigma, eta, depth, depth_c,
-                zlev, shape, nsigma_slice):
+                zlev, nsigma, coord_dims_func):
+        # Calculate the index of the 'z' dimension in the input arrays.
+        # First find the cube 'z' dimension ...
+        [cube_z_dim] = coord_dims_func(self.dependencies['zlev'])
+        # ... then calculate the corresponding dependency dimension.
+        derived_cubedims = self.derived_dims(coord_dims_func)
+        z_dim = derived_cubedims.index(cube_z_dim)
+
+        # Calculate the result shape as a combination of all the inputs.
+        # Note: all the inputs have the same number of dimensions >= 1, except
+        # for any missing dependencies, which have scalar values.
+        allshapes = np.array(
+            [el.shape
+             for el in (sigma, eta, depth, depth_c, zlev)
+             if el.ndim > 0])
+        result_shape = list(np.max(allshapes, axis=0))
+        ndims = len(result_shape)
+
+        # Make a slice tuple to index the first nsigma z-levels.
+        z_slices_nsigma = [slice(None)] * ndims
+        z_slices_nsigma[z_dim] = slice(0, int(nsigma))
+        z_slices_nsigma = tuple(z_slices_nsigma)
+        # Make a slice tuple to index the remaining z-levels.
+        z_slices_rest = [slice(None)] * ndims
+        z_slices_rest[z_dim] = slice(int(nsigma), None)
+        z_slices_rest = tuple(z_slices_rest)
+
         # Perform the ocean sigma over z coordinate nsigma slice.
         if eta.ndim:
-            eta = eta[nsigma_slice]
+            eta = eta[z_slices_nsigma]
         if sigma.ndim:
-            sigma = sigma[nsigma_slice]
+            sigma = sigma[z_slices_nsigma]
         if depth.ndim:
-            depth = depth[nsigma_slice]
+            depth = depth[z_slices_nsigma]
         # Note that, this performs a point-wise minimum.
-        temp = eta + sigma * (np.minimum(depth_c, depth) + eta)
-        # Calculate the final derived result.
-        result = np.ones(shape, dtype=temp.dtype) * zlev
-        result[nsigma_slice] = temp
+        nsigma_levs = eta + sigma * (da.minimum(depth_c, depth) + eta)
 
+        # Make a result-shaped lazy "ones" array for expanding partial results.
+        # Note: for the 'chunks' arg, we try to use [1, 1, ... ny, nx].
+        # This calculation could be assuming too much in some cases, as we
+        # don't actually check the dimensions of our dependencies anywhere.
+        result_chunks = result_shape
+        if len(result_shape) > 1:
+            result_chunks = [1] * len(result_shape)
+            result_chunks[-2:] = result_shape[-2:]
+        ones_full_result = da.ones(result_shape, chunks=result_chunks,
+                                   dtype=zlev.dtype)
+
+        # Expand nsigma_levs to its full required shape : needed as the
+        # calculated result may have a fixed size of 1 in some dimensions.
+        result_nsigma_levs = nsigma_levs * ones_full_result[z_slices_nsigma]
+
+        # Likewise, expand zlev to its full required shape.
+        result_rest_levs = (zlev[z_slices_rest] *
+                            ones_full_result[z_slices_rest])
+
+        # Combine nsigma and 'rest' levels for the final result.
+        result = da.concatenate([result_nsigma_levs, result_rest_levs],
+                                axis=z_dim)
         return result
 
     def make_coord(self, coord_dims_func):
@@ -817,59 +870,47 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points_shape = self._shape(nd_points_by_key)
 
-        # Calculate the nsigma slice.
-        nsigma_slice = [slice(None)] * len(derived_dims)
-        dim, = dependency_dims['zlev']
-        index = derived_dims.index(dim)
-        nsigma_slice[index] = slice(0, int(nd_points_by_key['nsigma']))
-        nsigma_slice = tuple(nsigma_slice)
-
+        [nsigma] = nd_points_by_key['nsigma']
         points = self._derive(nd_points_by_key['sigma'],
                               nd_points_by_key['eta'],
                               nd_points_by_key['depth'],
                               nd_points_by_key['depth_c'],
                               nd_points_by_key['zlev'],
-                              points_shape,
-                              nsigma_slice)
+                              nsigma,
+                              coord_dims_func)
 
         bounds = None
         if self.zlev.nbounds or (self.sigma and self.sigma.nbounds):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-            bounds_shape = self._shape(nd_values_by_key)
-            nsigma_slice_bounds = nsigma_slice + (slice(None),)
+            valid_shapes = [(), (1,), (2,)]
+            for key in ('sigma', 'zlev'):
+                if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                    name = self.dependencies[key].name()
+                    msg = 'Invalid bounds for {} ' \
+                        'coordinate {!r}.'.format(key, name)
+                    raise ValueError(msg)
+            valid_shapes.pop()
+            for key in ('eta', 'depth', 'depth_c', 'nsigma'):
+                if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                    name = self.dependencies[key].name()
+                    msg = 'The {} coordinate {!r} has bounds. ' \
+                        'These are being disregarded.'.format(key, name)
+                    warnings.warn(msg, UserWarning, stacklevel=2)
+                    # Swap bounds with points.
+                    bds_shape = list(nd_points_by_key[key].shape) + [1]
+                    bounds = nd_points_by_key[key].reshape(bds_shape)
+                    nd_values_by_key[key] = bounds
 
-            # Define the function here to obtain a closure.
-            def calc_bounds():
-                valid_shapes = [(), (1,), (2,)]
-                for key in ('sigma', 'zlev'):
-                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        name = self.dependencies[key].name()
-                        msg = 'Invalid bounds for {} ' \
-                            'coordinate {!r}.'.format(key, name)
-                        raise ValueError(msg)
-                valid_shapes.pop()
-                for key in ('eta', 'depth', 'depth_c', 'nsigma'):
-                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        name = self.dependencies[key].name()
-                        msg = 'The {} coordinate {!r} has bounds. ' \
-                            'These are being disregarded.'.format(key, name)
-                        warnings.warn(msg, UserWarning, stacklevel=2)
-                        # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
-                        nd_values_by_key[key] = bounds
-                return self._derive(nd_values_by_key['sigma'],
-                                    nd_values_by_key['eta'],
-                                    nd_values_by_key['depth'],
-                                    nd_values_by_key['depth_c'],
-                                    nd_values_by_key['zlev'],
-                                    bounds_shape,
-                                    nsigma_slice_bounds)
-            bounds = calc_bounds()
+            bounds = self._derive(nd_values_by_key['sigma'],
+                                  nd_values_by_key['eta'],
+                                  nd_values_by_key['depth'],
+                                  nd_values_by_key['depth_c'],
+                                  nd_values_by_key['zlev'],
+                                  nsigma,
+                                  coord_dims_func)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1010,32 +1051,28 @@ class OceanSigmaFactory(AuxCoordFactory):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-
-            # Define the function here to obtain a closure.
-            def calc_bounds():
-                valid_shapes = [(), (1,), (2,)]
-                key = 'sigma'
+            valid_shapes = [(), (1,), (2,)]
+            key = 'sigma'
+            if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                name = self.dependencies[key].name()
+                msg = 'Invalid bounds for {} ' \
+                    'coordinate {!r}.'.format(key, name)
+                raise ValueError(msg)
+            valid_shapes.pop()
+            for key in ('eta', 'depth'):
                 if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                     name = self.dependencies[key].name()
-                    msg = 'Invalid bounds for {} ' \
-                        'coordinate {!r}.'.format(key, name)
-                    raise ValueError(msg)
-                valid_shapes.pop()
-                for key in ('eta', 'depth'):
-                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        name = self.dependencies[key].name()
-                        msg = 'The {} coordinate {!r} has bounds. ' \
-                            'These are being disregarded.'.format(key, name)
-                        warnings.warn(msg, UserWarning, stacklevel=2)
-                        # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
-                        nd_values_by_key[key] = bounds
-                return self._derive(nd_values_by_key['sigma'],
-                                    nd_values_by_key['eta'],
-                                    nd_values_by_key['depth'])
+                    msg = 'The {} coordinate {!r} has bounds. ' \
+                        'These are being disregarded.'.format(key, name)
+                    warnings.warn(msg, UserWarning, stacklevel=2)
+                    # Swap bounds with points.
+                    bds_shape = list(nd_points_by_key[key].shape) + [1]
+                    bounds = nd_points_by_key[key].reshape(bds_shape)
+                    nd_values_by_key[key] = bounds
 
-            bounds = calc_bounds()
+            bounds = self._derive(nd_values_by_key['sigma'],
+                                  nd_values_by_key['eta'],
+                                  nd_values_by_key['depth'])
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1198,33 +1235,30 @@ class OceanSg1Factory(AuxCoordFactory):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-
-            # Define the function here to obtain a closure.
-            def calc_bounds():
-                valid_shapes = [(), (1,), (2,)]
-                key = 's'
+            valid_shapes = [(), (1,), (2,)]
+            key = 's'
+            if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                name = self.dependencies[key].name()
+                msg = 'Invalid bounds for {} ' \
+                    'coordinate {!r}.'.format(key, name)
+                raise ValueError(msg)
+            valid_shapes.pop()
+            for key in ('eta', 'depth', 'depth_c'):
                 if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                     name = self.dependencies[key].name()
-                    msg = 'Invalid bounds for {} ' \
-                        'coordinate {!r}.'.format(key, name)
-                    raise ValueError(msg)
-                valid_shapes.pop()
-                for key in ('eta', 'depth', 'depth_c'):
-                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        name = self.dependencies[key].name()
-                        msg = 'The {} coordinate {!r} has bounds. ' \
-                            'These are being disregarded.'.format(key, name)
-                        warnings.warn(msg, UserWarning, stacklevel=2)
-                        # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
-                        nd_values_by_key[key] = bounds
-                return self._derive(nd_values_by_key['s'],
-                                    nd_values_by_key['c'],
-                                    nd_values_by_key['eta'],
-                                    nd_values_by_key['depth'],
-                                    nd_values_by_key['depth_c'])
-            bounds = calc_bounds()
+                    msg = 'The {} coordinate {!r} has bounds. ' \
+                        'These are being disregarded.'.format(key, name)
+                    warnings.warn(msg, UserWarning, stacklevel=2)
+                    # Swap bounds with points.
+                    bds_shape = list(nd_points_by_key[key].shape) + [1]
+                    bounds = nd_points_by_key[key].reshape(bds_shape)
+                    nd_values_by_key[key] = bounds
+
+            bounds = self._derive(nd_values_by_key['s'],
+                                  nd_values_by_key['c'],
+                                  nd_values_by_key['eta'],
+                                  nd_values_by_key['depth'],
+                                  nd_values_by_key['depth_c'])
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1353,8 +1387,8 @@ class OceanSFactory(AuxCoordFactory):
                     b=self.b, depth_c=self.depth_c)
 
     def _derive(self, s, eta, depth, a, b, depth_c):
-        c = ((1 - b) * np.sinh(a * s) / np.sinh(a) + b *
-             (np.tanh(a * (s + 0.5)) / (2 * np.tanh(0.5 * a)) - 0.5))
+        c = ((1 - b) * da.sinh(a * s) / da.sinh(a) + b *
+             (da.tanh(a * (s + 0.5)) / (2 * da.tanh(0.5 * a)) - 0.5))
         return eta * (1 + s) + depth_c * s + (depth - depth_c) * c
 
     def make_coord(self, coord_dims_func):
@@ -1386,34 +1420,31 @@ class OceanSFactory(AuxCoordFactory):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-
-            # Define the function here to obtain a closure.
-            def calc_bounds():
-                valid_shapes = [(), (1,), (2,)]
-                key = 's'
+            valid_shapes = [(), (1,), (2,)]
+            key = 's'
+            if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                name = self.dependencies[key].name()
+                msg = 'Invalid bounds for {} ' \
+                    'coordinate {!r}.'.format(key, name)
+                raise ValueError(msg)
+            valid_shapes.pop()
+            for key in ('eta', 'depth', 'a', 'b', 'depth_c'):
                 if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                     name = self.dependencies[key].name()
-                    msg = 'Invalid bounds for {} ' \
-                        'coordinate {!r}.'.format(key, name)
-                    raise ValueError(msg)
-                valid_shapes.pop()
-                for key in ('eta', 'depth', 'a', 'b', 'depth_c'):
-                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        name = self.dependencies[key].name()
-                        msg = 'The {} coordinate {!r} has bounds. ' \
-                            'These are being disregarded.'.format(key, name)
-                        warnings.warn(msg, UserWarning, stacklevel=2)
-                        # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
-                        nd_values_by_key[key] = bounds
-                return self._derive(nd_values_by_key['s'],
-                                    nd_values_by_key['eta'],
-                                    nd_values_by_key['depth'],
-                                    nd_values_by_key['a'],
-                                    nd_values_by_key['b'],
-                                    nd_values_by_key['depth_c'])
-            bounds = calc_bounds()
+                    msg = 'The {} coordinate {!r} has bounds. ' \
+                        'These are being disregarded.'.format(key, name)
+                    warnings.warn(msg, UserWarning, stacklevel=2)
+                    # Swap bounds with points.
+                    bds_shape = list(nd_points_by_key[key].shape) + [1]
+                    bounds = nd_points_by_key[key].reshape(bds_shape)
+                    nd_values_by_key[key] = bounds
+
+            bounds = self._derive(nd_values_by_key['s'],
+                                  nd_values_by_key['eta'],
+                                  nd_values_by_key['depth'],
+                                  nd_values_by_key['a'],
+                                  nd_values_by_key['b'],
+                                  nd_values_by_key['depth_c'])
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
@@ -1577,33 +1608,30 @@ class OceanSg2Factory(AuxCoordFactory):
             # Build the bounds array.
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
-
-            # Define the function here to obtain a closure.
-            def calc_bounds():
-                valid_shapes = [(), (1,), (2,)]
-                key = 's'
+            valid_shapes = [(), (1,), (2,)]
+            key = 's'
+            if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                name = self.dependencies[key].name()
+                msg = 'Invalid bounds for {} ' \
+                    'coordinate {!r}.'.format(key, name)
+                raise ValueError(msg)
+            valid_shapes.pop()
+            for key in ('eta', 'depth', 'depth_c'):
                 if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                     name = self.dependencies[key].name()
-                    msg = 'Invalid bounds for {} ' \
-                        'coordinate {!r}.'.format(key, name)
-                    raise ValueError(msg)
-                valid_shapes.pop()
-                for key in ('eta', 'depth', 'depth_c'):
-                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        name = self.dependencies[key].name()
-                        msg = 'The {} coordinate {!r} has bounds. ' \
-                            'These are being disregarded.'.format(key, name)
-                        warnings.warn(msg, UserWarning, stacklevel=2)
-                        # Swap bounds with points.
-                        shape = list(nd_points_by_key[key].shape)
-                        bounds = nd_points_by_key[key].reshape(shape.append(1))
-                        nd_values_by_key[key] = bounds
-                return self._derive(nd_values_by_key['s'],
-                                    nd_values_by_key['c'],
-                                    nd_values_by_key['eta'],
-                                    nd_values_by_key['depth'],
-                                    nd_values_by_key['depth_c'])
-            bounds = calc_bounds()
+                    msg = 'The {} coordinate {!r} has bounds. ' \
+                        'These are being disregarded.'.format(key, name)
+                    warnings.warn(msg, UserWarning, stacklevel=2)
+                    # Swap bounds with points.
+                    bds_shape = list(nd_points_by_key[key].shape) + [1]
+                    bounds = nd_points_by_key[key].reshape(bds_shape)
+                    nd_values_by_key[key] = bounds
+
+            bounds = self._derive(nd_values_by_key['s'],
+                                  nd_values_by_key['c'],
+                                  nd_values_by_key['eta'],
+                                  nd_values_by_key['depth'],
+                                  nd_values_by_key['depth_c'])
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,

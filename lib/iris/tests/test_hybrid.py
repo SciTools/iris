@@ -151,14 +151,15 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Make sure altitude still works OK if orography was messed
         # with *after* altitude was created.
-        altitude = self.cube.coord('altitude')
         orog.bounds = np.zeros(orog.shape + (4,))
-        self.assertIsInstance(altitude.bounds, np.ndarray)
 
-        # Make sure altitude.bounds now raises an error.
-        exp_emsg = 'operands could not be broadcast together'
-        with self.assertRaisesRegexp(ValueError, exp_emsg):
-            self.cube.coord('altitude')
+        # Check that altitude derivation now issues a warning.
+        msg = 'Orography.* bounds.* being disregarded'
+        with warnings.catch_warnings():
+            # Cause all warnings to raise Exceptions
+            warnings.simplefilter("error")
+            with self.assertRaisesRegexp(UserWarning, msg):
+                self.cube.coord('altitude')
 
 
 @tests.skip_data
@@ -230,15 +231,15 @@ class TestHybridPressure(tests.IrisTest):
 
         # Make sure pressure still works OK if surface pressure was messed
         # with *after* pressure was created.
-        pressure = self.cube.coord('air_pressure')
         surface_pressure.bounds = np.zeros(surface_pressure.shape + (4,))
-        self.assertIsInstance(pressure.bounds, np.ndarray)
 
-        # Make sure pressure.bounds now raises an error.
-        exp_emsg = 'operands could not be broadcast together'
-        with self.assertRaisesRegexp(ValueError, exp_emsg):
-            self.cube.coord('air_pressure')
-
+        # Check that air_pressure derivation now issues a warning.
+        msg = 'Surface pressure.* bounds.* being disregarded'
+        with warnings.catch_warnings():
+            # Cause all warnings to raise Exceptions
+            warnings.simplefilter("error")
+            with self.assertRaisesRegexp(UserWarning, msg):
+                self.cube.coord('air_pressure')
 
 if __name__ == "__main__":
     tests.main()
