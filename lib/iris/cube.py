@@ -885,7 +885,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self.units = unit
 
     def add_cell_method(self, cell_method):
-        """Add a CellMethod to the Cube."""
+        """Add a :class:`~iris.coords.CellMethod` to the Cube."""
         self.cell_methods += (cell_method, )
 
     def add_aux_coord(self, coord, data_dims=None):
@@ -1599,11 +1599,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def core_data(self):
         """
-        The data at the core of this cube.
-        May be a numpy array or a dask array.
-        In using this, you are buying into not caring about the
-        type of the result
-        to be decided: should this be public??
+        Retrieve the data array of this :class:`~iris.cube.Cube` in its
+        current state, which will be either real or lazy.
+
+        If this :class:`~iris.cube.Cube` has lazy data, accessing its data
+        array via this method **will not** realise the data array. This means
+        you can perform operations using this method that work equivalently
+        on real or lazy data, and will maintain lazy data if present.
 
         """
         return self._data_manager.core_data()
@@ -1615,10 +1617,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     @property
     def dtype(self):
+        """
+        The data type of the values in the data array of this
+        :class:`~iris.cube.Cube`.
+
+        """
         return self._data_manager.dtype
 
     @property
     def fill_value(self):
+        """
+        The fill value for the masked data array of this
+        :class:`~iris.cube.Cube`. If ``None``, the default NumPy fill value for
+        the dtype of the masked data array will be used.
+
+        """
         return self._data_manager.fill_value
 
     @fill_value.setter
@@ -1687,6 +1700,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._data_manager.data = data
 
     def has_lazy_data(self):
+        """
+        Details whether this :class:`~iris.cube.Cube` has lazy data.
+
+        Returns:
+            Boolean.
+
+        """
         return self._data_manager.has_lazy_data()
 
     @property
@@ -3135,7 +3155,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. deprecated:: 1.6
             Add/modify history metadata within
-            attr:`~iris.cube.Cube.attributes` as needed.
+            :attr:`~iris.cube.Cube.attributes` as needed.
 
         """
         warn_deprecated("Cube.add_history() has been deprecated - "
