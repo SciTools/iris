@@ -1600,7 +1600,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def core_data(self):
         """
         Retrieve the data array of this :class:`~iris.cube.Cube` in its
-        current state, which will be either real or lazy.
+        current state, which may be either real or lazy.
 
         If this :class:`~iris.cube.Cube` has lazy data, accessing its data
         array via this method **will not** realise the data array. This means
@@ -1627,9 +1627,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def fill_value(self):
         """
-        The fill value for the masked data array of this
-        :class:`~iris.cube.Cube`. If ``None``, the default NumPy fill value for
-        the dtype of the masked data array will be used.
+        A value suitable for filling in missing (i.e. masked) datapoints of
+        this :class:`~iris.cube.Cube` s data.
+
+        This can also be ``None``, meaning that no suitable fill value is
+        known.
+
+        .. Note::
+
+            Ideally, this value will not occur anywhere in `cube.data`. Thus,
+            many operations which change cube data will also set `fill_value`
+            to None.
 
         """
         return self._data_manager.fill_value
