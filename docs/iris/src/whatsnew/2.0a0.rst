@@ -95,6 +95,36 @@ Incompatible Changes
 
 * The :meth:`~iris.cube.Cube.lazy_data` method no longer accepts any arguments.
 
+.. admonition:: Significant Changes in Calculated Results
+
+  Due to the replacement of biggus with dask, as described above, the results
+  of certain types of calculation may have significantly different values from
+  those obtained in earlier versions.
+  This is of a much greater order than the usual small changes in floating
+  point results : it applies especially to any data with masked points, or of
+  long integer types.
+
+  Firstly, as Dask does not natively support masked arrays, Iris is now using
+  NaNs to represent masked datapoints in most operations.  The effect is that
+  **any NaN data values may become masked points instead**.
+  It is still possible to write NaN values into real data arrays, but any
+  following operation may now convert them to masked points.
+  This can obviously cause significant problems for any operations where masked
+  datapoints and NaNs were previously used in distinct ways : in particular,
+  many Iris regridding operations are significantly altered.
+
+  Also, for related reasons, all integer data loaded from files is now
+  represented internally as floating point.  Although such data will always be
+  converted back to the original dtype when realised, this can have two
+  potentially significant effects :  **firstly**, that lazy calculations on
+  integer data will perform floating-point rather than integer arithmetic
+  operations; and **secondly** that, in long integer (8 byte) typed data,
+  values of magnitude more than +/-2^52 (approximately 4.5e+15) may no longer
+  be represented exactly.
+
+  It is hoped that, as dask matures, it may later be possible to remove these
+  particular limitations.
+
 
 Deprecations
 ============
