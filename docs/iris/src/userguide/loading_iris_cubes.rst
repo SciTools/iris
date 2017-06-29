@@ -143,7 +143,7 @@ essential descriptive information or metadata :  the bulk of the actual data
 content will only be loaded later, as it is needed.
 This is referred to as 'lazy' data.  It allows loading to be much quicker, and to occupy less memory.
 
-For more on the benefits, handling and uses of lazy data, see :doc:`"Real and Lazy Data" </whitepapers/real_and_lazy_data>`.
+For more on the benefits, handling and uses of lazy data, see :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`.
 
 
 Constrained loading

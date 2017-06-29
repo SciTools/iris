@@ -11,5 +11,3 @@ Extra information on specific technical issues.
 
    um_files_loading.rst
    change_management.rst
-   real_and_lazy_data.rst
-

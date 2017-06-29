@@ -24,18 +24,18 @@ Iris 2.0a0 Features
 
   This is a major feature enhancement, because basing Iris data in `dask`_
   allows iris to easily leverage its rich functionality and capabilities.
-  In particular, dask's *threaded*, *multi-processor* or *distributed*
+  In particular, dask's *threaded*, *multiprocessing* or *distributed*
   `schedulers`_ can be used in order to fully exploit the available compute
   resource.
 
-  For fuller details, see :doc:`"Real and Lazy Data" </whitepapers/real_and_lazy_data>`.
+  For fuller details, see :doc:`Real and Lazy Data   </userguide/real_and_lazy_data>`.
 
 * Changes to the :class:`iris.cube.Cube`:
 
   * A :class:`~iris.cube.Cube` now accepts the *new* kwargs :data:`dtype` and
     :data:`fill_value`.
 
-  * The :attr:`~iris.cube.Cube.copy` method now accepts the *new* kwargs
+  * The :meth:`~iris.cube.Cube.copy` method now accepts the *new* kwargs
     :data:`dtype` and :data:`fill_value`.
 
   * The *new* :meth:`~iris.cube.Cube.core_data` method returns the *real* or
@@ -109,7 +109,7 @@ Deprecations
 Documentation Changes
 =====================
 
-* A new whitepaper on :doc:`Real and Lazy Data </whitepapers/real_and_lazy_data>`
+* A new UserGuide chapter on :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`
   has been added, and referenced from key points in the :doc:`User Guide </userguide/index>` .
 
 

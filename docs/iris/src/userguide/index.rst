@@ -30,6 +30,7 @@ User guide table of contents
    saving_iris_cubes.rst
    navigating_a_cube.rst
    subsetting_a_cube.rst
+   real_and_lazy_data.rst
    plotting_a_cube.rst
    interpolation_and_regridding.rst
    merge_and_concat.rst
