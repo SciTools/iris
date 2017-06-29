@@ -1627,17 +1627,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def fill_value(self):
         """
-        A value suitable for filling in missing (i.e. masked) datapoints of
-        this :class:`~iris.cube.Cube` s data.
+        A fill value for the data of the :class:`~iris.cube.Cube`.
 
-        This can also be ``None``, meaning that no suitable fill value is
-        known.
+        This is a value suitable for filling masked points in this cube's data.
+        It may be None, meaning that no suitable fill value is known.
 
         .. Note::
 
-            Ideally, this value will not occur anywhere in `cube.data`. Thus,
-            many operations which change cube data will also set `fill_value`
-            to None.
+            Ideally, this value will not occur anywhere in the cube data.
+            Thus, many operations that change cube data will also set
+            `fill_value` to None.
 
         """
         return self._data_manager.fill_value
