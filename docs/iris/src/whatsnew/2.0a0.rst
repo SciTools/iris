@@ -2,7 +2,7 @@ What's New in Iris 2.0a0
 ************************
 
 :Release: 2.0a0 (**alpha pre-release**)
-:Date: 2017-06-XX
+:Date: 2017-07-03
 
 
 This document explains the new/changed features of Iris in version 2.0a0
@@ -15,16 +15,16 @@ Iris 2.0a0 Features
 
 .. admonition:: Showcase Feature - Dask Integration
 
-  The use of `biggus`_ to provide support for *virtual arrays* and
-  *lazy evaluation* within iris has been replaced with `dask`_.
+  The use of `Biggus`_ to provide support for *virtual arrays* and
+  *lazy evaluation* within Iris has been replaced with `Dask`_.
 
   In addition the concept of *lazy data*, already used for the
-  :class:`~iris.cube.Cube` data component, has now been extended to the data arrays in
-  :class:`~iris.coords.Coord` s and :class:`~iris.aux_factory.AuxCoordFactory` s.
+  :class:`~iris.cube.Cube` data component, has now been extended to the data array
+  in a :class:`~iris.coords.Coord` and an :class:`~iris.aux_factory.AuxCoordFactory`.
 
-  This is a major feature enhancement, because basing Iris data in `dask`_
-  allows iris to easily leverage its rich functionality and capabilities.
-  In particular, dask's *threaded*, *multiprocessing* or *distributed*
+  This is a major feature enhancement, because basing Iris data in Dask
+  allows Iris to easily leverage its rich functionality and capabilities.
+  In particular, Dask's *threaded*, *multiprocessing* or *distributed*
   `schedulers`_ can be used in order to fully exploit the available compute
   resource.
 
@@ -99,7 +99,7 @@ Incompatible Changes
 
 .. admonition:: Significant Changes in Calculated Results
 
-  Due to the replacement of biggus with dask, as described above, the results
+  Due to the replacement of `Biggus`_ with `Dask`_, as described above, the results
   of certain types of calculation may have significantly different values from
   those obtained in earlier versions.
   This is of a much greater order than the usual small changes in floating
@@ -124,7 +124,7 @@ Incompatible Changes
   values of magnitude more than +/-2^52 (approximately 4.5e+15) may no longer
   be represented exactly.
 
-  It is hoped that, as dask matures, it may later be possible to remove these
+  It is hoped that, as Dask matures, it may later be possible to remove these
   particular limitations.
 
 
@@ -143,10 +143,7 @@ Documentation Changes
   has been added, and referenced from key points in the :doc:`User Guide </userguide/index>` .
 
 
-.. _biggus: https://biggus.readthedocs.io/en/latest/
-.. _dask: http://dask.pydata.org/en/latest/
+.. _Biggus: https://biggus.readthedocs.io/en/latest/
+.. _Dask: http://dask.pydata.org/en/latest/
 .. _iris_grib: https://github.com/SciTools/iris-grib/
-.. _dask Array: http://dask.pydata.org/en/latest/array.html
-.. _dask Bags: http://dask.pydata.org/en/latest/bag.html
-.. _dask Delayed: http://dask.pydata.org/en/latest/delayed.html
 .. _schedulers: http://dask.pydata.org/en/latest/scheduler-overview.html
