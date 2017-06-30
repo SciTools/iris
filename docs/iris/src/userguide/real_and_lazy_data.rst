@@ -1,3 +1,4 @@
+
 .. _real_and_lazy_data:
 
 
@@ -35,14 +36,28 @@ Conversely, we use the term **lazy data** to describe data that is not loaded in
 In Iris, lazy data is provided as a
 `dask array <http://dask.pydata.org/en/latest/array-overview.html>`_.
 A dask array also has a shape and data type
-but typically the dask array's data points are not loaded into memory.
-Instead the data points are stored on disk and only loaded into memory in
-small chunks when absolutely necessary (see the section :ref:`when_real_data`
-for examples of when this might happen).
+but the dask array's data points remain on disk and only loaded into memory in
+small chunks when absolutely necessary.  This has key performance benefits for
+handling large amounts of data, where both calculation time and storage
+requirements can be significantly reduced.
 
-The primary advantage of using lazy data is that it enables
-`out-of-core processing <https://en.wikipedia.org/wiki/Out-of-core_algorithm>`_;
-that is, the loading and manipulating of datasets that otherwise would not fit into memory.
+In Iris, when actual data values are needed from a lazy data array, it is
+*'realised'* : this means that all the actual values are read in from the file,
+and a 'real'
+(i.e. `numpy <https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html>`_)
+array replaces the lazy array within the Iris object.
+
+Following realisation, the Iris object just contains the actual ('real')
+data, so the time cost of reading all the data is not incurred again.
+From here on, access to the data is fast, but it now occupies its full memory space.
+
+In particular, any direct reference to a `cube.data` will realise the cube data
+content : any lazy content is lost as the data is read from file, and the cube
+content is replaced with a real array.
+This is also referred to simply as "touching" the data.
+
+See the section :ref:`when_real_data`
+for more examples of this.
 
 You can check whether a cube has real data or lazy data by using the method
 :meth:`~iris.cube.Cube.has_lazy_data`. For example::
@@ -56,10 +71,38 @@ You can check whether a cube has real data or lazy data by using the method
     False
 
 
+Benefits
+--------
+
+The primary advantage of using lazy data is that it enables
+`out-of-core processing <https://en.wikipedia.org/wiki/Out-of-core_algorithm>`_;
+that is, the loading and manipulating of datasets without loading the full data into memory.
+
+There are two key benefits from this :
+
+**Firstly**, the result of a calculation on a large dataset often occupies much
+less storage space than the source data -- such as for instance a maximum data
+value calculated over a large number of datafiles.
+In these cases the result can be computed in sections, without ever requiring the
+entire source dataset to be loaded, thus drastically reducing memory footprint.
+This strategy of task division can also enable reduced execution time through the effective
+use of parallel processing capabilities.
+
+**Secondly**, it is often simply convenient to form a calculation on a large
+dataset, of which only a certain portion is required at any one time
+-- for example, plotting individual timesteps from a large sequence.
+In such cases, a required portion can be extracted and realised without calculating the entire result.
+
 .. _when_real_data:
 
 When does my data become real?
 ------------------------------
+
+Certain operations, such as cube indexing and statistics, can be
+performed in a lazy fashion, producing a 'lazy' result from a lazy input, so
+that no realisation immediately occurs.
+However other operations, such as plotting or printing data values, will always
+trigger the 'realisation' of data.
 
 When you load a dataset using Iris the data array will almost always initially be
 a lazy array. This section details some operations that will realise lazy data
@@ -70,7 +113,7 @@ Most operations on data arrays can be run equivalently on both real and lazy dat
 If the data array is real then the operation will be run on the data array
 immediately. The results of the operation will be available as soon as processing is completed.
 If the data array is lazy then the operation will be deferred and the data array will
-remain lazy until you request the result (such as when you call ``cube.data``)::
+remain lazy until you request the result (such as when you read from ``cube.data``)::
 
     >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> cube.has_lazy_data()
@@ -183,7 +226,7 @@ coordinates' lazy points and bounds:
 Dask processing options
 -----------------------
 
-As stated earlier in this user guide section, Iris uses dask to provide
+As stated earlier in this discussion, Iris uses dask to provide
 lazy data arrays for both Iris cubes and coordinates. Iris also uses dask
 functionality for processing deferred operations on lazy arrays.
 
@@ -221,10 +264,3 @@ Other dask processing options are also available. See the
 `dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
 for more information on setting dask processing options.
 
-
-Further reading
----------------
-
-This section of the Iris user guide provides a quick overview of real and lazy
-data within Iris. For more details on these and related concepts,
-see the whitepaper on lazy data.

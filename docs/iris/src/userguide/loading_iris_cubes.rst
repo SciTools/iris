@@ -135,6 +135,17 @@ star wildcards can be used::
      The cubes returned will not necessarily be in the same order as the 
      order of the filenames.
 
+Lazy loading
+------------
+
+In fact when Iris loads data from most file types, it normally only reads the
+essential descriptive information or metadata :  the bulk of the actual data
+content will only be loaded later, as it is needed.
+This is referred to as 'lazy' data.  It allows loading to be much quicker, and to occupy less memory.
+
+For more on the benefits, handling and uses of lazy data, see :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`.
+
+
 Constrained loading
 -----------------------
 Given a large dataset, it is possible to restrict or constrain the load 
