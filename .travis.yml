@@ -43,7 +43,7 @@ install:
       wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
-  - if [[ -e $HOME/miniconda_pkgs_backup ]]; then
+  - if [[ "$(ls $HOME/miniconda_pkgs_backup/* 2>/dev/null)" != "" ]]; then
       cp $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/;
     fi
   - export PATH="$HOME/miniconda/bin:$PATH"
