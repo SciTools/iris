@@ -1600,7 +1600,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def core_data(self):
         """
         Retrieve the data array of this :class:`~iris.cube.Cube` in its
-        current state, which may be either real or lazy.
+        current state, which will either be real or lazy.
 
         If this :class:`~iris.cube.Cube` has lazy data, accessing its data
         array via this method **will not** realise the data array. This means
@@ -1630,13 +1630,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         A fill value for the data of the :class:`~iris.cube.Cube`.
 
         This is a value suitable for filling masked points in this cube's data.
-        It may be None, meaning that no suitable fill value is known.
+        It may be ``None``, meaning that no suitable fill value is known.
 
         .. Note::
 
             Ideally, this value will not occur anywhere in the cube data.
             Thus, many operations that change cube data will also set
-            `fill_value` to None.
+            ``fill_value`` to ``None``.
 
         """
         return self._data_manager.fill_value
