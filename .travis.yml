@@ -26,6 +26,10 @@ env:
 git:
   depth: 10000
 
+cache:
+  directories:
+  - $HOME/miniconda/pkgs
+
 install:
   - export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
