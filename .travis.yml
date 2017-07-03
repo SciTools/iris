@@ -28,7 +28,7 @@ git:
 
 cache:
   directories:
-  - $HOME/miniconda/pkgs
+  - $HOME/miniconda_pkgs_backup
 
 install:
   - export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
@@ -43,6 +43,7 @@ install:
       wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
+  - cp $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/
   - export PATH="$HOME/miniconda/bin:$PATH"
 
   # Create the basic testing environment
@@ -74,6 +75,9 @@ install:
   # Output debug info
   - conda list
   - conda info -a
+
+  # Create packages backup
+  - cp $HOME/miniconda/pkgs/* $HOME/miniconda_pkgs_backup/
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
 # i.e. There should be no DownloadWarning reports in the log.
