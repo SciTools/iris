@@ -43,7 +43,9 @@ install:
       wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
-  - cp $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/
+  - if [[ -e $HOME/miniconda_pkgs_backup ]]; then
+      cp $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/;
+    fi
   - export PATH="$HOME/miniconda/bin:$PATH"
 
   # Create the basic testing environment
@@ -77,6 +79,9 @@ install:
   - conda info -a
 
   # Create packages backup
+  - if [[ ! -e $HOME/miniconda_pkgs_backup ]]; then
+      mkdir $HOME/miniconda_pkgs_backup;
+    fi
   - cp $HOME/miniconda/pkgs/* $HOME/miniconda_pkgs_backup/
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
