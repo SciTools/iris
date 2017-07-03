@@ -44,7 +44,10 @@ install:
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - if [[ "$(ls $HOME/miniconda_pkgs_backup/* 2>/dev/null)" != "" ]]; then
-      cp $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/;
+      echo "Existing Package backup FOUND, copying ...";
+      cp -r $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/;
+    else
+      echo "Package backup NOT present."
     fi
   - export PATH="$HOME/miniconda/bin:$PATH"
 
@@ -82,7 +85,7 @@ install:
   - if [[ ! -e $HOME/miniconda_pkgs_backup ]]; then
       mkdir $HOME/miniconda_pkgs_backup;
     fi
-  - cp $HOME/miniconda/pkgs/* $HOME/miniconda_pkgs_backup/
+  - cp -r $HOME/miniconda/pkgs/* $HOME/miniconda_pkgs_backup/
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
 # i.e. There should be no DownloadWarning reports in the log.
