@@ -44,10 +44,10 @@ install:
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - if [[ "$(ls $HOME/miniconda_pkgs_backup/* 2>/dev/null)" != "" ]]; then
-      echo "Existing Package backup FOUND, copying ...";
+      echo "Existing Package backup was FOUND, copying ...";
       cp -r $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/;
     else
-      echo "Package backup NOT present.";
+      echo "Package backup was NOT present.";
     fi
   - export PATH="$HOME/miniconda/bin:$PATH"
 
