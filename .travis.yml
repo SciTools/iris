@@ -47,7 +47,7 @@ install:
       echo "Existing Package backup FOUND, copying ...";
       cp -r $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/;
     else
-      echo "Package backup NOT present."
+      echo "Package backup NOT present.";
     fi
   - export PATH="$HOME/miniconda/bin:$PATH"
 
