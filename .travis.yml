@@ -34,7 +34,7 @@ cache:
 # ...but remove the env so we make that afresh every time.
 before_cache:
   - rm -rf $HOME/miniconda/envs/$ENV_NAME;
-    export CASHER_TIME_OUT=250
+    export CASHER_TIME_OUT=300
 
 # Install conda if it is absent.
 # N.B. not sure why it needs doing before, presumably due to caching it ?
