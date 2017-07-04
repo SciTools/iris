@@ -45,7 +45,7 @@ before_install:
         wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
       else
         wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
-      fi
+      fi;
       rm -rf $HOME/miniconda;
       bash miniconda.sh -b -p $HOME/miniconda;
     fi
