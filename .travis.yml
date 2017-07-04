@@ -33,13 +33,16 @@ cache:
 
 # ...but remove the env so we make that afresh every time.
 before_cache:
-  - rm -rf $HOME/miniconda/envs/$ENV_NAME
+  - rm -rf $HOME/miniconda/envs/$ENV_NAME;
+    export CASHER_TIME_OUT=250
 
 # Install conda if it is absent.
 # N.B. not sure why it needs doing before, presumably due to caching it ?
 before_install:
-  - if [ ! -f $HOME/miniconda/bin/conda ] ; then
-      echo "Fresh miniconda installation.";
+  - if [ -f $HOME/miniconda/bin/conda ] ; then
+      echo "Using existing miniconda installation.";
+    else
+      echo "Making fresh miniconda installation.";
       export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda;
       if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
         wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
