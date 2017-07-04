@@ -26,29 +26,35 @@ env:
 git:
   depth: 10000
 
+# Try to cache the conda installation, especially cached downloaded packages...
 cache:
   directories:
-  - $HOME/miniconda_pkgs_backup
+    - $HOME/miniconda
+
+# ...but remove the env so we make that afresh every time.
+before_cache:
+  - rm -rf $HOME/miniconda/envs/$ENV_NAME
+
+# Install conda if it is absent.
+# N.B. not sure why it needs doing before, presumably due to caching it ?
+before_install:
+  - if [ ! -f $HOME/miniconda/bin/conda ] ; then
+      echo "Fresh miniconda installation.";
+      export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda;
+      if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
+        wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
+      else
+        wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
+      fi
+      wget $URL -O miniconda.sh;
+      rm -rf $HOME/miniconda;
+      bash miniconda.sh -b -p $HOME/miniconda;
+    fi
 
 install:
   - export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
-  # Install miniconda
-  # -----------------
-  - export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
-      wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - if [[ "$(ls $HOME/miniconda_pkgs_backup/* 2>/dev/null)" != "" ]]; then
-      echo "Existing Package backup was FOUND, copying ...";
-      cp -r $HOME/miniconda_pkgs_backup/* $HOME/miniconda/pkgs/;
-    else
-      echo "Package backup was NOT present.";
-    fi
   - export PATH="$HOME/miniconda/bin:$PATH"
 
   # Create the basic testing environment
@@ -80,12 +86,6 @@ install:
   # Output debug info
   - conda list
   - conda info -a
-
-  # Create packages backup
-  - if [[ ! -e $HOME/miniconda_pkgs_backup ]]; then
-      mkdir $HOME/miniconda_pkgs_backup;
-    fi
-  - cp -r $HOME/miniconda/pkgs/* $HOME/miniconda_pkgs_backup/
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
 # i.e. There should be no DownloadWarning reports in the log.
