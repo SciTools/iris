@@ -93,6 +93,16 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         with self.assertRaisesRegexp(ValueError, msg):
             DimCoord([1, 2, 0, 3])
 
+    def test_copy_arrays(self):
+        # points and bounds arrays are copied
+        pts = np.array([2, 4, 6])
+        bnds = np.array([[1, 3], [3, 5], [5, 7]])
+        coord = DimCoord(pts, bounds=bnds)
+        pts[1] = 8
+        bnds[1, 1] = 10
+        self.assertEqual(coord.points[1], 4)
+        self.assertEqual(coord.bounds[1, 1], 5)
+
 
 class Test_core_points(tests.IrisTest, DimCoordTestMixin):
     # Test for DimCoord.core_points() with various types of points and bounds.
@@ -420,6 +430,13 @@ class Test_points__setter(tests.IrisTest, DimCoordTestMixin):
         result = coord.core_points()
         self.assertEqualRealArraysAndDtypes(result, new_pts.compute())
 
+    def test_copy_array(self):
+        # Assigning points creates a copy
+        pts = np.array([1, 2, 3])
+        coord = DimCoord(pts)
+        pts[1] = 5
+        self.assertEqual(coord.points[1], 2)
+
 
 class Test_bounds__getter(tests.IrisTest, DimCoordTestMixin):
     def setUp(self):
@@ -471,6 +488,14 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         coord.bounds = new_bounds
         result = coord.core_bounds()
         self.assertEqualRealArraysAndDtypes(result, new_bounds.compute())
+
+    def test_copy_array(self):
+        # Assigning bounds creates a copy
+        pts = np.array([2, 4, 6])
+        bnds = np.array([[1, 3], [3, 5], [5, 7]])
+        coord = DimCoord(pts, bounds=bnds)
+        bnds[1, 1] = 10
+        self.assertEqual(coord.bounds[1, 1], 5)
 
 
 if __name__ == '__main__':

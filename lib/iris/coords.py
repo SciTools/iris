@@ -1679,7 +1679,7 @@ class DimCoord(Coord):
 
     def _points_setter(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
-        copy = is_lazy_data(points)
+        copy = not is_lazy_data(points)
         points = as_concrete_data(points)
         # Ensure it is an actual array, and also make our own distinct view
         # so that we can make it read-only.
@@ -1741,7 +1741,7 @@ class DimCoord(Coord):
     def _bounds_setter(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
-            copy = is_lazy_data(bounds)
+            copy = not is_lazy_data(bounds)
             bounds = as_concrete_data(bounds)
             bounds = np.array(bounds, copy=copy)
 
