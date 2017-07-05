@@ -9,7 +9,7 @@ numpy
 pyke
 udunits2
 cf_units
-dask
+dask>=0.15.0
 
 # Iris build dependencies
 setuptools

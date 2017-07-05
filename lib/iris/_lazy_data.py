@@ -26,15 +26,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import dask
 import dask.array as da
 import dask.context
+from dask.local import get_sync as dget_sync
 import numpy as np
 import numpy.ma as ma
-
-try:
-    # dask >= v0.15
-    from dask.local import get_sync as dget_sync
-except ImportError:
-    # dask < v0.15
-    from dask.async import get_sync as dget_sync
 
 
 def _iris_dask_defaults():
