@@ -110,6 +110,11 @@ class TestPPStash(tests.IrisTest):
             self.assertEqual('abc', iris.fileformats.pp.STASH(1, 2, 3))
 
         with self.assertRaises(ValueError):
+            self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), 'mlotstmin')
+        with self.assertRaises(ValueError):
+            self.assertEqual('mlotstmin', iris.fileformats.pp.STASH(1, 2, 3))
+
+        with self.assertRaises(ValueError):
             self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), 'm01s02003')
         with self.assertRaises(ValueError):
             self.assertEqual('m01s02003', iris.fileformats.pp.STASH(1, 2, 3))
