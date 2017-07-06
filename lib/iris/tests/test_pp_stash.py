@@ -58,6 +58,10 @@ class TestPPStash(tests.IrisTest):
         self.assertNotEqual(iris.fileformats.pp.STASH(1, 2, 3), 'm02s03i004')
         self.assertNotEqual('m02s03i004', iris.fileformats.pp.STASH(1, 2, 3))
 
+    def test_irregular_stash_str(self):
+        self.assertEqual(iris.fileformats.pp.STASH.from_msi('M01s02i003'), 'm01s02i003')
+        self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi('M01s02i003'))
+
     def test_illegal_stash_str_range(self):
         self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), 'm00s02i003')
         self.assertNotEqual(iris.fileformats.pp.STASH(0, 2, 3), 'm01s02i003')
@@ -125,11 +129,6 @@ class TestPPStash(tests.IrisTest):
             self.assertNotEqual(iris.fileformats.pp.STASH(2, 3, 4), 'm1s2i3')
         with self.assertRaises(ValueError):
             self.assertNotEqual('m1s2i3', iris.fileformats.pp.STASH(2, 3, 4))
-
-        with self.assertRaises(ValueError):
-            self.assertEqual(iris.fileformats.pp.STASH.from_msi('M01s02i003'), 'm01s02i003')
-        with self.assertRaises(ValueError):
-            self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi('M01s02i003'))
 
     def test_illegal_stash_type(self):
         with self.assertRaises(TypeError):
