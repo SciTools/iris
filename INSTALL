@@ -86,6 +86,9 @@ scipy 0.10 or later (http://www.scipy.org/)
 cartopy 0.11.0 or later (http://github.com/SciTools/cartopy/)
     Python package which provides cartographic tools for python.
 
+dask 0.15.0 or later (https://dask.pydata.org/)
+    Python package for parallel computing.
+
 PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
     Python knowledge-based inference engine.
 
