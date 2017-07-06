@@ -305,7 +305,8 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         if not isinstance(msi, six.string_types):
             raise TypeError('Expected STASH code MSI string, got %r' % (msi,))
 
-        msi_match = re.match('^\s*m(.*)s(.*)i(.*)\s*$', msi, re.IGNORECASE)
+        msi_match = re.match('^\s*m(\d{2})s(\d{2})i(\d{3})\s*$', msi,
+                             re.IGNORECASE)
 
         if msi_match is None:
             raise ValueError('Expected STASH code MSI string "mXXsXXiXXX", '
