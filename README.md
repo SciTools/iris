@@ -40,10 +40,13 @@ the Iris project on GitHub:
 Documentation
 -------------
 
-The full documentation for Iris, including a user guide, example
+The full documentation for the current release of Iris, including a user guide, example
 code, and gallery, is online at:
-
 - http://scitools.org.uk/iris/
+
+There is also a documentation build for the latest code in the main GitHub repository at:
+- https://scitools-docs.github.io/iris/master/index.html
+(also similarly for other branches)
 
 
 Copyright and licence
