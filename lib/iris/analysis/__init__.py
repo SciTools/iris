@@ -1041,7 +1041,6 @@ def _percentile(data, axis, percent, **kwargs):
     if shape:
         data = data.reshape([np.prod(shape), data.shape[-1]])
     # Perform the percentile calculation.
-    print('PERCENTILE METHOD ', percentile_method)
     if percentile_method == 'fast':
         msg = 'Cannot use fast np.percentile method with masked array.'
         if ma.isMaskedArray(data):
