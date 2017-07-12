@@ -1027,7 +1027,7 @@ def _percentile(data, axis, percent, **kwargs):
     dimension of the resulting percentile data payload.
 
     Kwargs:
-    
+
     * percentile_method (string) :
         Switch to opt between the scipy.stats.mstats.mquantiles method for
         calculating percentiles, and the much faster np.percentiles method.
