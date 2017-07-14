@@ -25,6 +25,7 @@ import iris.tests as tests
 
 from itertools import permutations
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -1897,7 +1898,7 @@ class Test_share_data(tests.IrisTest):
 
 class Test___getitem__no_share_data(tests.IrisTest):
     def test_lazy_array(self):
-        cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
+        cube = Cube(da.from_array(np.arange(6).reshape(2, 3), chunks=6))
         cube2 = cube[1:]
         self.assertTrue(cube2.has_lazy_data())
         cube.data
@@ -1911,7 +1912,7 @@ class Test___getitem__no_share_data(tests.IrisTest):
 
 class Test___getitem__share_data(tests.IrisTest):
     def test_lazy_array(self):
-        cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
+        cube = Cube(da.from_array(np.arange(6).reshape(2, 3), chunks=6))
         cube.share_data = True
         cube2 = cube[1:]
         self.assertFalse(cube.has_lazy_data())
