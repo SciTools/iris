@@ -525,7 +525,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             # We do not perform a deepcopy when we supply new points so as to
             # not unncessarily copy the old points.
 
-            # Create a temp-coord to manage deep copying of a small array. 
+            # Create a temp-coord to manage deep copying of a small array.
             temp_coord = copy.copy(self)
             temp_coord.bounds = None
             # note: DataManager cannot be None or DataManager(None) for
