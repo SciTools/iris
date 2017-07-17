@@ -1017,7 +1017,8 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-def _percentile(data, axis, percent, **kwargs):
+def _percentile(data, axis, percent, percentile_method='scipy_mquantiles',
+                **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1029,11 +1030,13 @@ def _percentile(data, axis, percent, **kwargs):
     Kwargs:
 
     * percentile_method (string) :
-        Switch to opt between the scipy.stats.mstats.mquantiles method for
-        calculating percentiles, and the much faster np.percentiles method.
+        Switch to choose between methods for calculating percentiles.
+        Specify `percentile_method='fast'` to use the fast `numpy.percentiles`
+        method.
+        Do not specify or specify `percentile_method=None` to use the
+        scipy.mstats.mquantiles method.
 
     """
-    percentile_method = kwargs.get('percentile_method', None)
     # Ensure that the target axis is the last dimension.
     data = np.rollaxis(data, axis, start=data.ndim)
     shape = data.shape[:-1]
@@ -1041,15 +1044,18 @@ def _percentile(data, axis, percent, **kwargs):
     if shape:
         data = data.reshape([np.prod(shape), data.shape[-1]])
     # Perform the percentile calculation.
-    if percentile_method == 'fast':
+    if percentile_method == 'numpy_percentile':
         msg = 'Cannot use fast np.percentile method with masked array.'
         if ma.isMaskedArray(data):
             raise TypeError(msg)
         result = np.percentile(data, percent, axis=-1)
-    else:
+    elif percentile_method == 'scipy_mquantiles':
         quantiles = np.array(percent) / 100.
         result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1,
                                                **kwargs)
+    else:
+        msg = 'Unknown percentile_method {}.'
+        raise ValueError(msg.format(percentile_method))
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
         if percentile_method == 'fast':
