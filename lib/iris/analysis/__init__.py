@@ -1017,7 +1017,8 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-def _percentile(data, axis, percent, **kwargs):
+def _percentile(data, axis, percent, percentile_method='scipy_mquantiles',
+                **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1026,18 +1027,40 @@ def _percentile(data, axis, percent, **kwargs):
     If a new additive dimension is formed, then it will always be the last
     dimension of the resulting percentile data payload.
 
+    Kwargs:
+
+    * percentile_method (string) :
+        Switch to choose between methods for calculating percentiles.
+        Specify `percentile_method='fast'` to use the fast `numpy.percentiles`
+        method.
+        Do not specify or specify `percentile_method=None` to use the
+        scipy.mstats.mquantiles method.
+
     """
     # Ensure that the target axis is the last dimension.
     data = np.rollaxis(data, axis, start=data.ndim)
-    quantiles = np.array(percent) / 100.
     shape = data.shape[:-1]
     # Flatten any leading dimensions.
     if shape:
         data = data.reshape([np.prod(shape), data.shape[-1]])
     # Perform the percentile calculation.
-    result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1, **kwargs)
+    if percentile_method == 'numpy_percentile':
+        msg = 'Cannot use fast np.percentile method with masked array.'
+        if ma.isMaskedArray(data):
+            raise TypeError(msg)
+        result = np.percentile(data, percent, axis=-1)
+    elif percentile_method == 'scipy_mquantiles':
+        quantiles = np.array(percent) / 100.
+        result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1,
+                                               **kwargs)
+    else:
+        msg = 'Unknown percentile_method {}.'
+        raise ValueError(msg.format(percentile_method))
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
+        if percentile_method == 'fast':
+            result = result.T
+
     # Ensure to unflatten any leading dimensions.
     if shape:
         if not isinstance(percent, collections.Iterable):
