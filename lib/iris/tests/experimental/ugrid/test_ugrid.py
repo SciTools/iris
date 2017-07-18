@@ -29,8 +29,6 @@ import unittest
 # Import pyugrid if installed, else fail quietly + disable all the tests.
 try:
     import pyugrid
-    # Check it *is* the real module, and not an iris.proxy FakeModule.
-    pyugrid.ugrid
 except (ImportError, AttributeError):
     pyugrid = None
 skip_pyugrid = unittest.skipIf(
