@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -99,7 +99,6 @@ class TestUnmappable(tests.GraphicsTest):
             0)
         cube.standard_name = 'air_temperature'
         cube.units = 'K'
-        cube.assert_valid()
         self.cube = cube
 
     def test_simple(self):
