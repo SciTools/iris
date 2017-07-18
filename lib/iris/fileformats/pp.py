@@ -58,11 +58,9 @@ except ImportError:
     pp_packing = None
 
 
-__all__ = ['load', 'save', 'load_cubes', 'PPField',
-           'reset_load_rules', 'add_save_rules',
-           'as_fields', 'load_pairs_from_fields', 'as_pairs',
-           'save_pairs_from_cube', 'reset_save_rules',
-           'save_fields', 'STASH', 'EARTH_RADIUS']
+__all__ = ['load', 'save', 'load_cubes', 'PPField', 'as_fields',
+           'load_pairs_from_fields', 'save_pairs_from_cube', 'save_fields',
+           'STASH', 'EARTH_RADIUS']
 
 
 EARTH_RADIUS = 6371229.0
@@ -716,86 +714,8 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
                              'splittable integers object')
         self._value = value
 
-    def __len__(self):
-        """
-        Base ten length.
-
-        .. deprecated:: 1.8
-
-            The value of a BitwiseInt only makes sense in base-two.
-
-        """
-        warn_deprecated('Length is deprecated')
-        return len(str(self._value))
-
     def __setattr__(self, name, value):
         object.__setattr__(self, name, value)
-
-    def __getitem__(self, key):
-        """
-        Base ten indexing support.
-
-        .. deprecated:: 1.8
-
-            The value of an _LBProc only makes sense in base-two.
-
-        """
-        warn_deprecated('Indexing is deprecated')
-        try:
-            value = int('0' + str(self._value)[::-1][key][::-1])
-        except IndexError:
-            value = 0
-        # If the key returns a list of values, then combine them
-        # together to an integer.
-        if isinstance(value, list):
-            value = sum(10**i * val for i, val in enumerate(value))
-        return value
-
-    def __setitem__(self, key, value):
-        """
-        Base ten indexing support.
-
-        .. deprecated:: 1.8
-
-            The value of an _LBProc only makes sense in base-two.
-
-        """
-        warn_deprecated('Indexing is deprecated')
-        if (not isinstance(value, int) or value < 0):
-            msg = 'Can only set {} as a positive integer value.'.format(key)
-            raise ValueError(msg)
-
-        if isinstance(key, slice):
-            if ((key.start is not None and key.start < 0) or
-               (key.step is not None and key.step < 0) or
-               (key.stop is not None and key.stop < 0)):
-                raise ValueError('Cannot assign a value with slice '
-                                 'objects containing negative indices.')
-
-            # calculate the current length of the value of this string
-            current_length = len(range(*key.indices(len(self))))
-
-            # Get indices for as many digits as have been requested.
-            # Putting the upper limit on the number of digits at 100.
-            indices = range(*key.indices(100))
-            if len(indices) < len(str(value)):
-                fmt = 'Cannot put {} into {} as it has too many digits.'
-                raise ValueError(fmt.format(value, key))
-
-            # Iterate over each of the indices in the slice, zipping
-            # them together with the associated digit.
-            filled_value = str(value).zfill(current_length)
-            for index, digit in zip(indices, filled_value[::-1]):
-                # assign each digit to the associated index
-                self.__setitem__(index, int(digit))
-        else:
-            if value > 9:
-                raise ValueError('Can only set a single digit')
-            # Setting a single digit.
-            factor = 10 ** key
-            head, tail = divmod(self._value, factor)
-            head = head // 10
-            self._value = (head * 10 + value) * factor + tail
 
     def __iadd__(self, value):
         self._value += value
@@ -820,13 +740,6 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
 
     def __str__(self):
         return str(self._value)
-
-    @property
-    def flags(self):
-        warn_deprecated('The `flags` attribute is deprecated - please use '
-                        'integer bitwise operators instead.')
-        return tuple(2 ** i for i in range(self.NUM_BITS)
-                     if self._value & 2 ** i)
 
 
 class PPDataProxy(object):
@@ -2012,16 +1925,6 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             yield pp_field
 
 
-def reset_load_rules():
-    """
-    Resets the PP load process to use only the standard conversion rules.
-
-    .. deprecated:: 1.7
-
-    """
-    warn_deprecated('reset_load_rules was deprecated in v1.7.')
-
-
 def _ensure_save_rules_loaded():
     """Makes sure the standard save rules are loaded."""
 
@@ -2035,53 +1938,6 @@ def _ensure_save_rules_loaded():
         with iris.fileformats.rules._disable_deprecation_warnings():
             _save_rules = iris.fileformats.rules.RulesContainer(
                 rules_filename, iris.fileformats.rules.ProcedureRule)
-
-
-def add_save_rules(filename):
-    """
-    Registers a rules file for use during the PP save process.
-
-    Registered files are processed after the standard conversion rules, and in
-    the order they were registered.
-
-    .. deprecated:: 1.10
-
-        If you need to customise pp field saving, please refer to the functions
-        :func:`as_fields`, :func:`save_pairs_from_cube` and :func:`save_fields`
-        for an alternative solution.
-
-    """
-    warn_deprecated(
-        'custom pp save rules are deprecated from v1.10.\n'
-        'If you need to customise pp field saving, please refer to the '
-        'functions iris.fileformats.pp.as_fields, '
-        'iris.fileformats.pp.save_pairs_from_cube and '
-        'iris.fileformats.pp.save_fields for an alternative solution.')
-    _ensure_save_rules_loaded()
-    _save_rules.import_rules(filename)
-
-
-def reset_save_rules():
-    """
-    Resets the PP save process to use only the standard conversion rules.
-
-    .. deprecated:: 1.10
-
-        If you need to customise pp field saving, please refer to the functions
-        :func:`as_fields`, :func:`save_pairs_from_cube` and :func:`save_fields`
-        for an alternative solution.
-
-    """
-    warn_deprecated(
-        'custom pp save rules are deprecated from v1.10.\n'
-        'If you need to customise pp field saving, please refer to the '
-        'functions iris.fileformats.pp.as_fields, '
-        'iris.fileformats.pp.save_pairs_from_cube and '
-        'iris.fileformats.pp.save_fields for an alternative solution.')
-    # Uses this module-level variable
-    global _save_rules
-
-    _save_rules = None
 
 
 # Stash codes not to be filtered (reference altitude and pressure fields).
@@ -2322,19 +2178,6 @@ def save(cube, target, append=False, field_coords=None):
     """
     fields = as_fields(cube, field_coords, target)
     save_fields(fields, target, append=append)
-
-
-def as_pairs(cube, field_coords=None, target=None):
-    """
-    .. deprecated:: 1.10
-    Please use :func:`iris.fileformats.pp.save_pairs_from_cube` for the same
-    functionality.
-
-    """
-    warn_deprecated('as_pairs is deprecated in v1.10; please use'
-                    ' save_pairs_from_cube instead.')
-    return save_pairs_from_cube(cube, field_coords=field_coords,
-                                target=target)
 
 
 def save_pairs_from_cube(cube, field_coords=None, target=None):
