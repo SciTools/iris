@@ -122,8 +122,6 @@ class TestPPHeaderDerived(tests.IrisTest):
     def test_lbproc_access(self):
         # lbproc == 65539
         with mock.patch('warnings.warn') as warn:
-            self.assertEqual(self.pp.lbproc[0], 9)
-            self.assertEqual(self.pp.lbproc[19], 0)
             self.assertEqual(self.pp.lbproc.flag1, 1)
             self.assertEqual(self.pp.lbproc.flag65536, 1)
             self.assertEqual(self.pp.lbproc.flag131072, 0)

@@ -210,15 +210,6 @@ class Test___ior__(tests.IrisTest):
         self.assertEqual(int(lbproc), 13)
 
 
-class Test_flags(tests.IrisTest):
-    def test(self):
-        lbproc = _LBProc(26)
-        with mock.patch('warnings.warn') as warn:
-            flags = lbproc.flags
-        self.assertEqual(warn.call_count, 1)
-        self.assertEqual(flags, (2, 8, 16))
-
-
 class Test___repr__(tests.IrisTest):
     def test(self):
         lbproc = _LBProc(8641)
