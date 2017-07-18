@@ -225,7 +225,7 @@ def _assert_matching_units(cube, other, operation_name):
         raise iris.exceptions.NotYetImplementedError(msg)
 
 
-def add(cube, other, dim=None, ignore=True, in_place=False):
+def add(cube, other, dim=None, in_place=False):
     """
     Calculate the sum of two cubes, or the sum of a cube and a
     coordinate or scalar value.
@@ -265,10 +265,10 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
     else:
         op = operator.add
     return _add_subtract_common(op, 'add', cube, other, new_dtype, dim=dim,
-                                ignore=ignore, in_place=in_place)
+                                in_place=in_place)
 
 
-def subtract(cube, other, dim=None, ignore=True, in_place=False):
+def subtract(cube, other, dim=None, in_place=False):
     """
     Calculate the difference between two cubes, or the difference between
     a cube and a coordinate or scalar value.
@@ -308,11 +308,11 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
     else:
         op = operator.sub
     return _add_subtract_common(op, 'subtract', cube, other, new_dtype,
-                                dim=dim, ignore=ignore, in_place=in_place)
+                                dim=dim, in_place=in_place)
 
 
 def _add_subtract_common(operation_function, operation_name, cube, other,
-                         new_dtype, dim=None, ignore=True, in_place=False):
+                         new_dtype, dim=None, in_place=False):
     """
     Function which shares common code between addition and subtraction
     of cubes.
@@ -328,8 +328,6 @@ def _add_subtract_common(operation_function, operation_name, cube, other,
                            case of scalar masked arrays
     dim                  - dimension along which to apply `other` if it's a
                            coordinate that is not found in `cube`
-    ignore               - The value of this argument is ignored.
-        .. deprecated:: 0.8
     in_place             - whether or not to apply the operation in place to
                            `cube` and `cube.data`
 
@@ -341,14 +339,6 @@ def _add_subtract_common(operation_function, operation_name, cube, other,
         # get a coordinate comparison of this cube and the cube to do the
         # operation with
         coord_comp = iris.analysis.coord_comparison(cube, other)
-
-        # provide a deprecation warning if the ignore keyword has been set
-        if ignore is not True:
-            msg = ('The "ignore" keyword has been deprecated in '
-                   'add/subtract. This functionality is now automatic. '
-                   'The provided value to "ignore" has been ignored, '
-                   'and has been automatically calculated.')
-            warn_deprecated(msg)
 
         bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
                           coord_comp['resamplable'])
