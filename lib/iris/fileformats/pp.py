@@ -39,8 +39,7 @@ import numpy.ma as ma
 import netcdftime
 
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import (array_masked_to_nans, as_concrete_data,
-                             as_lazy_data, is_lazy_data)
+from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
@@ -51,11 +50,6 @@ try:
     import mo_pack
 except ImportError:
     mo_pack = None
-
-try:
-    from iris.fileformats import _old_pp_packing as pp_packing
-except ImportError:
-    pp_packing = None
 
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
@@ -934,13 +928,6 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                 decompress_wgdos = mo_pack.decompress_wgdos
             except AttributeError:
                 decompress_wgdos = mo_pack.unpack_wgdos
-        elif pp_packing is not None:
-            msg = 'iris.fileformats.pp_packing has been ' \
-                  'deprecated and will be removed in a future release. ' \
-                  'Install mo_pack to make use of the new unpacking ' \
-                  'functionality.'
-            warn_deprecated(msg)
-            decompress_wgdos = pp_packing.wgdos_unpack
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
                   'requires mo_pack to be installed'.format(lbpack.n1)
@@ -949,13 +936,6 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
     elif lbpack.n1 == 4:
         if mo_pack is not None and hasattr(mo_pack, 'decompress_rle'):
             decompress_rle = mo_pack.decompress_rle
-        elif pp_packing is not None:
-            msg = 'iris.fileformats.pp_packing has been ' \
-                  'deprecated and will be removed in a future release. ' \
-                  'Install/upgrade mo_pack to make use of the new unpacking ' \
-                  'functionality.'
-            warn_deprecated(msg)
-            decompress_rle = pp_packing.rle_decode
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
                   'requires mo_pack to be installed'.format(lbpack.n1)

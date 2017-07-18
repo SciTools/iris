@@ -216,8 +216,6 @@ setup(
             standard=False,
             ext_modules=[
                 setuptools.Extension(
-                    'iris.fileformats._old_pp_packing',
-                    ['src/iris/fileformats/pp_packing/pp_packing.c'],
                     libraries=['mo_unpack'],
                     include_dirs=[np.get_include()]
                 )
