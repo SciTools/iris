@@ -25,7 +25,7 @@ imagehash
 requests
 
 # Optional iris dependencies
-python-ecmwf_grib
+python-eccodes
 esmpy>=7.0
 gdal
 libmo_unpack

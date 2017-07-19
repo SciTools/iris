@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,6 +34,7 @@ import iris.coords
 
 if tests.GRIB_AVAILABLE:
     import gribapi
+    from iris.fileformats.grib._load_convert import _MDI as MDI
 
 
 @tests.skip_data
@@ -50,10 +51,10 @@ class TestLoadSave(tests.TestGribMessage):
             iris.save(cubes, temp_file_path)
             expect_diffs = {'totalLength': (4837, 4832),
                             'productionStatusOfProcessedData': (0, 255),
-                            'scaleFactorOfRadiusOfSphericalEarth': (4294967295,
+                            'scaleFactorOfRadiusOfSphericalEarth': (MDI,
                                                                     0),
                             'shapeOfTheEarth': (0, 1),
-                            'scaledValueOfRadiusOfSphericalEarth': (4294967295,
+                            'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                     6367470),
                             'typeOfGeneratingProcess': (0, 255),
                             'generatingProcessIdentifier': (128, 255),
@@ -70,10 +71,10 @@ class TestLoadSave(tests.TestGribMessage):
             iris.save(cubes, temp_file_path)
             expect_diffs = {'totalLength': (648196, 648191),
                             'productionStatusOfProcessedData': (0, 255),
-                            'scaleFactorOfRadiusOfSphericalEarth': (4294967295,
+                            'scaleFactorOfRadiusOfSphericalEarth': (MDI,
                                                                     0),
                             'shapeOfTheEarth': (0, 1),
-                            'scaledValueOfRadiusOfSphericalEarth': (4294967295,
+                            'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                     6367470),
                             'longitudeOfLastGridPoint': (392109982, 32106370),
                             'latitudeOfLastGridPoint': (19419996, 19419285),
@@ -91,10 +92,10 @@ class TestLoadSave(tests.TestGribMessage):
         cubes = iris.load(source_grib)
         expect_diffs = {'totalLength': (21232, 21227),
                         'productionStatusOfProcessedData': (0, 255),
-                        'scaleFactorOfRadiusOfSphericalEarth': (4294967295,
+                        'scaleFactorOfRadiusOfSphericalEarth': (MDI,
                                                                 0),
                         'shapeOfTheEarth': (0, 1),
-                        'scaledValueOfRadiusOfSphericalEarth': (4294967295,
+                        'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                 6367470),
                         'longitudeOfLastGridPoint': (356249908, 356249809),
                         'latitudeOfLastGridPoint': (-89999938, -89999944),

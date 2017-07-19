@@ -33,10 +33,8 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 from iris.fileformats.grib._load_convert import grid_definition_template_12
+from iris.fileformats.grib._load_convert import _MDI as MDI
 from iris.tests.unit.fileformats.grib.load_convert import empty_metadata
-
-
-MDI = 2 ** 32 - 1
 
 
 class Test(tests.IrisTest):

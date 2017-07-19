@@ -459,8 +459,12 @@ class Section(object):
             # By default these values are returned as unhelpful strings but
             # we can use int representation to compare against instead.
             res = gribapi.grib_get(self._message_id, key, int)
+            if gribapi.grib_is_missing(self._message_id, key) == 1:
+                res = None
         else:
             res = gribapi.grib_get(self._message_id, key)
+            if gribapi.grib_is_missing(self._message_id, key) == 1:
+                res = None
         return res
 
     def get_computed_key(self, key):
@@ -482,6 +486,8 @@ class Section(object):
             res = gribapi.grib_get_array(self._message_id, key)
         else:
             res = gribapi.grib_get(self._message_id, key)
+            if gribapi.grib_is_missing(self._message_id, key) == 1:
+                res = None
         return res
 
     def keys(self):

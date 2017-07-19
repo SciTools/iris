@@ -158,7 +158,9 @@ def unscale(value, factor):
 
     if isinstance(value, Iterable) or isinstance(factor, Iterable):
         def _masker(item):
-            result = ma.masked_equal(item, _MDI)
+            numerical_mdi = 2 ** 32 - 1
+            item = [numerical_mdi if i is None else i for i in item]
+            result = ma.masked_equal(item, numerical_mdi)
             if ma.count_masked(result):
                 # Circumvent downstream NumPy "RuntimeWarning"
                 # of "overflow encountered in power" in _unscale
@@ -177,30 +179,8 @@ def unscale(value, factor):
     return result
 
 
-# Regulations 92.1.4 and 92.1.5.
-_MDI = 2 ** 32 - 1
-# Note:
-#   1. Integer "on-disk" values (aka. coded keys) in GRIB messages:
-#       - Are 8-, 16-, or 32-bit.
-#       - Are either signed or unsigned, with signed values stored as
-#         sign-and-magnitude (*not* twos-complement).
-#       - Use all bits set to indicate a missing value (MDI).
-#   2. Irrespective of the on-disk form, the ECMWF GRIB API *always*:
-#       - Returns values as 64-bit signed integers, either as native
-#         Python 'int' or numpy 'int64'.
-#       - Returns missing values as 2**32 - 1, but not all keys are
-#         defined as supporting missing values.
-#   NB. For keys which support missing values, the MDI value is reliably
-#   distinct from the valid range of either signed or unsigned 8-, 16-,
-#   or 32-bit values. For example:
-#       unsigned 32-bit:
-#           min = 0b000...000 = 0
-#           max = 0b111...110 = 2**32 - 2
-#           MDI = 0b111...111 = 2**32 - 1
-#       signed 32-bit:
-#           MDI = 0b111...111 = 2**32 - 1
-#           min = 0b111...110 = -(2**31 - 2)
-#           max = 0b011...111 = 2**31 - 1
+# Use ECCodes gribapi to recognise missing value
+_MDI = None
 
 
 # Non-standardised usage for negative forecast times.

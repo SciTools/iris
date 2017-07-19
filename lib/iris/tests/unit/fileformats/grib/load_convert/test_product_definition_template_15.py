@@ -33,11 +33,9 @@ import iris.tests as tests
 from iris.coords import CellMethod, DimCoord
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import product_definition_template_15
+from iris.fileformats.grib._load_convert import _MDI as MDI
 from iris.tests.unit.fileformats.grib.load_convert import (LoadConvertTest,
                                                            empty_metadata)
-
-
-MDI = 0xffffffff
 
 
 def section_4():
