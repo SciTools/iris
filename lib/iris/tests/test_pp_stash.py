@@ -64,8 +64,10 @@ class TestPPStash(tests.IrisTest):
 
     def test_illegal_stash_str_range(self):
         self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), 'm00s02i003')
+        self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), 'm??s02i003')
         self.assertNotEqual(iris.fileformats.pp.STASH(0, 2, 3), 'm01s02i003')
         self.assertEqual('m00s02i003', iris.fileformats.pp.STASH(0, 2, 3))
+        self.assertEqual('m??s02i003', iris.fileformats.pp.STASH(0, 2, 3))
         self.assertNotEqual('m01s02i003', iris.fileformats.pp.STASH(0, 2, 3))
 
     def test_illegal_stash_stash_range(self):
