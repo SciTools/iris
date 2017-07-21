@@ -31,7 +31,6 @@ import cf_units
 import numpy as np
 from numpy import ma
 
-from iris._deprecation import warn_deprecated
 import iris.analysis
 import iris.coords
 import iris.cube

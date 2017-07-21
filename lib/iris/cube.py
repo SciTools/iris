@@ -3078,19 +3078,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return hash(id(self))
 
     def __add__(self, other):
-        return iris.analysis.maths.add(self, other, ignore=True)
+        return iris.analysis.maths.add(self, other)
 
     def __iadd__(self, other):
-        return iris.analysis.maths.add(self, other, ignore=True, in_place=True)
+        return iris.analysis.maths.add(self, other, in_place=True)
 
     __radd__ = __add__
 
     def __sub__(self, other):
-        return iris.analysis.maths.subtract(self, other, ignore=True)
+        return iris.analysis.maths.subtract(self, other)
 
     def __isub__(self, other):
-        return iris.analysis.maths.subtract(self, other,
-                                            ignore=True, in_place=True)
+        return iris.analysis.maths.subtract(self, other, in_place=True)
 
     __mul__ = iris.analysis.maths.multiply
     __rmul__ = iris.analysis.maths.multiply
