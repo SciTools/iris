@@ -38,7 +38,6 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 
-from iris._deprecation import warn_deprecated
 import iris
 import iris.exceptions
 
