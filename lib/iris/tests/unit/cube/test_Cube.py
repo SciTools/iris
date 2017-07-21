@@ -1883,13 +1883,13 @@ class Test_remove_metadata(tests.IrisTest):
 
 
 class Test_share_data(tests.IrisTest):
-    def setter_lazy_data(self):
-        cube = Cube(biggus.NumpyArrayAdapter(np.arange(6).reshape(2, 3)))
+    def test_setter_lazy_data(self):
+        cube = Cube(da.from_array(np.arange(6).reshape(2, 3), chunks=6))
         cube.share_data = True
         self.assertFalse(cube.has_lazy_data())
         self.assertTrue(cube._share_data)
 
-    def setter_realised_data(self):
+    def test_setter_realised_data(self):
         cube = Cube(np.arange(6).reshape(2, 3))
         cube.share_data = True
         self.assertFalse(cube.has_lazy_data())
