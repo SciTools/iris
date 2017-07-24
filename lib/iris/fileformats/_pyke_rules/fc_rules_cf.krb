@@ -1543,7 +1543,10 @@ fc_extras
             bounds_data = cf_bounds_var[:]
             # Gracefully fill bounds masked array.
             if ma.isMaskedArray(bounds_data):
-                bounds_data = ma.filled(bounds_data)
+                if not ma.isMaskedArray(points_data):
+                    bounds_data = ma.filled(bounds_data, fill_value=0.)
+                else:
+                    bounds_data = ma.filled(bounds_data)
                 msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
                 warnings.warn(msg.format(str(cf_coord_var.cf_name)))
             # Handle transposed bounds where the vertex dimension is not
