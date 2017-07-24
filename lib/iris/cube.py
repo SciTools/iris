@@ -41,7 +41,6 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
-from iris._deprecation import warn_deprecated
 
 import iris._merge
 import iris.analysis
@@ -3110,23 +3109,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
-
-    # START ANALYSIS ROUTINES
-
-    regridded = iris.util._wrap_function_for_method(
-        iris.analysis._interpolate_private.regrid,
-        """
-        Returns a new cube with values derived from this cube on the
-        horizontal grid specified by the grid_cube.
-
-        .. deprecated:: 1.10
-            Please replace usage of :meth:`~Cube.regridded` with
-            :meth:`~Cube.regrid`.  See :meth:`iris.analysis.interpolate.regrid`
-            for details of exact usage equivalents.
-
-        """)
-
-    # END ANALYSIS ROUTINES
 
     def collapsed(self, coords, aggregator, **kwargs):
         """
