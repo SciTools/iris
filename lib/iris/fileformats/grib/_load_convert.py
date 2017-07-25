@@ -158,13 +158,21 @@ def unscale(value, factor):
 
     if isinstance(value, Iterable) or isinstance(factor, Iterable):
         def _masker(item):
+            # This is a small work around for an edge case, which is not
+            # evident in any of our sample GRIB2 messages, where an array
+            # of header elements contains missing values.
+            # iris.fileformats.grib.message returns these as None, but they
+            # are wanted as a numerical masked array, so a temporary mdi
+            # value is used, selected from a legacy implementation of iris,
+            # to construct the masked array. The valure is transient, only in
+            # scope for this function.
             numerical_mdi = 2 ** 32 - 1
             item = [numerical_mdi if i is None else i for i in item]
             result = ma.masked_equal(item, numerical_mdi)
             if ma.count_masked(result):
                 # Circumvent downstream NumPy "RuntimeWarning"
                 # of "overflow encountered in power" in _unscale
-                # for data containing _MDI.
+                # for data containing _MDI.  Remove transient _MDI value.
                 result.data[result.mask] = 0
             return result
         value = _masker(value)
