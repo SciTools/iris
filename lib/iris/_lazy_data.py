@@ -94,13 +94,14 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
 
     """
     if not is_lazy_data(data):
+        asarray = True
         if ma.isMaskedArray(data):
-            data = array_masked_to_nans(data)
-        data = da.from_array(data, chunks=chunks)
+            asarray = False
+        data = da.from_array(data, chunks=chunks, asarray=asarray)
     return data
 
 
-def as_concrete_data(data, **kwargs):
+def as_concrete_data(data):
     """
     Return the actual content of a lazy array, as a numpy array.
     If the input data is a NumPy `ndarray` or masked array, return it
@@ -108,16 +109,10 @@ def as_concrete_data(data, **kwargs):
 
     If the input data is lazy, return the realised result.
 
-    Where lazy data contains NaNs these are translated by filling or converting
-    to masked data, using the :func:`~iris._lazy_data.convert_nans_array`
-    function.
-
     Args:
 
     * data:
         A dask array, NumPy `ndarray` or masked array
-
-    Kwargs are passed through to :func:`~iris._lazy_data.convert_nans_array`.
 
     Returns:
         A NumPy `ndarray` or masked array.
@@ -129,8 +124,6 @@ def as_concrete_data(data, **kwargs):
         # rather than a numpy.ndarray object.
         # Recorded in https://github.com/dask/dask/issues/2111.
         data = np.asanyarray(data.compute())
-        # Convert any missing data as requested.
-        data = convert_nans_array(data, **kwargs)
 
     return data
 

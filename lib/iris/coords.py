@@ -1866,12 +1866,7 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('The data payload of a CellMeasure may not be '
                              'None; it must be a numpy array or equivalent.')
         if is_lazy_data(data) and data.dtype.kind in 'biu':
-            # Disallow lazy integral data, as it will cause problems with dask
-            # if it turns out to contain any masked points.
             # Non-floating cell measures are not valid up to CF v1.7 anyway,
-            # but this avoids any possible problems with non-compliant files.
-            # Future usage could be supported by adding a fill_value and dtype
-            # as for cube data.  For now, disallowing it is just simpler.
             msg = ('Cannot create cell measure with lazy data of type {}, as '
                    'integer types are not currently supported.')
             raise ValueError(msg.format(data.dtype))

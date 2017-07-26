@@ -1081,7 +1081,7 @@ def _pp_attribute_names(header_defn):
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
-                          'boundary_packing', '_realised_dtype']
+                          'boundary_packing']
     return normal_headers + special_headers + extra_data + special_attributes
 
 
@@ -1114,7 +1114,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         self.raw_lbtim = None
         self.raw_lbpack = None
         self.boundary_packing = None
-        self._realised_dtype = None
         if header is not None:
             self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
@@ -1286,9 +1285,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         """
         if is_lazy_data(self._data):
             # Replace with real data on the first access.
-            self._data = as_concrete_data(self._data,
-                                          nans_replacement=ma.masked,
-                                          result_dtype=self.realised_dtype)
+            self._data = as_concrete_data(self._data)
         return self._data
 
     @data.setter
@@ -1297,16 +1294,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
     def core_data(self):
         return self._data
-
-    @property
-    def realised_dtype(self):
-        return self._data.dtype \
-            if self._realised_dtype is None \
-            else self._realised_dtype
-
-    @realised_dtype.setter
-    def realised_dtype(self, value):
-        self._realised_dtype = value
 
     @property
     def calendar(self):
@@ -1401,8 +1388,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                 # Integer or Boolean data : No masking is supported.
                 msg = 'Non-floating masked data cannot be saved to PP.'
                 raise ValueError(msg)
-            fill_value = self.bmdi
-            data = data.filled(fill_value=fill_value)
+            data = data.filled(fill_value=self.bmdi)
 
         # Make sure the data is big-endian
         if data.dtype.newbyteorder('>') != data.dtype:
@@ -1900,7 +1886,6 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field.realised_dtype = dtype.newbyteorder('=')
         block_shape = data_shape if 0 not in data_shape else (1, 1)
         field.data = as_lazy_data(proxy, chunks=block_shape)
 

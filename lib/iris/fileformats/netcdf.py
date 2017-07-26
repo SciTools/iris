@@ -510,11 +510,10 @@ def _load_cube(engine, cf, cf_var, filename):
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue', None)
 
-    dtype = nan_array_type(dummy_data.dtype)
-    proxy = NetCDFDataProxy(cf_var.shape, dtype,
+    proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
     data = as_lazy_data(proxy, chunks=cf_var.shape)
-    cube = iris.cube.Cube(data, fill_value=fill_value, dtype=dummy_data.dtype)
+    cube = iris.cube.Cube(data)
 
     # Reset the pyke inference engine.
     engine.reset()
@@ -1958,7 +1957,11 @@ class Saver(object):
             # Explicitly assign the fill_value, which will be the type default
             # in the case of an unmasked array.
             if packing is None:
-                fill_value = cube.fill_value
+                if hasattr(cube.lazy_data(), 'fill_value'):
+                    fill_value = cube.lazy_data().fill_value
+                else:
+                    fill_value = None
+
                 dtype = cube.lazy_data().dtype.newbyteorder('=')
 
             cf_var = self._dataset.createVariable(
@@ -1967,12 +1970,8 @@ class Saver(object):
                 **kwargs)
             set_packing_ncattrs(cf_var)
 
-            # Now stream the cube data payload straight to the netCDF
-            # data variable within the netCDF file, where any NaN values
-            # are replaced with the specified cube fill_value.
-            data = da.map_blocks(convert_nans_array, cube.lazy_data(),
-                                 nans_replacement=cube.fill_value,
-                                 result_dtype=cube.dtype)
+            data = cube.lazy_data()
+
             da.store([data], [cf_var])
 
         if cube.standard_name:

@@ -120,10 +120,6 @@ class GribMessage(object):
         # Default for fill value is None.
         return None
 
-    @property
-    def realised_dtype(self):
-        return np.dtype('f8')
-
     def core_data(self):
         return self.data
 
@@ -164,8 +160,7 @@ class GribMessage(object):
                 shape = (grid_section['numberOfDataPoints'],)
             else:
                 shape = (grid_section['Nj'], grid_section['Ni'])
-            proxy = _DataProxy(shape, self.realised_dtype, np.nan,
-                               self._recreate_raw)
+            proxy = _DataProxy(shape, np.dtype('f8'), self._recreate_raw)
             data = as_lazy_data(proxy)
         else:
             fmt = 'Grid definition template {} is not supported'
@@ -196,7 +191,7 @@ class _DataProxy(object):
 
     __slots__ = ('shape', 'dtype', 'recreate_raw')
 
-    def __init__(self, shape, dtype, fill_value, recreate_raw):
+    def __init__(self, shape, dtype, recreate_raw):
         self.shape = shape
         self.dtype = dtype
         self.recreate_raw = recreate_raw
@@ -258,10 +253,9 @@ class _DataProxy(object):
                 # Only the non-masked values are included in codedValues.
                 _data = np.empty(shape=bitmap.shape)
                 _data[bitmap.astype(bool)] = data
-                # Use nan where input = 1, the opposite of the behaviour
-                # specified by the GRIB spec.
-                _data[np.logical_not(bitmap.astype(bool))] = np.nan
-                data = _data
+                # `ma.masked_array` masks where input = 1, the opposite of
+                # the behaviour specified by the GRIB spec.
+                data = ma.masked_array(_data, mask=np.logical_not(bitmap))
             else:
                 msg = 'Shapes of data and bitmap do not match.'
                 raise TranslationError(msg)
@@ -272,7 +266,8 @@ class _DataProxy(object):
 
     def __repr__(self):
         msg = '<{self.__class__.__name__} shape={self.shape} ' \
-              'dtype={self.dtype!r} recreate_raw={self.recreate_raw!r} '
+              'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
+              'recreate_raw={self.recreate_raw!r} '
         return msg.format(self=self)
 
     def __getstate__(self):
