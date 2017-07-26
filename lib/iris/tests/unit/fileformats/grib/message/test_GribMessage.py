@@ -102,8 +102,7 @@ class Test_data__masked(tests.IrisTest):
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
                                       7: {'codedValues': input_values}})
-        result = as_concrete_data(message.data, nans_replacement=ma.masked,
-                                  result_dtype=data_type)
+        result = as_concrete_data(message.data)
         expected = ma.masked_array(output_values,
                                    np.logical_not(self.bitmap))
         expected = expected.reshape(self.shape)
@@ -121,8 +120,7 @@ class Test_data__masked(tests.IrisTest):
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
                                       7: {'codedValues': input_values}})
-        result = as_concrete_data(message.data, nans_replacement=ma.masked,
-                                  result_dtype=data_type)
+        result = as_concrete_data(message.data)
         expected = ma.masked_array(output_values,
                                    np.logical_not(self.bitmap))
         expected = expected.reshape(self.shape)
@@ -137,7 +135,7 @@ class Test_data__masked(tests.IrisTest):
                                           'bitmap': self.bitmap},
                                       7: {'codedValues': values}})
         with self.assertRaisesRegexp(TranslationError, 'do not match'):
-            as_concrete_data(message.data, nans_replacement=ma.masked)
+            as_concrete_data(message.data)
 
     def test_bitmap__invalid_indicator(self):
         values = np.arange(12)
@@ -146,7 +144,7 @@ class Test_data__masked(tests.IrisTest):
                                           'bitmap': None},
                                       7: {'codedValues': values}})
         with self.assertRaisesRegexp(TranslationError, 'unsupported bitmap'):
-            as_concrete_data(message.data, nans_replacement=ma.masked)
+            as_concrete_data(message.data)
 
 
 class Test_data__unsupported(tests.IrisTest):

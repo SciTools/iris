@@ -136,7 +136,7 @@ class TestDataMergeCombos(tests.IrisTest):
         y = np.arange(N)
         payload = self._make_data(data, dtype=dtype, fill_value=fill_value,
                                   mask=mask, lazy=lazy, N=N)
-        cube = iris.cube.Cube(payload, dtype=dtype, fill_value=fill_value)
+        cube = iris.cube.Cube(payload)
         lat = DimCoord(y, standard_name='latitude', units='degrees')
         cube.add_dim_coord(lat, 0)
         lon = DimCoord(x, standard_name='longitude', units='degrees')
@@ -155,14 +155,12 @@ class TestDataMergeCombos(tests.IrisTest):
     def _check_fill_value(self, result, fill0, fill1):
         expected_fill_value = self._expected_fill_value(fill0, fill1)
         if expected_fill_value is None:
-            self.assertIsNone(result.fill_value)
             data = result.data
             if ma.isMaskedArray(data):
                 np_fill_value = ma.masked_array(0,
                                                 dtype=result.dtype).fill_value
                 self.assertEqual(data.fill_value, np_fill_value)
         else:
-            self.assertEqual(result.fill_value, expected_fill_value)
             data = result.data
             if ma.isMaskedArray(data):
                 self.assertEqual(data.fill_value, expected_fill_value)
@@ -251,7 +249,6 @@ class TestDataMergeCombos(tests.IrisTest):
                                  fill_value=fill_value) for i in range(3)]
         for combo in itertools.permutations(cubes):
             result = iris.cube.CubeList(combo).merge_cube()
-            self.assertEqual(result.fill_value, fill_value)
             self.assertEqual(result.data.fill_value, fill_value)
 
     def test_fill_value_invariant_to_order__all_None(self):
@@ -259,7 +256,6 @@ class TestDataMergeCombos(tests.IrisTest):
                                  fill_value=None) for i in range(3)]
         for combo in itertools.permutations(cubes):
             result = iris.cube.CubeList(combo).merge_cube()
-            self.assertIsNone(result.fill_value)
             np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
             self.assertEqual(result.data.fill_value, np_fill_value)
 
@@ -270,7 +266,6 @@ class TestDataMergeCombos(tests.IrisTest):
         cubes.append(self._make_cube(3, mask=True, fill_value=4123))
         for combo in itertools.permutations(cubes):
             result = iris.cube.CubeList(combo).merge_cube()
-            self.assertIsNone(result.fill_value)
             np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
             self.assertEqual(result.data.fill_value, np_fill_value)
 
@@ -280,7 +275,6 @@ class TestDataMergeCombos(tests.IrisTest):
         cubes.append(self._make_cube(2, mask=True, fill_value=4321))
         for combo in itertools.permutations(cubes):
             result = iris.cube.CubeList(combo).merge_cube()
-            self.assertIsNone(result.fill_value)
             np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
             self.assertEqual(result.data.fill_value, np_fill_value)
 

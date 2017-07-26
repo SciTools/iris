@@ -1199,7 +1199,6 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]
             self.assertEqual(merged_cube.dtype, dtype)
-            self.assertEqual(merged_cube.fill_value, fill_value)
 
 
 @tests.skip_data

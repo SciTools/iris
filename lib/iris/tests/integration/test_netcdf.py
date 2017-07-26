@@ -212,7 +212,7 @@ class TestLazySave(tests.IrisTest):
 
     def test_lazy_mask_preserve_fill_value(self):
         data = ma.array([0, 1], mask=[False, True])
-        cube = iris.cube.Cube(data, fill_value=-1)
+        cube = iris.cube.Cube(data)
         with self.temp_filename(suffix='.nc') as filename, \
                 self.temp_filename(suffix='.nc') as other_filename:
             iris.save(cube, filename, unlimited_dimensions=[])
