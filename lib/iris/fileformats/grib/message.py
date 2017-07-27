@@ -458,7 +458,7 @@ class Section(object):
         elif key in ('typeOfFirstFixedSurface', 'typeOfSecondFixedSurface'):
             # By default these values are returned as unhelpful strings but
             # we can use int representation to compare against instead.
-            res = self._get_value_or_missing(key)
+            res = self._get_value_or_missing(key, use_int=True)
         else:
             res = self._get_value_or_missing(key)
         return res
@@ -488,14 +488,17 @@ class Section(object):
         """Return coded keys available in this Section."""
         return self._keys
 
-    def _get_value_or_missing(self, key):
+    def _get_value_or_missing(self, key, use_int=False):
         """
         Return value of header element, or None if value is encoded as missing.
         Implementation of Regulations 92.1.4 and 92.1.5 via ECCodes.
 
         """
-        if gribapi.grib_is_missing(self._message_id, key) == 1:
+        if gribapi.grib_is_missing(self._message_id, key):
             result = None
         else:
-            result = gribapi.grib_get(self._message_id, key)
+            if use_int:
+                result = gribapi.grib_get(self._message_id, key, int)
+            else:
+                result = gribapi.grib_get(self._message_id, key)
         return result
