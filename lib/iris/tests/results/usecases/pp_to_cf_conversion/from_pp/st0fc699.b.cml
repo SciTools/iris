@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" fill_value="-1e+30" units="unknown">
+  <cube core-dtype="float32" dtype="float32" units="unknown">
     <attributes>
       <attribute name="STASH" value="m02s00i???"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
