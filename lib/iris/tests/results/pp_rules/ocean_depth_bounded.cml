@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" fill_value="-1e+30" standard_name="sea_water_potential_temperature" units="degC">
+  <cube core-dtype="float32" dtype="float32" standard_name="sea_water_potential_temperature" units="degC">
     <attributes>
       <attribute name="STASH" value="m02s00i101"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

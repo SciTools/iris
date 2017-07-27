@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float64" dtype="float64" fill_value="1e+20" long_name="Daily Mean Near-Surface Air Temperature" standard_name="air_temperature" units="Celsius" var_name="tas">
+  <cube core-dtype="float64" dtype="float64" long_name="Daily Mean Near-Surface Air Temperature" standard_name="air_temperature" units="Celsius" var_name="tas">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="Note" value="This dataset is for test purposes only"/>
