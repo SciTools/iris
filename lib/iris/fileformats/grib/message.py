@@ -494,7 +494,7 @@ class Section(object):
         Implementation of Regulations 92.1.4 and 92.1.5 via ECCodes.
 
         """
-        if gribapi.grib_is_missing(self._message_id, key):
+        if gribapi.grib_is_missing(self._message_id, key) == 1:
             result = None
         else:
             result = gribapi.grib_get(self._message_id, key)
