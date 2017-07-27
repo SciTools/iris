@@ -495,7 +495,7 @@ class Section(object):
 
         """
         if gribapi.grib_is_missing(self._message_id, key):
-            res = None
+            result = None
         else:
-            res = gribapi.grib_get(self._message_id, key)
+            result = gribapi.grib_get(self._message_id, key)
         return result
