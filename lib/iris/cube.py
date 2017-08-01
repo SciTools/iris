@@ -1577,7 +1577,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         :class:`~iris.cube.Cube`.
 
         """
-        return self._data_manager.core_data().dtype
+        return self._data_manager.dtype
 
     @property
     def ndim(self):

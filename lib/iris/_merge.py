@@ -1611,8 +1611,7 @@ class ProtoCube(object):
         """
 
         return _CubeSignature(cube.metadata, cube.shape,
-                              cube.lazy_data().dtype,
-                              cube._cell_measures_and_dims)
+                              cube.dtype, cube._cell_measures_and_dims)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""

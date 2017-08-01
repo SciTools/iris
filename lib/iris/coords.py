@@ -1866,7 +1866,7 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('The data payload of a CellMeasure may not be '
                              'None; it must be a numpy array or equivalent.')
         if is_lazy_data(data) and data.dtype.kind in 'biu':
-            # Non-floating cell measures are not valid up to CF v1.7 anyway,
+            # Non-floating cell measures are not valid up to CF v1.7
             msg = ('Cannot create cell measure with lazy data of type {}, as '
                    'integer types are not currently supported.')
             raise ValueError(msg.format(data.dtype))
