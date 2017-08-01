@@ -42,8 +42,7 @@ def normalise_order(cube):
     #     function when the circular flag is true.
     #   * scipy.interpolate.interp1d in 0.11.0 which is used in
     #     `Linear1dExtrapolator`.
-    data = np.ascontiguousarray(cube.data)
-    cube.replace(data, fill_value=cube.fill_value)
+    cube.data = np.ascontiguousarray(cube.data)
 
 
 class TestLinearExtrapolator(tests.IrisTest):

@@ -518,7 +518,7 @@ class Test2D(tests.IrisTest):
         cubes.append(cube)
         mask = [(0, 1), (1, 0)]
         cube = _make_cube(x, (2, 4), 2, dtype=dtype, mask=mask)
-        cube.replace(cube.lazy_data(), dtype=dtype, fill_value=fill_value)
+        cube.data = cube.lazy_data()
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertCML(result, ('concatenate', 'concat_masked_2y2d_int16.cml'))
@@ -539,7 +539,7 @@ class Test2D(tests.IrisTest):
         fill_value = -37
         mask = [(0, 1), (1, 0)]
         cube = _make_cube(x, (2, 4), 2, dtype=dtype, mask=mask)
-        cube.replace(cube.lazy_data(), dtype=dtype, fill_value=fill_value)
+        cube.data = cube.lazy_data()
         cubes.append(cube)
         mask = [(0, 1), (0, 1)]
         cube = _make_cube(x, (0, 2), 1, dtype=dtype, mask=mask,

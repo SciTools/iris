@@ -2909,18 +2909,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return cube_xml_element
 
-    def replace(self, data):
-        """
-        Perform an in-place replacement of the cube data.
-
-        Args:
-
-        * data:
-            Replace the data of the cube with the provided data payload.
-
-        """
-        self._data_manager.replace(data)
-
     def copy(self, data=None):
         """
         Returns a deep copy of this cube.

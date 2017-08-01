@@ -187,12 +187,6 @@ class DataManager(object):
                     data = copy.deepcopy(self._lazy_array, memo)
                 else:
                     data = self._real_array.copy()
-            else:
-                # Check that the replacement data is valid relative to
-                # the currently managed data.
-                DataManager(self.core_data()).replace(data)
-                # If the replacement data is valid, then use it but
-                # without copying it.
             result = DataManager(data)
         except ValueError as error:
             emsg = 'Cannot copy {!r} - {}'
@@ -370,18 +364,3 @@ class DataManager(object):
             result = as_lazy_data(self._real_array)
 
         return result
-
-    def replace(self, data):
-        """
-        Perform an in-place replacement of the managed data.
-
-        Args:
-
-        * data:
-            Replace the managed data with either the :class:`~numpy.ndarray`
-            or :class:`~numpy.ma.core.MaskedArray` real data, or lazy
-            :class:`dask.array.core.Array`
-
-        """
-        # Perform in-place data assignment.
-        self.data = data
