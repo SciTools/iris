@@ -30,7 +30,7 @@ import gribapi
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import array_masked_to_nans, as_lazy_data
+from iris._lazy_data import as_lazy_data
 from iris.exceptions import TranslationError
 
 

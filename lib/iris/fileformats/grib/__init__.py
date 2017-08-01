@@ -34,7 +34,7 @@ import gribapi
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, convert_nans_array
+from iris._lazy_data import as_lazy_data
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError, NotYetImplementedError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
@@ -182,9 +182,6 @@ class GribWrapper(object):
             self._data = as_lazy_data(proxy)
         else:
             values_array = _message_values(grib_message, shape)
-            # mask where the values are nan
-            self.data = convert_nans_array(values_array,
-                                           nans_replacement=ma.masked)
 
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
@@ -691,6 +688,10 @@ def _message_values(grib_message, shape):
     data = gribapi.grib_get_double_array(grib_message, 'values')
     data = data.reshape(shape)
 
+    # Handle missing values in a sensible way.
+    mask = np.isnan(data)
+    if mask.any():
+        data = ma.array(data, mask=mask, fill_value=np.nan)
     return data
 
 

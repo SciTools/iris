@@ -39,8 +39,7 @@ import numpy.ma as ma
 import netcdftime
 
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import (array_masked_to_nans, as_concrete_data,
-                             as_lazy_data, is_lazy_data)
+from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
@@ -862,8 +861,8 @@ class PPDataProxy(object):
 
     @property
     def dtype(self):
-        return np.dtype('f8') if self.src_dtype.kind == 'i' \
-                 else self.src_dtype.newbyteorder('=')
+        return np.dtype('f8') if self.src_dtype.kind == 'i' else \
+            self.src_dtype.newbyteorder('=')
 
     @property
     def fill_value(self):

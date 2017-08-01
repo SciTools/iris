@@ -56,8 +56,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from iris._lazy_data import (array_masked_to_nans, as_lazy_data,
-                             convert_nans_array, nan_array_type)
+from iris._lazy_data import as_lazy_data
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -395,14 +394,7 @@ class NetCDFDataProxy(object):
             var = variable[keys]
         finally:
             dataset.close()
-        if ma.isMaskedArray(var):
-            if self.dtype.kind in 'biu':
-                msg = "NetCDF variable {!r} has masked data, which is not " \
-                      "supported for declared dtype {!r}."
-                raise TypeError(
-                    msg.format(self.variable_name, self.dtype.name))
-            var = array_masked_to_nans(var)
-        return np.asanyarray(var, dtype=self.dtype)
+        return np.asanyarray(var)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
