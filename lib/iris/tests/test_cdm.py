@@ -1030,13 +1030,13 @@ class TestCubeCollapsed(tests.IrisTest):
         # want to catch cases where there is a loss of precision however.
         if dual_stage.dtype > cube.dtype:
             data = dual_stage.data.astype(cube.dtype)
-            dual_stage.replace(data, fill_value=dual_stage.fill_value)
+            dual_stage.data = data
         self.assertCMLApproxData(dual_stage, ('cube_collapsed', '%s_%s_dual_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         single_stage = cube.collapsed([a_name, b_name], iris.analysis.MEAN)
         if single_stage.dtype > cube.dtype:
             data = single_stage.data.astype(cube.dtype)
-            single_stage.replace(data, fill_value=single_stage.fill_value)
+            single_stage.data = data
         self.assertCMLApproxData(single_stage, ('cube_collapsed', '%s_%s_single_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         # Compare the cube bits that should match
@@ -1199,7 +1199,6 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]
             self.assertEqual(merged_cube.dtype, dtype)
-            self.assertEqual(merged_cube.fill_value, fill_value)
 
 
 @tests.skip_data

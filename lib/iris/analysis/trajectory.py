@@ -380,9 +380,6 @@ def interpolate(cube, sample_points, method=None):
             new_cube_coord.points = src_coord.points[fancy_coord_index_arrays]
             # NOTE: the new coords do *not* have bounds.
 
-    # Set the fill-value last, as any previous data setter will clear it.
-    new_cube.fill_value = cube.fill_value
-
     return new_cube
 
 
@@ -547,7 +544,6 @@ class UnstructuredNearestNeigbourRegridder(object):
         # Make a new result cube with the reshaped data.
         result_cube = iris.cube.Cube(data_2d_x_and_y)
         result_cube.metadata = src_cube.metadata
-        result_cube.fill_value = src_cube.fill_value
 
         # Copy all the coords from the trajectory result.
         i_trajectory_dim = result_trajectory_cube.ndim - 1

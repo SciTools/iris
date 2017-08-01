@@ -43,13 +43,13 @@ class Test_lazy_aggregate(tests.IrisTest):
 
     def test_mdtol_default(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis)
-        masked_result = as_concrete_data(agg, nans_replacement=ma.masked)
+        masked_result = as_concrete_data(agg)
         self.assertMaskedArrayAlmostEqual(masked_result,
                                           self.expected_masked)
 
     def test_mdtol_below(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis, mdtol=0.3)
-        masked_result = as_concrete_data(agg, nans_replacement=ma.masked)
+        masked_result = as_concrete_data(agg)
         expected_masked = self.expected_masked
         expected_masked.mask = [False, True, True, True]
         self.assertMaskedArrayAlmostEqual(masked_result,
@@ -57,7 +57,7 @@ class Test_lazy_aggregate(tests.IrisTest):
 
     def test_mdtol_above(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis, mdtol=0.4)
-        masked_result = as_concrete_data(agg, nans_replacement=ma.masked)
+        masked_result = as_concrete_data(agg)
         self.assertMaskedArrayAlmostEqual(masked_result,
                                           self.expected_masked)
 
@@ -66,7 +66,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         collapse_axes = (0, 2)
         lazy_data = as_lazy_data(data)
         agg = MEAN.lazy_aggregate(lazy_data, axis=collapse_axes)
-        result = as_concrete_data(agg, nans_replacement=ma.masked)
+        result = as_concrete_data(agg)
         expected = np.mean(data, axis=collapse_axes)
         self.assertArrayAllClose(result, expected)
 

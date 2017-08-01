@@ -330,7 +330,6 @@ class _CubeSignature(object):
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
-        self.fill_value = cube.fill_value
 
         #
         # Collate the dimension coordinate metadata.
@@ -675,8 +674,6 @@ class _ProtoCube(object):
                                   dim_coords_and_dims=dim_coords_and_dims,
                                   aux_coords_and_dims=aux_coords_and_dims,
                                   cell_measures_and_dims=new_cm_and_dims,
-                                  dtype=cube_signature.data_type,
-                                  fill_value=cube_signature.fill_value,
                                   **kwargs)
         else:
             # There are no other source-cubes to concatenate
@@ -722,13 +719,6 @@ class _ProtoCube(object):
 
         # Check for compatible coordinate signatures.
         if match:
-            fill_value = self._cube_signature.fill_value
-            # Determine whether the fill value requires to be
-            # demoted to the default value.
-            if fill_value is not None:
-                if cube_signature.fill_value != fill_value:
-                    # Demote the fill value to the default.
-                    self._cube_signature.fill_value = None
             coord_signature = _CoordSignature(cube_signature)
             candidate_axis = self._coord_signature.candidate_axis(
                 coord_signature)

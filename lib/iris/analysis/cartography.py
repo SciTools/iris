@@ -765,7 +765,6 @@ def project(cube, target_proj, nx=None, ny=None):
 
     # Copy metadata across
     new_cube.metadata = cube.metadata
-    new_cube.fill_value = cube.fill_value
 
     return new_cube, extent
 

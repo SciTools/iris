@@ -627,7 +627,6 @@ class RectilinearInterpolator(object):
         cube = self._src_cube
         new_cube = iris.cube.Cube(interpolated_data)
         new_cube.metadata = cube.metadata
-        new_cube.fill_value = cube.fill_value
 
         def construct_new_coord_given_points(coord, points):
             # Handle what was previously a DimCoord which may no longer be
