@@ -43,7 +43,7 @@ def normalise_order(cube):
     #   * scipy.interpolate.interp1d in 0.11.0 which is used in
     #     `Linear1dExtrapolator`.
     data = np.ascontiguousarray(cube.data)
-    cube.replace(data, fill_value=cube.fill_value)
+    cube.data = data
 
 
 class TestLinearExtrapolator(tests.IrisTest):

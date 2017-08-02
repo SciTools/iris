@@ -129,13 +129,13 @@ class TestAnalysisWeights(tests.IrisTest):
         # to catch cases where there is a loss of precision however.
         if a.dtype > np.float32:
             cast_data = a.data.astype(np.float32)
-            a.replace(cast_data, fill_value=a.fill_value)
+            a.data = cast_data
         self.assertCMLApproxData(a, ('analysis', 'weighted_mean_lat.cml'))
 
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
         if b.dtype > np.float32:
             cast_data = b.data.astype(np.float32)
-            b.replace(cast_data, fill_value=b.fill_value)
+            b.data = cast_data
         b.data = np.asarray(b.data)
         self.assertCMLApproxData(b, ('analysis', 'weighted_mean_lon.cml'))
         self.assertEqual(b.coord('dummy').shape, (1, ))
@@ -144,7 +144,7 @@ class TestAnalysisWeights(tests.IrisTest):
         c = cube.collapsed([lat_coord[:], lon_coord], iris.analysis.MEAN, weights=weights)
         if c.dtype > np.float32:
             cast_data = c.data.astype(np.float32)
-            c.replace(cast_data, fill_value=c.fill_value)
+            c.data = cast_data
         self.assertCMLApproxData(c, ('analysis', 'weighted_mean_latlon.cml'))
         self.assertEqual(c.coord('dummy').shape, (1, ))
 
