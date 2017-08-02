@@ -500,8 +500,8 @@ def _load_cube(engine, cf, cf_var, filename):
         dummy_data = cf_var.add_offset + dummy_data
 
     # Create cube with deferred data, but no metadata
-    fill_value = getattr(cf_var.cf_data, '_FillValue', None)
-
+    fill_value = getattr(cf_var.cf_data, '_FillValue',
+                         netCDF4.default_fillvals[cf_var.dtype.str[1:]])
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
     data = as_lazy_data(proxy, chunks=cf_var.shape)
@@ -1949,12 +1949,10 @@ class Saver(object):
             # Explicitly assign the fill_value, which will be the type default
             # in the case of an unmasked array.
             if packing is None:
-                if hasattr(cube.lazy_data(), 'fill_value'):
-                    fill_value = cube.lazy_data().fill_value
-                else:
-                    fill_value = None
-
-                dtype = cube.lazy_data().dtype.newbyteorder('=')
+                fill_value = None
+                if not cube.has_lazy_data() and ma.isMaskedArray(cube.data):
+                    fill_value = cube.data.fill_value
+                dtype = cube.dtype.newbyteorder('=')
 
             cf_var = self._dataset.createVariable(
                 cf_name, dtype,
@@ -1962,9 +1960,7 @@ class Saver(object):
                 **kwargs)
             set_packing_ncattrs(cf_var)
 
-            data = cube.lazy_data()
-
-            da.store([data], [cf_var])
+            da.store([cube.lazy_data()], [cf_var])
 
         if cube.standard_name:
             _setncattr(cf_var, 'standard_name', cube.standard_name)

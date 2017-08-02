@@ -2901,9 +2901,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if order and ma.isMaskedArray(data):
                 data_xml_element.setAttribute('mask_order',
                                               _order(data.mask))
-            else:
-                dtype = self.lazy_data().dtype
-            data_xml_element.setAttribute('dtype', dtype.name)
+        else:
+            dtype = self.lazy_data().dtype
+        data_xml_element.setAttribute('dtype', dtype.name)
 
         cube_xml_element.appendChild(data_xml_element)
 

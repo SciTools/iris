@@ -255,7 +255,8 @@ class _DataProxy(object):
                 _data[bitmap.astype(bool)] = data
                 # `ma.masked_array` masks where input = 1, the opposite of
                 # the behaviour specified by the GRIB spec.
-                data = ma.masked_array(_data, mask=np.logical_not(bitmap))
+                data = ma.masked_array(_data, mask=np.logical_not(bitmap),
+                                       fill_value=np.nan)
             else:
                 msg = 'Shapes of data and bitmap do not match.'
                 raise TranslationError(msg)
@@ -266,8 +267,7 @@ class _DataProxy(object):
 
     def __repr__(self):
         msg = '<{self.__class__.__name__} shape={self.shape} ' \
-              'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
-              'recreate_raw={self.recreate_raw!r} '
+              'dtype={self.dtype!r} recreate_raw={self.recreate_raw!r} '
         return msg.format(self=self)
 
     def __getstate__(self):

@@ -761,14 +761,14 @@ THEN
 
 #MDI
 IF
-    isinstance(cm.data, ma.core.MaskedArray)
+    ma.isMaskedArray(cm.data)
 THEN
     pp.bmdi = cm.data.fill_value
 
 IF
     not isinstance(cm.data, ma.core.MaskedArray)
 THEN
-pp.bmdi = -1e30
+    pp.bmdi = -1e30
 
 
 # CFname mega rule
