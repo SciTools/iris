@@ -315,7 +315,7 @@ class _CoordSignature(namedtuple('CoordSignature',
 
 class _CubeSignature(namedtuple('CubeSignature',
                                 ['defn', 'data_shape', 'data_type',
-                                 'fill_value', 'cell_measures_and_dims'])):
+                                 'cell_measures_and_dims'])):
     """
     Criterion for identifying a specific type of :class:`iris.cube.Cube`
     based on its metadata.
@@ -330,9 +330,6 @@ class _CubeSignature(namedtuple('CubeSignature',
 
     * data_type:
         The data payload :class:`numpy.dtype` of a :class:`iris.cube.Cube`.
-
-    * fill_value:
-        The fill-value for the data payload of a :class:`iris.cube.Cube`.
 
     * cell_measures_and_dims:
         A list of cell_measures and dims for the cube.
@@ -1241,9 +1238,7 @@ class ProtoCube(object):
                 # All inputs were concrete, so turn the result back into a
                 # normal array.
                 dtype = self._cube_signature.data_type
-                merged_data = as_concrete_data(merged_data,
-                                               nans_replacement=ma.masked,
-                                               result_dtype=dtype)
+                merged_data = as_concrete_data(merged_data)
                 # Unmask the array if it has no masked points.
                 if (ma.isMaskedArray(merged_data) and
                         not ma.is_masked(merged_data)):
@@ -1283,14 +1278,6 @@ class ProtoCube(object):
         other = self._build_signature(cube)
         match = cube_signature.match(other, error_on_mismatch)
         if match:
-            # Determine whether the fill value requires to be demoted
-            # to the default value.
-            if cube_signature.fill_value is not None:
-                if cube_signature.fill_value != other.fill_value:
-                    # Demote the fill value to the default.
-                    signature = self._build_signature(self._source,
-                                                      default_fill_value=True)
-                    self._cube_signature = signature
             coord_payload = self._extract_coord_payload(cube)
             match = coord_payload.match_signature(self._coord_signature,
                                                   error_on_mismatch)
@@ -1504,8 +1491,6 @@ class ProtoCube(object):
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
                               cell_measures_and_dims=cms_and_dims,
-                              fill_value=signature.fill_value,
-                              dtype=signature.data_type,
                               **kwargs)
 
         # Add on any aux coord factories.
@@ -1611,7 +1596,7 @@ class ProtoCube(object):
                               self._vector_aux_coords_dims):
             aux_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
-    def _build_signature(self, cube, default_fill_value=False):
+    def _build_signature(self, cube):
         """
         Generate the signature that defines this cube.
 
@@ -1620,22 +1605,13 @@ class ProtoCube(object):
         * cube:
             The source cube to create the cube signature from.
 
-        Kwargs:
-
-        * default_fill_value:
-            Override the cube fill value with the default fill value of None.
-            Default is False i.e. use the provided cube.fill_value when
-            constructing the cube signature.
-
         Returns:
             The cube signature.
 
         """
-        fill_value = cube.fill_value
-        if default_fill_value:
-            fill_value = None
-        return _CubeSignature(cube.metadata, cube.shape, cube.dtype,
-                              fill_value, cube._cell_measures_and_dims)
+
+        return _CubeSignature(cube.metadata, cube.shape,
+                              cube.dtype, cube._cell_measures_and_dims)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""

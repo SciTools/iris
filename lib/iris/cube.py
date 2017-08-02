@@ -41,7 +41,6 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
-from iris._deprecation import warn_deprecated
 
 import iris._merge
 import iris.analysis
@@ -648,7 +647,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
                  aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None, fill_value=None, dtype=None):
+                 cell_measures_and_dims=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -695,14 +694,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :mod:`iris.aux_factory`.
         * cell_measures_and_dims
             A list of CellMeasures with dimension mappings.
-        * fill_value
-            The intended fill-value of :class:`~iris.cube.Cube` masked data.
-            Note that, the fill-value is cast relative to the dtype of the
-            :class:`~iris.cube.Cube`.
-        * dtype
-            The intended dtype of the specified lazy data, which must be
-            either integer or boolean. This is to handle the case of lazy
-            integer or boolean masked data.
 
         For example::
             >>> from iris.coords import DimCoord
@@ -723,8 +714,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         # Initialise the cube data manager.
-        self._data_manager = DataManager(data, fill_value=fill_value,
-                                         realised_dtype=dtype)
+        self._data_manager = DataManager(data)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1590,27 +1580,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return self._data_manager.dtype
 
     @property
-    def fill_value(self):
-        """
-        A fill value for the data of the :class:`~iris.cube.Cube`.
-
-        This is a value suitable for filling masked points in this cube's data.
-        It may be ``None``, meaning that no suitable fill value is known.
-
-        .. Note::
-
-            Ideally, this value will not occur anywhere in the cube data.
-            Thus, many operations that change cube data will also set
-            ``fill_value`` to ``None``.
-
-        """
-        return self._data_manager.fill_value
-
-    @fill_value.setter
-    def fill_value(self, fill_value):
-        self._data_manager.fill_value = fill_value
-
-    @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
         return self._data_manager.ndim
@@ -2146,9 +2115,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
 
         # Make the new cube slice
-        cube = Cube(data,
-                    fill_value=self.fill_value,
-                    dtype=self._data_manager.dtype)
+        cube = Cube(data)
         cube.metadata = deepcopy(self.metadata)
 
         # Record a mapping from old coordinate IDs to new coordinates,
@@ -2386,9 +2353,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 module = ma if ma.isMaskedArray(self.data) else np
                 func = module.concatenate
             data = func(chunk_data, dim)
-            result = iris.cube.Cube(data,
-                                    fill_value=self.fill_value,
-                                    dtype=self.dtype)
+            result = iris.cube.Cube(data)
             result.metadata = deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
@@ -2778,8 +2743,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Transpose the data payload.
         dm = self._data_manager
         data = dm.core_data().transpose(new_order)
-        self._data_manager = DataManager(data, fill_value=dm.fill_value,
-                                         realised_dtype=dm.dtype)
+        self._data_manager = DataManager(data)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -2821,8 +2785,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.var_name:
             cube_xml_element.setAttribute('var_name', self.var_name)
         cube_xml_element.setAttribute('units', str(self.units))
-        if self.fill_value is not None:
-            cube_xml_element.setAttribute('fill_value', str(self.fill_value))
         cube_xml_element.setAttribute('dtype', self.dtype.name)
         cube_xml_element.setAttribute('core-dtype',
                                       self.core_data().dtype.name)
@@ -2947,32 +2909,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return cube_xml_element
 
-    def replace(self, data, dtype=None, fill_value=None):
-        """
-        Perform an in-place replacement of the cube data.
-
-        Args:
-
-        * data:
-            Replace the data of the cube with the provided data payload.
-
-        Kwargs:
-
-        * dtype:
-            Replacement for the intended dtype of the realised lazy data.
-
-        * fill_value:
-            Replacement for the cube data fill-value.
-
-        .. note::
-            Data replacement alone will clear the intended dtype
-            of the realised lazy data and the fill-value.
-
-        """
-        self._data_manager.replace(data, fill_value=fill_value,
-                                   realised_dtype=dtype)
-
-    def copy(self, data=None, dtype='none', fill_value='none'):
+    def copy(self, data=None):
         """
         Returns a deep copy of this cube.
 
@@ -2981,19 +2918,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * data:
             Replace the data of the cube copy with provided data payload.
 
-        * dtype:
-            Replacement for the intended dtype of the realised lazy data.
-
-        * fill_value:
-            Replacement fill-value.
-
         Returns:
             A copy instance of the :class:`Cube`.
 
         """
         memo = {}
-        cube = self._deepcopy(memo, data=data, dtype=dtype,
-                              fill_value=fill_value)
+        cube = self._deepcopy(memo, data=data)
         return cube
 
     def __copy__(self):
@@ -3004,9 +2934,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __deepcopy__(self, memo):
         return self._deepcopy(memo)
 
-    def _deepcopy(self, memo, data=None, dtype='none', fill_value='none'):
-        dm = self._data_manager.copy(data=data, fill_value=fill_value,
-                                     realised_dtype=dtype)
+    def _deepcopy(self, memo, data=None):
+        dm = self._data_manager.copy(data=data)
 
         new_dim_coords_and_dims = deepcopy(self._dim_coords_and_dims, memo)
         new_aux_coords_and_dims = deepcopy(self._aux_coords_and_dims, memo)
@@ -3025,9 +2954,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         new_cube = Cube(dm.core_data(),
                         dim_coords_and_dims=new_dim_coords_and_dims,
-                        aux_coords_and_dims=new_aux_coords_and_dims,
-                        fill_value=dm.fill_value,
-                        dtype=dm.dtype)
+                        aux_coords_and_dims=new_aux_coords_and_dims)
 
         new_cube.metadata = deepcopy(self.metadata, memo)
 
@@ -3042,10 +2969,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if isinstance(other, Cube):
             result = self.metadata == other.metadata
-
-            # check the cube fill-value.
-            if result:
-                result = self.fill_value == other.fill_value
 
             # having checked the metadata, now check the coordinates
             if result:

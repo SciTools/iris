@@ -341,9 +341,8 @@ def _copy_cube_transformed(src_cube, data, coord_func):
     assert src_cube.ndim == data.ndim
 
     # Start with just the metadata and the data...
-    new_cube = iris.cube.Cube(data,
-                              fill_value=src_cube.fill_value,
-                              dtype=src_cube.dtype)
+    new_cube = iris.cube.Cube(data)
+    new_cube.metadata = src_cube.metadata
     new_cube.metadata = src_cube.metadata
 
     # ... and then create all the coordinates.
