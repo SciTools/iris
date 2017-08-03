@@ -1263,7 +1263,7 @@ class Test___call____circular(tests.IrisTest):
         # instead of being an array.
         src = self.src
         src.coord('longitude').circular = True
-        src.data = ma.MaskedArray(src.data, fill_value=src.fill_value)
+        src.data = ma.MaskedArray(src.data)
         self.assertEqual(src.data.mask, False)
         method_results = self._check_circular_results(src, 'missingmask')
         for method_result in method_results:
