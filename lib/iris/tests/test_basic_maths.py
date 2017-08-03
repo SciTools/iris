@@ -360,11 +360,7 @@ class TestBasicMaths(tests.IrisTest):
 class TestDivideAndMultiply(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
-        # We require to preserve the cube fill_value
-        # across the cube data setter operation.
-        fill_value = self.cube.fill_value
         self.cube.data = self.cube.data - 260
-        self.cube.fill_value = fill_value
 
     def test_divide(self):
         a = self.cube
@@ -498,17 +494,11 @@ class TestDivideAndMultiply(tests.IrisTest):
 class TestExponentiate(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
-        # We require to preserve the cube fill_value
-        # across the cube data setter operation.
-        self.fill_value = self.cube.fill_value
         self.cube.data = self.cube.data - 260
-        self.cube.fill_value = self.fill_value
 
     def test_exponentiate(self):
         a = self.cube
         a.data = a.data.astype(np.float64)
-        # We require to preserve the cube fill_value after setting the data.
-        a.fill_value = self.fill_value
         e = pow(a, 4)
         self.assertCMLApproxData(e, ('analysis', 'exponentiate.cml'))
 
@@ -516,8 +506,6 @@ class TestExponentiate(tests.IrisTest):
         # Make sure we have something which we can take the root of.
         a = self.cube
         a.data = abs(a.data)
-        # We require to preserve the cube fill_value after setting the data.
-        a.fill_value = self.fill_value
         a.units **= 2
 
         e = a ** 0.5
