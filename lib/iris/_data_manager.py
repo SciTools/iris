@@ -187,6 +187,13 @@ class DataManager(object):
                     data = copy.deepcopy(self._lazy_array, memo)
                 else:
                     data = self._real_array.copy()
+            else:
+                # Check that the replacement data is valid relative to
+                # the currently managed data.
+                dm_check = DataManager(self.core_data())
+                dm_check.data = data
+                # If the replacement data is valid, then use it but
+                # without copying it.
             result = DataManager(data)
         except ValueError as error:
             emsg = 'Cannot copy {!r} - {}'

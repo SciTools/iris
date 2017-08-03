@@ -79,17 +79,6 @@ class Test___eq__(tests.IrisTest):
         dm2 = DataManager(np.ones(self.shape))
         self.assertFalse(dm1 == dm2)
 
-    def test_real_with_real__fill_value(self):
-        fill_value = 1234
-        dm1 = DataManager(self.real_array, fill_value=fill_value)
-        dm2 = DataManager(self.real_array, fill_value=fill_value)
-        self.assertEqual(dm1, dm2)
-
-    def test_real_with_real__fill_value_failure(self):
-        dm1 = DataManager(self.real_array, fill_value=1234)
-        dm2 = DataManager(self.real_array, fill_value=4321)
-        self.assertFalse(dm1 == dm2)
-
     def test_real_with_real__dtype_failure(self):
         dm1 = DataManager(self.real_array)
         dm2 = DataManager(self.real_array.astype(int))
@@ -111,39 +100,9 @@ class Test___eq__(tests.IrisTest):
         dm2 = DataManager(as_lazy_data(self.real_array) * 10)
         self.assertFalse(dm1 == dm2)
 
-    def test_lazy_with_lazy__fill_value(self):
-        fill_value = 1234
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=fill_value)
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=fill_value)
-        self.assertEqual(dm1, dm2)
-
-    def test_lazy_with_lazy__fill_value_failure(self):
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=1234)
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=4321)
-        self.assertFalse(dm1 == dm2)
-
     def test_lazy_with_lazy__dtype_failure(self):
         dm1 = DataManager(as_lazy_data(self.real_array))
         dm2 = DataManager(as_lazy_data(self.real_array).astype(int))
-        self.assertFalse(dm1 == dm2)
-
-    def test_lazy_with_lazy__realised_dtype(self):
-        dtype = np.dtype('int16')
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=dtype)
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=dtype)
-        self.assertEqual(dm1, dm2)
-
-    def test_lazy_with_lazy__realised_dtype_failure(self):
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=np.dtype('int8'))
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=np.dtype('int16'))
         self.assertFalse(dm1 == dm2)
 
     def test_non_DataManager_failure(self):
@@ -167,17 +126,6 @@ class Test___ne__(tests.IrisTest):
         dm2 = DataManager(self.real_array.copy())
         self.assertFalse(dm1 != dm2)
 
-    def test_real_with_real__fill_value(self):
-        dm1 = DataManager(self.real_array, fill_value=1234)
-        dm2 = DataManager(self.real_array, fill_value=4321)
-        self.assertNotEqual(dm1, dm2)
-
-    def test_real_with_real__fill_value_failure(self):
-        fill_value = 1234
-        dm1 = DataManager(self.real_array, fill_value=fill_value)
-        dm2 = DataManager(self.real_array, fill_value=fill_value)
-        self.assertFalse(dm1 != dm2)
-
     def test_real_with_real__dtype(self):
         dm1 = DataManager(self.real_array)
         dm2 = DataManager(self.real_array.astype(int))
@@ -199,40 +147,10 @@ class Test___ne__(tests.IrisTest):
         dm2 = DataManager(as_lazy_data(self.real_array))
         self.assertFalse(dm1 != dm2)
 
-    def test_lazy_with_lazy__fill_value(self):
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=1234)
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=4321)
-        self.assertNotEqual(dm1, dm2)
-
-    def test_lazy_with_lazy__fill_value_failure(self):
-        fill_value = 1234
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=fill_value)
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          fill_value=fill_value)
-        self.assertFalse(dm1 != dm2)
-
     def test_lazy_with_lazy__dtype(self):
         dm1 = DataManager(as_lazy_data(self.real_array))
         dm2 = DataManager(as_lazy_data(self.real_array).astype(int))
         self.assertNotEqual(dm1, dm2)
-
-    def test_lazy_with_lazy__realised_dtype(self):
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=np.dtype('int8'))
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=np.dtype('int16'))
-        self.assertNotEqual(dm1, dm2)
-
-    def test_lazy_with_lazy__realised_dtype_failure(self):
-        dtype = np.dtype('int16')
-        dm1 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=dtype)
-        dm2 = DataManager(as_lazy_data(self.real_array),
-                          realised_dtype=dtype)
-        self.assertFalse(dm1 != dm2)
 
     def test_non_DataManager(self):
         dm = DataManager(np.array(0))
@@ -252,44 +170,10 @@ class Test___repr__(tests.IrisTest):
         expected = '{}({!r})'.format(self.name, self.real_array)
         self.assertEqual(result, expected)
 
-    def test_real__fill_value(self):
-        fill_value = 1234
-        dm = DataManager(self.real_array, fill_value=fill_value)
-        result = repr(dm)
-        fmt = '{}({!r}, fill_value={!r})'
-        expected = fmt.format(self.name, self.real_array, fill_value)
-        self.assertEqual(result, expected)
-
     def test_lazy(self):
         dm = DataManager(self.lazy_array)
         result = repr(dm)
         expected = '{}({!r})'.format(self.name, self.lazy_array)
-        self.assertEqual(result, expected)
-
-    def test_lazy__fill_value(self):
-        fill_value = 1234.0
-        dm = DataManager(self.lazy_array, fill_value=fill_value)
-        result = repr(dm)
-        fmt = '{}({!r}, fill_value={!r})'
-        expected = fmt.format(self.name, self.lazy_array, fill_value)
-        self.assertEqual(result, expected)
-
-    def test_lazy__realised_dtype(self):
-        dtype = np.dtype('int16')
-        dm = DataManager(self.lazy_array, realised_dtype=dtype)
-        result = repr(dm)
-        fmt = '{}({!r}, realised_dtype={!r})'
-        expected = fmt.format(self.name, self.lazy_array, dtype)
-        self.assertEqual(result, expected)
-
-    def test_lazy__fill_value_realised_dtype(self):
-        fill_value = 1234
-        dtype = np.dtype('int16')
-        dm = DataManager(self.lazy_array, fill_value=fill_value,
-                         realised_dtype=dtype)
-        result = repr(dm)
-        fmt = '{}({!r}, fill_value={!r}, realised_dtype={!r})'
-        expected = fmt.format(self.name, self.lazy_array, fill_value, dtype)
         self.assertEqual(result, expected)
 
 
@@ -308,29 +192,6 @@ class Test__assert_axioms(tests.IrisTest):
     def test_array_all(self):
         self.dm._lazy_array = self.lazy_array
         emsg = 'Unexpected data state, got lazy and real data'
-        with self.assertRaisesRegexp(AssertionError, emsg):
-            self.dm._assert_axioms()
-
-    def test_realised_dtype(self):
-        self.dm._realised_dtype = np.dtype('float')
-        emsg = 'Unexpected realised dtype state, got dtype'
-        with self.assertRaisesRegexp(AssertionError, emsg):
-            self.dm._assert_axioms()
-
-    def test_real_array_with_realised_dtype(self):
-        self.dm._realised_dtype = np.dtype('int')
-        emsg = ("Unexpected real data with realised dtype, got "
-                "real data and realised dtype\('int64'\)")
-        with self.assertRaisesRegexp(AssertionError, emsg):
-            self.dm._assert_axioms()
-
-    def test_non_float_lazy_array_with_realised_dtype(self):
-        self.dm._real_array = None
-        self.dm._lazy_array = self.lazy_array
-        self.dm._realised_dtype = np.dtype('int')
-        emsg = ("Unexpected lazy data dtype with realised dtype, got "
-                "lazy data dtype\('int64'\) and realised "
-                "dtype\('int64'\)")
         with self.assertRaisesRegexp(AssertionError, emsg):
             self.dm._assert_axioms()
 
@@ -384,34 +245,6 @@ class Test__deepcopy(tests.IrisTest):
         self.assertEqual(result, expected)
         self.assertIs(result._lazy_array, data)
 
-    def test_real_with_realised_dtype_failure(self):
-        dm = DataManager(self.real_array)
-        emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            dm._deepcopy(self.memo, realised_dtype=np.dtype('int16'))
-
-    def test_lazy_with_realised_dtype__lazy_dtype_failure(self):
-        dm = DataManager(as_lazy_data(self.real_array).astype(int))
-        emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            dm._deepcopy(self.memo, realised_dtype=np.dtype('int16'))
-
-    def test_lazy_with_realised_dtype_failure(self):
-        dm = DataManager(as_lazy_data(self.real_array))
-        emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            dm._deepcopy(self.memo, realised_dtype=np.dtype('float32'))
-
-    def test_lazy_with_realised_dtype(self):
-        dm = DataManager(as_lazy_data(self.real_array),
-                         realised_dtype=np.dtype('int16'))
-        data = as_lazy_data(self.real_array) * 10
-        dtype = np.dtype('int8')
-        result = dm._deepcopy(self.memo, data=data, realised_dtype=dtype)
-        expected = DataManager(data, realised_dtype=dtype)
-        self.assertEqual(result, expected)
-        self.assertIs(result._lazy_array, data)
-
     def test_real_with_real_failure(self):
         dm = DataManager(self.real_array)
         emsg = 'Cannot copy'
@@ -436,140 +269,6 @@ class Test__deepcopy(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, emsg):
             dm._deepcopy(self.memo, data=as_lazy_data(np.array(0)))
 
-    def test__default_fill_value(self):
-        dm = DataManager(np.array(0))
-        self.assertIsNone(dm.fill_value)
-        result = dm._deepcopy(self.memo)
-        self.assertIsNone(result.fill_value)
-
-    def test__default_with_fill_value(self):
-        fill_value = 1234
-        dm = DataManager(np.array(0), fill_value=fill_value)
-        self.assertEqual(dm.fill_value, fill_value)
-        result = dm._deepcopy(self.memo)
-        self.assertEqual(result.fill_value, fill_value)
-
-    def test__clear_fill_value(self):
-        fill_value = 1234
-        dm = DataManager(np.array(0), fill_value=fill_value)
-        self.assertEqual(dm.fill_value, fill_value)
-        result = dm._deepcopy(self.memo, fill_value=None)
-        self.assertIsNone(result.fill_value)
-
-    def test__set_fill_value(self):
-        fill_value = 1234
-        dm = DataManager(np.array(0))
-        self.assertIsNone(dm.fill_value)
-        result = dm._deepcopy(self.memo, fill_value=fill_value)
-        self.assertEqual(result.fill_value, fill_value)
-
-    def test__set_fill_value_failure(self):
-        dm = DataManager(np.array(0))
-        self.assertIsNone(dm.fill_value)
-        emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            dm._deepcopy(self.memo, fill_value=1e+20)
-
-
-class Test__propagate_masked_data_fill_value(tests.IrisTest):
-    def setUp(self):
-        self.real_array = np.array(0)
-        self.mask_array = ma.array(0)
-        np_fill_value = ma.array(0, dtype=self.mask_array.dtype).fill_value
-        assert np_fill_value == self.mask_array.fill_value
-        self.np_fill_value = np_fill_value
-        self.dm = DataManager(self.mask_array)
-        self.dm.fill_value = None
-
-    def test_nop__with_real_array(self):
-        fill_value = 1234
-        dm = DataManager(self.real_array)
-        dm.fill_value = 1234
-        self.assertEqual(dm.fill_value, fill_value)
-        dm._propagate_masked_data_fill_value()
-        self.assertEqual(dm.fill_value, fill_value)
-
-    def test_clear_fill_value__with_np_default(self):
-        fill_value = 1234
-        self.dm.fill_value = fill_value
-        self.assertEqual(self.dm.fill_value, fill_value)
-        self.dm._propagate_masked_data_fill_value()
-        self.assertIsNone(self.dm.fill_value)
-
-    def test_set_fill_value(self):
-        fill_value = 1234
-        self.assertIsNone(self.dm.fill_value)
-        self.dm._real_array.fill_value = fill_value
-        self.dm._propagate_masked_data_fill_value()
-        self.assertEqual(self.dm.fill_value, fill_value)
-
-
-class Test__realised_dtype_setter(tests.IrisTest):
-    def setUp(self):
-        self.real_array = np.array(0.0)
-        self.lazy_array = as_lazy_data(self.real_array)
-        self.dm = DataManager(self.lazy_array)
-
-    def test_lazy_with_none(self):
-        self.assertIsNone(self.dm._realised_dtype)
-        self.dm._realised_dtype_setter(None)
-        self.assertIsNone(self.dm._realised_dtype)
-
-    def test_real_with_none(self):
-        self.dm._lazy_array = None
-        self.dm._real_array = self.real_array
-        self.assertIsNone(self.dm._realised_dtype)
-        self.dm._realised_dtype_setter(None)
-        self.assertIsNone(self.dm._realised_dtype)
-
-    def test_real_with_same_dtype(self):
-        self.dm._lazy_array = None
-        self.dm._real_array = self.real_array
-        self.assertIsNone(self.dm._realised_dtype)
-        self.dm._realised_dtype_setter(self.dm.dtype)
-        self.assertIsNone(self.dm._realised_dtype)
-
-    def test_lazy_with_same_dtype(self):
-        self.assertIsNone(self.dm._realised_dtype)
-        self.dm._realised_dtype_setter(self.dm.dtype)
-        self.assertIsNone(self.dm._realised_dtype)
-
-    def test_real_array_failure(self):
-        self.dm._lazy_array = None
-        self.dm._real_array = self.real_array
-        self.assertIsNone(self.dm._realised_dtype)
-        emsg = 'Cannot set realised dtype, no lazy data is available'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            self.dm._realised_dtype_setter(np.dtype('int16'))
-
-    def test_invalid_realised_dtype(self):
-        emsg = ("Can only cast lazy data to an integer or boolean "
-                "dtype, got dtype\('float32'\)")
-        with self.assertRaisesRegexp(ValueError, emsg):
-            self.dm._realised_dtype_setter(np.dtype('float32'))
-
-    def test_lazy_with_realised_dtype(self):
-        dtypes = (np.dtype('bool'), np.dtype('int16'), np.dtype('uint16'))
-        for dtype in dtypes:
-            self.dm._realised_dtype = None
-            self.dm._realised_dtype_setter(dtype)
-            self.assertEqual(self.dm._realised_dtype, dtype)
-
-    def test_lazy_with_realised_dtype__lazy_dtype_failure(self):
-        self.dm._lazy_array = self.lazy_array.astype(np.dtype('int64'))
-        emsg = ("Cannot set realised dtype for lazy data "
-                "with dtype\('int64'\)")
-        with self.assertRaisesRegexp(ValueError, emsg):
-            self.dm._realised_dtype_setter(np.dtype('int16'))
-
-    def test_lazy_replace_with_none(self):
-        self.assertIsNone(self.dm._realised_dtype)
-        dtype = np.dtype('int16')
-        self.dm._realised_dtype_setter(dtype)
-        self.assertEqual(self.dm._realised_dtype, dtype)
-        self.dm._realised_dtype_setter(None)
-        self.assertIsNone(self.dm._realised_dtype)
-
 
 class Test_data__getter(tests.IrisTest):
     def setUp(self):
@@ -580,7 +279,8 @@ class Test_data__getter(tests.IrisTest):
         self.mask_array = ma.masked_array(self.real_array)
         self.mask_array_masked = self.mask_array.copy()
         self.mask_array_masked[0, 0, 0] = ma.masked
-        self.realised_dtype = self.mask_array.dtype
+        self.dtype = self.mask_array.dtype
+        self.fill_value = self.mask_array.fill_value
         self.lazy_mask_array = as_lazy_data(self.mask_array)
         self.lazy_mask_array_masked = as_lazy_data(self.mask_array_masked)
 
@@ -598,70 +298,24 @@ class Test_data__getter(tests.IrisTest):
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(result, self.real_array)
 
-    def test_with_real_mask_array__default_fill_value(self):
-        fill_value = 1234
-        self.mask_array.fill_value = fill_value
-        dm = DataManager(self.mask_array)
-        self.assertEqual(dm.fill_value, fill_value)
-        self.assertEqual(dm.data.fill_value, fill_value)
-
-    def test_with_real_mask_array__with_fill_value_None(self):
-        fill_value = 1234
-        self.mask_array.fill_value = fill_value
-        dm = DataManager(self.mask_array, fill_value=None)
-        self.assertIsNone(dm.fill_value)
-        np_fill_value = ma.array(0, dtype=dm.dtype).fill_value
-        self.assertEqual(dm.data.fill_value, np_fill_value)
-
-    def test_with_real_mask_array__with_fill_value(self):
-        fill_value = 1234
-        dm = DataManager(self.mask_array, fill_value=fill_value)
-        self.assertEqual(dm.fill_value, fill_value)
-        self.assertEqual(dm.data.fill_value, fill_value)
-
-    def test_with_lazy_mask_array__masked_default_fill_value(self):
-        dm = DataManager(self.lazy_mask_array_masked,
-                         realised_dtype=self.realised_dtype)
-        self.assertIsNone(dm.fill_value)
-        np_fill_value = ma.array(0, dtype=dm.dtype).fill_value
-        self.assertEqual(dm.data.fill_value, np_fill_value)
-
-    def test_with_lazy_mask_array__masked_fill_value_None(self):
-        dm = DataManager(self.lazy_mask_array_masked,
-                         fill_value=None,
-                         realised_dtype=self.realised_dtype)
-        self.assertIsNone(dm.fill_value)
-        np_fill_value = ma.array(0, dtype=dm.dtype).fill_value
-        self.assertEqual(dm.data.fill_value, np_fill_value)
-
-    def test_with_lazy_mask_array__masked_with_fill_value(self):
-        fill_value = 1234
-        dm = DataManager(self.lazy_mask_array_masked,
-                         fill_value=fill_value,
-                         realised_dtype=self.realised_dtype)
-        self.assertEqual(dm.fill_value, fill_value)
-        self.assertEqual(dm.data.fill_value, fill_value)
-
     def test_with_lazy_mask_array__not_masked(self):
-        dm = DataManager(self.lazy_mask_array,
-                         realised_dtype=self.realised_dtype)
+        dm = DataManager(self.lazy_mask_array)
         self.assertTrue(dm.has_lazy_data())
         result = dm.data
         self.assertFalse(dm.has_lazy_data())
         self.assertIsInstance(result, np.core.ndarray)
-        self.assertIsNone(dm._realised_dtype)
-        self.assertEqual(dm.dtype, self.realised_dtype)
+        self.assertEqual(dm.dtype, self.dtype)
+        self.assertEqual(result.fill_value, self.fill_value)
         self.assertArrayEqual(result, self.real_array)
 
     def test_with_lazy_mask_array__masked(self):
-        dm = DataManager(self.lazy_mask_array_masked,
-                         realised_dtype=self.realised_dtype)
+        dm = DataManager(self.lazy_mask_array_masked)
         self.assertTrue(dm.has_lazy_data())
         result = dm.data
         self.assertFalse(dm.has_lazy_data())
         self.assertIsInstance(result, ma.MaskedArray)
-        self.assertIsNone(dm._realised_dtype)
-        self.assertEqual(dm.dtype, self.realised_dtype)
+        self.assertEqual(dm.dtype, self.dtype)
+        self.assertEqual(result.fill_value, self.fill_value)
         self.assertArrayEqual(result, self.mask_array_masked)
 
     def test_with_real_masked_constant(self):
@@ -675,12 +329,10 @@ class Test_data__getter(tests.IrisTest):
         self.assertMaskedArrayEqual(result, masked_data)
 
     def test_with_lazy_masked_constant(self):
-        dtype = np.dtype('int16')
-        masked_data = ma.masked_array([666], mask=True, dtype=dtype)
+        masked_data = ma.masked_array([666], mask=True)
         masked_constant = masked_data[0]
         lazy_masked_constant = as_lazy_data(masked_constant)
-        dm = DataManager(lazy_masked_constant, realised_dtype=dtype)
-        self.assertEqual(dm.dtype, dtype)
+        dm = DataManager(lazy_masked_constant)
         result = dm.data
         self.assertFalse(dm.has_lazy_data())
         self.assertIsInstance(result, ma.MaskedArray)
@@ -818,35 +470,6 @@ class Test_data__setter(tests.IrisTest):
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
-    def test_realised_dtype_none(self):
-        shape = (2, 3, 4)
-        size = np.prod(shape)
-        mask_array = ma.arange(size).reshape(shape)
-        dtype = mask_array.dtype
-        lazy_array = as_lazy_data(mask_array)
-        dm = DataManager(lazy_array, realised_dtype=dtype)
-        self.assertIsNone(dm._realised_dtype)
-        self.assertEqual(dm.dtype, dtype)
-        dm.data = mask_array
-        self.assertIs(dm.data, mask_array)
-        self.assertIsNone(dm._realised_dtype)
-        self.assertEqual(dm.dtype, dtype)
-
-    def test_realised_dtype_clearance(self):
-        shape = (2, 3, 4)
-        size = np.prod(shape)
-        mask_array = ma.arange(size).reshape(shape)
-        mask_array[0, 0, 0] = ma.masked
-        dtype = mask_array.dtype
-        lazy_array = as_lazy_data(mask_array)
-        dm = DataManager(lazy_array, realised_dtype=dtype)
-        self.assertEqual(dm._realised_dtype, dtype)
-        self.assertEqual(dm.dtype, dtype)
-        dm.data = mask_array
-        self.assertIs(dm.data, mask_array)
-        self.assertIsNone(dm._realised_dtype)
-        self.assertEqual(dm.dtype, dtype)
-
     def test_coerce_to_ndarray(self):
         shape = (2, 3)
         size = np.prod(shape)
@@ -868,36 +491,6 @@ class Test_data__setter(tests.IrisTest):
         self.assertNotIsInstance(dm.data, ma.core.MaskedConstant)
         self.assertMaskedArrayEqual(dm.data, masked_data)
 
-    def test_real_array__fill_value_clearance(self):
-        fill_value = 1234
-        dm = DataManager(np.array(0), fill_value=fill_value)
-        self.assertEqual(dm.fill_value, fill_value)
-        dm.data = np.array(1)
-        self.assertIsNone(dm.fill_value)
-
-    def test_lazy_array__fill_value_clearance(self):
-        fill_value = 1234
-        dm = DataManager(as_lazy_data(np.array(0)),
-                         fill_value=fill_value)
-        self.assertEqual(dm.fill_value, fill_value)
-        dm.data = as_lazy_data(np.array(1))
-        self.assertIsNone(dm.fill_value)
-
-    def test_mask_array__default_fill_value(self):
-        dm = DataManager(np.array(0))
-        self.assertIsNone(dm.fill_value)
-        data = ma.array(1)
-        dm.data = data
-        self.assertIsNone(dm.fill_value)
-
-    def test_mask_array__with_fill_value(self):
-        dm = DataManager(np.array(0))
-        self.assertIsNone(dm.fill_value)
-        fill_value = 1234
-        data = ma.array(1, fill_value=fill_value)
-        dm.data = data
-        self.assertEqual(dm.fill_value, fill_value)
-
 
 class Test_dtype(tests.IrisTest):
     def setUp(self):
@@ -911,76 +504,6 @@ class Test_dtype(tests.IrisTest):
     def test_lazy_array(self):
         dm = DataManager(self.lazy_array)
         self.assertEqual(dm.dtype, np.dtype('float64'))
-
-    def test_lazy_array_realised_dtype(self):
-        dm = DataManager(self.lazy_array, realised_dtype=np.dtype('bool'))
-        self.assertEqual(dm.dtype, np.dtype('bool'))
-        self.assertEqual(dm._lazy_array.dtype, np.dtype('float64'))
-
-
-class Test_fill_value(tests.IrisTest):
-    def setUp(self):
-        self.dtypes = (np.dtype('int'), np.dtype('uint'),
-                       np.dtype('bool'), np.dtype('float'))
-
-    def test___init___default(self):
-        dm = DataManager(np.array(0))
-        self.assertIsNone(dm.fill_value)
-
-    def test___init___with_fill_value(self):
-        fill_value = 1234
-        dm = DataManager(np.array(0), fill_value=fill_value)
-        self.assertEqual(dm.fill_value, fill_value)
-
-    def test_fill_value_bool(self):
-        fill_value = np.bool_(True)
-        for dtype in self.dtypes:
-            data = np.array([0], dtype=dtype)
-            dm = DataManager(data)
-            dm.fill_value = fill_value
-            [expected] = np.asarray([fill_value], dtype=dtype)
-            self.assertEqual(dm.fill_value, expected)
-            self.assertEqual(dm.fill_value.dtype, dtype)
-
-    def test_fill_value_int(self):
-        fill_value = np.int(1234)
-        for dtype in self.dtypes:
-            data = np.array([0], dtype=dtype)
-            dm = DataManager(data)
-            dm.fill_value = fill_value
-            [expected] = np.asarray([fill_value], dtype=dtype)
-            self.assertEqual(dm.fill_value, expected)
-            self.assertEqual(dm.fill_value.dtype, dtype)
-
-    def test_fill_value_float(self):
-        fill_value = np.float(123.4)
-        for dtype in self.dtypes:
-            data = np.array([0], dtype=dtype)
-            dm = DataManager(data)
-            dm.fill_value = fill_value
-            if dtype.kind in 'biu':
-                fill_value = np.rint(fill_value)
-            [expected] = np.asarray([fill_value], dtype=dtype)
-            self.assertEqual(dm.fill_value, expected)
-            self.assertEqual(dm.fill_value.dtype, dtype)
-
-    def test_fill_value_uint(self):
-        fill_value = np.uint(1234)
-        for dtype in self.dtypes:
-            data = np.array([0], dtype=dtype)
-            dm = DataManager(data)
-            dm.fill_value = fill_value
-            [expected] = np.array([fill_value], dtype=dtype)
-            self.assertEqual(dm.fill_value, expected)
-            self.assertEqual(dm.fill_value.dtype, dtype)
-
-    def test_fill_value_overflow(self):
-        fill_value = np.float(1e+20)
-        data = np.array([0], dtype=np.int32)
-        dm = DataManager(data)
-        emsg = 'Fill value of .* invalid for dtype'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            dm.fill_value = fill_value
 
 
 class Test_ndim(tests.IrisTest):
@@ -1030,32 +553,10 @@ class Test_copy(tests.IrisTest):
 
     def test(self):
         dm = DataManager(np.array(0))
-        kwargs = dict(data=self.data, fill_value='none', realised_dtype='none')
+        kwargs = dict(data=self.data)
         with mock.patch(self.method) as mocker:
             mocker.return_value = self.return_value
             result = dm.copy(data=self.data)
-            mocker.assert_called_once_with(self.memo, **kwargs)
-        self.assertIs(result, self.return_value)
-
-    def test_with_fill_value(self):
-        dm = DataManager(np.array(0))
-        fill_value = mock.sentinel.fill_value
-        kwargs = dict(data=self.data, fill_value=fill_value,
-                      realised_dtype='none')
-        with mock.patch(self.method) as mocker:
-            mocker.return_value = self.return_value
-            result = dm.copy(data=self.data, fill_value=fill_value)
-            mocker.assert_called_once_with(self.memo, **kwargs)
-        self.assertIs(result, self.return_value)
-
-    def test_with_realised_dtype(self):
-        dm = DataManager(np.array(0))
-        realised_dtype = mock.sentinel.realised_dtype
-        kwargs = dict(data=self.data, fill_value='none',
-                      realised_dtype=realised_dtype)
-        with mock.patch(self.method) as mocker:
-            mocker.return_value = self.return_value
-            result = dm.copy(data=self.data, realised_dtype=realised_dtype)
             mocker.assert_called_once_with(self.memo, **kwargs)
         self.assertIs(result, self.return_value)
 
