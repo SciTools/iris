@@ -55,9 +55,7 @@ class TestPickle(tests.IrisTest):
     def _real_data(cube):
         # Get the concrete data of the cube for performing data values
         # comparison checks.
-        return as_concrete_data(cube.core_data(),
-                                nans_replacement=cube.fill_value,
-                                result_dtype=cube.dtype)
+        return as_concrete_data(cube.core_data())
 
     def assertCubeData(self, cube1, cube2):
         self.assertArrayEqual(self._real_data(cube1), self._real_data(cube2))
