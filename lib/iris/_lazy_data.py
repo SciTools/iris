@@ -94,7 +94,7 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
 
     """
     if isinstance(data, ma.core.MaskedConstant):
-        data = ma.masked_array([data], mask=data.mask)
+        data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
         asarray = not ma.isMaskedArray(data)
         data = da.from_array(data, chunks=chunks, asarray=asarray)
