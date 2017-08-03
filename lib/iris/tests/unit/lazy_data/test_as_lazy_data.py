@@ -25,6 +25,7 @@ import iris.tests as tests
 
 import dask.array as da
 import numpy as np
+import numpy.ma as ma
 
 from iris._lazy_data import as_lazy_data, _MAX_CHUNK_SIZE
 
@@ -60,6 +61,11 @@ class Test_as_lazy_data(tests.IrisTest):
         result, = np.unique(lazy_data.chunks)
         self.assertEqual(result, chunks)
 
+    def test_with_masked_constant(self):
+        masked_data = ma.masked_array([8], mask=True)
+        masked_constant = masked_data[0]
+        result = as_lazy_data(masked_constant)
+        self.assertIsInstance(result, da.core.Array)
 
 if __name__ == '__main__':
     tests.main()
