@@ -1181,7 +1181,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         # extract the 2d field that has SOME missing values
         masked_slice = cube[0]
-        masked_slice.fill_value = fill_value
+        masked_slice.data.fill_value = fill_value
 
         # test saving masked data
         reference_txt_path = tests.get_result_path(('cdm', 'masked_save_pp.txt'))
@@ -1199,7 +1199,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]
             self.assertEqual(merged_cube.dtype, dtype)
-            self.assertEqual(merged_cube.fill_value, fill_value)
+            self.assertEqual(merged_cube.data.fill_value, fill_value)
 
 
 @tests.skip_data
