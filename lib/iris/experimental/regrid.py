@@ -18,7 +18,6 @@
 Regridding functions.
 
 """
-
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
@@ -350,7 +349,59 @@ def _get_bounds_in_units(coord, units, dtype):
     return coord.units.convert(coord.bounds.astype(dtype), units).astype(dtype)
 
 
-def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
+def _weighted_mean_with_mdtol_old(data, weights, axis=None, mdtol=0):
+    """
+    Return the weighted mean of an array over the specified axis
+    using the provided weights (if any) and a permitted fraction of
+    masked data.
+
+    Args:
+
+    * data (array-like):
+        Data to be averaged.
+
+    * weights (array-like):
+        An array of the same shape as the data that specifies the contribution
+        of each corresponding data element to the calculated mean.
+
+    Kwargs:
+
+    * axis (int or tuple of ints):
+        Axis along which the mean is computed. The default is to compute
+        the mean of the flattened array.
+
+    * mdtol (float):
+        Tolerance of missing data. The value returned in each element of the
+        returned array will be masked if the fraction of masked data exceeds
+        mdtol. This fraction is weighted by the `weights` array if one is
+        provided. mdtol=0 means no missing data is tolerated
+        while mdtol=1 will mean the resulting element will be masked if and
+        only if all the contributing elements of data are masked.
+        Defaults to 0.
+
+    Returns:
+        Numpy array (possibly masked) or scalar.
+
+    """
+    res = ma.average(data, weights=weights, axis=axis)
+    if ma.isMaskedArray(data) and mdtol < 1:
+        weights_total = weights.sum(axis=axis)
+        masked_weights = weights.copy()
+        masked_weights[~ma.getmaskarray(data)] = 0
+        masked_weights_total = masked_weights.sum(axis=axis)
+        frac_masked = np.true_divide(masked_weights_total, weights_total)
+        mask_pt = frac_masked > mdtol
+        if np.any(mask_pt):
+            if np.isscalar(res):
+                res = ma.masked
+            elif ma.isMaskedArray(res):
+                res.mask |= mask_pt
+            else:
+                res = ma.masked_array(res, mask=mask_pt)
+    return res
+
+
+def _weighted_mean_with_mdtol_new(data, weights, axis=None, mdtol=0):
     """
     Return the weighted mean of an array over the specified axis
     using the provided weights (if any) and a permitted fraction of
@@ -401,6 +452,9 @@ def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
     else:
         res = np.average(data, weights=weights, axis=axis)
     return res
+
+
+_weighted_mean_with_mdtol = _weighted_mean_with_mdtol_new
 
 
 def _regrid_area_weighted_array(src_data, x_dim, y_dim,
