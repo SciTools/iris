@@ -131,14 +131,14 @@ def as_concrete_data(data):
     return data
 
 
-def lazy_masked_fill_value(data):
+def get_fill_value(data):
     """
-    Return the fill value of a lazy masked array.
+    Return the fill value of a concrete or lazy masked array.
 
     Args:
 
     * data:
-        A dask array, NumPy `ndarray` or masked array
+        A dask array, NumPy `ndarray` or masked array.
 
     Returns:
         The fill value of `data` if `data` represents a masked array, or None.
@@ -147,9 +147,14 @@ def lazy_masked_fill_value(data):
     # If lazy, get the smallest slice of the data from which we can retrieve
     # the fill_value.
     if is_lazy_data(data):
-        inds = tuple([0] * (data.ndim-1))
-        smallest_slice = data[inds][:0]
-        data = as_concrete_data(smallest_slice)
+        inds = [0] * data.ndim
+        if inds:
+            inds[-1] = slice(0, 1)
+            data = data[tuple(inds)]
+        data = as_concrete_data(data)
+    else:
+        if isinstance(data, ma.core.MaskedConstant):
+            data = ma.array(data.data, mask=data.mask)
 
     # Now get the fill value.
     fill_value = None
