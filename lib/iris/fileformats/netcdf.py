@@ -56,7 +56,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from iris._lazy_data import as_lazy_data
+from iris._lazy_data import as_lazy_data, lazy_masked_fill_value
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -1946,12 +1946,16 @@ class Saver(object):
 
         else:
             # Create the cube CF-netCDF data variable.
-            # Explicitly assign the fill_value, which will be the type default
-            # in the case of an unmasked array.
+            # Set `fill_value` if the data array is masked. If the data array
+            # is lazy masked, we realise the smallest possible slice of the
+            # array and retrieve the fill value from that.
             if packing is None:
-                fill_value = None
                 if not cube.has_lazy_data() and ma.isMaskedArray(cube.data):
                     fill_value = cube.data.fill_value
+                elif cube.has_lazy_data():
+                    fill_value = lazy_masked_fill_value(cube.lazy_data())
+                else:
+                    fill_value = None
                 dtype = cube.dtype.newbyteorder('=')
 
             cf_var = self._dataset.createVariable(
