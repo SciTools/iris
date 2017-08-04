@@ -72,7 +72,7 @@ def is_lazy_data(data):
 _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
 
-def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
+def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE, asarray=False):
     """
     Convert the input array `data` to a dask array.
 
@@ -89,6 +89,10 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
         For more information see
         http://dask.pydata.org/en/latest/array-creation.html#chunks.
 
+    * asarray:
+        If True, then chunks will be converted to instances of `ndarray`.
+        Set to False (default) to pass passed chunks through unchanged.
+
     Returns:
         The input array converted to a dask array.
 
@@ -96,7 +100,6 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE):
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
-        asarray = not ma.isMaskedArray(data)
         data = da.from_array(data, chunks=chunks, asarray=asarray)
     return data
 

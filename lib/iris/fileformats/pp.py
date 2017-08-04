@@ -861,8 +861,7 @@ class PPDataProxy(object):
 
     @property
     def dtype(self):
-        return np.dtype('f8') if self.src_dtype.kind == 'i' else \
-            self.src_dtype.newbyteorder('=')
+        return self.src_dtype.newbyteorder('=')
 
     @property
     def fill_value(self):
@@ -1040,11 +1039,9 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # Reform in row-column order
         data.shape = data_shape
 
-    # Convert mdi to NaN.
+    # Mask the array
     if mdi in data:
-        if data.dtype.kind == 'i':
-            data = data.astype(np.dtype('f8'))
-        data[data == mdi] = np.nan
+        data = ma.masked_values(data, mdi, copy=False)
 
     return data
 
@@ -1382,11 +1379,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # Get the actual data content.
         data = self.data
         if ma.is_masked(data):
-            # Fill missing data points with the MDI value from the header.
-            if data.dtype.kind in 'biu':
-                # Integer or Boolean data : No masking is supported.
-                msg = 'Non-floating masked data cannot be saved to PP.'
-                raise ValueError(msg)
             data = data.filled(fill_value=self.bmdi)
 
         # Make sure the data is big-endian
