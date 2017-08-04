@@ -146,7 +146,7 @@ class TestDataMergeCombos(tests.IrisTest):
         return cube
 
     @staticmethod
-    def _expected_fill_value(fill0, fill1):
+    def _expected_fill_value(fill0='none', fill1='none'):
         result = None
         if fill0 != 'none' or fill1 != 'none':
             if fill0 == 'none':
@@ -173,19 +173,20 @@ class TestDataMergeCombos(tests.IrisTest):
     def setUp(self):
         self.dtype = np.dtype('int32')
         fill_value = 1234
-        lazy_combos = itertools.product([False, True],
-                                        [False, True])
+        self.lazy_combos = itertools.product([False, True],
+                                             [False, True])
         fill_combos = itertools.product([None, fill_value],
                                         [fill_value, None])
-        self.combos = itertools.product(lazy_combos, fill_combos)
+        single_fill_combos = itertools.product([None, fill_value])
+        self.combos = itertools.product(self.lazy_combos, fill_combos)
+        self.mixed_combos = itertools.product(self.lazy_combos,
+                                              single_fill_combos)
 
     def test__ndarray_ndarray(self):
-        for (lazy0, lazy1), (fill0, fill1) in self.combos:
+        for (lazy0, lazy1) in self.lazy_combos:
             cubes = iris.cube.CubeList()
-            cubes.append(self._make_cube(0, dtype=self.dtype, lazy=lazy0,
-                                         fill_value=fill0))
-            cubes.append(self._make_cube(1, dtype=self.dtype, lazy=lazy1,
-                                         fill_value=fill1))
+            cubes.append(self._make_cube(0, dtype=self.dtype, lazy=lazy0))
+            cubes.append(self._make_cube(1, dtype=self.dtype, lazy=lazy1))
             result = cubes.merge_cube()
             expected = self._make_data([0, 1], dtype=self.dtype)
             self.assertArrayEqual(result.data, expected)
@@ -213,17 +214,16 @@ class TestDataMergeCombos(tests.IrisTest):
             self._check_fill_value(result, fill0, fill1)
 
     def test__ndarray_masked(self):
-        for (lazy0, lazy1), (fill0, fill1) in self.combos:
+        for (lazy0, lazy1), (fill,) in self.mixed_combos:
             cubes = iris.cube.CubeList()
-            cubes.append(self._make_cube(0, lazy=lazy0, dtype=self.dtype,
-                                         fill_value=fill0))
+            cubes.append(self._make_cube(0, lazy=lazy0, dtype=self.dtype))
             mask = [(0, 1), (0, 1)]
             cubes.append(self._make_cube(1, mask=mask, lazy=lazy1,
                                          dtype=self.dtype,
-                                         fill_value=fill1))
+                                         fill_value=fill))
             result = cubes.merge_cube()
             mask = [(1, 1), (0, 1), (0, 1)]
-            expected_fill_value = self._expected_fill_value(fill0, fill1)
+            expected_fill_value = self._expected_fill_value(fill)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
                                        fill_value=expected_fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
@@ -231,22 +231,21 @@ class TestDataMergeCombos(tests.IrisTest):
             self._check_fill_value(result, fill1=fill1)
 
     def test__masked_ndarray(self):
-        for (lazy0, lazy1), (fill0, fill1) in self.combos:
+        for (lazy0, lazy1), (fill,) in self.mixed_combos:
             cubes = iris.cube.CubeList()
             mask = [(0, 1), (0, 1)]
             cubes.append(self._make_cube(0, mask=mask, lazy=lazy0,
                                          dtype=self.dtype,
-                                         fill_value=fill0))
-            cubes.append(self._make_cube(1, lazy=lazy1, dtype=self.dtype,
-                                         fill_value=fill1))
+                                         fill_value=fill))
+            cubes.append(self._make_cube(1, lazy=lazy1, dtype=self.dtype))
             result = cubes.merge_cube()
             mask = [(0, 0), (0, 1), (0, 1)]
-            expected_fill_value = self._expected_fill_value(fill0, fill1)
+            expected_fill_value = self._expected_fill_value(fill)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
                                        fill_value=expected_fill_value)
             self.assertMaskedArrayEqual(result.data, expected)
             self.assertEqual(result.dtype, self.dtype)
-            self._check_fill_value(result, fill0=fill0)
+            self._check_fill_value(result, fill0=fill)
 
     def test_fill_value_invariant_to_order__same_non_None(self):
         fill_value = 1234
