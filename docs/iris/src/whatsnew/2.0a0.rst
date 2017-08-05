@@ -91,15 +91,15 @@ Bugs Fixed
   :class:`~iris.cube.Cube` with :data:`integer` or :data:`boolean` data with
   a :data:`float` result will raise an :data:`ArithmeticError` exception.
 
-* Attempting to use the :meth:`iris.cube.Cube.convert_units` method on a cube
-  where the existing unit is unknown will raise a :data:`UnitConversionError`
-  exception.
-
 
 Incompatible Changes
 ====================
 
 * The :meth:`~iris.cube.Cube.lazy_data` method no longer accepts any arguments.
+
+* Attempting to use the :meth:`iris.cube.Cube.convert_units` method on a cube
+  where the existing unit is unknown will raise a :data:`UnitConversionError`
+  exception.
 
 .. admonition:: Significant Changes in Calculated Results
 
