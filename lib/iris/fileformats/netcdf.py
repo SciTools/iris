@@ -1388,9 +1388,11 @@ class Saver(object):
                 raise ValueError(msg)
             values = values.astype(np.int32)
         # NetCDF does not support booleans, so save them as bytes.
+        valid_range = None
         if values.dtype == np.dtype('bool'):
-            values = values.astype(np.byte)
-        return values
+            values = values.astype('byte')
+            valid_range = np.array([0, 1], 'byte')
+        return values, valid_range
 
     def _create_cf_bounds(self, coord, cf_var, cf_name):
         """
@@ -1411,7 +1413,7 @@ class Saver(object):
         """
         if coord.has_bounds():
             # Get the values in a form which is valid for the file format.
-            bounds = self._ensure_valid_dtype(coord.bounds,
+            bounds, valid_range = self._ensure_valid_dtype(coord.bounds,
                                               'the bounds of coordinate',
                                               coord)
             n_bounds = bounds.shape[-1]
@@ -1430,6 +1432,8 @@ class Saver(object):
                 cf_var.bounds, bounds.dtype.newbyteorder('='),
                 cf_var.dimensions + (bounds_dimension_name,))
             cf_var_bounds[:] = bounds
+            if valid_range is not None:
+                _setncattr(cf_var_bounds, 'valid_range', valid_range)
 
     def _get_cube_variable_name(self, cube):
         """
@@ -1523,11 +1527,15 @@ class Saver(object):
             raise ValueError(msg)
 
         # Get the values in a form which is valid for the file format.
-        data = self._ensure_valid_dtype(data, 'coordinate', cell_measure)
+        data, valid_range = self._ensure_valid_dtype(data, 'coordinate',
+                                                     cell_measure)
 
         # Create the CF-netCDF variable.
         cf_var = self._dataset.createVariable(
             cf_name, data.dtype.newbyteorder('='), cf_dimensions)
+
+        if valid_range is not None:
+            _setncattr(cf_var, 'valid_range', valid_range)
 
         # Add the data to the CF-netCDF variable.
         cf_var[:] = data
@@ -1618,12 +1626,15 @@ class Saver(object):
                 cf_name = cf_dimensions[0]
 
             # Get the values in a form which is valid for the file format.
-            points = self._ensure_valid_dtype(coord.points, 'coordinate',
+            points, valid_range = self._ensure_valid_dtype(coord.points, 'coordinate',
                                               coord)
 
             # Create the CF-netCDF variable.
             cf_var = self._dataset.createVariable(
                 cf_name, points.dtype.newbyteorder('='), cf_dimensions)
+
+            if valid_range is not None:
+                _setncattr(cf_var, 'valid_range', valid_range)
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
             if coord in cf_coordinates:
@@ -1939,7 +1950,8 @@ class Saver(object):
                                           'NETCDF3_64BIT')):
 
             # Get the values in a form which is valid for the file format.
-            data = self._ensure_valid_dtype(cube.data, 'cube', cube)
+            data, valid_range = self._ensure_valid_dtype(cube.data, 'cube',
+                                                         cube)
 
             def store(data, cf_var, fill_value):
                 cf_var[:] = data
@@ -1948,6 +1960,7 @@ class Saver(object):
                 return is_masked, contains_value
         else:
             data = cube.lazy_data()
+            valid_range = None
 
             def store(data, cf_var, fill_value):
                 # Store lazy data and check whether it is masked and contains
@@ -1964,6 +1977,9 @@ class Saver(object):
                                               fill_value=fill_value,
                                               **kwargs)
         set_packing_ncattrs(cf_var)
+
+        if valid_range is not None:
+            _setncattr(cf_var, 'valid_range', valid_range)
 
         # If packing attributes are specified, don't bother checking whether
         # the fill value is in the data.
