@@ -1413,9 +1413,10 @@ class Saver(object):
         """
         if coord.has_bounds():
             # Get the values in a form which is valid for the file format.
-            bounds, valid_range = self._ensure_valid_dtype(coord.bounds,
-                                              'the bounds of coordinate',
-                                              coord)
+            bounds, valid_range = self._ensure_valid_dtype(
+                coord.bounds,
+                'the bounds of coordinate',
+                coord)
             n_bounds = bounds.shape[-1]
 
             if n_bounds == 2:
@@ -1626,8 +1627,9 @@ class Saver(object):
                 cf_name = cf_dimensions[0]
 
             # Get the values in a form which is valid for the file format.
-            points, valid_range = self._ensure_valid_dtype(coord.points, 'coordinate',
-                                              coord)
+            points, valid_range = self._ensure_valid_dtype(coord.points,
+                                                           'coordinate',
+                                                           coord)
 
             # Create the CF-netCDF variable.
             cf_var = self._dataset.createVariable(
