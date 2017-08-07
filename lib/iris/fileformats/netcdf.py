@@ -1389,9 +1389,9 @@ class Saver(object):
             values = values.astype(np.int32)
         # NetCDF does not support booleans, so save them as bytes.
         valid_range = None
-        if values.dtype == np.dtype('bool'):
-            values = values.astype('byte')
-            valid_range = np.array([0, 1], 'byte')
+        if values.dtype == np.bool:
+            values = values.astype(np.byte)
+            valid_range = np.array([0, 1], np.byte)
         return values, valid_range
 
     def _create_cf_bounds(self, coord, cf_var, cf_name):
