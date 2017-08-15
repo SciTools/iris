@@ -269,6 +269,7 @@ class TestDataMergeCombos(tests.IrisTest):
         cubes.append(self._make_cube(2, mask=True, fill_value=3412))
         cubes.append(self._make_cube(3, mask=True, fill_value=4123))
         for combo in itertools.permutations(cubes):
+            import pdb
             result = iris.cube.CubeList(combo).merge_cube()
             np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
             self.assertEqual(result.data.fill_value, np_fill_value)

@@ -83,6 +83,7 @@ install:
     fi
 
 # Download + install dask from dask PR #2301
+  - conda uninstall --quiet dask
   - wget https://github.com/jcrist/dask/archive/masked-array.zip;
   - unzip masked-array.zip;
   - cd dask-masked-array && python setup.py --quiet install;
