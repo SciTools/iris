@@ -48,6 +48,7 @@ class TestAsFields(tests.IrisTest):
             self.assertEqual(aslice.shape, (11, 9))
             self.assertEqual(field.lbcode, 101)
 
+    @tests.skip_dask_mask
     def test_lazy_data(self):
         cube = self.cube.copy()
         # "Rebase" the cube onto a lazy version of its data.

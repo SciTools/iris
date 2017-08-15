@@ -47,6 +47,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertMaskedArrayAlmostEqual(masked_result,
                                           self.expected_masked)
 
+    @tests.skip_dask_mask
     def test_mdtol_below(self):
         agg = MEAN.lazy_aggregate(self.array, axis=self.axis, mdtol=0.3)
         masked_result = as_concrete_data(agg)

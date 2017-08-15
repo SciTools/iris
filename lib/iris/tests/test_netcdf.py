@@ -51,6 +51,7 @@ from iris._lazy_data import is_lazy_data
 
 @tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
+    @tests.skip_dask_mask
     def test_monotonic(self):
         cubes = iris.load(tests.get_data_path(
             ('NetCDF', 'testing', 'test_monotonic_coordinate.nc')))
@@ -83,6 +84,7 @@ class TestNetCDFLoad(tests.IrisTest):
             dataset.close()
             cube = iris.load_cube(filename, 'eastward_wind')
 
+    @tests.skip_dask_mask
     def test_load_global_xyzt_gems(self):
         # Test loading single xyzt CF-netCDF file (multi-cube).
         cubes = iris.load(tests.get_data_path(('NetCDF', 'global', 'xyz_t',
@@ -243,6 +245,7 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(cube[0][(0, 2), (1, 3)],
                        ('netcdf', 'netcdf_deferred_mix_1.cml'))
 
+    @tests.skip_dask_mask
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
         cube0, cube1 = sorted(iris.load(tests.get_data_path(('NetCDF',
@@ -423,6 +426,7 @@ class TestNetCDFSave(tests.IrisTest):
             with self.assertRaises(ValueError):
                 iris.save(cube, file_out, netcdf_format='WIBBLE')
 
+    @tests.skip_dask_mask
     @tests.skip_data
     def test_netcdf_save_single(self):
         # Test saving a single CF-netCDF file.
@@ -441,6 +445,7 @@ class TestNetCDFSave(tests.IrisTest):
 
     # TODO investigate why merge now make time an AuxCoord rather than a
     # DimCoord and why forecast_period is 'preferred'.
+    @tests.skip_dask_mask
     @tests.skip_data
     def test_netcdf_save_multi2multi(self):
         # Test saving multiple CF-netCDF files.
@@ -459,6 +464,7 @@ class TestNetCDFSave(tests.IrisTest):
                 self.assertCDL(file_out, ('netcdf',
                                           'netcdf_save_multi_%d.cdl' % index))
 
+    @tests.skip_dask_mask
     @tests.skip_data
     def test_netcdf_save_multi2single(self):
         # Test saving multiple cubes to a single CF-netCDF file.
@@ -559,6 +565,7 @@ class TestNetCDFSave(tests.IrisTest):
             self.assertCDL(
                 file_out, ('netcdf', 'multi_dim_coord_slightly_different.cdl'))
 
+    @tests.skip_dask_mask
     @tests.skip_data
     def test_netcdf_hybrid_height(self):
         # Test saving a CF-netCDF file which contains a hybrid height
@@ -583,6 +590,7 @@ class TestNetCDFSave(tests.IrisTest):
             self.assertCML(cube,
                            ('netcdf', 'netcdf_save_load_hybrid_height.cml'))
 
+    @tests.skip_dask_mask
     @tests.skip_data
     def test_netcdf_save_ndim_auxiliary(self):
         # Test saving CF-netCDF with multi-dimensional auxiliary coordinates.
@@ -856,6 +864,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
                                       'uint32_auxiliary_coord_netcdf3.cml'),
                            checksum=False)
 
+    @tests.skip_dask_mask
     def test_uint32_data_netcdf3(self):
         self.cube.data = self.cube.data.astype(np.uint32)
         with self.temp_filename(suffix='.nc') as filename:

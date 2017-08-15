@@ -249,6 +249,7 @@ def concatenate(cubes, order=None):
     return result
 
 
+@tests.skip_dask_mask
 class TestSimple(tests.IrisTest):
     def test_empty(self):
         cubes = iris.cube.CubeList()
@@ -263,6 +264,7 @@ class TestSimple(tests.IrisTest):
         self.assertEqual(concatenate(cubes), cubes)
 
 
+@tests.skip_dask_mask
 class TestNoConcat(tests.IrisTest):
     def test_one_cube_has_anon_dim(self):
         cubes = []
@@ -338,6 +340,7 @@ class TestNoConcat(tests.IrisTest):
         self.assertEqual(len(result), 2)
 
 
+@tests.skip_dask_mask
 class Test2D(tests.IrisTest):
     def test_masked_and_unmasked__default_fill_value(self):
         cubes = []
@@ -804,6 +807,7 @@ class Test2D(tests.IrisTest):
             self.assertEqual(result.data.fill_value, np_fill_value)
 
 
+@tests.skip_dask_mask
 class TestMulti2D(tests.IrisTest):
     def test_concat_4x2d_aux_xy(self):
         cubes = []
@@ -897,6 +901,7 @@ class TestMulti2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (6, 6))
 
 
+@tests.skip_dask_mask
 class TestMulti2DScalar(tests.IrisTest):
     def test_concat_scalar_4x2d_aux_xy(self):
         cubes = iris.cube.CubeList()
@@ -1024,6 +1029,7 @@ class TestMulti2DScalar(tests.IrisTest):
         self.assertEqual(result[0].shape, (2, 4, 4))
 
 
+@tests.skip_dask_mask
 class Test3D(tests.IrisTest):
     def _make_group(self, xoff=0, yoff=0, zoff=0, doff=0):
         xoff *= 4

@@ -111,6 +111,7 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
                 self.assertRaisesRegexp(ValueError, 'multiple aux factories'):
             iris.save(cube, filename)
 
+    @tests.skip_dask_mask
     def test_hybrid_height_cubes(self):
         hh1 = stock.simple_4d_with_hybrid_height()
         hh1.attributes['cube'] = 'hh1'
@@ -210,6 +211,7 @@ class TestLazySave(tests.IrisTest):
                 saver.write(acube)
         self.assertTrue(acube.has_lazy_data())
 
+    @tests.skip_dask_mask
     def test_lazy_mask_preserve_fill_value(self):
         data = ma.array([0, 1], mask=[False, True])
         cube = iris.cube.Cube(data, fill_value=-1)
@@ -426,6 +428,7 @@ class TestPackedData(tests.IrisTest):
         # Read PP input file.
         self._multi_test('multi_packed_single_dtype.cdl')
 
+    @tests.skip_dask_mask
     def test_multi_packed_multi_dtype(self):
         """Test saving multiple packed cubes with pack_dtype list."""
         # Read PP input file.

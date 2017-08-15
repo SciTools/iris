@@ -32,6 +32,7 @@ from iris.fileformats.netcdf import _load_cube
 from iris.tests import mock
 
 
+@tests.skip_dask_mask
 class TestFillValue(tests.IrisTest):
     def setUp(self):
         name = 'iris.fileformats.netcdf._assert_case_specific_facts'

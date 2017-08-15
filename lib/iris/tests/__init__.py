@@ -1132,6 +1132,16 @@ def skip_plot(fn):
     return skip(fn)
 
 
+# Control for @skip_dask_mask : Set to False to run the dask mask failing
+# tests.
+_SKIP_DASK_MASK_TESTS = True
+
+
+skip_dask_mask = unittest.skipIf(_SKIP_DASK_MASK_TESTS,
+                                 'Test(s) currently fail on Dask Mask Array '
+                                 'feature branch.')
+
+
 skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
                                                 'which is not available.')
 

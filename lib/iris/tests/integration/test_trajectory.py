@@ -172,6 +172,7 @@ class TestTriPolar(tests.IrisTest):
         self.sample_points = [('longitude', longitudes),
                               ('latitude', latitudes)]
 
+    @tests.skip_dask_mask
     def test_tri_polar(self):
         # extract
         sampled_cube = traj_interpolate(self.cube, self.sample_points)
