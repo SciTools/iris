@@ -30,6 +30,7 @@ from iris.analysis import STD_DEV
 
 
 class Test_lazy_aggregate(tests.IrisTest):
+    @tests.skip_dask_mask
     def test_mdtol(self):
         na = np.nan
         array = np.array([[1., 2., 1., 2.],

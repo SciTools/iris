@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,6 +33,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import _DataProxy
 
 
+@tests.skip_dask_mask
 class Test__bitmap(tests.IrisTest):
     def test_no_bitmap(self):
         section_6 = {'bitMapIndicator': 255, 'bitmap': None}

@@ -91,6 +91,7 @@ class Test_data__masked(tests.IrisTest):
         self.assertEqual(result.shape, self.shape)
         self.assertArrayEqual(result, expected)
 
+    @tests.skip_dask_mask
     def test_bitmap_present_int_data(self):
         # Test the behaviour where bitmap and codedValues shapes
         # are not equal, and codedValues is integer data.
@@ -110,6 +111,7 @@ class Test_data__masked(tests.IrisTest):
         self.assertMaskedArrayEqual(result, expected)
         self.assertEqual(result.dtype, data_type)
 
+    @tests.skip_dask_mask
     def test_bitmap_present_float_data(self):
         # Test the behaviour where bitmap and codedValues shapes
         # are not equal, and codedValues is float data.
@@ -128,6 +130,7 @@ class Test_data__masked(tests.IrisTest):
         expected = expected.reshape(self.shape)
         self.assertMaskedArrayEqual(result, expected)
 
+    @tests.skip_dask_mask
     def test_bitmap__shapes_mismatch(self):
         # Test the behaviour where bitmap and codedValues shapes do not match.
         # Too many or too few unmasked values in codedValues will cause this.
@@ -139,6 +142,7 @@ class Test_data__masked(tests.IrisTest):
         with self.assertRaisesRegexp(TranslationError, 'do not match'):
             as_concrete_data(message.data, nans_replacement=ma.masked)
 
+    @tests.skip_dask_mask
     def test_bitmap__invalid_indicator(self):
         values = np.arange(12)
         message = _make_test_message({3: self._section_3,

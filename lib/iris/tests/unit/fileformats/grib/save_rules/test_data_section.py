@@ -93,6 +93,7 @@ class TestMDI(tests.IrisTest):
         # Check the correct data values have been set.
         self.assertValues(grib_api, np.arange(5))
 
+    @tests.skip_dask_mask
     def test_masked_with_finite_fill_value(self):
         cube = iris.cube.Cube(np.ma.MaskedArray([1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
                                                 mask=[0, 0, 0, 1, 1, 1]),
@@ -106,6 +107,7 @@ class TestMDI(tests.IrisTest):
         # Check the correct data values have been set.
         self.assertValues(grib_api, [1, 2, 3, FILL, FILL, FILL])
 
+    @tests.skip_dask_mask
     def test_masked_with_nan_fill_value(self):
         cube = iris.cube.Cube(np.ma.MaskedArray([1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
                                                 mask=[0, 0, 0, 1, 1, 1]),
@@ -132,6 +134,7 @@ class TestMDI(tests.IrisTest):
         # Check the correct data values have been set.
         self.assertValues(grib_api, np.arange(5) * 1000)
 
+    @tests.skip_dask_mask
     def test_scaled_with_finite_fill_value(self):
         # When re-scaling masked data with a finite fill value, ensure
         # the fill value and any filled values are also re-scaled.
@@ -148,6 +151,7 @@ class TestMDI(tests.IrisTest):
         # Check the correct data values have been set.
         self.assertValues(grib_api, [1000, 2000, 3000, FILL, FILL, FILL])
 
+    @tests.skip_dask_mask
     def test_scaled_with_nan_fill_value(self):
         # When re-scaling masked data with a NaN fill value, ensure
         # a fill value is chosen which allows for the scaling, and any
