@@ -1259,9 +1259,8 @@ class _CurvilinearRegridder(object):
 
 class PointInCell(object):
     """
-    This class describes the point-in-cell regridding scheme for regridding
-    over one or more orthogonal coordinates, typically for use with
-    :meth:`iris.cube.Cube.regrid()`.
+    This class describes the point-in-cell regridding scheme for use
+    typically with :meth:`iris.cube.Cube.regrid()`.
 
     The PointInCell regridder can regrid data from a source grid of any
     dimensionality and in any coordinate system.
