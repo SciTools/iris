@@ -8,17 +8,19 @@ features in this example.
 
 The data used comes from the HadGEM2-AO model simulations for the A1B and E1
 scenarios, both of which were derived using the IMAGE Integrated Assessment
-Model (Johns et al. 2010; Lowe et al. 2009).
+Model (Johns et al. 2011; Lowe et al. 2009).
 
 References
 ----------
 
-   Johns T.C., et al. (2010) Climate change under aggressive mitigation: The
-   ENSEMBLES multi-model experiment. Climate Dynamics (submitted)
+   Johns T.C., et al. (2011) Climate change under aggressive mitigation: the
+   ENSEMBLES multi-model experiment. Climate Dynamics, Vol 37, No. 9-10,
+   doi:10.1007/s00382-011-1005-5.
 
    Lowe J.A., C.D. Hewitt, D.P. Van Vuuren, T.C. Johns, E. Stehfest, J-F.
    Royer, and P. van der Linden, 2009. New Study For Climate Modeling,
-   Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21.
+   Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21,
+   doi:10.1029/2009EO210001.
 
 .. seealso::
 
