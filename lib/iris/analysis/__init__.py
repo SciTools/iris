@@ -1418,37 +1418,64 @@ This aggregator handles masked data.
 
 """
 
+def _dask_getmask(dask_array):
+    """
+    Equivalent of numpy.ma.getmaskarray() operation for lazy arrays.
 
-def _build_dask_mdtol_function(dask_nanfunction):
+    Highly kludgy + experimental.
+
+    """
+    nd = dask_array.ndim
+    allinds = 'ijklmnopqr'[:nd]
+    return da.atop(ma.getmaskarray,
+                   allinds, dask_array, allinds,
+                   dtype=dask_array.dtype)
+
+def _dask_make_masked(dask_array, mask_array):
+    """
+    Equivalent of numpy.ma.masked_array(data, mask), for lazy arrays.
+
+    Highly kludgy + experimental.
+
+    """
+    nd = dask_array.ndim
+    allinds = 'ijklmnopqr'[:nd]
+    def make_masked(data, mask):
+        return np.ma.masked_array(data, mask=mask)
+    return da.atop(make_masked,
+                   allinds, dask_array, allinds, mask_array, allinds,
+                   dtype=dask_array.dtype)
+
+
+def _build_dask_mdtol_function(dask_stats_function):
     """
     Make a wrapped dask statistic function that supports the 'mdtol' keyword.
 
-    'dask_nanfunction' must be a statistical function that treats NaNs as
-    missing data, and which has the basic call signature
-    "dask_nanfunction(data, axis, **kwargs)".
+    'dask_function' must be a statistical function compatible with the call
+    signature "dask_stats_function(data, axis, **kwargs)".
 
     The returned value is a new function operating on dask arrays.
-    It has the call signature "stat(data, axis=-1, mdtol=None, *kwargs)".
+    It has the call signature "stat(data, axis=-1, mdtol=None, **kwargs)".
 
     """
-    @wraps(dask_nanfunction)
+    @wraps(dask_stats_function)
     def inner_stat(array, axis=-1, mdtol=None, **kwargs):
-        dask_result = dask_nanfunction(array, axis=axis, **kwargs)
+        dask_result = dask_stats_function(array, axis=axis, **kwargs)
         if mdtol is None:
             result = dask_result
         else:
             point_counts = np.sum(np.ones(array.shape), axis=axis)
-            point_mask_counts = da.sum(da.isnan(array), axis=axis)
+            point_mask_counts = da.sum(_dask_getmask(array), axis=axis)
             masked_point_fractions = (point_mask_counts + 0.0) / point_counts
             # Note: the +0.0 forces a floating-point divide.
             boolean_mask = masked_point_fractions > mdtol
-            result = da.where(boolean_mask, np.nan, dask_result)
+            result = _dask_make_masked(dask_result, boolean_mask)
         return result
     return inner_stat
 
 
 MEAN = WeightedAggregator('mean', ma.average,
-                          lazy_func=_build_dask_mdtol_function(da.nanmean))
+                          lazy_func=_build_dask_mdtol_function(da.mean))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1647,7 +1674,7 @@ This aggregator handles masked data.
 
 
 STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1,
-                     lazy_func=_build_dask_mdtol_function(da.nanstd))
+                     lazy_func=_build_dask_mdtol_function(da.std))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the standard deviation over a :class:`~iris.cube.Cube`, as
@@ -1714,7 +1741,7 @@ This aggregator handles masked data.
 VARIANCE = Aggregator('variance',
                       ma.var,
                       units_func=lambda units: units * units,
-                      lazy_func=_build_dask_mdtol_function(da.nanvar),
+                      lazy_func=_build_dask_mdtol_function(da.var),
                       ddof=1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
