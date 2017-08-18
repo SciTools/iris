@@ -1418,41 +1418,15 @@ This aggregator handles masked data.
 
 """
 
-def _dask_getmask(dask_array):
-    """
-    Equivalent of numpy.ma.getmaskarray() operation for lazy arrays.
-
-    Highly kludgy + experimental.
-
-    """
-    nd = dask_array.ndim
-    allinds = 'ijklmnopqr'[:nd]
-    return da.atop(ma.getmaskarray,
-                   allinds, dask_array, allinds,
-                   dtype=dask_array.dtype)
-
-def _dask_make_masked(dask_array, mask_array):
-    """
-    Equivalent of numpy.ma.masked_array(data, mask), for lazy arrays.
-
-    Highly kludgy + experimental.
-
-    """
-    nd = dask_array.ndim
-    allinds = 'ijklmnopqr'[:nd]
-    def make_masked(data, mask):
-        return np.ma.masked_array(data, mask=mask)
-    return da.atop(make_masked,
-                   allinds, dask_array, allinds, mask_array, allinds,
-                   dtype=dask_array.dtype)
-
-
 def _build_dask_mdtol_function(dask_stats_function):
     """
     Make a wrapped dask statistic function that supports the 'mdtol' keyword.
 
-    'dask_function' must be a statistical function compatible with the call
-    signature "dask_stats_function(data, axis, **kwargs)".
+    'dask_function' must be a dask statistical function, compatible with the
+    call signature : "dask_stats_function(data, axis, **kwargs)".
+    It must be masked-data tolerant, i.e. it ignores masked input points and
+    performs a calculation on only the unmasked points.
+    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
 
     The returned value is a new function operating on dask arrays.
     It has the call signature "stat(data, axis=-1, mdtol=None, **kwargs)".
@@ -1460,19 +1434,26 @@ def _build_dask_mdtol_function(dask_stats_function):
     """
     @wraps(dask_stats_function)
     def inner_stat(array, axis=-1, mdtol=None, **kwargs):
+        # Call the statistic to get the basic result (missing-data tolerant).
         dask_result = dask_stats_function(array, axis=axis, **kwargs)
         if mdtol is None:
             result = dask_result
         else:
-            point_counts = np.sum(np.ones(array.shape), axis=axis)
-            point_mask_counts = da.sum(_dask_getmask(array), axis=axis)
+            # Build a lazy computation to compare the fraction of missing
+            # input points at each output point to the 'mdtol' threshold.
+            point_counts = da.sum(da.ones(array.shape, chunks=array.chunks),
+                                  axis=axis)
+            point_mask_counts = da.sum(
+                da.core.elemwise(ma.getmaskarray, array),
+                axis=axis)
             masked_point_fractions = (point_mask_counts + 0.0) / point_counts
             # Note: the +0.0 forces a floating-point divide.
             boolean_mask = masked_point_fractions > mdtol
-            result = _dask_make_masked(dask_result, boolean_mask)
+            # Return a mdtol-masked version of the basic result.
+            result = da.core.elemwise(ma.masked_array,
+                                      dask_result, boolean_mask)
         return result
     return inner_stat
-
 
 MEAN = WeightedAggregator('mean', ma.average,
                           lazy_func=_build_dask_mdtol_function(da.mean))
