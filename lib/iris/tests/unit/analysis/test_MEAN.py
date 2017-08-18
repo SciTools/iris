@@ -34,9 +34,9 @@ from iris._lazy_data import as_concrete_data
 class Test_lazy_aggregate(tests.IrisTest):
     def setUp(self):
         self.data = ma.arange(12).reshape(3, 4)
-        self.data.mask = [[0,0,0,1],
-                          [0,0,1,1],
-                          [0,1,1,1]]
+        self.data.mask = [[0, 0, 0, 1],
+                          [0, 0, 1, 1],
+                          [0, 1, 1, 1]]
         # --> fractions of masked-points in columns = [0, 1/3, 2/3, 1]
         self.array = as_lazy_data(self.data)
         self.axis = 0

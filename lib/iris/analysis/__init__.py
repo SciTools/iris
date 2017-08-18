@@ -1418,6 +1418,7 @@ This aggregator handles masked data.
 
 """
 
+
 def _build_dask_mdtol_function(dask_stats_function):
     """
     Make a wrapped dask statistic function that supports the 'mdtol' keyword.
@@ -1449,7 +1450,7 @@ def _build_dask_mdtol_function(dask_stats_function):
             masked_point_fractions = (point_mask_counts + 0.0) / point_counts
             # Note: the +0.0 forces a floating-point divide.
             boolean_mask = masked_point_fractions > mdtol
-            # Return a mdtol-masked version of the basic result.
+            # Return an mdtol-masked version of the basic result.
             result = da.core.elemwise(ma.masked_array,
                                       dask_result, boolean_mask)
         return result
