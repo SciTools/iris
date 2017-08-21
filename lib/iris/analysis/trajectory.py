@@ -133,7 +133,7 @@ class Trajectory(object):
                                                     self.sample_count)
 
 
-def interpolate(cube, sample_points, method=None, index_only=False):
+def interpolate(cube, sample_points, method=None):
     """
     Extract a sub-cube at the given n-dimensional points.
 
@@ -151,14 +151,6 @@ def interpolate(cube, sample_points, method=None, index_only=False):
         Request "linear" interpolation (default) or "nearest" neighbour.
         Only nearest neighbour is available when specifying multi-dimensional
         coordinates.
-
-    * index_only
-        Return only the array indices of the interpolated points if 'True'.
-        .. note:: This is only used in the case of nearest neighbour
-        interpolation.  When linear interpolation is performed, the
-        interpolated points are returned with the original array indices,
-        so the keyword is ignored.
-
 
     For example::
 
@@ -279,8 +271,6 @@ def interpolate(cube, sample_points, method=None, index_only=False):
         cache = {}
         column_indexes = _nearest_neighbour_indices_ndcoords(
             cube, sample_points, cache=cache)
-        if index_only:
-            return column_indexes
         # Construct "fancy" indexes, so we can create the result data array in
         # a single numpy indexing operation.
         # ALSO: capture the index range in each dimension, so that we can fetch
@@ -386,6 +376,50 @@ def interpolate(cube, sample_points, method=None, index_only=False):
             # NOTE: the new coords do *not* have bounds.
 
     return new_cube
+
+def nearest_neighbour_indices(cube, sample_points):
+    """
+    Extract an array of interpolated point indices.
+
+    Args:
+
+    * cube
+        The source Cube.
+
+    * sample_points
+        A sequence of coordinate (name) - values pairs.
+
+    Returns:
+        An array containing the nearest-neighbour indices of sample points.
+
+    """
+    # Convert any coordinate names to coords
+    points = []
+    for coord, values in sample_points:
+        if isinstance(coord, six.string_types):
+            coord = cube.coord(coord)
+        points.append((coord, values))
+    sample_points = points
+
+    # Do all value sequences have the same number of values?
+    coord, values = sample_points[0]
+    trajectory_size = len(values)
+    for coord, values in sample_points[1:]:
+        if len(values) != trajectory_size:
+            raise ValueError('Lengths of coordinate values are inconsistent.')
+
+    # TODO: Figure out whether I need this or not
+    # Start with empty data and then fill in the "column" of values for each
+    # trajectory point.
+    # new_cube = iris.cube.Cube(np.empty(new_data_shape))
+    # new_cube.metadata = cube.metadata
+
+    cache = {}
+    column_indexes = _nearest_neighbour_indices_ndcoords(cube,
+                                                         sample_points,
+                                                         cache=cache)
+    return column_indexes
+
 
 
 class UnstructuredNearestNeigbourRegridder(object):
