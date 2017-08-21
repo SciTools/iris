@@ -882,8 +882,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # If the cube has units convert the data.
         if self.units.is_unknown():
             raise iris.exceptions.UnitConversionError(
-                'cannot convert from unknown units to {!s}, '
-                'set the "units" attribute instead'.format(unit))
+                'Cannot convert from unknown units. '
+                'The "cube.units" attribute may be set directly.')
         self.data = self.units.convert(self.data, unit)
         self.units = unit
 

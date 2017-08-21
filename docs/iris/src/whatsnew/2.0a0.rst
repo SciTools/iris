@@ -97,9 +97,11 @@ Incompatible Changes
 
 * The :meth:`~iris.cube.Cube.lazy_data` method no longer accepts any arguments.
 
-* Attempting to use the :meth:`iris.cube.Cube.convert_units` method on a cube
-  where the existing unit is unknown will raise a :data:`UnitConversionError`
-  exception.
+* Using :meth:`~iris.cube.Cube.convert_units` on a cube with unknown units will
+  result in a :data:`UnitConversionError` being raised.
+
+* Using :meth:`~iris.coords.Coord.convert_units` on a coordinate with unknown
+  units will result in a :data:`UnitConversionError` being raised.
 
 .. admonition:: Significant Changes in Calculated Results
 

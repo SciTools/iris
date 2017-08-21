@@ -2008,7 +2008,9 @@ class Test_transpose(tests.IrisTest):
 class Test_convert_units(tests.IrisTest):
     def test_convert_unknown_units(self):
         cube = iris.cube.Cube(1)
-        with self.assertRaises(UnitConversionError):
+        emsg = ('Cannot convert from unknown units. '
+                'The "cube.units" attribute may be set directly.')
+        with self.assertRaisesRegexp(UnitConversionError, emsg):
             cube.convert_units('mm day-1')
 
 
