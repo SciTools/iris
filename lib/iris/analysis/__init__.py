@@ -1444,15 +1444,15 @@ def _build_dask_mdtol_function(dask_stats_function):
             # input points at each output point to the 'mdtol' threshold.
             point_counts = da.sum(da.ones(array.shape, chunks=array.chunks),
                                   axis=axis)
-            point_mask_counts = da.sum(
-                da.core.elemwise(ma.getmaskarray, array),
-                axis=axis)
-            masked_point_fractions = (point_mask_counts + 0.0) / point_counts
+            point_mask_counts = da.sum(da.ma.getmaskarray(array), axis=axis)
+            masked_point_fractions = \
+                point_mask_counts.astype(float) / point_counts
             # Note: the +0.0 forces a floating-point divide.
             boolean_mask = masked_point_fractions > mdtol
             # Return an mdtol-masked version of the basic result.
             result = da.core.elemwise(ma.masked_array,
-                                      dask_result, boolean_mask)
+                                      da.ma.getdata(dask_result),
+                                      boolean_mask)
         return result
     return inner_stat
 
