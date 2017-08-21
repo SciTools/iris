@@ -377,6 +377,7 @@ def interpolate(cube, sample_points, method=None):
 
     return new_cube
 
+
 def nearest_neighbour_indices(cube, sample_points):
     """
     Extract an array of interpolated point indices.
@@ -408,18 +409,11 @@ def nearest_neighbour_indices(cube, sample_points):
         if len(values) != trajectory_size:
             raise ValueError('Lengths of coordinate values are inconsistent.')
 
-    # TODO: Figure out whether I need this or not
-    # Start with empty data and then fill in the "column" of values for each
-    # trajectory point.
-    # new_cube = iris.cube.Cube(np.empty(new_data_shape))
-    # new_cube.metadata = cube.metadata
-
     cache = {}
     column_indexes = _nearest_neighbour_indices_ndcoords(cube,
                                                          sample_points,
                                                          cache=cache)
     return column_indexes
-
 
 
 class UnstructuredNearestNeigbourRegridder(object):
