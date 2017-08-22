@@ -111,7 +111,6 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
                 self.assertRaisesRegexp(ValueError, 'multiple aux factories'):
             iris.save(cube, filename)
 
-    @tests.skip_dask_mask
     def test_hybrid_height_cubes(self):
         hh1 = stock.simple_4d_with_hybrid_height()
         hh1.attributes['cube'] = 'hh1'
