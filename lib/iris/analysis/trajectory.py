@@ -408,7 +408,6 @@ def nearest_neighbour_indices(cube, sample_points):
     # for coord, values in sample_points[1:]:
     #     if len(values) != trajectory_size:
     #         raise ValueError('Lengths of coordinate values are inconsistent.')
-
     cache = {}
     column_indexes = _nearest_neighbour_indices_ndcoords(cube,
                                                          sample_points,
