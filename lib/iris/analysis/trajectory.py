@@ -394,20 +394,20 @@ def nearest_neighbour_indices(cube, sample_points):
         An array containing the nearest-neighbour indices of sample points.
 
     """
-    # Convert any coordinate names to coords
-    points = []
-    for coord, values in sample_points:
-        if isinstance(coord, six.string_types):
-            coord = cube.coord(coord)
-        points.append((coord, values))
-    sample_points = points
-
-    # Do all value sequences have the same number of values?
-    coord, values = sample_points[0]
-    trajectory_size = len(values)
-    for coord, values in sample_points[1:]:
-        if len(values) != trajectory_size:
-            raise ValueError('Lengths of coordinate values are inconsistent.')
+    # # Convert any coordinate names to coords
+    # points = []
+    # for coord, values in sample_points:
+    #     if isinstance(coord, six.string_types):
+    #         coord = cube.coord(coord)
+    #     points.append((coord, values))
+    # sample_points = points
+    #
+    # # Do all value sequences have the same number of values?
+    # coord, values = sample_points[0]
+    # trajectory_size = len(values)
+    # for coord, values in sample_points[1:]:
+    #     if len(values) != trajectory_size:
+    #         raise ValueError('Lengths of coordinate values are inconsistent.')
 
     cache = {}
     column_indexes = _nearest_neighbour_indices_ndcoords(cube,
