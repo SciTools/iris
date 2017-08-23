@@ -158,12 +158,13 @@ class Test_write(tests.IrisTest):
     def test_zlib(self):
         cube = self._simple_cube('>f4')
         with mock.patch('iris.fileformats.netcdf.netCDF4') as api:
+            api.default_fillvals = {'f4': 12345.}
             with Saver('/dummy/path', 'NETCDF4') as saver:
                 saver.write(cube, zlib=True)
         dataset = api.Dataset.return_value
         create_var_calls = mock.call.createVariable(
             'air_pressure_anomaly', np.dtype('float32'), ['dim0', 'dim1'],
-            fill_value=None, shuffle=True, least_significant_digit=None,
+            fill_value=mock.ANY, shuffle=True, least_significant_digit=None,
             contiguous=False, zlib=True, fletcher32=False,
             endian='native', complevel=4, chunksizes=None).call_list()
         dataset.assert_has_calls(create_var_calls)

@@ -741,20 +741,23 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-class _ValueCheckAndStoreTarget(object):
+class _FillValueMaskCheckAndStoreTarget(object):
     """
     To be used with da.store. Remembers whether any element was equal to a
-    given value before passing the chunk to the given target.
+    given value and whether it was masked, before passing the chunk to the
+    given target.
 
     """
-    def __init__(self, target, check_value=None):
+    def __init__(self, target, fill_value=None):
         self.target = target
-        self.check_value = check_value
+        self.fill_value = fill_value
         self.contains_value = False
+        self.is_masked = False
 
     def __setitem__(self, keys, arr):
-        if self.check_value is not None:
-            self.contains_value |= self.check_value in arr
+        if self.fill_value is not None:
+            self.contains_value |= self.fill_value in arr
+        self.is_masked |= ma.isMaskedArray(arr)
         self.target[keys] = arr
 
 
@@ -916,9 +919,8 @@ class Saver(object):
             http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
             If this argument is a type (or type string), appropriate values of
             scale_factor and add_offset will be automatically calculated based
-            on `cube.data` and possible masking. For masked data, `fill_value`
-            is taken from netCDF4.default_fillvals. For more control, pass a
-            dict with one or more of the following keys: `dtype` (required),
+            on `cube.data` and possible masking. For more control, pass a dict
+            with one or more of the following keys: `dtype` (required),
             `scale_factor` and `add_offset`. Note that automatic calculation of
             packing parameters will trigger loading of lazy data; set them
             manually using a dict to avoid this. The default is `None`, in
@@ -928,7 +930,9 @@ class Saver(object):
         * fill_value:
             The value to use for the `_FillValue` attribute on the netCDF
             variable. If `packing` is specified the value of `fill_value`
-            should be in the domain of the packed data.
+            should be in the domain of the packed data. If this argument is not
+            supplied and the data is masked, `fill_value` is taken from
+            netCDF4.default_fillvals
 
         Returns:
             None.
@@ -1878,30 +1882,11 @@ class Saver(object):
         Kwargs:
 
         * local_keys (iterable of strings):
-            An interable of cube attribute keys. Any cube attributes
-            with matching keys will become attributes on the data variable.
-
-        * packing (type or string or dict or list): A numpy integer datatype
-            (signed or unsigned) or a string that describes a numpy integer
-            dtype(i.e. 'i2', 'short', 'u4') or a dict of packing parameters as
-            described below. This provides support for netCDF data packing as
-            described in
-            http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
-            If this argument is a type (or type string), appropriate values of
-            scale_factor and add_offset will be automatically calculated based
-            on `cube.data` and possible masking. For masked data, `fill_value`
-            is taken from netCDF4.default_fillvals. For more control, pass a
-            dict with one or more of the following keys: `dtype` (required),
-            `scale_factor` and `add_offset`. Note that automatic calculation of
-            packing parameters will trigger loading of lazy data; set them
-            manually using a dict to avoid this. The default is `None`, in
-            which case the datatype is determined from the cube and no packing
-            will occur.
-
+            * see :func:`iris.fileformats.netcdf.Saver.write`
+        * packing (type or string or dict or list):
+            * see :func:`iris.fileformats.netcdf.Saver.write`
         * fill_value:
-            The value to use for the `_FillValue` attribute on the netCDF
-            variable if the data is masked. If `packing` is specified the
-            value of `fill_value` should be in the domain of the packed data.
+            * see :func:`iris.fileformats.netcdf.Saver.write`
 
         All other keywords are passed through to the dataset's `createVariable`
         method.
@@ -1959,18 +1944,26 @@ class Saver(object):
 
             def store(data, cf_var, fill_value):
                 cf_var[:] = data
-                return fill_value is not None and fill_value in data
+                is_masked = ma.isMaskedArray(data)
+                contains_value = fill_value is not None and fill_value in data
+                return is_masked, contains_value
         else:
             data = cube.lazy_data()
 
             def store(data, cf_var, fill_value):
-                # Store lazy data and check whether it contains the fill value
-                target = _ValueCheckAndStoreTarget(cf_var, fill_value)
+                # Store lazy data and check whether it is masked and contains
+                # the fill value
+                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
                 da.store([data], [target])
-                return target.contains_value
+                return target.is_masked, target.contains_value
 
         if not packing:
             dtype = data.dtype.newbyteorder('=')
+
+        if fill_value is None:
+            fill_value = netCDF4.default_fillvals[dtype.str[1:]]
+            # Ensure it is the correct dtype
+            fill_value = dtype.type(fill_value)
 
         # Create the cube CF-netCDF data variable with data payload.
         cf_var = self._dataset.createVariable(cf_name, dtype, dimension_names,
@@ -1980,16 +1973,19 @@ class Saver(object):
 
         # If packing attributes are specified, don't bother checking whether
         # the fill value is in the data.
-        fill_value_to_check = None if packing else \
-            fill_value if fill_value is not None else \
-            netCDF4.default_fillvals[data.dtype.str[1:]]
+        fill_value_to_check = None if packing else fill_value
 
-        # Store the data and check if it contains the fill value
-        contains_fill_value = store(data, cf_var, fill_value_to_check)
+        # Store the data and check if it is masked and contains the fill value
+        is_masked, contains_fill_value = store(data, cf_var,
+                                               fill_value_to_check)
 
-        if contains_fill_value:
-            warnings.warn('Cube {} contains fill value {}. Some data points '
-                          'will be masked.')
+        if is_masked:
+            if contains_fill_value:
+                warnings.warn("Cube '{}' contains fill value {}. Some data "
+                              "points will be masked.".format(cube.name(),
+                                                              fill_value))
+        else:
+            cf_var.delncattr('_FillValue')
 
         if cube.standard_name:
             _setncattr(cf_var, 'standard_name', cube.standard_name)
@@ -2181,18 +2177,18 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based
-        on `cube.data` and possible masking. For masked data, `fill_value`
-        is taken from netCDF4.default_fillvals. For more control, pass a
-        dict with one or more of the following keys: `dtype` (required),
-        `scale_factor` and `add_offset`. Note that automatic calculation of
-        packing parameters will trigger loading of lazy data; set them manually
-        using a dict to avoid this. The default is `None`, in which case the
-        datatype is determined from the cube and no packing will occur.
+        on `cube.data` and possible masking. For more control, pass a dict with
+        one or more of the following keys: `dtype` (required), `scale_factor`
+        and `add_offset`. Note that automatic calculation of packing parameters
+        will trigger loading of lazy data; set them manually using a dict to
+        avoid this. The default is `None`, in which case the datatype is
+        determined from the cube and no packing will occur.
 
     * fill_value:
         The value to use for the `_FillValue` attribute on the netCDF variable.
         If `packing` is specified the value of `fill_value` should be in the
-        domain of the packed data.
+        domain of the packed data. If this argument is not supplied and the
+        data is masked, `fill_value` is taken from netCDF4.default_fillvals
 
     Returns:
         None.
