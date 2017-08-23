@@ -181,7 +181,7 @@ class GribWrapper(object):
                                   offset - message_length)
             self._data = as_lazy_data(proxy)
         else:
-            values_array = _message_values(grib_message, shape)
+            self._data = _message_values(grib_message, shape)
 
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
