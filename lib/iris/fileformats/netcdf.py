@@ -2183,9 +2183,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         will trigger loading of lazy data; set them manually using a dict to
         avoid this. The default is `None`, in which case the datatype is
         determined from the cube and no packing will occur. If this argument is
-        a list it must have the same number of elements as `cube` if `cube` is a
-        `:class:`iris.cube.CubeList`, or one element, and each element of this
-         argument will be applied to each cube separately.
+        a list it must have the same number of elements as `cube` if `cube` is
+        a `:class:`iris.cube.CubeList`, or one element, and each element of
+        this argument will be applied to each cube separately.
 
     * fill_value (numeric or list):
         The value to use for the `_FillValue` attribute on the netCDF variable.
