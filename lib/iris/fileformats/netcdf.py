@@ -1960,11 +1960,6 @@ class Saver(object):
         if not packing:
             dtype = data.dtype.newbyteorder('=')
 
-        if fill_value is None:
-            fill_value = netCDF4.default_fillvals[dtype.str[1:]]
-            # Ensure it is the correct dtype
-            fill_value = dtype.type(fill_value)
-
         # Create the cube CF-netCDF data variable with data payload.
         cf_var = self._dataset.createVariable(cf_name, dtype, dimension_names,
                                               fill_value=fill_value,
@@ -1973,19 +1968,26 @@ class Saver(object):
 
         # If packing attributes are specified, don't bother checking whether
         # the fill value is in the data.
-        fill_value_to_check = None if packing else fill_value
+        fill_value_to_check = None if packing else \
+            fill_value if fill_value is not None else \
+            netCDF4.default_fillvals[dtype.str[1:]]
 
         # Store the data and check if it is masked and contains the fill value
         is_masked, contains_fill_value = store(data, cf_var,
                                                fill_value_to_check)
 
-        if is_masked:
-            if contains_fill_value:
-                warnings.warn("Cube '{}' contains fill value {}. Some data "
-                              "points will be masked.".format(cube.name(),
-                                                              fill_value))
-        else:
-            cf_var.delncattr('_FillValue')
+        if dtype.itemsize == 1 and fill_value is None:
+            if is_masked:
+                warnings.warn("Cube '{}' contains masked byte data and will "
+                              "be interpreted as unmasked. To save as masked "
+                              "data please explicitly provide a fill value."
+                              .format(cube.name()))
+        elif contains_fill_value:
+            warnings.warn("Cube '{}' contains data points equal to the fill"
+                          "value {}. The points will be interpreted as being "
+                          "masked. Please provide a fill_value argument not "
+                          "equal to any data point.".format(cube.name(),
+                                                            fill_value))
 
         if cube.standard_name:
             _setncattr(cf_var, 'standard_name', cube.standard_name)
