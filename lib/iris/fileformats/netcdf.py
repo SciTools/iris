@@ -930,9 +930,7 @@ class Saver(object):
         * fill_value:
             The value to use for the `_FillValue` attribute on the netCDF
             variable. If `packing` is specified the value of `fill_value`
-            should be in the domain of the packed data. If this argument is not
-            supplied and the data is masked, `fill_value` is taken from
-            netCDF4.default_fillvals
+            should be in the domain of the packed data.
 
         Returns:
             None.
@@ -2192,12 +2190,10 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     * fill_value (numeric or list):
         The value to use for the `_FillValue` attribute on the netCDF variable.
         If `packing` is specified the value of `fill_value` should be in the
-        domain of the packed data. If this argument is not supplied and the
-        data is masked, `fill_value` is taken from netCDF4.default_fillvals. If
-        this argument is a list it must have the same number of elements as
-        `cube` if `cube` is a `:class:`iris.cube.CubeList`, or a single
-        element, and each element of this argument will be applied to each cube
-        separately.
+        domain of the packed data. If this argument is a list it must have the
+        same number of elements as `cube` if `cube` is a
+        `:class:`iris.cube.CubeList`, or a single element, and each element of
+        this argument will be applied to each cube separately.
 
     Returns:
         None.
