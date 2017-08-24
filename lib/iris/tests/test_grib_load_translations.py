@@ -369,7 +369,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         grib.edition = 1
         return grib
 
-    @tests.skip_dask_mask
     def test_grib1_unknownparam(self):
         grib = self.mock_grib()
         grib.table2Version = 0
@@ -379,7 +378,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.assertEqual(cube.long_name, None)
         self.assertEqual(cube.units, cf_units.Unit("???"))
 
-    @tests.skip_dask_mask
     def test_grib1_unknown_local_param(self):
         grib = self.mock_grib()
         grib.table2Version = 128
@@ -389,7 +387,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.assertEqual(cube.long_name, 'UNKNOWN LOCAL PARAM 999.128')
         self.assertEqual(cube.units, cf_units.Unit("???"))
 
-    @tests.skip_dask_mask
     def test_grib1_unknown_standard_param(self):
         grib = self.mock_grib()
         grib.table2Version = 1
@@ -408,7 +405,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.assertEqual(cube.long_name, None)
         self.assertEqual(cube.units, cf_units.Unit(units_str))
 
-    @tests.skip_dask_mask
     def test_grib1_known_standard_params(self):
         # at present, there are just a very few of these
         self.known_grib1(11, 'air_temperature', 'kelvin')

@@ -33,24 +33,23 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import _DataProxy
 
 
-@tests.skip_dask_mask
 class Test__bitmap(tests.IrisTest):
     def test_no_bitmap(self):
         section_6 = {'bitMapIndicator': 255, 'bitmap': None}
-        data_proxy = _DataProxy(0, 0, 0, 0)
+        data_proxy = _DataProxy(0, 0, 0)
         result = data_proxy._bitmap(section_6)
         self.assertIsNone(result)
 
     def test_bitmap_present(self):
         bitmap = randint(2, size=(12))
         section_6 = {'bitMapIndicator': 0, 'bitmap': bitmap}
-        data_proxy = _DataProxy(0, 0, 0, 0)
+        data_proxy = _DataProxy(0, 0, 0)
         result = data_proxy._bitmap(section_6)
         self.assertArrayEqual(bitmap, result)
 
     def test_bitmap__invalid_indicator(self):
         section_6 = {'bitMapIndicator': 100, 'bitmap': None}
-        data_proxy = _DataProxy(0, 0, 0, 0)
+        data_proxy = _DataProxy(0, 0, 0)
         with self.assertRaisesRegexp(TranslationError, 'unsupported bitmap'):
             data_proxy._bitmap(section_6)
 
