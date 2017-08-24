@@ -131,39 +131,6 @@ def as_concrete_data(data):
     return data
 
 
-def get_fill_value(data):
-    """
-    Return the fill value of a concrete or lazy masked array.
-
-    Args:
-
-    * data:
-        A dask array, NumPy `ndarray` or masked array.
-
-    Returns:
-        The fill value of `data` if `data` represents a masked array, or None.
-
-    """
-    # If lazy, get the smallest slice of the data from which we can retrieve
-    # the fill_value.
-    if is_lazy_data(data):
-        inds = [0] * data.ndim
-        if inds:
-            inds[-1] = slice(0, 1)
-            data = data[tuple(inds)]
-        data = as_concrete_data(data)
-    else:
-        if isinstance(data, ma.core.MaskedConstant):
-            data = ma.array(data.data, mask=data.mask)
-
-    # Now get the fill value.
-    fill_value = None
-    if ma.isMaskedArray(data):
-        fill_value = data.fill_value
-
-    return fill_value
-
-
 def multidim_lazy_stack(stack):
     """
     Recursively build a multidimensional stacked dask array.

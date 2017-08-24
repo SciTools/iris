@@ -56,7 +56,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from iris._lazy_data import as_lazy_data, get_fill_value
+from iris._lazy_data import as_lazy_data
 
 # Show Pyke inference engine statistics.
 DEBUG = False
