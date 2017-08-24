@@ -2184,13 +2184,20 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         and `add_offset`. Note that automatic calculation of packing parameters
         will trigger loading of lazy data; set them manually using a dict to
         avoid this. The default is `None`, in which case the datatype is
-        determined from the cube and no packing will occur.
+        determined from the cube and no packing will occur. If this argument is
+        a list it must have the same number of elements as `cube` if `cube` is a
+        `:class:`iris.cube.CubeList`, or one element, and each element of this
+         argument will be applied to each cube separately.
 
-    * fill_value:
+    * fill_value (numeric or list):
         The value to use for the `_FillValue` attribute on the netCDF variable.
         If `packing` is specified the value of `fill_value` should be in the
         domain of the packed data. If this argument is not supplied and the
-        data is masked, `fill_value` is taken from netCDF4.default_fillvals
+        data is masked, `fill_value` is taken from netCDF4.default_fillvals. If
+        this argument is a list it must have the same number of elements as
+        `cube` if `cube` is a `:class:`iris.cube.CubeList`, or a single
+        element, and each element of this argument will be applied to each cube
+        separately.
 
     Returns:
         None.
@@ -2281,10 +2288,24 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                 raise ValueError(msg)
         packspecs = packing
 
+    if isinstance(fill_value, six.string_types):
+        fill_values = repeat(fill_value)
+    else:
+        try:
+            fill_values = tuple(fill_value)
+        except TypeError:
+            fill_values = repeat(fill_value)
+        else:
+            if len(fill_values) != len(cubes):
+                msg = ('If fill_value is a list, it must have the '
+                       'same number of elements as the argument to'
+                       'cube.')
+                raise ValueError(msg)
+
     # Initialise Manager for saving
     with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
-        for cube, packspec in zip(cubes, packspecs):
+        for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
                        least_significant_digit, packing=packspec,
