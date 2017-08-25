@@ -1430,7 +1430,7 @@ def _build_dask_mdtol_function(dask_stats_function):
     For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
 
     The returned value is a new function operating on dask arrays.
-    It has the call signature "stat(data, axis=-1, mdtol=None, **kwargs)".
+    It has the call signature `stat(data, axis=-1, mdtol=None, **kwargs)`.
 
     """
     @wraps(dask_stats_function)
@@ -1442,8 +1442,17 @@ def _build_dask_mdtol_function(dask_stats_function):
         else:
             # Build a lazy computation to compare the fraction of missing
             # input points at each output point to the 'mdtol' threshold.
-            point_counts = da.sum(da.ones(array.shape, chunks=array.chunks),
-                                  axis=axis)
+            if axis is not None:
+                # Make an iterable over one or multiple axis values.
+                axis_indices = np.array(axis, ndmin=1)
+            else:
+                # Collapse is over all axes.
+                axis_indices = range(array.ndim)
+            # Multiply the sizes of the collapsed dimensions, to get
+            # the total number of input points at each output point.
+            point_counts = np.prod([array.shape[axis_index]
+                                    for axis_index in axis_indices])
+            # Convert missing-points mask to missing-data fractions.
             point_mask_counts = da.sum(da.ma.getmaskarray(array), axis=axis)
             masked_point_fractions = point_mask_counts / point_counts
             boolean_mask = masked_point_fractions > mdtol
