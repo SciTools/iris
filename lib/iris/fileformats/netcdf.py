@@ -756,8 +756,8 @@ class _FillValueMaskCheckAndStoreTarget(object):
 
     def __setitem__(self, keys, arr):
         if self.fill_value is not None:
-            self.contains_value |= self.fill_value in arr
-        self.is_masked |= ma.isMaskedArray(arr)
+            self.contains_value = self.contains_value or self.fill_value in arr
+        self.is_masked = self.is_masked or ma.isMaskedArray(arr)
         self.target[keys] = arr
 
 
