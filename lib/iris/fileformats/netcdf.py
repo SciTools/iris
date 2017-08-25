@@ -37,7 +37,7 @@ import re
 import string
 import warnings
 
-import biggus
+import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
@@ -56,7 +56,8 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-
+from iris._lazy_data import (array_masked_to_nans, as_lazy_data,
+                             convert_nans_array, nan_array_type)
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -391,10 +392,17 @@ class NetCDFDataProxy(object):
         try:
             variable = dataset.variables[self.variable_name]
             # Get the NetCDF variable data and slice.
-            data = variable[keys]
+            var = variable[keys]
         finally:
             dataset.close()
-        return data
+        if ma.isMaskedArray(var):
+            if self.dtype.kind in 'biu':
+                msg = "NetCDF variable {!r} has masked data, which is not " \
+                      "supported for declared dtype {!r}."
+                raise TypeError(
+                    msg.format(self.variable_name, self.dtype.name))
+            var = array_masked_to_nans(var)
+        return np.asanyarray(var, dtype=self.dtype)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
@@ -500,12 +508,13 @@ def _load_cube(engine, cf, cf_var, filename):
         dummy_data = cf_var.add_offset + dummy_data
 
     # Create cube with deferred data, but no metadata
-    fill_value = getattr(cf_var.cf_data, '_FillValue',
-                         netCDF4.default_fillvals[cf_var.dtype.str[1:]])
-    proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
+    fill_value = getattr(cf_var.cf_data, '_FillValue', None)
+
+    dtype = nan_array_type(dummy_data.dtype)
+    proxy = NetCDFDataProxy(cf_var.shape, dtype,
                             filename, cf_var.cf_name, fill_value)
-    data = biggus.OrthoArrayAdapter(proxy)
-    cube = iris.cube.Cube(data)
+    data = as_lazy_data(proxy, chunks=cf_var.shape)
+    cube = iris.cube.Cube(data, fill_value=fill_value, dtype=dummy_data.dtype)
 
     # Reset the pyke inference engine.
     engine.reset()
@@ -1495,9 +1504,18 @@ class Saver(object):
         cf_dimensions = [dimension_names[dim] for dim in
                          cube.cell_measure_dims(cell_measure)]
 
+        # Get the data values.
+        data = cell_measure.data
+
+        # Disallow saving of *masked* cell measures.
+        if ma.is_masked(data):
+            # We can't save masked points properly, as we don't maintain a
+            # suitable fill_value.  (Load will not record one, either).
+            msg = "Cell measures with missing data are not supported."
+            raise ValueError(msg)
+
         # Get the values in a form which is valid for the file format.
-        data = self._ensure_valid_dtype(cell_measure.data, 'coordinate',
-                                        cell_measure)
+        data = self._ensure_valid_dtype(data, 'coordinate', cell_measure)
 
         # Create the CF-netCDF variable.
         cf_var = self._dataset.createVariable(
@@ -1940,7 +1958,7 @@ class Saver(object):
             # Explicitly assign the fill_value, which will be the type default
             # in the case of an unmasked array.
             if packing is None:
-                fill_value = cube.lazy_data().fill_value
+                fill_value = cube.fill_value
                 dtype = cube.lazy_data().dtype.newbyteorder('=')
 
             cf_var = self._dataset.createVariable(
@@ -1948,8 +1966,14 @@ class Saver(object):
                 dimension_names, fill_value=fill_value,
                 **kwargs)
             set_packing_ncattrs(cf_var)
-            # stream the data
-            biggus.save([cube.lazy_data()], [cf_var], masked=True)
+
+            # Now stream the cube data payload straight to the netCDF
+            # data variable within the netCDF file, where any NaN values
+            # are replaced with the specified cube fill_value.
+            data = da.map_blocks(convert_nans_array, cube.lazy_data(),
+                                 nans_replacement=cube.fill_value,
+                                 result_dtype=cube.dtype)
+            da.store([data], [cf_var])
 
         if cube.standard_name:
             _setncattr(cf_var, 'standard_name', cube.standard_name)
@@ -2047,7 +2071,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     * Keyword arguments specifying how to save the data are applied
       to each cube. To use different settings for different cubes, use
       the NetCDF Context manager (:class:`~Saver`) directly.
-    * The save process will stream the data payload to the file using biggus,
+    * The save process will stream the data payload to the file using dask,
       enabling large data payloads to be saved and maintaining the 'lazy'
       status of the cube's data payload, unless the netcdf_format is explicitly
       specified to be 'NETCDF3' or 'NETCDF3_CLASSIC'.

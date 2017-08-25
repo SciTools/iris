@@ -33,17 +33,19 @@ import re
 import struct
 import warnings
 
-import biggus
 import cf_units
 import numpy as np
 import numpy.ma as ma
 import netcdftime
 
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import (array_masked_to_nans, as_concrete_data,
+                             as_lazy_data, is_lazy_data)
 import iris.config
 import iris.fileformats.rules
 import iris.fileformats.pp_rules
 import iris.coord_systems
+
 
 try:
     import mo_pack
@@ -860,7 +862,8 @@ class PPDataProxy(object):
 
     @property
     def dtype(self):
-        return self.src_dtype.newbyteorder('=')
+        return np.dtype('f8') if self.src_dtype.kind == 'i' \
+                 else self.src_dtype.newbyteorder('=')
 
     @property
     def fill_value(self):
@@ -879,7 +882,8 @@ class PPDataProxy(object):
                                                self.boundary_packing,
                                                self.shape, self.src_dtype,
                                                self.mdi, self.mask)
-        return data.__getitem__(keys)
+        data = data.__getitem__(keys)
+        return np.asanyarray(data, dtype=self.dtype)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
@@ -974,7 +978,9 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # condition" array, which is split into 4 quartiles, North
         # East, South, West and where North and South contain the corners.
         compressed_data = data
-        data = np.ma.masked_all(data_shape)
+        if data_type.kind != 'i':
+            data_type = np.dtype('f8')
+        data = np.full(data_shape, np.nan, dtype=data_type)
 
         boundary_height = boundary_packing.y_halo + boundary_packing.rim_width
         boundary_width = boundary_packing.x_halo + boundary_packing.rim_width
@@ -1015,17 +1021,17 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                              'Could not load.')
         land_mask = mask.data.astype(np.bool)
         sea_mask = ~land_mask
-        new_data = np.ma.masked_all(land_mask.shape)
+        if data_type.kind != 'i':
+            data_type = np.dtype('f8')
+        new_data = np.full(land_mask.shape, np.nan, dtype=data_type)
         if lbpack.n3 == 1:
             # Land mask packed data.
-            new_data.mask = sea_mask
             # Sometimes the data comes in longer than it should be (i.e. it
             # looks like the compressed data is compressed, but the trailing
             # data hasn't been clipped off!).
             new_data[land_mask] = data[:land_mask.sum()]
         elif lbpack.n3 == 2:
             # Sea mask packed data.
-            new_data.mask = land_mask
             new_data[sea_mask] = data[:sea_mask.sum()]
         else:
             raise ValueError('Unsupported mask compression.')
@@ -1035,9 +1041,11 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # Reform in row-column order
         data.shape = data_shape
 
-    # Mask the array?
+    # Convert mdi to NaN.
     if mdi in data:
-        data = ma.masked_values(data, mdi, copy=False)
+        if data.dtype.kind == 'i':
+            data = data.astype(np.dtype('f8'))
+        data[data == mdi] = np.nan
 
     return data
 
@@ -1073,7 +1081,7 @@ def _pp_attribute_names(header_defn):
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
-                          'boundary_packing']
+                          'boundary_packing', '_realised_dtype']
     return normal_headers + special_headers + extra_data + special_attributes
 
 
@@ -1106,6 +1114,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         self.raw_lbtim = None
         self.raw_lbpack = None
         self.boundary_packing = None
+        self._realised_dtype = None
         if header is not None:
             self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
@@ -1185,17 +1194,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                       for name in public_attribute_names]
         self_attrs = [pair for pair in self_attrs if pair[1] is not None]
 
-        # Output any masked data as separate `data` and `mask`
-        # components, to avoid the standard MaskedArray output
-        # which causes irrelevant discrepancies between NumPy
-        # v1.6 and v1.7.
-        if ma.isMaskedArray(self._data):
-            # Force the fill value to zero to have the minimum
-            # impact on the output style.
-            self_attrs.append(('data.data', self._data.filled(0)))
-            self_attrs.append(('data.mask', self._data.mask))
-        else:
-            self_attrs.append(('data', self._data))
+        self_attrs.append(('data', self.data))
 
         # sort the attributes by position in the pp header followed,
         # then by alphabetical order.
@@ -1285,17 +1284,29 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         of the pp file
 
         """
-        # Cache the real data on first use
-        if isinstance(self._data, biggus.Array):
-            data = self._data.masked_array()
-            if ma.count_masked(data) == 0:
-                data = data.data
-            self._data = data
+        if is_lazy_data(self._data):
+            # Replace with real data on the first access.
+            self._data = as_concrete_data(self._data,
+                                          nans_replacement=ma.masked,
+                                          result_dtype=self.realised_dtype)
         return self._data
 
     @data.setter
     def data(self, value):
         self._data = value
+
+    def core_data(self):
+        return self._data
+
+    @property
+    def realised_dtype(self):
+        return self._data.dtype \
+            if self._realised_dtype is None \
+            else self._realised_dtype
+
+    @realised_dtype.setter
+    def realised_dtype(self, value):
+        self._realised_dtype = value
 
     @property
     def calendar(self):
@@ -1382,12 +1393,18 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         """
 
-        # Before we can actually write to file, we need to calculate the header
-        # elements. First things first, make sure the data is big-endian
+        # Get the actual data content.
         data = self.data
-        if isinstance(data, ma.core.MaskedArray):
-            data = data.filled(fill_value=self.bmdi)
+        if ma.is_masked(data):
+            # Fill missing data points with the MDI value from the header.
+            if data.dtype.kind in 'biu':
+                # Integer or Boolean data : No masking is supported.
+                msg = 'Non-floating masked data cannot be saved to PP.'
+                raise ValueError(msg)
+            fill_value = self.bmdi
+            data = data.filled(fill_value=fill_value)
 
+        # Make sure the data is big-endian
         if data.dtype.newbyteorder('>') != data.dtype:
             # take a copy of the data when byteswapping
             data = data.byteswap(False)
@@ -1399,7 +1416,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         b = np.empty(shape=NUM_FLOAT_HEADERS,
                      dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
-        # Populate the arrays from the PPField
+        # Fill in the header elements from the PPField
         for name, pos in self.HEADER_DEFN:
             try:
                 header_elem = getattr(self, name)
@@ -1644,10 +1661,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                 if all(attrs):
                     self_attr = getattr(self, attr)
                     other_attr = getattr(other, attr)
-                    if isinstance(self_attr, biggus.NumpyArrayAdapter):
-                        self_attr = self_attr.concrete
-                    if isinstance(other_attr, biggus.NumpyArrayAdapter):
-                        other_attr = other_attr.concrete
                     if not np.all(self_attr == other_attr):
                         result = False
                         break
@@ -1866,28 +1879,30 @@ def _interpret_fields(fields):
 def _create_field_data(field, data_shape, land_mask):
     """
     Modifies a field's ``_data`` attribute either by:
-     * converting DeferredArrayBytes into a biggus array,
+     * converting DeferredArrayBytes into a lazy array,
      * converting LoadedArrayBytes into an actual numpy array.
 
     """
-    if isinstance(field._data, LoadedArrayBytes):
-        loaded_bytes = field._data
-        field._data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
-                                                  field.lbpack,
-                                                  field.boundary_packing,
-                                                  data_shape,
-                                                  loaded_bytes.dtype,
-                                                  field.bmdi, land_mask)
+    if isinstance(field.core_data(), LoadedArrayBytes):
+        loaded_bytes = field.core_data()
+        field.data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
+                                                 field.lbpack,
+                                                 field.boundary_packing,
+                                                 data_shape,
+                                                 loaded_bytes.dtype,
+                                                 field.bmdi, land_mask)
     else:
         # Wrap the reference to the data payload within a data proxy
         # in order to support deferred data loading.
-        fname, position, n_bytes, dtype = field._data
+        fname, position, n_bytes, dtype = field.core_data()
         proxy = PPDataProxy(data_shape, dtype,
                             fname, position, n_bytes,
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field._data = biggus.NumpyArrayAdapter(proxy)
+        field.realised_dtype = dtype.newbyteorder('=')
+        block_shape = data_shape if 0 not in data_shape else (1, 1)
+        field.data = as_lazy_data(proxy, chunks=block_shape)
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):
@@ -1977,11 +1992,11 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             if read_data_bytes:
                 # Read the actual bytes. This can then be converted to a numpy
                 # array at a higher level.
-                pp_field._data = LoadedArrayBytes(pp_file.read(data_len),
-                                                  dtype)
+                pp_field.data = LoadedArrayBytes(pp_file.read(data_len),
+                                                 dtype)
             else:
                 # Provide enough context to read the data bytes later on.
-                pp_field._data = (filename, pp_file.tell(), data_len, dtype)
+                pp_field.data = (filename, pp_file.tell(), data_len, dtype)
                 # Seek over the actual data payload.
                 pp_file_seek(data_len, os.SEEK_CUR)
 
@@ -2322,18 +2337,6 @@ def as_pairs(cube, field_coords=None, target=None):
                                 target=target)
 
 
-def _data_fill_value(cube):
-    # Function to deduce a fill_value for a cube's data.
-    # This should eventually be superceded by a cube 'fill_value' property.
-    if cube.has_lazy_data():
-        fill_value = cube.lazy_data().fill_value
-    elif isinstance(cube.data, ma.MaskedArray):
-        fill_value = cube.data.fill_value
-    else:
-        fill_value = None
-    return fill_value
-
-
 def save_pairs_from_cube(cube, field_coords=None, target=None):
     """
     Use the PP saving rules (and any user rules) to convert a cube or
@@ -2416,11 +2419,6 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
     # Save each named or latlon slice2D in the cube
     for slice2D in cube.slices(field_coords):
-        # Attach an extra cube "fill_value" property, allowing the save rules
-        # to deduce MDI more easily without realising the data.
-        # NOTE: it is done this way because this property may exist in future.
-        slice2D.fill_value = _data_fill_value(slice2D)
-
         # Start with a blank PPField
         pp_field = PPField3()
 
@@ -2444,11 +2442,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         pp_field.lbuser[1] = -99
 
         # Set the data, keeping it lazy where possible.
-        if slice2D.has_lazy_data():
-            slice_core_data = slice2D.lazy_data()
-        else:
-            slice_core_data = slice2D.data
-        pp_field._data = slice_core_data
+        pp_field.data = slice2D.core_data()
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used

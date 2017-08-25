@@ -31,7 +31,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import datetime
+import os
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -46,8 +48,7 @@ sys.path.append(os.path.abspath(os.path.join('developers_guide')))
 
 # Temporary value for use by LaTeX and 'man' output.
 # Deleted at the end of the module.
-_authors = ('Byron Blay', 'Ed Campbell', 'Philip Elson', 'Richard Hattersley',
-            'Bill Little')
+_authors = ('Iris developers')
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
@@ -98,7 +99,8 @@ master_doc = 'contents'
 project = u'Iris'
 # define the copyright information for latex builds. Note, for html builds,
 # the copyright exists directly inside "_templates/layout.html"
-copyright = u'British Crown Copyright 2010 - 2015, Met Office'
+upper_copy_year = datetime.datetime.now().year
+copyright = u'British Crown Copyright 2010 - {}, Met Office'.format(upper_copy_year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -158,8 +160,6 @@ intersphinx_mapping = {
    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
    'matplotlib': ('http://matplotlib.org/', None),
    'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
-   'biggus': ('https://biggus.readthedocs.io/en/latest/', None),
-   'iris-grib': ('http://iris-grib.readthedocs.io/en/latest/', None),
 }
 
 
@@ -187,6 +187,8 @@ html_theme = 'sphinxdoc'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #html_theme_options = {}
+
+html_context = {'copyright_years': '2010 - {}'.format(upper_copy_year)}
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = []

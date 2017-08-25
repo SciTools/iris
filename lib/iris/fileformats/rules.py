@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,12 +33,9 @@ import os
 import os.path
 import platform
 import sys
-import types
 import warnings
 
 import cf_units
-import numpy as np
-import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris.analysis._interpolate_private import linear as regrid_linear
@@ -900,16 +897,19 @@ def _make_cube(field, converter):
     # Convert the field to a Cube.
     metadata = converter(field)
 
-    try:
-        data = field._data
-    except AttributeError:
-        data = field.data
-
-    cube = iris.cube.Cube(data,
+    cube_data = field.core_data()
+    cube_dtype = field.realised_dtype
+    if cube_dtype.kind in 'biu':
+        # Don't adopt BMDI as a fill value for integer data.
+        cube_fill_value = None
+    else:
+        cube_fill_value = field.bmdi
+    cube = iris.cube.Cube(cube_data,
                           attributes=metadata.attributes,
                           cell_methods=metadata.cell_methods,
                           dim_coords_and_dims=metadata.dim_coords_and_dims,
-                          aux_coords_and_dims=metadata.aux_coords_and_dims)
+                          aux_coords_and_dims=metadata.aux_coords_and_dims,
+                          fill_value=cube_fill_value, dtype=cube_dtype)
 
     # Temporary code to deal with invalid standard names in the
     # translation table.

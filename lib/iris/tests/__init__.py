@@ -92,16 +92,11 @@ else:
     GDAL_AVAILABLE = True
 
 try:
-    import iris_grib
+    import gribapi
     GRIB_AVAILABLE = True
-    from iris_grib.message import GribMessage
+    from iris.fileformats.grib.message import GribMessage
 except ImportError:
-    try:
-        import gribapi
-        GRIB_AVAILABLE = True
-        from iris.fileformats.grib.message import GribMessage
-    except ImportError:
-        GRIB_AVAILABLE = False
+    GRIB_AVAILABLE = False
 
 try:
     import iris_sample_data
@@ -516,6 +511,20 @@ class IrisTest_nometa(unittest.TestCase):
 
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
+
+    def assertRaisesRegexp(self, *args, **kwargs):
+        """
+        Emulate the old :meth:`unittest.TestCase.assertRaisesRegexp`.
+
+        Because the original function is now deprecated in Python 3.
+        Now calls :meth:`six.assertRaisesRegex()` (no final "p") instead.
+        It is the same, except for providing an additional 'msg' argument.
+
+        """
+        # Note: invoke via parent class to avoid recursion as, in Python 2,
+        # "six.assertRaisesRegex" calls getattr(self, 'assertRaisesRegexp').
+        return six.assertRaisesRegex(super(IrisTest_nometa, self),
+                                     *args, **kwargs)
 
     def _assertMaskedArray(self, assertion, a, b, strict, **kwargs):
         # Define helper function to extract unmasked values as a 1d

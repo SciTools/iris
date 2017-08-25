@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,10 +32,9 @@ from copy import deepcopy
 from cf_units import Unit
 
 from iris.coords import DimCoord
-from iris.fileformats.grib._load_convert import Probability
+from iris.fileformats.grib._load_convert import (Probability,
+                                                 translate_phenomenon)
 from iris.fileformats.grib.grib_phenom_translation import _GribToCfDataClass
-
-from iris.fileformats.grib._load_convert import translate_phenomenon
 
 
 class Test_probability(tests.IrisTest):

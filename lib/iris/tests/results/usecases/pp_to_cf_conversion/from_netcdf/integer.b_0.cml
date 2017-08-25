@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="land_binary_mask" units="1" var_name="land_binary_mask">
+  <cube core-dtype="float64" dtype="int32" standard_name="land_binary_mask" units="1" var_name="land_binary_mask">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

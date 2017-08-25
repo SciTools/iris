@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ import iris.tests as tests
 
 import datetime
 
-import biggus
+from iris._lazy_data import as_lazy_data
 import numpy as np
 
 import iris
@@ -305,12 +305,6 @@ class Test___call___1D_circular(ThreeDimCube):
         self.assertArrayEqual(expected.data, result.data)
 
     def test_fully_wrapped_twice_reversed_mainpoints(self):
-        points. _ = self.testpoints_fully_wrapped_twice
-        expected = self.interpolator(points)
-        result = self.interpolator_reverselons(points)
-        self.assertArrayEqual(expected.data, result.data)
-
-    def test_fully_wrapped_twice_reversed_mainpoints(self):
         _, points = self.testpoints_fully_wrapped_twice
         expected = self.interpolator(points)
         result = self.interpolator_reverselons(points)
@@ -487,7 +481,7 @@ class Test___call___lazy_data(ThreeDimCube):
         # of loading it again and again.
 
         # Modify self.cube to have lazy data.
-        self.cube.lazy_data(biggus.NumpyArrayAdapter(self.data))
+        self.cube.data = as_lazy_data(self.data)
         self.assertTrue(self.cube.has_lazy_data())
 
         # Perform interpolation and check the data has been loaded.

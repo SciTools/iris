@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,6 +36,7 @@ import iris.coords
 from iris.analysis._interpolate_private import \
     _nearest_neighbour_indices_ndcoords, linear as linear_regrid
 from iris.analysis._interpolation import snapshot_grid
+from iris.util import _meshgrid
 
 
 class _Segment(object):
@@ -339,6 +340,8 @@ def interpolate(cube, sample_points, method=None):
             # This is **not** proper mask handling, because we cannot produce a
             # masked result, but it ensures we use a "filled" version of the
             # input in this case.
+            if cube.fill_value is not None:
+                source_data.fill_value = cube.fill_value
             source_data = source_data.filled()
         new_cube.data[:] = source_data
         # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
@@ -374,6 +377,9 @@ def interpolate(cube, sample_points, method=None):
             # Fill the new coord with all the correct points from the old one.
             new_cube_coord.points = src_coord.points[fancy_coord_index_arrays]
             # NOTE: the new coords do *not* have bounds.
+
+    # Set the fill-value last, as any previous data setter will clear it.
+    new_cube.fill_value = cube.fill_value
 
     return new_cube
 
@@ -534,7 +540,7 @@ class UnstructuredNearestNeigbourRegridder(object):
         self.tgt_grid_shape = tgt_y_coord.shape + tgt_x_coord.shape
 
         # Calculate sample points as 2d arrays, like broadcast (NY,1)*(1,NX).
-        x_2d, y_2d = np.meshgrid(tgt_x_coord.points, tgt_y_coord.points)
+        x_2d, y_2d = _meshgrid(tgt_x_coord.points, tgt_y_coord.points)
         # Cast as a "trajectory", to suit the method used.
         self.trajectory = ((tgt_x_coord.name(), x_2d.flatten()),
                            (tgt_y_coord.name(), y_2d.flatten()))
@@ -576,6 +582,7 @@ class UnstructuredNearestNeigbourRegridder(object):
         # Make a new result cube with the reshaped data.
         result_cube = iris.cube.Cube(data_2d_x_and_y)
         result_cube.metadata = src_cube.metadata
+        result_cube.fill_value = src_cube.fill_value
 
         # Copy all the coords from the trajectory result.
         i_trajectory_dim = result_trajectory_cube.ndim - 1

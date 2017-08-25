@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,6 @@ metOcean mapping translations.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import argparse
 from datetime import datetime
 import os.path
 import requests
@@ -180,20 +179,19 @@ def build_grib_cf_map(fuseki, now, git_sha, base_dir):
     * git_sha:
         The git SHA1 of the metarelate commit
     * base_dir:
-        The root directory of the iris-grib source.
+        The root directory of the Iris source.
 
     """
-    file_grib_cf = os.path.join(base_dir, 'iris_grib', '_grib_cf_map.py')
-    if not os.path.exists(os.path.dirname(file_grib_cf)):
-        emsg = ('The iris_grib directory {} does not '
-                'exist.'.format(os.path.dirname(file_grib_cf)))
-        raise ValueError(emsg)
+    filename = os.path.join(base_dir, 'lib', 'iris', 'fileformats',
+                            'grib', '_grib_cf_map.py')
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
 
     # Create the file to contain GRIB/CF translations.
-    with open(file_grib_cf, 'w') as fh:
+    with open(filename, 'w') as fh:
         fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_GRIB,
                                datestamp=now, git_sha=git_sha,
-                               name='iris-grib'))
+                               name='Iris'))
         fh.write(HEADER_GRIB)
         fh.write('\n')
 
@@ -223,20 +221,13 @@ def build_grib_cf_map(fuseki, now, git_sha, base_dir):
 
 
 def main():
-    desc = 'Update translations from metarelate into your source tree'
-    parser = argparse.ArgumentParser(desc)
-    helptxt = ('The location of your local checkout of iris-grib checkout'
-               ' where the updated translations are to be stored.')
-    parser.add_argument('--iris_grib', action='store', help=helptxt)
-    args = parser.parse_args()
     now = datetime.utcnow().strftime('%d %B %Y %H:%m')
     git_sha = requests.get('http://www.metarelate.net/metOcean/latest_sha').text
     gen_path = os.path.abspath(sys.modules['__main__'].__file__)
     iris_path = os.path.dirname(os.path.dirname(gen_path))
     with FusekiServer() as fuseki:
         build_um_cf_map(fuseki, now, git_sha, iris_path)
-        if args.iris_grib:
-            build_grib_cf_map(fuseki, now, git_sha, args.iris_grib)
+        build_grib_cf_map(fuseki, now, git_sha, iris_path)
         
     if (git_sha !=
         requests.get('http://www.metarelate.net/metOcean/latest_sha').text):

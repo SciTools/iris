@@ -51,7 +51,8 @@ class TestAsFields(tests.IrisTest):
     def test_lazy_data(self):
         cube = self.cube.copy()
         # "Rebase" the cube onto a lazy version of its data.
-        cube.lazy_data(cube.lazy_data())
+        cube.replace(cube.lazy_data(), dtype=cube.dtype,
+                     fill_value=cube.fill_value)
         # Check that lazy data is preserved in save-pairs generation.
         slices_and_fields = pp.as_pairs(cube)
         for aslice, _ in slices_and_fields:

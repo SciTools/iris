@@ -29,10 +29,11 @@ import six
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
-import biggus
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import (as_lazy_data, as_concrete_data, is_lazy_data,
+                             multidim_lazy_stack)
 import iris.cube
 import iris.coords
 import iris.exceptions
@@ -314,7 +315,7 @@ class _CoordSignature(namedtuple('CoordSignature',
 
 class _CubeSignature(namedtuple('CubeSignature',
                                 ['defn', 'data_shape', 'data_type',
-                                 'cell_measures_and_dims'])):
+                                 'fill_value', 'cell_measures_and_dims'])):
     """
     Criterion for identifying a specific type of :class:`iris.cube.Cube`
     based on its metadata.
@@ -329,6 +330,9 @@ class _CubeSignature(namedtuple('CubeSignature',
 
     * data_type:
         The data payload :class:`numpy.dtype` of a :class:`iris.cube.Cube`.
+
+    * fill_value:
+        The fill-value for the data payload of a :class:`iris.cube.Cube`.
 
     * cell_measures_and_dims:
         A list of cell_measures and dims for the cube.
@@ -397,11 +401,11 @@ class _CubeSignature(namedtuple('CubeSignature',
         """
         msgs = self._defn_msgs(other.defn)
         if self.data_shape != other.data_shape:
-            msgs.append('cube.shape differs: {} != {}'.format(
-                self.data_shape, other.data_shape))
+            msg = 'cube.shape differs: {} != {}'
+            msgs.append(msg.format(self.data_shape, other.data_shape))
         if self.data_type != other.data_type:
-            msgs.append('cube data dtype differs: {} != {}'.format(
-                self.data_type, other.data_type))
+            msg = 'cube data dtype differs: {} != {}'
+            msgs.append(msg.format(self.data_type, other.data_type))
         if (self.cell_measures_and_dims != other.cell_measures_and_dims):
             msgs.append('cube.cell_measures differ')
 
@@ -1086,6 +1090,9 @@ class ProtoCube(object):
         self._hints = ['time', 'forecast_reference_time', 'forecast_period',
                        'model_level_number']
 
+        # The proto-cube source.
+        self._source = cube
+
         # The cube signature is metadata that defines this ProtoCube.
         self._cube_signature = self._build_signature(cube)
 
@@ -1191,11 +1198,19 @@ class ProtoCube(object):
 
         # Generate group-depth merged cubes from the source-cubes.
         for level in range(group_depth):
+            # Track the largest dtype of the data to be merged.
+            # Unfortunately, da.stack() is not symmetric with regards
+            # to dtypes. So stacking float + int yields a float, but
+            # stacking an int + float yields an int! We need to ensure
+            # that the largest dtype prevails i.e. float, in order to
+            # support the masked case for dask.
+            # Reference https://github.com/dask/dask/issues/2273.
+            dtype = None
             # Stack up all the data from all of the relevant source
-            # cubes in a single biggus ArrayStack.
+            # cubes in a single dask "stacked" array.
             # If it turns out that all the source cubes already had
-            # their data loaded then at the end we can convert the
-            # ArrayStack back to a numpy array.
+            # their data loaded then at the end we convert the stack back
+            # into a plain numpy array.
             stack = np.empty(self._stack_shape, 'object')
             all_have_data = True
             for nd_index in nd_indexes:
@@ -1204,20 +1219,34 @@ class ProtoCube(object):
                 group = group_by_nd_index[nd_index]
                 offset = min(level, len(group) - 1)
                 data = self._skeletons[group[offset]].data
-                # Ensure the data is represented as a biggus.Array and
-                # slot that Array into the stack.
-                if isinstance(data, biggus.Array):
+                # Ensure the data is represented as a dask array and
+                # slot that array into the stack.
+                if is_lazy_data(data):
                     all_have_data = False
                 else:
-                    data = biggus.NumpyArrayAdapter(data)
+                    data = as_lazy_data(data, chunks=data.shape)
                 stack[nd_index] = data
+                # Determine the largest dtype.
+                if dtype is None:
+                    dtype = data.dtype
+                else:
+                    dtype = np.promote_types(data.dtype, dtype)
 
-            merged_data = biggus.ArrayStack(stack)
+            # Coerce to the largest dtype.
+            for nd_index in nd_indexes:
+                stack[nd_index] = stack[nd_index].astype(dtype)
+
+            merged_data = multidim_lazy_stack(stack)
             if all_have_data:
-                merged_data = merged_data.masked_array()
-                # Unmask the array only if it is filled.
+                # All inputs were concrete, so turn the result back into a
+                # normal array.
+                dtype = self._cube_signature.data_type
+                merged_data = as_concrete_data(merged_data,
+                                               nans_replacement=ma.masked,
+                                               result_dtype=dtype)
+                # Unmask the array if it has no masked points.
                 if (ma.isMaskedArray(merged_data) and
-                        ma.count_masked(merged_data) == 0):
+                        not ma.is_masked(merged_data)):
                     merged_data = merged_data.data
             merged_cube = self._get_cube(merged_data)
             merged_cubes.append(merged_cube)
@@ -1250,9 +1279,18 @@ class ProtoCube(object):
             this :class:`ProtoCube`.
 
         """
-        match = self._cube_signature.match(self._build_signature(cube),
-                                           error_on_mismatch)
+        cube_signature = self._cube_signature
+        other = self._build_signature(cube)
+        match = cube_signature.match(other, error_on_mismatch)
         if match:
+            # Determine whether the fill value requires to be demoted
+            # to the default value.
+            if cube_signature.fill_value is not None:
+                if cube_signature.fill_value != other.fill_value:
+                    # Demote the fill value to the default.
+                    signature = self._build_signature(self._source,
+                                                      default_fill_value=True)
+                    self._cube_signature = signature
             coord_payload = self._extract_coord_payload(cube)
             match = coord_payload.match_signature(self._coord_signature,
                                                   error_on_mismatch)
@@ -1466,6 +1504,8 @@ class ProtoCube(object):
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
                               cell_measures_and_dims=cms_and_dims,
+                              fill_value=signature.fill_value,
+                              dtype=signature.data_type,
                               **kwargs)
 
         # Add on any aux coord factories.
@@ -1571,19 +1611,36 @@ class ProtoCube(object):
                               self._vector_aux_coords_dims):
             aux_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
-    def _build_signature(self, cube):
-        """Generate the signature that defines this cube."""
-        array = cube.lazy_data()
-        return _CubeSignature(cube.metadata, cube.shape, array.dtype,
-                              cube._cell_measures_and_dims)
+    def _build_signature(self, cube, default_fill_value=False):
+        """
+        Generate the signature that defines this cube.
+
+        Args:
+
+        * cube:
+            The source cube to create the cube signature from.
+
+        Kwargs:
+
+        * default_fill_value:
+            Override the cube fill value with the default fill value of None.
+            Default is False i.e. use the provided cube.fill_value when
+            constructing the cube signature.
+
+        Returns:
+            The cube signature.
+
+        """
+        fill_value = cube.fill_value
+        if default_fill_value:
+            fill_value = None
+        return _CubeSignature(cube.metadata, cube.shape, cube.dtype,
+                              fill_value, cube._cell_measures_and_dims)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""
-        if cube.has_lazy_data():
-            data = cube.lazy_data()
-        else:
-            data = cube.data
-        skeleton = _Skeleton(coord_payload.scalar.values, data)
+        skeleton = _Skeleton(coord_payload.scalar.values,
+                             cube.core_data())
         # Attempt to do something sensible with mixed scalar dtypes.
         for i, metadata in enumerate(coord_payload.scalar.metadata):
             if metadata.points_dtype > self._coord_metadata[i].points_dtype:
@@ -1627,10 +1684,7 @@ class ProtoCube(object):
         # the CoordDefn used by scalar_defns: `coord.points.dtype` and
         # `type(coord)`.
         def key_func(coord):
-            # Try to avoid evaluating LazyArray instances.
-            points_dtype = coord._points.dtype
-            if points_dtype is None:
-                points_dtype = coord.points.dtype
+            points_dtype = coord.dtype
             return (not np.issubdtype(points_dtype, np.number),
                     not isinstance(coord, iris.coords.DimCoord),
                     hint_dict.get(coord.name(), len(hint_dict) + 1),

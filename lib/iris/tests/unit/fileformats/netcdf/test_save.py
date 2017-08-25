@@ -78,8 +78,8 @@ class Test_attributes(tests.IrisTest):
     def test_attributes_arrays(self):
         # Ensure that attributes containing NumPy arrays can be equality
         # checked and their cubes saved as appropriate.
-        c1 = Cube([], attributes={'bar': np.arange(2)})
-        c2 = Cube([], attributes={'bar': np.arange(2)})
+        c1 = Cube([1], attributes={'bar': np.arange(2)})
+        c2 = Cube([2], attributes={'bar': np.arange(2)})
 
         with self.temp_filename('foo.nc') as nc_out:
             save([c1, c2], nc_out)

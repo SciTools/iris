@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -101,7 +101,7 @@ def extend_circular_data(data, coord_dim):
     coord_slice_in_cube = [slice(None)] * data.ndim
     coord_slice_in_cube[coord_dim] = slice(0, 1)
 
-    mod = ma if isinstance(data, ma.MaskedArray) else np
+    mod = ma if ma.isMaskedArray(data) else np
     data = mod.concatenate((data,
                             data[tuple(coord_slice_in_cube)]),
                            axis=coord_dim)
@@ -366,7 +366,7 @@ class RectilinearInterpolator(object):
             self._interpolator.values = src_mask
             mask_fraction = self._interpolator(interp_points)
             new_mask = (mask_fraction > 0)
-            if isinstance(data, ma.MaskedArray) or np.any(new_mask):
+            if ma.isMaskedArray(data) or np.any(new_mask):
                 result = np.ma.MaskedArray(result, new_mask)
 
         return result
@@ -627,6 +627,7 @@ class RectilinearInterpolator(object):
         cube = self._src_cube
         new_cube = iris.cube.Cube(interpolated_data)
         new_cube.metadata = cube.metadata
+        new_cube.fill_value = cube.fill_value
 
         def construct_new_coord_given_points(coord, points):
             # Handle what was previously a DimCoord which may no longer be

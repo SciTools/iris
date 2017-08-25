@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,8 +26,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
-from iris.fileformats.grib._load_convert import (projection_centre,
-                                                 ProjectionCentre)
+from iris.fileformats.grib._load_convert import (ProjectionCentre,
+                                                 projection_centre)
 
 
 class Test(tests.IrisTest):
