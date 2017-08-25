@@ -153,7 +153,6 @@ def interpolate(cube, sample_points, method=None):
         Only nearest neighbour is available when specifying multi-dimensional
         coordinates.
 
-
     For example::
 
         sample_points = [('latitude', [45, 45, 45]),
@@ -273,7 +272,6 @@ def interpolate(cube, sample_points, method=None):
         cache = {}
         column_indexes = _nearest_neighbour_indices_ndcoords(
             cube, sample_points, cache=cache)
-
         # Construct "fancy" indexes, so we can create the result data array in
         # a single numpy indexing operation.
         # ALSO: capture the index range in each dimension, so that we can fetch
@@ -384,6 +382,43 @@ def interpolate(cube, sample_points, method=None):
     new_cube.fill_value = cube.fill_value
 
     return new_cube
+
+
+def nearest_neighbour_indices(cube, sample_points):
+    """
+    Extract an array of interpolated point indices.
+
+    Args:
+
+    * cube
+        The source Cube.
+
+    * sample_points
+        A sequence of coordinate (name) - values pairs.
+
+    Returns:
+        An array containing the nearest-neighbour indices of sample points.
+
+    """
+    # # Convert any coordinate names to coords
+    # points = []
+    # for coord, values in sample_points:
+    #     if isinstance(coord, six.string_types):
+    #         coord = cube.coord(coord)
+    #     points.append((coord, values))
+    # sample_points = points
+    #
+    # # Do all value sequences have the same number of values?
+    # coord, values = sample_points[0]
+    # trajectory_size = len(values)
+    # for coord, values in sample_points[1:]:
+    #     if len(values) != trajectory_size:
+    #         raise ValueError('Lengths of coordinate values are inconsistent.')
+    cache = {}
+    column_indexes = _nearest_neighbour_indices_ndcoords(cube,
+                                                         sample_points,
+                                                         cache=cache)
+    return column_indexes
 
 
 class UnstructuredNearestNeigbourRegridder(object):
