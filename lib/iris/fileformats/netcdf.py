@@ -1903,6 +1903,8 @@ class Saver(object):
                 scale_factor = packing.get('scale_factor', None)
                 add_offset = packing.get('add_offset', None)
             else:
+                # We compute the scale_factor and add_offset based on the
+                # min/max of the data. This requires the data to be loaded.
                 masked = ma.isMaskedArray(cube.data)
                 dtype = np.dtype(packing)
                 cmax = cube.data.max()
@@ -1966,9 +1968,12 @@ class Saver(object):
 
         # If packing attributes are specified, don't bother checking whether
         # the fill value is in the data.
-        fill_value_to_check = None if packing else \
-            fill_value if fill_value is not None else \
-            netCDF4.default_fillvals[dtype.str[1:]]
+        if packing:
+            fill_value_to_check = None
+        elif fill_value is not None:
+            fill_value_to_check = fill_value
+        else:
+            fill_value_to_check = netCDF4.default_fillvals[dtype.str[1:]]
 
         # Store the data and check if it is masked and contains the fill value
         is_masked, contains_fill_value = store(data, cf_var,
