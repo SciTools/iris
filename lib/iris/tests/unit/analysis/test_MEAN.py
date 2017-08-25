@@ -84,6 +84,34 @@ class Test_lazy_aggregate(tests.IrisTest):
         expected = np.mean(data, axis=collapse_axes)
         self.assertArrayAllClose(result, expected)
 
+    def test_last_axis(self):
+        # From setUp:
+        # self.data.mask = [[0, 0, 0, 1],
+        #                   [0, 0, 1, 1],
+        #                   [0, 1, 1, 1]]
+        # --> fractions of masked-points in ROWS = [1/4, 1/2, 3/4]
+        axis = -1
+        agg = MEAN.lazy_aggregate(self.array, axis=axis, mdtol=0.51)
+        expected_masked = ma.mean(self.data, axis=-1)
+        expected_masked = np.ma.masked_array(expected_masked, [0, 0, 1])
+        masked_result = as_concrete_data(agg)
+        self.assertMaskedArrayAlmostEqual(masked_result,
+                                          expected_masked)
+
+    def test_all_axes_belowtol(self):
+        agg = MEAN.lazy_aggregate(self.array, axis=None, mdtol=0.75)
+        expected_masked = ma.mean(self.data)
+        masked_result = as_concrete_data(agg)
+        self.assertMaskedArrayAlmostEqual(masked_result,
+                                          expected_masked)
+
+    def test_all_axes_abovetol(self):
+        agg = MEAN.lazy_aggregate(self.array, axis=None, mdtol=0.45)
+        expected_masked = ma.masked_less([0.0], 1)
+        masked_result = as_concrete_data(agg)
+        self.assertMaskedArrayAlmostEqual(masked_result,
+                                          expected_masked)
+
 
 class Test_name(tests.IrisTest):
     def test(self):
