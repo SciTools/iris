@@ -77,6 +77,7 @@ import iris.util
 try:
     import matplotlib
     matplotlib.use('agg')
+    matplotlib.rcdefaults()
     import matplotlib.testing.compare as mcompare
     import matplotlib.pyplot as plt
 except ImportError:
@@ -874,7 +875,7 @@ class IrisTest_nometa(unittest.TestCase):
 # At present, that includes not using "python setup.py test"
 # The typically best way is like this :
 #    $ export IRIS_TEST_TIMINGS=1
-#    $ python -m unittest discover -s iris.tests 
+#    $ python -m unittest discover -s iris.tests
 # and commonly adding ...
 #    | grep "TIMING TEST" >iris_test_output.txt
 #
