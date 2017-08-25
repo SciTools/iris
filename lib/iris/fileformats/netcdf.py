@@ -1981,7 +1981,7 @@ class Saver(object):
                               "data please explicitly provide a fill value."
                               .format(cube.name()))
         elif contains_fill_value:
-            warnings.warn("Cube '{}' contains data points equal to the fill"
+            warnings.warn("Cube '{}' contains data points equal to the fill "
                           "value {}. The points will be interpreted as being "
                           "masked. Please provide a fill_value argument not "
                           "equal to any data point.".format(cube.name(),
