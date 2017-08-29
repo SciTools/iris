@@ -138,38 +138,10 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     else:
         src_data = src_levels.data
 
-    # The dimensions of cube and src_data must be broadcastable.
-    try:
-        np.broadcast_arrays(cube.data, src_data)
-    except ValueError:
-        emsg = ('Cannot broadcast the cube and src_levels with '
-                'shapes {} and {}.')
-        raise ValueError(emsg.format(cube.shape, src_data.shape))
-
     tgt_levels = np.asarray(tgt_levels)
     tgt_aux_dims = axis
     if tgt_levels.ndim != 1:
-        # The dimensions of tgt_levels must be broadcastable to cube
-        # in everything but the interpolation axis - otherwise raise
-        # an exception.
         dim_delta = cube.data.ndim - tgt_levels.ndim
-        # The axis is relative to the cube. Calculate the axis of
-        # interplation relative to the tgt_levels.
-        tgt_axis = axis - dim_delta
-        # Calculate the cube shape without the axis of interpolation.
-        data_shape = list(cube.data.shape)
-        data_shape.pop(axis)
-        # Calculate the tgt_levels shape without the axis of interpolation.
-        target_shape = list(tgt_levels.shape)
-        target_shape.pop(tgt_axis)
-        # Now ensure that the shapes are broadcastable.
-        try:
-            np.broadcast_arrays(np.empty(data_shape), np.empty(target_shape))
-        except ValueError:
-            emsg = ('Cannot broadcast the cube and tgt_levels with '
-                    'shapes {} and {}, whilst ignoring axis of interpolation.')
-            raise ValueError(emsg.format(cube.data.shape, tgt_levels.shape))
-        # Calculate the dimensions over the cube that the tgt_levels span.
         tgt_aux_dims = list(range(cube.data.ndim))[dim_delta:]
 
     if interpolator is None:
