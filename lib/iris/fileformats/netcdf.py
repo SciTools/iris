@@ -1902,6 +1902,13 @@ class Saver(object):
                 dtype = np.dtype(packing['dtype'])
                 scale_factor = packing.get('scale_factor', None)
                 add_offset = packing.get('add_offset', None)
+                valid_keys = {'dtype', 'scale_factor', 'add_offset'}
+                invalid_keys = set(packing.keys()) - valid_keys
+                if invalid_keys:
+                    msg = ("Invalid packing key(s) found: '{}'. The valid "
+                           "keys are '{}'.".format("', '".join(invalid_keys),
+                                                   "', '".join(valid_keys)))
+                    raise ValueError(msg)
             else:
                 # We compute the scale_factor and add_offset based on the
                 # min/max of the data. This requires the data to be loaded.
@@ -2299,8 +2306,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         else:
             if len(fill_values) != len(cubes):
                 msg = ('If fill_value is a list, it must have the '
-                       'same number of elements as the argument to'
-                       'cube.')
+                       'same number of elements as the cube argument.')
                 raise ValueError(msg)
 
     # Initialise Manager for saving
