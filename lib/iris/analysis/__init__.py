@@ -1016,7 +1016,7 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-def _percentile(data, axis, percent, percentile_method='scipy_mquantiles',
+def _percentile(data, axis, percent, fast_percentile_method=False,
                 **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
@@ -1028,14 +1028,10 @@ def _percentile(data, axis, percent, percentile_method='scipy_mquantiles',
 
     Kwargs:
 
-    * percentile_method (string) :
-        Switch to choose between methods for calculating percentiles.
-
-        percentile_method='numpy_percentile':
-            use the fast `numpy.percentiles` method.
-
-        percentile_method='scipy_mquartiles':
-            use the scipy.mstats.mquantiles method.
+    * fast_percentile_method (boolean) :
+        When set to True, uses the numpy.percentiles method as a faster
+        alternative to the scipy.mstats.mquantiles method. Does not handle
+        masked arrays.
 
     """
     # Ensure that the target axis is the last dimension.
@@ -1045,22 +1041,18 @@ def _percentile(data, axis, percent, percentile_method='scipy_mquantiles',
     if shape:
         data = data.reshape([np.prod(shape), data.shape[-1]])
     # Perform the percentile calculation.
-    if percentile_method == 'numpy_percentile':
+    if fast_percentile_method:
         msg = 'Cannot use fast np.percentile method with masked array.'
         if ma.isMaskedArray(data):
             raise TypeError(msg)
         result = np.percentile(data, percent, axis=-1)
-    elif percentile_method == 'scipy_mquantiles':
+        result = result.T
+    else:
         quantiles = np.array(percent) / 100.
         result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1,
                                                **kwargs)
-    else:
-        msg = 'Unknown percentile_method {}.'
-        raise ValueError(msg.format(percentile_method))
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
-        if percentile_method == 'numpy_percentile':
-            result = result.T
 
     # Ensure to unflatten any leading dimensions.
     if shape:
