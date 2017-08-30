@@ -757,7 +757,7 @@ class _FillValueMaskCheckAndStoreTarget(object):
     def __setitem__(self, keys, arr):
         if self.fill_value is not None:
             self.contains_value = self.contains_value or self.fill_value in arr
-        self.is_masked = self.is_masked or ma.isMaskedArray(arr)
+        self.is_masked = self.is_masked or ma.is_masked(arr)
         self.target[keys] = arr
 
 
@@ -1951,7 +1951,7 @@ class Saver(object):
 
             def store(data, cf_var, fill_value):
                 cf_var[:] = data
-                is_masked = ma.isMaskedArray(data)
+                is_masked = ma.is_masked(data)
                 contains_value = fill_value is not None and fill_value in data
                 return is_masked, contains_value
         else:
@@ -2296,7 +2296,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                 raise ValueError(msg)
         packspecs = packing
 
+    # Make fill-value(s) into an iterable over cubes.
     if isinstance(fill_value, six.string_types):
+        # Strings are awkward -- handle separately.
         fill_values = repeat(fill_value)
     else:
         try:
