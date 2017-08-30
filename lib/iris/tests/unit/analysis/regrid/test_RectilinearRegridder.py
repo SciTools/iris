@@ -1153,7 +1153,6 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             cml = RESULT_DIR + ('{}_subset_masked_2.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
-    @tests.skip_dask_mask
     def test_grid_partial_overlap(self):
         # The destination grid points are partially contained within the
         # src grid points.
@@ -1166,7 +1165,6 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             cml = RESULT_DIR + ('{}_partial_overlap.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
-    @tests.skip_dask_mask
     def test_grid_no_overlap(self):
         # The destination grid points are NOT contained within the
         # src grid points.
@@ -1178,7 +1176,6 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             result = regridder(self.src)
             self.assertCMLApproxData(result, RESULT_DIR + ('no_overlap.cml',))
 
-    @tests.skip_dask_mask
     def test_grid_subset_missing_data_aux(self):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data on the aux coordinate.
@@ -1234,7 +1231,6 @@ class Test___call____circular(tests.IrisTest):
         self.mode = 'mask'
         self.methods = ('linear', 'nearest')
 
-    @tests.skip_dask_mask
     def test_non_circular(self):
         # Non-circular src -> non-circular grid
         for method in self.methods:
@@ -1353,7 +1349,6 @@ class Test___call____circular(tests.IrisTest):
             self.assertMaskedArrayEqual(result_masked.data,
                                         expected_result_data)
 
-    @tests.skip_dask_mask
     def test_circular_grid(self):
         # Non-circular src -> circular grid
         grid = self.grid
