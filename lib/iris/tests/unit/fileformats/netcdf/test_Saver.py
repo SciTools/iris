@@ -25,7 +25,6 @@ import six
 import iris.tests as tests
 
 from contextlib import contextmanager
-import re
 import warnings
 
 import netCDF4 as nc
@@ -33,7 +32,7 @@ import numpy as np
 from numpy import ma
 
 import iris
-import iris._lazy_data
+from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
                                 LambertConformal, Mercator, Stereographic,
                                 LambertAzimuthalEqualArea)
@@ -164,7 +163,6 @@ class Test_write(tests.IrisTest):
     def test_zlib(self):
         cube = self._simple_cube('>f4')
         with mock.patch('iris.fileformats.netcdf.netCDF4') as api:
-            api.default_fillvals = {'f4': 12345.}
             with Saver('/dummy/path', 'NETCDF4') as saver:
                 saver.write(cube, zlib=True)
         dataset = api.Dataset.return_value
@@ -342,7 +340,7 @@ class Test_write_fill_value(tests.IrisTest):
             data = np.ma.masked_array(data)
             data[masked_index] = ma.masked
         if lazy:
-            data = iris._lazy_data.as_lazy_data(data)
+            data = as_lazy_data(data)
         lat = DimCoord(np.arange(3), 'latitude', units='degrees')
         lon = DimCoord(np.arange(4), 'longitude', units='degrees')
         return Cube(data, standard_name='air_temperature', units='K',
