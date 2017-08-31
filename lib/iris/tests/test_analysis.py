@@ -351,102 +351,157 @@ class TestAggregator_mdtol_keyword(tests.IrisTest):
 
 
 class TestAggregators(tests.IrisTest):
-    def test_percentile_1d(self):
+
+    def _check_collapsed_percentile(self, cube, percents, collapse_coord,
+                                    expected_result, CML_filename=None,
+                                    **kwargs):
+        expected_result = np.array(expected_result, dtype=np.float32)
+        result = cube.collapsed(collapse_coord, iris.analysis.PERCENTILE,
+                                percent=percents, **kwargs)
+        np.testing.assert_array_almost_equal(result.data, expected_result)
+        if CML_filename is not None:
+            self.assertCML(result, ('analysis', CML_filename), checksum=False)
+
+    def _check_percentile(self, data, axis, percents, expected_result,
+                          **kwargs):
+        result = iris.analysis._percentile(data, axis, percents, **kwargs)
+        np.testing.assert_array_almost_equal(result, expected_result)
+
+    def test_percentile_1d_25_percent(self):
         cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', 2.5, CML_filename='first_quartile_foo_1d.cml')
 
-        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
-                                        percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data,
-                                             np.array([2.5], dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis',
-                                        'first_quartile_foo_1d.cml'),
-                       checksum=False)
+    def test_percentile_1d_75_percent(self):
+        cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 75, 'foo', 7.5, CML_filename='third_quartile_foo_1d.cml')
 
-        third_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
-                                        percent=75)
-        np.testing.assert_array_almost_equal(third_quartile.data,
-                                             np.array([7.5],
-                                             dtype=np.float32))
-        self.assertCML(third_quartile,
-                       ('analysis', 'third_quartile_foo_1d.cml'),
-                       checksum=False)
+    def test_fast_percentile_1d_25_percent(self):
+        cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', 2.5, fast_percentile_method=True,
+            CML_filename='first_quartile_foo_1d_fast_percentile.cml')
 
-    def test_percentile_2d(self):
+    def test_fast_percentile_1d_75_percent(self):
+        cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 75, 'foo', 7.5, fast_percentile_method=True,
+            CML_filename='third_quartile_foo_1d_fast_percentile.cml')
+
+    def test_percentile_2d_single_coord(self):
         cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', [0.75, 4.75, 8.75],
+            CML_filename='first_quartile_foo_2d.cml')
 
-        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
-                                        percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data,
-                                             np.array([0.75, 4.75, 8.75],
-                                             dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis',
-                                        'first_quartile_foo_2d.cml'),
-                       checksum=False)
+    def test_percentile_2d_two_coords(self):
+        cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, ['foo', 'bar'], [2.75],
+            CML_filename='first_quartile_foo_bar_2d.cml')
 
-        first_quartile = cube.collapsed(('foo', 'bar'),
-                                        iris.analysis.PERCENTILE, percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data,
-                                             np.array([2.75],
-                                             dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis',
-                                        'first_quartile_foo_bar_2d.cml'),
-                       checksum=False)
+    def test_fast_percentile_2d_single_coord(self):
+        cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', [0.75, 4.75, 8.75], fast_percentile_method=True,
+            CML_filename='first_quartile_foo_2d_fast_percentile.cml')
+
+    def test_fast_percentile_2d_two_coords(self):
+        cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, ['foo', 'bar'], [2.75], fast_percentile_method=True,
+            CML_filename='first_quartile_foo_bar_2d_fast_percentile.cml')
 
     def test_percentile_3d(self):
         array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result =  np.array([[6., 7., 8., 9.],
+                                     [10., 11., 12., 13.],
+                                     [14., 15., 16., 17.]],
+                                    dtype=np.float32)
+        self._check_percentile(array_3d, 0, 50, expected_result)
 
-        last_quartile = iris.analysis._percentile(array_3d, 0, 50)
-        np.testing.assert_array_almost_equal(last_quartile,
-                                             np.array([[6., 7., 8., 9.],
-                                                       [10., 11., 12., 13.],
-                                                       [14., 15., 16., 17.]],
-                                             dtype=np.float32))
+    def test_fast_percentile_3d(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result =  np.array([[6., 7., 8., 9.],
+                                     [10., 11., 12., 13.],
+                                     [14., 15., 16., 17.]],
+                                    dtype=np.float32)
+        self._check_percentile(array_3d, 0, 50, expected_result,
+                               fast_percentile_method=True)
 
     def test_percentile_3d_axis_one(self):
         array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[4., 5., 6., 7.],
+                                    [16., 17., 18., 19.]],
+                                   dtype=np.float32)
 
-        last_quartile = iris.analysis._percentile(array_3d, 1, 50)
-        np.testing.assert_array_almost_equal(last_quartile,
-                                             np.array([[4., 5., 6., 7.],
-                                                       [16., 17., 18., 19.]],
-                                             dtype=np.float32))
+        self._check_percentile(array_3d, 1, 50, expected_result)
+
+    def test_fast_percentile_3d_axis_one(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[4., 5., 6., 7.],
+                                    [16., 17., 18., 19.]],
+                                   dtype=np.float32)
+
+        self._check_percentile(array_3d, 1, 50, expected_result,
+                               fast_percentile_method=True)
 
     def test_percentile_3d_axis_two(self):
         array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[1.5, 5.5, 9.5],
+                                    [13.5, 17.5, 21.5]],
+                                   dtype=np.float32)
 
-        last_quartile = iris.analysis._percentile(array_3d, 2, 50)
-        np.testing.assert_array_almost_equal(last_quartile,
-                                             np.array([[1.5, 5.5, 9.5],
-                                                       [13.5, 17.5, 21.5]],
-                                             dtype=np.float32))
+        self._check_percentile(array_3d, 2, 50, expected_result)
+
+    def test_fast_percentile_3d_axis_two(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[1.5, 5.5, 9.5],
+                                    [13.5, 17.5, 21.5]],
+                                   dtype=np.float32)
+
+        self._check_percentile(array_3d, 2, 50, expected_result,
+                               fast_percentile_method=True)
 
     def test_percentile_3d_masked(self):
         cube = tests.stock.simple_3d_mask()
+        expected_result = [[12., 13., 14., 15.],
+                           [16., 17., 18., 19.],
+                           [20., 18., 19., 20.]]
 
-        last_quartile = cube.collapsed('wibble',
-                                       iris.analysis.PERCENTILE, percent=75)
-        np.testing.assert_array_almost_equal(last_quartile.data,
-                                             np.array([[12., 13., 14., 15.],
-                                                       [16., 17., 18., 19.],
-                                                       [20., 18., 19., 20.]],
-                                             dtype=np.float32))
-        self.assertCML(last_quartile, ('analysis',
-                                       'last_quartile_foo_3d_masked.cml'),
-                       checksum=False)
+        self._check_collapsed_percentile(
+            cube, 75, 'wibble', expected_result,
+            CML_filename='last_quartile_foo_3d_masked.cml')
+
+    def test_fast_percentile_3d_masked(self):
+        cube = tests.stock.simple_3d_mask()
+        msg = 'Cannot use fast np.percentile method with masked array.'
+
+        with self.assertRaisesRegexp(TypeError, msg):
+            cube.collapsed('wibble',
+                           iris.analysis.PERCENTILE, percent=75,
+                           fast_percentile_method=True)
 
     def test_percentile_3d_notmasked(self):
         cube = tests.stock.simple_3d()
+        expected_result = [[9., 10., 11., 12.],
+                           [13., 14., 15., 16.],
+                           [17., 18., 19., 20.]]
 
-        last_quartile = cube.collapsed('wibble',
-                                       iris.analysis.PERCENTILE, percent=75)
-        np.testing.assert_array_almost_equal(last_quartile.data,
-                                             np.array([[9., 10., 11., 12.],
-                                                       [13., 14., 15., 16.],
-                                                       [17., 18., 19., 20.]],
-                                             dtype=np.float32))
-        self.assertCML(last_quartile, ('analysis',
-                                       'last_quartile_foo_3d_notmasked.cml'),
-                       checksum=False)
+        self._check_collapsed_percentile(
+            cube, 75, 'wibble', expected_result,
+            CML_filename='last_quartile_foo_3d_notmasked.cml')
+
+    def test_fast_percentile_3d_notmasked(self):
+        cube = tests.stock.simple_3d()
+        expected_result = [[9., 10., 11., 12.],
+                           [13., 14., 15., 16.],
+                           [17., 18., 19., 20.]]
+
+        self._check_collapsed_percentile(
+            cube, 75, 'wibble', expected_result, fast_percentile_method=True,
+            CML_filename='last_quartile_foo_3d_notmasked_fast_percentile.cml')
 
     def test_proportion(self):
         cube = tests.stock.simple_1d()
