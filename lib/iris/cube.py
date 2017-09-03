@@ -83,6 +83,39 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
         """
         return self.standard_name or self.long_name or self.var_name or default
 
+    @classmethod
+    def from_cube(cls, cube):
+        """
+        Construct a CubeMetadata from the given cube.
+
+        Parameters
+        ----------
+        cube : :class:`~iris.cube.Cube or :class:`~iris.coords.Coord` instance
+            The cube (or coordinate) from which to derive the metadata.
+
+        """
+        return cls(cube.standard_name, cube.long_name, cube.var_name,
+                   cube.units, cube.attributes,
+                   getattr(cube, 'cell_methods', None)) 
+
+    def apply_to_cube(self, cube):
+        """Apply this metadata to an existing cube."""
+        for name in self._fields:
+            setattr(cube, name, getattr(self, name))
+
+    def to_cube(self, data):
+        """
+        Use this metadata instance as the basis for a new Cube.
+
+        Parameters
+        ----------
+        data : array-like (as per the Cube constructor docs)
+            The data to be used for the new cube. This data may be lazy.
+ 
+        """
+        metadata_dict = copy.deepcopy(self._asdict())
+        return Cube(data, **metadata_dict)
+
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
@@ -793,11 +826,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
            :class:`CubeMetadata`.
 
         """
-        return CubeMetadata(self.standard_name, self.long_name, self.var_name,
-                            self.units, self.attributes, self.cell_methods)
+        # TODO: consider deprecating this property getter in favour of
+        # the CubeMetadata.from_cube class method.
+        return CubeMetadata.from_cube(self)
 
     @metadata.setter
     def metadata(self, value):
+        # TODO: Consider deprecating this property setter in favour of
+        # the CubeMetadata.apply_to_cube method.
         try:
             value = CubeMetadata(**value)
         except TypeError:
@@ -808,8 +844,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                  if not hasattr(value, field)]
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
-        for name in CubeMetadata._fields:
-            setattr(self, name, getattr(value, name))
+        value.apply_to_cube(self)
 
     def is_compatible(self, other, ignore=None):
         """

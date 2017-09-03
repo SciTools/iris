@@ -209,7 +209,7 @@ setup(
                 ['tests/stock*.npz']
         },
     data_files=[('iris', ['CHANGES', 'COPYING', 'COPYING.LESSER'])],
-    tests_require=['nose'],
+    tests_require=['nose', 'filelock'],
     features={
         'unpack': setuptools.Feature(
             "use of UKMO unpack library",
