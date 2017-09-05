@@ -86,7 +86,9 @@ install:
   - conda uninstall --quiet dask
   - wget https://github.com/dask/dask/archive/master.zip;
   - unzip master.zip;
-  - cd dask-master && python setup.py --quiet install;
+  - cd dask-master;
+  - python setup.py --quiet build;
+  - python setup.py --quiet install;
   - cd ..;
 
 # prepare iris build directory
