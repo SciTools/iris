@@ -82,11 +82,11 @@ install:
       ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data;
     fi
 
-# Download + install dask from dask PR #2301
+# Download + install dask from latest master
   - conda uninstall --quiet dask
-  - wget https://github.com/jcrist/dask/archive/masked-array.zip;
-  - unzip masked-array.zip;
-  - cd dask-masked-array && python setup.py --quiet install;
+  - wget https://github.com/dask/dask/archive/master.zip;
+  - unzip master.zip;
+  - cd dask-master && python setup.py --quiet install;
   - cd ..;
 
 # prepare iris build directory
