@@ -83,15 +83,16 @@ install:
     fi
 
 # Download + install dask from latest master
+  - python -c "import dask; print dask; print dask.__version__" || echo "no dask present";
   - conda uninstall --quiet -y dask
-  - python -c "import dask; print dask" || echo "no dask present";
+  - python -c "import dask; print dask; print dask.__version__" || echo "no dask present";
   - wget https://github.com/dask/dask/archive/master.zip;
   - unzip master.zip;
   - cd dask-master;
   - python setup.py --quiet build;
   - python setup.py --quiet install;
   - cd ..;
-  - python -c "import dask; print dask; print dask.__version__";
+  - python -c "import dask; print dask; print dask.__version__" || echo "no dask present";
   - ls -l ./dask-master/dask/array/ma.py;
   - ls -l ./dask-master/build/lib/dask/array/ma.py;
   - python -c "import dask.array.ma as dma; print dma"
