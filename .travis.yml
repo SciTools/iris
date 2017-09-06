@@ -84,7 +84,7 @@ install:
 
 # Download + install dask from latest master
   - python -c "import dask; print dask; print dask.__version__" || echo "no dask present";
-  - conda uninstall --quiet -y dask
+  - pip uninstall -y dask
   - python -c "import dask; print dask; print dask.__version__" || echo "no dask present";
   - wget https://github.com/dask/dask/archive/master.zip;
   - unzip master.zip;
