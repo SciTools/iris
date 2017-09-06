@@ -92,6 +92,8 @@ install:
   - python setup.py --quiet install;
   - cd ..;
   - python -c "import dask; print dask; print dask.__version__";
+  - ls -l ./dask-master/dask/array/ma.py;
+  - ls -l ./dask-master/build/lib/dask/array/ma.py;
   - python -c "import dask.array.ma as dma; print dma"
 
 # prepare iris build directory
