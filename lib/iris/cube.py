@@ -345,7 +345,7 @@ class CubeList(list):
 
         return self.extract(iris.Constraint(coord_values=coord_values))
 
-    def merge_cube(self):
+    def merge_cube(self, merge_duplicates=False):
         """
         Return the merged contents of the :class:`CubeList` as a single
         :class:`Cube`.
@@ -379,10 +379,10 @@ class CubeList(list):
             proto_cube.register(cube, error_on_mismatch=True)
 
         # Extract the merged cube from the ProtoCube.
-        merged_cube, = proto_cube.merge()
+        merged_cube, = proto_cube.merge(merge_duplicates=merge_duplicates)
         return merged_cube
 
-    def merge(self, unique=True):
+    def merge(self, unique=True, merge_duplicates=False):
         """
         Returns the :class:`CubeList` resulting from merging this
         :class:`CubeList`.
@@ -466,7 +466,7 @@ class CubeList(list):
         merged_cubes = CubeList()
         for name in sorted(proto_cubes_by_name, key=_none_sort):
             for proto_cube in proto_cubes_by_name[name]:
-                merged_cubes.extend(proto_cube.merge(unique=unique))
+                merged_cubes.extend(proto_cube.merge(unique=unique, merge_duplicates=merge_duplicates))
 
         return merged_cubes
 
