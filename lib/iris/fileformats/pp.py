@@ -306,7 +306,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
             raise TypeError('Expected STASH code MSI string, got %r' % (msi,))
 
         msi_match = re.match(
-            '^\s*m(\d{2}|\?{2})s(\d{2}|\?{2})i(\d{3}|\?{3})\s*$', msi,
+            '^\s*m(\d+|\?+)s(\d+|\?+)i(\d+|\?+)\s*$', msi,
             re.IGNORECASE)
 
         if msi_match is None:
