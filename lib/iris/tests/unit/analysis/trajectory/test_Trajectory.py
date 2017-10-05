@@ -26,9 +26,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import mock
+
 import numpy as np
 
 from iris.analysis.trajectory import Trajectory
+from iris.tests.stock import simple_3d
 
 
 class Test___init__(tests.IrisTest):
@@ -68,6 +71,76 @@ class Test___init__(tests.IrisTest):
         self.assertEqual(trajectory.sample_count, 33)
         self.assertEqual(trajectory.sampled_points[31],
                          {'lat': 0.12499999999999989, 'lon': 3.875})
+
+
+class Test__get_interp_points(tests.IrisTest):
+    def test_basic(self):
+        waypoints = [{'lat': 0}, {'lat': 1}]
+        sample_count = 5
+        trajectory = Trajectory(waypoints, sample_count=sample_count)
+        result = trajectory._get_interp_points()
+        expected_points = list(np.linspace(0, 1, sample_count))
+
+        self.assertEqual(len(result), len(waypoints[0]))
+        self.assertEqual(len(result[0][1]), sample_count)
+        self.assertEqual(result[0][1], expected_points)
+
+    def test_2d(self):
+        waypoints = [{'lat': 0, 'lon': 0}, {'lat': 1, 'lon': 2}]
+        sample_count = 5
+        trajectory = Trajectory(waypoints, sample_count=sample_count)
+        result = trajectory._get_interp_points()
+
+        self.assertEqual(len(result), len(waypoints[0]))
+        self.assertEqual(len(result[0][1]), sample_count)
+        self.assertEqual(len(result[1][1]), sample_count)
+        self.assertEqual(result[0][0], 'lat')
+        self.assertEqual(result[1][0], 'lon')
+
+    def test_3d(self):
+        waypoints = [{'y': 0, 'x': 0, 'z': 2}, {'y': 1, 'x': 2, 'z': 10}]
+        sample_count = 5
+        trajectory = Trajectory(waypoints, sample_count=sample_count)
+        result = trajectory._get_interp_points()
+
+        self.assertEqual(len(result), len(waypoints[0]))
+        self.assertEqual(len(result[0][1]), sample_count)
+        self.assertEqual(len(result[1][1]), sample_count)
+        self.assertEqual(len(result[2][1]), sample_count)
+        self.assertEqual(result[0][0], 'y')
+        self.assertEqual(result[1][0], 'x')
+        self.assertEqual(result[2][0], 'z')
+
+
+class Test_interpolate(tests.IrisTest):
+    def test_cube__simple_3d(self):
+        # Test that an 'index' coord is added to the resultant cube.
+        cube = simple_3d()
+        waypoints = [{'latitude': 40, 'longitude': 40},
+                     {'latitude': 0, 'longitude': 0}]
+        sample_count = 3
+        trajectory = Trajectory(waypoints, sample_count=sample_count)
+        result = trajectory.interpolate(cube)
+        coord_names = [c.name() for c in result.coords(dim_coords=True)]
+        new_coord = result.coord(coord_names[1])
+
+        self.assertEqual(result.ndim, cube.ndim - 1)
+        self.assertEqual(coord_names[1], 'index')
+        self.assertEqual(len(new_coord.points), sample_count)
+
+    def test_call(self):
+        # Test that :func:`iris.analysis.trajectory.interpolate` is called by
+        # `Trajectory.interpolate`.
+        cube = simple_3d()
+        to_patch = 'iris.analysis.trajectory.interpolate'
+        waypoints = [{'latitude': 40, 'longitude': 40},
+                     {'latitude': 0, 'longitude': 0}]
+        sample_count = 3
+        trajectory = Trajectory(waypoints, sample_count=sample_count)
+
+        with mock.patch(to_patch, return_value=cube) as mock_interpolate:
+            trajectory.interpolate(cube)
+        mock_interpolate.assert_called_once()
 
 
 if __name__ == "__main__":
