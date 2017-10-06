@@ -89,15 +89,26 @@ class TestAnalysisCubeCoordComparison(tests.IrisTest):
         cube4.add_dim_coord(lon, 1)
         cube4.add_dim_coord(lat, 0)
 
+        # Test when coords are the same object
+        lon = cube1.coord('longitude')
+        lat = cube1.coord('latitude')
+        cube5 = iris.cube.Cube(np.zeros((41, 41)))
+        cube5.add_dim_coord(lon, 0)
+        cube5.add_dim_coord(lat, 1)
+
         coord_comparison = iris.analysis.coord_comparison
 
         self.assertComparisonDict(coord_comparison(cube1, cube1), ('analysis', 'coord_comparison', 'cube1_cube1.txt'))
         self.assertComparisonDict(coord_comparison(cube1, cube2), ('analysis', 'coord_comparison', 'cube1_cube2.txt'))
         self.assertComparisonDict(coord_comparison(cube1, cube3), ('analysis', 'coord_comparison', 'cube1_cube3.txt'))
         self.assertComparisonDict(coord_comparison(cube1, cube4), ('analysis', 'coord_comparison', 'cube1_cube4.txt'))
+        self.assertComparisonDict(coord_comparison(cube1, cube5), ('analysis', 'coord_comparison', 'cube1_cube5.txt'))
         self.assertComparisonDict(coord_comparison(cube2, cube3), ('analysis', 'coord_comparison', 'cube2_cube3.txt'))
         self.assertComparisonDict(coord_comparison(cube2, cube4), ('analysis', 'coord_comparison', 'cube2_cube4.txt'))
+        self.assertComparisonDict(coord_comparison(cube2, cube5), ('analysis', 'coord_comparison', 'cube2_cube5.txt'))
         self.assertComparisonDict(coord_comparison(cube3, cube4), ('analysis', 'coord_comparison', 'cube3_cube4.txt'))
+        self.assertComparisonDict(coord_comparison(cube3, cube5), ('analysis', 'coord_comparison', 'cube3_cube5.txt'))
+        self.assertComparisonDict(coord_comparison(cube4, cube5), ('analysis', 'coord_comparison', 'cube4_cube5.txt'))
 
         self.assertComparisonDict(coord_comparison(cube1, cube1, cube1), ('analysis', 'coord_comparison', 'cube1_cube1_cube1.txt'))
         self.assertComparisonDict(coord_comparison(cube1, cube2, cube1), ('analysis', 'coord_comparison', 'cube1_cube2_cube1.txt'))
