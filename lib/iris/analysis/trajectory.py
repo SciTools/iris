@@ -147,6 +147,18 @@ class Trajectory(object):
                   for k in self.sampled_points[0].keys()}
         return [(k, v) for k, v in points.items()]
 
+    def _src_cube_anon_dims(self, cube):
+        """
+        A helper method to locate the index of anonymous dimensions on the
+        interpolation target, ``cube``.
+
+        Returns:
+            The index of any anonymous dimensions in ``cube``.
+
+        """
+        named_dims = [cube.coord_dims(c)[0] for c in cube.dim_coords]
+        return list(set(range(cube.ndim)) - set(named_dims))
+
     def interpolate(self, cube, method=None):
         """
         Calls :func:`~iris.analysis.trajectory.interpolate` to interpolate
@@ -175,9 +187,16 @@ class Trajectory(object):
         # Add an "index" coord to name the anonymous dimension produced by
         # the interpolation, if present.
         if len(interpolated_cube.dim_coords) < interpolated_cube.ndim:
+            # Add a new coord `index` to describe the new dimension created by
+            # interpolating.
             index_coord = iris.coords.DimCoord(range(self.sample_count),
                                                long_name='index')
-            anon_dim_index = interpolated_cube.shape.index(self.sample_count)
+            # Make sure anonymous dims in `cube` do not mistakenly get labelled
+            # as the new `index` dimension created by interpolating.
+            src_anon_dims = self._src_cube_anon_dims(cube)
+            interp_anon_dims = self._src_cube_anon_dims(interpolated_cube)
+            anon_dim_index, = list(set(interp_anon_dims) - set(src_anon_dims))
+            # Add the new coord to the interpolated cube.
             interpolated_cube.add_dim_coord(index_coord, anon_dim_index)
         return interpolated_cube
 

@@ -31,7 +31,7 @@ import mock
 import numpy as np
 
 from iris.analysis.trajectory import Trajectory
-from iris.tests.stock import simple_3d
+from iris.tests.stock import simple_3d, simple_4d_with_hybrid_height
 
 
 class Test___init__(tests.IrisTest):
@@ -113,19 +113,52 @@ class Test__get_interp_points(tests.IrisTest):
 
 
 class Test_interpolate(tests.IrisTest):
+    def _result_cube_metadata(self, res_cube):
+        dim_names = [c.name() for c in res_cube.dim_coords]
+        named_dims = [res_cube.coord_dims(c)[0] for c in res_cube.dim_coords]
+        anon_dims = list(set(range(res_cube.ndim)) - set(named_dims))
+        anon_dims = None if not len(anon_dims) else anon_dims
+        return dim_names, named_dims, anon_dims
+
     def test_cube__simple_3d(self):
         # Test that an 'index' coord is added to the resultant cube.
         cube = simple_3d()
         waypoints = [{'latitude': 40, 'longitude': 40},
                      {'latitude': 0, 'longitude': 0}]
         sample_count = 3
+        new_coord_name = 'index'
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory.interpolate(cube)
-        coord_names = [c.name() for c in result.coords(dim_coords=True)]
-        new_coord = result.coord(coord_names[1])
+
+        dim_names, named_dims, anon_dims = self._result_cube_metadata(result)
+        new_coord = result.coord(new_coord_name)
+        exp_named_dims = [0, 1]
 
         self.assertEqual(result.ndim, cube.ndim - 1)
-        self.assertEqual(coord_names[1], 'index')
+        self.assertIn(new_coord_name, dim_names)
+        self.assertEqual(named_dims, exp_named_dims)
+        self.assertIsNone(anon_dims)
+        self.assertEqual(len(new_coord.points), sample_count)
+
+    def test_cube__anon_dim(self):
+        cube = simple_4d_with_hybrid_height()
+        cube.remove_coord('model_level_number')  # Make cube dim 1 anonymous.
+        waypoints = [{'grid_latitude': 21, 'grid_longitude': 31},
+                     {'grid_latitude': 23, 'grid_longitude': 33}]
+        sample_count = 4
+        new_coord_name = 'index'
+        trajectory = Trajectory(waypoints, sample_count=sample_count)
+        result = trajectory.interpolate(cube)
+
+        dim_names, named_dims, anon_dims = self._result_cube_metadata(result)
+        new_coord = result.coord(new_coord_name)
+        exp_named_dims = [0, 2]
+        exp_anon_dims = [1]
+
+        self.assertEqual(result.ndim, cube.ndim - 1)
+        self.assertIn(new_coord_name, dim_names)
+        self.assertEqual(named_dims, exp_named_dims)
+        self.assertEqual(anon_dims, exp_anon_dims)
         self.assertEqual(len(new_coord.points), sample_count)
 
     def test_call(self):
