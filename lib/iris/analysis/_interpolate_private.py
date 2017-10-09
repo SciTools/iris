@@ -639,34 +639,6 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     return new_cube
 
 
-def regrid_to_max_resolution(cubes, **kwargs):
-    """
-    Returns all the cubes re-gridded to the highest horizontal resolution.
-
-    Horizontal resolution is defined by the number of grid points/cells covering the horizontal plane.
-    See :func:`iris.analysis.interpolation.regrid` regarding mode of interpolation.
-
-    Args:
-
-    * cubes:
-        An iterable of :class:`iris.cube.Cube` instances.
-
-    Returns:
-        A list of new :class:`iris.cube.Cube` instances.
-
-    .. deprecated:: 1.10
-
-        The module :mod:`iris.analysis.interpolate` is deprecated.
-        Please replace usage of :func:`regrid_to_max_resolution` with
-        :meth:`iris.cube.Cube.regrid`.
-
-    """
-    # TODO: This could be significantly improved for readability and functionality.
-    resolution = lambda cube_: (cube_.shape[cube_.coord_dims(cube_.coord(axis="x"))[0]]) * (cube_.shape[cube_.coord_dims(cube_.coord(axis="y"))[0]])
-    grid_cube = max(cubes, key=resolution)
-    return [cube.regridded(grid_cube, **kwargs) for cube in cubes]
-
-
 def linear(cube, sample_points, extrapolation_mode='linear'):
     """
     Return a cube of the linearly interpolated points given the desired

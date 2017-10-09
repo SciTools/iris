@@ -325,9 +325,10 @@ def _curl_regrid(cube, prototype):
     assert isinstance(prototype, iris.cube.Cube)
 
     if cube is None:
-        return None
-    # #301 use of resample would be better here.
-    return cube.regridded(prototype)
+        result = None
+    else:
+        result = cube.regrid(prototype, iris.analysis.Linear())
+    return result
 
 
 def _copy_cube_transformed(src_cube, data, coord_func):
