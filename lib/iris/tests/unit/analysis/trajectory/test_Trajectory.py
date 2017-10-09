@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -75,7 +75,8 @@ class Test___init__(tests.IrisTest):
 
 class Test__get_interp_points(tests.IrisTest):
     def test_basic(self):
-        waypoints = [{'lat': 0}, {'lat': 1}]
+        dim_names = 'lat'
+        waypoints = [{dim_names: 0}, {dim_names: 1}]
         sample_count = 5
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory._get_interp_points()
@@ -84,9 +85,12 @@ class Test__get_interp_points(tests.IrisTest):
         self.assertEqual(len(result), len(waypoints[0]))
         self.assertEqual(len(result[0][1]), sample_count)
         self.assertEqual(result[0][1], expected_points)
+        self.assertEqual(result[0][0], dim_names)
 
     def test_2d(self):
-        waypoints = [{'lat': 0, 'lon': 0}, {'lat': 1, 'lon': 2}]
+        dim_names = ['lat', 'lon']
+        waypoints = [{dim_names[0]: 0, dim_names[1]: 0},
+                     {dim_names[0]: 1, dim_names[1]: 2}]
         sample_count = 5
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory._get_interp_points()
@@ -94,11 +98,13 @@ class Test__get_interp_points(tests.IrisTest):
         self.assertEqual(len(result), len(waypoints[0]))
         self.assertEqual(len(result[0][1]), sample_count)
         self.assertEqual(len(result[1][1]), sample_count)
-        self.assertEqual(result[0][0], 'lat')
-        self.assertEqual(result[1][0], 'lon')
+        self.assertIn(result[0][0], dim_names)
+        self.assertIn(result[1][0], dim_names)
 
     def test_3d(self):
-        waypoints = [{'y': 0, 'x': 0, 'z': 2}, {'y': 1, 'x': 2, 'z': 10}]
+        dim_names = ['y', 'x', 'z']
+        waypoints = [{dim_names[0]: 0, dim_names[1]: 0, dim_names[2]: 2},
+                     {dim_names[0]: 1, dim_names[1]: 2, dim_names[2]: 10}]
         sample_count = 5
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory._get_interp_points()
@@ -107,9 +113,9 @@ class Test__get_interp_points(tests.IrisTest):
         self.assertEqual(len(result[0][1]), sample_count)
         self.assertEqual(len(result[1][1]), sample_count)
         self.assertEqual(len(result[2][1]), sample_count)
-        self.assertEqual(result[0][0], 'y')
-        self.assertEqual(result[1][0], 'x')
-        self.assertEqual(result[2][0], 'z')
+        self.assertIn(result[0][0], dim_names)
+        self.assertIn(result[1][0], dim_names)
+        self.assertIn(result[2][0], dim_names)
 
 
 class Test_interpolate(tests.IrisTest):

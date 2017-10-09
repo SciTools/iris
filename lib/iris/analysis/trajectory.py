@@ -135,8 +135,7 @@ class Trajectory(object):
     def _get_interp_points(self):
         """
         Translate `self.sampled_points` to the format expected by the
-        interpolator. If the CRS of the sample points does not match the CRS
-        of the cube to interpolate, also transform the points.
+        interpolator.
 
         Returns:
             `self.sampled points` in the format required by
