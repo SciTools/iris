@@ -538,127 +538,6 @@ class SplittableInt(object):
         return self._compare(other, operator.ge)
 
 
-class BitwiseInt(SplittableInt):
-    """
-    A class to hold an integer, of fixed bit-length, which can easily get/set
-    each bit individually.
-
-    .. deprecated:: 1.8
-
-        Please use `int` instead.
-
-    .. note::
-
-        Uses a fixed number of bits.
-        Will raise an Error when attempting to access an out-of-range flag.
-
-    >>> a = BitwiseInt(511)
-    >>> a.flag1
-    1
-    >>> a.flag8
-    1
-    >>> a.flag128
-    1
-    >>> a.flag256
-    1
-    >>> a.flag512
-    AttributeError: 'BitwiseInt' object has no attribute 'flag512'
-    >>> a.flag512 = 1
-    AttributeError: Cannot set a flag that does not exist: flag512
-
-    """
-
-    def __init__(self, value, num_bits=None):
-        # intentionally empty docstring as all covered in the class docstring.
-        """ """
-        warn_deprecated('BitwiseInt is deprecated - please use `int` instead.')
-
-        SplittableInt.__init__(self, value)
-        self.flags = ()
-
-        # do we need to calculate the number of bits based on the given value?
-        self._num_bits = num_bits
-        if self._num_bits is None:
-            self._num_bits = 0
-            while((value >> self._num_bits) > 0):
-                self._num_bits += 1
-        else:
-            # make sure the number of bits is enough to store the given value.
-            if (value >> self._num_bits) > 0:
-                raise ValueError("Not enough bits to store value")
-
-        self._set_flags_from_value()
-
-    def _set_flags_from_value(self):
-        all_flags = []
-
-        # Set attributes "flag[n]" to 0 or 1
-        for i in range(self._num_bits):
-            flag_name = 1 << i
-            flag_value = ((self._value >> i) & 1)
-            object.__setattr__(self, 'flag%d' % flag_name, flag_value)
-
-            # Add to list off all flags
-            if flag_value:
-                all_flags.append(flag_name)
-
-        self.flags = tuple(all_flags)
-
-    def _set_value_from_flags(self):
-        self._value = 0
-        for i in range(self._num_bits):
-            bit_value = pow(2, i)
-            flag_name = "flag%i" % bit_value
-            flag_value = object.__getattribute__(self, flag_name)
-            self._value += flag_value * bit_value
-
-    def __iand__(self, value):
-        """Perform an &= operation."""
-        self._value &= value
-        self._set_flags_from_value()
-        return self
-
-    def __ior__(self, value):
-        """Perform an |= operation."""
-        self._value |= value
-        self._set_flags_from_value()
-        return self
-
-    def __iadd__(self, value):
-        """Perform an inplace add operation"""
-        self._value += value
-        self._set_flags_from_value()
-        return self
-
-    def __setattr__(self, name, value):
-        # Allow setting of the attribute flags
-        # Are we setting a flag?
-        if name.startswith("flag") and name != "flags":
-            # true and false become 1 and 0
-            if not isinstance(value, bool):
-                raise TypeError("Can only set bits to True or False")
-
-            # Setting an existing flag?
-            if hasattr(self, name):
-                # which flag?
-                flag_value = int(name[4:])
-                # on or off?
-                if value:
-                    self |= flag_value
-                else:
-                    self &= ~flag_value
-
-            # Fail if an attempt has been made to set a flag that does not
-            # exist
-            else:
-                raise AttributeError("Cannot set a flag that does not"
-                                     " exist: %s" % name)
-
-        # If we're not setting a flag, then continue as normal
-        else:
-            SplittableInt.__setattr__(self, name, value)
-
-
 def _make_flag_getter(value):
     def getter(self):
         warn_deprecated('The `flag` attributes are deprecated - please use '
@@ -693,7 +572,8 @@ class _FlagMetaclass(type):
         return type.__new__(cls, classname, bases, class_dict)
 
 
-class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
+@six.add_metaclass(_FlagMetaclass)
+class _LBProc(object):
     # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
     # properties.
     def __init__(self, value):
