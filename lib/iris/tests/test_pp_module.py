@@ -125,7 +125,7 @@ class TestPPHeaderDerived(tests.IrisTest):
             self.assertEqual(self.pp.lbproc.flag1, 1)
             self.assertEqual(self.pp.lbproc.flag65536, 1)
             self.assertEqual(self.pp.lbproc.flag131072, 0)
-        self.assertEqual(warn.call_count, 5)
+        self.assertEqual(warn.call_count, 3)
     
     def test_set_lbuser(self):
         self.pp.stash = 'm02s12i003'
