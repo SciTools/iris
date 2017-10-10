@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,14 +35,14 @@ class TestStructuredLoadFF(tests.IrisTest):
         self.fname = tests.get_data_path(('FF', 'structured', 'small'))
 
     def test_simple(self):
-        cube, = load(self.fname, None)
-        self.assertCML(cube)
+        cubes = list(load(self.fname, None))
+        self.assertCML(cubes)
 
     def test_simple_callback(self):
         def callback(cube, field, filename):
             cube.attributes['processing'] = 'fast-ff'
-        cube, = load(self.fname, callback=callback)
-        self.assertCML(cube)
+        cubes = list(load(self.fname, callback=callback))
+        self.assertCML(cubes)
 
 
 @tests.skip_data
