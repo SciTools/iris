@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,8 +29,6 @@ import unittest
 # Import pyugrid if installed, else fail quietly + disable all the tests.
 try:
     import pyugrid
-    # Check it *is* the real module, and not an iris.proxy FakeModule.
-    pyugrid.ugrid
 except (ImportError, AttributeError):
     pyugrid = None
 skip_pyugrid = unittest.skipIf(
