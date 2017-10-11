@@ -572,8 +572,7 @@ class _FlagMetaclass(type):
         return type.__new__(cls, classname, bases, class_dict)
 
 
-@six.add_metaclass(_FlagMetaclass)
-class _LBProc(object):
+class _LBProc(six.with_metaclass(_FlagMetaclass, SplittableInt)):
     # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
     # properties.
     def __init__(self, value):
