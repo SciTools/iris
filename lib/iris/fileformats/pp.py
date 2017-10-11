@@ -2004,7 +2004,7 @@ def save(cube, target, append=False, field_coords=None):
 
 def save_pairs_from_cube(cube, field_coords=None, target=None):
     """
-    Use the PP saving rules (and any user rules) to convert a cube or
+    Use the PP saving rules to convert a cube or
     iterable of cubes to an iterable of (2D cube, PP field) pairs.
 
     Args:
