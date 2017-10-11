@@ -454,11 +454,8 @@ def sample_data_path(*path_to_join):
     if iris_sample_data is not None:
         target = os.path.join(iris_sample_data.path, target)
     else:
-        wmsg = ("iris.config.SAMPLE_DATA_DIR was deprecated in v1.10.0 and "
-                "will be removed in a future Iris release. Install the "
-                "'iris_sample_data' package.")
-        warn_deprecated(wmsg)
-        target = os.path.join(iris.config.SAMPLE_DATA_DIR, target)
+        raise ValueError("Please install the 'iris_sample_data' package to "
+                         "access sample data.")
     if not glob.glob(target):
         raise ValueError('Sample data file(s) at {!r} not found.\n'
                          'NB. This function is only for locating files in the '

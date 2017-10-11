@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,7 +31,6 @@ import tempfile
 import mock
 
 from iris import sample_data_path
-from iris._deprecation import IrisDeprecation
 
 
 def _temp_file(sample_dir):
@@ -61,57 +60,42 @@ class TestIrisSampleData_path(tests.IrisTest):
             result = sample_data_path(os.path.basename(sample_file))
             self.assertEqual(result, sample_file)
 
-
-class TestConfig(tests.IrisTest):
-    def setUp(self):
-        # Force iris_sample_data to be unavailable.
-        self.patch('iris.iris_sample_data', None)
-        # All of our tests are going to run with SAMPLE_DATA_DIR
-        # redirected to a temporary directory.
-        self.sample_dir = tempfile.mkdtemp()
-        patcher = mock.patch('iris.config.SAMPLE_DATA_DIR', self.sample_dir)
-        patcher.start()
-        self.addCleanup(patcher.stop)
-
-    def tearDown(self):
-        shutil.rmtree(self.sample_dir)
-
-    def test_file_ok(self):
-        sample_path = _temp_file(self.sample_dir)
-        result = sample_data_path(os.path.basename(sample_path))
-        self.assertEqual(result, sample_path)
-
     def test_file_not_found(self):
-        with self.assertRaisesRegexp(ValueError, 'Sample data .* not found'):
-            sample_data_path('foo')
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            with self.assertRaisesRegexp(ValueError,
+                                         'Sample data .* not found'):
+                sample_data_path('foo')
 
     def test_file_absolute(self):
-        with self.assertRaisesRegexp(ValueError, 'Absolute path'):
-            sample_data_path(os.path.abspath('foo'))
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            with self.assertRaisesRegexp(ValueError, 'Absolute path'):
+                sample_data_path(os.path.abspath('foo'))
 
     def test_glob_ok(self):
         sample_path = _temp_file(self.sample_dir)
         sample_glob = '?' + os.path.basename(sample_path)[1:]
-        result = sample_data_path(sample_glob)
-        self.assertEqual(result, os.path.join(self.sample_dir, sample_glob))
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            result = sample_data_path(sample_glob)
+            self.assertEqual(result, os.path.join(self.sample_dir,
+                                                  sample_glob))
 
     def test_glob_not_found(self):
-        with self.assertRaisesRegexp(ValueError, 'Sample data .* not found'):
-            sample_data_path('foo.*')
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            with self.assertRaisesRegexp(ValueError,
+                                         'Sample data .* not found'):
+                sample_data_path('foo.*')
 
     def test_glob_absolute(self):
-        with self.assertRaisesRegexp(ValueError, 'Absolute path'):
-            sample_data_path(os.path.abspath('foo.*'))
+        with mock.patch('iris_sample_data.path', self.sample_dir):
+            with self.assertRaisesRegexp(ValueError, 'Absolute path'):
+                sample_data_path(os.path.abspath('foo.*'))
 
-    def test_warn_deprecated(self):
-        sample_path = _temp_file(self.sample_dir)
-        with mock.patch('warnings.warn') as warn:
-            sample_data_path(os.path.basename(sample_path))
-            self.assertEqual(warn.call_count, 1)
-            (warn_msg, warn_exception), _ = warn.call_args
-            msg = 'iris.config.SAMPLE_DATA_DIR was deprecated'
-            self.assertTrue(warn_msg.startswith(msg))
-            self.assertEqual(warn_exception, IrisDeprecation)
+
+class TestIrisSampleDataMissing(tests.IrisTest):
+    def test_no_iris_sample_data(self):
+        self.patch('iris.iris_sample_data', None)
+        with self.assertRaisesRegexp(ValueError, 'Please install'):
+            sample_data_path('')
 
 
 if __name__ == '__main__':
