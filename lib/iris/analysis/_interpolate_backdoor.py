@@ -109,17 +109,6 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
 regrid.__doc__ = _interp.regrid.__doc__
 
 
-def regrid_to_max_resolution(cubes, **kwargs):
-    msg = (_INTERPOLATE_DEPRECATION_WARNING + '\n' +
-           'Please replace usage of '
-           'iris.analysis.interpolate.regrid_to_max_resolution() '
-           'with iris.cube.Cube.regrid().')
-    _warn_deprecated(msg)
-    return _interp.regrid_to_max_resolution(cubes, **kwargs)
-
-regrid_to_max_resolution.__doc__ = _interp.regrid_to_max_resolution.__doc__
-
-
 def linear(cube, sample_points, extrapolation_mode='linear'):
     msg = (_INTERPOLATE_DEPRECATION_WARNING + '\n' +
            'Please replace usage of iris.analysis.interpolate.linear() with '
