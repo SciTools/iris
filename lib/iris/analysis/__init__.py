@@ -2491,7 +2491,3 @@ class UnstructuredNearest(object):
             UnstructuredNearestNeigbourRegridder
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
 
-
-# Import "iris.analysis.interpolate" to replicate older automatic imports.
-# NOTE: do this at end, as otherwise its import of 'Linear' will fail.
-from . import _interpolate_backdoor as interpolate
