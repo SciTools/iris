@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -83,8 +83,10 @@ class TestPPStash(tests.IrisTest):
         self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi('M01s02i003'))
 
     def test_illegal_stash_str_range(self):
+
         self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), 'm??s02i003')
         self.assertNotEqual(iris.fileformats.pp.STASH(0, 2, 3), 'm01s02i003')
+
         self.assertEqual('m??s02i003', iris.fileformats.pp.STASH(0, 2, 3))
         self.assertNotEqual('m01s02i003', iris.fileformats.pp.STASH(0, 2, 3))
 
@@ -104,28 +106,30 @@ class TestPPStash(tests.IrisTest):
         self.assertEqual(iris.fileformats.pp.STASH(100, 2, 3), iris.fileformats.pp.STASH(999, 2, 3))
 
     def test_illegal_stash_format(self):
-        with self.assertRaises(ValueError):
-            self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), 'abc')
-        with self.assertRaises(ValueError):
-            self.assertEqual('abc', iris.fileformats.pp.STASH(1, 2, 3))
+        test_values = (
+            ('abc', (1, 2, 3)),
+            ('mlotstmin', (1, 2, 3)),
+            ('m01s02003', (1, 2, 3)))
 
-        with self.assertRaises(ValueError):
-            self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), 'm01s02003')
-        with self.assertRaises(ValueError):
-            self.assertEqual('m01s02003', iris.fileformats.pp.STASH(1, 2, 3))
+        for (test_value, reference) in test_values:
+            msg = 'Expected STASH code .* {!r}'.format(test_value)
+            with self.assertRaisesRegexp(ValueError, msg):
+                test_value == iris.fileformats.pp.STASH(*reference)
+            with self.assertRaisesRegexp(ValueError, msg):
+                iris.fileformats.pp.STASH(*reference) == test_value
 
     def test_illegal_stash_type(self):
-        with self.assertRaises(TypeError):
-            self.assertEqual(iris.fileformats.pp.STASH.from_msi(102003), 'm01s02i003')
+        test_values = (
+            (102003, 'm01s02i003'),
+            (['m01s02i003'], 'm01s02i003'),
+            )
 
-        with self.assertRaises(TypeError):
-            self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi(102003))
-
-        with self.assertRaises(TypeError):
-            self.assertEqual(iris.fileformats.pp.STASH.from_msi(['m01s02i003']), 'm01s02i003')
-
-        with self.assertRaises(TypeError):
-            self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi(['m01s02i003']))
+        for (test_value, reference) in test_values:
+            msg = 'Expected STASH code .* {!r}'.format(test_value)
+            with self.assertRaisesRegexp(TypeError, msg):
+                iris.fileformats.pp.STASH.from_msi(test_value) == reference
+            with self.assertRaisesRegexp(TypeError, msg):
+                reference == iris.fileformats.pp.STASH.from_msi(test_value)
 
     def test_stash_lbuser(self):
         stash = iris.fileformats.pp.STASH(2, 32, 456)
