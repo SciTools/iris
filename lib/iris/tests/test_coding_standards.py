@@ -115,7 +115,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_grib_save.py',
         '*/iris/tests/test_grib_save_rules.py',
         '*/iris/tests/test_hybrid.py',
-        '*/iris/tests/test_interpolation.py',
         '*/iris/tests/test_intersect.py',
         '*/iris/tests/test_io_init.py',
         '*/iris/tests/test_iterate.py',

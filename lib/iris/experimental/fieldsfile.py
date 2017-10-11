@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -163,7 +163,7 @@ def load(filenames, callback=None):
         "as a replacement."
         "\nA call to 'iris.experimental.fieldsfile.load' can be replaced with "
         "'iris.load_raw', within a 'structured_um_loading' context.")
-    loader = Loader(_collations_from_filename, {}, _convert_collation, None)
+    loader = Loader(_collations_from_filename, {}, _convert_collation)
     return CubeList(load_cubes(filenames, callback, loader, None))
 
 

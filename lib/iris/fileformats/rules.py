@@ -811,10 +811,9 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
 
 
 _loader_attrs = ('field_generator', 'field_generator_kwargs',
-                 'converter', 'legacy_custom_rules')
+                 'converter')
 class Loader(collections.namedtuple('Loader', _loader_attrs)):
-    def __new__(cls, field_generator, field_generator_kwargs, converter,
-                legacy_custom_rules=None):
+    def __new__(cls, field_generator, field_generator_kwargs, converter):
         """
         Create a definition of a field-based Cube loader.
 
@@ -830,21 +829,9 @@ class Loader(collections.namedtuple('Loader', _loader_attrs)):
         * converter
             A callable that converts a field object into a Cube.
 
-        Kwargs:
-
-        * legacy_custom_rules
-            An object with a callable `verify` attribute with two
-            parameters: (cube, field). Legacy method for modifying
-            Cubes during the load process. Default is None.
-
-            .. deprecated:: 1.9
-
         """
-        if legacy_custom_rules is not None:
-            warn_deprecated('The `legacy_custom_rules` attribute is '
-                            'deprecated.')
         return tuple.__new__(cls, (field_generator, field_generator_kwargs,
-                                   converter, legacy_custom_rules))
+                                   converter))
 
 
 ConversionMetadata = collections.namedtuple('ConversionMetadata',
@@ -991,13 +978,7 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
                     yield (field, filename)
 
     def loadcubes_user_callback_wrapper(cube, field, filename):
-        # First run any custom user-provided rules.
-        if loader.legacy_custom_rules:
-            warn_deprecated('The `legacy_custom_rules` attribute of '
-                            'the `loader` is deprecated.')
-            loader.legacy_custom_rules.verify(cube, field)
-
-        # Then also run user-provided original callback function.
+        # Run user-provided original callback function.
         result = cube
         if user_callback is not None:
             result = user_callback(cube, field, filename)
