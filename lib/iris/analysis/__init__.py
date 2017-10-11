@@ -1437,7 +1437,7 @@ def _build_dask_mdtol_function(dask_stats_function):
     def inner_stat(array, axis=-1, mdtol=None, **kwargs):
         # Call the statistic to get the basic result (missing-data tolerant).
         dask_result = dask_stats_function(array, axis=axis, **kwargs)
-        if mdtol is None:
+        if mdtol is None or mdtol >= 1.0:
             result = dask_result
         else:
             # Build a lazy computation to compare the fraction of missing
