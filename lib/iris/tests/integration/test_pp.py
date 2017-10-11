@@ -73,7 +73,6 @@ class TestVertical(tests.IrisTest):
         field.lbvc = 0
         field.brsvd = [None] * 4
         field.brlev = None
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
 
         # Check the vertical coordinate is as originally specified.
@@ -111,7 +110,6 @@ class TestVertical(tests.IrisTest):
         field.lbvc = 0
         field.brlev = None
         field.brsvd = [None] * 4
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
 
         # Check the vertical coordinate is as originally specified.
@@ -144,7 +142,6 @@ class TestVertical(tests.IrisTest):
         field = iris.fileformats.pp.PPField3()
         field.lbfc = 0
         field.lbvc = 0
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
 
         # Check the vertical coordinate is as originally specified.
@@ -214,7 +211,6 @@ class TestVertical(tests.IrisTest):
         pressure_field.lbvc = 0
         pressure_field.brsvd = [None, None]
         pressure_field.lbuser = [None] * 7
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(pressure_cube, pressure_field)
 
         data_field = iris.fileformats.pp.PPField3()
@@ -306,7 +302,6 @@ class TestVertical(tests.IrisTest):
         field.lbvc = 0
         field.brsvd = [None, None]
         field.lbuser = [None] * 7
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
 
         self.assertEqual(field.blev, delta)
@@ -343,7 +338,6 @@ class TestVertical(tests.IrisTest):
         field.lbvc = 0
         field.brsvd = [None, None]
         field.lbuser = [None] * 7
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
 
         self.assertEqual(field.bhlev, delta)
@@ -409,7 +403,6 @@ class TestVertical(tests.IrisTest):
         data_field.lbvc = 0
         data_field.brsvd = [None, None]
         data_field.lbuser = [None] * 7
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(data_cube, data_field)
 
         # Check the data field has the vertical coordinate as originally
@@ -446,7 +439,6 @@ class TestSaveLBFT(tests.IrisTest):
         field.lbfc = 0
         field.lbvc = 0
         field.lbtim = 0
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
         return field
 
@@ -633,7 +625,6 @@ class TestSaveLBPROC(tests.IrisTest):
     def convert_cube_to_field(self, cube):
         field = iris.fileformats.pp.PPField3()
         field.lbvc = 0
-        iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
         return field
 

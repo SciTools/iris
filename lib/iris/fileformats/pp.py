@@ -2208,8 +2208,6 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
     # On the flip side, record which Cube metadata has been "used" and flag up
     # unused?
 
-    _ensure_save_rules_loaded()
-
     n_dims = len(cube.shape)
     if n_dims < 2:
         raise ValueError('Unable to save a cube of fewer than 2 dimensions.')
