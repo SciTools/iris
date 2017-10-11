@@ -24,10 +24,15 @@ import six
 # importing anything else.
 import iris.tests as tests
 
+from contextlib import contextmanager
+import warnings
+
 import netCDF4 as nc
 import numpy as np
+from numpy import ma
 
 import iris
+from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
                                 LambertConformal, Mercator, Stereographic,
                                 LambertAzimuthalEqualArea)
@@ -323,6 +328,154 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
             ds = nc.Dataset(nc_path)
             self.assertArrayEqual(ds.variables['longitude'].valid_max, 2)
             ds.close()
+
+
+class Test_write_fill_value(tests.IrisTest):
+    def _make_cube(self, dtype, lazy=False, masked_value=None,
+                   masked_index=None):
+        data = np.arange(12, dtype=dtype).reshape(3, 4)
+        if masked_value is not None:
+            data = ma.masked_equal(data, masked_value)
+        if masked_index is not None:
+            data = np.ma.masked_array(data)
+            data[masked_index] = ma.masked
+        if lazy:
+            data = as_lazy_data(data)
+        lat = DimCoord(np.arange(3), 'latitude', units='degrees')
+        lon = DimCoord(np.arange(4), 'longitude', units='degrees')
+        return Cube(data, standard_name='air_temperature', units='K',
+                    dim_coords_and_dims=[(lat, 0), (lon, 1)])
+
+    @contextmanager
+    def _netCDF_var(self, cube, **kwargs):
+        # Get the netCDF4 Variable for a cube from a temp file
+        standard_name = cube.standard_name
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, **kwargs)
+            ds = nc.Dataset(nc_path)
+            var, = [var for var in ds.variables.values()
+                    if var.standard_name == standard_name]
+            yield var
+
+    @contextmanager
+    def _warning_check(self, message_text='', expect_warning=True):
+        # Check that a warning is raised containing a given string, or that
+        # no warning containing a given string is raised.
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            yield
+        matches = (message_text in str(warning.message) for warning in w)
+        warning_raised = any(matches)
+        msg = "Warning containing text '{}' not raised." if expect_warning \
+            else "Warning containing text '{}' unexpectedly raised."
+        self.assertEqual(expect_warning, warning_raised,
+                         msg.format(message_text))
+
+    def test_fill_value(self):
+        # Test that a passed fill value is saved as a _FillValue attribute.
+        cube = self._make_cube('>f4')
+        fill_value = 12345.
+        with self._netCDF_var(cube, fill_value=fill_value) as var:
+            self.assertEqual(fill_value, var._FillValue)
+
+    def test_default_fill_value(self):
+        # Test that if no fill value is passed then there is no _FillValue.
+        # attribute.
+        cube = self._make_cube('>f4')
+        with self._netCDF_var(cube) as var:
+            self.assertNotIn('_FillValue', var.ncattrs())
+
+    def test_mask_fill_value(self):
+        # Test that masked data saves correctly when given a fill value.
+        index = (1, 1)
+        fill_value = 12345.
+        cube = self._make_cube('>f4', masked_index=index)
+        with self._netCDF_var(cube, fill_value=fill_value) as var:
+            self.assertEqual(fill_value, var._FillValue)
+            self.assertTrue(var[index].mask)
+
+    def test_mask_default_fill_value(self):
+        # Test that masked data saves correctly using the default fill value.
+        index = (1, 1)
+        cube = self._make_cube('>f4', masked_index=index)
+        with self._netCDF_var(cube) as var:
+            self.assertNotIn('_FillValue', var.ncattrs())
+            self.assertTrue(var[index].mask)
+
+    def test_mask_lazy_fill_value(self):
+        # Test that masked lazy data saves correctly when given a fill value.
+        index = (1, 1)
+        fill_value = 12345.
+        cube = self._make_cube('>f4', masked_index=index, lazy=True)
+        with self._netCDF_var(cube, fill_value=fill_value) as var:
+            self.assertEqual(var._FillValue, fill_value)
+            self.assertTrue(var[index].mask)
+
+    def test_mask_lazy_default_fill_value(self):
+        # Test that masked lazy data saves correctly when given a fill value.
+        index = (1, 1)
+        cube = self._make_cube('>f4', masked_index=index, lazy=True)
+        with self._netCDF_var(cube) as var:
+            self.assertNotIn('_FillValue', var.ncattrs())
+            self.assertTrue(var[index].mask)
+
+    def test_contains_fill_value_passed(self):
+        # Test that a warning is raised if the data contains the fill value.
+        cube = self._make_cube('>f4')
+        fill_value = 1
+        with self._warning_check(
+                'contains data points equal to the fill value'):
+            with self._netCDF_var(cube, fill_value=fill_value):
+                pass
+
+    def test_contains_fill_value_byte(self):
+        # Test that a warning is raised if the data contains the fill value
+        # when it is of a byte type.
+        cube = self._make_cube('>i1')
+        fill_value = 1
+        with self._warning_check(
+                'contains data points equal to the fill value'):
+            with self._netCDF_var(cube, fill_value=fill_value):
+                pass
+
+    def test_contains_default_fill_value(self):
+        # Test that a warning is raised if the data contains the default fill
+        # value if no fill_value argument is supplied.
+        cube = self._make_cube('>f4')
+        cube.data[0, 0] = nc.default_fillvals['f4']
+        with self._warning_check(
+                'contains data points equal to the fill value'):
+            with self._netCDF_var(cube):
+                pass
+
+    def test_contains_default_fill_value_byte(self):
+        # Test that no warning is raised if the data contains the default fill
+        # value if no fill_value argument is supplied when the data is of a
+        # byte type.
+        cube = self._make_cube('>i1')
+        with self._warning_check(
+                'contains data points equal to the fill value', False):
+            with self._netCDF_var(cube):
+                pass
+
+    def test_contains_masked_fill_value(self):
+        # Test that no warning is raised if the data contains the fill_value at
+        # a masked point.
+        fill_value = 1
+        cube = self._make_cube('>f4', masked_value=fill_value)
+        with self._warning_check(
+                'contains data points equal to the fill value', False):
+            with self._netCDF_var(cube, fill_value=fill_value):
+                pass
+
+    def test_masked_byte_default_fill_value(self):
+        # Test that a warning is raised when saving masked byte data with no
+        # fill value supplied.
+        cube = self._make_cube('>i1', masked_value=1)
+        with self._warning_check('contains masked byte data', True):
+            with self._netCDF_var(cube):
+                pass
 
 
 class _Common__check_attribute_compliance(object):
