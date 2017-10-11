@@ -22,6 +22,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 from collections import namedtuple
 from itertools import product
 import operator
+import scipy
 
 from numpy.lib.stride_tricks import as_strided
 import numpy as np
@@ -30,6 +31,7 @@ import numpy.ma as ma
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 from iris.analysis.cartography import wrap_lons as wrap_circular_points
 from iris.coords import DimCoord, AuxCoord
+from iris._deprecation import warn_deprecated
 import iris.util
 
 
@@ -72,6 +74,56 @@ def _canonical_sample_points(coords, sample_points):
         canonical_sample_points.append(points)
     return canonical_sample_points
 
+def _ll_to_cart(lon, lat):
+    # Based on cartopy.img_transform.ll_to_cart()
+    x = np.sin(np.deg2rad(90 - lat)) * np.cos(np.deg2rad(lon))
+    y = np.sin(np.deg2rad(90 - lat)) * np.sin(np.deg2rad(lon))
+    z = np.cos(np.deg2rad(90 - lat))
+    return (x, y, z)
+
+def _cartesian_sample_points(sample_points, sample_point_coord_names):
+    # Replace geographic latlon with cartesian xyz.
+    # Generates coords suitable for nearest point calculations with
+    # scipy.spatial.cKDTree.
+    #
+    # Input:
+    # sample_points[coord][datum] : list of sample_positions for each datum,
+    # formatted for fast use of _ll_to_cart()
+    # sample_point_coord_names[coord] : list of n coord names
+    #
+    # Output:
+    # list of [x,y,z,t,etc] positions, formatted for kdtree
+
+    # Find lat and lon coord indices
+    i_lat = i_lon = None
+    i_non_latlon = list(range(len(sample_point_coord_names)))
+    for i, name in enumerate(sample_point_coord_names):
+        if "latitude" in name:
+            i_lat = i
+            i_non_latlon.remove(i_lat)
+        if "longitude" in name:
+            i_lon = i
+            i_non_latlon.remove(i_lon)
+
+    if i_lat is None or i_lon is None:
+        return sample_points.transpose()
+
+    num_points = len(sample_points[0])
+    cartesian_points = [None] * num_points
+
+    # Get the point coordinates without the latlon
+    for p in range(num_points):
+        cartesian_points[p] = [sample_points[c][p] for c in i_non_latlon]
+
+    # Add cartesian xyz coordinates from latlon
+    x, y, z = _ll_to_cart(sample_points[i_lon], sample_points[i_lat])
+    for p in range(num_points):
+        cartesian_point = cartesian_points[p]
+        cartesian_point.append(x[p])
+        cartesian_point.append(y[p])
+        cartesian_point.append(z[p])
+
+    return cartesian_points
 
 def extend_circular_coord(coord, points):
     """
