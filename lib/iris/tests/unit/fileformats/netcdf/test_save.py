@@ -158,7 +158,7 @@ class Test_fill_value(tests.IrisTest):
                 self.assertIs(None, kwargs['fill_value'])
 
     def test_single(self):
-        # Test that when a signle value is passed as the fill_value argument,
+        # Test that when a single value is passed as the fill_value argument,
         # that value is passed to each call to Saver.write
         cubes = self._make_cubes()
         fill_value = 12345.

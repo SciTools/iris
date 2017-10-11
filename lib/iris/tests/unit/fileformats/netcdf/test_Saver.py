@@ -413,7 +413,8 @@ class Test_write_fill_value(tests.IrisTest):
             self.assertTrue(var[index].mask)
 
     def test_mask_lazy_default_fill_value(self):
-        # Test that masked lazy data saves correctly when given a fill value.
+        # Test that masked lazy data saves correctly using the default fill
+        # value.
         index = (1, 1)
         cube = self._make_cube('>f4', masked_index=index, lazy=True)
         with self._netCDF_var(cube) as var:
@@ -475,6 +476,15 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube('>i1', masked_value=1)
         with self._warning_check('contains masked byte data', True):
             with self._netCDF_var(cube):
+                pass
+
+    def test_masked_byte_fill_value_passed(self):
+        # Test that no warning is raised when saving masked byte data with a
+        # fill value supplied if the the data does not contain the fill_value.
+        fill_value = 100
+        cube = self._make_cube('>i1', masked_value=2)
+        with self._warning_check('contains masked byte data', False):
+            with self._netCDF_var(cube, fill_value=fill_value):
                 pass
 
 

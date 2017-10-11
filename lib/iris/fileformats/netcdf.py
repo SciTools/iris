@@ -48,6 +48,7 @@ import iris.analysis
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, \
     OceanSigmaZFactory, OceanSigmaFactory, OceanSFactory, OceanSg1Factory, \
     OceanSg2Factory
+import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.cube
