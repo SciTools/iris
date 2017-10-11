@@ -1907,21 +1907,6 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             yield pp_field
 
 
-def _ensure_save_rules_loaded():
-    """Makes sure the standard save rules are loaded."""
-
-    # Uses these module-level variables
-    global _save_rules
-
-    if _save_rules is None:
-        # Load the pp save rules
-        rules_filename = os.path.join(iris.config.CONFIG_PATH,
-                                      'pp_save_rules.txt')
-        with iris.fileformats.rules._disable_deprecation_warnings():
-            _save_rules = iris.fileformats.rules.RulesContainer(
-                rules_filename, iris.fileformats.rules.ProcedureRule)
-
-
 # Stash codes not to be filtered (reference altitude and pressure fields).
 _STASH_ALLOW = [STASH(1, 0, 33), STASH(1, 0, 1)]
 
@@ -2222,8 +2207,6 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
     # On the flip side, record which Cube metadata has been "used" and flag up
     # unused?
-
-    _ensure_save_rules_loaded()
 
     n_dims = len(cube.shape)
     if n_dims < 2:
