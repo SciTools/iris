@@ -39,7 +39,6 @@ import cf_units
 
 from iris._deprecation import warn_deprecated
 from iris.analysis._interpolate_private import linear as regrid_linear
-import iris.config as config
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
@@ -126,71 +125,6 @@ def _rules_execution_environment():
     return _rules_globals.copy()
 
 
-# Dummy logging routine for when we don't want to do any logging.
-def _dummy_log(format, filename, rules):
-    pass
-
-
-# Genuine logging routine
-def _real_log(format, filename, rules):
-    # Replace "\" with "\\", and "," with "\,"
-    filename = filename.replace('\\', '\\\\').replace(',', '\\,')
-    _rule_logger.info("%s,%s,%s" % (format, filename, ','.join([rule.id for rule in rules])))
-
-
-# Debug logging routine (more informative that just object ids)
-def _verbose_log(format, filename, rules):
-    # Replace "\" with "\\", and "," with "\,"
-    filename = filename.replace('\\', '\\\\').replace(',', '\\,')
-    _rule_logger.info("\n\n-----\n\n%s,%s,%s" % (format, filename, '\n\n'.join([str(rule) for rule in rules])))
-
-
-# Prepares a logger for file-based logging of rule usage
-def _prepare_rule_logger(verbose=False, log_dir=None):
-    # Default to the dummy logger that does nothing
-    logger = _dummy_log
-
-    # read the log_dir from the config file unless the log_dir argument is set
-    if log_dir is None:
-        log_dir = config.RULE_LOG_DIR
-    # Only do real logging if we've been told the directory to use ...
-    if log_dir is not None:
-        user = getpass.getuser()
-
-        # .. and if we haven't been told to ignore the current invocation.
-        ignore = False
-        ignore_users = config.RULE_LOG_IGNORE
-        if ignore_users is not None:
-            ignore_users = ignore_users.split(',')
-            ignore = user in ignore_users
-
-        if not ignore:
-            try:
-                hostname = platform.node() or 'UNKNOWN'
-                log_path = os.path.join(log_dir, '_'.join([hostname, user]))
-                file_handler = handlers.RotatingFileHandler(log_path, maxBytes=1e7, backupCount=5)
-                format = '%%(asctime)s,%s,%%(message)s' % getpass.getuser()
-                file_handler.setFormatter(logging.Formatter(format, '%Y-%m-%d %H:%M:%S'))
-
-                global _rule_logger
-                _rule_logger = logging.getLogger('iris.fileformats.rules')
-                _rule_logger.setLevel(logging.INFO)
-                _rule_logger.addHandler(file_handler)
-                _rule_logger.propagate = False
-
-                if verbose:
-                    logger = _verbose_log
-                else:
-                    logger = _real_log
-
-            except IOError:
-                # If we can't create the log file for some reason then it's fine to just silently
-                # ignore the error and fallback to using the dummy logging routine.
-                pass
-
-    return logger
-
-
 # A flag to control all the text-rules and rules-logging deprecation warnings.
 _enable_rules_deprecations = True
 
@@ -204,19 +138,6 @@ def _disable_deprecation_warnings():
         yield
     finally:
         _enable_rules_deprecations = old_flag_value
-
-
-# Defines the "log" function for this module
-# This is a 'private' version:  The public one is now deprecated (see on).
-_log_rules = _prepare_rule_logger()
-
-
-# Provide a public 'log' function, which issues a deprecation warning.
-def log(*args, **kwargs):
-    if _enable_rules_deprecations:
-        warn_deprecated(
-            "The `iris.fileformats.rules.log()` method is deprecated.")
-    return _log_rules(*args, **kwargs)
 
 
 class DebugString(str):
