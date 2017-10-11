@@ -51,7 +51,7 @@ import iris.cube
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from . import _interpolate_private as _interp
+
 
 
 _INTERPOLATE_DEPRECATION_WARNING = \

@@ -82,7 +82,6 @@ PYCODESTYLE_IGNORE_OPTIONS = (
 class StandardReportWithExclusions(pep8.StandardReport):
     expected_bad_files = [
         '*/iris/std_names.py',
-        '*/iris/analysis/_interpolate_private.py',
         '*/iris/fileformats/cf.py',
         '*/iris/fileformats/dot.py',
         '*/iris/fileformats/grib/_grib_cf_map.py',

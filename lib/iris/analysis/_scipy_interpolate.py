@@ -43,8 +43,6 @@ def _ndim_coords_from_arrays(points, ndim=None):
     return points
 
 
-# source: https://github.com/scipy/scipy/blob/b94a5d5ccc08dddbc88453477ff2625\
-# 9aeaafb32/scipy/interpolate/interpolate.py#L1400
 class _RegularGridInterpolator(object):
 
     """
