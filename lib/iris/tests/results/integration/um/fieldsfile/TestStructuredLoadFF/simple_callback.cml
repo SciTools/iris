@@ -55,7 +55,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[1.0, 0.998870030363],
+        <dimCoord bounds="[[1.0, 0.998870030363],
 		[0.998870030363, 0.996988167171],
 		[0.996988167171, 0.994356539679]]" id="a5c170db" long_name="sigma" points="[0.999434935344, 0.997928877018, 0.995671918702]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
