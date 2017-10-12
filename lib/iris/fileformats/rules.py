@@ -324,7 +324,7 @@ class FunctionRule(Rule):
         # "deferred import" performed by Rule.run_actions() above.
 
         #cell methods - not yet implemented
-        elif isinstance(obj, CellMethod):
+        if isinstance(obj, CellMethod):
             cube.add_cell_method(obj)
 
         elif isinstance(obj, CMAttribute):
