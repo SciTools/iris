@@ -25,6 +25,7 @@ import six
 import iris.tests as tests
 
 from contextlib import contextmanager
+import re
 import warnings
 
 import netCDF4 as nc
@@ -359,18 +360,26 @@ class Test_write_fill_value(tests.IrisTest):
             yield var
 
     @contextmanager
-    def _warning_check(self, message_text='', expect_warning=True):
+    def assertGivesWarning(self, expected_regexp='', expect_warning=True):
         # Check that a warning is raised containing a given string, or that
         # no warning containing a given string is raised.
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter('always')
             yield
-        matches = (message_text in str(warning.message) for warning in w)
+        messages = [str(warning.message) for warning in w]
+        expr = re.compile(expected_regexp)
+        matches = [message for message in messages if expr.search(message)]
         warning_raised = any(matches)
-        msg = "Warning containing text '{}' not raised." if expect_warning \
-            else "Warning containing text '{}' unexpectedly raised."
-        self.assertEqual(expect_warning, warning_raised,
-                         msg.format(message_text))
+        if expect_warning:
+            if not warning_raised:
+                msg = "Warning matching '{}' not raised."
+                msg = msg.format(expected_regexp)
+                self.assertEqual(expect_warning, warning_raised, msg)
+        else:
+            if warning_raised:
+                msg = "Unexpected warning(s) raised, matching '{}' : {!r}."
+                msg = msg.format(expected_regexp, matches)
+                self.assertEqual(expect_warning, warning_raised, msg)
 
     def test_fill_value(self):
         # Test that a passed fill value is saved as a _FillValue attribute.
@@ -425,8 +434,8 @@ class Test_write_fill_value(tests.IrisTest):
         # Test that a warning is raised if the data contains the fill value.
         cube = self._make_cube('>f4')
         fill_value = 1
-        with self._warning_check(
-                'contains data points equal to the fill value'):
+        with self.assertGivesWarning(
+                'contains unmasked data points equal to the fill-value'):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
 
@@ -435,8 +444,8 @@ class Test_write_fill_value(tests.IrisTest):
         # when it is of a byte type.
         cube = self._make_cube('>i1')
         fill_value = 1
-        with self._warning_check(
-                'contains data points equal to the fill value'):
+        with self.assertGivesWarning(
+                'contains unmasked data points equal to the fill-value'):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
 
@@ -445,8 +454,8 @@ class Test_write_fill_value(tests.IrisTest):
         # value if no fill_value argument is supplied.
         cube = self._make_cube('>f4')
         cube.data[0, 0] = nc.default_fillvals['f4']
-        with self._warning_check(
-                'contains data points equal to the fill value'):
+        with self.assertGivesWarning(
+                'contains unmasked data points equal to the fill-value'):
             with self._netCDF_var(cube):
                 pass
 
@@ -455,8 +464,7 @@ class Test_write_fill_value(tests.IrisTest):
         # value if no fill_value argument is supplied when the data is of a
         # byte type.
         cube = self._make_cube('>i1')
-        with self._warning_check(
-                'contains data points equal to the fill value', False):
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
             with self._netCDF_var(cube):
                 pass
 
@@ -465,8 +473,7 @@ class Test_write_fill_value(tests.IrisTest):
         # a masked point.
         fill_value = 1
         cube = self._make_cube('>f4', masked_value=fill_value)
-        with self._warning_check(
-                'contains data points equal to the fill value', False):
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
 
@@ -474,7 +481,7 @@ class Test_write_fill_value(tests.IrisTest):
         # Test that a warning is raised when saving masked byte data with no
         # fill value supplied.
         cube = self._make_cube('>i1', masked_value=1)
-        with self._warning_check('contains masked byte data', True):
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
             with self._netCDF_var(cube):
                 pass
 
@@ -483,7 +490,7 @@ class Test_write_fill_value(tests.IrisTest):
         # fill value supplied if the the data does not contain the fill_value.
         fill_value = 100
         cube = self._make_cube('>i1', masked_value=2)
-        with self._warning_check('contains masked byte data', False):
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
 
