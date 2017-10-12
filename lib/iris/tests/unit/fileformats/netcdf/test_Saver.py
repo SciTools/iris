@@ -359,28 +359,6 @@ class Test_write_fill_value(tests.IrisTest):
                     if var.standard_name == standard_name]
             yield var
 
-    @contextmanager
-    def assertGivesWarning(self, expected_regexp='', expect_warning=True):
-        # Check that a warning is raised containing a given string, or that
-        # no warning containing a given string is raised.
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always')
-            yield
-        messages = [str(warning.message) for warning in w]
-        expr = re.compile(expected_regexp)
-        matches = [message for message in messages if expr.search(message)]
-        warning_raised = any(matches)
-        if expect_warning:
-            if not warning_raised:
-                msg = "Warning matching '{}' not raised."
-                msg = msg.format(expected_regexp)
-                self.assertEqual(expect_warning, warning_raised, msg)
-        else:
-            if warning_raised:
-                msg = "Unexpected warning(s) raised, matching '{}' : {!r}."
-                msg = msg.format(expected_regexp, matches)
-                self.assertEqual(expect_warning, warning_raised, msg)
-
     def test_fill_value(self):
         # Test that a passed fill value is saved as a _FillValue attribute.
         cube = self._make_cube('>f4')
