@@ -1378,8 +1378,18 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         # Get the actual data content.
         data = self.data
-        if ma.is_masked(data):
-            data = data.filled(fill_value=self.bmdi)
+        mdi = self.bmdi
+        if np.any(data == mdi):
+            msg = ('PPField data contains unmasked points equal to the fill '
+                   "value, {}. As saved, these points will read back as "
+                   "missing data. To save these as normal values, please "
+                   "set the field BMDI not equal to any valid data points.")
+            warnings.warn(msg.format(mdi))
+        if isinstance(data, ma.MaskedArray):
+            if ma.is_masked(data):
+                data = data.filled(fill_value=mdi)
+            else:
+                data = data.data
 
         # Make sure the data is big-endian
         if data.dtype.newbyteorder('>') != data.dtype:
@@ -2414,6 +2424,9 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         pp_field.lbcode = 1     # Grid code.
         pp_field.bmks = 1.0     # Some scaley thing.
         pp_field.lbproc = 0
+        # Set the missing-data value to the standard default value.
+        # The save code uses this header word to fill masked data points.
+        pp_field.bmdi = -1e30
         # From UM doc F3: "Set to -99 if LBEGIN not known"
         pp_field.lbuser[1] = -99
 

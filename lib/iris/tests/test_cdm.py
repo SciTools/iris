@@ -1199,7 +1199,8 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]
             self.assertEqual(merged_cube.dtype, dtype)
-            self.assertEqual(merged_cube.data.fill_value, fill_value)
+            # Check that the original masked-array fill-value is *ignored*.
+            self.assertArrayAllClose(merged_cube.data.fill_value, -1e30)
 
 
 @tests.skip_data

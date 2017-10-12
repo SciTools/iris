@@ -759,18 +759,6 @@ THEN
     pp.brsvd[1] = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].bounds[0, 1]
 
 
-#MDI
-IF
-    ma.isMaskedArray(cm.data)
-THEN
-    pp.bmdi = cm.data.fill_value
-
-IF
-    not isinstance(cm.data, ma.core.MaskedArray)
-THEN
-    pp.bmdi = -1e30
-
-
 # CFname mega rule
 IF
     (cm.standard_name, cm.long_name, str(cm.units)) in iris.fileformats.um_cf_map.CF_TO_LBFC

@@ -25,8 +25,6 @@ import six
 import iris.tests as tests
 
 from contextlib import contextmanager
-import re
-import warnings
 
 import netCDF4 as nc
 import numpy as np
