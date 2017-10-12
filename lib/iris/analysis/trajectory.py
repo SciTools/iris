@@ -33,8 +33,6 @@ import iris.analysis
 import iris.coord_systems
 import iris.coords
 
-from iris.analysis._interpolate_private import \
-    _nearest_neighbour_indices_ndcoords, linear as linear_regrid
 from iris.analysis._interpolation import snapshot_grid
 from iris.util import _meshgrid
 

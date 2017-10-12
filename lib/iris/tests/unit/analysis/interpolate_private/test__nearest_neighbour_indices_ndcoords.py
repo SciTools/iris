@@ -33,9 +33,6 @@ import numpy as np
 from iris.cube import Cube
 from iris.coords import DimCoord, AuxCoord
 
-from iris.analysis._interpolate_private import \
-    _nearest_neighbour_indices_ndcoords as nn_ndinds
-
 
 class Test2d(tests.IrisTest):
     def test_nonlatlon_simple_2d(self):

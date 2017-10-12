@@ -38,7 +38,6 @@ import warnings
 import cf_units
 
 from iris._deprecation import warn_deprecated
-from iris.analysis._interpolate_private import linear as regrid_linear
 import iris.config as config
 import iris.cube
 import iris.exceptions
