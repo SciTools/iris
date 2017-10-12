@@ -94,7 +94,7 @@ class TestIrisSampleData_path(tests.IrisTest):
 class TestIrisSampleDataMissing(tests.IrisTest):
     def test_no_iris_sample_data(self):
         self.patch('iris.iris_sample_data', None)
-        with self.assertRaisesRegexp(ValueError, 'Please install'):
+        with self.assertRaisesRegexp(ImportError, 'Please install'):
             sample_data_path('')
 
 
