@@ -30,7 +30,7 @@ import netcdftime
 import cf_units
 import numpy as np
 
-from iris.fileformats.pp_rules import convert
+from iris.fileformats.pp_load_rules import convert
 from iris.util import guess_coord_axis
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp import STASH

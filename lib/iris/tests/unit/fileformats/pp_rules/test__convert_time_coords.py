@@ -33,7 +33,7 @@ import numpy as np
 
 from iris.coords import DimCoord, AuxCoord
 from iris.fileformats.pp import SplittableInt
-from iris.fileformats.pp_rules import _convert_time_coords
+from iris.fileformats.pp_load_rules import _convert_time_coords
 from iris.tests import mock
 from iris.tests.unit.fileformats import TestField
 

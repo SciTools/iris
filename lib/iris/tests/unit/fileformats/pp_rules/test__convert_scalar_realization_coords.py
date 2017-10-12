@@ -30,7 +30,7 @@ import iris.tests as tests
 from iris.coords import DimCoord
 from iris.tests.unit.fileformats import TestField
 
-from iris.fileformats.pp_rules import _convert_scalar_realization_coords
+from iris.fileformats.pp_load_rules import _convert_scalar_realization_coords
 
 
 class Test(TestField):

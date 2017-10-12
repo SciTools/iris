@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris.fileformats.pp_rules import _model_level_number
+from iris.fileformats.pp_load_rules import _model_level_number
 
 
 class Test_9999(tests.IrisTest):

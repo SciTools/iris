@@ -41,6 +41,7 @@ from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
 import iris.fileformats.pp_rules
+import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 
 # NOTE: this is for backwards-compatitibility *ONLY*
@@ -1930,7 +1931,8 @@ def load_pairs_from_fields(pp_fields):
 
     """
     load_pairs_from_fields = iris.fileformats.rules.load_pairs_from_fields
-    return load_pairs_from_fields(pp_fields, iris.fileformats.pp_rules.convert)
+    return load_pairs_from_fields(pp_fields,
+                                  iris.fileformats.pp_load_rules.convert)
 
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
@@ -1957,7 +1959,7 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
     else:
         loader = iris.fileformats.rules.Loader(
             loading_function, loading_function_kwargs or {},
-            iris.fileformats.pp_rules.convert)
+            iris.fileformats.pp_load_rules.convert)
 
     result = iris.fileformats.rules.load_cubes(filenames, callback, loader,
                                                pp_filter)

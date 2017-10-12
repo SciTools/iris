@@ -29,7 +29,7 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.fileformats.pp_rules import _reshape_vector_args
+from iris.fileformats.pp_load_rules import _reshape_vector_args
 
 
 class TestEmpty(tests.IrisTest):

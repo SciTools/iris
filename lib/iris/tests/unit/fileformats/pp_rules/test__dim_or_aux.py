@@ -24,7 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from iris.coords import DimCoord, AuxCoord
-from iris.fileformats.pp_rules import _dim_or_aux
+from iris.fileformats.pp_load_rules import _dim_or_aux
 
 
 class Test(tests.IrisTest):

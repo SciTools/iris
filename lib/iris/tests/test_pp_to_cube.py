@@ -25,7 +25,7 @@ import os
 
 import iris
 import iris.fileformats.pp
-import iris.fileformats.pp_rules
+import iris.fileformats.pp_load_rules
 import iris.fileformats.rules
 import iris.io
 import iris.util
@@ -41,7 +41,7 @@ class TestPPLoadCustom(tests.IrisTest):
 
     def _field_to_cube(self, field):
         cube, _, _ = iris.fileformats.rules._make_cube(
-            field, iris.fileformats.pp_rules.convert)
+            field, iris.fileformats.pp_load_rules.convert)
         return cube
 
     def test_lbtim_2(self):

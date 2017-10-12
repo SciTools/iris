@@ -29,7 +29,7 @@ from netcdftime import datetime as nc_datetime
 
 import cartopy.crs as ccrs
 import iris
-from iris.fileformats.pp_rules import _all_other_rules
+from iris.fileformats.pp_load_rules import _all_other_rules
 from iris.fileformats.pp import SplittableInt
 from iris.coords import CellMethod, DimCoord, AuxCoord
 from iris.tests import mock

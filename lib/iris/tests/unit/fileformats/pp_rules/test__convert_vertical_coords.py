@@ -32,7 +32,7 @@ import numpy as np
 from iris.coords import DimCoord, AuxCoord
 from iris.aux_factory import HybridPressureFactory, HybridHeightFactory
 from iris.fileformats.pp import SplittableInt, STASH
-from iris.fileformats.pp_rules import Reference, _convert_vertical_coords
+from iris.fileformats.pp_load_rules import Reference, _convert_vertical_coords
 from iris.tests.unit.fileformats import TestField
 
 

@@ -31,7 +31,7 @@ from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
 import iris.fileformats.pp
-import iris.fileformats.pp_rules
+import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 from iris.exceptions import IgnoreCubeException
 from iris.tests import mock
