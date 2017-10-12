@@ -320,10 +320,8 @@ class FunctionRule(Rule):
 
         factory = None
 
-        # NB. The names such as 'CoordAndDims' and 'CellMethod' are defined by
-        # the "deferred import" performed by Rule.run_actions() above.
-        if isinstance(obj, CoordAndDims):
-            obj.add_coord(cube)
+        # NB. The names such as 'CellMethod' are defined by the
+        # "deferred import" performed by Rule.run_actions() above.
 
         #cell methods - not yet implemented
         elif isinstance(obj, CellMethod):
