@@ -155,50 +155,6 @@ class CMAttribute(object):
         self.value = value
 
 
-class CoordAndDims(object):
-    """
-    Used within rules to represent a mapping of coordinate to data dimensions.
-
-    .. deprecated:: 1.10
-
-    """
-    def __init__(self, coord, dims=None):
-        warn_deprecated(
-            "the `iris.fileformats.rules.CoordAndDims class is deprecated.")
-        self.coord = coord
-        if dims is None:
-            dims = []
-        if not isinstance(dims, list):
-            dims = [dims]
-        self.dims = dims
-
-    def add_coord(self, cube):
-        added = False
-
-        # Try to add to dim_coords?
-        if isinstance(self.coord, iris.coords.DimCoord) and self.dims:
-            if len(self.dims) > 1:
-                raise Exception("Only 1 dim allowed for a DimCoord")
-
-            # Does the cube already have a coord for this dim?
-            already_taken = False
-            for coord, coord_dim in cube._dim_coords_and_dims:
-                if coord_dim == self.dims[0]:
-                    already_taken = True
-                    break
-
-            if not already_taken:
-                cube.add_dim_coord(self.coord, self.dims[0])
-                added = True
-
-        # If we didn't add it to dim_coords, add it to aux_coords.
-        if not added:
-            cube.add_aux_coord(self.coord, self.dims)
-
-    def __repr__(self):
-        return "<CoordAndDims: %r, %r>" % (self.coord.name, self.dims)
-
-
 class Reference(iris.util._OrderedHashable):
     _names = ('name',)
     """
