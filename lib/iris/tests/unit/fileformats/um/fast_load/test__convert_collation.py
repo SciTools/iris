@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.experimental.fieldsfile._convert_collation`."""
+"""Unit tests for :func:`iris.fileformats.um._fast_load._convert_collation`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -27,7 +27,7 @@ import cf_units
 import netcdftime
 import numpy as np
 
-from iris.experimental.fieldsfile \
+from iris.fileformats.um._fast_load \
     import _convert_collation as convert_collation
 import iris.aux_factory
 import iris.coord_systems
