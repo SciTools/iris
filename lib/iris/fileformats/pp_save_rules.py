@@ -561,6 +561,9 @@ def _lbproc_rules(cube, pp):
         The PP field with updated metadata.
 
     """
+    # Basic setting (this may be overridden by subsequent rules).
+    pp.lbproc = 0
+
     if cube.attributes.get("ukmo__process_flags", None):
         pp.lbproc += sum([lbproc_map[name]
                           for name in cube.attributes["ukmo__process_flags"]])
@@ -799,9 +802,6 @@ def _all_other_rules(cube, pp):
 
 
 def verify(cube, field):
-    # Basic setting (this may be overridden by subsequent rules).
-    field.lbproc = 0
-
     # Rules functions.
     field = _basic_coord_system_rules(cube, field)
     field = _um_version_rules(cube, field)
