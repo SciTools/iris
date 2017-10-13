@@ -59,20 +59,22 @@ def _basic_coord_system_rules(cube, pp):
 
 def _um_version_rules(cube, pp):
     from_um_str = "Data from Met Office Unified Model"
-    source_attr = cube.attributes['source'].rsplit(from_um_str, 1)
+    source_attr = cube.attributes.get('source')
+    if source_attr is not None:
+        um_version = source_attr.rsplit(from_um_str, 1)
 
     if ('um_version' not in cube.attributes and
             'source' in cube.attributes and
-            len(source_attr) > 1 and
-            len(source_attr[1]) == 0):
+            len(um_version) > 1 and
+            len(um_version[1]) == 0):
         # UM - no version number.
         pp.lbsrce = 1111
     elif ('um_version' not in cube.attributes and
             'source' in cube.attributes and
-            len(source_attr) > 1 and
-            len(source_attr[1]) > 0):
+            len(um_version) > 1 and
+            len(um_version[1]) > 0):
         # UM - with version number.
-        pp.lbsrce = int(float(source_attr[1]) * 1000000) + 1111
+        pp.lbsrce = int(float(um_version[1]) * 1000000) + 1111
     elif 'um_version' in cube.attributes:
         # UM - from 'um_version' attribute.
         um_ver_minor = int(cube.attributes['um_version'].split('.')[1])
@@ -172,7 +174,7 @@ def _general_time_rules(cube, pp):
     if (time_coord is not None and
             time_coord.has_bounds() and
             clim_season_coord is None and
-            fp_coord is not None or frt_coord is not None and
+            (fp_coord is not None or frt_coord is not None) and
             cm_time_mean is not None and
             cm_time_mean.intervals != () and
             cm_time_mean.intervals[0].endswith('hour')):
@@ -212,10 +214,13 @@ def _general_time_rules(cube, pp):
         # e.g. if interval is '1 hour' then lbtim.ia becomes 1.
         pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
 
-    # Climatological time means.
-    lower_bound_yr = time_coord.units.num2date(time_coord.bounds[0, 0]).year
-    upper_bound_yr = time_coord.units.num2date(time_coord.bounds[0, 1]).year
+    if time_coord is not None:
+        lower_bound_yr =\
+            time_coord.units.num2date(time_coord.bounds[0, 0]).year
+        upper_bound_yr =\
+            time_coord.units.num2date(time_coord.bounds[0, 1]).year
 
+    # Climatological time means.
     if (time_coord is not None and
             time_coord.has_bounds() and
             lower_bound_yr == upper_bound_yr and
@@ -366,35 +371,55 @@ def _grid_and_pole_rules(cube, pp):
         The PP field with updated metadata.
 
     """
-    lon_coords = (vector_coord(cube, 'longitude'),
-                  vector_coord(cube, 'grid_longitude'))
-    lat_coords = (vector_coord(cube, 'latitude'),
-                  vector_coord(cube, 'grid_latitude'))
+    lon_coord = vector_coord(cube, 'longitude')
+    grid_lon_coord = vector_coord(cube, 'grid_longitude')
+    lat_coord = vector_coord(cube, 'latitude')
+    grid_lat_coord = vector_coord(cube, 'grid_latitude')
 
-    for xy_coord, grid_xy_coord in (lon_coords, lat_coords):
-        # Which horizontal coord do we have in x and y?
-        if xy_coord:
-            coord = xy_coord
-        elif grid_xy_coord:
-            coord = grid_xy_coord
-        # Process the located horizontal coord.
-        if coord:
-            if is_regular(coord):
-                pp.bzx = coord.points[0] - regular_step(coord)
-                pp.bdx = regular_step(coord)
-                pp.lbnpt = len(coord.points)
-            else:
-                pp.bzx = 0
-                pp.bdx = 0
-                pp.lbnpt = coord.shape[0]
-                pp.x = coord.points
+    if lon_coord and not is_regular(lon_coord):
+        pp.bzx = 0
+        pp.bdx = 0
+        pp.lbnpt = lon_coord.shape[0]
+        pp.x = lon_coord.points
+    elif grid_lon_coord and not is_regular(grid_lon_coord):
+        pp.bzx = 0
+        pp.bdx = 0
+        pp.lbnpt = grid_lon_coord.shape[0]
+        pp.x = grid_lon_coord.points
+    elif lon_coord and is_regular(lon_coord):
+        pp.bzx = lon_coord.points[0] - regular_step(lon_coord)
+        pp.bdx = regular_step(lon_coord)
+        pp.lbnpt = len(lon_coord.points)
+    elif grid_lon_coord and is_regular(grid_lon_coord):
+        pp.bzx = grid_lon_coord.points[0] - regular_step(grid_lon_coord)
+        pp.bdx = regular_step(grid_lon_coord)
+        pp.lbnpt = len(grid_lon_coord.points)
+
+    if lat_coord and not is_regular(lat_coord):
+        pp.bzy = 0
+        pp.bdy = 0
+        pp.lbrow = lat_coord.shape[0]
+        pp.y = lat_coord.points
+    elif grid_lat_coord and not is_regular(grid_lat_coord):
+        pp.bzy = 0
+        pp.bdy = 0
+        pp.lbrow = grid_lat_coord.shape[0]
+        pp.y = grid_lat_coord.points
+    elif lat_coord and is_regular(lat_coord):
+        pp.bzy = lat_coord.points[0] - regular_step(lat_coord)
+        pp.bdy = regular_step(lat_coord)
+        pp.lbrow = len(lat_coord.points)
+    elif grid_lat_coord and is_regular(grid_lat_coord):
+        pp.bzy = grid_lat_coord.points[0] - regular_step(grid_lat_coord)
+        pp.bdy = regular_step(grid_lat_coord)
+        pp.lbrow = len(grid_lat_coord.points)
 
     # Check if we have a rotated coord system.
     if cube.coord_system("RotatedGeogCS") is not None:
         pp.lbcode = int(pp.lbcode) + 100
 
     # Check if we have a circular x-coord.
-    for lon_coord in lon_coords:
+    for lon_coord in (lon_coord, grid_lon_coord):
         if lon_coord is not None:
             if lon_coord.circular:
                 pp.lbhem = 0
@@ -586,8 +611,14 @@ def _vertical_rules(cube, pp):
     soil_mln_coord = scalar_coord(cube, 'soil_model_level_number')
 
     # Define commonly-used aux factories.
-    height_factory = aux_factory(cube, HybridHeightFactory)
-    pressure_factory = aux_factory(cube, HybridPressureFactory)
+    try:
+        height_factory = aux_factory(cube, HybridHeightFactory)
+    except ValueError:
+        height_factory = None
+    try:
+        pressure_factory = aux_factory(cube, HybridPressureFactory)
+    except ValueError:
+        pressure_factory = None
 
     # Set `lbuser[5]`.
     if (pseudo_level_coord is not None and
