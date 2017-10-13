@@ -2153,16 +2153,6 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         rules_result = _save_rules.verify(slice2D, pp_field)
         verify_rules_ran = rules_result.matching_rules
 
-        # Log the rules used
-        if target is None:
-            target = 'None'
-        elif not isinstance(target, six.string_types):
-            target = target.name
-
-        with iris.fileformats.rules._disable_deprecation_warnings():
-            iris.fileformats.rules.log('PP_SAVE', str(target),
-                                       verify_rules_ran)
-
         yield (slice2D, pp_field)
 
 
