@@ -35,7 +35,7 @@ from iris.util import is_regular, regular_step
 import netcdftime
 
 
-def basic_coord_system_rules(cube, pp):
+def _basic_coord_system_rules(cube, pp):
     """
     Rules for setting the coord system of the PP field.
 
@@ -57,7 +57,7 @@ def basic_coord_system_rules(cube, pp):
     return pp
 
 
-def um_version_rules(cube, pp):
+def _um_version_rules(cube, pp):
     from_um_str = "Data from Met Office Unified Model"
     source_attr = cube.attributes['source'].rsplit(from_um_str, 1)
 
@@ -81,7 +81,7 @@ def um_version_rules(cube, pp):
     return pp
 
 
-def stash_rules(cube, pp):
+def _stash_rules(cube, pp):
     """
     Attributes rules for setting the STASH attribute of the PP field.
 
@@ -101,7 +101,7 @@ def stash_rules(cube, pp):
     return pp
 
 
-def general_time_rules(cube, pp):
+def _general_time_rules(cube, pp):
     """
     Rules for setting time metadata of the PP field.
 
@@ -331,7 +331,7 @@ def general_time_rules(cube, pp):
     return pp
 
 
-def calendar_rules(cube, pp):
+def _calendar_rules(cube, pp):
     """
     Rules for setting the calendar of the PP field.
 
@@ -354,7 +354,7 @@ def calendar_rules(cube, pp):
     return pp
 
 
-def grid_and_pole_rules(cube, pp):
+def _grid_and_pole_rules(cube, pp):
     """
     Rules for setting the horizontal grid and pole location of the PP field.
 
@@ -404,7 +404,7 @@ def grid_and_pole_rules(cube, pp):
     return pp
 
 
-def non_std_cross_section_rules(cube, pp):
+def _non_std_cross_section_rules(cube, pp):
     """
     Rules for applying non-standard cross-sections to the PP field.
 
@@ -522,7 +522,7 @@ def non_std_cross_section_rules(cube, pp):
     return pp
 
 
-def lbproc_rules(cube, pp):
+def _lbproc_rules(cube, pp):
     """
     Rules for setting the horizontal grid and pole location of the PP field.
 
@@ -561,7 +561,7 @@ def lbproc_rules(cube, pp):
     return pp
 
 
-def vertical_rules(cube, pp):
+def _vertical_rules(cube, pp):
     """
     Rules for setting vertical levels for the PP field.
 
@@ -722,7 +722,7 @@ def vertical_rules(cube, pp):
     return pp
 
 
-def mdi_rules(cube, pp):
+def _mdi_rules(cube, pp):
     """
     Rules for setting the MDI (Missing Data Indicator) value of the PP field.
 
@@ -742,7 +742,7 @@ def mdi_rules(cube, pp):
     return pp
 
 
-def all_other_rules(cube, pp):
+def _all_other_rules(cube, pp):
     """
     Rules for setting the horizontal grid and pole location of the PP field.
 
@@ -772,17 +772,17 @@ def verify(cube, field):
     field.lbproc = 0
 
     # Rules functions.
-    field = basic_coord_system_rules(cube, field)
-    field = um_version_rules(cube, field)
-    field = stash_rules(cube, field)
-    field = general_time_rules(cube, field)
-    field = calendar_rules(cube, field)
-    field = grid_and_pole_rules(cube, field)
-    field = non_std_cross_section_rules(cube, field)
-    field = lbproc_rules(cube, field)
-    field = vertical_rules(cube, field)
-    field = mdi_rules(cube, field)
-    field = all_other_rules(cube, field)
+    field = _basic_coord_system_rules(cube, field)
+    field = _um_version_rules(cube, field)
+    field = _stash_rules(cube, field)
+    field = _general_time_rules(cube, field)
+    field = _calendar_rules(cube, field)
+    field = _grid_and_pole_rules(cube, field)
+    field = _non_std_cross_section_rules(cube, field)
+    field = _lbproc_rules(cube, field)
+    field = _vertical_rules(cube, field)
+    field = _mdi_rules(cube, field)
+    field = _all_other_rules(cube, field)
 
     # TODO: is this return signature correct?
     return (cube, field)
