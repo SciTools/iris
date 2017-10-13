@@ -143,15 +143,18 @@ def _assert_shared(np_obj, pandas_obj):
     if base is None:
         base = pandas_obj.values
 
-    # Chase the stack of NumPy `base` references back to see if any of
-    # them are our original array.
-    while base is not None:
-        if base is np_obj:
-            return
-        # Take the next step up the stack of `base` references.
-        base = base.base
-    msg = 'Pandas {} does not share memory'.format(type(pandas_obj).__name__)
-    raise AssertionError(msg)
+    def _get_base(array):
+        # Chase the stack of NumPy `base` references back to the original array
+        while array.base is not None:
+            array = array.base
+        return array
+
+    base = _get_base(base)
+    np_base = _get_base(np_obj)
+    if base is not np_base:
+        msg = ('Pandas {} does not share memory'
+               .format(type(pandas_obj).__name__))
+        raise AssertionError(msg)
 
 
 def as_series(cube, copy=True):
