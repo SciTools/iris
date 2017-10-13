@@ -23,6 +23,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from contextlib import contextmanager
+import warnings
+
 import numpy as np
 
 import iris.fileformats.pp as pp
@@ -37,18 +40,22 @@ from iris.tests import mock
 # items when written to disk and get consistent results.
 
 
-DUMMY_HEADER = [('dummy1', (0, 13)),
+DUMMY_HEADER = [('dummy1', (0, 11)),
                 ('lbtim', (12,)),
+                ('dummy2', (13,)),
                 ('lblrec', (14,)),
-                ('dummy2', (15, 18)),
+                ('dummy3', (15, 16)),
                 ('lbrow', (17,)),
+                ('dummy4', (18,)),
                 ('lbext',  (19,)),
                 ('lbpack', (20,)),
-                ('dummy3', (21, 37)),
+                ('dummy5', (21, 37)),
                 ('lbuser', (38, 39, 40, 41, 42, 43, 44,)),
                 ('brsvd', (45, 46, 47, 48)),
                 ('bdatum', (49,)),
-                ('dummy4', (45, 63)),
+                ('dummy6', (50, 61)),
+                ('bmdi',   (62, )),
+                ('dummy7', (63,)),
                 ]
 
 
@@ -57,13 +64,32 @@ class TestPPField(PPField):
     HEADER_DEFN = DUMMY_HEADER
     HEADER_DICT = dict(DUMMY_HEADER)
 
+    def _ready_for_save(self):
+        self.dummy1 = 0
+        self.dummy2 = 0
+        self.dummy3 = 0
+        self.dummy4 = 0
+        self.dummy5 = 0
+        self.dummy6 = 0
+        self.dummy7 = 0
+        self.lbtim = 0
+        self.lblrec = 0
+        self.lbrow = 0
+        self.lbext = 0
+        self.lbpack = 0
+        self.lbuser = 0
+        self.brsvd = 0
+        self.bdatum = 0
+        self.bmdi = -1e30
+        return self
+
     @property
     def t1(self):
-        return netcdftime.datetime(2013, 10, 14, 10, 4)
+        return None
 
     @property
     def t2(self):
-        return netcdftime.datetime(2013, 10, 14, 10, 5)
+        return None
 
 
 class Test_save(tests.IrisTest):
@@ -71,19 +97,7 @@ class Test_save(tests.IrisTest):
         # Tests down-casting of >f8 data to >f4.
 
         def field_checksum(data):
-            field = TestPPField()
-            field.dummy1 = 0
-            field.dummy2 = 0
-            field.dummy3 = 0
-            field.dummy4 = 0
-            field.lbtim = 0
-            field.lblrec = 0
-            field.lbrow = 0
-            field.lbext = 0
-            field.lbpack = 0
-            field.lbuser = 0
-            field.brsvd = 0
-            field.bdatum = 0
+            field = TestPPField()._ready_for_save()
             field.data = data
             with self.temp_filename('.pp') as temp_filename:
                 with open(temp_filename, 'wb') as pp_file:
@@ -93,14 +107,49 @@ class Test_save(tests.IrisTest):
 
         data_64 = np.linspace(0, 1, num=10, endpoint=False).reshape(2, 5)
         checksum_32 = field_checksum(data_64.astype('>f4'))
-        with mock.patch('warnings.warn') as warn:
+        msg = 'Downcasting array precision from float64 to float32 for save.'
+        with self.assertGivesWarning(msg):
             checksum_64 = field_checksum(data_64.astype('>f8'))
-
         self.assertEqual(checksum_32, checksum_64)
-        warn.assert_called_once_with(
-            'Downcasting array precision from float64 to float32 for save.'
-            'If float64 precision is required then please save in a '
-            'different format')
+
+    def test_masked_mdi_value_warning(self):
+        # Check that an unmasked MDI value raises a warning.
+        field = TestPPField()._ready_for_save()
+        field.bmdi = -123.4
+        # Make float32 data, as float64 default produces an extra warning.
+        field.data = np.ma.masked_array([1., field.bmdi, 3.], dtype=np.float32)
+        msg = 'PPField data contains unmasked points'
+        with self.assertGivesWarning(msg):
+            with self.temp_filename('.pp') as temp_filename:
+                with open(temp_filename, 'wb') as pp_file:
+                    field.save(pp_file)
+
+    def test_unmasked_mdi_value_warning(self):
+        # Check that MDI in *unmasked* data raises a warning.
+        field = TestPPField()._ready_for_save()
+        field.bmdi = -123.4
+        # Make float32 data, as float64 default produces an extra warning.
+        field.data = np.array([1., field.bmdi, 3.], dtype=np.float32)
+        msg = 'PPField data contains unmasked points'
+        with self.assertGivesWarning(msg):
+            with self.temp_filename('.pp') as temp_filename:
+                with open(temp_filename, 'wb') as pp_file:
+                    field.save(pp_file)
+
+    def test_mdi_masked_value_nowarning(self):
+        # Check that a *masked* MDI value does not raise a warning.
+        field = TestPPField()._ready_for_save()
+        field.bmdi = -123.4
+        # Make float32 data, as float64 default produces an extra warning.
+        field.data = np.ma.masked_array([1., 2., 3.], mask=[0, 1, 0],
+                                        dtype=np.float32)
+        # Set underlying data value at masked point to BMDI value.
+        field.data.data[1] = field.bmdi
+        self.assertArrayAllClose(field.data.data[1], field.bmdi)
+        with self.assertGivesWarning(r'\(mask\|fill\)', expect_warning=False):
+            with self.temp_filename('.pp') as temp_filename:
+                with open(temp_filename, 'wb') as pp_file:
+                    field.save(pp_file)
 
 
 class Test_calendar(tests.IrisTest):

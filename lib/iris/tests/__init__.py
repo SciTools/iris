@@ -49,6 +49,7 @@ import logging
 import math
 import os
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -526,6 +527,28 @@ class IrisTest_nometa(unittest.TestCase):
         # "six.assertRaisesRegex" calls getattr(self, 'assertRaisesRegexp').
         return six.assertRaisesRegex(super(IrisTest_nometa, self),
                                      *args, **kwargs)
+
+    @contextlib.contextmanager
+    def assertGivesWarning(self, expected_regexp='', expect_warning=True):
+        # Check that a warning is raised matching a given expression, or that
+        # no warning matching the given expression is raised.
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            yield
+        messages = [str(warning.message) for warning in w]
+        expr = re.compile(expected_regexp)
+        matches = [message for message in messages if expr.search(message)]
+        warning_raised = any(matches)
+        if expect_warning:
+            if not warning_raised:
+                msg = "Warning matching '{}' not raised."
+                msg = msg.format(expected_regexp)
+                self.assertEqual(expect_warning, warning_raised, msg)
+        else:
+            if warning_raised:
+                msg = "Unexpected warning(s) raised, matching '{}' : {!r}."
+                msg = msg.format(expected_regexp, matches)
+                self.assertEqual(expect_warning, warning_raised, msg)
 
     def _assertMaskedArray(self, assertion, a, b, strict, **kwargs):
         # Define helper function to extract unmasked values as a 1d

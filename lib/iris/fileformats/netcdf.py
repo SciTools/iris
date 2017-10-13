@@ -1989,16 +1989,19 @@ class Saver(object):
 
         if dtype.itemsize == 1 and fill_value is None:
             if is_masked:
-                warnings.warn("Cube '{}' contains masked byte data and will "
-                              "be interpreted as unmasked. To save as masked "
-                              "data please explicitly provide a fill value."
-                              .format(cube.name()))
+                msg = ("Cube '{}' contains byte data with masked points, but "
+                       "no fill_value keyword was given. As saved, these "
+                       "points will read back as valid values. To save as "
+                       "masked byte data, please explicitly specify the "
+                       "'fill_value' keyword.")
+                warnings.warn(msg.format(cube.name()))
         elif contains_fill_value:
-            warnings.warn("Cube '{}' contains data points equal to the fill "
-                          "value {}. The points will be interpreted as being "
-                          "masked. Please provide a fill_value argument not "
-                          "equal to any data point.".format(cube.name(),
-                                                            fill_value))
+            msg = ("Cube '{}' contains unmasked data points equal to the "
+                   "fill-value, {}. As saved, these points will read back "
+                   "as missing data. To save these as normal values, please "
+                   "specify a 'fill_value' keyword not equal to any valid "
+                   "data points.")
+            warnings.warn(msg.format(cube.name(), fill_value))
 
         if cube.standard_name:
             _setncattr(cf_var, 'standard_name', cube.standard_name)
