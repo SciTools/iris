@@ -412,9 +412,6 @@ class FunctionRule(Rule):
         elif isinstance(obj, Factory):
             factory = obj
 
-        elif isinstance(obj, DebugString):
-            print(obj)
-
         # The function returned nothing, like the pp save actions, "lbft = 3"
         elif obj is None:
             pass
