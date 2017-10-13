@@ -784,8 +784,7 @@ def verify(cube, field):
     field = _mdi_rules(cube, field)
     field = _all_other_rules(cube, field)
 
-    # TODO: is this return signature correct?
-    return (cube, field)
+    return field
 
 
 # Helper functions used when running the rules.

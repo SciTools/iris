@@ -41,8 +41,9 @@ import netcdftime
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
-import iris.fileformats.rules
 import iris.fileformats.pp_rules
+from iris.fileformats.pp_save_rules import verify
+import iris.fileformats.rules
 import iris.coord_systems
 
 
@@ -2150,8 +2151,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
-        rules_result = _save_rules.verify(slice2D, pp_field)
-        verify_rules_ran = rules_result.matching_rules
+        pp_field = verify(slice2D, pp_field)
 
         yield (slice2D, pp_field)
 
