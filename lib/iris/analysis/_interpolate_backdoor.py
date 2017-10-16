@@ -106,11 +106,3 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                           extrapolation_mode=extrapolation_mode)
 
 linear.__doc__ = _interp.linear.__doc__
-
-
-class Linear1dExtrapolator(six.with_metaclass(ClassWrapperSameDocstring,
-                                              _interp.Linear1dExtrapolator)):
-    @wraps(_interp.Linear1dExtrapolator.__init__)
-    def __init__(self, interpolator):
-        _warn_deprecated()
-        super(Linear1dExtrapolator, self).__init__(interpolator)
