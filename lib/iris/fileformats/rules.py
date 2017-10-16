@@ -168,22 +168,6 @@ class CMAttribute(object):
         self.value = value
 
 
-class CMCustomAttribute(object):
-    """
-    Used by the rules for defining custom attributes on the Cube in a consistent manner.
-
-    .. deprecated:: 1.10
-
-    """
-    __slots__ = ('name', 'value')
-    def __init__(self, name, value):
-        warn_deprecated(
-            "the `iris.fileformats.rules.CmCustomAttribute class is "
-            "deprecated.")
-        self.name = name
-        self.value = value
-
-
 class CoordAndDims(object):
     """
     Used within rules to represent a mapping of coordinate to data dimensions.
@@ -418,9 +402,6 @@ class FunctionRule(Rule):
                     cube.units = cf_units._UNKNOWN_UNIT_STRING
             else:
                 setattr(cube, obj.name, obj.value)
-
-        elif isinstance(obj, CMCustomAttribute):
-            cube.attributes[obj.name] = obj.value
 
         elif isinstance(obj, Factory):
             factory = obj
