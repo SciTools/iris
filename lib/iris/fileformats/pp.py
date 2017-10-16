@@ -65,10 +65,6 @@ __all__ = ['load', 'save', 'load_cubes', 'PPField', 'as_fields',
 EARTH_RADIUS = 6371229.0
 
 
-# Cube->PP rules are loaded on first use
-_save_rules = None
-
-
 PP_HEADER_DEPTH = 256
 PP_WORD_DEPTH = 4
 NUM_LONG_HEADERS = 45
