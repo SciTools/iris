@@ -30,7 +30,6 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-from iris.analysis._interpolate_private import regrid
 from iris.analysis import Nearest
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
@@ -238,18 +237,6 @@ class MixinCheckingCode(object):
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "nan RESULT")
         self.assertArrayEqual(result_cube.data, expected_result)
-
-
-# perform identical tests on the old + new approaches
-class TestInterpolateRegridNearest(MixinCheckingCode, tests.IrisTest):
-    def regrid(self, src_cube, dst_cube,
-               translate_nans_to_mask=False, **kwargs):
-        result = regrid(src_cube, dst_cube, mode='nearest')
-        data = result.data
-        if translate_nans_to_mask and np.any(np.isnan(data)):
-            data = np.ma.masked_array(data, mask=np.isnan(data))
-            result.data = data
-        return result
 
 
 class TestCubeRegridNearest(MixinCheckingCode, tests.IrisTest):

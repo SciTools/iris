@@ -74,24 +74,3 @@ def nearest_neighbour_indices(cube, sample_points):
     return _interp.nearest_neighbour_indices(cube, sample_points)
 
 nearest_neighbour_indices.__doc__ = _interp.nearest_neighbour_indices.__doc__
-
-
-def extract_nearest_neighbour(cube, sample_points):
-    msg = (_INTERPOLATE_DEPRECATION_WARNING + '\n' +
-           'Please replace usage of '
-           'iris.analysis.interpolate.extract_nearest_neighbour() with '
-           'iris.cube.Cube.interpolate(..., scheme=iris.analysis.Nearest()).')
-    _warn_deprecated(msg)
-    return _interp.extract_nearest_neighbour(cube, sample_points)
-
-extract_nearest_neighbour.__doc__ = _interp.extract_nearest_neighbour.__doc__
-
-
-def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
-    msg = (_INTERPOLATE_DEPRECATION_WARNING + '\n' +
-           'Please replace usage of iris.analysis.interpolate.regrid() '
-           'with iris.cube.Cube.regrid().')
-    _warn_deprecated(msg)
-    return _interp.regrid(source_cube, grid_cube, mode=mode, **kwargs)
-
-regrid.__doc__ = _interp.regrid.__doc__
