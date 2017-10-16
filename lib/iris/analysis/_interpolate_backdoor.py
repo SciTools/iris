@@ -95,14 +95,3 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     return _interp.regrid(source_cube, grid_cube, mode=mode, **kwargs)
 
 regrid.__doc__ = _interp.regrid.__doc__
-
-
-def linear(cube, sample_points, extrapolation_mode='linear'):
-    msg = (_INTERPOLATE_DEPRECATION_WARNING + '\n' +
-           'Please replace usage of iris.analysis.interpolate.linear() with '
-           'iris.cube.Cube.interpolate(..., scheme=iris.analysis.Linear()).')
-    _warn_deprecated(msg)
-    return _interp.linear(cube, sample_points,
-                          extrapolation_mode=extrapolation_mode)
-
-linear.__doc__ = _interp.linear.__doc__
