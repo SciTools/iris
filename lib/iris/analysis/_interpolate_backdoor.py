@@ -65,17 +65,6 @@ def _warn_deprecated(msg=None):
     iris_warn_deprecated(msg)
 
 
-def nearest_neighbour_indices(cube, sample_points):
-    msg = (_INTERPOLATE_DEPRECATION_WARNING + '\n' +
-           'Please replace usage of '
-           'iris.analysis.interpolate.nearest_neighbour_indices() '
-           'with iris.coords.Coord.nearest_neighbour_index()).')
-    _warn_deprecated(msg)
-    return _interp.nearest_neighbour_indices(cube, sample_points)
-
-nearest_neighbour_indices.__doc__ = _interp.nearest_neighbour_indices.__doc__
-
-
 def extract_nearest_neighbour(cube, sample_points):
     msg = (_INTERPOLATE_DEPRECATION_WARNING + '\n' +
            'Please replace usage of '
