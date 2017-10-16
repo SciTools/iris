@@ -24,8 +24,8 @@ import warnings
 import iris
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.fileformats.pp import lbproc_map
 from iris.fileformats.um_cf_map import CF_TO_LBFC
+from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (aux_factory,
                                     has_aux_factory,
                                     scalar_cell_method,
@@ -568,7 +568,7 @@ def _lbproc_rules(cube, pp):
     pp.lbproc = 0
 
     if cube.attributes.get("ukmo__process_flags", None):
-        pp.lbproc += sum([lbproc_map[name]
+        pp.lbproc += sum([LBPROC_MAP[name]
                           for name in cube.attributes["ukmo__process_flags"]])
 
     # Zonal-mean: look for a CellMethod which is a "mean" over "longitude" or
