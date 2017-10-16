@@ -26,7 +26,6 @@ import six
 import abc
 import collections
 from copy import deepcopy
-import itertools
 import operator
 import os
 import re
@@ -41,8 +40,14 @@ import netcdftime
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
-import iris.fileformats.rules
 import iris.fileformats.pp_rules
+from iris.fileformats.pp_save_rules import verify
+
+# NOTE: this is for backwards-compatitibility *ONLY*
+# We could simply remove it for v2.0 ?
+from iris.fileformats._pp_lbproc_pairs import (LBPROC_PAIRS,
+                                               LBPROC_MAP as lbproc_map)
+import iris.fileformats.rules
 import iris.coord_systems
 
 
@@ -58,10 +63,6 @@ __all__ = ['load', 'save', 'load_cubes', 'PPField', 'as_fields',
 
 
 EARTH_RADIUS = 6371229.0
-
-
-# Cube->PP rules are loaded on first use
-_save_rules = None
 
 
 PP_HEADER_DEPTH = 256
@@ -220,31 +221,6 @@ LBUSER_DTYPE_LOOKUP = {1: np.dtype('>f4'),
                        -3: np.dtype('>i4'),
                        'default': np.dtype('>f4'),
                        }
-
-# LBPROC codes and their English equivalents
-LBPROC_PAIRS = ((1, "Difference from another experiment"),
-                (2, "Difference from zonal (or other spatial) mean"),
-                (4, "Difference from time mean"),
-                (8, "X-derivative (d/dx)"),
-                (16, "Y-derivative (d/dy)"),
-                (32, "Time derivative (d/dt)"),
-                (64, "Zonal mean field"),
-                (128, "Time mean field"),
-                (256, "Product of two fields"),
-                (512, "Square root of a field"),
-                (1024, "Difference between fields at levels BLEV and BRLEV"),
-                (2048, "Mean over layer between levels BLEV and BRLEV"),
-                (4096, "Minimum value of field during time period"),
-                (8192, "Maximum value of field during time period"),
-                (16384, "Magnitude of a vector, not specifically wind speed"),
-                (32768, "Log10 of a field"),
-                (65536, "Variance of a field"),
-                (131072, "Mean over an ensemble of parallel runs"))
-
-# lbproc_map is dict mapping lbproc->English and English->lbproc
-# essentially a one to one mapping
-lbproc_map = {x: y for x, y in
-              itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))}
 
 
 class STASH(collections.namedtuple('STASH', 'model section item')):
@@ -1786,21 +1762,6 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             yield pp_field
 
 
-def _ensure_save_rules_loaded():
-    """Makes sure the standard save rules are loaded."""
-
-    # Uses these module-level variables
-    global _save_rules
-
-    if _save_rules is None:
-        # Load the pp save rules
-        rules_filename = os.path.join(iris.config.CONFIG_PATH,
-                                      'pp_save_rules.txt')
-        with iris.fileformats.rules._disable_deprecation_warnings():
-            _save_rules = iris.fileformats.rules.RulesContainer(
-                rules_filename, iris.fileformats.rules.ProcedureRule)
-
-
 # Stash codes not to be filtered (reference altitude and pressure fields).
 _STASH_ALLOW = [STASH(1, 0, 33), STASH(1, 0, 1)]
 
@@ -2102,8 +2063,6 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
     # On the flip side, record which Cube metadata has been "used" and flag up
     # unused?
 
-    _ensure_save_rules_loaded()
-
     n_dims = len(cube.shape)
     if n_dims < 2:
         raise ValueError('Unable to save a cube of fewer than 2 dimensions.')
@@ -2150,8 +2109,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
-        rules_result = _save_rules.verify(slice2D, pp_field)
-        verify_rules_ran = rules_result.matching_rules
+        pp_field = verify(slice2D, pp_field)
 
         yield (slice2D, pp_field)
 

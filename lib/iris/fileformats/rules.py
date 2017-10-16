@@ -876,4 +876,3 @@ def load_cubes(filenames, user_callback, loader, filter_function=None):
             converter=loader.converter,
             user_callback_wrapper=loadcubes_user_callback_wrapper):
         yield cube
-
