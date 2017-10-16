@@ -140,19 +140,6 @@ def _disable_deprecation_warnings():
         _enable_rules_deprecations = old_flag_value
 
 
-class DebugString(str):
-    """
-    Used by the rules for debug purposes
-
-    .. deprecated:: 1.10
-
-    """
-    def __init__(self, *args, **kwargs):
-        warn_deprecated(
-            "the `iris.fileformats.rules.DebugString class is deprecated.")
-        super(DebugString, self).__init__(*args, **kwargs)
-
-
 class CMAttribute(object):
     """
     Used by the rules for defining attributes on the Cube in a consistent manner.
@@ -405,9 +392,6 @@ class FunctionRule(Rule):
 
         elif isinstance(obj, Factory):
             factory = obj
-
-        elif isinstance(obj, DebugString):
-            print(obj)
 
         # The function returned nothing, like the pp save actions, "lbft = 3"
         elif obj is None:
