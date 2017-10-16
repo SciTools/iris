@@ -382,52 +382,6 @@ def extract_nearest_neighbour(cube, sample_points):
     return cube[nearest_neighbour_indices(cube, sample_points)]
 
 
-def nearest_neighbour_data_value(cube, sample_points):
-    """
-    Returns the data value closest to the given coordinate point values.
-
-    The sample_points mapping must include coordinate values corresponding to all data
-    dimensions.
-
-    For example:
-
-        >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-        >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0), ('longitude', 10)])
-        299.21564
-        >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0)])
-        Traceback (most recent call last):
-        ...
-        ValueError: The sample points [('latitude', 0)] was not specific enough to return a single value from the cube.
-
-
-    Args:
-
-    * cube:
-        An :class:`iris.cube.Cube`.
-    * sample_points
-        A list of tuple pairs mapping coordinate instances or unique coordinate names in the cube to point values.
-
-    Returns:
-        The data value at the point in the cube closest to the supplied coordinate values.
-
-    .. deprecated:: 1.10
-
-        The module :mod:`iris.analysis.interpolate` is deprecated.
-        Please replace usage of
-        :func:`iris.analysis.interpolate.nearest_neighbour_data_value`
-        with :meth:`iris.cube.Cube.interpolate` using the scheme
-        :class:`iris.analysis.Nearest`.
-
-    """
-    indices = nearest_neighbour_indices(cube, sample_points)
-    for ind in indices:
-        if isinstance(ind, slice):
-            raise ValueError('The sample points given (%s) were not specific enough to return a '
-                             'single value from the cube.' % sample_points)
-
-    return cube.data[indices]
-
-
 def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     """
     Returns a new cube with values derived from the source_cube on the horizontal grid specified
