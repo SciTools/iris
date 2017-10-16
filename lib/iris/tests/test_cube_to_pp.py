@@ -184,8 +184,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         # Add an extra "fill_value" property, as used by the save rules.
         cube.fill_value = None
         pp_field = mock.MagicMock(spec=PPField3)
-        iris.fileformats.pp._ensure_save_rules_loaded()
-        iris.fileformats.pp._save_rules.verify(cube, pp_field)
+        iris.fileformats.pp_save_rules.verify(cube, pp_field)
         self.assertEqual(pp_field.lbtim.ic, 4)
 
 

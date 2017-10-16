@@ -214,11 +214,14 @@ def _general_time_rules(cube, pp):
         # e.g. if interval is '1 hour' then lbtim.ia becomes 1.
         pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
 
-    if time_coord is not None:
+    if time_coord is not None and time_coord.has_bounds():
         lower_bound_yr =\
             time_coord.units.num2date(time_coord.bounds[0, 0]).year
         upper_bound_yr =\
             time_coord.units.num2date(time_coord.bounds[0, 1]).year
+    else:
+        lower_bound_yr = None
+        upper_bound_yr = None
 
     # Climatological time means.
     if (time_coord is not None and

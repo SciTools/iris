@@ -175,12 +175,8 @@ class Test_Save__LbprocProduction(tests.IrisTest):
         self.cube = stock.realistic_3d()
         self.pp_field = mock.MagicMock(spec=pp.PPField3)
         self.pp_field.HEADER_DEFN = pp.PPField3.HEADER_DEFN
-        self.patcher = mock.patch('iris.fileformats.pp.PPField3',
-                                  return_value=self.pp_field)
-        self.patcher.start()
-
-    def tearDown(self):
-        self.patcher.stop()
+        self.patch('iris.fileformats.pp.PPField3',
+                   return_value=self.pp_field)
 
     def test_no_cell_methods(self):
         lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
