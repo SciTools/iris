@@ -156,19 +156,8 @@ class MixinCheckingCode(object):
                 [3., 4., 5.]]
         src_cube = grid_cube(src_x, src_y, data)
         dst_cube = grid_cube(dst_x, dst_y)
-        # Account for a behavioural difference in this case :
-        # The Nearest scheme does wrapping of modular coordinate values.
-        # Thus target of 352.0 --> -8.0, which is nearest to -10.
-        # This looks just like "circular" handling, but only because it happens
-        # to produce the same results *for nearest-neighbour in particular*.
-        if isinstance(self, TestInterpolateRegridNearest):
-            # interpolate.regrid --> Wrapping-free results (non-circular).
-            expected_result = [[3., 3., 4., 4., 5., 5., 5., 5.],
-                               [3., 3., 4., 4., 5., 5., 5., 5.]]
-        else:
-            # cube regrid --> Wrapped results.
-            expected_result = [[4., 3., 4., 4., 5., 5., 3., 4.],
-                               [4., 3., 4., 4., 5., 5., 3., 4.]]
+        expected_result = [[4., 3., 4., 4., 5., 5., 3., 4.],
+                           [4., 3., 4., 4., 5., 5., 3., 4.]]
         _debug_data(src_cube, "noncircular SOURCE")
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "noncircular RESULT")
