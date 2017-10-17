@@ -46,7 +46,6 @@ import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
-import iris.analysis._interpolate_private
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
