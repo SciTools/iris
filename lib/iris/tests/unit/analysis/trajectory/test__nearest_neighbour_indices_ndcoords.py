@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:meth:`iris.analysis._interpolate_private._nearest_neighbour_indices_ndcoords`.
+:meth:`iris.analysis.trajectory._nearest_neighbour_indices_ndcoords`.
 
 """
 
@@ -27,13 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 
 from iris.cube import Cube
 from iris.coords import DimCoord, AuxCoord
 
-from iris.analysis._interpolate_private import \
+from iris.analysis.trajectory import \
     _nearest_neighbour_indices_ndcoords as nn_ndinds
 
 
@@ -141,13 +140,9 @@ class TestApiExtras(tests.IrisTest):
         cube.add_aux_coord(co_y, 0)
         cube.add_aux_coord(co_x, 1)
         sample_point = {'x': 2.8, 'y': 18.5}
-        warn_call = self.patch(
-            'iris.analysis._interpolate_private.warn_deprecated')
-        result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(1, 2)])
-        self.assertEqual(warn_call.call_count, 1)
-        self.assertIn('dictionary to specify points is deprecated',
-                      warn_call.call_args[0][0])
+        exp_emsg = 'must be a list of \(coordinate, value\) pairs'
+        with self.assertRaisesRegexp(TypeError, exp_emsg):
+            nn_ndinds(cube, sample_point)
 
 
 class TestLatlon(tests.IrisTest):
