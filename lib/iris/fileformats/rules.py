@@ -44,7 +44,6 @@ import iris.exceptions
 import iris.fileformats.um_cf_map
 from iris.util import is_regular, regular_step
 
-RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
 ReferenceTarget = collections.namedtuple('ReferenceTarget',
                                          ('name', 'transform'))
