@@ -28,6 +28,8 @@ import tempfile
 import types
 import warnings
 
+import netCDF4
+
 import iris
 import iris.tests.pp as pp
 import iris.util
@@ -80,7 +82,6 @@ def callback_aaxzc_n10r13xy_b_pp(cube, field, filename):
     cube.add_aux_coord(height_coord)
 
 
-@tests.skip_dask_mask
 @tests.skip_data
 class TestAll(tests.IrisTest, pp.PPTest):
     _ref_dir = ('usecases', 'pp_to_cf_conversion')
@@ -105,8 +106,13 @@ class TestAll(tests.IrisTest, pp.PPTest):
         nc_filenames = []
 
         for index, cube in enumerate(cubes):
+            # Explicitly set a fill-value as a workaround for
+            # https://github.com/Unidata/netcdf4-python/issues/725
+            fill_value = netCDF4.default_fillvals[cube.dtype.str[1:]];
+
             file_nc = tempfile.NamedTemporaryFile(suffix='.nc', delete=False).name
-            iris.save(cube, file_nc, netcdf_format='NETCDF3_CLASSIC')
+            iris.save(cube, file_nc, netcdf_format='NETCDF3_CLASSIC',
+                      fill_value=fill_value)
 
             # Check the netCDF file against CDL expected output.
             self.assertCDL(file_nc, self._ref_dir + ('to_netcdf', '%s_%d.cdl' % (fname_name, index)))
