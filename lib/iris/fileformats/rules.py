@@ -87,43 +87,6 @@ class ConcreteReferenceTarget(object):
         return self._final_cube
 
 
-# Controls the deferred import of all the symbols from iris.coords.
-# This "import all" is used as the rules file does not use fully qualified class names.
-_rules_globals = None
-_import_pending = True
-def _rules_execution_environment():
-    """
-    Return an environment with the globals needed for rules code execution.
-
-    This is needed as the rules file does not use fully qualified class names.
-    If something is needed for rules execution, it can be added here.
-
-    A master environment is built only when needed (the first call).
-    This allows the import of various modules to be deferred, so we don't load
-    all of those when we merely import this module.
-
-    """
-    global _import_pending, _rules_globals
-    if _import_pending:
-        # Get all module globals, and add other deferred imports.
-        import iris.aux_factory
-        import iris.coords
-        import iris.coord_systems
-        import iris.fileformats.um_cf_map
-        # Take a copy of all this module's globals.
-        _rules_globals = globals().copy()
-        # Add various other stuff.
-        # NOTE: these are equivalent to "from xx import *": not tidy !
-        _rules_globals.update(iris.aux_factory.__dict__)
-        _rules_globals.update(iris.coords.__dict__)
-        _rules_globals.update(iris.coord_systems.__dict__)
-        _rules_globals.update(iris.fileformats.um_cf_map.__dict__)
-        _rules_globals.update(cf_units.__dict__)
-        _import_pending = False
-
-    return _rules_globals.copy()
-
-
 # A flag to control all the text-rules and rules-logging deprecation warnings.
 _enable_rules_deprecations = True
 
