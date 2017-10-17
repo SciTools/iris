@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,7 +33,7 @@ from iris.tests import mock
 
 if tests.GRIB_AVAILABLE:
     import gribapi
-    import iris.fileformats.grib._save_rules as grib_save_rules
+    import iris_grib._save_rules as grib_save_rules
 else:
     gribapi = None
 

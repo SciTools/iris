@@ -45,7 +45,10 @@ if tests.MPL_AVAILABLE:
 
 if tests.GRIB_AVAILABLE:
     import gribapi
-    import iris.fileformats.grib
+    import iris.fileformats
+    import iris_grib
+    # THIS IS A HORRIBLE KLUDGE.
+    iris.fileformats.grib = iris_grib
 
 
 def _mock_gribapi_fetch(message, key):

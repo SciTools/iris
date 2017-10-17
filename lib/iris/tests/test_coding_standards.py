@@ -310,8 +310,7 @@ class TestLicenseHeaders(tests.IrisTest):
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
                             'docs/iris/build/*',
                             'lib/iris/analysis/_scipy_interpolate.py',
-                            'lib/iris/fileformats/_pyke_rules/*',
-                            'lib/iris/fileformats/grib/_grib_cf_map.py')
+                            'lib/iris/fileformats/_pyke_rules/*')
 
         try:
             last_change_by_fname = self.last_change_by_fname()

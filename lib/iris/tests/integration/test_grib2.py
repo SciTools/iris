@@ -36,8 +36,8 @@ from iris.util import is_regular
 
 # Grib support is optional.
 if tests.GRIB_AVAILABLE:
-    from iris.fileformats.grib import load_pairs_from_fields
-    from iris.fileformats.grib.message import GribMessage
+    from iris_grib import load_pairs_from_fields
+    from iris_grib.message import GribMessage
 
 
 @tests.skip_data
