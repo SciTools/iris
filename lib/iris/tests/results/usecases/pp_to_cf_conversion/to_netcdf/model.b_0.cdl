@@ -6,6 +6,7 @@ dimensions:
 	pressure = 9 ;
 variables:
 	float air_temperature(time, pressure, latitude, longitude) ;
+		air_temperature:_FillValue = 9.96921e+36f ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
 		air_temperature:um_stash_source = "m01s16i203" ;

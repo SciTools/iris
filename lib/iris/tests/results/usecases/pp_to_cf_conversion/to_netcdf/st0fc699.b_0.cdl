@@ -4,7 +4,7 @@ dimensions:
 	longitude = 288 ;
 variables:
 	float unknown(latitude, longitude) ;
-		unknown:_FillValue = -1.e+30f ;
+		unknown:_FillValue = 9.96921e+36f ;
 		unknown:um_stash_source = "m02s00i???" ;
 		unknown:cell_methods = "time: mean (interval: 2 hour)" ;
 		unknown:grid_mapping = "latitude_longitude" ;
