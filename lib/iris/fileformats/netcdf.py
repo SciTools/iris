@@ -1943,16 +1943,23 @@ class Saver(object):
             cf_name = self._increment_name(cf_name)
 
         # if netcdf3 avoid streaming due to dtype handling
-        if (not cube.has_lazy_data() or
-            self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                          'NETCDF3_64BIT')):
+        is_nc3 = self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                               'NETCDF3_64BIT')
+        if (is_nc3 or not cube.has_lazy_data()):
 
             # Get the values in a form which is valid for the file format.
             data = self._ensure_valid_dtype(cube.data, 'cube', cube)
+            is_masked = ma.is_masked(data)
+
+            if is_nc3 and fill_value is None and is_masked \
+                    and data.dtype.itemsize != 1:
+                # Always explicitly set the fill_value for netCDF3 non-byte
+                # masked data or it will be interpreted as being unmasked until
+                # https://github.com/Unidata/netcdf-c/issues/499 is fixed.
+                fill_value = netCDF4.default_fillvals[data.dtype.str[1:]]
 
             def store(data, cf_var, fill_value):
                 cf_var[:] = data
-                is_masked = ma.is_masked(data)
                 contains_value = fill_value is not None and fill_value in data
                 return is_masked, contains_value
         else:
