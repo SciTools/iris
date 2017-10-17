@@ -75,7 +75,7 @@ class Test(tests.IrisTest):
         lat = cube.coord('latitude')
         lon.guess_bounds()
         lat.guess_bounds()
-        from iris.fileformats.rules import regular_step
+        from iris.util import regular_step
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
         minx = 3.7499990463256836
@@ -100,7 +100,7 @@ class Test(tests.IrisTest):
         lat = cube.coord('latitude')
         lon.guess_bounds()
         lat.guess_bounds()
-        from iris.fileformats.rules import regular_step
+        from iris.util import regular_step
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
         full = abs(regular_step(lon) * regular_step(lat))
@@ -131,7 +131,7 @@ class Test(tests.IrisTest):
         lat = cube.coord('latitude')
         lon.guess_bounds()
         lat.guess_bounds()
-        from iris.fileformats.rules import regular_step
+        from iris.util import regular_step
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
         minx = 3.7499990463256836
