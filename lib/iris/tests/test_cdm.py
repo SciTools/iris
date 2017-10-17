@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -840,7 +840,7 @@ class TestCubeAPI(TestCube2d):
         with self.assertRaises(TypeError):
             self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'})
         with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), [], ())
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), [], (), ())
         with self.assertRaises(TypeError):
             self.t.metadata = {'standard_name': 'air_pressure',
                                'long_name': 'foo',
@@ -861,7 +861,7 @@ class TestCubeAPI(TestCube2d):
 class TestCubeEquality(TestCube2d):
     def test_simple_equality(self):
         self.assertEqual(self.t, self.t.copy())
-    
+
     def test_data_inequality(self):
         self.assertNotEqual(self.t, self.t + 1)
     
@@ -959,7 +959,7 @@ class TestDataManagerIndexing(TestCube2d):
         lat_cube = next(self.cube.slices(['grid_latitude', ]))
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
- 
+
     def test_cube_empty_indexing(self):
         test_filename = ('cube_slice', 'real_empty_data_indexing.cml')
         r = self.cube[:5, ::-1][3]
@@ -1024,9 +1024,19 @@ class TestCubeCollapsed(tests.IrisTest):
         # compare dual and single stage collapsing
         dual_stage = cube.collapsed(a_name, iris.analysis.MEAN)
         dual_stage = dual_stage.collapsed(b_name, iris.analysis.MEAN)
+        # np.ma.average doesn't apply type promotion rules in some versions,
+        # and instead makes the result type float64. To ignore that case we
+        # fix up the dtype here if it is promotable from cube.dtype. We still
+        # want to catch cases where there is a loss of precision however.
+        if dual_stage.dtype > cube.dtype:
+            data = dual_stage.data.astype(cube.dtype)
+            dual_stage.replace(data, fill_value=dual_stage.fill_value)
         self.assertCMLApproxData(dual_stage, ('cube_collapsed', '%s_%s_dual_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         single_stage = cube.collapsed([a_name, b_name], iris.analysis.MEAN)
+        if single_stage.dtype > cube.dtype:
+            data = single_stage.data.astype(cube.dtype)
+            single_stage.replace(data, fill_value=single_stage.fill_value)
         self.assertCMLApproxData(single_stage, ('cube_collapsed', '%s_%s_single_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         # Compare the cube bits that should match
@@ -1146,7 +1156,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         cube = self._load_3d_cube()
         self.assertIsInstance(cube.data, ma.core.MaskedArray)
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
-        
+
     def test_slicing(self):
         cube = self._load_3d_cube()
 
@@ -1166,25 +1176,30 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
     def test_save_and_merge(self):
         cube = self._load_3d_cube()
+        dtype = cube.dtype
+        fill_value = 123456
 
         # extract the 2d field that has SOME missing values
         masked_slice = cube[0]
-        masked_slice.data.fill_value = 123456
-        
+        masked_slice.fill_value = fill_value
+
         # test saving masked data
         reference_txt_path = tests.get_result_path(('cdm', 'masked_save_pp.txt'))
         with self.cube_save_test(reference_txt_path, reference_cubes=masked_slice) as temp_pp_path:
             iris.save(masked_slice, temp_pp_path)
-        
+
             # test merge keeps the mdi we just saved
             cube1 = iris.load_cube(temp_pp_path)
+            self.assertEqual(cube1.dtype, dtype)
+
             cube2 = cube1.copy()
             # make cube1 and cube2 differ on a scalar coord, to make them mergeable into a 3d cube
             cube2.coord("pressure").points = [1001.0]
             merged_cubes = iris.cube.CubeList([cube1, cube2]).merge()
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]
-            self.assertEqual(merged_cube.data.fill_value, 123456)
+            self.assertEqual(merged_cube.dtype, dtype)
+            self.assertEqual(merged_cube.fill_value, fill_value)
 
 
 @tests.skip_data

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,6 +29,7 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 import numpy as np
+import numpy.ma as ma
 from osgeo import gdal, osr
 
 import cf_units
@@ -97,7 +98,7 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname,
     gdal_dataset.SetGeoTransform(padf_transform)
 
     band = gdal_dataset.GetRasterBand(1)
-    if isinstance(data, np.ma.core.MaskedArray):
+    if ma.isMaskedArray(data):
         data = data.copy()
         data[data.mask] = data.fill_value
         band.SetNoDataValue(float(data.fill_value))

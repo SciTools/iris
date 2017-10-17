@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -80,13 +80,58 @@ class _MaskedArrayEquality(six.with_metaclass(ABCMeta, object)):
             self._func(self.arr1, arr2, strict=False)
 
 
-class Test_assertMaskedArrayEqual(_MaskedArrayEquality, tests.IrisTest):
+@tests.iristest_timing_decorator
+class Test_assertMaskedArrayEqual(_MaskedArrayEquality,
+                                  tests.IrisTest_nometa):
     @property
     def _func(self):
         return self.assertMaskedArrayEqual
 
 
-class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality, tests.IrisTest):
+class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
+    def test_nonmasked_same(self):
+        # Masked test can be used on non-masked arrays.
+        arr1 = np.array([1, 2])
+        self.assertMaskedArrayEqual(arr1, arr1)
+
+    def test_masked_nonmasked_same(self):
+        # Masked test can be used between masked + non-masked arrays, and will
+        # consider them equal, when mask=None.
+        arr1 = np.ma.masked_array([1, 2])
+        arr2 = np.array([1, 2])
+        self.assertMaskedArrayEqual(arr1, arr2)
+
+    def test_masked_nonmasked_different(self):
+        arr1 = np.ma.masked_array([1, 2])
+        arr2 = np.array([1, 3])
+        with self.assertRaisesRegexp(AssertionError, 'Arrays are not equal'):
+            self.assertMaskedArrayEqual(arr1, arr2)
+
+    def test_nonmasked_masked_same(self):
+        # Masked test can be used between masked + non-masked arrays, and will
+        # consider them equal, when mask=None.
+        arr1 = np.array([1, 2])
+        arr2 = np.ma.masked_array([1, 2])
+        self.assertMaskedArrayEqual(arr1, arr2)
+
+    def test_masked_nonmasked_same_falsemask(self):
+        # Masked test can be used between masked + non-masked arrays, and will
+        # consider them equal, when mask=False.
+        arr1 = np.ma.masked_array([1, 2], mask=False)
+        arr2 = np.array([1, 2])
+        self.assertMaskedArrayEqual(arr1, arr2)
+
+    def test_masked_nonmasked_same_emptymask(self):
+        # Masked test can be used between masked + non-masked arrays, and will
+        # consider them equal, when mask=zeros.
+        arr1 = np.ma.masked_array([1, 2], mask=[False, False])
+        arr2 = np.array([1, 2])
+        self.assertMaskedArrayEqual(arr1, arr2)
+
+
+@tests.iristest_timing_decorator
+class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality,
+                                        tests.IrisTest_nometa):
     @property
     def _func(self):
         return self.assertMaskedArrayAlmostEqual

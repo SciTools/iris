@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq / m^3">
+  <cube core-dtype="float64" dtype="float64" long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq / m^3">
     <attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
@@ -67,7 +67,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
-  <cube long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq s / m^3">
+  <cube core-dtype="float64" dtype="float64" long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq s / m^3">
     <attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
@@ -134,7 +134,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
-  <cube long_name="CAESIUM-137_DRY_DEPOSITION_RATE" units="Bq / (m^2 s)">
+  <cube core-dtype="float64" dtype="float64" long_name="CAESIUM-137_DRY_DEPOSITION_RATE" units="Bq / (m^2 s)">
     <attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
@@ -200,7 +200,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
-  <cube long_name="CAESIUM-137_WET_DEPOSITION_RATE" units="Bq / (m^2 s)">
+  <cube core-dtype="float64" dtype="float64" long_name="CAESIUM-137_WET_DEPOSITION_RATE" units="Bq / (m^2 s)">
     <attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
@@ -266,7 +266,7 @@
     <cellMethods/>
     <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
-  <cube long_name="CAESIUM-137_DEPOSITION_RATE" units="Bq / (m^2 s)">
+  <cube core-dtype="float64" dtype="float64" long_name="CAESIUM-137_DEPOSITION_RATE" units="Bq / (m^2 s)">
     <attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>

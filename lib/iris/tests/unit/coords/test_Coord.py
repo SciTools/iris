@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -324,6 +324,12 @@ class Test_collapsed(tests.IrisTest):
         with self.assertRaises(ValueError):
             coord.collapsed()
 
+    def test_collapsed_overflow(self):
+        coord = DimCoord(points=np.array([1493892000, 1493895600, 1493899200],
+                                         dtype=np.int32))
+        result = coord.collapsed()
+        self.assertEqual(result.points, 1493895600)
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):
@@ -346,26 +352,6 @@ class Test_is_compatible(tests.IrisTest):
         self.test_coord.attributes['array_test'] = np.array([1.0, 2, 3])
         self.other_coord.attributes['array_test'] = np.array([1.0, 2, 777.7])
         self.assertFalse(self.test_coord.is_compatible(self.other_coord))
-
-
-class Test_DimCoord_copy(tests.IrisTest):
-    def test_writable_points(self):
-        coord1 = DimCoord(np.arange(5),
-                          bounds=[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
-        coord2 = coord1.copy()
-        msg = 'destination is read-only'
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord1.points[:] = 0
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord2.points[:] = 0
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord1.bounds[:] = 0
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord2.bounds[:] = 0
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ from iris.analysis._interpolation import (get_xy_dim_coords, get_xy_coords,
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
-from iris.util import promote_aux_coord_to_dim_coord
+from iris.util import _meshgrid, promote_aux_coord_to_dim_coord
 
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))
@@ -755,7 +755,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
 
     # Wrap up the data as a Cube.
     # Create 2d meshgrids as required by _create_cube func.
-    meshgrid_x, meshgrid_y = np.meshgrid(grid_x.points, grid_y.points)
+    meshgrid_x, meshgrid_y = _meshgrid(grid_x.points, grid_y.points)
     regrid_callback = RectilinearRegridder._regrid
     new_cube = RectilinearRegridder._create_cube(new_data, src_cube,
                                                  src_x_dim, src_y_dim,
@@ -1131,6 +1131,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     cube = iris.cube.Cube(weighted_mean.reshape(grid_cube.shape),
                           dim_coords_and_dims=dim_coords_and_dims)
     cube.metadata = copy.deepcopy(src_cube.metadata)
+    cube.fill_value = src_cube.fill_value
 
     for coord in src_cube.coords(dimensions=()):
         cube.add_aux_coord(coord.copy())
@@ -1420,7 +1421,7 @@ class _ProjectedUnstructuredRegridder(object):
             src_projection, src_x_coord.points, src_y_coord.points)
 
         tgt_projection = tgt_x_coord.coord_system.as_cartopy_projection()
-        tgt_x, tgt_y = np.meshgrid(tgt_x_coord.points, tgt_y_coord.points)
+        tgt_x, tgt_y = _meshgrid(tgt_x_coord.points, tgt_y_coord.points)
         projected_tgt_grid = projection.transform_points(
             tgt_projection, tgt_x, tgt_y)
 
@@ -1493,6 +1494,7 @@ class _ProjectedUnstructuredRegridder(object):
         # Create a result cube with the appropriate metadata
         result = iris.cube.Cube(data)
         result.metadata = copy.deepcopy(src.metadata)
+        result.fill_value = src.fill_value
 
         # Copy across all the coordinates which don't span the grid.
         # Record a mapping from old coordinate IDs to new coordinates,

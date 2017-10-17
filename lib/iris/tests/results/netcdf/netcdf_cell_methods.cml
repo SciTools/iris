@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="cube_axes_0" units="1" var_name="cube_axes_0">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_axes_0" units="1" var_name="cube_axes_0">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -18,9 +18,9 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_axes_1" units="1" var_name="cube_axes_1">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_axes_1" units="1" var_name="cube_axes_1">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -39,9 +39,9 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_axes_2" units="1" var_name="cube_axes_2">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_axes_2" units="1" var_name="cube_axes_2">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -64,9 +64,9 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_axes_3" units="1" var_name="cube_axes_3">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_axes_3" units="1" var_name="cube_axes_3">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -87,9 +87,9 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_axes_4" units="1" var_name="cube_axes_4">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_axes_4" units="1" var_name="cube_axes_4">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -110,9 +110,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_comment_0" units="1" var_name="cube_comment_0">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_comment_0" units="1" var_name="cube_comment_0">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -129,9 +129,9 @@
         <coord comment="this is a time comment" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_comment_1" units="1" var_name="cube_comment_1">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_comment_1" units="1" var_name="cube_comment_1">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -148,9 +148,9 @@
         <coord comment="this is a time comment" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_comment_2" units="1" var_name="cube_comment_2">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_comment_2" units="1" var_name="cube_comment_2">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -168,9 +168,9 @@
         <coord comment="this is a shared comment" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_comment_3" units="1" var_name="cube_comment_3">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_comment_3" units="1" var_name="cube_comment_3">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -188,9 +188,9 @@
         <coord comment="this is a lon comment" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_comment_4" units="1" var_name="cube_comment_4">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_comment_4" units="1" var_name="cube_comment_4">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -211,9 +211,9 @@
         <coord comment="this is a shared comment" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_interval_0" units="1" var_name="cube_interval_0">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_interval_0" units="1" var_name="cube_interval_0">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -230,9 +230,9 @@
         <coord interval="1 day" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_interval_1" units="1" var_name="cube_interval_1">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_interval_1" units="1" var_name="cube_interval_1">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -250,9 +250,9 @@
         <coord interval="0.1 degrees" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_interval_2" units="1" var_name="cube_interval_2">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_interval_2" units="1" var_name="cube_interval_2">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -270,9 +270,9 @@
         <coord interval="0.2 degree_e" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_interval_3" units="1" var_name="cube_interval_3">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_interval_3" units="1" var_name="cube_interval_3">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -293,9 +293,9 @@
         <coord interval="0.1 degrees" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_interval_4" units="1" var_name="cube_interval_4">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_interval_4" units="1" var_name="cube_interval_4">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -318,9 +318,9 @@
         <coord interval="0.2 degree_e" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_maximum" units="1" var_name="cube_maximum">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_maximum" units="1" var_name="cube_maximum">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -331,9 +331,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_mean" units="1" var_name="cube_mean">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_mean" units="1" var_name="cube_mean">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -344,9 +344,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_median" units="1" var_name="cube_median">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_median" units="1" var_name="cube_median">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -357,9 +357,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_mid_range" units="1" var_name="cube_mid_range">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_mid_range" units="1" var_name="cube_mid_range">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -370,9 +370,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_minimum" units="1" var_name="cube_minimum">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_minimum" units="1" var_name="cube_minimum">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -383,9 +383,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_mix_0" units="1" var_name="cube_mix_0">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_mix_0" units="1" var_name="cube_mix_0">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -402,9 +402,9 @@
         <coord comment="daily mean time" interval="1 day" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_mix_1" units="1" var_name="cube_mix_1">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_mix_1" units="1" var_name="cube_mix_1">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -422,9 +422,9 @@
         <coord comment="area-weighted" interval="0.2 degree_e" name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_mix_2" units="1" var_name="cube_mix_2">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_mix_2" units="1" var_name="cube_mix_2">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="4a0cb9d8" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
@@ -445,9 +445,9 @@
         <coord comment="weekly sum" interval="7 days" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xecbb4b55" dtype="int32" fill_value="-2147483647" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
+    <data checksum="0xecbb4b55" dtype="int32" mask_checksum="0xf626d399" shape="(1, 2, 2)"/>
   </cube>
-  <cube long_name="cube_mode" units="1" var_name="cube_mode">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_mode" units="1" var_name="cube_mode">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -458,9 +458,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_point" units="1" var_name="cube_point">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_point" units="1" var_name="cube_point">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -471,9 +471,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_standard_deviation" units="1" var_name="cube_standard_deviation">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_standard_deviation" units="1" var_name="cube_standard_deviation">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -484,9 +484,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_sum" units="1" var_name="cube_sum">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_sum" units="1" var_name="cube_sum">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -497,9 +497,9 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
-  <cube long_name="cube_variance" units="1" var_name="cube_variance">
+  <cube core-dtype="int32" dtype="int32" fill_value="-2147483647" long_name="cube_variance" units="1" var_name="cube_variance">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="3a4420ff" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -510,6 +510,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x2144df1c" dtype="int32" fill_value="-2147483647" mask_checksum="0xa505df1b" shape="(1,)"/>
+    <data checksum="0x2144df1c" dtype="int32" mask_checksum="0xa505df1b" shape="(1,)"/>
   </cube>
 </cubes>

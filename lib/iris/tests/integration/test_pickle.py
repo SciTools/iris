@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,7 @@ import iris.tests as tests
 
 import six.moves.cPickle as pickle
 
+import iris
 if tests.GRIB_AVAILABLE:
     import gribapi
     from iris.fileformats.grib.message import GribMessage
@@ -50,6 +51,37 @@ class TestGribMessage(tests.IrisTest):
         with self.temp_filename('.pkl') as filename:
             with open(filename, 'wb') as f:
                 pickle.dump(message.data, f)
+
+
+class Common(object):
+    # Ensure that data proxies are pickleable.
+    def pickle_cube(self, path):
+        cube = iris.load(path)[0]
+        with self.temp_filename('.pkl') as filename:
+            with open(filename, 'wb') as f:
+                pickle.dump(cube, f)
+
+
+@tests.skip_data
+class test_netcdf(Common, tests.IrisTest):
+    def test(self):
+        path = tests.get_data_path(('NetCDF', 'global', 'xyt',
+                                    'SMALL_hires_wind_u_for_ipcc4.nc'))
+        self.pickle_cube(path)
+
+
+@tests.skip_data
+class test_pp(Common, tests.IrisTest):
+    def test(self):
+        path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+        self.pickle_cube(path)
+
+
+@tests.skip_data
+class test_ff(Common, tests.IrisTest):
+    def test(self):
+        path = tests.get_data_path(('FF', 'n48_multi_field'))
+        self.pickle_cube(path)
 
 
 if __name__ == '__main__':

@@ -1,1 +1,0 @@
-* Added experimental ProjectedUnstructured regridders which use scipy.interpolate.griddata to regrid unstructured data (see :class:`iris.experimental.regrid.ProjectedUnstructuredLinear` and :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`)

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_temperature" units="K" var_name="air_temperature">
+  <cube core-dtype="float64" dtype="int64" standard_name="air_temperature" units="K" var_name="air_temperature">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="cube" value="hh1"/>
@@ -64,7 +64,7 @@
     <cellMethods/>
     <data checksum="0x2acdccca" dtype="int64" shape="(3, 4, 5, 6)"/>
   </cube>
-  <cube standard_name="air_temperature" units="K" var_name="air_temperature_0">
+  <cube core-dtype="float64" dtype="int64" standard_name="air_temperature" units="K" var_name="air_temperature_0">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="cube" value="hh2"/>

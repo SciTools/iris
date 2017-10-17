@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import mock
 import netCDF4 as nc
 import numpy as np
 
@@ -32,25 +33,53 @@ from iris.fileformats.netcdf import save, CF_CONVENTIONS_VERSION
 from iris.tests.stock import lat_lon_cube
 
 
-class Test_attributes(tests.IrisTest):
-    def test_custom_conventions(self):
+class Test_conventions(tests.IrisTest):
+    def setUp(self):
+        self.cube = Cube([0])
+        self.custom_conventions = 'convention1 convention2'
+        self.cube.attributes['Conventions'] = self.custom_conventions
+        self.options = iris.config.netcdf
+
+    def test_custom_conventions__ignored(self):
         # Ensure that we drop existing conventions attributes and replace with
         # CF convention.
-        cube = Cube([0])
-        cube.attributes['Conventions'] = 'convention1 convention2'
-
         with self.temp_filename('.nc') as nc_path:
-            save(cube, nc_path, 'NETCDF4')
+            save(self.cube, nc_path, 'NETCDF4')
             ds = nc.Dataset(nc_path)
             res = ds.getncattr('Conventions')
             ds.close()
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
 
+    def test_custom_conventions__allowed(self):
+        # Ensure that existing conventions attributes are passed through if the
+        # relevant Iris option is set.
+        with mock.patch.object(self.options, 'conventions_override', True):
+            with self.temp_filename('.nc') as nc_path:
+                save(self.cube, nc_path, 'NETCDF4')
+                ds = nc.Dataset(nc_path)
+                res = ds.getncattr('Conventions')
+                ds.close()
+        self.assertEqual(res, self.custom_conventions)
+
+    def test_custom_conventions__allowed__missing(self):
+        # Ensure the default conventions attribute is set if the relevant Iris
+        # option is set but there is no custom conventions attribute.
+        del self.cube.attributes['Conventions']
+        with mock.patch.object(self.options, 'conventions_override', True):
+            with self.temp_filename('.nc') as nc_path:
+                save(self.cube, nc_path, 'NETCDF4')
+                ds = nc.Dataset(nc_path)
+                res = ds.getncattr('Conventions')
+                ds.close()
+        self.assertEqual(res, CF_CONVENTIONS_VERSION)
+
+
+class Test_attributes(tests.IrisTest):
     def test_attributes_arrays(self):
         # Ensure that attributes containing NumPy arrays can be equality
         # checked and their cubes saved as appropriate.
-        c1 = Cube([], attributes={'bar': np.arange(2)})
-        c2 = Cube([], attributes={'bar': np.arange(2)})
+        c1 = Cube([1], attributes={'bar': np.arange(2)})
+        c2 = Cube([2], attributes={'bar': np.arange(2)})
 
         with self.temp_filename('foo.nc') as nc_out:
             save([c1, c2], nc_out)

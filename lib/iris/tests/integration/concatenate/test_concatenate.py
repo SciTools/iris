@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,6 +33,7 @@ import numpy as np
 import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
+import iris.tests.stock as stock
 from iris.util import unify_time_units
 
 
@@ -186,6 +187,53 @@ class Test_anonymous_dims(tests.IrisTest):
 
         result = concatenate([cube1, cube2])
         self.assertEqual(len(result), 2)
+
+
+class Test_anonymous_dims_alternate_mapping(tests.IrisTest):
+    # Ensure that anonymous concatenation is not sensitive to dimension mapping
+    # of the anonymous dimension.
+    def setUp(self):
+        self.cube = stock.simple_3d()
+        coord = self.cube.coord('wibble')
+        self.cube.remove_coord(coord)
+        self.cube.add_aux_coord(coord, 0)
+
+    def test_concatenate_anom_1st_dim(self):
+        # Check that concatenation along a non anonymous dimension is
+        # insensitive to the dimension which is anonymous.
+        # Concatenate along longitude.
+        # DIM: cube(--, lat, lon)   & cube(--, lat, lon')
+        # AUX: cube(wibble, --, --) & cube(wibble, --, --)
+        cube1 = self.cube[..., :2]
+        cube2 = self.cube[..., 2:]
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 1)
+
+    def test_concatenate_anom_2nd_dim(self):
+        # Check that concatenation along a non anonymous dimension is
+        # insensitive to the dimension which is anonymous.
+        # Concatenate along longitude.
+        # DIM: cube(lon, --, lat)   & cube(lon', ---, lat)
+        # AUX: cube(--, wibble, --) & cube(--, wibble, --)
+        cube1 = self.cube[..., :2]
+        cube2 = self.cube[..., 2:]
+        cube1.transpose((2, 0, 1))
+        cube2.transpose((2, 0, 1))
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 1)
+
+    def test_concatenate_anom_3rd_dim(self):
+        # Check that concatenation along a non anonymous dimension is
+        # insensitive to the dimension which is anonymous.
+        # Concatenate along longitude.
+        # DIM: cube(lat, lon, --)   & cube(lat, lon', --)
+        # AUX: cube(--, --, wibble) & cube(--, --, wibble)
+        cube1 = self.cube[..., :2]
+        cube2 = self.cube[..., 2:]
+        cube1.transpose((1, 2, 0))
+        cube2.transpose((1, 2, 0))
+        result = concatenate([cube1, cube2])
+        self.assertEqual(len(result), 1)
 
 
 if __name__ == '__main__':

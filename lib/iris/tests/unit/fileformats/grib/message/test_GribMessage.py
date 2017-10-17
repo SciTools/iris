@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,9 +29,10 @@ import iris.tests as tests
 
 from abc import ABCMeta, abstractmethod
 
-import biggus
 import numpy as np
+import numpy.ma as ma
 
+from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.exceptions import TranslationError
 from iris.fileformats.grib.message import GribMessage
 from iris.tests import mock
@@ -85,23 +86,45 @@ class Test_data__masked(tests.IrisTest):
         message = _make_test_message({3: self._section_3,
                                       6: SECTION_6_NO_BITMAP,
                                       7: {'codedValues': values}})
-        result = message.data.ndarray()
+        result = as_concrete_data(message.data)
         expected = values.reshape(self.shape)
         self.assertEqual(result.shape, self.shape)
         self.assertArrayEqual(result, expected)
 
-    def test_bitmap_present(self):
+    def test_bitmap_present_int_data(self):
         # Test the behaviour where bitmap and codedValues shapes
-        # are not equal.
+        # are not equal, and codedValues is integer data.
+        data_type = np.int64
         input_values = np.arange(5)
-        output_values = np.array([-1, -1, 0, 1, -1, -1, -1, 2, -1, 3, -1, 4])
+        output_values = np.array([-1, -1, 0, 1, -1, -1, -1, 2, -1, 3, -1, 4],
+                                 dtype=data_type)
         message = _make_test_message({3: self._section_3,
                                       6: {'bitMapIndicator': 0,
                                           'bitmap': self.bitmap},
                                       7: {'codedValues': input_values}})
-        result = message.data.masked_array()
-        expected = np.ma.masked_array(output_values,
-                                      np.logical_not(self.bitmap))
+        result = as_concrete_data(message.data, nans_replacement=ma.masked,
+                                  result_dtype=data_type)
+        expected = ma.masked_array(output_values,
+                                   np.logical_not(self.bitmap))
+        expected = expected.reshape(self.shape)
+        self.assertMaskedArrayEqual(result, expected)
+        self.assertEqual(result.dtype, data_type)
+
+    def test_bitmap_present_float_data(self):
+        # Test the behaviour where bitmap and codedValues shapes
+        # are not equal, and codedValues is float data.
+        data_type = np.float32
+        input_values = np.arange(5, dtype=np.float32) + 5
+        output_values = np.array([-1, -1, 5, 6, -1, -1, -1, 7, -1, 8, -1, 9],
+                                 dtype=data_type)
+        message = _make_test_message({3: self._section_3,
+                                      6: {'bitMapIndicator': 0,
+                                          'bitmap': self.bitmap},
+                                      7: {'codedValues': input_values}})
+        result = as_concrete_data(message.data, nans_replacement=ma.masked,
+                                  result_dtype=data_type)
+        expected = ma.masked_array(output_values,
+                                   np.logical_not(self.bitmap))
         expected = expected.reshape(self.shape)
         self.assertMaskedArrayEqual(result, expected)
 
@@ -114,7 +137,7 @@ class Test_data__masked(tests.IrisTest):
                                           'bitmap': self.bitmap},
                                       7: {'codedValues': values}})
         with self.assertRaisesRegexp(TranslationError, 'do not match'):
-            message.data.masked_array()
+            as_concrete_data(message.data, nans_replacement=ma.masked)
 
     def test_bitmap__invalid_indicator(self):
         values = np.arange(12)
@@ -123,7 +146,7 @@ class Test_data__masked(tests.IrisTest):
                                           'bitmap': None},
                                       7: {'codedValues': values}})
         with self.assertRaisesRegexp(TranslationError, 'unsupported bitmap'):
-            message.data.ndarray()
+            as_concrete_data(message.data, nans_replacement=ma.masked)
 
 
 class Test_data__unsupported(tests.IrisTest):
@@ -182,11 +205,11 @@ class Mixin_data__grid_template(six.with_metaclass(ABCMeta, object)):
              6: SECTION_6_NO_BITMAP,
              7: {'codedValues': np.arange(12)}})
         data = message.data
-        self.assertIsInstance(data, biggus.Array)
+        self.assertTrue(is_lazy_data(data))
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
-        self.assertIs(data.fill_value, np.nan)
-        self.assertArrayEqual(data.ndarray(), np.arange(12).reshape(3, 4))
+        self.assertArrayEqual(as_concrete_data(data),
+                              np.arange(12).reshape(3, 4))
 
     def test_regular_mode_0(self):
         self._test(0)
@@ -211,27 +234,37 @@ def _example_section_3(grib_definition_template_number, scanning_mode):
             'Ni': 4}
 
 
-class Test_data__grid_template_0(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_0(tests.IrisTest_nometa,
+                                 Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(0, scanning_mode)
 
 
-class Test_data__grid_template_1(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_1(tests.IrisTest_nometa,
+                                 Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(1, scanning_mode)
 
 
-class Test_data__grid_template_5(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_5(tests.IrisTest_nometa,
+                                 Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(5, scanning_mode)
 
 
-class Test_data__grid_template_12(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_12(tests.IrisTest_nometa,
+                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(12, scanning_mode)
 
 
-class Test_data__grid_template_30(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_30(tests.IrisTest_nometa,
+                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(30, scanning_mode)
         # Dimensions are 'Nx' + 'Ny' instead of 'Ni' + 'Nj'.
@@ -242,13 +275,16 @@ class Test_data__grid_template_30(tests.IrisTest, Mixin_data__grid_template):
         return section_3
 
 
-class Test_data__grid_template_40_regular(tests.IrisTest,
+@tests.iristest_timing_decorator
+class Test_data__grid_template_40_regular(tests.IrisTest_nometa,
                                           Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         return _example_section_3(40, scanning_mode)
 
 
-class Test_data__grid_template_90(tests.IrisTest, Mixin_data__grid_template):
+@tests.iristest_timing_decorator
+class Test_data__grid_template_90(tests.IrisTest_nometa,
+                                  Mixin_data__grid_template):
     def section_3(self, scanning_mode):
         section_3 = _example_section_3(90, scanning_mode)
         # Exceptionally, dimensions are 'Nx' + 'Ny' instead of 'Ni' + 'Nj'.

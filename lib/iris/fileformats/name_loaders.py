@@ -34,6 +34,8 @@ import iris.cube
 from iris.exceptions import TranslationError
 import iris.util
 
+from operator import itemgetter
+
 
 EARTH_RADIUS = 6371229.0
 NAMEIII_DATETIME_FORMAT = '%d/%m/%Y  %H:%M %Z'
@@ -81,6 +83,8 @@ def read_header(file_handle):
     for line in file_handle:
         words = line.split(':', 1)
         if len(words) != 2:
+            if 'Forward' in line or 'Backward' in line:
+                header['Trajectory direction'] = words[0].strip()
             break
         key, value = [word.strip() for word in words]
         header[key] = value
@@ -1108,6 +1112,11 @@ def load_NAMEIII_trajectory(filename):
                         pass
                 columns[c].append(v)
 
+    # Sort columns according to PP Index
+    columns_t = list(map(list, zip(*columns)))
+    columns_t.sort(key=itemgetter(1))
+    columns = list(map(list, zip(*columns_t)))
+
     # Where's the Z column?
     z_column = None
     for i, heading in enumerate(headings):
@@ -1167,9 +1176,17 @@ def load_NAMEIII_trajectory(filename):
         name, units = _split_name_and_units(name)
         cube = iris.cube.Cube(values, units=units)
         cube.rename(name)
+        # Add the Main Headings as attributes.
+        for key, value in six.iteritems(header):
+            if value is not None and value != '' and \
+                    key not in headings:
+                cube.attributes[key] = value
+        # Add coordinates
         for coord in coords:
             dim = 0 if len(coord.points) > 1 else None
-            if isinstance(coord, DimCoord) and coord.name() == "time":
+            if dim == 0 and coord.name() == "time":
+                cube.add_dim_coord(coord.copy(), dim)
+            elif dim == 0 and coord.name() == 'PP Index':
                 cube.add_dim_coord(coord.copy(), dim)
             else:
                 cube.add_aux_coord(coord.copy(), dim)

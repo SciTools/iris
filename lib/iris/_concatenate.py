@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,12 +26,12 @@ import six
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 
-import biggus
+import dask.array as da
 import numpy as np
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal, unify_time_units
+from iris.util import guess_coord_axis, array_equal
 
 
 #
@@ -322,6 +322,7 @@ class _CubeSignature(object):
         self.ndim = cube.ndim
         self.scalar_coords = []
         self.cell_measures_and_dims = cube._cell_measures_and_dims
+        self.dim_mapping = []
 
         # Determine whether there are any anonymous cube dimensions.
         covered = set(cube.coord_dims(coord)[0] for coord in self.dim_coords)
@@ -329,13 +330,16 @@ class _CubeSignature(object):
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
+        self.fill_value = cube.fill_value
 
         #
         # Collate the dimension coordinate metadata.
         #
-        for coord in self.dim_coords:
-            metadata = _CoordMetaData(coord, cube.coord_dims(coord))
+        for ind, coord in enumerate(self.dim_coords):
+            dims = cube.coord_dims(coord)
+            metadata = _CoordMetaData(coord, dims)
             self.dim_metadata.append(metadata)
+            self.dim_mapping.append(dims[0])
 
         #
         # Collate the auxiliary coordinate metadata and scalar coordinates.
@@ -433,10 +437,11 @@ class _CubeSignature(object):
 
         # Check cube definitions.
         if self.defn != other.defn:
-            # Note that the case of different phenomenon names is dealt with
-            # in :meth:`iris.cube.CubeList.concatenate_cube()`.
+            # Note that the case of different phenomenon names is dealt
+            # with in :meth:`iris.cube.CubeList.concatenate_cube()`.
             msg = 'Cube metadata differs for phenomenon: {}'
             msgs.append(msg.format(self.defn.name()))
+
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')
@@ -456,9 +461,9 @@ class _CubeSignature(object):
         if self.ndim != other.ndim:
             msgs.append(msg_template.format('Data dimensions', '',
                                             self.ndim, other.ndim))
-        # Check datatype.
+        # Check data type.
         if self.data_type != other.data_type:
-            msgs.append(msg_template.format('Datatypes', '',
+            msgs.append(msg_template.format('Data types', '',
                                             self.data_type, other.data_type))
 
         # Check _cell_measures_and_dims
@@ -493,6 +498,7 @@ class _CoordSignature(object):
         """
         self.aux_coords_and_dims = cube_signature.aux_coords_and_dims
         self.dim_coords = cube_signature.dim_coords
+        self.dim_mapping = cube_signature.dim_mapping
         self.dim_extents = []
         self.dim_order = [metadata.kwargs['order']
                           for metadata in cube_signature.dim_metadata]
@@ -548,12 +554,12 @@ class _CoordSignature(object):
         candidate_axes = []
 
         # Compare dimension coordinates.
-        for dim, coord in enumerate(self.dim_coords):
-            result, candidate_axis = self._cmp(coord,
-                                               other.dim_coords[dim])
+        for ind, coord in enumerate(self.dim_coords):
+            result, candidate_axis = self._cmp(coord, other.dim_coords[ind])
             if not result:
                 break
             if candidate_axis:
+                dim = self.dim_mapping[ind]
                 candidate_axes.append(dim)
 
         # Only permit one degree of dimensional freedom when
@@ -643,7 +649,8 @@ class _ProtoCube(object):
         """
         if len(self._skeletons) > 1:
             skeletons = self._skeletons
-            order = self._coord_signature.dim_order[self.axis]
+            dim_ind = self._coord_signature.dim_mapping.index(self.axis)
+            order = self._coord_signature.dim_order[dim_ind]
             cube_signature = self._cube_signature
 
             # Sequence the skeleton segments into the correct order
@@ -668,6 +675,8 @@ class _ProtoCube(object):
                                   dim_coords_and_dims=dim_coords_and_dims,
                                   aux_coords_and_dims=aux_coords_and_dims,
                                   cell_measures_and_dims=new_cm_and_dims,
+                                  dtype=cube_signature.data_type,
+                                  fill_value=cube_signature.fill_value,
                                   **kwargs)
         else:
             # There are no other source-cubes to concatenate
@@ -713,6 +722,13 @@ class _ProtoCube(object):
 
         # Check for compatible coordinate signatures.
         if match:
+            fill_value = self._cube_signature.fill_value
+            # Determine whether the fill value requires to be
+            # demoted to the default value.
+            if fill_value is not None:
+                if cube_signature.fill_value != fill_value:
+                    # Demote the fill value to the default.
+                    self._cube_signature.fill_value = None
             coord_signature = _CoordSignature(cube_signature)
             candidate_axis = self._coord_signature.candidate_axis(
                 coord_signature)
@@ -721,7 +737,8 @@ class _ProtoCube(object):
 
         # Check for compatible coordinate extents.
         if match:
-            match = self._sequence(coord_signature.dim_extents[candidate_axis],
+            dim_ind = self._coord_signature.dim_mapping.index(candidate_axis)
+            match = self._sequence(coord_signature.dim_extents[dim_ind],
                                    candidate_axis)
 
         # Check for compatible AuxCoords.
@@ -748,10 +765,11 @@ class _ProtoCube(object):
             # a subsequently registered cube has a non-constant dimension
             # order we should use that instead of _CONSTANT to make sure all
             # the ordering checks and sorts work as expected.
-            existing_order = self._coord_signature.dim_order[self.axis]
-            this_order = coord_signature.dim_order[self.axis]
+            dim_ind = self._coord_signature.dim_mapping.index(candidate_axis)
+            existing_order = self._coord_signature.dim_order[dim_ind]
+            this_order = coord_signature.dim_order[dim_ind]
             if existing_order == _CONSTANT and this_order != _CONSTANT:
-                self._coord_signature.dim_order[self.axis] = this_order
+                self._coord_signature.dim_order[dim_ind] = this_order
 
         return match
 
@@ -842,7 +860,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        data = biggus.LinearMosaic(tuple(data), axis=self.axis)
+        data = da.concatenate(data, self.axis)
 
         return data
 
@@ -858,18 +876,19 @@ class _ProtoCube(object):
         # Setup convenience hooks.
         skeletons = self._skeletons
         axis = self.axis
-        defn = self._cube_signature.dim_metadata[axis].defn
-        circular = self._cube_signature.dim_metadata[axis].kwargs['circular']
+        dim_ind = self._cube_signature.dim_mapping.index(axis)
+        metadata = self._cube_signature.dim_metadata[dim_ind]
+        defn, circular = metadata.defn, metadata.kwargs['circular']
 
         # Concatenate the points together for the nominated dimension.
-        points = [skeleton.signature.dim_coords[axis].points
+        points = [skeleton.signature.dim_coords[dim_ind].points
                   for skeleton in skeletons]
         points = np.concatenate(tuple(points))
 
         # Concatenate the bounds together for the nominated dimension.
         bounds = None
-        if self._cube_signature.dim_coords[axis].has_bounds():
-            bounds = [skeleton.signature.dim_coords[axis].bounds
+        if self._cube_signature.dim_coords[dim_ind].has_bounds():
+            bounds = [skeleton.signature.dim_coords[dim_ind].bounds
                       for skeleton in skeletons]
             bounds = np.concatenate(tuple(bounds))
 
@@ -881,7 +900,8 @@ class _ProtoCube(object):
 
         # Generate all the dimension coordinates for the new concatenated cube.
         dim_coords_and_dims = []
-        for dim, coord in enumerate(self._cube_signature.dim_coords):
+        for ind, coord in enumerate(self._cube_signature.dim_coords):
+            dim = self._cube_signature.dim_mapping[ind]
             if dim == axis:
                 dim_coords_and_dims.append((dim_coord, dim))
             else:
@@ -911,12 +931,13 @@ class _ProtoCube(object):
         result = True
 
         # Add the new extent to the current extents collection.
-        dim_extents = [skeleton.signature.dim_extents[axis]
+        dim_ind = self._coord_signature.dim_mapping.index(axis)
+        dim_extents = [skeleton.signature.dim_extents[dim_ind]
                        for skeleton in self._skeletons]
         dim_extents.append(extent)
 
         # Sort into the appropriate dimension order.
-        order = self._coord_signature.dim_order[axis]
+        order = self._coord_signature.dim_order[dim_ind]
         dim_extents.sort(reverse=(order == _DECREASING))
 
         # Ensure that the extents don't overlap.

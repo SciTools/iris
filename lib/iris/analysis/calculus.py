@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -325,9 +325,10 @@ def _curl_regrid(cube, prototype):
     assert isinstance(prototype, iris.cube.Cube)
 
     if cube is None:
-        return None
-    # #301 use of resample would be better here.
-    return cube.regridded(prototype)
+        result = None
+    else:
+        result = cube.regrid(prototype, iris.analysis.Linear())
+    return result
 
 
 def _copy_cube_transformed(src_cube, data, coord_func):
@@ -341,7 +342,9 @@ def _copy_cube_transformed(src_cube, data, coord_func):
     assert src_cube.ndim == data.ndim
 
     # Start with just the metadata and the data...
-    new_cube = iris.cube.Cube(data)
+    new_cube = iris.cube.Cube(data,
+                              fill_value=src_cube.fill_value,
+                              dtype=src_cube.dtype)
     new_cube.metadata = src_cube.metadata
 
     # ... and then create all the coordinates.
@@ -441,7 +444,7 @@ def _trig_method(coord, trig_function):
     return trig_coord
 
 
-def curl(i_cube, j_cube, k_cube=None, ignore=None):
+def curl(i_cube, j_cube, k_cube=None):
     r"""
     Calculate the 2-dimensional or 3-dimensional spherical or cartesian
     curl of the given vector of cubes.
@@ -461,11 +464,6 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
     * k_cube
         The k cube of the vector to operate on
-    * ignore
-        This argument is not used.
-
-        .. deprecated:: 0.8
-            The coordinates to ignore are determined automatically.
 
     Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)
 
@@ -523,11 +521,6 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
             where phi is longitude, theta is latitude.
 
     """
-    if ignore is not None:
-        ignore = None
-        warn_deprecated('The ignore keyword to iris.analysis.calculus.curl '
-                        'is deprecated, ignoring is now done automatically.')
-
     # Get the vector quantity names.
     # (i.e. ['easterly', 'northerly', 'vertical'])
     vector_quantity_names, phenomenon_name = \
