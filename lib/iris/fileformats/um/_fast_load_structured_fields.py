@@ -283,7 +283,7 @@ def group_structured_fields(field_iterator):
     *  the same for all fields,
     *  completely irrelevant, or
     *  used by a vectorised rule function (such as
-       :func:`iris.fileformats.pp_rules._convert_vector_time_coords`).
+       :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
 
     Returns:
         A generator of FieldCollation objects, each of which contains a single

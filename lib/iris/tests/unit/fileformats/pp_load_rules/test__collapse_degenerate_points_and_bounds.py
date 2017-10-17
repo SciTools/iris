@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.pp_rules._collapse_degenerate_points_and_bounds`.
+:func:`iris.fileformats.pp_load_rules._collapse_degenerate_points_and_bounds`.
 
 """
 

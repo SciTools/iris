@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.fileformats.pp_rules._dim_or_aux`."""
+"""Unit tests for :func:`iris.fileformats.pp_load_rules._dim_or_aux`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa

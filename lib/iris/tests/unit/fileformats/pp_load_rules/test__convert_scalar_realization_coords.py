@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.pp_rules._convert_pseudo_level_coords`.
+:func:`iris.fileformats.pp_load_rules._convert_scalar_realization_coords`.
 
 """
 
@@ -30,17 +30,17 @@ import iris.tests as tests
 from iris.coords import DimCoord
 from iris.tests.unit.fileformats import TestField
 
-from iris.fileformats.pp_load_rules import _convert_scalar_pseudo_level_coords
+from iris.fileformats.pp_load_rules import _convert_scalar_realization_coords
 
 
 class Test(TestField):
     def test_valid(self):
-        coords_and_dims = _convert_scalar_pseudo_level_coords(lbuser5=21)
+        coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=21)
         self.assertEqual(coords_and_dims,
-                         [(DimCoord([21], long_name='pseudo_level'), None)])
+                         [(DimCoord([21], standard_name='realization'), None)])
 
     def test_missing_indicator(self):
-        coords_and_dims = _convert_scalar_pseudo_level_coords(lbuser5=0)
+        coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=0)
         self.assertEqual(coords_and_dims, [])
 
 

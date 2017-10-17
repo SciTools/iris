@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.fileformats.pp_rules._all_other_rules` function."""
+"""Unit tests for the `iris.fileformats.pp_load_rules._all_other_rules` function."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -36,7 +36,7 @@ from iris.tests import mock
 from iris.tests.unit.fileformats import TestField
 
 
-# iris.fileformats.pp_rules._all_other_rules() returns a tuple of
+# iris.fileformats.pp_load_rules._all_other_rules() returns a tuple of
 # of various metadata. This constant is the index into this
 # tuple to obtain the cell methods.
 CELL_METHODS_INDEX = 5

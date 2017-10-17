@@ -40,7 +40,6 @@ import netcdftime
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
-import iris.fileformats.pp_rules
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 

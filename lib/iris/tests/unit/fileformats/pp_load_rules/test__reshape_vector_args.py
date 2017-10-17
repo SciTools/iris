@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.pp_rules._reshape_vector_args`.
+:func:`iris.fileformats.pp_load_rules._reshape_vector_args`.
 
 """
 
