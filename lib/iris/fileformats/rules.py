@@ -23,26 +23,14 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import abc
 import collections
-from contextlib import contextmanager
-import getpass
-import logging
-import logging.handlers as handlers
-import os
-import os.path
-import platform
-import sys
 import warnings
 
 import cf_units
 
-from iris._deprecation import warn_deprecated
-from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
-from iris.util import is_regular, regular_step
 
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
 ReferenceTarget = collections.namedtuple('ReferenceTarget',
@@ -199,7 +187,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
 def _regrid_to_target(src_cube, target_coords, target_cube):
     # Interpolate onto the target grid.
     sample_points = [(coord, coord.points) for coord in target_coords]
-    result_cube = src_cube.interpolate(sample_points, Linear())
+    result_cube = regrid_linear(src_cube, sample_points)
 
     # Any scalar coords on the target_cube will have become vector
     # coords on the resample src_cube (i.e. result_cube).
