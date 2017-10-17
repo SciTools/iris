@@ -316,7 +316,7 @@ class TestDimCoordCreation(tests.IrisTest):
         
     def test_dim_coord_restrictions(self):
         # 1d
-        with self.assertRaisesRegexp(ValueError, 'must be 1-dim'):
+        with self.assertRaisesRegexp(ValueError, 'must be scalar or 1-dim'):
             iris.coords.DimCoord([[1, 2, 3], [4, 5, 6]])
         # monotonic
         with self.assertRaisesRegexp(ValueError, 'must be strictly monotonic'):
@@ -326,7 +326,7 @@ class TestDimCoordCreation(tests.IrisTest):
                                      'monotonicity.*consistent.*all bounds'):
             iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # shapes of points and bounds
-        msg = 'Bounds shape must be compatible with points shape'
+        msg = 'The shape of the bounds array should be'
         with self.assertRaisesRegexp(ValueError, msg):
             iris.coords.DimCoord([1, 2, 3], bounds=[0.5, 1.5, 2.5, 3.5])
         # another example of shapes of points and bounds

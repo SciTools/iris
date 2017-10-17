@@ -84,7 +84,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         bds_shape = list(self.bds_real.shape)
         bds_shape[0] += 1
         bds_wrong = np.zeros(bds_shape)
-        msg = 'Bounds shape must be compatible with points shape'
+        msg = 'The shape of the bounds array should be'
         with self.assertRaisesRegexp(ValueError, msg):
             DimCoord(self.pts_real, bounds=bds_wrong)
 
@@ -397,10 +397,20 @@ class Test_points__setter(tests.IrisTest, DimCoordTestMixin):
 
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
-        coord = DimCoord([1.0, 2.0])
+        points = [1.0, 2.0]
+        coord = DimCoord(points)
         msg = 'Require data with shape \(2,\), got \(3,\)'
         with self.assertRaisesRegexp(ValueError, msg):
             coord.points = np.array([1.0, 2.0, 3.0])
+        self.assertArrayEqual(coord.points, points)
+
+    def test_fail_not_monotonic(self):
+        # Setting real points requires that they are monotonic.
+        coord = DimCoord(self.pts_real, bounds=self.bds_real)
+        msg = 'strictly monotonic'
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord.points = np.array([3.0, 1.0, 2.0])
+        self.assertArrayEqual(coord.points, self.pts_real)
 
     def test_set_lazy(self):
         # Setting new lazy points realises them.
@@ -441,9 +451,18 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
-        msg = 'Bounds shape must be compatible with points shape'
+        msg = 'The shape of the bounds array should be'
         with self.assertRaisesRegexp(ValueError, msg):
             coord.bounds = np.array([1.0, 2.0, 3.0])
+        self.assertArrayEqual(coord.bounds, self.bds_real)
+
+    def test_fail_not_monotonic(self):
+        # Setting real bounds requires that they are monotonic.
+        coord = DimCoord(self.pts_real, bounds=self.bds_real)
+        msg = 'strictly monotonic'
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord.bounds = np.array([[3.0, 2.0], [1.0, 0.0], [2.0, 1.0]])
+        self.assertArrayEqual(coord.bounds, self.bds_real)
 
     def test_set_lazy(self):
         # Setting new lazy bounds realises them.
