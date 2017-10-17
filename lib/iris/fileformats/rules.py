@@ -87,36 +87,6 @@ class ConcreteReferenceTarget(object):
         return self._final_cube
 
 
-# A flag to control all the text-rules and rules-logging deprecation warnings.
-_enable_rules_deprecations = True
-
-# A context manager to avoid the deprecation warnings for internal calls.
-@contextmanager
-def _disable_deprecation_warnings():
-    global _enable_rules_deprecations
-    old_flag_value = _enable_rules_deprecations
-    try:
-        _enable_rules_deprecations = False
-        yield
-    finally:
-        _enable_rules_deprecations = old_flag_value
-
-
-class CMAttribute(object):
-    """
-    Used by the rules for defining attributes on the Cube in a consistent manner.
-
-    .. deprecated:: 1.10
-
-    """
-    __slots__ = ('name', 'value')
-    def __init__(self, name, value):
-        warn_deprecated(
-            "the `iris.fileformats.rules.CmAttribute class is deprecated.")
-        self.name = name
-        self.value = value
-
-
 class Reference(iris.util._OrderedHashable):
     _names = ('name',)
     """
