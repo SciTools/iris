@@ -976,9 +976,8 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # condition" array, which is split into 4 quartiles, North
         # East, South, West and where North and South contain the corners.
         compressed_data = data
-        if data_type.kind != 'i':
-            data_type = np.dtype('f8')
-        data = np.full(data_shape, np.nan, dtype=data_type)
+        data = np.ma.masked_all(data_shape)
+        data.fill_value = mdi
 
         boundary_height = boundary_packing.y_halo + boundary_packing.rim_width
         boundary_width = boundary_packing.x_halo + boundary_packing.rim_width
@@ -1019,9 +1018,8 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                              'Could not load.')
         land_mask = mask.data.astype(np.bool)
         sea_mask = ~land_mask
-        if data_type.kind != 'i':
-            data_type = np.dtype('f8')
-        new_data = np.full(land_mask.shape, np.nan, dtype=data_type)
+        new_data = np.ma.masked_all(land_mask.shape)
+        new_data.fill_value = mdi
         if lbpack.n3 == 1:
             # Land mask packed data.
             # Sometimes the data comes in longer than it should be (i.e. it

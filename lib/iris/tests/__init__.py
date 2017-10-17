@@ -1158,7 +1158,7 @@ def skip_plot(fn):
 
 # Control for @skip_dask_mask : Set to False to run the dask mask failing
 # tests.
-_SKIP_DASK_MASK_TESTS = True
+_SKIP_DASK_MASK_TESTS = False
 
 
 skip_dask_mask = unittest.skipIf(_SKIP_DASK_MASK_TESTS,

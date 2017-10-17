@@ -342,8 +342,6 @@ def interpolate(cube, sample_points, method=None):
             # This is **not** proper mask handling, because we cannot produce a
             # masked result, but it ensures we use a "filled" version of the
             # input in this case.
-            if cube.fill_value is not None:
-                source_data.fill_value = cube.fill_value
             source_data = source_data.filled()
         new_cube.data[:] = source_data
         # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
