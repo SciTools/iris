@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.pp_rules._collapse_degenerate_points_and_bounds`.
+:func:`iris.fileformats.pp_load_rules._collapse_degenerate_points_and_bounds`.
 
 """
 
@@ -29,7 +29,8 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.fileformats.pp_rules import _collapse_degenerate_points_and_bounds
+from iris.fileformats.pp_load_rules import \
+    _collapse_degenerate_points_and_bounds
 
 
 class Test(tests.IrisTest):

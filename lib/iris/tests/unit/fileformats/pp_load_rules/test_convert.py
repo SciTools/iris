@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.fileformats.pp_rules.convert`."""
+"""Unit tests for :func:`iris.fileformats.pp_load_rules.convert`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -30,7 +30,7 @@ import netcdftime
 import cf_units
 import numpy as np
 
-from iris.fileformats.pp_rules import convert
+from iris.fileformats.pp_load_rules import convert
 from iris.util import guess_coord_axis
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp import STASH

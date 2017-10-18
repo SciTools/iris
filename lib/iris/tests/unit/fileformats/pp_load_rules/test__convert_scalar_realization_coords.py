@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.pp_rules._convert_scalar_realization_coords`.
+:func:`iris.fileformats.pp_load_rules._convert_scalar_realization_coords`.
 
 """
 
@@ -30,7 +30,7 @@ import iris.tests as tests
 from iris.coords import DimCoord
 from iris.tests.unit.fileformats import TestField
 
-from iris.fileformats.pp_rules import _convert_scalar_realization_coords
+from iris.fileformats.pp_load_rules import _convert_scalar_realization_coords
 
 
 class Test(TestField):

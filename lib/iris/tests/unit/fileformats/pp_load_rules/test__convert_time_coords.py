@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for
-:func:`iris.fileformats.pp_rules._convert_time_coords`.
+:func:`iris.fileformats.pp_load_rules._convert_time_coords`.
 
 """
 
@@ -33,7 +33,7 @@ import numpy as np
 
 from iris.coords import DimCoord, AuxCoord
 from iris.fileformats.pp import SplittableInt
-from iris.fileformats.pp_rules import _convert_time_coords
+from iris.fileformats.pp_load_rules import _convert_time_coords
 from iris.tests import mock
 from iris.tests.unit.fileformats import TestField
 
