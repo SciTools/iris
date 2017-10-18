@@ -106,7 +106,6 @@ install:
     fi
 
 # iris
-  - python setup.py --quiet build
   - python setup.py --quiet install
 
 script:

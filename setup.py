@@ -10,7 +10,6 @@ import multiprocessing
 import os
 import sys
 
-import numpy as np
 import setuptools
 
 # Add full path so Python doesn't load any __init__.py in the intervening
