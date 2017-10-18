@@ -23,26 +23,15 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import abc
 import collections
-from contextlib import contextmanager
-import getpass
-import logging
-import logging.handlers as handlers
-import os
-import os.path
-import platform
-import sys
 import warnings
 
 import cf_units
 
-from iris._deprecation import warn_deprecated
 from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
-from iris.util import is_regular, regular_step
 
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
 ReferenceTarget = collections.namedtuple('ReferenceTarget',
@@ -85,36 +74,6 @@ class ConcreteReferenceTarget(object):
                 self._final_cube = final_cube
 
         return self._final_cube
-
-
-# A flag to control all the text-rules and rules-logging deprecation warnings.
-_enable_rules_deprecations = True
-
-# A context manager to avoid the deprecation warnings for internal calls.
-@contextmanager
-def _disable_deprecation_warnings():
-    global _enable_rules_deprecations
-    old_flag_value = _enable_rules_deprecations
-    try:
-        _enable_rules_deprecations = False
-        yield
-    finally:
-        _enable_rules_deprecations = old_flag_value
-
-
-class CMAttribute(object):
-    """
-    Used by the rules for defining attributes on the Cube in a consistent manner.
-
-    .. deprecated:: 1.10
-
-    """
-    __slots__ = ('name', 'value')
-    def __init__(self, name, value):
-        warn_deprecated(
-            "the `iris.fileformats.rules.CmAttribute class is deprecated.")
-        self.name = name
-        self.value = value
 
 
 class Reference(iris.util._OrderedHashable):
