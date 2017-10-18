@@ -47,8 +47,6 @@ if tests.GRIB_AVAILABLE:
     import gribapi
     import iris.fileformats
     import iris_grib
-    # THIS IS A HORRIBLE KLUDGE.
-    iris.fileformats.grib = iris_grib
 
 
 def _mock_gribapi_fetch(message, key):
@@ -205,7 +203,7 @@ class TestGribTimecodes(tests.IrisTest):
         # Operates on lists of cases for various time-units and grib-editions.
         # Format: (edition, code, expected-exception,
         #          equivalent-seconds, description-string)
-        with mock.patch('iris.fileformats.grib.gribapi', _mock_gribapi):
+        with mock.patch('iris_grib.gribapi', _mock_gribapi):
             for test_controls in test_set:
                 (
                     grib_edition, timeunit_codenum,
@@ -222,7 +220,7 @@ class TestGribTimecodes(tests.IrisTest):
                 if expected_error:
                     # Expect GribWrapper construction to fail.
                     with self.assertRaises(type(expected_error)) as ar_context:
-                        msg = iris.fileformats.grib.GribWrapper(message)
+                        msg = iris_grib.GribWrapper(message)
                     self.assertEqual(
                         ar_context.exception.args,
                         expected_error.args)
@@ -231,7 +229,7 @@ class TestGribTimecodes(tests.IrisTest):
                 # 'ELSE'...
                 # Expect the wrapper construction to work.
                 # Make a GribWrapper object and test it.
-                wrapped_msg = iris.fileformats.grib.GribWrapper(message)
+                wrapped_msg = iris_grib.GribWrapper(message)
 
                 # Check the units string.
                 forecast_timeunit = wrapped_msg._forecastTimeUnit
@@ -328,7 +326,7 @@ class TestGribTimecodes(tests.IrisTest):
                 gribapi.grib_write(grib_message, temp_gribfile)
 
             # Load the message from the file as a cube.
-            cube_generator = iris.fileformats.grib.load_cubes(
+            cube_generator = iris_grib.load_cubes(
                 temp_gribfile_path)
             with self.assertRaises(iris.exceptions.TranslationError) as te:
                 cube = next(cube_generator)
@@ -355,12 +353,12 @@ class TestGribSimple(tests.IrisTest):
     def cube_from_message(self, grib):
         # Parameter translation now uses the GribWrapper, so we must convert
         # the Mock-based fake message to a FakeGribMessage.
-        with mock.patch('iris.fileformats.grib.gribapi', _mock_gribapi):
+        with mock.patch('iris_grib.gribapi', _mock_gribapi):
                 grib_message = FakeGribMessage(**grib.__dict__)
-                wrapped_msg = iris.fileformats.grib.GribWrapper(grib_message)
+                wrapped_msg = iris_grib.GribWrapper(grib_message)
                 cube, _, _ = iris.fileformats.rules._make_cube(
                     wrapped_msg,
-                    iris.fileformats.grib._grib1_load_rules.grib1_convert)
+                    iris_grib._grib1_load_rules.grib1_convert)
         return cube
 
 
