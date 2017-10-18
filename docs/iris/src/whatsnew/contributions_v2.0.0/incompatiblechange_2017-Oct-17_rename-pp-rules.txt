@@ -1,2 +1,2 @@
-`iris.fileformats.pp_rules` has been renamed to `iris.fileformats.pp_load_rules`.
-This has been done for the sake of clarity following the introduction of `iris.fileformats.pp_save_rules`.
+* ```iris.fileformats.pp_rules``` has been renamed to :mod:`iris.fileformats.pp_load_rules`.
+  This has been done for the sake of clarity following the introduction of `iris.fileformats.pp_save_rules`.

@@ -1,1 +1,1 @@
-Removed deprecated module ```iris.experimental.fieldsfile```.
+* Removed deprecated module ```iris.experimental.fieldsfile```.
