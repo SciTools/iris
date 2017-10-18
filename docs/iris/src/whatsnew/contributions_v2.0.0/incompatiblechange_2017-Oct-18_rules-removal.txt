@@ -10,3 +10,4 @@ The following classes and functions have been removed from :mod:`iris.fileformat
 	* ```iris.fileformat.rules.Rule```
 	* ```iris.fileformat.rules.RulesContainer```
 	* ```iris.fileformat.rules.RuleResult```
+	* Removed deprecated keyword argument ```legacy_custom_rules``` from :class:`iris.fileformats.rules.Loader`.
