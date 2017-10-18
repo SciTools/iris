@@ -172,7 +172,6 @@ class TestTriPolar(tests.IrisTest):
         self.sample_points = [('longitude', longitudes),
                               ('latitude', latitudes)]
 
-    @tests.skip_dask_mask
     def test_tri_polar(self):
         # extract
         sampled_cube = traj_interpolate(self.cube, self.sample_points)
@@ -204,7 +203,7 @@ class TestTriPolar(tests.IrisTest):
         # TODO: arguably, we should support masked data properly in the
         # interpolation routine.  In the legacy code, that is unfortunately
         # just not the case.
-        test_cube.fill_value = 0
+        test_cube.data.fill_value = 0
 
         # Test points on a regular global grid, with unrelated steps + offsets
         # and an extended range of longitude values.
