@@ -1015,7 +1015,8 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-def _percentile(data, axis, percent, **kwargs):
+def _percentile(data, axis, percent, fast_percentile_method=False,
+                **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1024,18 +1025,34 @@ def _percentile(data, axis, percent, **kwargs):
     If a new additive dimension is formed, then it will always be the last
     dimension of the resulting percentile data payload.
 
+    Kwargs:
+
+    * fast_percentile_method (boolean) :
+        When set to True, uses the numpy.percentiles method as a faster
+        alternative to the scipy.mstats.mquantiles method. Does not handle
+        masked arrays.
+
     """
     # Ensure that the target axis is the last dimension.
     data = np.rollaxis(data, axis, start=data.ndim)
-    quantiles = np.array(percent) / 100.
     shape = data.shape[:-1]
     # Flatten any leading dimensions.
     if shape:
         data = data.reshape([np.prod(shape), data.shape[-1]])
     # Perform the percentile calculation.
-    result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1, **kwargs)
+    if fast_percentile_method:
+        msg = 'Cannot use fast np.percentile method with masked array.'
+        if ma.isMaskedArray(data):
+            raise TypeError(msg)
+        result = np.percentile(data, percent, axis=-1)
+        result = result.T
+    else:
+        quantiles = np.array(percent) / 100.
+        result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1,
+                                               **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
+
     # Ensure to unflatten any leading dimensions.
     if shape:
         if not isinstance(percent, collections.Iterable):
@@ -2477,8 +2494,3 @@ class UnstructuredNearest(object):
         from iris.analysis.trajectory import \
             UnstructuredNearestNeigbourRegridder
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
-
-
-# Import "iris.analysis.interpolate" to replicate older automatic imports.
-# NOTE: do this at end, as otherwise its import of 'Linear' will fail.
-from . import _interpolate_backdoor as interpolate

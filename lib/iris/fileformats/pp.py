@@ -26,7 +26,6 @@ import six
 import abc
 import collections
 from copy import deepcopy
-import itertools
 import operator
 import os
 import re
@@ -41,8 +40,14 @@ import netcdftime
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
+import iris.fileformats.pp_load_rules
+from iris.fileformats.pp_save_rules import verify
+
+# NOTE: this is for backwards-compatitibility *ONLY*
+# We could simply remove it for v2.0 ?
+from iris.fileformats._pp_lbproc_pairs import (LBPROC_PAIRS,
+                                               LBPROC_MAP as lbproc_map)
 import iris.fileformats.rules
-import iris.fileformats.pp_rules
 import iris.coord_systems
 
 
@@ -51,24 +56,13 @@ try:
 except ImportError:
     mo_pack = None
 
-try:
-    from iris.fileformats import _old_pp_packing as pp_packing
-except ImportError:
-    pp_packing = None
 
-
-__all__ = ['load', 'save', 'load_cubes', 'PPField',
-           'reset_load_rules', 'add_save_rules',
-           'as_fields', 'load_pairs_from_fields', 'as_pairs',
-           'save_pairs_from_cube', 'reset_save_rules',
-           'save_fields', 'STASH', 'EARTH_RADIUS']
+__all__ = ['load', 'save', 'load_cubes', 'PPField', 'as_fields',
+           'load_pairs_from_fields', 'save_pairs_from_cube', 'save_fields',
+           'STASH', 'EARTH_RADIUS']
 
 
 EARTH_RADIUS = 6371229.0
-
-
-# Cube->PP rules are loaded on first use
-_save_rules = None
 
 
 PP_HEADER_DEPTH = 256
@@ -228,31 +222,6 @@ LBUSER_DTYPE_LOOKUP = {1: np.dtype('>f4'),
                        'default': np.dtype('>f4'),
                        }
 
-# LBPROC codes and their English equivalents
-LBPROC_PAIRS = ((1, "Difference from another experiment"),
-                (2, "Difference from zonal (or other spatial) mean"),
-                (4, "Difference from time mean"),
-                (8, "X-derivative (d/dx)"),
-                (16, "Y-derivative (d/dy)"),
-                (32, "Time derivative (d/dt)"),
-                (64, "Zonal mean field"),
-                (128, "Time mean field"),
-                (256, "Product of two fields"),
-                (512, "Square root of a field"),
-                (1024, "Difference between fields at levels BLEV and BRLEV"),
-                (2048, "Mean over layer between levels BLEV and BRLEV"),
-                (4096, "Minimum value of field during time period"),
-                (8192, "Maximum value of field during time period"),
-                (16384, "Magnitude of a vector, not specifically wind speed"),
-                (32768, "Log10 of a field"),
-                (65536, "Variance of a field"),
-                (131072, "Mean over an ensemble of parallel runs"))
-
-# lbproc_map is dict mapping lbproc->English and English->lbproc
-# essentially a one to one mapping
-lbproc_map = {x: y for x, y in
-              itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))}
-
 
 class STASH(collections.namedtuple('STASH', 'model section item')):
     """
@@ -304,7 +273,9 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         if not isinstance(msi, six.string_types):
             raise TypeError('Expected STASH code MSI string, got %r' % (msi,))
 
-        msi_match = re.match('^\s*m(.*)s(.*)i(.*)\s*$', msi, re.IGNORECASE)
+        msi_match = re.match(
+            '^\s*m(\d+|\?+)s(\d+|\?+)i(\d+|\?+)\s*$', msi,
+            re.IGNORECASE)
 
         if msi_match is None:
             raise ValueError('Expected STASH code MSI string "mXXsXXiXXX", '
@@ -543,127 +514,6 @@ class SplittableInt(object):
         return self._compare(other, operator.ge)
 
 
-class BitwiseInt(SplittableInt):
-    """
-    A class to hold an integer, of fixed bit-length, which can easily get/set
-    each bit individually.
-
-    .. deprecated:: 1.8
-
-        Please use `int` instead.
-
-    .. note::
-
-        Uses a fixed number of bits.
-        Will raise an Error when attempting to access an out-of-range flag.
-
-    >>> a = BitwiseInt(511)
-    >>> a.flag1
-    1
-    >>> a.flag8
-    1
-    >>> a.flag128
-    1
-    >>> a.flag256
-    1
-    >>> a.flag512
-    AttributeError: 'BitwiseInt' object has no attribute 'flag512'
-    >>> a.flag512 = 1
-    AttributeError: Cannot set a flag that does not exist: flag512
-
-    """
-
-    def __init__(self, value, num_bits=None):
-        # intentionally empty docstring as all covered in the class docstring.
-        """ """
-        warn_deprecated('BitwiseInt is deprecated - please use `int` instead.')
-
-        SplittableInt.__init__(self, value)
-        self.flags = ()
-
-        # do we need to calculate the number of bits based on the given value?
-        self._num_bits = num_bits
-        if self._num_bits is None:
-            self._num_bits = 0
-            while((value >> self._num_bits) > 0):
-                self._num_bits += 1
-        else:
-            # make sure the number of bits is enough to store the given value.
-            if (value >> self._num_bits) > 0:
-                raise ValueError("Not enough bits to store value")
-
-        self._set_flags_from_value()
-
-    def _set_flags_from_value(self):
-        all_flags = []
-
-        # Set attributes "flag[n]" to 0 or 1
-        for i in range(self._num_bits):
-            flag_name = 1 << i
-            flag_value = ((self._value >> i) & 1)
-            object.__setattr__(self, 'flag%d' % flag_name, flag_value)
-
-            # Add to list off all flags
-            if flag_value:
-                all_flags.append(flag_name)
-
-        self.flags = tuple(all_flags)
-
-    def _set_value_from_flags(self):
-        self._value = 0
-        for i in range(self._num_bits):
-            bit_value = pow(2, i)
-            flag_name = "flag%i" % bit_value
-            flag_value = object.__getattribute__(self, flag_name)
-            self._value += flag_value * bit_value
-
-    def __iand__(self, value):
-        """Perform an &= operation."""
-        self._value &= value
-        self._set_flags_from_value()
-        return self
-
-    def __ior__(self, value):
-        """Perform an |= operation."""
-        self._value |= value
-        self._set_flags_from_value()
-        return self
-
-    def __iadd__(self, value):
-        """Perform an inplace add operation"""
-        self._value += value
-        self._set_flags_from_value()
-        return self
-
-    def __setattr__(self, name, value):
-        # Allow setting of the attribute flags
-        # Are we setting a flag?
-        if name.startswith("flag") and name != "flags":
-            # true and false become 1 and 0
-            if not isinstance(value, bool):
-                raise TypeError("Can only set bits to True or False")
-
-            # Setting an existing flag?
-            if hasattr(self, name):
-                # which flag?
-                flag_value = int(name[4:])
-                # on or off?
-                if value:
-                    self |= flag_value
-                else:
-                    self &= ~flag_value
-
-            # Fail if an attempt has been made to set a flag that does not
-            # exist
-            else:
-                raise AttributeError("Cannot set a flag that does not"
-                                     " exist: %s" % name)
-
-        # If we're not setting a flag, then continue as normal
-        else:
-            SplittableInt.__setattr__(self, name, value)
-
-
 def _make_flag_getter(value):
     def getter(self):
         warn_deprecated('The `flag` attributes are deprecated - please use '
@@ -698,7 +548,7 @@ class _FlagMetaclass(type):
         return type.__new__(cls, classname, bases, class_dict)
 
 
-class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
+class _LBProc(six.with_metaclass(_FlagMetaclass, SplittableInt)):
     # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
     # properties.
     def __init__(self, value):
@@ -715,86 +565,8 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
                              'splittable integers object')
         self._value = value
 
-    def __len__(self):
-        """
-        Base ten length.
-
-        .. deprecated:: 1.8
-
-            The value of a BitwiseInt only makes sense in base-two.
-
-        """
-        warn_deprecated('Length is deprecated')
-        return len(str(self._value))
-
     def __setattr__(self, name, value):
         object.__setattr__(self, name, value)
-
-    def __getitem__(self, key):
-        """
-        Base ten indexing support.
-
-        .. deprecated:: 1.8
-
-            The value of an _LBProc only makes sense in base-two.
-
-        """
-        warn_deprecated('Indexing is deprecated')
-        try:
-            value = int('0' + str(self._value)[::-1][key][::-1])
-        except IndexError:
-            value = 0
-        # If the key returns a list of values, then combine them
-        # together to an integer.
-        if isinstance(value, list):
-            value = sum(10**i * val for i, val in enumerate(value))
-        return value
-
-    def __setitem__(self, key, value):
-        """
-        Base ten indexing support.
-
-        .. deprecated:: 1.8
-
-            The value of an _LBProc only makes sense in base-two.
-
-        """
-        warn_deprecated('Indexing is deprecated')
-        if (not isinstance(value, int) or value < 0):
-            msg = 'Can only set {} as a positive integer value.'.format(key)
-            raise ValueError(msg)
-
-        if isinstance(key, slice):
-            if ((key.start is not None and key.start < 0) or
-               (key.step is not None and key.step < 0) or
-               (key.stop is not None and key.stop < 0)):
-                raise ValueError('Cannot assign a value with slice '
-                                 'objects containing negative indices.')
-
-            # calculate the current length of the value of this string
-            current_length = len(range(*key.indices(len(self))))
-
-            # Get indices for as many digits as have been requested.
-            # Putting the upper limit on the number of digits at 100.
-            indices = range(*key.indices(100))
-            if len(indices) < len(str(value)):
-                fmt = 'Cannot put {} into {} as it has too many digits.'
-                raise ValueError(fmt.format(value, key))
-
-            # Iterate over each of the indices in the slice, zipping
-            # them together with the associated digit.
-            filled_value = str(value).zfill(current_length)
-            for index, digit in zip(indices, filled_value[::-1]):
-                # assign each digit to the associated index
-                self.__setitem__(index, int(digit))
-        else:
-            if value > 9:
-                raise ValueError('Can only set a single digit')
-            # Setting a single digit.
-            factor = 10 ** key
-            head, tail = divmod(self._value, factor)
-            head = head // 10
-            self._value = (head * 10 + value) * factor + tail
 
     def __iadd__(self, value):
         self._value += value
@@ -819,13 +591,6 @@ class _LBProc(six.with_metaclass(_FlagMetaclass, BitwiseInt)):
 
     def __str__(self):
         return str(self._value)
-
-    @property
-    def flags(self):
-        warn_deprecated('The `flags` attribute is deprecated - please use '
-                        'integer bitwise operators instead.')
-        return tuple(2 ** i for i in range(self.NUM_BITS)
-                     if self._value & 2 ** i)
 
 
 class PPDataProxy(object):
@@ -932,13 +697,6 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                 decompress_wgdos = mo_pack.decompress_wgdos
             except AttributeError:
                 decompress_wgdos = mo_pack.unpack_wgdos
-        elif pp_packing is not None:
-            msg = 'iris.fileformats.pp_packing has been ' \
-                  'deprecated and will be removed in a future release. ' \
-                  'Install mo_pack to make use of the new unpacking ' \
-                  'functionality.'
-            warn_deprecated(msg)
-            decompress_wgdos = pp_packing.wgdos_unpack
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
                   'requires mo_pack to be installed'.format(lbpack.n1)
@@ -947,13 +705,6 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
     elif lbpack.n1 == 4:
         if mo_pack is not None and hasattr(mo_pack, 'decompress_rle'):
             decompress_rle = mo_pack.decompress_rle
-        elif pp_packing is not None:
-            msg = 'iris.fileformats.pp_packing has been ' \
-                  'deprecated and will be removed in a future release. ' \
-                  'Install/upgrade mo_pack to make use of the new unpacking ' \
-                  'functionality.'
-            warn_deprecated(msg)
-            decompress_rle = pp_packing.rle_decode
         else:
             msg = 'Unpacking PP fields with LBPACK of {} ' \
                   'requires mo_pack to be installed'.format(lbpack.n1)
@@ -1998,78 +1749,6 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             yield pp_field
 
 
-def reset_load_rules():
-    """
-    Resets the PP load process to use only the standard conversion rules.
-
-    .. deprecated:: 1.7
-
-    """
-    warn_deprecated('reset_load_rules was deprecated in v1.7.')
-
-
-def _ensure_save_rules_loaded():
-    """Makes sure the standard save rules are loaded."""
-
-    # Uses these module-level variables
-    global _save_rules
-
-    if _save_rules is None:
-        # Load the pp save rules
-        rules_filename = os.path.join(iris.config.CONFIG_PATH,
-                                      'pp_save_rules.txt')
-        with iris.fileformats.rules._disable_deprecation_warnings():
-            _save_rules = iris.fileformats.rules.RulesContainer(
-                rules_filename, iris.fileformats.rules.ProcedureRule)
-
-
-def add_save_rules(filename):
-    """
-    Registers a rules file for use during the PP save process.
-
-    Registered files are processed after the standard conversion rules, and in
-    the order they were registered.
-
-    .. deprecated:: 1.10
-
-        If you need to customise pp field saving, please refer to the functions
-        :func:`as_fields`, :func:`save_pairs_from_cube` and :func:`save_fields`
-        for an alternative solution.
-
-    """
-    warn_deprecated(
-        'custom pp save rules are deprecated from v1.10.\n'
-        'If you need to customise pp field saving, please refer to the '
-        'functions iris.fileformats.pp.as_fields, '
-        'iris.fileformats.pp.save_pairs_from_cube and '
-        'iris.fileformats.pp.save_fields for an alternative solution.')
-    _ensure_save_rules_loaded()
-    _save_rules.import_rules(filename)
-
-
-def reset_save_rules():
-    """
-    Resets the PP save process to use only the standard conversion rules.
-
-    .. deprecated:: 1.10
-
-        If you need to customise pp field saving, please refer to the functions
-        :func:`as_fields`, :func:`save_pairs_from_cube` and :func:`save_fields`
-        for an alternative solution.
-
-    """
-    warn_deprecated(
-        'custom pp save rules are deprecated from v1.10.\n'
-        'If you need to customise pp field saving, please refer to the '
-        'functions iris.fileformats.pp.as_fields, '
-        'iris.fileformats.pp.save_pairs_from_cube and '
-        'iris.fileformats.pp.save_fields for an alternative solution.')
-    # Uses this module-level variable
-    global _save_rules
-
-    _save_rules = None
-
-
 # Stash codes not to be filtered (reference altitude and pressure fields).
 _STASH_ALLOW = [STASH(1, 0, 33), STASH(1, 0, 1)]
 
@@ -2238,7 +1917,8 @@ def load_pairs_from_fields(pp_fields):
 
     """
     load_pairs_from_fields = iris.fileformats.rules.load_pairs_from_fields
-    return load_pairs_from_fields(pp_fields, iris.fileformats.pp_rules.convert)
+    return load_pairs_from_fields(pp_fields,
+                                  iris.fileformats.pp_load_rules.convert)
 
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
@@ -2265,7 +1945,7 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
     else:
         loader = iris.fileformats.rules.Loader(
             loading_function, loading_function_kwargs or {},
-            iris.fileformats.pp_rules.convert)
+            iris.fileformats.pp_load_rules.convert)
 
     result = iris.fileformats.rules.load_cubes(filenames, callback, loader,
                                                pp_filter)
@@ -2310,22 +1990,9 @@ def save(cube, target, append=False, field_coords=None):
     save_fields(fields, target, append=append)
 
 
-def as_pairs(cube, field_coords=None, target=None):
-    """
-    .. deprecated:: 1.10
-    Please use :func:`iris.fileformats.pp.save_pairs_from_cube` for the same
-    functionality.
-
-    """
-    warn_deprecated('as_pairs is deprecated in v1.10; please use'
-                    ' save_pairs_from_cube instead.')
-    return save_pairs_from_cube(cube, field_coords=field_coords,
-                                target=target)
-
-
 def save_pairs_from_cube(cube, field_coords=None, target=None):
     """
-    Use the PP saving rules (and any user rules) to convert a cube or
+    Use the PP saving rules to convert a cube or
     iterable of cubes to an iterable of (2D cube, PP field) pairs.
 
     Args:
@@ -2384,8 +2051,6 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
     # On the flip side, record which Cube metadata has been "used" and flag up
     # unused?
 
-    _ensure_save_rules_loaded()
-
     n_dims = len(cube.shape)
     if n_dims < 2:
         raise ValueError('Unable to save a cube of fewer than 2 dimensions.')
@@ -2435,18 +2100,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
-        rules_result = _save_rules.verify(slice2D, pp_field)
-        verify_rules_ran = rules_result.matching_rules
-
-        # Log the rules used
-        if target is None:
-            target = 'None'
-        elif not isinstance(target, six.string_types):
-            target = target.name
-
-        with iris.fileformats.rules._disable_deprecation_warnings():
-            iris.fileformats.rules.log('PP_SAVE', str(target),
-                                       verify_rules_ran)
+        pp_field = verify(slice2D, pp_field)
 
         yield (slice2D, pp_field)
 

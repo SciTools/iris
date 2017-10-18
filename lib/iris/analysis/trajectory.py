@@ -27,14 +27,13 @@ import six
 import math
 
 import numpy as np
+from scipy.spatial import cKDTree
 
-from cf_units import Unit
 import iris.analysis
 import iris.coord_systems
 import iris.coords
 
-from iris.analysis._interpolate_private import \
-    _nearest_neighbour_indices_ndcoords, linear as linear_regrid
+from iris.analysis import Linear
 from iris.analysis._interpolation import snapshot_grid
 from iris.util import _meshgrid
 
@@ -256,7 +255,7 @@ def interpolate(cube, sample_points, method=None):
     if method in ["linear", None]:
         for i in range(trajectory_size):
             point = [(coord, values[i]) for coord, values in sample_points]
-            column = linear_regrid(cube, point)
+            column = cube.interpolate(point, Linear())
             new_cube.data[..., i] = column.data
             # Fill in the empty squashed (non derived) coords.
             for column_coord in column.dim_coords + column.aux_coords:
@@ -381,6 +380,229 @@ def interpolate(cube, sample_points, method=None):
             # NOTE: the new coords do *not* have bounds.
 
     return new_cube
+
+
+def _ll_to_cart(lon, lat):
+    # Based on cartopy.img_transform.ll_to_cart().
+    x = np.sin(np.deg2rad(90 - lat)) * np.cos(np.deg2rad(lon))
+    y = np.sin(np.deg2rad(90 - lat)) * np.sin(np.deg2rad(lon))
+    z = np.cos(np.deg2rad(90 - lat))
+    return (x, y, z)
+
+
+def _cartesian_sample_points(sample_points, sample_point_coord_names):
+    """
+    Replace geographic lat/lon with cartesian xyz.
+    Generates coords suitable for nearest point calculations with
+    `scipy.spatial.cKDTree`.
+
+    Args:
+
+    * sample_points[coord][datum]:
+        list of sample_positions for each datum, formatted for fast use of
+        :func:`_ll_to_cart()`.
+
+    * sample_point_coord_names[coord]:
+        list of n coord names
+
+    Returns:
+        list of [x,y,z,t,etc] positions, formatted for kdtree.
+
+    """
+    # Find lat and lon coord indices
+    i_lat = i_lon = None
+    i_non_latlon = list(range(len(sample_point_coord_names)))
+    for i, name in enumerate(sample_point_coord_names):
+        if "latitude" in name:
+            i_lat = i
+            i_non_latlon.remove(i_lat)
+        if "longitude" in name:
+            i_lon = i
+            i_non_latlon.remove(i_lon)
+
+    if i_lat is None or i_lon is None:
+        return sample_points.transpose()
+
+    num_points = len(sample_points[0])
+    cartesian_points = [None] * num_points
+
+    # Get the point coordinates without the latlon
+    for p in range(num_points):
+        cartesian_points[p] = [sample_points[c][p] for c in i_non_latlon]
+
+    # Add cartesian xyz coordinates from latlon
+    x, y, z = _ll_to_cart(sample_points[i_lon], sample_points[i_lat])
+    for p in range(num_points):
+        cartesian_point = cartesian_points[p]
+        cartesian_point.append(x[p])
+        cartesian_point.append(y[p])
+        cartesian_point.append(z[p])
+
+    return cartesian_points
+
+
+def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
+    """
+    Returns the indices to select the data value(s) closest to the given
+    coordinate point values.
+
+    'sample_points' is of the form [[coord-or-coord-name, point-value(s)]*].
+    The lengths of all the point-values sequences must be equal.
+
+    This function is adapted for points sampling a multi-dimensional coord,
+    and can currently only do nearest neighbour interpolation.
+
+    Because this function can be slow for multidimensional coordinates,
+    a 'cache' dictionary can be provided by the calling code.
+
+    .. Note::
+
+        If the points are longitudes/latitudes, these are handled correctly as
+        points on the sphere, but the values must be in 'degrees'.
+
+    Developer notes:
+    A "sample space cube" is made which only has the coords and dims we are
+    sampling on.
+    We get the nearest neighbour using this sample space cube.
+
+    """
+    if sample_points:
+        try:
+            coord, value = sample_points[0]
+        except (KeyError, ValueError):
+            emsg = ('Sample points must be a list of '
+                    '(coordinate, value) pairs, got {!r}.')
+            raise TypeError(emsg.format(sample_points))
+
+    # Convert names to coords in sample_point and reformat sample point values
+    # for use in `_cartesian_sample_points()`.
+    coord_values = []
+    sample_point_coords = []
+    sample_point_coord_names = []
+    ok_coord_ids = set(map(id, cube.dim_coords + cube.aux_coords))
+    for coord, value in sample_points:
+        coord = cube.coord(coord)
+        if id(coord) not in ok_coord_ids:
+            msg = ('Invalid sample coordinate {!r}: derived coordinates are'
+                   ' not allowed.'.format(coord.name()))
+            raise ValueError(msg)
+        sample_point_coords.append(coord)
+        sample_point_coord_names.append(coord.name())
+        value = np.array(value, ndmin=1)
+        coord_values.append(value)
+
+    coord_point_lens = np.array([len(value) for value in coord_values])
+    if not np.all(coord_point_lens == coord_point_lens[0]):
+        msg = 'All coordinates must have the same number of sample points.'
+        raise ValueError(msg)
+
+    coord_values = np.array(coord_values)
+
+    # Which dims are we sampling?
+    sample_dims = set()
+    for coord in sample_point_coords:
+        for dim in cube.coord_dims(coord):
+            sample_dims.add(dim)
+    sample_dims = sorted(list(sample_dims))
+
+    # Extract a sub cube that lives in just the sampling space.
+    sample_space_slice = [0] * cube.ndim
+    for sample_dim in sample_dims:
+        sample_space_slice[sample_dim] = slice(None, None)
+    sample_space_slice = tuple(sample_space_slice)
+    sample_space_cube = cube[sample_space_slice]
+
+    # Just the sampling coords.
+    for coord in sample_space_cube.coords():
+        if not coord.name() in sample_point_coord_names:
+            sample_space_cube.remove_coord(coord)
+
+    # Order the sample point coords according to the sample space cube coords.
+    sample_space_coord_names = \
+        [coord.name() for coord in sample_space_cube.coords()]
+    new_order = [sample_space_coord_names.index(name)
+                 for name in sample_point_coord_names]
+    coord_values = np.array([coord_values[i] for i in new_order])
+    sample_point_coord_names = [sample_point_coord_names[i] for i in new_order]
+
+    sample_space_coords = \
+        sample_space_cube.dim_coords + sample_space_cube.aux_coords
+    sample_space_coords_and_dims = \
+        [(coord, sample_space_cube.coord_dims(coord))
+         for coord in sample_space_coords]
+
+    if cache is not None and cube in cache:
+        kdtree = cache[cube]
+    else:
+        # Create a "sample space position" for each
+        # `datum.sample_space_data_positions[coord_index][datum_index]`.
+        sample_space_data_positions = \
+            np.empty((len(sample_space_coords_and_dims),
+                      sample_space_cube.data.size),
+                     dtype=float)
+        for d, ndi in enumerate(np.ndindex(sample_space_cube.data.shape)):
+            for c, (coord, coord_dims) in \
+                    enumerate(sample_space_coords_and_dims):
+                # Index of this datum along this coordinate (could be nD).
+                if coord_dims:
+                    keys = tuple(ndi[ind] for ind in coord_dims)
+                else:
+                    keys = slice(None, None)
+                # Position of this datum along this coordinate.
+                sample_space_data_positions[c][d] = coord.points[keys]
+
+        # Convert to cartesian coordinates. Flatten for kdtree compatibility.
+        cartesian_space_data_coords = \
+            _cartesian_sample_points(sample_space_data_positions,
+                                     sample_point_coord_names)
+
+        # Create a kdtree for the nearest-distance lookup to these 3d points.
+        kdtree = cKDTree(cartesian_space_data_coords)
+        # This can find the nearest datum point to any given target point,
+        # which is the goal of this function.
+
+    # Update cache.
+    if cache is not None:
+        cache[cube] = kdtree
+
+    # Convert the sample points to cartesian (3d) coords.
+    # If there is no latlon within the coordinate there will be no change.
+    # Otherwise, geographic latlon is replaced with cartesian xyz.
+    cartesian_sample_points = _cartesian_sample_points(
+        coord_values, sample_point_coord_names)
+
+    # Use kdtree to get the nearest sourcepoint index for each target point.
+    _, datum_index_lists = kdtree.query(cartesian_sample_points)
+
+    # Convert flat indices back into multidimensional sample-space indices.
+    sample_space_dimension_indices = np.unravel_index(
+        datum_index_lists, sample_space_cube.data.shape)
+    # Convert this from "pointwise list of index arrays for each dimension",
+    # to "list of cube indices for each point".
+    sample_space_ndis = np.array(sample_space_dimension_indices).transpose()
+
+    # For the returned result, we must convert these indices into the source
+    # (sample-space) cube, to equivalent indices into the target 'cube'.
+
+    # Make a result array: (cube.ndim * <index>), per sample point.
+    n_points = coord_values.shape[-1]
+    main_cube_slices = np.empty((n_points, cube.ndim), dtype=object)
+    # Initialise so all unused indices are ":".
+    main_cube_slices[:] = slice(None)
+
+    # Move result indices according to the source (sample) and target (cube)
+    # dimension mappings.
+    for sample_coord, sample_coord_dims in sample_space_coords_and_dims:
+        # Find the coord in the main cube
+        main_coord = cube.coord(sample_coord.name())
+        main_coord_dims = cube.coord_dims(main_coord)
+        # Fill nearest-point data indices for each coord dimension.
+        for sample_i, main_i in zip(sample_coord_dims, main_coord_dims):
+            main_cube_slices[:, main_i] = sample_space_ndis[:, sample_i]
+
+    # Return as a list of **tuples** : required for correct indexing usage.
+    result = [tuple(inds) for inds in main_cube_slices]
+    return result
 
 
 class UnstructuredNearestNeigbourRegridder(object):

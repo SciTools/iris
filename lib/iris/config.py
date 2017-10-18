@@ -23,15 +23,6 @@ defined by :mod:`ConfigParser`.
 
 ----------
 
-.. py:data:: iris.config.SAMPLE_DATA_DIR
-
-    Local directory where sample data exists. Defaults to "sample_data"
-    sub-directory of the Iris package install directory. The sample data
-    directory supports the Iris gallery. Directory contents accessed via
-    :func:`iris.sample_data_path`.
-
-    .. deprecated:: 1.10
-
 .. py:data:: iris.config.TEST_DATA_DIR
 
     Local directory where test data exists.  Defaults to "test_data"
@@ -46,20 +37,6 @@ defined by :mod:`ConfigParser`.
 .. py:data:: iris.config.IMPORT_LOGGER
 
     The [optional] name of the logger to notify when first imported.
-
-.. py:data:: iris.config.RULE_LOG_DIR
-
-    The [optional] full path to the rule logging directory used by
-    :func:`iris.fileformats.pp.load()` and
-    :func:`iris.fileformats.pp.save()`.
-
-    .. deprecated:: 1.10
-
-.. py:data:: iris.config.RULE_LOG_IGNORE
-
-    The [optional] list of users to ignore when logging rules.
-
-    .. deprecated:: 1.10
 
 ----------
 """
@@ -123,10 +100,6 @@ config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
 _RESOURCE_SECTION = 'Resources'
 
 
-SAMPLE_DATA_DIR = get_dir_option(
-    _RESOURCE_SECTION, 'sample_data_dir',
-    default=os.path.join(os.path.dirname(__file__), 'sample_data'))
-
 TEST_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'test_data_dir',
                                default=os.path.join(os.path.dirname(__file__),
                                                     'test_data'))
@@ -147,13 +120,6 @@ PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
 #################
 # Logging options
 _LOGGING_SECTION = 'Logging'
-
-
-RULE_LOG_DIR = get_dir_option(_LOGGING_SECTION, 'rule_dir')
-
-
-RULE_LOG_IGNORE = get_option(_LOGGING_SECTION, 'rule_ignore')
-
 
 IMPORT_LOGGER = get_option(_LOGGING_SECTION, 'import_logger')
 

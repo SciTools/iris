@@ -46,7 +46,6 @@ import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
-import iris.analysis._interpolate_private
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
@@ -3001,19 +3000,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return hash(id(self))
 
     def __add__(self, other):
-        return iris.analysis.maths.add(self, other, ignore=True)
+        return iris.analysis.maths.add(self, other)
 
     def __iadd__(self, other):
-        return iris.analysis.maths.add(self, other, ignore=True, in_place=True)
+        return iris.analysis.maths.add(self, other, in_place=True)
 
     __radd__ = __add__
 
     def __sub__(self, other):
-        return iris.analysis.maths.subtract(self, other, ignore=True)
+        return iris.analysis.maths.subtract(self, other)
 
     def __isub__(self, other):
-        return iris.analysis.maths.subtract(self, other,
-                                            ignore=True, in_place=True)
+        return iris.analysis.maths.subtract(self, other, in_place=True)
 
     __mul__ = iris.analysis.maths.multiply
     __rmul__ = iris.analysis.maths.multiply
@@ -3033,23 +3031,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
-
-    # START ANALYSIS ROUTINES
-
-    regridded = iris.util._wrap_function_for_method(
-        iris.analysis._interpolate_private.regrid,
-        """
-        Returns a new cube with values derived from this cube on the
-        horizontal grid specified by the grid_cube.
-
-        .. deprecated:: 1.10
-            Please replace usage of :meth:`~Cube.regridded` with
-            :meth:`~Cube.regrid`.  See :meth:`iris.analysis.interpolate.regrid`
-            for details of exact usage equivalents.
-
-        """)
-
-    # END ANALYSIS ROUTINES
 
     def collapsed(self, coords, aggregator, **kwargs):
         """

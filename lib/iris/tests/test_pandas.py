@@ -299,6 +299,13 @@ class TestAsDataFrame(tests.IrisTest):
         with self.assertRaises(ValueError):
             data_frame = iris.pandas.as_data_frame(cube, copy=False)
 
+    def test_copy_false_with_cube_view(self):
+        data = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+        cube = Cube(data[:], long_name="foo")
+        data_frame = iris.pandas.as_data_frame(cube, copy=False)
+        data_frame[0][0] = 99
+        self.assertEqual(cube.data[0, 0], 99)
+
 
 @skip_pandas
 class TestSeriesAsCube(tests.IrisTest):

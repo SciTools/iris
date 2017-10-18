@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,7 @@ import iris.tests as tests
 from iris.coords import DimCoord, CellMethod
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
+from iris.fileformats.pp_save_rules import _lbproc_rules
 from iris.tests import mock
 import iris.tests.stock as stock
 
@@ -162,26 +163,38 @@ class TestLbsrceProduction(tests.IrisTest):
 
 
 class Test_Save__LbprocProduction(tests.IrisTest):
+    # This test class is a little different to the others.
+    # If it called `pp.save` via `_pp_save_ppfield_values` it would run
+    # `pp_save_rules.verify` and run all the save rules. As this class uses
+    # a 3D cube with a time coord it would run the time rules, which would fail
+    # because the mock object does not set up the `pp.lbtim` attribute
+    # correctly (i.e. as a `SplittableInt` object).
+    # To work around this we call the lbproc rules directly here.
+
     def setUp(self):
         self.cube = stock.realistic_3d()
+        self.pp_field = mock.MagicMock(spec=pp.PPField3)
+        self.pp_field.HEADER_DEFN = pp.PPField3.HEADER_DEFN
+        self.patch('iris.fileformats.pp.PPField3',
+                   return_value=self.pp_field)
 
     def test_no_cell_methods(self):
-        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
         self.assertEqual(lbproc, 0)
 
     def test_mean(self):
         self.cube.cell_methods = (CellMethod('mean', 'time', '1 hour'),)
-        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
         self.assertEqual(lbproc, 128)
 
     def test_minimum(self):
         self.cube.cell_methods = (CellMethod('minimum', 'time', '1 hour'),)
-        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
         self.assertEqual(lbproc, 4096)
 
     def test_maximum(self):
         self.cube.cell_methods = (CellMethod('maximum', 'time', '1 hour'),)
-        lbproc = _pp_save_ppfield_values(self.cube).lbproc
+        lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
         self.assertEqual(lbproc, 8192)
 
 
