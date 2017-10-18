@@ -44,7 +44,7 @@ class Test(tests.IrisTest):
             rules_load.return_value = expected_result
             result = load_cubes(files, callback)
             kwargs = {}
-            loader = Loader(generator, kwargs, converter, None)
+            loader = Loader(generator, kwargs, converter)
             rules_load.assert_called_once_with(files, callback, loader)
             self.assertIs(result, expected_result)
 

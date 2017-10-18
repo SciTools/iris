@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ import iris.tests as tests
 
 import iris
 from iris.fileformats import pp
-from iris.fileformats.pp_rules import convert
+from iris.fileformats.pp_load_rules import convert
 from iris.fileformats.rules import load_cubes
 
 

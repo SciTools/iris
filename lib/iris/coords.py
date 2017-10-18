@@ -1664,16 +1664,17 @@ class DimCoord(Coord):
         """
         Confirm that a new set of coord points adheres to the requirements for
         :class:`~iris.coords.DimCoord` points, being:
-            * points are 1D,
+            * points are scalar or 1D,
             * points are numeric, and
             * points are monotonic.
 
         """
-        if points.ndim != 1:
-            raise ValueError('The points array must be 1-dimensional.')
+        if points.ndim not in (0, 1):
+            raise ValueError(
+                'The points array must be scalar or 1-dimensional.')
         if not np.issubdtype(points.dtype, np.number):
             raise ValueError('The points array must be numeric.')
-        if len(points) > 1 and not iris.util.monotonic(points, strict=True):
+        if points.size > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
 
     def _points_setter(self, points):
@@ -1684,6 +1685,9 @@ class DimCoord(Coord):
         # so that we can make it read-only.
         points = np.array(points, copy=copy)
 
+        # Check validity requirements for dimension-coordinate points.
+        self._new_points_requirements(points)
+
         # Invoke the generic points setter.
         super(DimCoord, self)._points_setter(points)
 
@@ -1692,9 +1696,6 @@ class DimCoord(Coord):
             points = self._points_dm.core_data()
             # N.B. always a *real* array, as we realised 'points' at the start.
 
-            # Check validity requirements for dimension-coordinate points.
-            self._new_points_requirements(points)
-
             # Make the array read-only.
             points.flags.writeable = False
 
@@ -1702,15 +1703,16 @@ class DimCoord(Coord):
 
     def _new_bounds_requirements(self, bounds):
         """
-        Confirm that a new set of coord points adheres to the requirements for
-        :class:`~iris.coords.DimCoord` points, being:
-            * points are 1D,
-            * points are numeric, and
-            * points are monotonic.
+        Confirm that a new set of coord bounds adheres to the requirements for
+        :class:`~iris.coords.DimCoord` bounds, being:
+            * bounds are compatible in shape with the points
+            * bounds are numeric, and
+            * bounds are monotonic in the first dimension.
 
         """
         # Ensure the bounds are a compatible shape.
-        if self.shape != bounds.shape[:-1]:
+        if self.shape != bounds.shape[:-1] and \
+                not (self.shape == (1,) and bounds.ndim == 1):
             raise ValueError(
                 "The shape of the bounds array should be "
                 "points.shape + (n_bounds,)")
@@ -1718,22 +1720,23 @@ class DimCoord(Coord):
         if not np.issubdtype(bounds.dtype, np.number):
             raise ValueError('The bounds array must be numeric.')
 
-        n_bounds = bounds.shape[-1]
-        n_points = bounds.shape[0]
-        if n_points > 1:
+        if bounds.ndim > 1:
+            n_bounds = bounds.shape[-1]
+            n_points = bounds.shape[0]
+            if n_points > 1:
 
-            directions = set()
-            for b_index in range(n_bounds):
-                monotonic, direction = iris.util.monotonic(
-                    bounds[:, b_index], strict=True, return_direction=True)
-                if not monotonic:
-                    raise ValueError('The bounds array must be strictly '
-                                     'monotonic.')
-                directions.add(direction)
+                directions = set()
+                for b_index in range(n_bounds):
+                    monotonic, direction = iris.util.monotonic(
+                        bounds[:, b_index], strict=True, return_direction=True)
+                    if not monotonic:
+                        raise ValueError('The bounds array must be strictly '
+                                         'monotonic.')
+                    directions.add(direction)
 
-            if len(directions) != 1:
-                raise ValueError('The direction of monotonicity must be '
-                                 'consistent across all bounds')
+                if len(directions) != 1:
+                    raise ValueError('The direction of monotonicity must be '
+                                     'consistent across all bounds')
 
     def _bounds_setter(self, bounds):
         if bounds is not None:
@@ -1742,6 +1745,9 @@ class DimCoord(Coord):
             bounds = as_concrete_data(bounds)
             bounds = np.array(bounds, copy=copy)
 
+            # Check validity requirements for dimension-coordinate bounds.
+            self._new_bounds_requirements(bounds)
+
         # Invoke the generic bounds setter.
         super(DimCoord, self)._bounds_setter(bounds)
 
@@ -1749,9 +1755,6 @@ class DimCoord(Coord):
             # Re-fetch the core array, as the super call may replace it.
             bounds = self._bounds_dm.core_data()
             # N.B. always a *real* array, as we realised 'bounds' at the start.
-
-            # Check validity requirements for dimension-coordinate bounds.
-            self._new_bounds_requirements(bounds)
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False

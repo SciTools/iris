@@ -88,30 +88,6 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
             iris.save(cubes, temp_pp_path)
 
-    def test_user_pp_save_rules(self):
-        # Test pp save rules with user rules.
-        
-        #create a user rules file
-        user_rules_filename = iris.util.create_temp_filename(suffix='.txt')
-        try:
-            with open(user_rules_filename, "wt") as user_rules_file:
-                user_rules_file.write("IF\ncm.standard_name == 'air_temperature'\nTHEN\npp.lbuser[3] = 9222")
-            with iris.fileformats.rules._disable_deprecation_warnings():
-                iris.fileformats.pp.add_save_rules(user_rules_filename)
-            try:
-                #read pp
-                in_filename = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
-                cubes = iris.load(in_filename, callback=itab_callback)
-
-                reference_txt_path = tests.get_result_path(('cube_to_pp', 'user_rules.txt'))
-                with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
-                    iris.save(cubes, temp_pp_path)
-
-            finally:
-                iris.fileformats.pp.reset_save_rules()
-        finally:
-            os.remove(user_rules_filename)
-
     def test_pp_append_singles(self):
         # Test pp append saving - single cubes.
         
@@ -208,8 +184,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         # Add an extra "fill_value" property, as used by the save rules.
         cube.fill_value = None
         pp_field = mock.MagicMock(spec=PPField3)
-        iris.fileformats.pp._ensure_save_rules_loaded()
-        iris.fileformats.pp._save_rules.verify(cube, pp_field)
+        iris.fileformats.pp_save_rules.verify(cube, pp_field)
         self.assertEqual(pp_field.lbtim.ic, 4)
 
 
