@@ -1677,6 +1677,9 @@ class DimCoord(Coord):
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
 
+    def _points_getter(self):
+        return super(DimCoord, self)._points_getter().view()
+
     def _points_setter(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
         copy = not is_lazy_data(points)
@@ -1699,7 +1702,7 @@ class DimCoord(Coord):
             # Make the array read-only.
             points.flags.writeable = False
 
-    points = property(Coord._points_getter, _points_setter)
+    points = property(_points_getter, _points_setter)
 
     def _new_bounds_requirements(self, bounds):
         """
@@ -1738,6 +1741,9 @@ class DimCoord(Coord):
                     raise ValueError('The direction of monotonicity must be '
                                      'consistent across all bounds')
 
+    def _bounds_getter(self):
+        return super(DimCoord, self)._bounds_getter().view()
+
     def _bounds_setter(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
@@ -1759,7 +1765,7 @@ class DimCoord(Coord):
             # Ensure the array is read-only.
             bounds.flags.writeable = False
 
-    bounds = property(Coord._bounds_getter, _bounds_setter)
+    bounds = property(_bounds_getter, _bounds_setter)
 
     def is_monotonic(self):
         return True
