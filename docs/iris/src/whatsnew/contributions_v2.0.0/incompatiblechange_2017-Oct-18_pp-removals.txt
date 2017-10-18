@@ -1,0 +1,1 @@
+* Removed deprecated functions ```reset_load_rules```, ```add_save_rules```, ```reset_save_rules``` and ```as_pairs``` from :mod:`iris.fileformats.pp`.
