@@ -1,0 +1,4 @@
+* Removed deprecated and unused kwarg ```ignore``` from the following functions:
+    * :func:`iris.analysis.calculus.curl`,
+    * :func:`iris.analysis.maths.add`, and
+    * :func:`iris.analysis.maths.subtract`.
