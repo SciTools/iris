@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" long_name="land area fraction of grid cell" standard_name="land_area_fraction" units="1" var_name="sftls">
+  <cube dtype="float32" long_name="land area fraction of grid cell" standard_name="land_area_fraction" units="1" var_name="sftls">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="conventionsURL" value="http://www.cgd.ucar.edu/cms/eaton/cf-metadata/index.html"/>

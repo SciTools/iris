@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="int16" dtype="int16" long_name="Visibility" units="unknown">
+  <cube dtype="int16" long_name="Visibility" units="unknown">
     <attributes>
       <attribute name="field_code" value="155"/>
       <attribute name="invalid_units" value="m/2-25k"/>

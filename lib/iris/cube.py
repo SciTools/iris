@@ -2785,8 +2785,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cube_xml_element.setAttribute('var_name', self.var_name)
         cube_xml_element.setAttribute('units', str(self.units))
         cube_xml_element.setAttribute('dtype', self.dtype.name)
-        cube_xml_element.setAttribute('core-dtype',
-                                      self.core_data().dtype.name)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
