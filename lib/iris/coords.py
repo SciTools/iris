@@ -1604,18 +1604,19 @@ class DimCoord(Coord):
 
         """
         new_coord = copy.deepcopy(super(DimCoord, self), memo)
+
         # Ensure points and bounds arrays are read-only.
-        new_coord.points.flags.writeable = False
-        if new_coord.bounds is not None:
-            new_coord.bounds.flags.writeable = False
+        new_coord._points_dm.core_data().flags.writeable = False
+        if new_coord._bounds_dm is not None:
+            new_coord._bounds_dm.core_data().flags.writeable = False
         return new_coord
 
     def copy(self, points=None, bounds=None):
         new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
         # Make the arrays read-only.
-        new_coord.points.flags.writeable = False
+        new_coord._points_dm.core_data().flags.writeable = False
         if bounds is not None:
-            new_coord.bounds.flags.writeable = False
+            new_coord._bounds_dm.core_data().flags.writeable = False
         return new_coord
 
     def __eq__(self, other):
@@ -1682,11 +1683,10 @@ class DimCoord(Coord):
 
     def _points_setter(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
-        copy = not is_lazy_data(points)
-        points = as_concrete_data(points)
         # Ensure it is an actual array, and also make our own distinct view
         # so that we can make it read-only.
-        points = np.array(points, copy=copy)
+        points = as_concrete_data(points)
+        points = np.array(points)
 
         # Check validity requirements for dimension-coordinate points.
         self._new_points_requirements(points)
@@ -1742,14 +1742,16 @@ class DimCoord(Coord):
                                      'consistent across all bounds')
 
     def _bounds_getter(self):
-        return super(DimCoord, self)._bounds_getter().view()
+        result = super(DimCoord, self)._bounds_getter()
+        if result is not None:
+            result = result.view()
+        return result
 
     def _bounds_setter(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
-            copy = not is_lazy_data(bounds)
             bounds = as_concrete_data(bounds)
-            bounds = np.array(bounds, copy=copy)
+            bounds = np.array(bounds)
 
             # Check validity requirements for dimension-coordinate bounds.
             self._new_bounds_requirements(bounds)
@@ -1766,6 +1768,16 @@ class DimCoord(Coord):
             bounds.flags.writeable = False
 
     bounds = property(_bounds_getter, _bounds_setter)
+
+    def core_points(self):
+        result = super(DimCoord, self).core_points()
+        return result.view()
+
+    def core_bounds(self):
+        result = super(DimCoord, self).core_bounds()
+        if result is not None:
+            result = result.view()
+        return result
 
     def is_monotonic(self):
         return True

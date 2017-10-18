@@ -56,29 +56,23 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
             pts = coord.core_points()
             bds = coord.core_bounds()
             # Check properties of points.
-            if (points_type_name == 'real' and
-                    coord.dtype == self.pts_real.dtype):
-                # Points array should be identical to the reference one.
-                self.assertArraysShareData(
-                    pts, self.pts_real,
-                    'Points are not the same data as the provided array.')
-            else:
-                # the original points array was cast to a test dtype.
-                check_pts = self.pts_real.astype(coord.dtype)
-                self.assertEqualRealArraysAndDtypes(pts, check_pts)
+            # Points array should not be identical to the reference one.
+            self.assertArraysDoNotShareData(
+                 pts, self.pts_real,
+               'Points are the same data as the provided array.')
+            # the original points array was cast to a test dtype.
+            check_pts = self.pts_real.astype(coord.dtype)
+            self.assertEqualRealArraysAndDtypes(pts, check_pts)
 
             # Check properties of bounds.
             if bounds_type_name != 'no':
-                if (bounds_type_name == 'real' and
-                        coord.bounds_dtype == self.bds_real.dtype):
-                    # Bounds array should be the reference data.
-                    self.assertArraysShareData(
-                        bds, self.bds_real,
-                        'Bounds are not the same data as the provided array.')
-                else:
-                    # the original bounds array was cast to a test dtype.
-                    check_bds = self.bds_real.astype(coord.bounds_dtype)
-                    self.assertEqualRealArraysAndDtypes(bds, check_bds)
+                # Bounds array should not be the reference data.
+                self.assertArraysDoNotShareData(
+                     bds, self.bds_real,
+                    'Bounds are the same data as the provided array.')
+                # the original bounds array was cast to a test dtype.
+                check_bds = self.bds_real.astype(coord.bounds_dtype)
+                self.assertEqualRealArraysAndDtypes(bds, check_bds)
 
     def test_fail_bounds_shape_mismatch(self):
         bds_shape = list(self.bds_real.shape)
@@ -113,9 +107,9 @@ class Test_core_points(tests.IrisTest, DimCoordTestMixin):
         data = self.pts_real
         coord = DimCoord(data)
         result = coord.core_points()
-        self.assertArraysShareData(
+        self.assertArraysDoNotShareData(
             result, self.pts_real,
-            'core_points() are not the same data as the internal array.')
+            'core_points() are the same data as the internal array.')
 
     def test_lazy_points(self):
         lazy_data = self.pts_lazy
@@ -137,9 +131,9 @@ class Test_core_bounds(tests.IrisTest, DimCoordTestMixin):
     def test_real_bounds(self):
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         result = coord.core_bounds()
-        self.assertArraysShareData(
+        self.assertArraysDoNotShareData(
             result, self.bds_real,
-            'core_bounds() are not the same data as the internal array.')
+            'core_bounds() are the same data as the internal array.')
 
     def test_lazy_bounds(self):
         coord = DimCoord(self.pts_real, bounds=self.bds_lazy)
@@ -383,12 +377,12 @@ class Test_points__getter(tests.IrisTest, DimCoordTestMixin):
         self.setupTestArrays()
 
     def test_real_points(self):
-        # Getting real points does not change or copy them.
+        # Getting real points returns a copy
         coord = DimCoord(self.pts_real)
         result = coord.core_points()
-        self.assertArraysShareData(
+        self.assertArraysDoNotShareData(
             result, self.pts_real,
-            'Points are not the same array as the provided data.')
+            'Points are the same array as the provided data.')
 
 
 class Test_points__setter(tests.IrisTest, DimCoordTestMixin):
@@ -396,14 +390,14 @@ class Test_points__setter(tests.IrisTest, DimCoordTestMixin):
         self.setupTestArrays()
 
     def test_set_real(self):
-        # Setting points does not copy, but makes a readonly view.
+        # Setting points copies the data
         coord = DimCoord(self.pts_real)
         new_pts = self.pts_real + 102.3
         coord.points = new_pts
         result = coord.core_points()
-        self.assertArraysShareData(
+        self.assertArraysDoNotShareData(
             result, new_pts,
-            'Points are not the same data as the assigned array.')
+            'Points are the same data as the assigned array.')
 
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
@@ -446,9 +440,9 @@ class Test_bounds__getter(tests.IrisTest, DimCoordTestMixin):
         # Getting real bounds does not change or copy them.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         result = coord.bounds
-        self.assertArraysShareData(
+        self.assertArraysDoNotShareData(
             result, self.bds_real,
-            'Points are not the same array as the provided data.')
+            'Bounds are the same array as the provided data.')
 
 
 class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
@@ -461,9 +455,9 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         new_bounds = self.bds_real + 102.3
         coord.bounds = new_bounds
         result = coord.core_bounds()
-        self.assertArraysShareData(
+        self.assertArraysDoNotShareData(
             result, new_bounds,
-            'Bounds are not the same data as the assigned array.')
+            'Bounds are the same data as the assigned array.')
 
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
