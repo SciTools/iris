@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" standard_name="air_pressure" units="Pa">
+  <cube dtype="float32" standard_name="air_pressure" units="Pa">
     <attributes>
       <attribute name="STASH" value="m01s00i407"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

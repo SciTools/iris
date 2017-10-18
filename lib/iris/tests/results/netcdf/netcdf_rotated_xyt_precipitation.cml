@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" long_name="Precipitation" standard_name="precipitation_flux" units="kg m-2 s-1" var_name="pr">
+  <cube dtype="float32" long_name="Precipitation" standard_name="precipitation_flux" units="kg m-2 s-1" var_name="pr">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="NCO" value="4.1.0"/>

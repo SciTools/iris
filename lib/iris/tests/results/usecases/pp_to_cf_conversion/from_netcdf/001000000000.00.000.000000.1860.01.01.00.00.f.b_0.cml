@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" standard_name="sea_surface_height_above_geoid" units="m" var_name="sea_surface_height_above_geoid">
+  <cube dtype="float32" standard_name="sea_surface_height_above_geoid" units="m" var_name="sea_surface_height_above_geoid">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
     </attributes>

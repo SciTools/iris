@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float64" dtype="float64" standard_name="air_temperature" units="K">
+  <cube dtype="float64" standard_name="air_temperature" units="K">
     <coords>
       <coord>
         <dimCoord id="1d45e087" points="[0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
@@ -30,7 +30,7 @@
     <cellMethods/>
     <data checksum="0xd04cbc45" dtype="float64" shape="(360, 600)"/>
   </cube>
-  <cube core-dtype="float64" dtype="float64" standard_name="air_temperature" units="K">
+  <cube dtype="float64" standard_name="air_temperature" units="K">
     <coords>
       <coord>
         <dimCoord bounds="[[-28587.0, 6477.0]]" id="1d45e087" points="[-11055.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
@@ -81,7 +81,7 @@
     </cellMethods>
     <data checksum="0x857e5378" dtype="float64" shape="(73, 96)"/>
   </cube>
-  <cube core-dtype="float64" dtype="float64" standard_name="air_temperature" units="K">
+  <cube dtype="float64" standard_name="air_temperature" units="K">
     <coords>
       <coord>
         <dimCoord bounds="[[0.0, 0.0]]" id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="uint8" dtype="uint8" standard_name="leaf_area_index" units="%">
+  <cube dtype="uint8" standard_name="leaf_area_index" units="%">
     <attributes>
       <attribute name="source" value="Boston University"/>
     </attributes>

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" standard_name="air_temperature" units="K">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -37,7 +37,7 @@
     <cellMethods/>
     <data checksum="0x80e93a14" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube core-dtype="float32" dtype="float32" standard_name="air_temperature" units="K">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -78,7 +78,7 @@
     </cellMethods>
     <data checksum="0x85641c30" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube core-dtype="float32" dtype="float32" standard_name="air_temperature" units="K">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -119,7 +119,7 @@
     </cellMethods>
     <data checksum="0x03d5c2e9" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube core-dtype="float32" dtype="float32" standard_name="air_temperature" units="K">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -160,7 +160,7 @@
     </cellMethods>
     <data checksum="0xac9bd3e8" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube core-dtype="float32" dtype="float32" standard_name="air_temperature" units="K">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s16i203"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

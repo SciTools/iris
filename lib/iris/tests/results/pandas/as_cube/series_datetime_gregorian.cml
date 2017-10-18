@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="int64" dtype="int64" units="unknown">
+  <cube dtype="int64" units="unknown">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="5816e14d" long_name="index" points="[271753.016944, 281282.033889, 290739.050833,

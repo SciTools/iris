@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="int64" dtype="int64" units="unknown">
+  <cube dtype="int64" units="unknown">
     <coords>
       <coord datadims="[0]">
         <auxCoord id="343cbc01" long_name="index" points="[A Thing, A Thing, A Thing, A Thing, A Thing]" shape="(5,)" units="Unit('unknown')" value_type="object"/>
