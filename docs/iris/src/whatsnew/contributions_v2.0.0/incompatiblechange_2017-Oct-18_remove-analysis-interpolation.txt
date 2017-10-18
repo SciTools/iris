@@ -1,0 +1,8 @@
+* The module ```iris.analysis.interpolate``` has been removed, along with the following functions:
+    * ```iris.analysis.linear```
+    * ```iris.analysis.all_points_in_range```
+    * ```iris.analysis.nearest_neighbour_data_value```
+    * ```iris.analysis.regrid```
+    * ```iris.analysis.extract_nearest_neighbour```
+    * ```iris.analysis.nearest_neighbour_indices```
+    * ```iris.analysis.Linear1dExtrapolator```
