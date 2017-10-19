@@ -1,5 +1,5 @@
 dimensions:
-	latitude = UNLIMITED ; // (73 currently)
+	latitude = 73 ;
 	bnds = 2 ;
 	longitude = 96 ;
 variables:

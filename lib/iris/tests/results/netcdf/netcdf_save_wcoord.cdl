@@ -1,6 +1,6 @@
 dimensions:
-	dim0 = UNLIMITED ; // (1 currently)
-	lon = UNLIMITED ; // (2 currently)
+	dim0 = 1 ;
+	lon = 2 ;
 	lat = 2 ;
 variables:
 	double temp(lon, lat) ;

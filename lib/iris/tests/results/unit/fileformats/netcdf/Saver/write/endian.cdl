@@ -1,5 +1,5 @@
 dimensions:
-	dim0 = UNLIMITED ; // (3 currently)
+	dim0 = 3 ;
 	bnds = 2 ;
 	dim1 = 4 ;
 variables:

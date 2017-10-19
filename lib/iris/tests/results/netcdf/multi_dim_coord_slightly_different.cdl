@@ -1,6 +1,6 @@
 dimensions:
-	latitude_0 = UNLIMITED ; // (10 currently)
-	time = UNLIMITED ; // (2 currently)
+	latitude_0 = 10 ;
+	time = 2 ;
 	latitude = 2 ;
 variables:
 	double temp(time, latitude) ;

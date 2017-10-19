@@ -853,11 +853,9 @@ class Saver(object):
           :class:`iris.coords.Coord` objects):
             Explicit list of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
-            NetCDF dimension variable length 'UNLIMITED'. By default, the
-            outermost (first) dimension for each cube is used. Only the
-            'NETCDF4' format supports multiple 'UNLIMITED' dimensions. To save
-            no unlimited dimensions, use `unlimited_dimensions=[]` (an empty
-            list).
+            NetCDF dimension variable length 'UNLIMITED'. By default, no
+            unlimited dimensions are saved.  Only the 'NETCDF4' format
+            supports multiple 'UNLIMITED' dimensions.
 
         * zlib (bool):
             If `True`, the data will be compressed in the netCDF file using
@@ -942,19 +940,27 @@ class Saver(object):
             `chunksizes` and `endian` keywords are silently ignored for netCDF
             3 files that do not use HDF5.
 
-        .. deprecated:: 1.8.0
+        .. deprecated:: 2.0.0
 
-            NetCDF default saving behaviour currently assigns the outermost
-            dimension as unlimited. This behaviour is to be deprecated, in
-            favour of no automatic assignment. To switch to the new behaviour,
-            set `iris.FUTURE.netcdf_no_unlimited` to True.
+            NetCDF default saving behaviour currently does not assign any
+            dimensions automatically as unlimited, but setting
+            `iris.FUTURE.netcdf_no_unlimited` to False will revert to legacy
+            saving behaviour and assign the outermost dimension to unlimited.
+            This `Future` option is deprecated and will be removed in
+            Iris v3.0.
 
-        """
+            """
+        future_msg = "The 'Future' object property 'netcdf_no_unlimited' " \
+                     "has been deprecated and past functionality " \
+                     "removed.  Leading dimensions will no longer be " \
+                     "assigned as unlimited unless specified in keyword " \
+                     "arguments." \
+
+        if not iris.FUTURE.netcdf_no_unlimited:
+            raise Exception(future_msg)
+
         if unlimited_dimensions is None:
-            if iris.FUTURE.netcdf_no_unlimited:
                 unlimited_dimensions = []
-            else:
-                _no_unlim_dep_warning()
 
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
                                 in [None, False])
@@ -1088,8 +1094,7 @@ class Saver(object):
 
         * unlimited_dimensions (iterable of strings and/or
           :class:`iris.coords.Coord` objects):
-            List of coordinates to make unlimited. By default, the
-            outermost dimension is made unlimited.
+            List of coordinates to make unlimited (None by default).
 
         Returns:
             None.
@@ -2129,10 +2134,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
       :class:`iris.coords.Coord` objects):
         Explicit list of coordinate names (or coordinate objects) corresponding
         to coordinate dimensions of `cube` to save with the NetCDF dimension
-        variable length 'UNLIMITED'. By default, the outermost (first)
-        dimension for each cube is used. Only the 'NETCDF4' format supports
-        multiple 'UNLIMITED' dimensions. To save no unlimited dimensions, use
-        `unlimited_dimensions=[]` (an empty list).
+        variable length 'UNLIMITED'. By default, no unlimited dimensions are
+        saved.  Only the 'NETCDF4' format supports multiple 'UNLIMITED'
+        dimensions.
 
     * zlib (bool):
         If `True`, the data will be compressed in the netCDF file using gzip
@@ -2225,19 +2229,24 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
         NetCDF Context manager (:class:`~Saver`).
 
-    .. deprecated:: 1.8.0
+    .. deprecated:: 2.0.0
 
-        NetCDF default saving behaviour currently assigns the outermost
-        dimensions to unlimited. This behaviour is to be deprecated, in
-        favour of no automatic assignment. To switch to the new behaviour,
-        set `iris.FUTURE.netcdf_no_unlimited` to True.
-
+        NetCDF default saving behaviour currently does not assign any
+        dimensions automatically as unlimited, but setting
+        `iris.FUTURE.netcdf_no_unlimited` to False will revert to legacy
+        saving behaviour and assign the outermost dimension to unlimited.
+        This `Future` option is deprecated and will be removed in Iris v3.0.
     """
+    future_msg = "The 'Future' object property 'netcdf_no_unlimited' has " \
+                 "been deprecated and past functionality " \
+                 "removed.  Leading dimensions will no longer be " \
+                 "assigned as unlimited unless specified in keyword " \
+                 "arguments."
+    if not iris.FUTURE.netcdf_no_unlimited:
+        raise Exception(future_msg)
+
     if unlimited_dimensions is None:
-        if iris.FUTURE.netcdf_no_unlimited:
             unlimited_dimensions = []
-        else:
-            _no_unlim_dep_warning()
 
     if isinstance(cube, iris.cube.Cube):
         cubes = iris.cube.CubeList()
@@ -2350,9 +2359,10 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
 
 def _no_unlim_dep_warning():
-    msg = ('NetCDF default saving behaviour currently assigns the '
-           'outermost dimensions to unlimited. This behaviour is to be '
-           'deprecated, in favour of no automatic assignment. To switch '
-           'to the new behaviour, set iris.FUTURE.netcdf_no_unlimited to '
-           'True.')
+    msg = ('NetCDF default saving behaviour currently does not assign any '
+           'unlimited dimensions by default, but setting'
+           '`iris.FUTURE.netcdf_no_unlimited` to False will revert to legacy '
+           'saving behaviour and assign the outermost dimension to unlimited. '
+           'This `Future` option is deprecated and will be removed in Iris '
+           'v3.0.')
     warn_deprecated(msg)

@@ -144,7 +144,7 @@ class Future(threading.local):
     """Run-time configuration controller."""
 
     def __init__(self, cell_datetime_objects=True, netcdf_promote=True,
-                 netcdf_no_unlimited=False, clip_latitudes=True):
+                 netcdf_no_unlimited=True, clip_latitudes=True):
         """
         A container for run-time options controls.
 
@@ -182,10 +182,10 @@ class Future(threading.local):
             exposed variables that defined reference surfaces for
             dimensionless vertical coordinates as independent Cubes.
 
-        The option `netcdf_no_unlimited`, when True, changes the
-        behaviour of the netCDF saver, such that no dimensions are set to
-        unlimited.  The current default is that the leading dimension is
-        unlimited unless otherwise specified.
+        The option `netcdf_no_unlimited`, when False, changes the
+        behaviour of the netCDF saver, such that the leading dimension is
+        unlimited unless otherwise specified.  The current default is that no
+        dimensions are set to unlimited.
 
         .. deprecated:: 2.0.0
 

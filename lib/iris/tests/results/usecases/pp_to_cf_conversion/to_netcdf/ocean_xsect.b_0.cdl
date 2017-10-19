@@ -1,5 +1,5 @@
 dimensions:
-	depth = UNLIMITED ; // (20 currently)
+	depth = 20 ;
 	bnds = 2 ;
 	latitude = 144 ;
 variables:

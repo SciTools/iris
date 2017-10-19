@@ -74,15 +74,14 @@ class SystemInitialTest(tests.IrisTest):
         filetypes = ('.nc', '.pp')
         if tests.GRIB_AVAILABLE:
             filetypes += ('.grib2',)
-        with iris.FUTURE.context(netcdf_no_unlimited=True):
-            for filetype in filetypes:
-                saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
-                iris.save(cm, saved_tmpfile)
+        for filetype in filetypes:
+            saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
+            iris.save(cm, saved_tmpfile)
 
-                new_cube = iris.load_cube(saved_tmpfile)
-                self.assertCML(new_cube,
-                               ('system',
-                                'supported_filetype_%s.cml' % filetype))
+            new_cube = iris.load_cube(saved_tmpfile)
+            self.assertCML(new_cube,
+                           ('system',
+                            'supported_filetype_%s.cml' % filetype))
 
     @tests.skip_grib
     def system_test_grib_patch(self):

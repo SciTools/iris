@@ -1,5 +1,5 @@
 dimensions:
-	projection_y_coordinate = UNLIMITED ; // (3 currently)
+	projection_y_coordinate = 3 ;
 	projection_x_coordinate = 4 ;
 variables:
 	int64 air_pressure_anomaly(projection_y_coordinate, projection_x_coordinate) ;

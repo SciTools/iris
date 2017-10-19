@@ -111,19 +111,20 @@ class Test_attributes(tests.IrisTest):
 class Test_unlimited_dims(tests.IrisTest):
     def test_no_unlimited_default(self):
         cube = lat_lon_cube()
-        with iris.FUTURE.context(netcdf_no_unlimited=False):
-            with self.temp_filename('foo.nc') as nc_out:
-                save(cube, nc_out)
-                ds = nc.Dataset(nc_out)
-                self.assertTrue(ds.dimensions['latitude'].isunlimited())
-
-    def test_no_unlimited_future_default(self):
-        cube = lat_lon_cube()
         with iris.FUTURE.context(netcdf_no_unlimited=True):
             with self.temp_filename('foo.nc') as nc_out:
                 save(cube, nc_out)
                 ds = nc.Dataset(nc_out)
                 self.assertFalse(ds.dimensions['latitude'].isunlimited())
+
+    def test_no_unlimited_future_alternative(self):
+        cube = lat_lon_cube()
+        with iris.FUTURE.context(netcdf_no_unlimited=False):
+            with self.temp_filename('foo.nc') as nc_out:
+                with self.assertRaises(Exception):
+                    save(cube, nc_out)
+                    ds = nc.Dataset(nc_out)
+                    self.assertTrue(ds.dimensions['latitude'].isunlimited())
 
 
 class Test_fill_value(tests.IrisTest):

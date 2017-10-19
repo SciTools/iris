@@ -186,12 +186,13 @@ class Test_write(tests.IrisTest):
             self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
 
     def test_default_unlimited_dimensions(self):
+        # Default is no unlimited dimensions.
         cube = self._simple_cube('>f4')
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             ds = nc.Dataset(nc_path)
-            self.assertTrue(ds.dimensions['dim0'].isunlimited())
+            self.assertFalse(ds.dimensions['dim0'].isunlimited())
             self.assertFalse(ds.dimensions['dim1'].isunlimited())
             ds.close()
 
@@ -199,7 +200,7 @@ class Test_write(tests.IrisTest):
         cube = self._simple_cube('>f4')
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
-                saver.write(cube, unlimited_dimensions=[])
+                saver.write(cube, unlimited_dimensions=None)
             ds = nc.Dataset(nc_path)
             for dim in six.itervalues(ds.dimensions):
                 self.assertFalse(dim.isunlimited())
@@ -233,6 +234,15 @@ class Test_write(tests.IrisTest):
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
+
+    def test_future_netcdf_no_unlimited_error(self):
+        cube = self._simple_cube('>f4')
+        with self.temp_filename('.nc') as nc_path:
+            # Should get an exception if flag has been set to False.
+            with iris.FUTURE.context(netcdf_no_unlimited=False):
+                with Saver(nc_path, 'NETCDF4') as saver:
+                    with self.assertRaises(Exception):
+                        saver.write(cube)
 
     def test_reserved_attributes(self):
         cube = self._simple_cube('>f4')
