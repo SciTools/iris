@@ -224,12 +224,12 @@ class Future(threading.local):
 
             with iris.FUTURE.context():
                 iris.FUTURE.cell_datetime_objects = False
-                # ... code which expects time objects
+                # ... code which expects integers
 
         Or more concisely::
 
             with iris.FUTURE.context(cell_datetime_objects=False):
-                # ... code which expects time objects
+                # ... code which expects integers
 
         """
         # Save the current context

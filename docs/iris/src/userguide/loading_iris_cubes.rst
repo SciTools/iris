@@ -255,8 +255,7 @@ for ease of calendar-based testing.
     DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
     >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
     >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
-    ...     cube_11 = cube_all.extract(hour_11)
-    ... 
+    >>> cube_11 = cube_all.extract(hour_11)
     >>> print('Selected times :\n' + str(cube_11.coord('time')))
     Selected times :
     DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
@@ -281,9 +280,9 @@ time selections when loading or extracting data.
 The previous constraint example can now be written as:
 
    >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
-   ...     print(iris.load_cube(
-   ...         iris.sample_data_path('uk_hires.pp'),
-   ...         'air_potential_temperature' & the_11th_hour).coord('time'))
+   >>> print(iris.load_cube(
+   ...	iris.sample_data_path('uk_hires.pp'),
+   ...	'air_potential_temperature' & the_11th_hour).coord('time'))
    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
 A more complex example might be when there exists a time sequence representing the first day of every week
@@ -316,7 +315,7 @@ functionality with PartialDateTime:
 
     >>> st_swithuns_daterange = iris.Constraint(
     ...     time=lambda cell: PartialDateTime(month=7, day=15) < cell < PartialDateTime(month=8, day=25))
-    ...   within_st_swithuns = long_ts.extract(st_swithuns_daterange)
+    >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
     ... 
     >>> print(within_st_swithuns.coord('time'))
     DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
