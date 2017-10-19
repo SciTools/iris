@@ -246,7 +246,7 @@ provides special features to facilitate this:
 
 Firstly, when Iris evaluates Constraint expressions, it will convert time-coordinate 
 values (points and bounds) from numbers into :class:`~datetime.datetime`-like objects
-for ease of calendar-based testing.:
+for ease of calendar-based testing.
 
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
