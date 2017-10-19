@@ -1239,10 +1239,6 @@ class ProtoCube(object):
                 # normal array.
                 dtype = self._cube_signature.data_type
                 merged_data = as_concrete_data(merged_data)
-                # Unmask the array if it has no masked points.
-                if (ma.isMaskedArray(merged_data) and
-                        not ma.is_masked(merged_data)):
-                    merged_data = merged_data.data
             merged_cube = self._get_cube(merged_data)
             merged_cubes.append(merged_cube)
 

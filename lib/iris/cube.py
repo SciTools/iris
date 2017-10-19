@@ -2094,11 +2094,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # We don't want a view of the data, so take a copy of it.
         data = deepcopy(data)
 
-        # We can turn a masked array into a normal array if it's full.
-        if ma.isMaskedArray(data):
-            if ma.count_masked(data) == 0:
-                data = data.filled()
-
         # XXX: Slicing a single item from a masked array that is masked,
         #      results in numpy (v1.11.1) *always* returning a MaskedConstant
         #      with a dtype of float64, regardless of the original masked
