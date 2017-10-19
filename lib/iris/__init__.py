@@ -197,7 +197,7 @@ class Future(threading.local):
         return msg.format(self.cell_datetime_objects, self.netcdf_promote,
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
-    deprecated_options = {}
+    deprecated_options = {'cell_datetime_objects'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
@@ -223,12 +223,12 @@ class Future(threading.local):
         For example::
 
             with iris.FUTURE.context():
-                iris.FUTURE.cell_datetime_objects = True
+                iris.FUTURE.cell_datetime_objects = False
                 # ... code which expects time objects
 
         Or more concisely::
 
-            with iris.FUTURE.context(cell_datetime_objects=True):
+            with iris.FUTURE.context(cell_datetime_objects=False):
                 # ... code which expects time objects
 
         """
