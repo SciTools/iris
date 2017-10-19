@@ -1,1 +1,1 @@
-* The deprecated configuration variable ```SAMPLE_DATA_DIR``` has been removed in favour of user installation of the ```iris_sample_data``` package.
+* The deprecated configuration variable ```SAMPLE_DATA_DIR``` has been removed from ```iris.config``` in favour of user installation of the ```iris-sample-data``` package.
