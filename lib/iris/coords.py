@@ -1604,7 +1604,6 @@ class DimCoord(Coord):
 
         """
         new_coord = copy.deepcopy(super(DimCoord, self), memo)
-
         # Ensure points and bounds arrays are read-only.
         new_coord._points_dm.core_data().flags.writeable = False
         if new_coord._bounds_dm is not None:
@@ -1683,8 +1682,8 @@ class DimCoord(Coord):
 
     def _points_setter(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
-        # Ensure it is an actual array, and also make our own distinct view
-        # so that we can make it read-only.
+        # Ensure it is an actual array, and also make our own copy so that we
+        # can make it read-only.
         points = as_concrete_data(points)
         points = np.array(points)
 
