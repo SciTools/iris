@@ -28,7 +28,8 @@ import netCDF4 as nc
 import numpy as np
 
 import iris
-from iris.cube import Cube
+from iris.coords import DimCoord
+from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import save, CF_CONVENTIONS_VERSION
 from iris.tests.stock import lat_lon_cube
 
@@ -123,6 +124,97 @@ class Test_unlimited_dims(tests.IrisTest):
                 save(cube, nc_out)
                 ds = nc.Dataset(nc_out)
                 self.assertFalse(ds.dimensions['latitude'].isunlimited())
+
+
+class Test_fill_value(tests.IrisTest):
+    def setUp(self):
+        self.standard_names = ['air_temperature',
+                               'air_potential_temperature',
+                               'air_temperature_anomaly']
+
+    def _make_cubes(self):
+        lat = DimCoord(np.arange(3), 'latitude', units='degrees')
+        lon = DimCoord(np.arange(4), 'longitude', units='degrees')
+        data = np.arange(12, dtype='f4').reshape(3, 4)
+        return CubeList(Cube(data, standard_name=name, units='K',
+                             dim_coords_and_dims=[(lat, 0), (lon, 1)])
+                        for name in self.standard_names)
+
+    def test_None(self):
+        # Test that when no fill_value argument is passed, the fill_value
+        # argument to Saver.write is None or not present.
+        cubes = self._make_cubes()
+        with mock.patch('iris.fileformats.netcdf.Saver') as Saver:
+            save(cubes, 'dummy.nc')
+
+        # Get the Saver.write mock
+        with Saver() as saver:
+            write = saver.write
+
+        self.assertEqual(3, write.call_count)
+        for call in write.mock_calls:
+            _, _, kwargs = call
+            if 'fill_value' in kwargs:
+                self.assertIs(None, kwargs['fill_value'])
+
+    def test_single(self):
+        # Test that when a single value is passed as the fill_value argument,
+        # that value is passed to each call to Saver.write
+        cubes = self._make_cubes()
+        fill_value = 12345.
+        with mock.patch('iris.fileformats.netcdf.Saver') as Saver:
+            save(cubes, 'dummy.nc', fill_value=fill_value)
+
+        # Get the Saver.write mock
+        with Saver() as saver:
+            write = saver.write
+
+        self.assertEqual(3, write.call_count)
+        for call in write.mock_calls:
+            _, _, kwargs = call
+            self.assertEqual(fill_value, kwargs['fill_value'])
+
+    def test_multiple(self):
+        # Test that when a list is passed as the fill_value argument,
+        # each element is passed to separate calls to Saver.write
+        cubes = self._make_cubes()
+        fill_values = [123., 456., 789.]
+        with mock.patch('iris.fileformats.netcdf.Saver') as Saver:
+            save(cubes, 'dummy.nc', fill_value=fill_values)
+
+        # Get the Saver.write mock
+        with Saver() as saver:
+            write = saver.write
+
+        self.assertEqual(3, write.call_count)
+        for call, fill_value in zip(write.mock_calls, fill_values):
+            _, _, kwargs = call
+            self.assertEqual(fill_value, kwargs['fill_value'])
+
+    def test_single_string(self):
+        # Test that when a string is passed as the fill_value argument,
+        # that value is passed to calls to Saver.write
+        cube = Cube(['abc', 'def', 'hij'])
+        fill_value = 'xyz'
+        with mock.patch('iris.fileformats.netcdf.Saver') as Saver:
+            save(cube, 'dummy.nc', fill_value=fill_value)
+
+        # Get the Saver.write mock
+        with Saver() as saver:
+            write = saver.write
+
+        self.assertEqual(1, write.call_count)
+        _, _, kwargs = write.mock_calls[0]
+        self.assertEqual(fill_value, kwargs['fill_value'])
+
+    def test_multi_wrong_length(self):
+        # Test that when a list of a different length to the number of cubes
+        # is passed as the fill_value argument, an error is raised
+        cubes = self._make_cubes()
+        fill_values = [1., 2., 3., 4.]
+        with mock.patch('iris.fileformats.netcdf.Saver') as Saver:
+            with self.assertRaises(ValueError):
+                save(cubes, 'dummy.nc', fill_value=fill_values)
 
 
 if __name__ == "__main__":

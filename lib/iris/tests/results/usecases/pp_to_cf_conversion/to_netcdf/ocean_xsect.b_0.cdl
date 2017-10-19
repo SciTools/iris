@@ -4,7 +4,7 @@ dimensions:
 	latitude = 144 ;
 variables:
 	float sea_water_potential_temperature(depth, latitude) ;
-		sea_water_potential_temperature:_FillValue = -1.e+30f ;
+		sea_water_potential_temperature:_FillValue = 9.96921e+36f ;
 		sea_water_potential_temperature:standard_name = "sea_water_potential_temperature" ;
 		sea_water_potential_temperature:units = "degC" ;
 		sea_water_potential_temperature:um_stash_source = "m02s00i101" ;

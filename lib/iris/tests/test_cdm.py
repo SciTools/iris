@@ -1030,13 +1030,13 @@ class TestCubeCollapsed(tests.IrisTest):
         # want to catch cases where there is a loss of precision however.
         if dual_stage.dtype > cube.dtype:
             data = dual_stage.data.astype(cube.dtype)
-            dual_stage.replace(data, fill_value=dual_stage.fill_value)
+            dual_stage.data = data
         self.assertCMLApproxData(dual_stage, ('cube_collapsed', '%s_%s_dual_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         single_stage = cube.collapsed([a_name, b_name], iris.analysis.MEAN)
         if single_stage.dtype > cube.dtype:
             data = single_stage.data.astype(cube.dtype)
-            single_stage.replace(data, fill_value=single_stage.fill_value)
+            single_stage.data = data 
         self.assertCMLApproxData(single_stage, ('cube_collapsed', '%s_%s_single_stage.cml' % (a_filename, b_filename)), *args, **kwargs)
 
         # Compare the cube bits that should match
@@ -1181,7 +1181,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         # extract the 2d field that has SOME missing values
         masked_slice = cube[0]
-        masked_slice.fill_value = fill_value
+        masked_slice.data.fill_value = fill_value
 
         # test saving masked data
         reference_txt_path = tests.get_result_path(('cdm', 'masked_save_pp.txt'))
@@ -1199,7 +1199,8 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]
             self.assertEqual(merged_cube.dtype, dtype)
-            self.assertEqual(merged_cube.fill_value, fill_value)
+            # Check that the original masked-array fill-value is *ignored*.
+            self.assertArrayAllClose(merged_cube.data.fill_value, -1e30)
 
 
 @tests.skip_data

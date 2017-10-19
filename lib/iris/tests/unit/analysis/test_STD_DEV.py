@@ -31,13 +31,14 @@ from iris.analysis import STD_DEV
 
 class Test_lazy_aggregate(tests.IrisTest):
     def test_mdtol(self):
-        na = np.nan
-        array = np.array([[1., 2., 1., 2.],
-                          [1., 2., 3., na],
-                          [1., 2., na, na]])
+        na = -999.888
+        array = np.ma.masked_equal([[1., 2., 1., 2.],
+                                    [1., 2., 3., na],
+                                    [1., 2., na, na]],
+                                   na)
         array = as_lazy_data(array)
         var = STD_DEV.lazy_aggregate(array, axis=1, mdtol=0.3)
-        masked_result = as_concrete_data(var, nans_replacement=np.ma.masked)
+        masked_result = as_concrete_data(var)
         masked_expected = np.ma.masked_array([0.57735, 1., 0.707107],
                                              mask=[0, 0, 1])
         self.assertMaskedArrayAlmostEqual(masked_result, masked_expected)

@@ -34,7 +34,7 @@ import gribapi
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, convert_nans_array
+from iris._lazy_data import as_lazy_data
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError, NotYetImplementedError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
@@ -139,7 +139,6 @@ class GribWrapper(object):
     def __init__(self, grib_message, grib_fh=None):
         """Store the grib message and compute our extra keys."""
         self.grib_message = grib_message
-        self.realised_dtype = np.array([0.]).dtype
 
         if self.edition != 1:
             emsg = 'GRIB edition {} is not supported by {!r}.'
@@ -178,14 +177,11 @@ class GribWrapper(object):
             # The byte offset requires to be reset back to the first byte
             # of this message. The file pointer offset is always at the end
             # of the current message due to the grib-api reading the message.
-            proxy = GribDataProxy(shape, self.realised_dtype, grib_fh.name,
+            proxy = GribDataProxy(shape, np.array([0.]).dtype, grib_fh.name,
                                   offset - message_length)
             self._data = as_lazy_data(proxy)
         else:
-            values_array = _message_values(grib_message, shape)
-            # mask where the values are nan
-            self.data = convert_nans_array(values_array,
-                                           nans_replacement=ma.masked)
+            self.data = _message_values(grib_message, shape)
 
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
@@ -692,6 +688,10 @@ def _message_values(grib_message, shape):
     data = gribapi.grib_get_double_array(grib_message, 'values')
     data = data.reshape(shape)
 
+    # Handle missing values in a sensible way.
+    mask = np.isnan(data)
+    if mask.any():
+        data = ma.array(data, mask=mask, fill_value=np.nan)
     return data
 
 

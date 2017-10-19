@@ -293,18 +293,11 @@ def _make_cube(field, converter):
     metadata = converter(field)
 
     cube_data = field.core_data()
-    cube_dtype = field.realised_dtype
-    if cube_dtype.kind in 'biu':
-        # Don't adopt BMDI as a fill value for integer data.
-        cube_fill_value = None
-    else:
-        cube_fill_value = field.bmdi
     cube = iris.cube.Cube(cube_data,
                           attributes=metadata.attributes,
                           cell_methods=metadata.cell_methods,
                           dim_coords_and_dims=metadata.dim_coords_and_dims,
-                          aux_coords_and_dims=metadata.aux_coords_and_dims,
-                          fill_value=cube_fill_value, dtype=cube_dtype)
+                          aux_coords_and_dims=metadata.aux_coords_and_dims)
 
     # Temporary code to deal with invalid standard names in the
     # translation table.

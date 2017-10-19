@@ -25,6 +25,7 @@ import iris.tests as tests
 
 import iris
 from iris.analysis import MEAN
+
 from iris._lazy_data import is_lazy_data
 
 

@@ -95,8 +95,8 @@ class TestMDI(tests.IrisTest):
 
     def test_masked_with_finite_fill_value(self):
         cube = iris.cube.Cube(np.ma.MaskedArray([1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
-                                                mask=[0, 0, 0, 1, 1, 1]),
-                              fill_value=2000)
+                                                mask=[0, 0, 0, 1, 1, 1],
+                                                fill_value=2000))
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
             data_section(cube, grib_message)
@@ -108,8 +108,8 @@ class TestMDI(tests.IrisTest):
 
     def test_masked_with_nan_fill_value(self):
         cube = iris.cube.Cube(np.ma.MaskedArray([1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
-                                                mask=[0, 0, 0, 1, 1, 1]),
-                              fill_value=np.nan)
+                                                mask=[0, 0, 0, 1, 1, 1],
+                                                fill_value=np.nan))
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
             data_section(cube, grib_message)
@@ -136,9 +136,9 @@ class TestMDI(tests.IrisTest):
         # When re-scaling masked data with a finite fill value, ensure
         # the fill value and any filled values are also re-scaled.
         cube = iris.cube.Cube(np.ma.MaskedArray([1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
-                                                mask=[0, 0, 0, 1, 1, 1]),
-                              standard_name='geopotential_height', units='km',
-                              fill_value=2000)
+                                                mask=[0, 0, 0, 1, 1, 1],
+                                                fill_value=2000),
+                              standard_name='geopotential_height', units='km')
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
             data_section(cube, grib_message)
@@ -153,9 +153,9 @@ class TestMDI(tests.IrisTest):
         # a fill value is chosen which allows for the scaling, and any
         # filled values match the chosen fill value.
         cube = iris.cube.Cube(np.ma.MaskedArray([-1.0, 2.0, -1.0, 2.0],
-                                                mask=[0, 0, 1, 1]),
-                              standard_name='geopotential_height', units='km',
-                              fill_value=np.nan)
+                                                mask=[0, 0, 1, 1],
+                                                fill_value=np.nan),
+                              standard_name='geopotential_height', units='km')
         grib_message = mock.sentinel.GRIB_MESSAGE
         with mock.patch(GRIB_API) as grib_api:
             data_section(cube, grib_message)

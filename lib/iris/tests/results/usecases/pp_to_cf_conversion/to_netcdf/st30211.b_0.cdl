@@ -6,7 +6,7 @@ dimensions:
 	time = 4 ;
 variables:
 	float northward_ocean_heat_transport(pseudo_level, time, latitude, longitude) ;
-		northward_ocean_heat_transport:_FillValue = -1.e+30f ;
+		northward_ocean_heat_transport:_FillValue = 9.96921e+36f ;
 		northward_ocean_heat_transport:standard_name = "northward_ocean_heat_transport" ;
 		northward_ocean_heat_transport:units = "PW" ;
 		northward_ocean_heat_transport:um_stash_source = "m02s30i211" ;

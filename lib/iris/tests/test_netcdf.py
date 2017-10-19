@@ -94,7 +94,7 @@ class TestNetCDFLoad(tests.IrisTest):
         # manager loading.
         lnsp = cubes[1]
         self.assertTrue(ma.isMaskedArray(lnsp.data))
-        self.assertEqual(-32767.0, lnsp.fill_value)
+        self.assertEqual(-32767.0, lnsp.data.fill_value)
 
     def test_load_global_xyzt_gems_iter(self):
         # Test loading stepped single xyzt CF-netCDF file (multi-cube).

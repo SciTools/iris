@@ -1,16 +1,16 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" fill_value="-1e+30" standard_name="air_temperature" units="K">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s16i203"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>
     <coords>
       <coord datadims="[0, 1]">
-        <auxCoord id="9041e969" points="[[--, --, 260.259246826, 260.259246826],
-		[--, --, 377.580688477, 374.184997559],
-		[--, --, 494.902130127, 488.110778809],
-		[--, --, 612.223571777, 602.036560059]]" shape="(4, 4)" standard_name="altitude" units="Unit('m')" value_type="float64">
+        <auxCoord id="9041e969" points="[[nan, nan, 260.259246826, 260.259246826],
+		[nan, nan, 377.580688477, 374.184997559],
+		[nan, nan, 494.902130127, 488.110778809],
+		[nan, nan, 612.223571777, 602.036560059]]" shape="(4, 4)" standard_name="altitude" units="Unit('m')" value_type="float64">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>

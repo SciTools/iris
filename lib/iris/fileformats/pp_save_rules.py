@@ -759,26 +759,6 @@ def _vertical_rules(cube, pp):
     return pp
 
 
-def _mdi_rules(cube, pp):
-    """
-    Rules for setting the MDI (Missing Data Indicator) value of the PP field.
-
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
-
-    Returns:
-        The PP field with updated metadata.
-
-    """
-    if cube.fill_value is not None:
-        pp.bmdi = cube.fill_value
-    else:
-        pp.bmdi = -1e30
-
-    return pp
-
-
 def _all_other_rules(cube, pp):
     """
     Rules for setting the horizontal grid and pole location of the PP field.
@@ -815,7 +795,6 @@ def verify(cube, field):
     field = _non_std_cross_section_rules(cube, field)
     field = _lbproc_rules(cube, field)
     field = _vertical_rules(cube, field)
-    field = _mdi_rules(cube, field)
     field = _all_other_rules(cube, field)
 
     return field

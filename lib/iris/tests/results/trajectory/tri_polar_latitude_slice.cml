@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float64" dtype="float64" fill_value="9.96920996839e+36" long_name="Temperature" standard_name="sea_water_potential_temperature" units="degC" var_name="votemper">
+  <cube dtype="float64" long_name="Temperature" standard_name="sea_water_potential_temperature" units="degC" var_name="votemper">
     <attributes>
       <attribute name="Conventions" value="CF-1.1"/>
       <attribute name="DOMAIN_DIM_N001" value="x"/>

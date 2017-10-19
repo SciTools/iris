@@ -626,8 +626,7 @@ class PPDataProxy(object):
 
     @property
     def dtype(self):
-        return np.dtype('f8') if self.src_dtype.kind == 'i' \
-                 else self.src_dtype.newbyteorder('=')
+        return self.src_dtype.newbyteorder('=')
 
     @property
     def fill_value(self):
@@ -728,9 +727,8 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # condition" array, which is split into 4 quartiles, North
         # East, South, West and where North and South contain the corners.
         compressed_data = data
-        if data_type.kind != 'i':
-            data_type = np.dtype('f8')
-        data = np.full(data_shape, np.nan, dtype=data_type)
+        data = np.ma.masked_all(data_shape)
+        data.fill_value = mdi
 
         boundary_height = boundary_packing.y_halo + boundary_packing.rim_width
         boundary_width = boundary_packing.x_halo + boundary_packing.rim_width
@@ -771,9 +769,8 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
                              'Could not load.')
         land_mask = mask.data.astype(np.bool)
         sea_mask = ~land_mask
-        if data_type.kind != 'i':
-            data_type = np.dtype('f8')
-        new_data = np.full(land_mask.shape, np.nan, dtype=data_type)
+        new_data = np.ma.masked_all(land_mask.shape)
+        new_data.fill_value = mdi
         if lbpack.n3 == 1:
             # Land mask packed data.
             # Sometimes the data comes in longer than it should be (i.e. it
@@ -791,11 +788,9 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         # Reform in row-column order
         data.shape = data_shape
 
-    # Convert mdi to NaN.
+    # Mask the array
     if mdi in data:
-        if data.dtype.kind == 'i':
-            data = data.astype(np.dtype('f8'))
-        data[data == mdi] = np.nan
+        data = ma.masked_values(data, mdi, copy=False)
 
     return data
 
@@ -831,7 +826,7 @@ def _pp_attribute_names(header_defn):
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
-                          'boundary_packing', '_realised_dtype']
+                          'boundary_packing']
     return normal_headers + special_headers + extra_data + special_attributes
 
 
@@ -864,7 +859,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         self.raw_lbtim = None
         self.raw_lbpack = None
         self.boundary_packing = None
-        self._realised_dtype = None
         if header is not None:
             self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
@@ -1036,9 +1030,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         """
         if is_lazy_data(self._data):
             # Replace with real data on the first access.
-            self._data = as_concrete_data(self._data,
-                                          nans_replacement=ma.masked,
-                                          result_dtype=self.realised_dtype)
+            self._data = as_concrete_data(self._data)
         return self._data
 
     @data.setter
@@ -1047,16 +1039,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
     def core_data(self):
         return self._data
-
-    @property
-    def realised_dtype(self):
-        return self._data.dtype \
-            if self._realised_dtype is None \
-            else self._realised_dtype
-
-    @realised_dtype.setter
-    def realised_dtype(self, value):
-        self._realised_dtype = value
 
     @property
     def calendar(self):
@@ -1145,14 +1127,18 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
         # Get the actual data content.
         data = self.data
-        if ma.is_masked(data):
-            # Fill missing data points with the MDI value from the header.
-            if data.dtype.kind in 'biu':
-                # Integer or Boolean data : No masking is supported.
-                msg = 'Non-floating masked data cannot be saved to PP.'
-                raise ValueError(msg)
-            fill_value = self.bmdi
-            data = data.filled(fill_value=fill_value)
+        mdi = self.bmdi
+        if np.any(data == mdi):
+            msg = ('PPField data contains unmasked points equal to the fill '
+                   "value, {}. As saved, these points will read back as "
+                   "missing data. To save these as normal values, please "
+                   "set the field BMDI not equal to any valid data points.")
+            warnings.warn(msg.format(mdi))
+        if isinstance(data, ma.MaskedArray):
+            if ma.is_masked(data):
+                data = data.filled(fill_value=mdi)
+            else:
+                data = data.data
 
         # Make sure the data is big-endian
         if data.dtype.newbyteorder('>') != data.dtype:
@@ -1650,7 +1636,6 @@ def _create_field_data(field, data_shape, land_mask):
                             field.raw_lbpack,
                             field.boundary_packing,
                             field.bmdi, land_mask)
-        field.realised_dtype = dtype.newbyteorder('=')
         block_shape = data_shape if 0 not in data_shape else (1, 1)
         field.data = as_lazy_data(proxy, chunks=block_shape)
 
@@ -2102,6 +2087,9 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         pp_field.lbcode = 1     # Grid code.
         pp_field.bmks = 1.0     # Some scaley thing.
         pp_field.lbproc = 0
+        # Set the missing-data value to the standard default value.
+        # The save code uses this header word to fill masked data points.
+        pp_field.bmdi = -1e30
         # From UM doc F3: "Set to -99 if LBEGIN not known"
         pp_field.lbuser[1] = -99
 

@@ -1,59 +1,59 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube core-dtype="float32" dtype="float32" standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="source" value="Iris test case"/>
     </attributes>
     <coords>
       <coord datadims="[1, 2, 3]">
-        <auxCoord bounds="[[[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]],
+        <auxCoord bounds="[[[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
 
- 		[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]],
+ 		[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
 
- 		[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]],
+ 		[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
 
- 		[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]]],
+ 		[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]]],
 
 
-		[[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]],
+		[[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
 
- 		[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]],
+ 		[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
 
- 		[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]],
+ 		[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
 
- 		[[--, --],
-  		[--, --],
-  		[--, --],
-  		[--, --]]]]" id="9041e969" points="[[[--, --, --, --],
- 		[--, --, --, --],
- 		[--, --, --, --],
- 		[--, --, --, --]],
+ 		[[nan, nan],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]]]]" id="9041e969" points="[[[nan, nan, nan, nan],
+ 		[nan, nan, nan, nan],
+ 		[nan, nan, nan, nan],
+ 		[nan, nan, nan, nan]],
 
-		[[--, --, --, --],
- 		[--, --, --, --],
- 		[--, --, --, --],
- 		[--, --, --, --]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
+		[[nan, nan, nan, nan],
+ 		[nan, nan, nan, nan],
+ 		[nan, nan, nan, nan],
+ 		[nan, nan, nan, nan]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>

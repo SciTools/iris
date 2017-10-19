@@ -44,49 +44,23 @@ class Test_as_concrete_data(tests.IrisTest):
         self.assertFalse(is_lazy_data(result))
 
     def test_lazy_data(self):
-        # Minimal testing as as_concrete_data is a wrapper to
-        # convert_nans_array
         data = np.arange(24).reshape((2, 12))
         lazy_array = as_lazy_data(data)
+        self.assertTrue(is_lazy_data(lazy_array))
+        result = as_concrete_data(lazy_array)
+        self.assertFalse(is_lazy_data(result))
+        self.assertArrayEqual(result, data)
 
-        sentinel = mock.sentinel.data
-        with mock.patch('iris._lazy_data.convert_nans_array') as conv_nans:
-            conv_nans.return_value = sentinel
-            result = as_concrete_data(lazy_array)
-        self.assertEqual(sentinel, result)
-
-        # Check call to convert_nans_array
-        self.assertEqual(conv_nans.call_count, 1)
-        args, kwargs = conv_nans.call_args
-        arg, = args
-        self.assertFalse(is_lazy_data(arg))
-        self.assertArrayEqual(arg, data)
-        self.assertEqual(kwargs, {})
-
-    def test_lazy_data_pass_thru_kwargs(self):
-        # Minimal testing as as_concrete_data is a wrapper to
-        # convert_nans_array
+    def test_lazy_mask_data(self):
         data = np.arange(24).reshape((2, 12))
-        lazy_array = as_lazy_data(data)
-        nans_replacement = 7
-        result_dtype = np.int16
-
-        sentinel = mock.sentinel.data
-        with mock.patch('iris._lazy_data.convert_nans_array') as conv_nans:
-            conv_nans.return_value = sentinel
-            result = as_concrete_data(lazy_array,
-                                      nans_replacement=nans_replacement,
-                                      result_dtype=result_dtype)
-        self.assertEqual(sentinel, result)
-
-        # Check call to convert_nans_array
-        self.assertEqual(conv_nans.call_count, 1)
-        args, kwargs = conv_nans.call_args
-        arg, = args
-        self.assertFalse(is_lazy_data(arg))
-        self.assertArrayEqual(arg, data)
-        self.assertEqual(kwargs, {'nans_replacement': nans_replacement,
-                                  'result_dtype': result_dtype, })
+        fill_value = 1234
+        mask_data = ma.masked_array(data, fill_value=fill_value)
+        lazy_array = as_lazy_data(mask_data)
+        self.assertTrue(is_lazy_data(lazy_array))
+        result = as_concrete_data(lazy_array)
+        self.assertFalse(is_lazy_data(result))
+        self.assertMaskedArrayEqual(result, mask_data)
+        self.assertEqual(result.fill_value, fill_value)
 
 
 if __name__ == '__main__':
