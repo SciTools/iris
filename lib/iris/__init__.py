@@ -143,7 +143,7 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
+    def __init__(self, cell_datetime_objects=True, netcdf_promote=False,
                  netcdf_no_unlimited=False, clip_latitudes=False):
         """
         A container for run-time options controls.
@@ -151,7 +151,7 @@ class Future(threading.local):
         To adjust the values simply update the relevant attribute from
         within your code. For example::
 
-            iris.FUTURE.cell_datetime_objects = True
+            iris.FUTURE.cell_datetime_objects = False
 
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
