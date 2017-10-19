@@ -1109,11 +1109,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 point = self.units.num2date(point)
                 if bound is not None:
                     bound = self.units.num2date(bound)
-                    
+               
         else:
             warn_deprecated("the 'Future' object property "
                             "cell_datetime_objects is now deprecated. Please "
-                            "remove code which uses this. cell_datetime_objects")
+                            "remove code which uses this. "
+                            "cell_datetime_objects")
 
         return Cell(point, bound)
 
