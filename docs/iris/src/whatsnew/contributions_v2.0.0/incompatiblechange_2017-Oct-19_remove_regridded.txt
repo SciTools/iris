@@ -1,1 +1,0 @@
-* The deprecated method ```iris.cube.Cube.regridded``` has been removed from the module :mod:`iris.cube`.
