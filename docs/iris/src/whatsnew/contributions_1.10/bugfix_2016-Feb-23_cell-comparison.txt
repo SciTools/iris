@@ -1,1 +1,0 @@
-* Fixed a bug where comparisons between :class:`iris.coords.Cell` objects and NumPy numeric types would produce unexpected behaviour
