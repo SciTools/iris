@@ -1,1 +1,1 @@
-* The deprecated keyword arguments ```coord``` and ```name``` have been removed from methods :method:`iris.cube.Cube.coord` and :method:`iris.cube.Cube.coords`.
+* The deprecated keyword arguments ```coord``` and ```name``` have been removed from the class :class:`iris.cube.Cube`.
