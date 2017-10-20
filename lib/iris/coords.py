@@ -176,6 +176,9 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
     # This subclass adds no attributes.
     __slots__ = ()
 
+    # Make this class's comparison operators override those of numpy
+    __array_priority__ = 100
+
     def __new__(cls, point=None, bound=None):
         """
         Construct a Cell from point or point-and-bound information.

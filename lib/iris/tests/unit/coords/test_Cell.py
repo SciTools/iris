@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import datetime
+import numpy as np
 
 import netcdftime
 
@@ -141,6 +142,40 @@ class Test_contains_point(tests.IrisTest):
         with self.assertRaisesRegexp(TypeError, 'bounded region for datetime'):
             cell.contains_point(point)
 
+
+class Test_numpy_comparison(tests.IrisTest):
+    """
+    Unit tests to check that the results of comparisons with numpy types can be
+    used as truth values."""
+    def test_cell_lhs(self):
+        cell = Cell(point=1.5)
+        n = np.float64(1.2)
+
+        try:
+            bool(cell < n)
+            bool(cell <= n)
+            bool(cell > n)
+            bool(cell >= n)
+            bool(cell == n)
+            bool(cell != n)
+        except:
+            self.fail(
+                "Result of comparison could not be used as a truth value")
+
+    def test_cell_rhs(self):
+        cell = Cell(point=1.5)
+        n = np.float64(1.2)
+
+        try:
+            bool(n < cell)
+            bool(n <= cell)
+            bool(n > cell)
+            bool(n >= cell)
+            bool(n == cell)
+            bool(n != cell)
+        except:
+            self.fail(
+                "Result of comparison could not be used as a truth value")
 
 if __name__ == '__main__':
     tests.main()
