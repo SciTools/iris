@@ -59,7 +59,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
             # Points array should not be identical to the reference one.
             self.assertArraysDoNotShareData(
                  pts, self.pts_real,
-               'Points are the same data as the provided array.')
+                 'Points are the same data as the provided array.')
             # the original points array was cast to a test dtype.
             check_pts = self.pts_real.astype(coord.dtype)
             self.assertEqualRealArraysAndDtypes(pts, check_pts)
@@ -69,7 +69,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
                 # Bounds array should not be the reference data.
                 self.assertArraysDoNotShareData(
                      bds, self.bds_real,
-                    'Bounds are the same data as the provided array.')
+                     'Bounds are the same data as the provided array.')
                 # the original bounds array was cast to a test dtype.
                 check_bds = self.bds_real.astype(coord.bounds_dtype)
                 self.assertEqualRealArraysAndDtypes(bds, check_bds)
