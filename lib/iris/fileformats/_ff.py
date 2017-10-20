@@ -132,9 +132,6 @@ class Grid(object):
     An abstract class representing the default/file-level grid
     definition for a FieldsFile.
 
-    .. deprecated:: 1.10
-        The module :mod:`iris.fileformats.ff` is deprecated.
-
     """
     def __init__(self, column_dependent_constants, row_dependent_constants,
                  real_constants, horiz_grid_type):
@@ -154,8 +151,6 @@ class Grid(object):
 
         * horiz_grid_type (integer):
             `horiz_grid_type` from a FFHeader.
-
-        .. deprecated:: 1.10
 
         """
         self.column_dependent_constants = column_dependent_constants
@@ -212,9 +207,6 @@ class Grid(object):
 class ArakawaC(Grid):
     """
     An abstract class representing an Arakawa C-grid.
-
-    .. deprecated:: 1.10
-        The module :mod:`iris.fileformats.ff` is deprecated.
 
     """
     def _x_vectors(self):
@@ -276,9 +268,6 @@ class NewDynamics(ArakawaC):
 
     The theta and u points are at the poles.
 
-    .. deprecated:: 1.10
-        The module :mod:`iris.fileformats.ff` is deprecated.
-
     """
 
     _v_offset = 0.5
@@ -298,9 +287,6 @@ class ENDGame(ArakawaC):
 
     The v points are at the poles.
 
-    .. deprecated:: 1.10
-        The module :mod:`iris.fileformats.ff` is deprecated.
-
     """
 
     _v_offset = -0.5
@@ -317,9 +303,6 @@ class ENDGame(ArakawaC):
 class FFHeader(object):
     """
     A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile.
-
-    .. deprecated:: 1.10
-        The module :mod:`iris.fileformats.ff` is deprecated.
 
     """
 
@@ -338,8 +321,6 @@ class FFHeader(object):
 
         Returns:
             FFHeader object.
-
-        .. deprecated:: 1.10
 
         """
 
@@ -454,9 +435,6 @@ class FF2PP(object):
     """
     A class to extract the individual PPFields from within a FieldsFile.
 
-    .. deprecated:: 1.10
-        The module :mod:`iris.fileformats.ff` is deprecated.
-
     """
 
     def __init__(self, filename, read_data=False,
@@ -483,11 +461,6 @@ class FF2PP(object):
 
             >>> for field in ff.FF2PP(filename):
             ...     print(field)
-
-        .. deprecated:: 1.10
-            The module :mod:`iris.fileformats.ff` is deprecated.
-            Please use :func:`iris.fileformats.um.um_to_pp` in place of
-            :class:`iris.fileformats.ff.FF2PP`.
 
         """
 
@@ -821,11 +794,6 @@ def load_cubes(filenames, callback, constraints=None):
         file (order is not preserved when there is a field with
         orography references).
 
-    .. deprecated:: 1.10
-            The module :mod:`iris.fileformats.ff` is deprecated.
-            Please use :func:`iris.fileformats.um.load_cubes` in place of
-            :func:`iris.fileformats.ff.load_cubes`.
-
     """
     return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
                                           constraints=constraints)
@@ -838,11 +806,6 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
     .. seealso::
 
         :func:`load_cubes` for keyword details
-
-    .. deprecated:: 1.10
-            The module :mod:`iris.fileformats.ff` is deprecated.
-            Please use :func:`iris.fileformats.um.load_cubes_32bit_ieee`
-            in place of :func:`iris.fileformats.ff.load_cubes_32bit_ieee`.
 
     """
     return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
