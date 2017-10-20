@@ -176,8 +176,8 @@ For example, to mask values that lie beyond the range of the original data:
    >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
    >>> new_column = column.interpolate(sample_points, scheme)
    >>> print(new_column.coord('altitude').points)
-   [-- 494.44451904296875 588.888916015625 683.333251953125 777.77783203125
-    872.2222290039062 966.666748046875 1061.111083984375 1155.555419921875 --]
+   [           nan   494.44451904   588.88891602   683.33325195   777.77783203
+      872.222229     966.66674805  1061.11108398  1155.55541992            nan]
 
 
 .. _caching_an_interpolator:
