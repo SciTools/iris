@@ -666,7 +666,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         or a dask array.
 
         """
-        return self._points_dm.core_data()
+        result = self._points_dm.core_data()
+        if not is_lazy_data(result):
+            result = result.view()
+        return result
 
     def core_bounds(self):
         """
@@ -677,6 +680,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()
+            if not is_lazy_data(result):
+                result = result.view()
         return result
 
     def has_lazy_points(self):
@@ -1758,16 +1763,6 @@ class DimCoord(Coord):
             bounds.flags.writeable = False
 
     bounds = property(Coord._bounds_getter, _bounds_setter)
-
-    def core_points(self):
-        result = super(DimCoord, self).core_points()
-        return result.view()
-
-    def core_bounds(self):
-        result = super(DimCoord, self).core_bounds()
-        if result is not None:
-            result = result.view()
-        return result
 
     def is_monotonic(self):
         return True
