@@ -87,16 +87,6 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         with self.assertRaisesRegexp(ValueError, msg):
             DimCoord([1, 2, 0, 3])
 
-    def test_copy_arrays(self):
-        # points and bounds arrays are copied
-        pts = np.array([2, 4, 6])
-        bnds = np.array([[1, 3], [3, 5], [5, 7]])
-        coord = DimCoord(pts, bounds=bnds)
-        pts[1] = 8
-        bnds[1, 1] = 10
-        self.assertEqual(coord.points[1], 4)
-        self.assertEqual(coord.bounds[1, 1], 5)
-
 
 class Test_core_points(tests.IrisTest, DimCoordTestMixin):
     # Test for DimCoord.core_points() with various types of points and bounds.

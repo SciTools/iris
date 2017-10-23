@@ -62,6 +62,10 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
                     self.assertArraysShareData(
                         pts, self.pts_real,
                         'Points are not the same data as the provided array.')
+                    self.assertIsNot(
+                        pts, self.pts_real,
+                        'Points array is the same instance as the provided '
+                        'array.')
                 else:
                     # the original points were cast to a test dtype.
                     check_pts = self.pts_real.astype(coord.dtype)
@@ -81,6 +85,10 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
                     self.assertArraysShareData(
                         bds, self.bds_real,
                         'Bounds are not the same data as the provided array.')
+                    self.assertIsNot(
+                        pts, self.pts_real,
+                        'Bounds array is the same instance as the provided '
+                        'array.')
                 else:
                     # the original bounds were cast to a test dtype.
                     check_bds = self.bds_real.astype(coord.bounds_dtype)
@@ -123,7 +131,7 @@ class Test_core_points(tests.IrisTest, AuxCoordTestMixin):
         coord = AuxCoord(self.pts_lazy)
         real_points = coord.points
         result = coord.core_points()
-        self.assertIs(result, real_points)
+        self.assertEqualRealArraysAndDtypes(result, real_points)
 
 
 class Test_core_bounds(tests.IrisTest, AuxCoordTestMixin):
@@ -152,7 +160,7 @@ class Test_core_bounds(tests.IrisTest, AuxCoordTestMixin):
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
         real_bounds = coord.bounds
         result = coord.core_bounds()
-        self.assertIs(result, real_bounds)
+        self.assertEqualRealArraysAndDtypes(result, real_bounds)
 
 
 class Test_lazy_points(tests.IrisTest, AuxCoordTestMixin):
