@@ -110,14 +110,10 @@ def as_lazy_data(data, chunks=None, asarray=False):
         The input array converted to a dask array.
 
     """
-    if chunks is not None:
-        requested_shape = chunks
-        chunks = requested_shape
-    else:
-        # Default to the shape of the wrapped array-like.
-        requested_shape = data.shape
-        # reduce if larger than a default maximum size.
-        chunks = _limited_shape(requested_shape)
+    if chunks is None:
+        # Default to the shape of the wrapped array-like,
+        # but reduce it if larger than a default maximum size.
+        chunks = _limited_shape(data.shape)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
