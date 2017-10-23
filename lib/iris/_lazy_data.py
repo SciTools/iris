@@ -23,6 +23,8 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import atexit
+
 import dask
 import dask.array as da
 import dask.context
@@ -72,7 +74,7 @@ def is_lazy_data(data):
 _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
 
-def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE, asarray=False):
+def as_lazy_data(data, chunks=None, asarray=False):
     """
     Convert the input array `data` to a dask array.
 
@@ -97,6 +99,25 @@ def as_lazy_data(data, chunks=_MAX_CHUNK_SIZE, asarray=False):
         The input array converted to a dask array.
 
     """
+    if chunks is not None:
+        requested_shape = chunks
+        chunks = requested_shape
+    else:
+        # Default to the shape of the wrapped array-like.
+        requested_shape = data.shape
+        # reduce if larger than the default maximum size.
+        shape = requested_shape
+        i_reduce = 0
+        while np.prod(shape) > _MAX_CHUNK_SIZE:
+            factor = np.ceil(np.prod(shape) / float(_MAX_CHUNK_SIZE))
+            new_dim = int(np.floor(shape[i_reduce] / factor))
+            if new_dim < 1:
+                new_dim = 1
+            shape = list(shape)
+            shape[i_reduce] = new_dim
+            i_reduce += 1
+        chunks = tuple(shape)
+
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):

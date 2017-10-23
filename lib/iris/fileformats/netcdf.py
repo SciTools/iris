@@ -489,7 +489,6 @@ def _set_attributes(attributes, key, value):
     else:
         attributes[str(key)] = value
 
-DEFAULT_MAX_POINTS = 10e6
 
 def _load_cube(engine, cf, cf_var, filename):
     """Create the cube associated with the CF-netCDF data variable."""
@@ -506,21 +505,7 @@ def _load_cube(engine, cf, cf_var, filename):
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
-    def reduced_chunks(shape):
-        global DEFAULT_MAX_POINTS
-        i_reduce = 0
-        while np.prod(shape) > DEFAULT_MAX_POINTS:
-            factor = np.ceil(np.prod(shape) / float(DEFAULT_MAX_POINTS))
-            new_dim = int(np.floor(shape[i_reduce] / factor))
-            if new_dim < 1:
-                new_dim = 1
-            shape = list(shape)
-            shape[i_reduce] = new_dim
-            i_reduce += 1
-        return tuple(shape)
-
-    reduced_shape = reduced_chunks(cf_var.shape)
-    data = as_lazy_data(proxy, chunks=reduced_shape)
+    data = as_lazy_data(proxy)
     cube = iris.cube.Cube(data)
 
     # Reset the pyke inference engine.
