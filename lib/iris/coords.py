@@ -1115,7 +1115,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     "behaviour. "
                     "Please update your code to support using cells as "
                     "datetime objects."
-                    "See the userguide, §2.2.1 for examples of this.")
+                    "See the userguide section 2.2.1 for examples of this.")
             warn_deprecated(wmsg)
 
         return Cell(point, bound)
