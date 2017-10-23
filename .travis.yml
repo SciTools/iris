@@ -136,6 +136,7 @@ script:
 
   # When we merge a change, and we are running in python 3, push some docs. 
   - if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_EVENT_TYPE} == 'push' && ${TRAVIS_PYTHON_VERSION} == 3* && ${ORG} == "SciTools" ]]; then
+      cd $INSTALL_DIR;
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
         --key-path .github/deploy_key.scitools-docs.enc
