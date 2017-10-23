@@ -23,8 +23,6 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import atexit
-
 import dask
 import dask.array as da
 import dask.context

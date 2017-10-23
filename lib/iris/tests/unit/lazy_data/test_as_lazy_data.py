@@ -23,11 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import mock
+
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, _MAX_CHUNK_SIZE
+from iris._lazy_data import as_lazy_data, _MAX_CHUNK_SIZE, _limited_shape
 
 
 class Test_as_lazy_data(tests.IrisTest):
@@ -66,6 +68,47 @@ class Test_as_lazy_data(tests.IrisTest):
         masked_constant = masked_data[0]
         result = as_lazy_data(masked_constant)
         self.assertIsInstance(result, da.core.Array)
+
+    @staticmethod
+    def _dummydata(shape):
+        return mock.Mock(spec=da.core.Array,
+                         dtype=np.dtype('f4'),
+                         shape=shape)
+
+    def test_chunk_size_limiting(self):
+        # Check the default chunksizes for large data.
+        given_shapes_and_resulting_chunks = [
+            ((16, 1024, 1024), (16, 1024, 1024)),  # largest unmodified
+            ((17, 1011, 1022), (8, 1011, 1022)),
+            ((16, 1024, 1025), (8, 1024, 1025)),
+            ((1, 17, 1011, 1022), (1, 8, 1011, 1022)),
+            ((17, 1, 1011, 1022), (8, 1, 1011, 1022)),
+            ((11, 2, 1011, 1022), (5, 2, 1011, 1022))
+        ]
+        err_fmt = 'Result of reducing shape {} was {}, expected {}'
+        for (shape, expected) in given_shapes_and_resulting_chunks:
+            chunks = _limited_shape(shape)
+            msg = err_fmt.format(shape, chunks, expected)
+            self.assertEqual(chunks, expected, msg)
+
+    def test_default_chunks_limiting(self):
+        # Check that chunking is limited when no specific 'chunks' given.
+        limitcall_patch = self.patch('iris._lazy_data._limited_shape')
+        test_shape = (3, 2, 4)
+        data = self._dummydata(test_shape)
+        as_lazy_data(data)
+        self.assertEqual(limitcall_patch.call_args_list,
+                         [mock.call(test_shape)])
+
+    def test_large_specific_chunk_passthrough(self):
+        # Check that even a too-large specific 'chunks' arg is honoured.
+        limitcall_patch = self.patch('iris._lazy_data._limited_shape')
+        huge_test_shape = (1001, 1002, 1003, 1004)
+        data = self._dummydata(huge_test_shape)
+        result = as_lazy_data(data, chunks=huge_test_shape)
+        self.assertEqual(limitcall_patch.call_args_list, [])
+        self.assertEqual(result.shape, huge_test_shape)
+
 
 if __name__ == '__main__':
     tests.main()
