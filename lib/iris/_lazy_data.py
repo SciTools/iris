@@ -73,13 +73,17 @@ _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
 
 def _limited_shape(shape):
+    # Reduce a shape to less than a default overall number-of-points, reducing
+    # earlier dimensions preferentially.
+    # Note: this is only a heuristic, assuming that earlier dimensions are
+    # 'outer' storage dimensions -- not *always* true, even for NetCDF data.
+    shape = list(shape)
     i_reduce = 0
     while np.prod(shape) > _MAX_CHUNK_SIZE:
         factor = np.ceil(np.prod(shape) / float(_MAX_CHUNK_SIZE))
         new_dim = int(np.floor(shape[i_reduce] / factor))
         if new_dim < 1:
             new_dim = 1
-        shape = list(shape)
         shape[i_reduce] = new_dim
         i_reduce += 1
     return tuple(shape)
