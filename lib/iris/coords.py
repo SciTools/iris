@@ -1610,17 +1610,17 @@ class DimCoord(Coord):
         """
         new_coord = copy.deepcopy(super(DimCoord, self), memo)
         # Ensure points and bounds arrays are read-only.
-        new_coord._points_dm.core_data().flags.writeable = False
+        new_coord._points_dm.data.flags.writeable = False
         if new_coord._bounds_dm is not None:
-            new_coord._bounds_dm.core_data().flags.writeable = False
+            new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
 
     def copy(self, points=None, bounds=None):
         new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
         # Make the arrays read-only.
-        new_coord._points_dm.core_data().flags.writeable = False
+        new_coord._points_dm.data.flags.writeable = False
         if bounds is not None:
-            new_coord._bounds_dm.core_data().flags.writeable = False
+            new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
 
     def __eq__(self, other):
