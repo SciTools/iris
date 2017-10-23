@@ -281,8 +281,8 @@ The previous constraint example can now be written as:
 
    >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
    >>> print(iris.load_cube(
-   ...	iris.sample_data_path('uk_hires.pp'),
-   ...	'air_potential_temperature' & the_11th_hour).coord('time'))
+   ...     iris.sample_data_path('uk_hires.pp'),
+   ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
 A more complex example might be when there exists a time sequence representing the first day of every week

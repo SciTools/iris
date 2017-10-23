@@ -197,14 +197,18 @@ class Future(threading.local):
         return msg.format(self.cell_datetime_objects, self.netcdf_promote,
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
-    deprecated_options = {'cell_datetime_objects'}
+    deprecated_options = {'cell_datetime_objects': 'warning'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
-            reason = self.deprecated_options[name]
-            msg = ("the 'Future' object property {!r} is now deprecated. "
-                   "Please remove code which uses this.  {}")
-            warn_deprecated(msg.format(name, reason))
+            level = self.deprecated_options[name]
+            if level == 'error':
+                pass
+            else:
+                msg = ("setting the 'Future' property {!r} is deprecated "
+                       "and will be removed in a future release. "
+                       "Please remove code that sets this property.")
+                warn_deprecated(msg.format(name))
         if name not in self.__dict__:
             msg = "'Future' object has no attribute {!r}".format(name)
             raise AttributeError(msg)
@@ -221,15 +225,8 @@ class Future(threading.local):
         statement, the previous state is restored.
 
         For example::
-
-            with iris.FUTURE.context():
-                iris.FUTURE.cell_datetime_objects = False
-                # ... code which expects integers
-
-        Or more concisely::
-
             with iris.FUTURE.context(cell_datetime_objects=False):
-                # ... code which expects integers
+                # ... code that expects numbers and not datetimes
 
         """
         # Save the current context
