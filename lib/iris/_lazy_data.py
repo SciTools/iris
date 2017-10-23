@@ -74,6 +74,19 @@ def is_lazy_data(data):
 _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
 
+def _limited_shape(shape):
+    i_reduce = 0
+    while np.prod(shape) > _MAX_CHUNK_SIZE:
+        factor = np.ceil(np.prod(shape) / float(_MAX_CHUNK_SIZE))
+        new_dim = int(np.floor(shape[i_reduce] / factor))
+        if new_dim < 1:
+            new_dim = 1
+        shape = list(shape)
+        shape[i_reduce] = new_dim
+        i_reduce += 1
+    return tuple(shape)
+
+
 def as_lazy_data(data, chunks=None, asarray=False):
     """
     Convert the input array `data` to a dask array.
@@ -105,18 +118,8 @@ def as_lazy_data(data, chunks=None, asarray=False):
     else:
         # Default to the shape of the wrapped array-like.
         requested_shape = data.shape
-        # reduce if larger than the default maximum size.
-        shape = requested_shape
-        i_reduce = 0
-        while np.prod(shape) > _MAX_CHUNK_SIZE:
-            factor = np.ceil(np.prod(shape) / float(_MAX_CHUNK_SIZE))
-            new_dim = int(np.floor(shape[i_reduce] / factor))
-            if new_dim < 1:
-                new_dim = 1
-            shape = list(shape)
-            shape[i_reduce] = new_dim
-            i_reduce += 1
-        chunks = tuple(shape)
+        # reduce if larger than a default maximum size.
+        chunks = _limited_shape(requested_shape)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
