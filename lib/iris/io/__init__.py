@@ -172,7 +172,8 @@ def expand_filespecs(file_specs):
                 file_list = '\n       - {}'.format(', '.join(expanded))
             else:
                 file_list = ''
-            msg += '\n    - "{}" matched {} file(s){}'.format(pattern, len(expanded), file_list)
+            msg += '\n    - "{}" matched {} file(s){}'.format(
+                    pattern, len(expanded), file_list)
         raise IOError(msg)
 
     return [fname for fnames in all_expanded for fname in fnames]

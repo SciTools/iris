@@ -34,7 +34,7 @@ import iris.io as iio
 class TestExpandFilespecs(tests.IrisTest):
     def setUp(self):
         tests.IrisTest.setUp(self)
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = os.path.realpath(tempfile.mkdtemp())
         self.fnames = ['a.foo', 'b.txt']
         for fname in self.fnames:
             with open(os.path.join(self.tmpdir, fname), 'w') as fh:
@@ -54,10 +54,15 @@ class TestExpandFilespecs(tests.IrisTest):
         self.assertEqual(product, predicted)
 
     def test_relative_path(self):
-        os.chdir(self.tmpdir)
-        item_out = iio.expand_filespecs(['*'])
-        item_in = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
-        self.assertEqual(item_out, item_in)
+        cwd = os.getcwd()
+        try:
+            os.chdir(self.tmpdir)
+            item_out = iio.expand_filespecs(['*'])
+            item_in = [os.path.join(self.tmpdir, fname)
+                       for fname in self.fnames]
+            self.assertEqual(item_out, item_in)
+        finally:
+            os.chdir(cwd)
 
     def test_return_order(self):
         # It is really quite important what order we return the
@@ -75,17 +80,18 @@ class TestExpandFilespecs(tests.IrisTest):
         self.assertEqual(result, expected[::-1])
 
     def test_no_files_found(self):
-        msg = r'_b\" matched 0 file\(s\)'
+        msg = r'\/no_exist.txt\" matched 0 file\(s\)'
         with self.assertRaisesRegexp(IOError, msg):
-            iio.expand_filespecs([self.tmpdir + '_b'])
+            iio.expand_filespecs([os.path.join(self.tmpdir, 'no_exist.txt')])
 
     def test_files_and_none(self):
         with self.assertRaises(IOError) as err:
-            iio.expand_filespecs([self.tmpdir + '_b',
-                                  os.path.join(self.tmpdir, '*')])
+            iio.expand_filespecs(
+                [os.path.join(self.tmpdir, 'does_not_exist.txt'),
+                 os.path.join(self.tmpdir, '*')])
         expected = textwrap.dedent("""
             One or more of the files specified did not exist:
-                - "{0}_b" matched 0 file(s)
+                - "{0}/does_not_exist.txt" matched 0 file(s)
                 - "{0}/*" matched 2 file(s)
                    - {0}/a.foo, {0}/b.txt
             """).strip().format(self.tmpdir)
