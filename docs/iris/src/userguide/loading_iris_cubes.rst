@@ -244,11 +244,9 @@ However, when constraining by time we usually want to test calendar-related
 aspects such as hours of the day or months of the year, so Iris
 provides special features to facilitate this:
 
-Firstly, Iris can be configured so that when it evaluates Constraint
-expressions, it will convert time-coordinate values (points and bounds) from
-numbers into :class:`~datetime.datetime`-like objects for ease of calendar-based
-testing.  This feature is not backwards compatible so for now it must be
-explicitly enabled by setting the "cell_datetime_objects" option in :class:`iris.Future`:
+Firstly, when Iris evaluates Constraint expressions, it will convert time-coordinate 
+values (points and bounds) from numbers into :class:`~datetime.datetime`-like objects
+for ease of calendar-based testing.
 
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
@@ -257,9 +255,7 @@ explicitly enabled by setting the "cell_datetime_objects" option in :class:`iris
     DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
     >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
     >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
-    >>> with iris.FUTURE.context(cell_datetime_objects=True):
-    ...     cube_11 = cube_all.extract(hour_11)
-    ... 
+    >>> cube_11 = cube_all.extract(hour_11)
     >>> print('Selected times :\n' + str(cube_11.coord('time')))
     Selected times :
     DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
@@ -284,10 +280,9 @@ time selections when loading or extracting data.
 The previous constraint example can now be written as:
 
    >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
-   >>> with iris.FUTURE.context(cell_datetime_objects=True):
-   ...     print(iris.load_cube(
-   ...         iris.sample_data_path('uk_hires.pp'),
-   ...         'air_potential_temperature' & the_11th_hour).coord('time'))
+   >>> print(iris.load_cube(
+   ...     iris.sample_data_path('uk_hires.pp'),
+   ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
 A more complex example might be when there exists a time sequence representing the first day of every week
@@ -320,8 +315,7 @@ functionality with PartialDateTime:
 
     >>> st_swithuns_daterange = iris.Constraint(
     ...     time=lambda cell: PartialDateTime(month=7, day=15) < cell < PartialDateTime(month=8, day=25))
-    >>> with iris.FUTURE.context(cell_datetime_objects=True):
-    ...   within_st_swithuns = long_ts.extract(st_swithuns_daterange)
+    >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
     ... 
     >>> print(within_st_swithuns.coord('time'))
     DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,

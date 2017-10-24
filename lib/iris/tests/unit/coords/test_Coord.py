@@ -241,26 +241,15 @@ class Test_cell(tests.IrisTest):
                                             mock.sentinel.upper]]))
         return coord
 
-    def test_time_as_number(self):
-        # Make sure Coord.cell() normally returns the values straight
-        # out of the Coord's points/bounds arrays.
-        coord = self._mock_coord()
-        cell = Coord.cell(coord, 0)
-        self.assertIs(cell.point, mock.sentinel.time)
-        self.assertEqual(cell.bound,
-                         (mock.sentinel.lower, mock.sentinel.upper))
-
     def test_time_as_object(self):
-        # When iris.FUTURE.cell_datetime_objects is True, ensure
-        # Coord.cell() converts the point/bound values to "datetime"
-        # objects.
+        # Ensure Coord.cell() converts the point/bound values to
+        # "datetime" objects.
         coord = self._mock_coord()
         coord.units.num2date = mock.Mock(
             side_effect=[mock.sentinel.datetime,
                          (mock.sentinel.datetime_lower,
                           mock.sentinel.datetime_upper)])
-        with mock.patch('iris.FUTURE', cell_datetime_objects=True):
-            cell = Coord.cell(coord, 0)
+        cell = Coord.cell(coord, 0)
         self.assertIs(cell.point, mock.sentinel.datetime)
         self.assertEqual(cell.bound,
                          (mock.sentinel.datetime_lower,

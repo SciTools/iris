@@ -86,12 +86,11 @@ def main():
     # Constrain the period 1860-1999 and extract the observed data from a1b
     constraint = iris.Constraint(time=lambda
                                  cell: 1860 <= cell.point.year <= 1999)
-    with iris.FUTURE.context(cell_datetime_objects=True):
-        observed = a1b_mean.extract(constraint)
-        # Assert that this data set is the same as the e1 scenario:
-        # they share data up to the 1999 cut off.
-        assert np.all(np.isclose(observed.data,
-                                 e1_mean.extract(constraint).data))
+    observed = a1b_mean.extract(constraint)
+    # Assert that this data set is the same as the e1 scenario:
+    # they share data up to the 1999 cut off.
+    assert np.all(np.isclose(observed.data,
+                             e1_mean.extract(constraint).data))
 
     # Plot the observed data
     qplt.plot(observed, label='observed', color='black', lw=1.5)

@@ -37,6 +37,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._data_manager import DataManager
+from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data, multidim_lazy_stack
 import iris.aux_factory
 import iris.exceptions
@@ -1112,6 +1113,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 point = self.units.num2date(point)
                 if bound is not None:
                     bound = self.units.num2date(bound)
+        else:
+            wmsg = ("disabling cells as datetime objects is deprecated "
+                    "behaviour. "
+                    "Please update your code to support using cells as "
+                    "datetime objects."
+                    "See the userguide section 2.2.1 for examples of this.")
+            warn_deprecated(wmsg)
 
         return Cell(point, bound)
 

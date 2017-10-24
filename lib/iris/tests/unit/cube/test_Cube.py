@@ -397,14 +397,21 @@ class Test_collapsed__warning(tests.IrisTest):
 
 
 class Test_summary(tests.IrisTest):
+    def setUp(self):
+        self.cube = Cube(0)
+
     def test_cell_datetime_objects(self):
         # Check the scalar coordinate summary still works even when
         # iris.FUTURE.cell_datetime_objects is True.
-        cube = Cube(0)
-        cube.add_aux_coord(AuxCoord(42, units='hours since epoch'))
-        with FUTURE.context(cell_datetime_objects=True):
-            summary = cube.summary()
+        self.cube.add_aux_coord(AuxCoord(42, units='hours since epoch'))
+        summary = self.cube.summary()
         self.assertIn('1970-01-02 18:00:00', summary)
+
+    def test_scalar_str_coord(self):
+        str_value = 'foo'
+        self.cube.add_aux_coord(AuxCoord(str_value))
+        summary = self.cube.summary()
+        self.assertIn(str_value, summary)
 
 
 class Test_is_compatible(tests.IrisTest):

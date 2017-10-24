@@ -34,13 +34,12 @@ class Test(tests.IrisTest):
         # The `netcdf4` Python module introduced new calendar classes by v1.2.7
         # This test is primarily of this interface, so the
         # final test assertion is simple.
-        with iris.FUTURE.context(cell_datetime_objects=True):
-            filename = tests.get_data_path(('PP', 'structured', 'small.pp'))
-            cube = iris.load_cube(filename)
-            pdt = PartialDateTime(year=1992, month=10, day=1, hour=2)
-            time_constraint = iris.Constraint(time=lambda cell: cell < pdt)
-            sub_cube = cube.extract(time_constraint)
-            self.assertEqual(sub_cube.coord('time').points.shape, (1,))
+        filename = tests.get_data_path(('PP', 'structured', 'small.pp'))
+        cube = iris.load_cube(filename)
+        pdt = PartialDateTime(year=1992, month=10, day=1, hour=2)
+        time_constraint = iris.Constraint(time=lambda cell: cell < pdt)
+        sub_cube = cube.extract(time_constraint)
+        self.assertEqual(sub_cube.coord('time').points.shape, (1,))
 
 
 if __name__ == "__main__":

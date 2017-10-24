@@ -27,6 +27,7 @@ import six
 import iris.tests as tests
 
 from collections import Iterable
+import datetime
 import itertools
 import numpy as np
 import numpy.ma as ma
@@ -290,12 +291,12 @@ class TestDataMerge(tests.IrisTest):
         data_path = tests.get_data_path(
             ('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
         phenom_constraint = iris.Constraint('air_potential_temperature')
-        time_value_1 = 347921.33333332836627960205
-        time_value_2 = 347921.83333333209156990051
-        time_constraint1 = iris.Constraint(time=time_value_1)
-        time_constraint2 = iris.Constraint(time=time_value_2)
+        datetime_1 = datetime.datetime(2009, 9, 9, 17, 20)
+        datetime_2 = datetime.datetime(2009, 9, 9, 17, 50)
+        time_constraint1 = iris.Constraint(time=datetime_1)
+        time_constraint2 = iris.Constraint(time=datetime_2)
         time_constraint_1_and_2 = iris.Constraint(
-            time=lambda c: c in (time_value_1, time_value_2))
+            time=lambda c: c in (datetime_1, datetime_2))
         cube1 = iris.load_cube(data_path, phenom_constraint & time_constraint1)
         cube2 = iris.load_cube(data_path, phenom_constraint & time_constraint2)
 

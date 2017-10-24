@@ -1950,9 +1950,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                         unit = ' {!s}'.format(coord.units)
 
                     # Format cell depending on type of point and whether it
-                    # has a bound
-                    with iris.FUTURE.context(cell_datetime_objects=False):
-                        coord_cell = coord.cell(0)
+                    # has a bound.
+                    coord_cell = coord.cell(0)
                     if isinstance(coord_cell.point, six.string_types):
                         # Indent string type coordinates
                         coord_cell_split = [iris.util.clip_string(str(item))
@@ -1962,20 +1961,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             pad=' ', width=indent + len(coord.name()) + 2)
                         coord_cell_str = line_sep.join(coord_cell_split) + unit
                     else:
-                        # Human readable times
-                        if coord.units.is_time_reference():
-                            coord_cell_cpoint = coord.units.num2date(
-                                coord_cell.point)
-                            if coord_cell.bound is not None:
-                                coord_cell_cbound = coord.units.num2date(
-                                    coord_cell.bound)
-                        else:
-                            coord_cell_cpoint = coord_cell.point
-                            coord_cell_cbound = coord_cell.bound
+                        coord_cell_cpoint = coord_cell.point
+                        coord_cell_cbound = coord_cell.bound
 
                         coord_cell_str = '{!s}{}'.format(coord_cell_cpoint,
                                                          unit)
-                        if coord_cell.bound is not None:
+                        if coord_cell_cbound is not None:
                             bound = '({})'.format(', '.join(str(val) for
                                                   val in coord_cell_cbound))
                             coord_cell_str += ', bound={}{}'.format(bound,

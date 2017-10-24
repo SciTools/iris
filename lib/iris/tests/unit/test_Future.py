@@ -17,11 +17,14 @@
 """Unit tests for the `iris.Future` class."""
 
 from __future__ import (absolute_import, division, print_function)
+import six
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+
+import warnings
 
 from iris import Future
 
@@ -32,12 +35,6 @@ class Test___setattr__(tests.IrisTest):
         new_value = not future.netcdf_no_unlimited
         future.netcdf_no_unlimited = new_value
         self.assertEqual(future.netcdf_no_unlimited, new_value)
-
-    def test_valid_cell_datetime_objects(self):
-        future = Future()
-        new_value = not future.cell_datetime_objects
-        future.cell_datetime_objects = new_value
-        self.assertEqual(future.cell_datetime_objects, new_value)
 
     def test_valid_clip_latitudes(self):
         future = Future()
@@ -50,23 +47,43 @@ class Test___setattr__(tests.IrisTest):
         with self.assertRaises(AttributeError):
             future.numberwang = 7
 
+    def test_cell_datetime_objects(self):
+        future = Future()
+        new_value = not future.cell_datetime_objects
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter('always')
+            future.cell_datetime_objects = new_value
+        self.assertEqual(future.cell_datetime_objects, new_value)
+        exp_wmsg = "'Future' property 'cell_datetime_objects' is deprecated"
+        six.assertRegex(self, str(warn[0]), exp_wmsg)
+
 
 class Test_context(tests.IrisTest):
     def test_no_args(self):
-        future = Future(cell_datetime_objects=False)
-        self.assertFalse(future.cell_datetime_objects)
-        with future.context():
+        # Catch the deprecation when explicitly setting `cell_datetime_objects`
+        # as the test is still useful even though the Future property is
+        # deprecated.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            future = Future(cell_datetime_objects=False)
             self.assertFalse(future.cell_datetime_objects)
-            future.cell_datetime_objects = True
-            self.assertTrue(future.cell_datetime_objects)
-        self.assertFalse(future.cell_datetime_objects)
+            with future.context():
+                self.assertFalse(future.cell_datetime_objects)
+                future.cell_datetime_objects = True
+                self.assertTrue(future.cell_datetime_objects)
+            self.assertFalse(future.cell_datetime_objects)
 
     def test_with_arg(self):
-        future = Future(cell_datetime_objects=False)
-        self.assertFalse(future.cell_datetime_objects)
-        with future.context(cell_datetime_objects=True):
-            self.assertTrue(future.cell_datetime_objects)
-        self.assertFalse(future.cell_datetime_objects)
+        # Catch the deprecation when explicitly setting `cell_datetime_objects`
+        # as the test is still useful even though the Future property is
+        # deprecated.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            future = Future(cell_datetime_objects=False)
+            self.assertFalse(future.cell_datetime_objects)
+            with future.context(cell_datetime_objects=True):
+                self.assertTrue(future.cell_datetime_objects)
+            self.assertFalse(future.cell_datetime_objects)
 
     def test_invalid_arg(self):
         future = Future()
@@ -82,13 +99,18 @@ class Test_context(tests.IrisTest):
         class LocalTestException(Exception):
             pass
 
-        future = Future(cell_datetime_objects=False)
-        try:
-            with future.context(cell_datetime_objects=True):
-                raise LocalTestException()
-        except LocalTestException:
-            pass
-        self.assertEqual(future.cell_datetime_objects, False)
+        # Catch the deprecation when explicitly setting `cell_datetime_objects`
+        # as the test is still useful even though the Future property is
+        # deprecated.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            future = Future(cell_datetime_objects=False)
+            try:
+                with future.context(cell_datetime_objects=True):
+                    raise LocalTestException()
+            except LocalTestException:
+                pass
+            self.assertEqual(future.cell_datetime_objects, False)
 
 
 if __name__ == "__main__":

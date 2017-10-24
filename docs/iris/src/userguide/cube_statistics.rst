@@ -198,6 +198,7 @@ to represent the climatological seasons and the season year respectively::
 
 .. testsetup:: aggregation
 
+    import datetime
     import iris
 
     filename = iris.sample_data_path('ostia_monthly.nc')
@@ -301,7 +302,8 @@ do not cover a three month period (note: judged here as > 3*28 days):
 
 .. doctest:: aggregation
 
-    >>> spans_three_months = lambda t: (t.bound[1] - t.bound[0]) > 3*28*24.0
+    >>> tdelta_3mth = datetime.timedelta(hours=3*28*24.0)
+    >>> spans_three_months = lambda t: (t.bound[1] - t.bound[0]) > tdelta_3mth
     >>> three_months_bound = iris.Constraint(time=spans_three_months)
     >>> full_season_means = annual_seasonal_mean.extract(three_months_bound)
     >>> full_season_means
