@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -141,7 +141,7 @@ class Test_aggregate(tests.IrisTest):
         actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
                                        weights=weights)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.tile(np.arange(shape[-1]), percent.size)
+        expected = np.tile(np.arange(shape[-1]), percent.size).astype('f8')
         expected = expected.reshape(percent.size, shape[-1]).T
         expected[:, 1:-1] += (percent[1:-1]-25)*0.2
         expected[:, -1] += 10.
@@ -156,7 +156,7 @@ class Test_aggregate(tests.IrisTest):
         actual = WPERCENTILE.aggregate(data, axis=0, percent=percent,
                                        weights=weights)
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.tile(np.arange(shape[-1]), percent.size)
+        expected = np.tile(np.arange(shape[-1]), percent.size).astype('f8')
         expected = expected.reshape(percent.size, shape[-1]).T
         expected[:, 1:-1] += (percent[1:-1]-25)*0.4
         expected[:, -1] += 20.

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -261,9 +261,18 @@ class _CoordConstraint(object):
         elif (isinstance(self._coord_thing, collections.Iterable) and
                 not isinstance(self._coord_thing,
                                (six.string_types, iris.coords.Cell))):
-            call_func = lambda cell: cell in list(self._coord_thing)
+            desired_values = list(self._coord_thing)
+            # A dramatic speedup can be had if we don't have bounds.
+            if coord.has_bounds():
+                def call_func(cell):
+                    return cell in desired_values
+            else:
+                def call_func(cell):
+                    return cell.point in desired_values
         else:
-            call_func = lambda c: c == self._coord_thing
+            def call_func(c):
+                return c == self._coord_thing
+
             try_quick = (isinstance(coord, iris.coords.DimCoord) and
                          not isinstance(self._coord_thing, iris.coords.Cell))
 
@@ -436,7 +445,7 @@ class AttributeConstraint(Constraint):
             iris.AttributeConstraint(STASH='m01s16i004')
 
             iris.AttributeConstraint(
-                STASH=lambda stash: stash.endswith('i005'))
+                STASH=lambda stash: str(stash).endswith('i005'))
 
         .. note:: Attribute constraint names are case sensitive.
 

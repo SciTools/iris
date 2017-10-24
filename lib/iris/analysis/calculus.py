@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,11 +26,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import re
-import warnings
 
 import cf_units
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 import iris.cube
 import iris.coords
 import iris.coord_systems
@@ -91,8 +91,8 @@ def _construct_midpoint_coord(coord, circular=None):
     if circular is None:
         circular = getattr(coord, 'circular', False)
     elif circular != getattr(coord, 'circular', False):
-        warnings.warn('circular flag and Coord.circular attribute do '
-                      'not match')
+        warn_deprecated('circular flag and Coord.circular attribute do '
+                        'not match')
 
     if coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -325,9 +325,10 @@ def _curl_regrid(cube, prototype):
     assert isinstance(prototype, iris.cube.Cube)
 
     if cube is None:
-        return None
-    # #301 use of resample would be better here.
-    return cube.regridded(prototype)
+        result = None
+    else:
+        result = cube.regrid(prototype, iris.analysis.Linear())
+    return result
 
 
 def _copy_cube_transformed(src_cube, data, coord_func):
@@ -342,6 +343,7 @@ def _copy_cube_transformed(src_cube, data, coord_func):
 
     # Start with just the metadata and the data...
     new_cube = iris.cube.Cube(data)
+    new_cube.metadata = src_cube.metadata
     new_cube.metadata = src_cube.metadata
 
     # ... and then create all the coordinates.
@@ -441,9 +443,14 @@ def _trig_method(coord, trig_function):
     return trig_coord
 
 
-def curl(i_cube, j_cube, k_cube=None, ignore=None):
-    r'''
-    Calculate the 3d curl of the given vector of cubes.
+def curl(i_cube, j_cube, k_cube=None):
+    r"""
+    Calculate the 2-dimensional or 3-dimensional spherical or cartesian
+    curl of the given vector of cubes.
+
+    As well as the standard x and y coordinates, this function requires each
+    cube to possess a vertical or z-like coordinate (representing some form
+    of height or pressure).  This can be a scalar or dimension coordinate.
 
     Args:
 
@@ -456,17 +463,27 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
     * k_cube
         The k cube of the vector to operate on
-    * ignore
-        This argument is not used.
-        .. deprecated:: 0.8
-            The coordinates to ignore are determined automatically.
 
     Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)
 
+    If the k-cube is not passed in then the 2-dimensional curl will
+    be calculated, yielding the result: [None, None, k_cube].
+    If the k-cube is passed in, the 3-dimensional curl will
+    be calculated, returning 3 component cubes.
+
+    All cubes passed in must have the same data units, and those units
+    must be spatially-derived (e.g. 'm/s' or 'km/h').
+
     The calculation of curl is dependent on the type of
-    :func:`iris.coord_systems.CoordSystem` in the cube:
+    :func:`~iris.coord_systems.CoordSystem` in the cube.
+    If the :func:`~iris.coord_systems.CoordSystem` is either
+    GeogCS or RotatedGeogCS, the spherical curl will be calculated; otherwise
+    the cartesian curl will be calculated:
 
         Cartesian curl
+
+            When cartesian calculus is used, i_cube is the u component,
+            j_cube is the v component and k_cube is the w component.
 
             The Cartesian curl is defined as:
 
@@ -481,8 +498,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
         Spherical curl
 
-            When spherical calculus is used, i_cube is the phi vector
-            component (e.g. eastward), j_cube is the theta component
+            When spherical calculus is used, i_cube is the :math:`\phi` vector
+            component (e.g. eastward), j_cube is the :math:`\theta` component
             (e.g. northward) and k_cube is the radial component.
 
             The spherical curl is defined as:
@@ -502,12 +519,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
             where phi is longitude, theta is latitude.
 
-    '''
-    if ignore is not None:
-        ignore = None
-        warnings.warn('The ignore keyword to iris.analysis.calculus.curl '
-                      'is deprecated, ignoring is now done automatically.')
-
+    """
     # Get the vector quantity names.
     # (i.e. ['easterly', 'northerly', 'vertical'])
     vector_quantity_names, phenomenon_name = \
@@ -545,10 +557,10 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
 
     horiz_cs = i_cube.coord_system('CoordSystem')
 
-    # Planar (non spherical) coords?
-    ellipsoidal = isinstance(horiz_cs, (iris.coord_systems.GeogCS,
-                                        iris.coord_systems.RotatedGeogCS))
-    if not ellipsoidal:
+    # Non-spherical coords?
+    spherical_coords = isinstance(horiz_cs, (iris.coord_systems.GeogCS,
+                                  iris.coord_systems.RotatedGeogCS))
+    if not spherical_coords:
 
         # TODO Implement some mechanism for conforming to a common grid
         dj_dx = _curl_differentiate(j_cube, x_coord)
@@ -635,7 +647,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
         dicos_dtheta = _curl_differentiate(temp, lat_coord)
         prototype_diff = dicos_dtheta
 
-        # r curl component: 1 / (r * cos(lat)) * (dicos_dtheta - d_j_cube_dphi)
+        # r curl component: 1 / (r * cos(lat)) * (d_j_cube_dphi - dicos_dtheta)
         # Since prototype_diff == dicos_dtheta we don't need to
         # recalculate dicos_dtheta.
         d_j_cube_dphi = _curl_differentiate(j_cube, lon_coord)
@@ -643,8 +655,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
         new_lat_coord = d_j_cube_dphi.coord(axis='Y')
         new_lat_cos_coord = _coord_cos(new_lat_coord)
         lat_dim = d_j_cube_dphi.coord_dims(new_lat_coord)[0]
-        r_cmpt = iris.analysis.maths.divide(_curl_subtract(dicos_dtheta,
-                                                           d_j_cube_dphi),
+        r_cmpt = iris.analysis.maths.divide(_curl_subtract(d_j_cube_dphi,
+                                                           dicos_dtheta),
                                             r * new_lat_cos_coord, dim=lat_dim)
         r_cmpt.units = r_cmpt.units / r_unit
         d_j_cube_dphi = dicos_dtheta = None

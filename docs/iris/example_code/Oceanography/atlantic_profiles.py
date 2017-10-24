@@ -22,6 +22,9 @@ import matplotlib.pyplot as plt
 
 
 def main():
+    # Enable a future option, to ensure that the netcdf load works the same way
+    # as in future Iris versions.
+    iris.FUTURE.netcdf_promote = True
 
     # Load the gridded temperature and salinity data.
     fname = iris.sample_data_path('atlantic_profiles.nc')
@@ -43,7 +46,7 @@ def main():
     # them in this order places the depth coordinate on the y-axis.
     # The first plot is in the default axes. We'll use the same color for the
     # curve and its axes/tick labels.
-    fig = plt.figure(figsize=(5, 6))
+    plt.figure(figsize=(5, 6))
     temperature_color = (.3, .4, .5)
     ax1 = plt.gca()
     iplt.plot(theta_1000m, theta_1000m.coord('depth'), linewidth=2,

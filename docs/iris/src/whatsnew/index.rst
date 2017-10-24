@@ -1,3 +1,5 @@
+.. _iris_whatsnew:
+
 What's new in Iris
 ******************
 
@@ -7,6 +9,11 @@ Iris versions.
 .. toctree::
    :maxdepth: 2
 
+   2.0a0.rst
+   1.13.rst
+   1.12.rst
+   1.11.rst
+   1.10.rst
    1.9.rst
    1.8.rst
    1.7.rst

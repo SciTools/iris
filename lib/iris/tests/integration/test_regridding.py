@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,22 +30,20 @@ from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.tests.stock import global_pp
-
-# Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
-    import iris.quickplot as qplt
+from iris.tests.stock import global_pp, simple_3d
+from iris.analysis import UnstructuredNearest
 
 
 @tests.skip_data
-@tests.skip_plot
-class TestOSGBToLatLon(tests.GraphicsTest):
+class TestOSGBToLatLon(tests.IrisTest):
     def setUp(self):
         path = tests.get_data_path(
             ('NIMROD', 'uk2km', 'WO0000000003452',
              '201007020900_u1096_ng_ey00_visibility0180_screen_2km'))
         self.src = iris.load_cube(path)[0]
-        self.src.data = self.src.data.astype(np.float32)
+        # Cast up to float64, to work around numpy<=1.8 bug with means of
+        # arrays of 32bit floats.
+        self.src.data = self.src.data.astype(np.float64)
         self.grid = Cube(np.empty((73, 96)))
         cs = GeogCS(6370000)
         lat = DimCoord(np.linspace(46, 65, 73), 'latitude', units='degrees',
@@ -58,23 +56,25 @@ class TestOSGBToLatLon(tests.GraphicsTest):
     def _regrid(self, method):
         regridder = Regridder(self.src, self.grid, method, 'mask')
         result = regridder(self.src)
-        qplt.pcolor(result, antialiased=False)
-        qplt.plt.gca().coastlines()
+        return result
 
     def test_linear(self):
-        self._regrid('linear')
-        self.check_graphic()
+        res = self._regrid('linear')
+        self.assertArrayShapeStats(res, (73, 96), -16100.351951, 5603.850769)
 
     def test_nearest(self):
-        self._regrid('nearest')
-        self.check_graphic()
+        res = self._regrid('nearest')
+        self.assertArrayShapeStats(res, (73, 96), -16095.965585, 5612.657155)
 
 
 @tests.skip_data
-@tests.skip_plot
-class TestGlobalSubsample(tests.GraphicsTest):
+class TestGlobalSubsample(tests.IrisTest):
     def setUp(self):
         self.src = global_pp()
+        _ = self.src.data
+        # Cast up to float64, to work around numpy<=1.8 bug with means of
+        # arrays of 32bit floats.
+        self.src.data = self.src.data.astype(np.float64)
         # Subsample and shift the target grid so that we can see a visual
         # difference between regridding scheme methods.
         grid = self.src[1::2, 1::3]
@@ -85,16 +85,28 @@ class TestGlobalSubsample(tests.GraphicsTest):
     def _regrid(self, method):
         regridder = Regridder(self.src, self.grid, method, 'mask')
         result = regridder(self.src)
-        qplt.pcolormesh(result)
-        qplt.plt.gca().coastlines()
+        return result
 
     def test_linear(self):
-        self._regrid('linear')
-        self.check_graphic()
+        res = self._regrid('linear')
+        self.assertArrayShapeStats(res, (36, 32), 280.35907, 15.997223)
 
     def test_nearest(self):
-        self._regrid('nearest')
-        self.check_graphic()
+        res = self._regrid('nearest')
+        self.assertArrayShapeStats(res, (36, 32), 280.33726, 16.064001)
+
+
+@tests.skip_data
+class TestUnstructured(tests.IrisTest):
+    def setUp(self):
+        path = tests.get_data_path(('NetCDF', 'unstructured_grid',
+                                   'theta_nodal_xios.nc'))
+        self.src = iris.load_cube(path, 'Potential Temperature')
+        self.grid = simple_3d()[0, :, :]
+
+    def test_nearest(self):
+        res = self.src.regrid(self.grid, UnstructuredNearest())
+        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.890808, 11.000724)
 
 
 if __name__ == "__main__":

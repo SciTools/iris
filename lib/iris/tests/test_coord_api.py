@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import unittest
 from xml.dom.minidom import Document
 import logging
 
@@ -34,79 +33,15 @@ import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris._data_manager import DataManager
 import iris.tests.stock
 
 
 logger = logging.getLogger('tests')
 
 
-class TestLazy(unittest.TestCase):
-    def setUp(self):
-        # Start with a coord with LazyArray points.
-        shape = (3, 4)
-        dtype = np.int64
-        point_func = lambda: np.arange(12, dtype=dtype).reshape(shape)
-        points = iris.aux_factory._LazyArray(shape, point_func, dtype)
-        self.coord = iris.coords.AuxCoord(points=points)
-
-    def _check_lazy(self, coord):
-        self.assertIsInstance(self.coord._points, iris.aux_factory._LazyArray)
-        self.assertIsNone(self.coord._points._array)
-
-    def test_nop(self):
-        self._check_lazy(self.coord)
-
-    def _check_both_lazy(self, new_coord):
-        # Make sure both coords have an "empty" LazyArray.
-        self._check_lazy(self.coord)
-        self._check_lazy(new_coord)
-
-    def test_lazy_slice1(self):
-        self._check_both_lazy(self.coord[:])
-
-    def test_lazy_slice2(self):
-        self._check_both_lazy(self.coord[:, :])
-
-    def test_lazy_slice3(self):
-        self._check_both_lazy(self.coord[...])
-
-    def _check_concrete(self, new_coord):
-        # Taking a genuine subset slice should trigger the evaluation
-        # of the original LazyArray, and result in a normal ndarray for
-        # the new coord.
-        self.assertIsInstance(self.coord._points, iris.aux_factory._LazyArray)
-        self.assertIsInstance(self.coord._points._array, np.ndarray)
-        self.assertIsInstance(new_coord._points, np.ndarray)
-
-    def test_concrete_slice1(self):
-        self._check_concrete(self.coord[0])
-
-    def test_concrete_slice2(self):
-        self._check_concrete(self.coord[0, :])
-
-    def test_shape(self):
-        # Checking the shape shouldn't trigger a lazy load.
-        self.assertEqual(self.coord.shape, (3, 4))
-        self._check_lazy(self.coord)
-
-    def _check_shared_data(self, coord):
-        # Updating the original coord's points should update the sliced
-        # coord's points too.
-        points = coord.points
-        new_points = coord[:].points
-        np.testing.assert_array_equal(points, new_points)
-        points[0, 0] = 999
-        self.assertEqual(points[0, 0], new_points[0, 0])
-
-    def test_concrete_shared_data(self):
-        coord = iris.coords.AuxCoord(np.arange(12).reshape((3, 4)))
-        self._check_shared_data(coord)
-
-    def test_lazy_shared_data(self):
-        self._check_shared_data(self.coord)
-
-
-class TestCoordSlicing(unittest.TestCase):
+@tests.skip_data
+class TestCoordSlicing(tests.IrisTest):
     def setUp(self):
         cube = iris.tests.stock.realistic_4d()
         self.lat = cube.coord('grid_latitude')
@@ -207,6 +142,7 @@ class TestCoordIntersection(tests.IrisTest):
         self.a.units = 'kilometer'
         self.assertRaises(ValueError, self.a.intersect, self.b)
 
+    @tests.skip_data
     def test_commutative(self):
         cube = iris.tests.stock.realistic_4d()
         coord = cube.coord('grid_longitude')
@@ -232,6 +168,7 @@ class TestXML(tests.IrisTest):
         self.assertXMLElement(coord, ('coord_api', 'complex.xml'))
 
 
+@tests.skip_data
 class TestCoord_ReprStr_nontime(tests.IrisTest):
     def setUp(self):
         self.lat = iris.tests.stock.realistic_4d().coord('grid_latitude')[:10]
@@ -253,6 +190,7 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
                           ('coord_api', 'str_repr', 'aux_nontime_str.txt'))
 
 
+@tests.skip_data
 class TestCoord_ReprStr_time(tests.IrisTest):
     def setUp(self):
         self.time = iris.tests.stock.realistic_4d().coord('time')
@@ -274,7 +212,7 @@ class TestCoord_ReprStr_time(tests.IrisTest):
                           ('coord_api', 'str_repr', 'aux_time_str.txt'))
 
 
-class TestAuxCoordCreation(unittest.TestCase):
+class TestAuxCoordCreation(tests.IrisTest):
     def test_basic(self):
         a = iris.coords.AuxCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
@@ -332,7 +270,7 @@ class TestAuxCoordCreation(unittest.TestCase):
         self.assertIsNot(a.coord_system, b.coord_system)
   
   
-class TestDimCoordCreation(unittest.TestCase):
+class TestDimCoordCreation(tests.IrisTest):
     def test_basic(self):
         a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
@@ -378,7 +316,7 @@ class TestDimCoordCreation(unittest.TestCase):
         
     def test_dim_coord_restrictions(self):
         # 1d
-        with self.assertRaisesRegexp(ValueError, 'must be 1-dim'):
+        with self.assertRaisesRegexp(ValueError, 'must be scalar or 1-dim'):
             iris.coords.DimCoord([[1, 2, 3], [4, 5, 6]])
         # monotonic
         with self.assertRaisesRegexp(ValueError, 'must be strictly monotonic'):
@@ -388,10 +326,11 @@ class TestDimCoordCreation(unittest.TestCase):
                                      'monotonicity.*consistent.*all bounds'):
             iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # shapes of points and bounds
-        with self.assertRaisesRegexp(ValueError, 'shape of the bounds array'):
+        msg = 'The shape of the bounds array should be'
+        with self.assertRaisesRegexp(ValueError, msg):
             iris.coords.DimCoord([1, 2, 3], bounds=[0.5, 1.5, 2.5, 3.5])
         # another example of shapes of points and bounds
-        with self.assertRaisesRegexp(ValueError, 'shape of the bounds array'):
+        with self.assertRaisesRegexp(ValueError, msg):
             iris.coords.DimCoord([1, 2, 3], bounds=[[0.5, 1.5], [1.5, 2.5]])
 
         # numeric
@@ -596,68 +535,86 @@ class TestCoordCollapsed(tests.IrisTest):
         self.assertCML(pcube, ("coord_api", "nd_bounds.cml"))
 
 
+@tests.skip_data
 class TestGetterSetter(tests.IrisTest):
     def test_get_set_points_and_bounds(self):
         cube = iris.tests.stock.realistic_4d()
         coord = cube.coord("grid_latitude")
-        
+
         # get bounds
         bounds = coord.bounds
         self.assertEqual(bounds.shape, (100, 2))
-        
+
         self.assertEqual(bounds.shape[-1], coord.nbounds)
-        
+
         # set bounds
         coord.bounds = bounds + 1
-        
+
         np.testing.assert_array_equal(coord.bounds, bounds + 1)
 
         # set bounds - different length to existing points
         with self.assertRaises(ValueError):
             coord.bounds = bounds[::2, :]
-        
+
         # set points/bounds to None
         with self.assertRaises(ValueError):
             coord.points = None
         coord.bounds = None
-        
-        # set bounds from non-numpy pair
-        coord._points = None  # reset the undelying shape of the coordinate
+
+        # set bounds from non-numpy pair.
+        # First reset the underlying shape of the coordinate.
+        coord._points_dm = DataManager(1)
         coord.points = 1
         coord.bounds = [123, 456]
         self.assertEqual(coord.shape, (1, ))
         self.assertEqual(coord.bounds.shape, (1, 2))
-        
+
         # set bounds from non-numpy pairs
-        coord._points = None # reset the undelying shape of the coordinate
-        coord.points = list(range(3))
+        # First reset the underlying shape of the coord's points and bounds.
+        coord._points_dm = DataManager(np.arange(3))
+        coord.bounds = None
         coord.bounds = [[123, 456], [234, 567], [345, 678]]
         self.assertEqual(coord.shape, (3, ))
         self.assertEqual(coord.bounds.shape, (3, 2))
-        
+
 
 class TestGuessBounds(tests.IrisTest):
     def test_guess_bounds(self):
-        coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]), long_name="foo", units="1")
+        coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]),
+                                     long_name="foo", units="1")
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]))
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]))
+
         coord.bounds = None
         coord.guess_bounds(0.25)
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) + 2.5)
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5],
+                                        [5, 15],
+                                        [15, 25],
+                                        [25, 35]]) + 2.5)
+
         coord.bounds = None
         coord.guess_bounds(0.75)
-        self.assertArrayEqual(coord.bounds, np.array([[-5, 5], [5, 15], [15, 25], [25, 35]]) - 2.5)
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5, 5],
+                                        [5, 15],
+                                        [15, 25],
+                                        [25, 35]]) - 2.5)
 
         points = coord.points.copy()
         points[2] = 25
         coord.points = points
         coord.bounds = None
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, np.array([[-5., 5.], [5., 17.5], [17.5, 27.5], [27.5, 32.5]]))
-        
+        self.assertArrayEqual(coord.bounds,
+                              np.array([[-5., 5.],
+                                        [5., 17.5],
+                                        [17.5, 27.5],
+                                        [27.5, 32.5]]))
+
         # if the points are not monotonic, then guess_bounds should fail
+        points = coord.points.copy()
         points[2] = 32
         coord = iris.coords.AuxCoord.from_coord(coord)
         coord.points = points

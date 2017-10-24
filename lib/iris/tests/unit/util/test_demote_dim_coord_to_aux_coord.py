@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -38,6 +38,7 @@ class Test(tests.IrisTest):
         self.assertEqual(cube_b.dim_coords,
                          (cube_a.coord('latitude'), cube_a.coord('longitude')))
 
+    @tests.skip_data
     def test_argument_is_coord_instance(self):
         cube_a = stock.realistic_4d()
         cube_b = cube_a.copy()

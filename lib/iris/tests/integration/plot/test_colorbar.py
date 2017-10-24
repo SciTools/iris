@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -42,6 +42,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestColorBarCreation(tests.GraphicsTest):
     def setUp(self):
+        super(TestColorBarCreation, self).setUp()
         self.draw_functions = (contour, contourf, pcolormesh, pcolor)
         self.cube = iris.tests.stock.lat_lon_cube()
         self.cube.coord('longitude').guess_bounds()

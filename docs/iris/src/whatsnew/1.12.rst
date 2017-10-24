@@ -1,0 +1,117 @@
+What's New in Iris 1.12
+***********************
+
+:Release: 1.12
+:Date: 2017-01-10
+
+This document explains the new/changed features of Iris in version 1.12
+(:doc:`View all changes <index>`.)
+
+Iris 1.12 Features
+==================
+.. _showcase:
+
+.. admonition:: Showcase Feature - New regridding schemes ...
+
+  A new regridding scheme, :class:`iris.analysis.UnstructuredNearest`,
+  performs nearest-neighbour regridding from "unstructured" onto "structured" grids.
+  Here, "unstructured" means that the data has X and Y coordinate values
+  defined at each horizontal location, instead of the independent X and Y
+  dimensions that constitute a structured grid.
+  For example, data sampled on a trajectory or a tripolar ocean grid would be unstructured.
+
+  The essential purpose is the same as
+  :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
+  This scheme, by comparison, is generally more accurate, but slower.
+
+  In addition : added experimental ProjectedUnstructured regridders which use scipy.interpolate.griddata to regrid unstructured data (see :class:`iris.experimental.regrid.ProjectedUnstructuredLinear` and :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`)
+
+.. admonition:: Showcase Feature - Fast UM file loading
+
+  Support has been added for accelerated loading of UM files (PP and
+  Fieldsfile), when these have a suitable regular "structured" form.
+
+  A context manager is used to enable fast um loading in all the regular iris
+  load functions, such as :meth:`iris.load` and :meth:`iris.load_cube`,
+  when loading data from UM file types.
+  For example:
+
+        >>> import iris
+        >>> filepath = iris.sample_data_path('uk_hires.pp')
+        >>> from iris.fileformats.um import structured_um_loading
+        >>> with structured_um_loading():
+        ...     cube = iris.load_cube(filepath, 'air_potential_temperature')
+
+  This approach can deliver loading which is 10 times faster or more.
+  For example :
+
+  * a 78 Gb fieldsfile of 51,840 fields loads in about 13 rather than 190
+    seconds.
+  * a set of 25 800Mb PP files loads in about 21 rather than 220 seconds.
+
+  You can load data with structured loading and compare the results with those
+  from "normal" loading to check whether they are equivalent.
+
+  * The results will normally differ, if at all, only in having dimensions in a
+    different order or a different choice of dimension coordinates.
+    **In these cases, structured loading can be used with confidence.**
+
+  * Ordinary Fieldsfiles (i.e. model outputs) are generally suitable for
+    structured loading.  Many PP files also are, especially if produced
+    directly from Fieldsfiles, and retaining the same field ordering.
+
+  * Some inputs however (generally PP) will be unsuitable for structured
+    loading :  For instance if a particular combination of vertical levels and
+    time has been omitted, or some fields appear out of order.
+
+  * There are also some known unsupported cases, including data which is
+    produced on pseudo-levels.  See the detail documentation on this.
+
+  It is the user's responsibility to use structured loading only with suitable
+  inputs.  Otherwise, odd behaviour and even incorrect loading can result, as
+  input files are not checked as fully as in a normal load.
+
+  Although the user loading call for structured loading can be just the same,
+  and the returned results are also often identical, structured loading is not
+  in fact an exact *identical* replacement for normal loading:
+
+  *  results are often somewhat different, especially regarding the order
+     of dimensions and the choice of dimension coordinates.
+
+  *  although both constraints and user callbacks are supported, callback
+     routines will generally need to be re-written.  This is because a
+     'raw' cube in structured loading generally covers *multiple* PPfields,
+     which therefore need to be handled as a collection :  A grouping object
+     containing them is passed to the callback 'field' argument.
+     An example showing callbacks suitable for both normal and structured
+     loading can be seen `here <https://github.com/pp-mo/iris/blob/9042b4217ab6dd78dcfccfec19584170a5a6250a/lib/iris/tests/integration/fast_load/test_fast_load.py#L409>`_.
+
+  For full details, see : :meth:`iris.fileformats.um.structured_um_loading`.
+
+
+* A skip pattern is introduced to the fields file loader, such that fields
+  which cannot be turned into iris PPField instances are skipped and the
+  remaining fields are loaded.  This especially applies to certain types of
+  files that can contain fields with a non-standard LBREL value : Iris can now
+  load such a file, skipping the unreadable field and printing a warning
+  message.
+
+* Iris can now load PP files containing a PP field whose LBLREC value does not
+  match the field length recorded in the file.
+  A warning message is printed, and all fields up to the offending one are
+  loaded and returned.
+  Previously, this simply resulted in an unrecoverable error.
+
+* The transpose method of a Cube now results in a lazy transposed view of the original rather than realising the data then transposing it.
+
+* The :func:`iris.analysis.cartography.area_weights` function is now more accurate for single precision input bounds.
+
+Deprecations
+============
+* The module :mod:`iris.experimental.fieldsfile` has been deprecated, in favour
+  of the new fast-loading mechanism provided by
+  :meth:`iris.fileformats.um.structured_um_loading`.
+
+Documentation Changes
+=====================
+* Corrected documentation of :class:`iris.analysis.AreaWeighted` scheme to make the usage scope clearer.

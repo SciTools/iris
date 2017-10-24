@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,7 +33,6 @@ import shutil
 import stat
 import tempfile
 
-import biggus
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -47,6 +46,7 @@ import iris.util
 import iris.coord_systems as icoord_systems
 from iris.tests import mock
 import iris.tests.stock as stock
+from iris._lazy_data import is_lazy_data
 
 
 @tests.skip_data
@@ -111,7 +111,7 @@ class TestNetCDFLoad(tests.IrisTest):
         cube = iris.load_cube(tests.get_data_path(
             ('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
         # Make sure the AuxCoords have lazy data.
-        self.assertIsInstance(cube.coord('latitude')._points, biggus.Array)
+        self.assertTrue(is_lazy_data(cube.coord('latitude').core_points()))
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 
     def test_load_rotated_xyt_precipitation(self):
@@ -152,6 +152,14 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertEqual(cube.coord('projection_y_coordinate').coord_system,
                          expected)
 
+    def test_load_lcc_grid(self):
+        # Test loading a single CF-netCDF file with Lambert conformal conic
+        # grid mapping.
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'lambert_conformal',
+                                 'test_lcc.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_lcc.cml'))
+
     def test_missing_climatology(self):
         # Check we can cope with a missing climatology variable.
         with self.temp_filename(suffix='nc') as filename:
@@ -164,6 +172,21 @@ class TestNetCDFLoad(tests.IrisTest):
             dataset.renameVariable('climatology_bounds', 'foo')
             dataset.close()
             cube = iris.load_cube(filename, 'Mean temperature')
+
+    def test_load_merc_grid(self):
+        # Test loading a single CF-netCDF file with a Mercator grid_mapping
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'mercator',
+                                 'toa_brightness_temperature.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_merc.cml'))
+
+    def test_load_stereographic_grid(self):
+        # Test loading a single CF-netCDF file with a stereographic
+        # grid_mapping.
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'stereographic',
+                                 'toa_brightness_temperature.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_stereo.cml'))
 
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.
@@ -277,6 +300,7 @@ class SaverPermissions(tests.IrisTest):
             os.rmdir(dir_name)
 
 
+@tests.skip_data
 class TestSave(tests.IrisTest):
     def test_hybrid(self):
         cube = stock.realistic_4d()
@@ -390,8 +414,9 @@ class TestNetCDFSave(tests.IrisTest):
             # Test NETCDF4_64BIT file format saving.
             iris.save(cube, file_out, netcdf_format='NETCDF3_64BIT')
             ds = nc.Dataset(file_out)
-            self.assertEqual(ds.file_format, 'NETCDF3_64BIT',
-                             'Failed to save as NETCDF3_64BIT format')
+            self.assertTrue(ds.file_format in ['NETCDF3_64BIT',
+                                               'NETCDF3_64BIT_OFFSET'],
+                            'Failed to save as NETCDF3_64BIT format')
             ds.close()
 
             # Test invalid file format saving.
@@ -608,24 +633,24 @@ class TestNetCDFSave(tests.IrisTest):
         coord_system3 = icoord_systems.RotatedGeogCS(30, 30)
 
         c1.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'latitude', long_name='1',
+            np.arange(1, 3), 'latitude', long_name='1', units='degrees',
             coord_system=coord_system), 1)
         c1.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'longitude', long_name='1',
+            np.arange(1, 3), 'longitude', long_name='1', units='degrees',
             coord_system=coord_system), 0)
 
         c2.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'latitude', long_name='2',
+            np.arange(1, 3), 'latitude', long_name='2', units='degrees',
             coord_system=coord_system2), 1)
         c2.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'longitude', long_name='2',
+            np.arange(1, 3), 'longitude', long_name='2', units='degrees',
             coord_system=coord_system2), 0)
 
         c3.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'grid_latitude', long_name='3',
+            np.arange(1, 3), 'grid_latitude', long_name='3', units='degrees',
             coord_system=coord_system3), 1)
         c3.add_dim_coord(iris.coords.DimCoord(
-            np.arange(1, 3), 'grid_longitude', long_name='3',
+            np.arange(1, 3), 'grid_longitude', long_name='3', units='degrees',
             coord_system=coord_system3), 0)
 
         cubes = iris.cube.CubeList([c1, c2, c3])
@@ -672,20 +697,50 @@ class TestNetCDFSave(tests.IrisTest):
 
     def test_attributes(self):
         # Should be global attributes.
-        self.cube.attributes['history'] = 'A long time ago...'
-        self.cube.attributes['title'] = 'Attribute test'
-        self.cube.attributes['foo'] = 'bar'
-        # Should be data varible attributes.
-        self.cube.attributes['standard_error_multiplier'] = 23
-        self.cube.attributes['flag_masks'] = 'a'
-        self.cube.attributes['flag_meanings'] = 'b'
-        self.cube.attributes['flag_values'] = 'c'
-        self.cube.attributes['STASH'] = iris.fileformats.pp.STASH(1, 2, 3)
+        aglobals = {'history': 'A long time ago...',
+                    'title': 'Attribute test',
+                    'foo': 'bar'}
+        for k, v in six.iteritems(aglobals):
+            self.cube.attributes[k] = v
         # Should be overriden.
-        self.cube.attributes['conventions'] = 'TEST'
+        aover = {'Conventions': 'TEST'}
+        for k, v in six.iteritems(aover):
+            self.cube.attributes[k] = v
+        # Should be data varible attributes.
+        avars = {'standard_error_multiplier': 23,
+                 'flag_masks': 'a',
+                 'flag_meanings': 'b',
+                 'flag_values': 'c',
+                 'STASH': iris.fileformats.pp.STASH(1, 2, 3)}
+        for k, v in six.iteritems(avars):
+            self.cube.attributes[k] = v
         with self.temp_filename(suffix='.nc') as filename:
             iris.save(self.cube, filename)
-            self.assertCDL(filename, ('netcdf', 'netcdf_save_attr.cdl'))
+            # Load the dataset.
+            ds = nc.Dataset(filename, 'r')
+            exceptions = []
+            # Should be global attributes.
+            for gkey in aglobals:
+                if getattr(ds, gkey) != aglobals.get(gkey):
+                    exceptions.append('{} != {}'.format(getattr(ds, gkey),
+                                                        aglobals.get(gkey)))
+            # Should be overriden.
+            for okey in aover:
+                if getattr(ds, okey) == aover.get(okey):
+                    exceptions.append('{} != {}'.format(getattr(ds, okey),
+                                                        avars.get(okey)))
+            dv = ds['temp']
+            # Should be data varible attributes;
+            # except STASH -> um_stash_source.
+            for vkey in avars:
+                if vkey != 'STASH' and (getattr(dv, vkey) != avars.get(vkey)):
+                    exceptions.append('{} != {}'.format(getattr(dv, vkey),
+                                                        avars.get(vkey)))
+            if getattr(dv, 'um_stash_source') != avars.get('STASH'):
+                exc = '{} != {}'.format(getattr(dv, 'um_stash_source'),
+                                        avars.get(vkey))
+                exceptions.append(exc)
+        self.assertEqual(exceptions, [])
 
     def test_conflicting_attributes(self):
         # Should be data variable attributes.

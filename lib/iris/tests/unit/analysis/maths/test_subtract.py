@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,10 +27,14 @@ import operator
 
 from iris.analysis.maths import subtract
 from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
+    CubeArithmeticBroadcastingTestMixin, CubeArithmeticCoordsTest, \
+    CubeArithmeticMaskedConstantTestMixin, CubeArithmeticMaskingTestMixin
 
 
-class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
+@tests.skip_data
+@tests.iristest_timing_decorator
+class TestBroadcasting(tests.IrisTest_nometa,
+                       CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
         return operator.sub
@@ -40,7 +44,32 @@ class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
         return subtract
 
 
-class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
+@tests.iristest_timing_decorator
+class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
+    @property
+    def data_op(self):
+        return operator.sub
+
+    @property
+    def cube_func(self):
+        return subtract
+
+
+class TestCoordMatch(CubeArithmeticCoordsTest):
+    def test_no_match(self):
+        cube1, cube2 = self.SetUpNonMatching()
+        with self.assertRaises(ValueError):
+            subtract(cube1, cube2)
+
+    def test_reversed_points(self):
+        cube1, cube2 = self.SetUpReversed()
+        with self.assertRaises(ValueError):
+            subtract(cube1, cube2)
+
+
+@tests.iristest_timing_decorator
+class TestMaskedConstant(tests.IrisTest_nometa,
+                         CubeArithmeticMaskedConstantTestMixin):
     @property
     def data_op(self):
         return operator.sub

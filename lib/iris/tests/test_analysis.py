@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -123,15 +123,28 @@ class TestAnalysisWeights(tests.IrisTest):
         self.assertCML(cube, ('analysis', 'weighted_mean_source.cml'))
 
         a = cube.collapsed('lat', iris.analysis.MEAN, weights=weights)
+        # np.ma.average doesn't apply type promotion rules in some versions,
+        # and instead makes the result type float64. To ignore that case we
+        # fix up the dtype here if it is promotable from float32. We still want
+        # to catch cases where there is a loss of precision however.
+        if a.dtype > np.float32:
+            cast_data = a.data.astype(np.float32)
+            a.data = cast_data
         self.assertCMLApproxData(a, ('analysis', 'weighted_mean_lat.cml'))
 
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
+        if b.dtype > np.float32:
+            cast_data = b.data.astype(np.float32)
+            b.data = cast_data
         b.data = np.asarray(b.data)
         self.assertCMLApproxData(b, ('analysis', 'weighted_mean_lon.cml'))
         self.assertEqual(b.coord('dummy').shape, (1, ))
 
         # test collapsing multiple coordinates (and the fact that one of the coordinates isn't the same coordinate instance as on the cube)
         c = cube.collapsed([lat_coord[:], lon_coord], iris.analysis.MEAN, weights=weights)
+        if c.dtype > np.float32:
+            cast_data = c.data.astype(np.float32)
+            c.data = cast_data
         self.assertCMLApproxData(c, ('analysis', 'weighted_mean_latlon.cml'))
         self.assertEqual(c.coord('dummy').shape, (1, ))
 
@@ -212,30 +225,30 @@ class TestAnalysisBasic(tests.IrisTest):
         self.assertCML(self.cube, ('analysis', original_name))
 
     def test_mean(self):
-        self._common('mean', iris.analysis.MEAN, decimal=1)
+        self._common('mean', iris.analysis.MEAN, rtol=1e-05)
 
     def test_std_dev(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('std_dev', iris.analysis.STD_DEV, decimal=1)
+        self._common('std_dev', iris.analysis.STD_DEV, rtol=1e-05)
 
     def test_hmean(self):
         # harmonic mean requires data > 0
         self.cube.data *= self.cube.data
-        self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', decimal=1)
+        self._common('hmean', iris.analysis.HMEAN, 'original_hmean.cml', rtol=1e-05)
 
     def test_gmean(self):
-        self._common('gmean', iris.analysis.GMEAN, decimal=1)
+        self._common('gmean', iris.analysis.GMEAN, rtol=1e-05)
 
     def test_variance(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('variance', iris.analysis.VARIANCE, decimal=1)
+        self._common('variance', iris.analysis.VARIANCE, rtol=1e-05)
 
     def test_median(self):
         self._common('median', iris.analysis.MEDIAN)
 
     def test_sum(self):
         # as the numbers are so high, trim off some trailing digits & compare to 0dp
-        self._common('sum', iris.analysis.SUM, decimal=1)
+        self._common('sum', iris.analysis.SUM, rtol=1e-05)
 
     def test_max(self):
         self._common('max', iris.analysis.MAX)
@@ -335,102 +348,157 @@ class TestAggregator_mdtol_keyword(tests.IrisTest):
 
 
 class TestAggregators(tests.IrisTest):
-    def test_percentile_1d(self):
+
+    def _check_collapsed_percentile(self, cube, percents, collapse_coord,
+                                    expected_result, CML_filename=None,
+                                    **kwargs):
+        expected_result = np.array(expected_result, dtype=np.float32)
+        result = cube.collapsed(collapse_coord, iris.analysis.PERCENTILE,
+                                percent=percents, **kwargs)
+        np.testing.assert_array_almost_equal(result.data, expected_result)
+        if CML_filename is not None:
+            self.assertCML(result, ('analysis', CML_filename), checksum=False)
+
+    def _check_percentile(self, data, axis, percents, expected_result,
+                          **kwargs):
+        result = iris.analysis._percentile(data, axis, percents, **kwargs)
+        np.testing.assert_array_almost_equal(result, expected_result)
+
+    def test_percentile_1d_25_percent(self):
         cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', 2.5, CML_filename='first_quartile_foo_1d.cml')
 
-        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
-                                        percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data,
-                                             np.array([2.5], dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis',
-                                        'first_quartile_foo_1d.cml'),
-                       checksum=False)
+    def test_percentile_1d_75_percent(self):
+        cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 75, 'foo', 7.5, CML_filename='third_quartile_foo_1d.cml')
 
-        third_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
-                                        percent=75)
-        np.testing.assert_array_almost_equal(third_quartile.data,
-                                             np.array([7.5],
-                                             dtype=np.float32))
-        self.assertCML(third_quartile,
-                       ('analysis', 'third_quartile_foo_1d.cml'),
-                       checksum=False)
+    def test_fast_percentile_1d_25_percent(self):
+        cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', 2.5, fast_percentile_method=True,
+            CML_filename='first_quartile_foo_1d_fast_percentile.cml')
 
-    def test_percentile_2d(self):
+    def test_fast_percentile_1d_75_percent(self):
+        cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 75, 'foo', 7.5, fast_percentile_method=True,
+            CML_filename='third_quartile_foo_1d_fast_percentile.cml')
+
+    def test_percentile_2d_single_coord(self):
         cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', [0.75, 4.75, 8.75],
+            CML_filename='first_quartile_foo_2d.cml')
 
-        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
-                                        percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data,
-                                             np.array([0.75, 4.75, 8.75],
-                                             dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis',
-                                        'first_quartile_foo_2d.cml'),
-                       checksum=False)
+    def test_percentile_2d_two_coords(self):
+        cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, ['foo', 'bar'], [2.75],
+            CML_filename='first_quartile_foo_bar_2d.cml')
 
-        first_quartile = cube.collapsed(('foo', 'bar'),
-                                        iris.analysis.PERCENTILE, percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data,
-                                             np.array([2.75],
-                                             dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis',
-                                        'first_quartile_foo_bar_2d.cml'),
-                       checksum=False)
+    def test_fast_percentile_2d_single_coord(self):
+        cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', [0.75, 4.75, 8.75], fast_percentile_method=True,
+            CML_filename='first_quartile_foo_2d_fast_percentile.cml')
+
+    def test_fast_percentile_2d_two_coords(self):
+        cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, ['foo', 'bar'], [2.75], fast_percentile_method=True,
+            CML_filename='first_quartile_foo_bar_2d_fast_percentile.cml')
 
     def test_percentile_3d(self):
         array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result =  np.array([[6., 7., 8., 9.],
+                                     [10., 11., 12., 13.],
+                                     [14., 15., 16., 17.]],
+                                    dtype=np.float32)
+        self._check_percentile(array_3d, 0, 50, expected_result)
 
-        last_quartile = iris.analysis._percentile(array_3d, 0, 50)
-        np.testing.assert_array_almost_equal(last_quartile,
-                                             np.array([[6., 7., 8., 9.],
-                                                       [10., 11., 12., 13.],
-                                                       [14., 15., 16., 17.]],
-                                             dtype=np.float32))
+    def test_fast_percentile_3d(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result =  np.array([[6., 7., 8., 9.],
+                                     [10., 11., 12., 13.],
+                                     [14., 15., 16., 17.]],
+                                    dtype=np.float32)
+        self._check_percentile(array_3d, 0, 50, expected_result,
+                               fast_percentile_method=True)
 
     def test_percentile_3d_axis_one(self):
         array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[4., 5., 6., 7.],
+                                    [16., 17., 18., 19.]],
+                                   dtype=np.float32)
 
-        last_quartile = iris.analysis._percentile(array_3d, 1, 50)
-        np.testing.assert_array_almost_equal(last_quartile,
-                                             np.array([[4., 5., 6., 7.],
-                                                       [16., 17., 18., 19.]],
-                                             dtype=np.float32))
+        self._check_percentile(array_3d, 1, 50, expected_result)
+
+    def test_fast_percentile_3d_axis_one(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[4., 5., 6., 7.],
+                                    [16., 17., 18., 19.]],
+                                   dtype=np.float32)
+
+        self._check_percentile(array_3d, 1, 50, expected_result,
+                               fast_percentile_method=True)
 
     def test_percentile_3d_axis_two(self):
         array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[1.5, 5.5, 9.5],
+                                    [13.5, 17.5, 21.5]],
+                                   dtype=np.float32)
 
-        last_quartile = iris.analysis._percentile(array_3d, 2, 50)
-        np.testing.assert_array_almost_equal(last_quartile,
-                                             np.array([[1.5, 5.5, 9.5],
-                                                       [13.5, 17.5, 21.5]],
-                                             dtype=np.float32))
+        self._check_percentile(array_3d, 2, 50, expected_result)
+
+    def test_fast_percentile_3d_axis_two(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        expected_result = np.array([[1.5, 5.5, 9.5],
+                                    [13.5, 17.5, 21.5]],
+                                   dtype=np.float32)
+
+        self._check_percentile(array_3d, 2, 50, expected_result,
+                               fast_percentile_method=True)
 
     def test_percentile_3d_masked(self):
         cube = tests.stock.simple_3d_mask()
+        expected_result = [[12., 13., 14., 15.],
+                           [16., 17., 18., 19.],
+                           [20., 18., 19., 20.]]
 
-        last_quartile = cube.collapsed('wibble',
-                                       iris.analysis.PERCENTILE, percent=75)
-        np.testing.assert_array_almost_equal(last_quartile.data,
-                                             np.array([[12., 13., 14., 15.],
-                                                       [16., 17., 18., 19.],
-                                                       [20., 18., 19., 20.]],
-                                             dtype=np.float32))
-        self.assertCML(last_quartile, ('analysis',
-                                       'last_quartile_foo_3d_masked.cml'),
-                       checksum=False)
+        self._check_collapsed_percentile(
+            cube, 75, 'wibble', expected_result,
+            CML_filename='last_quartile_foo_3d_masked.cml')
+
+    def test_fast_percentile_3d_masked(self):
+        cube = tests.stock.simple_3d_mask()
+        msg = 'Cannot use fast np.percentile method with masked array.'
+
+        with self.assertRaisesRegexp(TypeError, msg):
+            cube.collapsed('wibble',
+                           iris.analysis.PERCENTILE, percent=75,
+                           fast_percentile_method=True)
 
     def test_percentile_3d_notmasked(self):
         cube = tests.stock.simple_3d()
+        expected_result = [[9., 10., 11., 12.],
+                           [13., 14., 15., 16.],
+                           [17., 18., 19., 20.]]
 
-        last_quartile = cube.collapsed('wibble',
-                                       iris.analysis.PERCENTILE, percent=75)
-        np.testing.assert_array_almost_equal(last_quartile.data,
-                                             np.array([[9., 10., 11., 12.],
-                                                       [13., 14., 15., 16.],
-                                                       [17., 18., 19., 20.]],
-                                             dtype=np.float32))
-        self.assertCML(last_quartile, ('analysis',
-                                       'last_quartile_foo_3d_notmasked.cml'),
-                       checksum=False)
+        self._check_collapsed_percentile(
+            cube, 75, 'wibble', expected_result,
+            CML_filename='last_quartile_foo_3d_notmasked.cml')
+
+    def test_fast_percentile_3d_notmasked(self):
+        cube = tests.stock.simple_3d()
+        expected_result = [[9., 10., 11., 12.],
+                           [13., 14., 15., 16.],
+                           [17., 18., 19., 20.]]
+
+        self._check_collapsed_percentile(
+            cube, 75, 'wibble', expected_result, fast_percentile_method=True,
+            CML_filename='last_quartile_foo_3d_notmasked_fast_percentile.cml')
 
     def test_proportion(self):
         cube = tests.stock.simple_1d()
@@ -534,19 +602,23 @@ class TestAggregators(tests.IrisTest):
 
 
 @tests.skip_data
-class TestRotatedPole(tests.GraphicsTest):
-    @tests.skip_plot
-    def _check_both_conversions(self, cube):
+class TestRotatedPole(tests.IrisTest):
+    def _check_both_conversions(self, cube, index):
         rlons, rlats = iris.analysis.cartography.get_xy_grids(cube)
         rcs = cube.coord_system('RotatedGeogCS')
         x, y = iris.analysis.cartography.unrotate_pole(
             rlons, rlats, rcs.grid_north_pole_longitude,
             rcs.grid_north_pole_latitude)
-        plt.scatter(x, y)
-        self.check_graphic()
-
-        plt.scatter(rlons, rlats)
-        self.check_graphic()
+        self.assertDataAlmostEqual(x, ('analysis',
+                                       'rotated_pole.{}.x.json'.format(index)))
+        self.assertDataAlmostEqual(y, ('analysis',
+                                       'rotated_pole.{}.y.json'.format(index)))
+        self.assertDataAlmostEqual(rlons,
+                                   ('analysis',
+                                    'rotated_pole.{}.rlon.json'.format(index)))
+        self.assertDataAlmostEqual(rlats,
+                                   ('analysis',
+                                    'rotated_pole.{}.rlat.json'.format(index)))
 
     def test_all(self):
         path = tests.get_data_path(('PP', 'ukVorog', 'ukv_orog_refonly.pp'))
@@ -554,11 +626,11 @@ class TestRotatedPole(tests.GraphicsTest):
 
         # Check overall behaviour.
         cube = master_cube[::10, ::10]
-        self._check_both_conversions(cube)
+        self._check_both_conversions(cube, 0)
 
         # Check numerical stability.
         cube = master_cube[210:238, 424:450]
-        self._check_both_conversions(cube)
+        self._check_both_conversions(cube, 1)
 
     def test_unrotate_nd(self):
         rlons = np.array([[350., 352.], [350., 352.]])
@@ -642,11 +714,11 @@ class TestAreaWeights(tests.IrisTest):
         small_cube.coord('longitude').guess_bounds()
         area_weights = iris.analysis.cartography.area_weights(small_cube)
         expected_results = np.array(
-            [[3.11955916e+12, 3.11956058e+12, 3.11955916e+12, 3.11956058e+12],
-             [5.21950793e+12, 5.21951031e+12, 5.21950793e+12, 5.21951031e+12],
-             [6.68991432e+12, 6.68991737e+12, 6.68991432e+12, 6.68991737e+12],
-             [7.35341320e+12, 7.35341655e+12, 7.35341320e+12, 7.35341655e+12],
-             [7.12998265e+12, 7.12998589e+12, 7.12998265e+12, 7.12998589e+12]],
+            [[3.11955866e+12, 3.11956008e+12, 3.11955866e+12, 3.11956008e+12],
+             [5.21951065e+12, 5.21951303e+12, 5.21951065e+12, 5.21951303e+12],
+             [6.68991281e+12, 6.68991585e+12, 6.68991281e+12, 6.68991585e+12],
+             [7.35341305e+12, 7.35341640e+12, 7.35341305e+12, 7.35341640e+12],
+             [7.12998335e+12, 7.12998660e+12, 7.12998335e+12, 7.12998660e+12]],
             dtype=np.float64)
         self.assertArrayAllClose(area_weights, expected_results, rtol=1e-8)
 
@@ -656,6 +728,7 @@ class TestAreaWeights(tests.IrisTest):
         self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'),
                        checksum=False)
 
+@tests.skip_data
 class TestAreaWeightGeneration(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()
@@ -991,93 +1064,6 @@ class TestRollingWindow(tests.IrisTest):
                                        [12.0, 9.0]], dtype=np.float64)
         # use almost equal to compare floats
         self.assertArrayAlmostEqual(expected_result, res_cube.data)
-
-
-class TestProject(tests.GraphicsTest):
-    def setUp(self):
-        cube = iris.tests.stock.realistic_4d_no_derived()
-        # Remove some slices to speed testing.
-        self.cube = cube[0:2, 0:3]
-        self.target_proj = ccrs.Robinson()
-
-    def test_bad_resolution(self):
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube,
-                                              self.target_proj,
-                                              nx=-200, ny=200)
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube,
-                                              self.target_proj,
-                                              nx=200, ny='abc')
-
-    def test_missing_latlon(self):
-        cube = self.cube.copy()
-        cube.remove_coord('grid_latitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(cube, self.target_proj)
-        cube = self.cube.copy()
-        cube.remove_coord('grid_longitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(cube, self.target_proj)
-        self.cube.remove_coord('grid_longitude')
-        self.cube.remove_coord('grid_latitude')
-        with self.assertRaises(ValueError):
-            iris.analysis.cartography.project(self.cube, self.target_proj)
-
-    def test_default_resolution(self):
-        new_cube, extent = iris.analysis.cartography.project(self.cube,
-                                                             self.target_proj)
-        self.assertEqual(new_cube.shape, self.cube.shape)
-
-    @tests.skip_data
-    @tests.skip_plot
-    def test_cartopy_projection(self):
-        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
-                                                   'global.pp')))
-        projections = {}
-        projections['RotatedPole'] = ccrs.RotatedPole(pole_longitude=177.5,
-                                                      pole_latitude=37.5)
-        projections['Robinson'] = ccrs.Robinson()
-        projections['PlateCarree'] = ccrs.PlateCarree()
-        projections['NorthPolarStereo'] = ccrs.NorthPolarStereo()
-        projections['Orthographic'] = ccrs.Orthographic(central_longitude=-90,
-                                                        central_latitude=45)
-        projections['InterruptedGoodeHomolosine'] = ccrs.InterruptedGoodeHomolosine()
-        projections['LambertCylindrical'] = ccrs.LambertCylindrical()
-
-        # Set up figure
-        fig = plt.figure(figsize=(10, 10))
-        gs = matplotlib.gridspec.GridSpec(nrows=3, ncols=3, hspace=1.5, wspace=0.5)
-        for subplot_spec, name in zip(gs, sorted(projections)):
-            target_proj = projections[name]
-            # Set up axes and title
-            ax = plt.subplot(subplot_spec, frameon=False, projection=target_proj)
-            ax.set_title(name)
-            # Transform cube to target projection
-            new_cube, extent = iris.analysis.cartography.project(cube, target_proj,
-                                                                 nx=150, ny=150)
-            # Plot
-            plt.pcolor(new_cube.coord('projection_x_coordinate').points,
-                       new_cube.coord('projection_y_coordinate').points,
-                       new_cube.data)
-            # Add coastlines
-            ax.coastlines()
-
-        # Tighten up layout
-        gs.tight_layout(plt.gcf())
-
-        # Verify resulting plot
-        self.check_graphic(tol=1.0)
-
-    @tests.skip_data
-    def test_no_coord_system(self):
-        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
-        cube.coord('longitude').coord_system = None
-        cube.coord('latitude').coord_system = None
-        new_cube, extent = iris.analysis.cartography.project(cube,
-                                                             self.target_proj)
-        self.assertCML(new_cube,
-                       ('analysis', 'project', 'default_source_cs.cml'))
 
 
 if __name__ == "__main__":

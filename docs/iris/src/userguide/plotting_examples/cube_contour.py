@@ -18,6 +18,6 @@ contour = qplt.contour(temperature_cube)
 plt.gca().coastlines()
 
 # Add contour labels based on the contour we have just created.
-plt.clabel(contour)
+plt.clabel(contour, inline=False)
 
 plt.show()

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,14 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Experimental code for fast loading of structured UM data."""
+"""
+Code for fast loading of structured UM data.
+
+This module defines which pp-field elements take part in structured loading,
+and provides creation of :class:`FieldCollation` objects from lists of
+:class:`iris.fileformats.pp.PPField`.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -24,11 +31,9 @@ import itertools
 from netCDF4 import netcdftime
 import numpy as np
 
+from iris._lazy_data import as_lazy_data, multidim_lazy_stack
 from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
-
-from biggus import ArrayStack
-from iris.fileformats.pp import PPField3
 
 
 class FieldCollation(object):
@@ -81,11 +86,32 @@ class FieldCollation(object):
         if not self._structure_calculated:
             self._calculate_structure()
         if self._data_cache is None:
-            data_arrays = [f._data for f in self.fields]
-            self._data_cache = \
-                ArrayStack.multidim_array_stack(data_arrays,
-                                                self.vector_dims_shape)
+            stack = np.empty(self.vector_dims_shape, 'object')
+            for nd_index, field in zip(np.ndindex(self.vector_dims_shape),
+                                       self.fields):
+                stack[nd_index] = as_lazy_data(field._data,
+                                               chunks=field._data.shape)
+            self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
+
+    def core_data(self):
+        return self.data
+
+    @property
+    def realised_dtype(self):
+        return np.result_type(*[field.realised_dtype
+                                for field in self._fields])
+
+    @property
+    def data_proxy(self):
+        return self.data
+
+    @property
+    def bmdi(self):
+        bmdis = set([f.bmdi for f in self.fields])
+        if len(bmdis) != 1:
+            raise ValueError('Multiple bmdi values defined in FieldCollection')
+        return bmdis.pop()
 
     @property
     def vector_dims_shape(self):
@@ -120,10 +146,13 @@ class FieldCollation(object):
         """Define the field components used in the structure analysis."""
         # Define functions to make t1 and t2 values as date-time tuples.
         # These depend on header version (PPField2 has no seconds values).
-        t1_fn = lambda fld: (fld.lbyr, fld.lbmon, fld.lbdat,
-                             fld.lbhr, fld.lbmin, getattr(fld, 'lbsec', 0))
-        t2_fn = lambda fld: (fld.lbyrd, fld.lbmond, fld.lbdatd,
-                             fld.lbhrd, fld.lbmind, getattr(fld, 'lbsecd', 0))
+        def t1_fn(fld):
+            return (fld.lbyr, fld.lbmon, fld.lbdat, fld.lbhr, fld.lbmin,
+                    getattr(fld, 'lbsec', 0))
+
+        def t2_fn(fld):
+            return (fld.lbyrd, fld.lbmond, fld.lbdatd, fld.lbhrd, fld.lbmind,
+                    getattr(fld, 'lbsecd', 0))
 
         # Return a list of (name, array) for the vectorizable elements.
         component_arrays = [
@@ -211,7 +240,24 @@ def _um_collation_key_function(field):
     'phenomenon', as described for :meth:`group_structured_fields`.
 
     """
-    return (field.lbuser[3], field.lbproc, field.lbuser[6])
+    return (field.lbuser[3],  # stashcode first
+            field.lbproc,  # then stats processing
+            field.lbuser[6],  # then model
+            field.lbuser[4]  # then pseudo-level : this one is a KLUDGE.
+            )
+    # NOTE: including pseudo-level here makes it treat different pseudo-levels
+    # as different phenomena.  These will later be merged in the "ordinary"
+    # post-load merge.
+    # The current structured-load code fails to handle multiple pseudo-levels
+    # correctly: because pseudo-level is not on in its list of "things that may
+    # vary within a phenomenon", it will create a scalar pseudo-level
+    # coordinate when it should have been a vector of values.
+    # This kludge fixes that error, but it is inefficient because it bypasses
+    # the structured load, producing n-levels times more 'raw' cubes.
+    # It will also fail if any phenomenon occurs with multiple 'normal' levels
+    # (i.e. lblev) *and* pseudo-levels (lbuser[4]).
+    # TODO: it should be fairly easy to do this properly -- i.e. create a
+    # vector pseudo-level coordinate directly in the structured load analysis.
 
 
 def group_structured_fields(field_iterator):
@@ -225,7 +271,8 @@ def group_structured_fields(field_iterator):
         A source of PP or FF fields.  N.B. order is significant.
 
     The function sorts and collates on phenomenon-relevant metadata only,
-    defined as the field components: 'lbuser[3]', 'lbuser[6]' and 'lbproc'.
+    defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
+    'lbuser[6]' (model).
     Each distinct combination of these defines a specific phenomenon (or
     statistical aggregation of one), and those fields appear as a single
     iteration result.
@@ -236,12 +283,17 @@ def group_structured_fields(field_iterator):
     *  the same for all fields,
     *  completely irrelevant, or
     *  used by a vectorised rule function (such as
-       :func:`iris.fileformats.pp_rules._convert_vector_time_coords`).
+       :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
 
     Returns:
-        An generator of
-        :class:`~iris.experimental.fileformats.um.FieldCollation` objects,
-        each of which contains a single collated group from the input fields.
+        A generator of FieldCollation objects, each of which contains a single
+        collated group from the input fields.
+
+    .. note::
+
+         At present, fields with different values of 'lbuser[4]' (pseudo-level)
+         are *also* treated as different phenomena.  This is a temporary fix,
+         standing in place for a more correct handling of pseudo-levels.
 
     """
     _fields = sorted(field_iterator, key=_um_collation_key_function)

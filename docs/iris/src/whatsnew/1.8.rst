@@ -60,7 +60,7 @@ Iris 1.8 features
         air_potential_temperature / (K)     (model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
     
 
-* :func:`iris.cube.CubeList.concatenate` now works with `biggus <http://biggus.readthedocs.org/>`_ arrays and so
+* :func:`iris.cube.CubeList.concatenate` now works with `biggus <https://biggus.readthedocs.io/>`_ arrays and so
   now supports concatenation of cubes with deferred data.
 * Improvements to NetCDF saving through using biggus:
  * A cube's lazy data payload will still be lazy after saving; the data will not

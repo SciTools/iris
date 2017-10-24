@@ -1,12 +1,11 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="TRACER_AIR_CONCENTRATION" units="g/m3">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g/m3">
     <attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
-      <attribute name="Number of fields" value="5"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="0.000 to 1.000m agl"/>
       <attribute name="Release location" value="1.9056W   52.4771N"/>
@@ -58,13 +57,12 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_DOSAGE" units="g s/m3">
+  <cube dtype="float32" long_name="TRACER_DOSAGE" units="g s/m3">
     <attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
-      <attribute name="Number of fields" value="5"/>
       <attribute name="Quantity" value="Dosage"/>
       <attribute name="Release height" value="0.000 to 1.000m agl"/>
       <attribute name="Release location" value="1.9056W   52.4771N"/>
@@ -116,13 +114,12 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_WET_DEPOSITION" units="g/m2">
+  <cube dtype="float32" long_name="TRACER_WET_DEPOSITION" units="g/m2">
     <attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
-      <attribute name="Number of fields" value="5"/>
       <attribute name="Quantity" value="Wet deposition"/>
       <attribute name="Release height" value="0.000 to 1.000m agl"/>
       <attribute name="Release location" value="1.9056W   52.4771N"/>
@@ -174,13 +171,12 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_DRY_DEPOSITION" units="g/m2">
+  <cube dtype="float32" long_name="TRACER_DRY_DEPOSITION" units="g/m2">
     <attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
-      <attribute name="Number of fields" value="5"/>
       <attribute name="Quantity" value="Dry deposition"/>
       <attribute name="Release height" value="0.000 to 1.000m agl"/>
       <attribute name="Release location" value="1.9056W   52.4771N"/>
@@ -232,13 +228,12 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_TOTAL_DEPOSITION" units="g/m2">
+  <cube dtype="float32" long_name="TRACER_TOTAL_DEPOSITION" units="g/m2">
     <attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
-      <attribute name="Number of fields" value="5"/>
       <attribute name="Quantity" value="Total deposition"/>
       <attribute name="Release height" value="0.000 to 1.000m agl"/>
       <attribute name="Release location" value="1.9056W   52.4771N"/>

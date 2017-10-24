@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="test_data" units="1">
+  <cube dtype="float32" long_name="test_data" units="1">
     <coords>
       <coord>
         <auxCoord bounds="[[0.0, 2.0]]" id="9010c8c9" long_name="dummy" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
@@ -21,6 +21,6 @@
         <coord name="lon"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float64" shape="(3,)" state="loaded"/>
+    <data dtype="float32" shape="(3,)" state="loaded"/>
   </cube>
 </cubes>

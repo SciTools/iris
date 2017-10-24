@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2, 3]">
+        <auxCoord id="8f75dad5" points="[[-29.5486755686, -23.2425386265, -27.1960399432,
+ 		..., -26.4183339764, -23.4102889086,
+ 		-30.5598035506],
+		[-5.31277829259, -7.60878083145, -22.525325091,
+ 		..., -20.3389138774, -6.63677815264,
+ 		-5.96000876128],
+		[11.9373940243, 1.68737606823, -19.7510874124,
+ 		..., -16.5990757719, 3.75281211255,
+ 		12.1482277251],
+		..., 
+		[84.2615074996, 54.8444519294, 26.7572399859,
+ 		..., 30.1637441878, 58.6051869919,
+ 		86.9541960184],
+		[68.173538568, 62.6851805113, 39.6290904051,
+ 		..., 42.324932868, 64.8680482789, 66.5017981217],
+		[43.3491677352, 51.7189413318, 46.2669886567,
+ 		..., 47.2804916021, 51.4709777887,
+ 		42.1572752986]]" shape="(10, 10)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </auxCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 13.3333],
+		[13.3333, 33.3333],
+		[33.3333, 60.0]]" id="fb105c19" long_name="level_height" points="[5.0, 21.6667, 45.0]" shape="(3,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[2, 3]">
+        <auxCoord id="81715b9b" points="[[165.651442753, 178.244991596, -168.158926231,
+ 		..., 169.237783452, -176.909512275,
+ 		-164.826658657],
+		[171.94140771, -164.537718135, -145.687720691,
+ 		..., 147.432981219, 167.102019536,
+ 		-169.282739452],
+		[-175.009064548, -147.024893924, -126.259032068,
+ 		..., 128.51309535, 150.23087257, 178.899398957],
+		..., 
+		[-58.3498044086, -70.8813751857, -58.2031018979,
+ 		..., 60.1459626823, 72.0019743312, 20.695582309],
+		[22.0508714127, -35.1608425218, -42.536925264,
+ 		..., 43.0527802786, 31.4703414616,
+ 		-27.6376083083],
+		[17.2456810934, 2.60343563417, -15.3083834763,
+ 		..., 14.270914103, -4.55555121054,
+ 		-17.7002310265]]" shape="(10, 10)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </auxCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="38fd0305" points="[1, 2, 3]" shape="(3,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord id="aa537550" points="[-15305249.9975, -11904083.3314, -8502916.66526,
+		-5101749.99916, -1700583.33305, 1700583.33305,
+		5101749.99916, 8502916.66526, 11904083.3314,
+		15305249.9975]" shape="(10,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="3589f6ce" points="[-7762639.61572, -6037608.59, -4312577.56429,
+		-2587546.53857, -862515.512857, 862515.512857,
+		2587546.53857, 4312577.56429, 6037608.59,
+		7762639.61572]" shape="(10,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord bounds="[[1.0, 0.998464],
+		[0.998464, 0.996162],
+		[0.996162, 0.993097]]" id="a5c170db" long_name="sigma" points="[0.999424, 0.997504, 0.99482]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="cb784457" points="[347921.166667, 347921.333333]" shape="(2,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(2, 3, 10, 10)" state="loaded"/>
+  </cube>
+</cubes>

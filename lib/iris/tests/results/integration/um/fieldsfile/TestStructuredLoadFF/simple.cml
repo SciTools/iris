@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_pressure" units="Pa">
+    <attributes>
+      <attribute name="STASH" value="m01s00i407"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="8.5"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="1d45e087" points="[13681.0, 13682.0]" shape="(2,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[182880.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="77a50eb5" points="[-43.2422, -43.0078, -42.7734, -42.5391,
+		-42.3047, -42.0703, -41.8359, -41.6016,
+		-41.3672, -41.1328, -40.8984, -40.6641,
+		-40.4297, -40.1953, -39.9609, -39.7266,
+		-39.4922, -39.2578, -39.0234, -38.7891,
+		-38.5547, -38.3203, -38.0859, -37.8516,
+		-37.6172, -37.3828, -37.1484, -36.9141,
+		-36.6797, -36.4453]" shape="(30,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 10.0000001],
+		[10.0000001, 26.66666665],
+		[26.66666665, 49.99999965]]" id="fb105c19" long_name="level_height" points="[4.999999965, 18.33333295, 38.33333315]" shape="(3,)" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord id="f913a8b3" points="[70.1367, 70.4883, 70.8398, 71.1914, 71.543,
+		71.8945, 72.2461, 72.5977, 72.9492, 73.3008,
+		73.6523, 74.0039, 74.3555, 74.707, 75.0586,
+		75.4102, 75.7617, 76.1133, 76.4648, 76.8164,
+		77.168, 77.5195, 77.8711, 78.2227, 78.5742,
+		78.9258, 79.2773, 79.6289, 79.9805, 80.332,
+		80.6836, 81.0352, 81.3867, 81.7383, 82.0898,
+		82.4414, 82.793, 83.1445, 83.4961, 83.8477]" shape="(40,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="38fd0305" points="[1, 2, 3]" shape="(3,)" standard_name="model_level_number" units="Unit('1')" value_type="int64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[1.0, 0.998870030363],
+		[0.998870030363, 0.996988167171],
+		[0.996988167171, 0.994356539679]]" id="a5c170db" long_name="sigma" points="[0.999434935344, 0.997928877018, 0.995671918702]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="cb784457" points="[196561.0, 196562.0]" shape="(2,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x42a6d5c8" dtype="float32" shape="(2, 3, 30, 40)"/>
+  </cube>
+</cubes>

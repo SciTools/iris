@@ -1,13 +1,12 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
+  <cube dtype="float64" long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
     <attributes>
       <attribute name="End of release" value="0830UTC 28/03/2022"/>
       <attribute name="Forecast duration" value="87648 hours"/>
       <attribute name="Location" value="Birmingham"/>
       <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow"/>
       <attribute name="NAME Version" value="NAME III (version 6.0 for VAAC)"/>
-      <attribute name="Number of series" value="2"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="8376.000m asl +/- 6864.000m"/>
       <attribute name="Release location" value="19.0500W   63.6300N"/>
@@ -46,14 +45,13 @@
     <cellMethods/>
     <data dtype="float64" shape="(132,)" state="loaded"/>
   </cube>
-  <cube long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
+  <cube dtype="float64" long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
     <attributes>
       <attribute name="End of release" value="0830UTC 28/03/2022"/>
       <attribute name="Forecast duration" value="87648 hours"/>
       <attribute name="Location" value="Bristol"/>
       <attribute name="Met data" value="NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow"/>
       <attribute name="NAME Version" value="NAME III (version 6.0 for VAAC)"/>
-      <attribute name="Number of series" value="2"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="8376.000m asl +/- 6864.000m"/>
       <attribute name="Release location" value="19.0500W   63.6300N"/>

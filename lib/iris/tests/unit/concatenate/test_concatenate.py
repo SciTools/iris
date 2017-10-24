@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,12 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
-import biggus
 import cf_units
 import numpy as np
+import numpy.ma as ma
 
-import iris.coords
 from iris._concatenate import concatenate
+from iris._lazy_data import as_lazy_data
+import iris.coords
 import iris.cube
 from iris.exceptions import ConcatenateError
 
@@ -92,14 +93,6 @@ class TestMessages(tests.IrisTest):
                                                 units='1'),
                            data_dims=(1,))
         self.cube = cube
-
-    def test_anonymous_coord_message(self):
-        cube_1 = self.cube
-        cube_2 = cube_1.copy()
-        cube_2.remove_coord('latitude')
-        exc_regexp = 'one or both cubes have anonymous dimensions'
-        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
 
     def test_definition_difference_message(self):
         cube_1 = self.cube
@@ -174,7 +167,7 @@ class TestMessages(tests.IrisTest):
         cube_1 = self.cube
         cube_2 = cube_1.copy()
         cube_2.data.dtype = np.float64
-        exc_regexp = 'Datatypes differ: .* != .*'
+        exc_regexp = 'Data types differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
             result = concatenate([cube_1, cube_2], True)
 
@@ -202,6 +195,30 @@ class TestOrder(tests.IrisTest):
         result = concatenate([top, bottom])
         self.assertEqual(len(result), 1)
 
+    def test_asc_points_with_singleton_ordered(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([15, 25])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_points_with_singleton_unordered(self):
+        top = self._make_cube([25])
+        bottom = self._make_cube([5, 15])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_bounds_with_singleton_ordered(self):
+        top = self._make_cube([5], [[0, 10]])
+        bottom = self._make_cube([15, 25], [[10, 20], [20, 30]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_bounds_with_singleton_unordered(self):
+        top = self._make_cube([25], [[20, 30]])
+        bottom = self._make_cube([5, 15], [[0, 10], [10, 20]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
     def test_desc_points(self):
         top = self._make_cube([90, 70, 50, 30, 10])
         bottom = self._make_cube([-10, -30, -50, -70, -90])
@@ -214,11 +231,62 @@ class TestOrder(tests.IrisTest):
         result = concatenate([top, bottom])
         self.assertEqual(len(result), 1)
 
+    def test_desc_points_with_singleton_ordered(self):
+        top = self._make_cube([25])
+        bottom = self._make_cube([15, 5])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
 
-class TestConcatenateBiggus(tests.IrisTest):
+    def test_desc_points_with_singleton_unordered(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([25, 15])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_bounds_with_singleton_ordered(self):
+        top = self._make_cube([25], [[30, 20]])
+        bottom = self._make_cube([15, 5], [[20, 10], [10, 0]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_bounds_with_singleton_unordered(self):
+        top = self._make_cube([5], [[10, 0]])
+        bottom = self._make_cube([25, 15], [[30, 20], [20, 10]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_points_all_singleton(self):
+        top = self._make_cube([5])
+        bottom = self._make_cube([15])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+    def test_asc_bounds_all_singleton(self):
+        top = self._make_cube([5], [0, 10])
+        bottom = self._make_cube([15], [10, 20])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+    def test_desc_bounds_all_singleton(self):
+        top = self._make_cube([5], [10, 0])
+        bottom = self._make_cube([15], [20, 10])
+        result1 = concatenate([top, bottom])
+        result2 = concatenate([bottom, top])
+        self.assertEqual(len(result1), 1)
+        self.assertEqual(len(result2), 1)
+        self.assertEqual(result1, result2)
+
+
+class TestConcatenate__dask(tests.IrisTest):
     def build_lazy_cube(self, points, bounds=None, nx=4):
         data = np.arange(len(points) * nx).reshape(len(points), nx)
-        data = biggus.NumpyArrayAdapter(data)
+        data = as_lazy_data(data)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
         lat = iris.coords.DimCoord(points, 'latitude', bounds=bounds)
         lon = iris.coords.DimCoord(np.arange(nx), 'longitude')
@@ -226,21 +294,20 @@ class TestConcatenateBiggus(tests.IrisTest):
         cube.add_dim_coord(lon, 1)
         return cube
 
-    def test_lazy_biggus_concatenate(self):
+    def test_lazy_concatenate(self):
         c1 = self.build_lazy_cube([1, 2])
         c2 = self.build_lazy_cube([3, 4, 5])
         cube, = concatenate([c1, c2])
         self.assertTrue(cube.has_lazy_data())
-        self.assertNotIsInstance(cube.data, np.ma.MaskedArray)
+        self.assertFalse(ma.isMaskedArray(cube.data))
 
-    def test_lazy_biggus_concatenate_masked_array_mixed_deffered(self):
+    def test_lazy_concatenate_masked_array_mixed_deferred(self):
         c1 = self.build_lazy_cube([1, 2])
         c2 = self.build_lazy_cube([3, 4, 5])
         c2.data = np.ma.masked_greater(c2.data, 3)
-        self.assertFalse(c2.has_lazy_data())
         cube, = concatenate([c1, c2])
         self.assertTrue(cube.has_lazy_data())
-        self.assertIsInstance(cube.data, np.ma.MaskedArray)
+        self.assertTrue(ma.isMaskedArray(cube.data))
 
 
 if __name__ == '__main__':

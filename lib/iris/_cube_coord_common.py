@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,7 +34,7 @@ class LimitedAttributeDict(dict):
                        'coordinates', 'grid_mapping', 'climatology',
                        'cell_methods', 'formula_terms', 'compress',
                        'missing_value', 'add_offset', 'scale_factor',
-                       'valid_max', 'valid_min', 'valid_range', '_FillValue')
+                       '_FillValue')
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)

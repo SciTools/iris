@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,7 @@ import iris.tests as tests
 
 import contextlib
 import io
+import warnings
 
 import numpy as np
 
@@ -66,12 +67,13 @@ class Test(tests.IrisTest):
     def test_lblrec_invalid(self):
         pp_field = mock.Mock(lblrec=2,
                              lbext=0)
-        with self.assertRaises(ValueError) as err:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter('always')
             self.gen_fields([pp_field])
-        self.assertEqual(str(err.exception),
-                         ('LBLREC has a different value to the integer '
-                          'recorded after the header in the file (8 '
-                          'and 4).'))
+        self.assertEqual(len(warn), 1)
+        wmsg = ('LBLREC has a different value to the .* the header in the '
+                'file \(8 and 4\)\. Skipping .*')
+        six.assertRegex(self, str(warn[0].message), wmsg)
 
     def test_read_headers_call(self):
         # Checks that the two calls to np.fromfile are called in the
@@ -90,7 +92,7 @@ class Test(tests.IrisTest):
         with open_fh as open_fh_ctx:
             expected_deferred_bytes = ('mocked', open_fh_ctx.tell(),
                                        4, np.dtype('>f4'))
-        self.assertEqual(pp_field._data, expected_deferred_bytes)
+        self.assertEqual(pp_field.data, expected_deferred_bytes)
 
     def test_read_data_call(self):
         # Checks that data is read if read_data is True.
@@ -104,7 +106,7 @@ class Test(tests.IrisTest):
         with open_fh as open_fh_ctx:
             expected_loaded_bytes = pp.LoadedArrayBytes(open_fh_ctx.read(),
                                                         np.dtype('>f4'))
-        self.assertEqual(pp_field._data, expected_loaded_bytes)
+        self.assertEqual(pp_field.data, expected_loaded_bytes)
 
     def test_invalid_header_release(self):
         # Check that an unknown LBREL value just results in a warning

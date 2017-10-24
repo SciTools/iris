@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -81,8 +81,10 @@ def add_categorised_coord(cube, name, from_coord, category_function,
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
         # Use a common type for string arrays (N.B. limited to 64 chars)
         all_cases_string_type = '|S64' if six.PY2 else '|U64'
-        vectorised_fn = lambda *args: str_vectorised_fn(*args).astype(
-            all_cases_string_type)
+
+        def vectorised_fn(*args):
+            return str_vectorised_fn(*args).astype(all_cases_string_type)
+
     else:
         vectorised_fn = np.vectorize(category_function)
     new_coord = iris.coords.AuxCoord(vectorised_fn(from_coord,
@@ -204,6 +206,16 @@ def add_weekday(cube, coord, name='weekday'):
         cube, name, coord,
         lambda coord, x: calendar.day_abbr[_pt_date(coord, x).weekday()],
         units='no_unit')
+
+
+# --------------------------------------------
+# Time categorisations : hour of the day
+
+def add_hour(cube, coord, name='hour'):
+    """Add a categorical hour coordinate, values 0..23."""
+    add_categorised_coord(
+        cube, name, coord,
+        lambda coord, x: _pt_date(coord, x).hour)
 
 
 # ----------------------------------------------

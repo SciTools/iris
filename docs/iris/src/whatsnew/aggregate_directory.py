@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -238,7 +238,10 @@ def compile_directory(directory, release):
         for file_description in category_items:
             entry_path = os.path.join(directory, file_description['FileName'])
             with open(entry_path, 'r') as content_object:
-                category_text.extend(content_object.readlines())
+                text = content_object.readlines()
+                if not text[-1].endswith('\n'):
+                    text[-1] += '\n'
+                category_text.extend(text)
         compiled_text.extend(category_text)
     return compiled_text
 

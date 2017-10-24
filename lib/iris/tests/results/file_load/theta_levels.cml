@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -51,7 +51,7 @@
     </cellMethods>
     <data checksum="0x17763b08" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -102,7 +102,7 @@
     </cellMethods>
     <data checksum="0xc185be42" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -153,7 +153,7 @@
     </cellMethods>
     <data checksum="0xe65750bc" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -204,7 +204,7 @@
     </cellMethods>
     <data checksum="0x816283f9" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -255,7 +255,7 @@
     </cellMethods>
     <data checksum="0x56b85efa" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -306,7 +306,7 @@
     </cellMethods>
     <data checksum="0xe96a203f" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -357,7 +357,7 @@
     </cellMethods>
     <data checksum="0xce07f637" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -408,7 +408,7 @@
     </cellMethods>
     <data checksum="0x1cfc905c" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -459,7 +459,7 @@
     </cellMethods>
     <data checksum="0xe239fdec" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -510,7 +510,7 @@
     </cellMethods>
     <data checksum="0x45a44f1a" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -561,7 +561,7 @@
     </cellMethods>
     <data checksum="0xb12f6572" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -612,7 +612,7 @@
     </cellMethods>
     <data checksum="0x0e3c5965" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -663,7 +663,7 @@
     </cellMethods>
     <data checksum="0x6347d5bd" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -714,7 +714,7 @@
     </cellMethods>
     <data checksum="0x77273f7e" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -765,7 +765,7 @@
     </cellMethods>
     <data checksum="0x4bd3a5eb" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -816,7 +816,7 @@
     </cellMethods>
     <data checksum="0x129ae43d" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -867,7 +867,7 @@
     </cellMethods>
     <data checksum="0x10f0c12e" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -918,7 +918,7 @@
     </cellMethods>
     <data checksum="0x2bb76c16" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -969,7 +969,7 @@
     </cellMethods>
     <data checksum="0xf5b26d1a" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1020,7 +1020,7 @@
     </cellMethods>
     <data checksum="0x9b8c7031" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1071,7 +1071,7 @@
     </cellMethods>
     <data checksum="0xc310cc9a" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1122,7 +1122,7 @@
     </cellMethods>
     <data checksum="0xb41fa10f" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1173,7 +1173,7 @@
     </cellMethods>
     <data checksum="0xefab27e4" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1224,7 +1224,7 @@
     </cellMethods>
     <data checksum="0x946cabe8" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1275,7 +1275,7 @@
     </cellMethods>
     <data checksum="0x5998cbc6" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1326,7 +1326,7 @@
     </cellMethods>
     <data checksum="0xb0a6552e" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1377,7 +1377,7 @@
     </cellMethods>
     <data checksum="0xab0a810b" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1428,7 +1428,7 @@
     </cellMethods>
     <data checksum="0x9ab0fdd8" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1479,7 +1479,7 @@
     </cellMethods>
     <data checksum="0x34f06e6a" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1530,7 +1530,7 @@
     </cellMethods>
     <data checksum="0x47c31d91" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1581,7 +1581,7 @@
     </cellMethods>
     <data checksum="0x8569fd3f" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1632,7 +1632,7 @@
     </cellMethods>
     <data checksum="0x3ace76f3" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1683,7 +1683,7 @@
     </cellMethods>
     <data checksum="0xbc11c8a9" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1734,7 +1734,7 @@
     </cellMethods>
     <data checksum="0xbf693c7d" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1785,7 +1785,7 @@
     </cellMethods>
     <data checksum="0xc100ff09" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1836,7 +1836,7 @@
     </cellMethods>
     <data checksum="0x43595449" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -1887,7 +1887,7 @@
     </cellMethods>
     <data checksum="0x377b59d4" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

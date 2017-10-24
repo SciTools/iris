@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -41,7 +41,8 @@ class Test_load(tests.IrisTest):
             pp.load('mock', read_data=True)
 
         interpret.assert_called_once_with(extract_result)
-        field_gen.assert_called_once_with('mock', read_data_bytes=True)
+        field_gen.assert_called_once_with('mock', read_data_bytes=True,
+                                          little_ended=False)
 
 
 if __name__ == "__main__":

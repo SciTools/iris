@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,8 +36,6 @@ import numpy as np
 # Import ESMF if installed, else fail quietly + disable all the tests.
 try:
     import ESMF
-    # Check it *is* the real module, and not an iris.proxy FakeModule.
-    ESMF.Manager
 except ImportError as AttributeError:
     ESMF = None
 skip_esmf = unittest.skipIf(
@@ -130,22 +128,6 @@ def _donothing_context_manager():
 
 @skip_esmf
 class TestConservativeRegrid(tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        # Pre-initialise ESMF, just to avoid warnings about no logfile.
-        # NOTE: noisy if logging is off, and no control of filepath.  Boo!!
-        if ESMF is not None:
-            # WARNING: nosetest calls class setUp/tearDown even when "skipped".
-            cls._emsf_logfile_path = os.path.join(os.getcwd(), 'ESMF_LogFile')
-            ESMF.Manager(logkind=ESMF.LogKind.SINGLE, debug=False)
-
-    @classmethod
-    def tearDownClass(cls):
-        # remove the logfile if we can, just to be tidy
-        if ESMF is not None:
-            # WARNING: nosetest calls class setUp/tearDown even when "skipped".
-            if os.path.exists(cls._emsf_logfile_path):
-                os.remove(cls._emsf_logfile_path)
 
     def setUp(self):
         # Compute basic test data cubes.
@@ -242,6 +224,7 @@ class TestConservativeRegrid(tests.IrisTest):
                                [True, False, False, False, True],
                                [True, True, True, True, True]])
 
+    @tests.skip_data
     def test_multidimensional(self):
         """
         Check valid operation on a multidimensional cube.
@@ -377,7 +360,7 @@ class TestConservativeRegrid(tests.IrisTest):
         c2.add_dim_coord(x_coord_2, 1)
 
         # NOTE: at present, this causes an error inside ESMF ...
-        context = self.assertRaises(NameError)
+        context = self.assertRaises(ValueError)
         global_cell_supported = False
         if global_cell_supported:
             context = _donothing_context_manager()

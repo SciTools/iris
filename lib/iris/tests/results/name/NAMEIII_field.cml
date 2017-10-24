@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="TRACER_AIR_CONCENTRATION" units="g s / m^3">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g s / m^3">
     <attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
@@ -8,8 +8,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 1"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -63,7 +61,7 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
     <attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
@@ -71,8 +69,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 2"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Air Concentration"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -126,7 +122,7 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_DRY_DEPOSITION" units="g / m^2">
+  <cube dtype="float32" long_name="TRACER_DRY_DEPOSITION" units="g / m^2">
     <attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
@@ -134,8 +130,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 3"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Dry deposition"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -188,7 +182,7 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_WET_DEPOSITION" units="g / m^2">
+  <cube dtype="float32" long_name="TRACER_WET_DEPOSITION" units="g / m^2">
     <attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
@@ -196,8 +190,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 4"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Wet deposition"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>
@@ -250,7 +242,7 @@
     </cellMethods>
     <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
-  <cube long_name="TRACER_DEPOSITION" units="g / m^2">
+  <cube dtype="float32" long_name="TRACER_DEPOSITION" units="g / m^2">
     <attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
@@ -258,8 +250,6 @@
       <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
       <attribute name="NAME Version" value="NAME III (version 5.3)"/>
       <attribute name="Name" value="Unnamed Field Req 5"/>
-      <attribute name="Number of field cols" value="5"/>
-      <attribute name="Number of preliminary cols" value="4"/>
       <attribute name="Quantity" value="Deposition"/>
       <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
       <attribute name="Release location" value="3.4991W   50.7110N"/>

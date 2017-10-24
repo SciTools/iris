@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,7 @@ Reference Code Table 1.2.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised
+# import iris.tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
@@ -59,7 +59,12 @@ class Test(tests.IrisTest):
         coord = reference_time_coord(section)
         self.assertEqual(coord, expected)
 
-    def test_start_of_forecast(self):
+    def test_start_of_forecast_0(self):
+        section = deepcopy(self.section)
+        section['significanceOfReferenceTime'] = 0
+        self._check(section, 'forecast_reference_time')
+
+    def test_start_of_forecast_1(self):
         section = deepcopy(self.section)
         section['significanceOfReferenceTime'] = 1
         self._check(section, 'forecast_reference_time')
@@ -71,7 +76,7 @@ class Test(tests.IrisTest):
 
     def test_unknown_significance(self):
         section = deepcopy(self.section)
-        section['significanceOfReferenceTime'] = 0
+        section['significanceOfReferenceTime'] = 5
         emsg = 'unsupported significance'
         with self.assertRaisesRegexp(TranslationError, emsg):
             self._check(section)

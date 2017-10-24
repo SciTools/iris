@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,17 +22,19 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from . import extest_util
-
-with extest_util.add_examples_to_path():
-    import polynomial_fit
+from .extest_util import (add_examples_to_path,
+                          show_replaced_by_check_graphic,
+                          fail_any_deprecation_warnings)
 
 
 class TestPolynomialFit(tests.GraphicsTest):
     """Test the polynomial_fit example code."""
     def test_polynomial_fit(self):
-        with extest_util.show_replaced_by_check_graphic(self):
-            polynomial_fit.main()
+        with fail_any_deprecation_warnings():
+            with add_examples_to_path():
+                import polynomial_fit
+            with show_replaced_by_check_graphic(self):
+                polynomial_fit.main()
 
 
 if __name__ == '__main__':

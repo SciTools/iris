@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,10 +33,10 @@ import iris.coords
 import iris.tests.stock
 
 from iris.coords import DimCoord
-from iris.tests.test_interpolation import normalise_order
 
 
 class TestCubeDelta(tests.IrisTest):
+    @tests.skip_data
     def test_invalid(self):
         cube = iris.tests.stock.realistic_4d()
         with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
@@ -483,7 +483,6 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         result.data = result.data * 0  + 1
         np.testing.assert_array_almost_equal(result.data, r[2].data, decimal=4)
 
-        normalise_order(r[1])
         self.assertCML(r, ('analysis', 'calculus', 'curl_contrived_cartesian2.cml'), checksum=False)
 
     def test_contrived_spherical_curl1(self):
@@ -553,7 +552,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
         cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
 
-        result = r.copy(data=2*cos_x_pts*cos_y_pts)
+        # Expected r-component value: -2 cos(lon) cos(lat)
+        result = r.copy(data=-2*cos_x_pts*cos_y_pts)
 
         # Note: This numerical comparison was created when the radius was 1000 times smaller
         np.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :]/1000.0, decimal=1)
@@ -566,7 +566,7 @@ class TestCurlInterface(tests.IrisTest):
 
         v = u.copy()
         y = v.coord('latitude')
-        y.points += 5
+        y.points = y.points + 5
         self.assertRaises(ValueError, iris.analysis.calculus.curl, u, v)
 
     def test_standard_name(self):

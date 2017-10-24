@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.fileformats.grib.save_messages` function."""
+"""
+Unit tests for the `iris.fileformats.grib.save_messages` function.
+
+"""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -25,9 +28,8 @@ import six
 import iris.tests as tests
 
 import gribapi
-import numpy as np
 
-import iris.fileformats.grib as grib
+import iris.fileformats.grib
 from iris.tests import mock
 
 
@@ -46,8 +48,9 @@ class TestSaveMessages(tests.IrisTest):
             # sending a MagicMock object to gribapi raises an AssertionError
             # as the gribapi code does a type check
             # this is deemed acceptable within the scope of this unit test
-            with self.assertRaises(AssertionError):
-                grib.save_messages([self.grib_message], 'foo.grib2')
+            with self.assertRaises((AssertionError, TypeError)):
+                iris.fileformats.grib.save_messages([self.grib_message],
+                                                    'foo.grib2')
         self.assertTrue(mock.call('foo.grib2', 'wb') in m.mock_calls)
 
     def test_save_append(self):
@@ -60,9 +63,9 @@ class TestSaveMessages(tests.IrisTest):
             # sending a MagicMock object to gribapi raises an AssertionError
             # as the gribapi code does a type check
             # this is deemed acceptable within the scope of this unit test
-            with self.assertRaises(AssertionError):
-                grib.save_messages([self.grib_message], 'foo.grib2',
-                                   append=True)
+            with self.assertRaises((AssertionError, TypeError)):
+                iris.fileformats.grib.save_messages(
+                    [self.grib_message], 'foo.grib2', append=True)
         self.assertTrue(mock.call('foo.grib2', 'ab') in m.mock_calls)
 
 

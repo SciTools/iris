@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,6 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.aux_factory import _LazyArray
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     reorder_bounds_data
 from iris.tests import mock
@@ -52,20 +51,6 @@ class Test(tests.IrisTest):
         cf_coord_var = mock.Mock(dimensions=('foo', 'bar'))
 
         res = reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var)
-        # Move zeroth dimension (nv) to the end.
-        expected = np.rollaxis(bounds_data, 0, bounds_data.ndim)
-        self.assertArrayEqual(res, expected)
-
-    def test_slowest_varying_lazy(self):
-        bounds_data = np.arange(24).reshape(4, 2, 3)
-        func = lambda: bounds_data
-        lazy_bounds_data = _LazyArray(bounds_data.shape, func,
-                                      bounds_data.dtype)
-        cf_bounds_var = mock.Mock(dimensions=('nv', 'foo', 'bar'))
-        cf_coord_var = mock.Mock(dimensions=('foo', 'bar'))
-
-        res = reorder_bounds_data(lazy_bounds_data, cf_bounds_var,
-                                  cf_coord_var)
         # Move zeroth dimension (nv) to the end.
         expected = np.rollaxis(bounds_data, 0, bounds_data.ndim)
         self.assertArrayEqual(res, expected)

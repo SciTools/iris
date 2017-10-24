@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,9 +30,8 @@ import iris.tests as tests
 import numpy as np
 
 from iris.coord_systems import GeogCS
-from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
-
 from iris.fileformats.grib._save_rules import grid_definition_template_0
+from iris.tests.unit.fileformats.grib.save_rules import GdtTestMixin
 
 
 class Test(tests.IrisTest, GdtTestMixin):

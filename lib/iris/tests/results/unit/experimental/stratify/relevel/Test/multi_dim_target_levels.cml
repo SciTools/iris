@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" units="1">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord id="4a0cb9d8" points="[90]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="int64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="62e940e0" points="[-180]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1, 2]">
+        <auxCoord id="de9ef2ae" long_name="thingness" points="[[[0]],
+
+		[[12]]]" shape="(2, 1, 1)" units="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xbe5f7a1f" dtype="float64" shape="(2, 1, 1)"/>
+  </cube>
+</cubes>

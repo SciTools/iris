@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,9 +30,9 @@ import numpy as np
 import warnings
 
 from iris.exceptions import NotYetImplementedError
-import iris.fileformats.ff as ff
+import iris.fileformats._ff as ff
 import iris.fileformats.pp as pp
-from iris.fileformats.ff import FF2PP
+from iris.fileformats._ff import FF2PP
 from iris.tests import mock
 
 
@@ -58,14 +58,14 @@ _DummyBoundaryPacking = collections.namedtuple('_DummyBoundaryPacking',
 
 
 class Test____iter__(tests.IrisTest):
-    @mock.patch('iris.fileformats.ff.FFHeader')
+    @mock.patch('iris.fileformats._ff.FFHeader')
     def test_call_structure(self, _FFHeader):
         # Check that the iter method calls the two necessary utility
         # functions
         extract_result = mock.Mock()
         interpret_patch = mock.patch('iris.fileformats.pp._interpret_fields',
                                      autospec=True, return_value=iter([]))
-        extract_patch = mock.patch('iris.fileformats.ff.FF2PP._extract_field',
+        extract_patch = mock.patch('iris.fileformats._ff.FF2PP._extract_field',
                                    autospec=True, return_value=extract_result)
 
         FF2PP_instance = ff.FF2PP('mock')
@@ -85,7 +85,7 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         the "make_pp_field" call.
 
         """
-        with mock.patch('iris.fileformats.ff.FFHeader'):
+        with mock.patch('iris.fileformats._ff.FFHeader'):
             ff2pp = ff.FF2PP('mock')
         ff2pp._ff_header.lookup_table = [0, 0, len(fields)]
         # Fake level constants, with shape specifying just one model-level.
@@ -103,7 +103,7 @@ class Test__extract_field__LBC_format(tests.IrisTest):
                 mock.patch('struct.unpack_from', return_value=[4]), \
                 mock.patch('iris.fileformats.pp.make_pp_field',
                            side_effect=fields), \
-                mock.patch('iris.fileformats.ff.FF2PP._payload',
+                mock.patch('iris.fileformats._ff.FF2PP._payload',
                            return_value=(0, 0)):
             yield ff2pp
 
@@ -221,7 +221,7 @@ class Test__payload(tests.IrisTest):
 
     def _test(self, mock_field, expected_depth, expected_dtype,
               word_depth=None):
-        with mock.patch('iris.fileformats.ff.FFHeader', return_value=None):
+        with mock.patch('iris.fileformats._ff.FFHeader', return_value=None):
             kwargs = {}
             if word_depth is not None:
                 kwargs['word_depth'] = word_depth
@@ -350,7 +350,7 @@ class Test__payload(tests.IrisTest):
 
 class Test__det_border(tests.IrisTest):
     def setUp(self):
-        _FFH_patch = mock.patch('iris.fileformats.ff.FFHeader')
+        _FFH_patch = mock.patch('iris.fileformats._ff.FFHeader')
         _FFH_patch.start()
         self.addCleanup(_FFH_patch.stop)
 
@@ -391,7 +391,7 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
         # Patch FFHeader to produce a mock header instead of opening a file.
         self.mock_ff_header = mock.Mock()
         self.mock_ff_header.dataset_type = 5
-        self.mock_ff = self.patch('iris.fileformats.ff.FFHeader',
+        self.mock_ff = self.patch('iris.fileformats._ff.FFHeader',
                                   return_value=self.mock_ff_header)
 
         # Create a mock LBC type PPField.
@@ -447,7 +447,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         self.n_all_levels = 3
         self.mock_ff_header.level_dependent_constants = \
             np.zeros((self.n_all_levels))
-        self.mock_ff = self.patch('iris.fileformats.ff.FFHeader',
+        self.mock_ff = self.patch('iris.fileformats._ff.FFHeader',
                                   return_value=self.mock_ff_header)
 
         # Create a simple mock for a test field.

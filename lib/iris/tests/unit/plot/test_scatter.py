@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,6 +33,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
     def setUp(self):
         super(TestStringCoordPlot, self).setUp()
         self.cube = self.cube[0, :]
+        self.lat_lon_cube = self.lat_lon_cube[0, :]
 
     def test_xaxis_labels(self):
         iplt.scatter(self.cube.coord('str_coord'), self.cube)
@@ -41,6 +42,32 @@ class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
         iplt.scatter(self.cube, self.cube.coord('str_coord'))
         self.assertBoundsTickLabels('yaxis')
+
+    def test_xaxis_labels_with_axes(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_xlim(0, 3)
+        iplt.scatter(self.cube.coord('str_coord'), self.cube, axes=ax)
+        plt.close(fig)
+        self.assertPointsTickLabels('xaxis', ax)
+
+    def test_yaxis_labels_with_axes(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_ylim(0, 3)
+        iplt.scatter(self.cube, self.cube.coord('str_coord'), axes=ax)
+        plt.close(fig)
+        self.assertPointsTickLabels('yaxis', ax)
+
+    def test_scatter_longitude(self):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        iplt.scatter(self.lat_lon_cube,
+                     self.lat_lon_cube.coord('longitude'), axes=ax)
+        plt.close(fig)
 
 
 if __name__ == "__main__":

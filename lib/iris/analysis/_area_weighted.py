@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -52,6 +52,13 @@ class AreaWeightedRegridder(object):
             mdtol=1 will mean the resulting element will be masked if and only
             if all the contributing elements of data are masked.
             Defaults to 1.
+
+        .. Note::
+
+            Both sourge and target cubes must have an XY grid defined by
+            separate X and Y dimensions with dimension coordinates.
+            All of the XY dimension coordinates must also be bounded, and have
+            the same cooordinate system.
 
         """
         # Snapshot the state of the cubes to ensure that the regridder is

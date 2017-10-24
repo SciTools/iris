@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
         <auxCoord id="78c32bc2" long_name="a" points="[2005, 2005, 2005, 2026, 2026, 2026, 2002, 2002,

@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_temperature" units="K">
+  <cube dtype="float64" standard_name="air_temperature" units="K">
     <coords>
       <coord>
-        <dimCoord id="1d45e087" points="[2]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+        <dimCoord id="1d45e087" points="[2]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a62739f9" points="[2.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[379980.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="61bde96d" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <dimCoord id="ecc4ad5a" long_name="height" points="[2.0]" shape="(1,)" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="0f43c07d" points="[-2396487.0124, -2392487.0124, -2388487.0124,

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,14 +25,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import unittest
 from io import BytesIO
 
 import iris.fileformats as iff
 import iris.io
 
 
-class TestDecodeUri(unittest.TestCase):
+class TestDecodeUri(tests.IrisTest):
     def test_decode_uri(self):
         tests = {
             '/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp': (
@@ -82,6 +81,8 @@ class TestFileFormatPicker(tests.IrisTest):
                 ['GRIB', 'jpeg2000', 'file.grib2']),
             ('UM Post Processing file (PP)',
                 ['PP', 'simple_pp', 'global.pp']),
+            ('UM Post Processing file (PP) little-endian',
+                ['PP', 'little_endian', 'qrparm.orog.pp']),
             ('UM Fieldsfile (FF) ancillary',
                 ['FF', 'ancillary_fixed_length_header']),
 #            ('BUFR',
@@ -125,13 +126,6 @@ class TestFileFormatPicker(tests.IrisTest):
         DAP_URI = 'http://geoport.whoi.edu/thredds/dodsC/bathy/gom15'
         a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
         self.assertEqual(a.name, 'NetCDF OPeNDAP')
-
-
-@tests.skip_data
-class TestFileExceptions(tests.IrisTest):
-    def test_pp_little_endian(self):
-        filename = tests.get_data_path(('PP', 'aPPglob1', 'global_little_endian.pp'))
-        self.assertRaises(ValueError, iris.load_cube, filename)
 
 
 if __name__ == '__main__':

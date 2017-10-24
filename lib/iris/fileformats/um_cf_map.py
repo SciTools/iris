@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,6 +16,12 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
+# Created on 12 January 2017 09:01 from 
+# http://www.metarelate.net/metOcean
+# at commit c8b9eaf6733843702297f9770e166bc9ad756235
+
+# https://github.com/metarelate/metOcean/commit/c8b9eaf6733843702297f9770e166bc9ad756235
+
 """
 Provides UM/CF phenomenon translations.
 
@@ -429,6 +435,7 @@ STASH_TO_CF = {
     'm01s03i392': CFName('surface_downward_eastward_stress', None, 'Pa'),
     'm01s03i393': CFName('surface_downward_northward_stress', None, 'Pa'),
     'm01s03i394': CFName('surface_downward_northward_stress', None, 'Pa'),
+    'm01s03i395': CFName('land_area_fraction', None, '1'),
     'm01s03i401': CFName(None, 'Dust emissions division 1', 'kg/m^2/s'),
     'm01s03i402': CFName(None, 'Dust emissions division 2', 'kg/m^2/s'),
     'm01s03i403': CFName(None, 'Dust emissions division 3', 'kg/m^2/s'),
@@ -587,6 +594,8 @@ STASH_TO_CF = {
     'm01s15i144': CFName('y_wind', None, 'm s-1'),
     'm01s15i201': CFName('x_wind', None, 'm s-1'),
     'm01s15i202': CFName('y_wind', None, 'm s-1'),
+    'm01s15i212': CFName('x_wind', None, 'm s-1'),
+    'm01s15i213': CFName('y_wind', None, 'm s-1'),
     'm01s15i214': CFName('ertel_potential_vorticity', None, 'K m2 kg-1 s-1'),
     'm01s15i215': CFName('air_potential_temperature', None, 'K'),
     'm01s15i216': CFName('air_potential_temperature', None, 'K'),
@@ -676,6 +685,7 @@ STASH_TO_CF = {
     'm01s30i203': CFName('upward_air_velocity', None, 'm s-1'),
     'm01s30i204': CFName('air_temperature', None, 'K'),
     'm01s30i205': CFName('specific_humidity', None, '1'),
+    'm01s30i206': CFName('relative_humidity', None, '1'),
     'm01s30i207': CFName('geopotential_height', None, 'm'),
     'm01s30i208': CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'),
     'm01s30i211': CFName('square_of_eastward_wind', None, 'm2 s-2'),
@@ -709,7 +719,7 @@ STASH_TO_CF = {
     'm01s30i313': CFName('upward_eliassen_palm_flux_in_air', None, 'kg s-2'),
     'm01s30i314': CFName('tendency_of_eastward_wind_due_to_eliassen_palm_flux_divergence', None, 'm s-2'),
     'm01s30i401': CFName('atmosphere_kinetic_energy_content', None, 'J m-2'),
-    'm01s30i404': CFName('atmosphere_mass_content_of_water', None, 'kg m-2'),
+    'm01s30i404': CFName('atmosphere_mass_per_unit_area', None, 'kg m-2'),
     'm01s30i405': CFName('atmosphere_cloud_liquid_water_content', None, 'kg m-2'),
     'm01s30i406': CFName('atmosphere_cloud_ice_content', None, 'kg m-2'),
     'm01s30i417': CFName('surface_air_pressure', None, 'Pa'),
@@ -791,8 +801,8 @@ STASH_TO_CF = {
     'm01s34i058': CFName('mass_fraction_of_atomic_nitrogen_in_air', None, 'kg kg-1'),
     'm01s34i059': CFName(None, 'mass_fraction_of_ground_state_atomic_oxygen_in_air', 'kg kg-1'),
     'm01s34i070': CFName('mass_fraction_of_molecular_hydrogen_in_air', None, 'kg kg-1'),
-    'm01s34i071': CFName('mass_concentration_of_dimethyl_sulfide_in_air', None, 'kg kg-1'),
-    'm01s34i072': CFName('mass_concentration_of_sulfur_dioxide_in_air', None, 'kg kg-1'),
+    'm01s34i071': CFName('mass_fraction_of_dimethyl_sulfide_in_air', None, 'kg kg-1'),
+    'm01s34i072': CFName('mass_fraction_of_sulfur_dioxide_in_air', None, 'kg kg-1'),
     'm01s34i073': CFName('mass_fraction_of_sulfuric_acid_in_air', None, 'kg kg-1'),
     'm01s34i074': CFName(None, 'mass_fraction_of_methanesulfonic_acid_in_air', 'kg kg-1'),
     'm01s34i075': CFName(None, 'mass_fraction_of_dimethyl_sulfoxide', 'kg kg-1'),
@@ -814,23 +824,30 @@ STASH_TO_CF = {
     'm01s34i096': CFName(None, 'mass_fraction_of_methyl_ethyl_ketone_in_air', 'kg kg-1'),
     'm01s34i097': CFName('mass_fraction_of_toluene_in_air', None, 'kg kg-1'),
     'm01s34i100': CFName(None, 'mass_fraction_of_lumped_chlorine_expressed_as_hydrogen_chloride', 'kg kg-1'),
+    'm01s34i101': CFName(None, 'number_of_soluble_nucleation_mode_particles_per_molecule_of_air', '1'),
     'm01s34i102': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_nucleation_mode_dry_aerosol_in_air', 'kg kg-1'),
+    'm01s34i103': CFName(None, 'number_of_soluble_Aitken_mode_particles_per_molecule_of_air', '1'),
     'm01s34i104': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i105': CFName(None, 'mass_fraction_of_black_carbon_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i106': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
+    'm01s34i107': CFName(None, 'number_of_soluble_accumulation_mode_particles_per_molecule_of_air', '1'),
     'm01s34i108': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i109': CFName(None, 'mass_fraction_of_black_carbon_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i110': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i111': CFName(None, 'mass_fraction_of_seasalt_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i112': CFName(None, 'mass_fraction_of_dust_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
+    'm01s34i113': CFName(None, 'number_of_soluble_coarse_mode_particles_per_molecule_of_air', '1'),
     'm01s34i114': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i115': CFName(None, 'mass_fraction_of_black_carbon_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i116': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i117': CFName(None, 'mass_fraction_of_seasalt_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i118': CFName(None, 'mass_fraction_of_dust_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
+    'm01s34i119': CFName(None, 'number_of_insoluble_Aitken_mode_particles_per_molecule_of_air', '1'),
     'm01s34i120': CFName(None, 'mass_fraction_of_black_carbon_in_insoluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i121': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_insoluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
+    'm01s34i122': CFName(None, 'number_of_insoluble_accumulation_mode_particles_per_molecule_of_air', '1'),
     'm01s34i123': CFName(None, 'mass_fraction_of_dust_in_insoluble_accumulation_mode_aerosol_in_air', 'kg kg-1'),
+    'm01s34i124': CFName(None, 'number_of_insoluble_coarse_mode_particles_per_molecule_of_air', '1'),
     'm01s34i125': CFName(None, 'mass_fraction_of_dust_in_insoluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i126': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_nucleation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i127': CFName(None, 'mass_fraction_of_seasalt_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
@@ -909,6 +926,8 @@ STASHCODE_IMPLIED_HEIGHTS = {
     'm01s03i210': (10.0,),
     'm01s03i225': (10.0,),
     'm01s03i226': (10.0,),
+    'm01s03i227': (10.0,),
+    'm01s03i230': (10.0,),
     'm01s03i236': (1.5,),
     'm01s03i237': (1.5,),
     'm01s03i245': (1.5,),
@@ -916,6 +935,8 @@ STASHCODE_IMPLIED_HEIGHTS = {
     'm01s03i250': (1.5,),
     'm01s03i281': (1.5,),
     'm01s03i463': (10.0,),
+    'm01s15i212': (50.0,),
+    'm01s15i213': (50.0,),
     }
 
 CF_TO_LBFC = {

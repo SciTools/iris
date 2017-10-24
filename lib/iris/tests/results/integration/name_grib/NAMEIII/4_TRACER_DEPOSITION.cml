@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord>
-        <dimCoord bounds="[[0.0, 3.99999999627]]" id="1d45e087" points="[3.99999999627]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord bounds="[[0.0, 4.0]]" id="1d45e087" points="[4.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="77a50eb5" points="[50.6115, 50.612499, 50.613498, ..., 50.808303,
-		50.809302, 50.810301]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="77a50eb5" points="[50.6115, 50.6125, 50.6135, ..., 50.8085,
+		50.8095, 50.8105]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -16,9 +16,6 @@
 		356.6782, 356.68]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
-      </coord>
-      <coord>
-        <auxCoord id="61bde96d" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>

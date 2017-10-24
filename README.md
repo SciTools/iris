@@ -1,9 +1,12 @@
 Iris
 ====
 
-[![Build Status](https://secure.travis-ci.org/SciTools/iris.png)](http://travis-ci.org/SciTools/iris)
+[![Join the chat at https://gitter.im/SciTools/iris](https://badges.gitter.im/SciTools/iris.svg)](https://gitter.im/SciTools/iris?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master)](https://travis-ci.org/SciTools/iris/branches)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.51860.svg)](https://dx.doi.org/10.5281/zenodo.51860)
+[![Documentation for master branch ](https://img.shields.io/badge/docs-master-blue.svg)](https://scitools-docs.github.io/iris/master/index.html)
 
-(C) British Crown Copyright 2010 - 2015, Met Office
+(C) British Crown Copyright 2010 - 2017, Met Office
 
 Iris is a powerful, easy to use, community-driven Python library for
 analysing and visualising meteorological and oceanographic data sets.
@@ -38,16 +41,19 @@ the Iris project on GitHub:
 Documentation
 -------------
 
-The full documentation for Iris, including a user guide, example
+The full documentation for the current release of Iris, including a user guide, example
 code, and gallery, is online at:
-
 - http://scitools.org.uk/iris/
+
+There is also a documentation build for the latest code in the main GitHub repository at:
+- https://scitools-docs.github.io/iris/master/index.html
+(also similarly for other branches)
 
 
 Copyright and licence
 ---------------------
 
-(C) British Crown Copyright 2010 - 2014, Met Office
+(C) British Crown Copyright 2010 - 2017, Met Office
 
 This file is part of Iris.
 

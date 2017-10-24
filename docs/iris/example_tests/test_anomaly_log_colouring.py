@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,17 +22,19 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from . import extest_util
-
-with extest_util.add_examples_to_path():
-    import anomaly_log_colouring
+from .extest_util import (add_examples_to_path,
+                          show_replaced_by_check_graphic,
+                          fail_any_deprecation_warnings)
 
 
 class TestAnomalyLogColouring(tests.GraphicsTest):
     """Test the anomaly colouring example code."""
     def test_anomaly_log_colouring(self):
-        with extest_util.show_replaced_by_check_graphic(self):
-            anomaly_log_colouring.main()
+        with fail_any_deprecation_warnings():
+            with add_examples_to_path():
+                import anomaly_log_colouring
+            with show_replaced_by_check_graphic(self):
+                anomaly_log_colouring.main()
 
 
 if __name__ == '__main__':

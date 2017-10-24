@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,10 +29,14 @@ import operator
 from iris.analysis.maths import divide
 from iris.cube import Cube
 from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
+    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin, \
+    CubeArithmeticCoordsTest
 
 
-class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
+@tests.skip_data
+@tests.iristest_timing_decorator
+class TestBroadcasting(tests.IrisTest_nometa,
+                       CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
         try:
@@ -45,7 +49,8 @@ class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
         return divide
 
 
-class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
+@tests.iristest_timing_decorator
+class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         try:
@@ -84,6 +89,18 @@ class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
         res = self.cube_func(cube_b, cube_a).data
 
         self.assertMaskedArrayEqual(com, res, strict=True)
+
+
+class TestCoordMatch(CubeArithmeticCoordsTest):
+    def test_no_match(self):
+        cube1, cube2 = self.SetUpNonMatching()
+        with self.assertRaises(ValueError):
+            divide(cube1, cube2)
+
+    def test_reversed_points(self):
+        cube1, cube2 = self.SetUpReversed()
+        with self.assertRaises(ValueError):
+            divide(cube1, cube2)
 
 
 if __name__ == "__main__":

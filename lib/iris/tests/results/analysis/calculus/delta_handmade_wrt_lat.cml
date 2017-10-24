@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="change_in_x_wind_wrt_latitude" units="km/h">
+  <cube dtype="float32" long_name="change_in_x_wind_wrt_latitude" units="km/h">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="77a50eb5" points="[-67.5, -22.5, 22.5, 67.5]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">

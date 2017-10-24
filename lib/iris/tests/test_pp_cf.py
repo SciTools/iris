@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,8 @@ import subprocess
 import tempfile
 import types
 import warnings
+
+import netCDF4
 
 import iris
 import iris.tests.pp as pp
@@ -104,8 +106,13 @@ class TestAll(tests.IrisTest, pp.PPTest):
         nc_filenames = []
 
         for index, cube in enumerate(cubes):
+            # Explicitly set a fill-value as a workaround for
+            # https://github.com/Unidata/netcdf4-python/issues/725
+            fill_value = netCDF4.default_fillvals[cube.dtype.str[1:]];
+
             file_nc = tempfile.NamedTemporaryFile(suffix='.nc', delete=False).name
-            iris.save(cube, file_nc, netcdf_format='NETCDF3_CLASSIC')
+            iris.save(cube, file_nc, netcdf_format='NETCDF3_CLASSIC',
+                      fill_value=fill_value)
 
             # Check the netCDF file against CDL expected output.
             self.assertCDL(file_nc, self._ref_dir + ('to_netcdf', '%s_%d.cdl' % (fname_name, index)))

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,7 +33,6 @@ import os.path
 import sys
 import tempfile
 import time
-import warnings
 
 import cf_units
 import numpy as np
@@ -41,52 +40,6 @@ import numpy.ma as ma
 
 import iris
 import iris.exceptions
-
-
-def broadcast_weights(weights, array, dims):
-    """
-    Broadcast a weights array to the shape of another array.
-
-    Each dimension of the weights array must correspond to a dimension
-    of the other array.
-
-    .. deprecated:: 1.6
-
-       Please use :func:`~iris.util.broadcast_to_shape()`.
-
-    Args:
-
-    * weights (:class:`numpy.ndarray`-like):
-        An array of weights to broadcast.
-
-    * array (:class:`numpy.ndarray`-like):
-        An array whose shape is the target shape for *weights*.
-
-    * dims (:class:`list` :class:`tuple` etc.):
-        A sequence of dimension indices, specifying which dimensions of
-        *array* are represented in *weights*. The order the dimensions
-        are given in is not important, but the order of the dimensions
-        in *weights* should be the same as the relative ordering of the
-        corresponding dimensions in *array*. For example, if *array* is
-        4d with dimensions (ntime, nlev, nlat, nlon) and *weights*
-        provides latitude-longitude grid weightings then *dims* could be
-        set to [2, 3] or [3, 2] but *weights* must have shape
-        (nlat, nlon) since the latitude dimension comes before the
-        longitude dimension in *array*.
-
-    """
-    warnings.warn('broadcast_weights() is deprecated and will be removed '
-                  'in a future release. Consider converting existing code '
-                  'to use broadcast_to_shape() as a replacement.',
-                  stacklevel=2)
-    # Create a shape array, which *weights* can be re-shaped to, allowing
-    # them to be broadcast with *array*.
-    weights_shape = np.ones(array.ndim)
-    for dim in dims:
-        if dim is not None:
-            weights_shape[dim] = array.shape[dim]
-    # Broadcast the arrays together.
-    return np.broadcast_arrays(weights.reshape(weights_shape), array)[0]
 
 
 def broadcast_to_shape(array, shape, dim_map):
@@ -306,8 +259,8 @@ def guess_coord_axis(coord):
     elif coord.standard_name in ('latitude', 'grid_latitude',
                                  'projection_y_coordinate'):
         axis = 'Y'
-    elif (coord.units.is_convertible('hPa')
-          or coord.attributes.get('positive') in ('up', 'down')):
+    elif (coord.units.is_convertible('hPa') or
+          coord.attributes.get('positive') in ('up', 'down')):
         axis = 'Z'
     elif coord.units.is_time_reference():
         axis = 'T'
@@ -598,8 +551,9 @@ def column_slices_generator(full_slice, ndims):
 
     # Get all of the dimensions for which a tuple of indices were provided
     # (numpy.ndarrays are treated in the same way tuples in this case)
-    is_tuple_style_index = lambda key: isinstance(key, tuple) or \
-        (isinstance(key, np.ndarray) and key.ndim == 1)
+    def is_tuple_style_index(key):
+        return (isinstance(key, tuple) or
+                (isinstance(key, np.ndarray) and key.ndim == 1))
     tuple_indices = [i for i, key in enumerate(full_slice)
                      if is_tuple_style_index(key)]
 
@@ -693,6 +647,52 @@ def _build_full_slice_given_keys(keys, ndim):
     full_slice = tuple([np.array(key, ndmin=1) if isinstance(key, tuple)
                         else key for key in full_slice])
     return full_slice
+
+
+def _slice_data_with_keys(data, keys):
+    """
+    Index an array-like object as "data[keys]", with orthogonal indexing.
+
+    Args:
+
+    * data (array-like):
+        array to index.
+
+    * keys (list):
+        list of indexes, as received from a __getitem__ call.
+
+    This enforces an orthogonal interpretation of indexing, which means that
+    both 'real' (numpy) arrays and other array-likes index in the same way,
+    instead of numpy arrays doing 'fancy indexing'.
+
+    Returns (dim_map, data_region), where :
+
+    * dim_map (dict) :
+        A dimension map, as returned by :func:`column_slices_generator`.
+        i.e. "dim_map[old_dim_index]" --> "new_dim_index" or None.
+
+    * data_region (array-like) :
+        The sub-array.
+
+    .. Note::
+
+        Avoids copying the data, where possible.
+
+    """
+    # Combines the use of _build_full_slice_given_keys and
+    # column_slices_generator.
+    # By slicing on only one index at a time, this also mostly avoids copying
+    # the data, except some cases when a key contains a list of indices.
+    n_dims = len(data.shape)
+    full_slice = _build_full_slice_given_keys(keys, n_dims)
+    dims_mapping, slices_iter = column_slices_generator(full_slice, n_dims)
+    for this_slice in slices_iter:
+        data = data[this_slice]
+        if data.ndim > 0 and min(data.shape) < 1:
+            # Disallow slicings where a dimension has no points, like "[5:5]".
+            raise IndexError('Cannot index with zero length slice.')
+
+    return dims_mapping, data
 
 
 def _wrap_function_for_method(function, docstring=None):
@@ -926,107 +926,6 @@ def clip_string(the_str, clip_length=70, rider="..."):
             return first_part + remainder[:termination_point] + rider
 
 
-def ensure_array(a):
-    """.. deprecated:: 1.7"""
-    warnings.warn('ensure_array() is deprecated and will be removed '
-                  'in a future release.')
-    if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
-        a = np.array([a])
-    return a
-
-
-class _Timers(object):
-    """
-    A utility class for timing things.
-
-    .. deprecated:: 1.7
-
-    """
-    # See help for timers, below.
-
-    def __init__(self):
-        self.timers = {}
-
-    def start(self, name, step_name):
-        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
-                      'in future Iris releases.')
-        self.stop(name)
-        timer = self.timers.setdefault(name, {})
-        timer[step_name] = time.time()
-        timer["active_timer_step"] = step_name
-
-    def restart(self, name, step_name):
-        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
-                      'in future Iris releases.')
-        self.stop(name)
-        timer = self.timers.setdefault(name, {})
-        timer[step_name] = time.time() - timer.get(step_name, 0)
-        timer["active_timer_step"] = step_name
-
-    def stop(self, name):
-        if name in self.timers and "active_timer_step" in self.timers[name]:
-            timer = self.timers[name]
-            active = timer["active_timer_step"]
-            start = timer[active]
-            timer[active] = time.time() - start
-        return self.get(name)
-
-    def get(self, name):
-        result = (name, [])
-        if name in self.timers:
-            result = (name, ", ".join(["'%s':%8.5f" % (k, v)
-                                       for k, v in self.timers[name].items()
-                                       if k != "active_timer_step"]))
-        return result
-
-    def reset(self, name):
-        self.timers[name] = {}
-
-
-timers = _Timers()
-"""
-Provides multiple named timers, each composed of multiple named steps.
-
-.. deprecated:: 1.7
-
-Only one step is active at a time, so calling start(timer_name, step_name)
-will stop the current step and start the new one.
-
-Example Usage::
-
-    from iris.util import timers
-
-    def little_func(param):
-
-        timers.restart("little func", "init")
-        init()
-
-        timers.restart("little func", "main")
-        main(param)
-
-        timers.restart("little func", "cleanup")
-        cleanup()
-
-        timers.stop("little func")
-
-    def my_big_func():
-
-        timers.start("big func", "input")
-        input()
-
-        timers.start("big func", "processing")
-        little_func(123)
-        little_func(456)
-
-        timers.start("big func", "output")
-        output()
-
-        print(timers.stop("big func"))
-
-        print(timers.get("little func"))
-"""
-
-
 def format_array(arr):
     """
     Returns the given array as a string, using the python builtin str
@@ -1076,18 +975,23 @@ def new_axis(src_cube, scalar_coord=None):
         >>> ncube.shape
         (1, 360, 360)
 
-    .. warning::
-
-        Calling this method will trigger any deferred loading, causing the
-        data array of the cube to be loaded into memory.
-
     """
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
 
     # Indexing numpy arrays requires loading deferred data here returning a
     # copy of the data with a new leading dimension.
-    new_cube = iris.cube.Cube(src_cube.data[None])
+    # If the source cube is a Masked Constant, it is changed here to a Masked
+    # Array to allow the mask to gain an extra dimension with the data.
+    if src_cube.has_lazy_data():
+        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+    else:
+        if isinstance(src_cube.data, ma.core.MaskedConstant):
+            new_data = ma.array([np.nan], mask=[True])
+        else:
+            new_data = src_cube.data[None]
+        new_cube = iris.cube.Cube(new_data)
+
     new_cube.metadata = src_cube.metadata
 
     for coord in src_cube.aux_coords:
@@ -1177,9 +1081,16 @@ def as_compatible_shape(src_cube, target_cube):
     # for subsequent use in creating updated aux_factories.
     coord_mapping = {}
 
+    reverse_mapping = {v: k for k, v in dim_mapping.items() if v is not None}
+
     def add_coord(coord):
         """Closure used to add a suitably reshaped coord to new_cube."""
-        dims = target_cube.coord_dims(coord)
+        all_dims = target_cube.coord_dims(coord)
+        src_dims = [dim for dim in src_cube.coord_dims(coord) if
+                    src_cube.shape[dim] > 1]
+        mapped_dims = [reverse_mapping[dim] for dim in src_dims]
+        length1_dims = [dim for dim in all_dims if new_cube.shape[dim] == 1]
+        dims = length1_dims + mapped_dims
         shape = [new_cube.shape[dim] for dim in dims]
         if not shape:
             shape = [1]
@@ -1316,13 +1227,20 @@ def regular_step(coord):
     if coord.shape[0] < 2:
         raise ValueError("Expected a non-scalar coord")
 
-    diffs = coord.points[1:] - coord.points[:-1]
-    avdiff = np.mean(diffs)
-    if not np.allclose(diffs, avdiff, rtol=0.001):
-        # TODO: This value is set for test_analysis to pass...
+    avdiff, regular = points_step(coord.points)
+    if not regular:
         msg = "Coord %s is not regular" % coord.name()
         raise iris.exceptions.CoordinateNotRegularError(msg)
     return avdiff.astype(coord.points.dtype)
+
+
+def points_step(points):
+    """Determine whether a NumPy array has a regular step."""
+    diffs = np.diff(points)
+    avdiff = np.mean(diffs)
+    # TODO: This value for `rtol` is set for test_analysis to pass...
+    regular = np.allclose(diffs, avdiff, rtol=0.001)
+    return avdiff, regular
 
 
 def unify_time_units(cubes):
@@ -1396,7 +1314,7 @@ def _is_circular(points, modulus, bounds=None):
         if len(points) > 1:
             diffs = list(set(np.diff(points)))
             diff = np.mean(diffs)
-            abs_tol = diff * 1.0e-4
+            abs_tol = np.abs(diff * 1.0e-4)
             diff_approx_equal = np.max(np.abs(diffs - diff)) < abs_tol
             if diff_approx_equal:
                 circular_value = (points[-1] + diff) % modulus
@@ -1587,3 +1505,23 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.remove_coord(dim_coord)
 
     cube.add_aux_coord(dim_coord, coord_dim)
+
+
+@functools.wraps(np.meshgrid)
+def _meshgrid(*xi, **kwargs):
+    """
+    @numpy v1.13, the dtype of each output nD coordinate is the same as its
+    associated input 1D coordinate. This is not the case prior to numpy v1.13,
+    where the output dtype is cast up to its highest resolution, regardlessly.
+
+    This convenience function ensures consistent meshgrid behaviour across
+    numpy versions.
+
+    Reference: https://github.com/numpy/numpy/pull/5302
+
+    """
+    mxi = np.meshgrid(*xi, **kwargs)
+    for i, (mxii, xii) in enumerate(zip(mxi, xi)):
+        if mxii.dtype != xii.dtype:
+            mxi[i] = mxii.astype(xii.dtype)
+    return mxi

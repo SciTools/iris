@@ -5,4 +5,3 @@ failed to merge into a single cube.
   cube.cell_methods differ
   cube.shape differs: (3,) != (2,)
   cube data dtype differs: int64 != int8
-  cube data fill_value differs: 999999 != 57

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,14 +25,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import unittest
-
 import iris
 import iris.fileformats.cf as cf
 from iris.tests import mock
 
 
-class TestCaching(unittest.TestCase):
+class TestCaching(tests.IrisTest):
     def test_cached(self):
         # Make sure attribute access to the underlying netCDF4.Variable
         # is cached.
@@ -261,9 +259,9 @@ class TestLoad(tests.IrisTest):
             sorted(cube.coord('longitude').attributes.items()), 
             [('data_type', 'float'), 
              ('modulo', 360), 
-             ('topology', 'circular')
-            ]
-        )
+             ('topology', 'circular'),
+             ('valid_max', 359.0),
+             ('valid_min', 0.0)])
 
     def test_cell_methods(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc'))

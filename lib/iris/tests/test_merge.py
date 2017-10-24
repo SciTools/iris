@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,13 +26,17 @@ import six
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+from collections import Iterable
+import datetime
+import itertools
 import numpy as np
+import numpy.ma as ma
 
 import iris
+from iris._lazy_data import as_lazy_data
 import iris.cube
-import iris.exceptions
 from iris.coords import DimCoord, AuxCoord
-import iris.coords
+import iris.exceptions
 import iris.tests.stock
 
 
@@ -105,6 +109,181 @@ class TestColpex(tests.IrisTest):
         self.assertCML(cubes, ('COLPEX', 'small_colpex_theta_p_alt.cml'))
 
 
+class TestDataMergeCombos(tests.IrisTest):
+    def _make_data(self, data, dtype=np.dtype('int32'), fill_value=None,
+                   mask=None, lazy=False, N=3):
+        if isinstance(data, Iterable):
+            shape = (len(data), N, N)
+            data = np.array(data).reshape(-1, 1, 1)
+        else:
+            shape = (N, N)
+        if mask is not None:
+            payload = ma.empty(shape, dtype=dtype, fill_value=fill_value)
+            payload.data[:] = data
+            if isinstance(mask, bool):
+                payload.mask = mask
+            else:
+                payload[mask] = ma.masked
+        else:
+            payload = np.empty(shape, dtype=dtype)
+            payload[:] = data
+        if lazy:
+            payload = as_lazy_data(payload)
+        return payload
+
+    def _make_cube(self, data, dtype=np.dtype('int32'), fill_value=None,
+                   mask=None, lazy=False, N=3):
+        x = np.arange(N)
+        y = np.arange(N)
+        payload = self._make_data(data, dtype=dtype, fill_value=fill_value,
+                                  mask=mask, lazy=lazy, N=N)
+        cube = iris.cube.Cube(payload)
+        lat = DimCoord(y, standard_name='latitude', units='degrees')
+        cube.add_dim_coord(lat, 0)
+        lon = DimCoord(x, standard_name='longitude', units='degrees')
+        cube.add_dim_coord(lon, 1)
+        height = DimCoord(data, standard_name='height', units='m')
+        cube.add_aux_coord(height)
+        return cube
+
+    @staticmethod
+    def _expected_fill_value(fill0='none', fill1='none'):
+        result = None
+        if fill0 != 'none' or fill1 != 'none':
+            if fill0 == 'none':
+                result = fill1
+            elif fill1 == 'none':
+                result = fill0
+            elif fill0 == fill1:
+                result = fill0
+        return result
+
+    def _check_fill_value(self, result, fill0='none', fill1='none'):
+        expected_fill_value = self._expected_fill_value(fill0, fill1)
+        if expected_fill_value is None:
+            data = result.data
+            if ma.isMaskedArray(data):
+                np_fill_value = ma.masked_array(0,
+                                                dtype=result.dtype).fill_value
+                self.assertEqual(data.fill_value, np_fill_value)
+        else:
+            data = result.data
+            if ma.isMaskedArray(data):
+                self.assertEqual(data.fill_value, expected_fill_value)
+
+    def setUp(self):
+        self.dtype = np.dtype('int32')
+        fill_value = 1234
+        self.lazy_combos = itertools.product([False, True],
+                                             [False, True])
+        fill_combos = itertools.product([None, fill_value],
+                                        [fill_value, None])
+        single_fill_combos = itertools.product([None, fill_value])
+        self.combos = itertools.product(self.lazy_combos, fill_combos)
+        self.mixed_combos = itertools.product(self.lazy_combos,
+                                              single_fill_combos)
+
+    def test__ndarray_ndarray(self):
+        for (lazy0, lazy1) in self.lazy_combos:
+            cubes = iris.cube.CubeList()
+            cubes.append(self._make_cube(0, dtype=self.dtype, lazy=lazy0))
+            cubes.append(self._make_cube(1, dtype=self.dtype, lazy=lazy1))
+            result = cubes.merge_cube()
+            expected = self._make_data([0, 1], dtype=self.dtype)
+            self.assertArrayEqual(result.data, expected)
+            self.assertEqual(result.dtype, self.dtype)
+            self._check_fill_value(result)
+
+    def test__masked_masked(self):
+        for (lazy0, lazy1), (fill0, fill1) in self.combos:
+            cubes = iris.cube.CubeList()
+            mask = [(0,), (0,)]
+            cubes.append(self._make_cube(0, mask=mask, lazy=lazy0,
+                                         dtype=self.dtype,
+                                         fill_value=fill0))
+            mask = [(1,), (1,)]
+            cubes.append(self._make_cube(1, mask=mask, lazy=lazy1,
+                                         dtype=self.dtype,
+                                         fill_value=fill1))
+            result = cubes.merge_cube()
+            mask = [(0, 1), (0, 1), (0, 1)]
+            expected_fill_value = self._expected_fill_value(fill0, fill1)
+            expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
+                                       fill_value=expected_fill_value)
+            self.assertMaskedArrayEqual(result.data, expected)
+            self.assertEqual(result.dtype, self.dtype)
+            self._check_fill_value(result, fill0, fill1)
+
+    def test__ndarray_masked(self):
+        for (lazy0, lazy1), (fill,) in self.mixed_combos:
+            cubes = iris.cube.CubeList()
+            cubes.append(self._make_cube(0, lazy=lazy0, dtype=self.dtype))
+            mask = [(0, 1), (0, 1)]
+            cubes.append(self._make_cube(1, mask=mask, lazy=lazy1,
+                                         dtype=self.dtype,
+                                         fill_value=fill))
+            result = cubes.merge_cube()
+            mask = [(1, 1), (0, 1), (0, 1)]
+            expected_fill_value = self._expected_fill_value(fill)
+            expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
+                                       fill_value=expected_fill_value)
+            self.assertMaskedArrayEqual(result.data, expected)
+            self.assertEqual(result.dtype, self.dtype)
+            self._check_fill_value(result, fill1=fill1)
+
+    def test__masked_ndarray(self):
+        for (lazy0, lazy1), (fill,) in self.mixed_combos:
+            cubes = iris.cube.CubeList()
+            mask = [(0, 1), (0, 1)]
+            cubes.append(self._make_cube(0, mask=mask, lazy=lazy0,
+                                         dtype=self.dtype,
+                                         fill_value=fill))
+            cubes.append(self._make_cube(1, lazy=lazy1, dtype=self.dtype))
+            result = cubes.merge_cube()
+            mask = [(0, 0), (0, 1), (0, 1)]
+            expected_fill_value = self._expected_fill_value(fill)
+            expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
+                                       fill_value=expected_fill_value)
+            self.assertMaskedArrayEqual(result.data, expected)
+            self.assertEqual(result.dtype, self.dtype)
+            self._check_fill_value(result, fill0=fill)
+
+    def test_fill_value_invariant_to_order__same_non_None(self):
+        fill_value = 1234
+        cubes = [self._make_cube(i, mask=True,
+                                 fill_value=fill_value) for i in range(3)]
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            self.assertEqual(result.data.fill_value, fill_value)
+
+    def test_fill_value_invariant_to_order__all_None(self):
+        cubes = [self._make_cube(i, mask=True,
+                                 fill_value=None) for i in range(3)]
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
+    def test_fill_value_invariant_to_order__different_non_None(self):
+        cubes = [self._make_cube(0, mask=True, fill_value=1234)]
+        cubes.append(self._make_cube(1, mask=True, fill_value=2341))
+        cubes.append(self._make_cube(2, mask=True, fill_value=3412))
+        cubes.append(self._make_cube(3, mask=True, fill_value=4123))
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
+    def test_fill_value_invariant_to_order__mixed(self):
+        cubes = [self._make_cube(0, mask=True, fill_value=None)]
+        cubes.append(self._make_cube(1, mask=True, fill_value=1234))
+        cubes.append(self._make_cube(2, mask=True, fill_value=4321))
+        for combo in itertools.permutations(cubes):
+            result = iris.cube.CubeList(combo).merge_cube()
+            np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
+            self.assertEqual(result.data.fill_value, np_fill_value)
+
+
 @tests.skip_data
 class TestDataMerge(tests.IrisTest):
     def test_extended_proxy_data(self):
@@ -112,12 +291,12 @@ class TestDataMerge(tests.IrisTest):
         data_path = tests.get_data_path(
             ('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
         phenom_constraint = iris.Constraint('air_potential_temperature')
-        time_value_1 = 347921.33333332836627960205
-        time_value_2 = 347921.83333333209156990051
-        time_constraint1 = iris.Constraint(time=time_value_1)
-        time_constraint2 = iris.Constraint(time=time_value_2)
+        datetime_1 = datetime.datetime(2009, 9, 9, 17, 20)
+        datetime_2 = datetime.datetime(2009, 9, 9, 17, 50)
+        time_constraint1 = iris.Constraint(time=datetime_1)
+        time_constraint2 = iris.Constraint(time=datetime_2)
         time_constraint_1_and_2 = iris.Constraint(
-            time=lambda c: c in (time_value_1, time_value_2))
+            time=lambda c: c in (datetime_1, datetime_2))
         cube1 = iris.load_cube(data_path, phenom_constraint & time_constraint1)
         cube2 = iris.load_cube(data_path, phenom_constraint & time_constraint2)
 
@@ -488,11 +667,9 @@ class TestTimeTripleMerging(tests.IrisTest):
                                    ])
         cube = cubes.merge()[0]
         self.assertCML(cube, ('merge', 'time_triple_merging2.cml'), checksum=False)
-        self.assertIsNone(cube.assert_valid())
 
         cube = iris.cube.CubeList(cubes[:-1]).merge()[0]
         self.assertCML(cube, ('merge', 'time_triple_merging3.cml'), checksum=False)
-        self.assertIsNone(cube.assert_valid())
 
     def test_simple3(self):
         cubes = iris.cube.CubeList([
@@ -505,11 +682,9 @@ class TestTimeTripleMerging(tests.IrisTest):
                                    ])
         cube = cubes.merge()[0]
         self.assertCML(cube, ('merge', 'time_triple_merging4.cml'), checksum=False)
-        self.assertIsNone(cube.assert_valid())
 
         cube = iris.cube.CubeList(cubes[:-1]).merge()[0]
         self.assertCML(cube, ('merge', 'time_triple_merging5.cml'), checksum=False)
-        self.assertIsNone(cube.assert_valid())
 
 
 class TestCubeMergeTheoretical(tests.IrisTest):

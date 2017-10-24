@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord>
         <dimCoord bounds="[[0.0, 0.999999996275]]" id="1d45e087" points="[0.499999998137]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
@@ -29,6 +29,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x75146405" dtype="float64" fill_value="nan" mask_checksum="0xdbe0da54" shape="(881, 1121)"/>
+    <data checksum="0x75146405" dtype="float64" mask_checksum="0xdbe0da54" shape="(881, 1121)"/>
   </cube>
 </cubes>

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import numpy as np
+import numpy.ma as ma
 
 from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.aux_factory import HybridHeightFactory
@@ -46,10 +47,13 @@ class Test__regrid__linear(tests.IrisTest):
         self.y = DimCoord(np.linspace(0, 49, 50))
         self.xs, self.ys = np.meshgrid(self.x.points, self.y.points)
 
-        transformation = lambda x, y: x + y ** 2
+        def transformation(x, y):
+            return x + y ** 2
+
         # Construct a function which adds dimensions to the 2D data array
         # so that we can test higher dimensional functionality.
-        dim_extender = lambda arr: (arr[np.newaxis, ..., np.newaxis] * [1, 2])
+        def dim_extender(arr):
+            return arr[np.newaxis, ..., np.newaxis] * [1, 2]
 
         self.data = dim_extender(transformation(self.xs, self.ys))
 
@@ -110,7 +114,7 @@ class Test__regrid__linear(tests.IrisTest):
         self.assertArrayEqual(result, self.expected)
 
     def test_simple_masked(self):
-        data = np.ma.MaskedArray(self.data, mask=True)
+        data = ma.MaskedArray(self.data, mask=True)
         data.mask[:, 1:30, 1:30] = False
         result = regrid(data, self.x_dim, self.y_dim,
                         self.x, self.y,
@@ -121,16 +125,16 @@ class Test__regrid__linear(tests.IrisTest):
                                     [True, True], [True, True]],
                                    [[True, True], [True, True],
                                     [True, True], [True, True]]]], dtype=bool)
-        expected = np.ma.MaskedArray(self.expected,
-                                     mask=expected_mask)
+        expected = ma.MaskedArray(self.expected,
+                                  mask=expected_mask)
         self.assertMaskedArrayEqual(result, expected)
 
     def test_simple_masked_no_mask(self):
-        data = np.ma.MaskedArray(self.data, mask=False)
+        data = ma.MaskedArray(self.data, mask=False)
         result = regrid(data, self.x_dim, self.y_dim,
                         self.x, self.y,
                         self.target_x, self.target_y)
-        self.assertIsInstance(result, np.ma.MaskedArray)
+        self.assertIsInstance(result, ma.MaskedArray)
 
     def test_result_transpose_shape(self):
         ndim = self.data.ndim
@@ -179,6 +183,9 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
 
     def setUp(self):
         self.methods = ('linear', 'nearest')
+        self.test_dtypes = [np.dtype(spec)
+                            for spec in ('i1', 'i2', 'i4', 'i8',
+                                         'f2', 'f4', 'f8')]
 
     def _regrid(self, data, method, extrapolation_mode=None):
         x = np.arange(4)
@@ -201,7 +208,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertNotIsInstance(result, np.ma.MaskedArray)
+            self.assertNotIsInstance(result, ma.MaskedArray)
             expected = self.values_by_method[method]
             self.assertArrayEqual(result, expected)
 
@@ -209,51 +216,51 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> Masked
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
-        data[2, 3] = np.ma.masked
+        data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1],
                     [0, 0, 0, 1, 1]]
             values = self.values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_default_maskedarray_none_masked(self):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> N/A
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1]]
             values = self.values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_default_maskedarray_none_masked_expanded(self):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> N/A
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         # Make sure the mask has been expanded
         data.mask = False
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1]]
             values = self.values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_method_ndarray(self):
@@ -263,7 +270,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, 'extrapolate')
-            self.assertNotIsInstance(result, np.ma.MaskedArray)
+            self.assertNotIsInstance(result, ma.MaskedArray)
             expected = self.extrapolate_values_by_method[method]
             self.assertArrayEqual(result, expected)
 
@@ -271,17 +278,17 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> linear
         # Masked        -> Masked
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
-        data[2, 3] = np.ma.masked
+        data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, 'extrapolate')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0],
                     [0, 0, 0, 1, 1]]
             values = self.extrapolate_values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_nan_ndarray(self):
@@ -291,7 +298,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, 'nan')
-            self.assertNotIsInstance(result, np.ma.MaskedArray)
+            self.assertNotIsInstance(result, ma.MaskedArray)
             expected = self.values_by_method[method]
             self.assertArrayEqual(result, expected)
 
@@ -299,17 +306,17 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> NaN
         # Masked        -> Masked
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
-        data[2, 3] = np.ma.masked
+        data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, 'nan')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0],
                     [0, 0, 0, 1, 0]]
             values = self.values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_error_ndarray(self):
@@ -322,9 +329,9 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
 
     def test_error_maskedarray(self):
         # Values irrelevant - the function raises an error.
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
-        data[2, 3] = np.ma.masked
+        data[2, 3] = ma.masked
         for method in self.methods:
             with self.assertRaisesRegexp(ValueError, 'out of bounds'):
                 self._regrid(data, method, 'error')
@@ -337,29 +344,29 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, 'mask')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1]]
             values = self.values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_mask_maskedarray(self):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> Masked
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
-        data[2, 3] = np.ma.masked
+        data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, 'mask')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1],
                     [0, 0, 0, 1, 1]]
             values = self.values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_nanmask_ndarray(self):
@@ -369,7 +376,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, 'nanmask')
-            self.assertNotIsInstance(result, np.ma.MaskedArray)
+            self.assertNotIsInstance(result, ma.MaskedArray)
             expected = self.values_by_method[method]
             self.assertArrayEqual(result, expected)
 
@@ -377,17 +384,17 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> Masked
-        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
-        data[2, 3] = np.ma.masked
+        data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, 'nanmask')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1],
                     [0, 0, 0, 0, 1],
                     [0, 0, 0, 1, 1]]
             values = self.values_by_method[method]
-            expected = np.ma.MaskedArray(values, mask)
+            expected = ma.MaskedArray(values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_invalid(self):
@@ -396,6 +403,25 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             with self.assertRaisesRegexp(ValueError, emsg):
                 self._regrid(data, method, 'BOGUS')
+
+    def test_method_result_types(self):
+        # Check return types from basic calculation on floats and ints.
+        for method in self.methods:
+            result_dtypes = {}
+            for source_dtype in self.test_dtypes:
+                data = np.arange(12, dtype=source_dtype).reshape(3, 4)
+                result = self._regrid(data, method)
+                result_dtypes[source_dtype] = result.dtype
+            if method == 'linear':
+                # Linear results are promoted to float.
+                expected_types_mapping = {
+                    test_dtype: np.promote_types(test_dtype, np.float16)
+                    for test_dtype in self.test_dtypes}
+            if method == 'nearest':
+                # Nearest results are the same as the original data.
+                expected_types_mapping = {test_dtype: test_dtype
+                                          for test_dtype in self.test_dtypes}
+            self.assertEqual(result_dtypes, expected_types_mapping)
 
 
 class Test___call____invalid_types(tests.IrisTest):
@@ -675,9 +701,9 @@ class Test___call____no_coord_systems(tests.IrisTest):
             result = regridder(src)
             for coord in result.dim_coords:
                 self.assertEqual(coord, grid.coord(coord))
-            expected = np.ma.arange(12).reshape((3, 4)) + 5
-            expected[:, 3] = np.ma.masked
-            expected[2, :] = np.ma.masked
+            expected = ma.arange(12).reshape((3, 4)) + 5
+            expected[:, 3] = ma.masked
+            expected[2, :] = ma.masked
             self.assertMaskedArrayEqual(result.data, expected)
 
     def test_matching_units(self):
@@ -697,9 +723,9 @@ class Test___call____no_coord_systems(tests.IrisTest):
             result = regridder(src)
             for coord in result.dim_coords:
                 self.assertEqual(coord, grid.coord(coord))
-            expected = np.ma.arange(12).reshape((3, 4)) + 5
-            expected[:, 3] = np.ma.masked
-            expected[2, :] = np.ma.masked
+            expected = ma.arange(12).reshape((3, 4)) + 5
+            expected[:, 3] = ma.masked
+            expected[2, :] = ma.masked
             self.assertMaskedArrayEqual(result.data, expected)
 
     def test_different_units(self):
@@ -761,11 +787,11 @@ class Test___call____extrapolation_modes(tests.IrisTest):
     def _masked_cube(self, method):
         assert method in self.methods
         src = uk_cube()
-        src.data = np.ma.asarray(src.data)
+        src.data = ma.asarray(src.data)
         nan_index = (0, 0) if method == 'linear' else (1, 1)
         mask_index = (2, 3)
         src.data[nan_index] = np.nan
-        src.data[mask_index] = np.ma.masked
+        src.data[mask_index] = ma.masked
         return src
 
     def _regrid(self, src, method, extrapolation_mode='mask'):
@@ -776,7 +802,7 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         result = regridder(src)
 
         surface = result.coord('surface_altitude').points
-        self.assertNotIsInstance(surface, np.ma.MaskedArray)
+        self.assertNotIsInstance(surface, ma.MaskedArray)
         self.assertArrayEqual(surface, self.surface_values)
 
         return result.data
@@ -787,11 +813,11 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method)
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1],
                     [0, 0, 0, 1],
                     [1, 1, 1, 1]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_default_maskedarray(self):
@@ -801,11 +827,11 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method)
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1],
                     [0, 0, 1, 1],
                     [1, 1, 1, 1]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_default_maskedarray_none_masked(self):
@@ -814,15 +840,15 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         # Masked        -> N/A
         for method in self.methods:
             src = uk_cube()
-            src.data = np.ma.asarray(src.data)
+            src.data = ma.asarray(src.data)
             index = (0, 0) if method == 'linear' else (1, 1)
             src.data[index] = np.nan
             result = self._regrid(src, method)
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1],
                     [0, 0, 0, 1],
                     [1, 1, 1, 1]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_default_maskedarray_none_masked_expanded(self):
@@ -831,17 +857,17 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         # Masked        -> N/A
         for method in self.methods:
             src = uk_cube()
-            src.data = np.ma.asarray(src.data)
+            src.data = ma.asarray(src.data)
             # Make sure the mask has been expanded
             src.data.mask = False
             index = (0, 0) if method == 'linear' else (1, 1)
             src.data[index] = np.nan
             result = self._regrid(src, method)
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1],
                     [0, 0, 0, 1],
                     [1, 1, 1, 1]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_method_ndarray(self):
@@ -850,7 +876,7 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, 'extrapolate')
-            self.assertNotIsInstance(result, np.ma.MaskedArray)
+            self.assertNotIsInstance(result, ma.MaskedArray)
             expected = self.extrapolate_values_by_method[method]
             self.assertArrayEqual(result, expected)
 
@@ -860,7 +886,7 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, 'nan')
-            self.assertNotIsInstance(result, np.ma.MaskedArray)
+            self.assertNotIsInstance(result, ma.MaskedArray)
             self.assertArrayEqual(result, self.values)
 
     def test_nan_maskedarray(self):
@@ -870,11 +896,11 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method, 'nan')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0],
                     [0, 0, 1, 0],
                     [0, 0, 0, 0]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_error_ndarray(self):
@@ -898,11 +924,11 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, 'mask')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1],
                     [0, 0, 0, 1],
                     [1, 1, 1, 1]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_mask_maskedarray(self):
@@ -912,11 +938,11 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method, 'mask')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1],
                     [0, 0, 1, 1],
                     [1, 1, 1, 1]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_nanmask_ndarray(self):
@@ -925,7 +951,7 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, 'nanmask')
-            self.assertNotIsInstance(result, np.ma.MaskedArray)
+            self.assertNotIsInstance(result, ma.MaskedArray)
             self.assertArrayEqual(result, self.values)
 
     def test_nanmask_maskedarray(self):
@@ -935,11 +961,11 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method, 'nanmask')
-            self.assertIsInstance(result, np.ma.MaskedArray)
+            self.assertIsInstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1],
                     [0, 0, 1, 1],
                     [1, 1, 1, 1]]
-            expected = np.ma.MaskedArray(self.values, mask)
+            expected = ma.MaskedArray(self.values, mask)
             self.assertMaskedArrayEqual(result, expected)
 
     def test_invalid(self):
@@ -1105,8 +1131,8 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data.
         src = self.src
-        src.data = np.ma.MaskedArray(src.data)
-        src.data[:, :, 0, 0] = np.ma.masked
+        src.data = ma.MaskedArray(src.data)
+        src.data[:, :, 0, 0] = ma.masked
         grid = self._grid_subset()
         for method in self.methods:
             regridder = Regridder(src, grid, method, self.mode)
@@ -1118,8 +1144,8 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data.
         src = self.src
-        src.data = np.ma.MaskedArray(src.data)
-        src.data[:, :, 1, 2] = np.ma.masked
+        src.data = ma.MaskedArray(src.data)
+        src.data[:, :, 1, 2] = ma.masked
         grid = self._grid_subset()
         for method in self.methods:
             regridder = Regridder(src, grid, method, self.mode)
@@ -1154,7 +1180,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data on the aux coordinate.
         src = self.src
-        src.coord('surface_altitude').points[1, 2] = np.ma.masked
+        src.coord('surface_altitude').points[1, 2] = ma.masked
         grid = self._grid_subset()
         for method in self.methods:
             regridder = Regridder(src, grid, method, self.mode)
@@ -1163,6 +1189,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             self.assertCMLApproxData(result, cml)
 
 
+@tests.skip_data
 class Test___call____NOP(tests.IrisTest):
     def setUp(self):
         # The destination grid points are exactly the same as the
@@ -1213,16 +1240,114 @@ class Test___call____circular(tests.IrisTest):
             cml = RESULT_DIR + ('{}_non_circular.cml'.format(method),)
             self.assertCMLApproxData(result, cml)
 
+    def _check_circular_results(self, src_cube, missingmask=''):
+        results = []
+        for method in self.methods:
+            regridder = Regridder(src_cube, self.grid, method, self.mode)
+            result = regridder(src_cube)
+            results.append(result)
+            self.assertFalse(result.coord('longitude').circular)
+            cml = RESULT_DIR + ('{}_circular_src{}.cml'.format(method,
+                                                               missingmask),)
+            self.assertCMLApproxData(result, cml)
+        return results
+
     def test_circular_src(self):
-        # Circular src -> non-circular grid
+        # Circular src -> non-circular grid, standard test.
         src = self.src
         src.coord('longitude').circular = True
+        self._check_circular_results(src)
+
+    def test_circular_src__masked_missingmask(self):
+        # Test the special case where src_cube.data.mask is just *False*,
+        # instead of being an array.
+        src = self.src
+        src.coord('longitude').circular = True
+        src.data = ma.MaskedArray(src.data)
+        self.assertEqual(src.data.mask, False)
+        method_results = self._check_circular_results(src, 'missingmask')
+        for method_result in method_results:
+            self.assertIsInstance(method_result.data.mask, np.ndarray)
+            self.assertTrue(np.all(method_result.data.mask == np.array(False)))
+
+    def test_circular_src__masked(self):
+        # Test that masked source points produce the expected masked results.
+
+        # Define source + destination sample points.
+        # Note: these are chosen to avoid any marginal edge-cases, such as
+        # where a destination value matches a source point (for 'linear'), or a
+        # half-way point (for 'nearest').
+        src_x = [0.0, 60.0, 120.0, 180.0, 240.0, 300.0]
+        dst_x = [20.0, 80.0, 140.0, 200.0, 260.0, 320.0]
+        src_y = [100.0, 200.0, 300.0, 400.0, 500.0]
+        dst_y = [40.0, 140.0, 240.0, 340.0, 440.0, 540.0]
+
+        # Define the expected result masks for the tested methods,
+        # when just the middle source point is masked...
+        result_masks = {
+            'nearest': np.array(
+                [[0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 1, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0]],
+                dtype=bool),
+            'linear': np.array(
+                [[0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 1, 1, 0, 0, 0],
+                 [0, 1, 1, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0]],
+                dtype=bool),
+        }
+
+        # Cook up some distinctive data values.
+        src_nx, src_ny, dst_nx, dst_ny = (len(dd) for dd in
+                                          (src_x, src_y, dst_x, dst_y))
+        data_x = np.arange(src_nx).reshape((1, src_nx))
+        data_y = np.arange(src_ny).reshape((src_ny, 1))
+        data = 3.0 + data_x + 20.0 * data_y
+
+        # Make src and dst test cubes.
+        def make_2d_cube(x_points, y_points, data):
+            cube = Cube(data)
+            y_coord = DimCoord(y_points, standard_name='latitude',
+                               units='degrees')
+            x_coord = DimCoord(x_points, standard_name='longitude',
+                               units='degrees')
+            x_coord.circular = True
+            cube.add_dim_coord(y_coord, 0)
+            cube.add_dim_coord(x_coord, 1)
+            return cube
+
+        src_cube_full = make_2d_cube(src_x, src_y, data)
+        dst_cube = make_2d_cube(dst_x, dst_y, np.zeros((dst_ny, dst_nx)))
+
+        src_cube_masked = src_cube_full.copy()
+        src_cube_masked.data = ma.array(src_cube_masked.data,
+                                        mask=np.zeros((src_ny, src_nx)))
+
+        # Mask the middle source point, and give it a huge underlying data
+        # value to ensure that it does not take any part in the results.
+        src_cube_masked.data[2, 2] = 1e19
+        src_cube_masked.data.mask[2, 2] = True
+
+        # Test results against the unmasked operation, for each method.
         for method in self.methods:
-            regridder = Regridder(src, self.grid, method, self.mode)
-            result = regridder(src)
-            self.assertFalse(result.coord('longitude').circular)
-            cml = RESULT_DIR + ('{}_circular_src.cml'.format(method),)
-            self.assertCMLApproxData(result, cml)
+            regridder = Regridder(src_cube_full, dst_cube, method,
+                                  extrapolation_mode='nan')
+            result_basic = regridder(src_cube_full)
+            result_masked = regridder(src_cube_masked)
+            # Check we get a masked result
+            self.assertIsInstance(result_masked.data, ma.MaskedArray)
+            # Check that the result matches the basic one, except for being
+            # masked at the specific expected points.
+            expected_result_data = ma.array(result_basic.data)
+            expected_result_data.mask = result_masks[method]
+            self.assertMaskedArrayEqual(result_masked.data,
+                                        expected_result_data)
 
     def test_circular_grid(self):
         # Non-circular src -> circular grid
