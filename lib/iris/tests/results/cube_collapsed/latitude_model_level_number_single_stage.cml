@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[-0.12825, -0.03825]]" id="f1ab3066" points="[-0.08325]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[359.579, 359.58],
+		[359.58, 359.581],
+		[359.581, 359.582],
+		..., 
+		[359.666, 359.667],
+		[359.667, 359.668],
+		[359.668, 359.669]]" id="d3676747" points="[359.58, 359.581, 359.581, ..., 359.667, 359.668,
+		359.669]" shape="(100,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[0.0, 42077.5]]" id="fb105c19" long_name="level_height" points="[21038.8]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[1, 70]]" id="38fd0305" points="[35]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
+        <auxCoord bounds="[[0.0, 1.0]]" id="a5c170db" long_name="sigma" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="cb784457" points="[347921.166667, 347921.333333, 347921.5,
+		347921.666667, 347921.833333, 347922.0]" shape="(6,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="grid_latitude"/>
+        <coord name="model_level_number"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(6, 100)" state="loaded"/>
+  </cube>
+</cubes>

@@ -1,0 +1,29 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         YlGn_09
+# scheme:       sequential
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   1.000000 1.000000 0.898039
+   0.968627 0.988235 0.725490
+   0.850980 0.941176 0.639216
+   0.678431 0.866667 0.556863
+   0.470588 0.776471 0.474510
+   0.254902 0.670588 0.364706
+   0.137255 0.517647 0.262745
+   0.000000 0.407843 0.215686
+   0.000000 0.270588 0.160784

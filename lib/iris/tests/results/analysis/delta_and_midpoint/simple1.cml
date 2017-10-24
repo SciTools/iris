@@ -1,0 +1,2 @@
+<?xml version="1.0" ?>
+<dimCoord circular="True" id="6a05e671" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>

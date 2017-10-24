@@ -1,0 +1,2 @@
+<?xml version="1.0" ?>
+<dimCoord circular="True" id="43cd7f4a" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('meter')" value_type="float32"/>

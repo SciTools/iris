@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" standard_name="air_temperature" units="K">
+    <coords>
+      <coord datadims="[1, 2]">
+        <auxCoord id="9041e969" points="[[-660.0, -610.0, -560.0, -510.0, -460.0, -410.0],
+		[-673.0, -622.0, -571.0, -520.0, -469.0, -418.0],
+		[-686.0, -634.0, -582.0, -530.0, -478.0, -426.0],
+		[-699.0, -646.0, -593.0, -540.0, -487.0, -434.0]]" shape="(4, 6)" standard_name="altitude" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+      <coord>
+        <dimCoord id="c914d088" points="[1]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="int64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="0901097d" points="[30, 31, 32, 33, 34, 35]" shape="(6,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord id="d70a5be9" long_name="level_height" points="[40, 41, 42, 43]" shape="(4,)" units="Unit('m')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="2e7cc9c8" points="[10, 11, 12, 13]" shape="(4,)" standard_name="model_level_number" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord id="a5c170db" long_name="sigma" points="[50, 51, 52, 53]" shape="(4,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[2]">
+        <auxCoord id="6e1f874b" long_name="surface_altitude" points="[-14.0, -13.0, -12.0, -11.0, -10.0, -9.0]" shape="(6,)" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="cb784457" points="[0, 1, 2]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x679c96e1" dtype="float64" mask_checksum="0xc8092ec8" shape="(3, 4, 6)"/>
+  </cube>
+</cubes>

@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="test_data" units="1">
+    <coords>
+      <coord datadims="[1]">
+        <auxCoord id="9010c8c9" long_name="dummy" points="[0.0, 1.0, 2.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="a1029661" long_name="lat" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="729502fc" long_name="lon" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x65ff680d" dtype="float32" shape="(3, 3)"/>
+  </cube>
+</cubes>

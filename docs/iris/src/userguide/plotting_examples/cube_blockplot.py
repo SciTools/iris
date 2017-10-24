@@ -1,23 +1,19 @@
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 import matplotlib.pyplot as plt
 
 import iris
 import iris.quickplot as qplt
-import iris.plot as iplt
 
-fname = iris.sample_data_path('air_temp.pp')
-temperature_cube = iris.load_strict(fname)
 
-# put bounds on the latitude and longitude coordinates
-temperature_cube.coord('latitude').guess_bounds()
-temperature_cube.coord('longitude').guess_bounds()
+# Load the data for a single value of model level number.
+fname = iris.sample_data_path('hybrid_height.nc')
+temperature_cube = iris.load_cube(
+    fname, iris.Constraint(model_level_number=1))
 
-# Draw the contour with 25 levels
+# Draw the block plot.
 qplt.pcolormesh(temperature_cube)
-
-# Get the map created by pcolormesh
-current_map = iplt.gcm()
-
-# Add coastlines to the map
-current_map.drawcoastlines()
 
 plt.show()

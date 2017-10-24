@@ -1,0 +1,32 @@
+.sidebar { z-index: 10; }
+
+.highlight { background: none; }
+
+p.hr_p {
+    overflow: hidden;
+    text-align: center;
+}
+p.hr_p a {
+    font-size: small;
+    color: #1C86EE;
+}
+p.hr_p:before,
+p.hr_p:after {
+    background-color: #abc;
+    border: 1px solid #abc;
+    content: "";
+    display: inline-block;
+    height: 1px;
+    position: relative;
+    vertical-align: middle;
+    width: 50%;
+}
+p.hr_p:before {
+    right: 0.5em;
+    margin-left: -50%;
+}
+p.hr_p:after {
+    left: 0.5em;
+    margin-right: -50%;
+}
+ 

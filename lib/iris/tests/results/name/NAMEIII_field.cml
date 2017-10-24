@@ -1,0 +1,305 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g s / m^3">
+    <attributes>
+      <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
+      <attribute name="Ensemble Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Name" value="Unnamed Field Req 1"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
+      <attribute name="Release location" value="3.4991W   50.7110N"/>
+      <attribute name="Run duration" value="4hr 0min"/>
+      <attribute name="Run name" value="UK_Release_02112009"/>
+      <attribute name="Run time" value="17/11/2009 11:57:12.652 UTC"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
+      <attribute name="Time Av or Int" value="4hr 0min integral"/>
+      <attribute name="Vertical Av or Int" value="Boundary layer average"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50.611, 50.612],
+		[50.612, 50.613],
+		[50.613, 50.614],
+		..., 
+		[50.808, 50.809],
+		[50.809, 50.81],
+		[50.81, 50.811]]" id="77a50eb5" points="[50.6115, 50.6125, 50.6135, ..., 50.8085,
+		50.8095, 50.8105]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-3.6791, -3.6773],
+		[-3.6773, -3.6755],
+		[-3.6755, -3.6737],
+		..., 
+		[-3.3245, -3.3227],
+		[-3.3227, -3.3209],
+		[-3.3209, -3.3191]]" id="f913a8b3" points="[-3.6782, -3.6764, -3.6746, ..., -3.3236,
+		-3.3218, -3.32]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+    <attributes>
+      <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
+      <attribute name="Ensemble Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Name" value="Unnamed Field Req 2"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
+      <attribute name="Release location" value="3.4991W   50.7110N"/>
+      <attribute name="Run duration" value="4hr 0min"/>
+      <attribute name="Run name" value="UK_Release_02112009"/>
+      <attribute name="Run time" value="17/11/2009 11:57:12.652 UTC"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
+      <attribute name="Time Av or Int" value="1hr 0min average"/>
+      <attribute name="Vertical Av or Int" value="Boundary layer average"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50.611, 50.612],
+		[50.612, 50.613],
+		[50.613, 50.614],
+		..., 
+		[50.808, 50.809],
+		[50.809, 50.81],
+		[50.81, 50.811]]" id="77a50eb5" points="[50.6115, 50.6125, 50.6135, ..., 50.8085,
+		50.8095, 50.8105]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-3.6791, -3.6773],
+		[-3.6773, -3.6755],
+		[-3.6755, -3.6737],
+		..., 
+		[-3.3245, -3.3227],
+		[-3.3227, -3.3209],
+		[-3.3209, -3.3191]]" id="f913a8b3" points="[-3.6782, -3.6764, -3.6746, ..., -3.3236,
+		-3.3218, -3.32]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[349218.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_DRY_DEPOSITION" units="g / m^2">
+    <attributes>
+      <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
+      <attribute name="Ensemble Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Name" value="Unnamed Field Req 3"/>
+      <attribute name="Quantity" value="Dry deposition"/>
+      <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
+      <attribute name="Release location" value="3.4991W   50.7110N"/>
+      <attribute name="Run duration" value="4hr 0min"/>
+      <attribute name="Run name" value="UK_Release_02112009"/>
+      <attribute name="Run time" value="17/11/2009 11:57:12.652 UTC"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
+      <attribute name="Time Av or Int" value="4hr 0min integral"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50.611, 50.612],
+		[50.612, 50.613],
+		[50.613, 50.614],
+		..., 
+		[50.808, 50.809],
+		[50.809, 50.81],
+		[50.81, 50.811]]" id="77a50eb5" points="[50.6115, 50.6125, 50.6135, ..., 50.8085,
+		50.8095, 50.8105]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-3.6791, -3.6773],
+		[-3.6773, -3.6755],
+		[-3.6755, -3.6737],
+		..., 
+		[-3.3245, -3.3227],
+		[-3.3227, -3.3209],
+		[-3.3209, -3.3191]]" id="f913a8b3" points="[-3.6782, -3.6764, -3.6746, ..., -3.3236,
+		-3.3218, -3.32]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_WET_DEPOSITION" units="g / m^2">
+    <attributes>
+      <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
+      <attribute name="Ensemble Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Name" value="Unnamed Field Req 4"/>
+      <attribute name="Quantity" value="Wet deposition"/>
+      <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
+      <attribute name="Release location" value="3.4991W   50.7110N"/>
+      <attribute name="Run duration" value="4hr 0min"/>
+      <attribute name="Run name" value="UK_Release_02112009"/>
+      <attribute name="Run time" value="17/11/2009 11:57:12.652 UTC"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
+      <attribute name="Time Av or Int" value="4hr 0min integral"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50.611, 50.612],
+		[50.612, 50.613],
+		[50.613, 50.614],
+		..., 
+		[50.808, 50.809],
+		[50.809, 50.81],
+		[50.81, 50.811]]" id="77a50eb5" points="[50.6115, 50.6125, 50.6135, ..., 50.8085,
+		50.8095, 50.8105]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-3.6791, -3.6773],
+		[-3.6773, -3.6755],
+		[-3.6755, -3.6737],
+		..., 
+		[-3.3245, -3.3227],
+		[-3.3227, -3.3209],
+		[-3.3209, -3.3191]]" id="f913a8b3" points="[-3.6782, -3.6764, -3.6746, ..., -3.3236,
+		-3.3218, -3.32]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_DEPOSITION" units="g / m^2">
+    <attributes>
+      <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
+      <attribute name="Ensemble Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_data_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Name" value="Unnamed Field Req 5"/>
+      <attribute name="Quantity" value="Deposition"/>
+      <attribute name="Release height" value="5.000m agl +/- 5.000m"/>
+      <attribute name="Release location" value="3.4991W   50.7110N"/>
+      <attribute name="Run duration" value="4hr 0min"/>
+      <attribute name="Run name" value="UK_Release_02112009"/>
+      <attribute name="Run time" value="17/11/2009 11:57:12.652 UTC"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
+      <attribute name="Time Av or Int" value="4hr 0min integral"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50.611, 50.612],
+		[50.612, 50.613],
+		[50.613, 50.614],
+		..., 
+		[50.808, 50.809],
+		[50.809, 50.81],
+		[50.81, 50.811]]" id="77a50eb5" points="[50.6115, 50.6125, 50.6135, ..., 50.8085,
+		50.8095, 50.8105]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-3.6791, -3.6773],
+		[-3.6773, -3.6755],
+		[-3.6755, -3.6737],
+		..., 
+		[-3.3245, -3.3227],
+		[-3.3227, -3.3209],
+		[-3.3209, -3.3191]]" id="f913a8b3" points="[-3.6782, -3.6764, -3.6746, ..., -3.3236,
+		-3.3218, -3.32]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+</cubes>

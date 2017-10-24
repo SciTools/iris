@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int64" long_name="thingness" units="1">
+    <coords>
+      <coord>
+        <dimCoord bounds="[[0, 11]]" id="b0d35dcf" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="count">
+        <coord name="foo"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="int64" shape="()" state="loaded"/>
+  </cube>
+</cubes>

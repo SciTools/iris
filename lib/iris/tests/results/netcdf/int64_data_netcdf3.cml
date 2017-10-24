@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int32" standard_name="surface_temperature" units="K" var_name="temp">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+    </attributes>
+    <coords/>
+    <cellMethods/>
+    <data checksum="0xecbb4b55" dtype="int32" shape="(2, 2)"/>
+  </cube>
+</cubes>

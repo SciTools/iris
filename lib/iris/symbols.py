@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,6 +19,10 @@ Contains symbol definitions for use with :func:`iris.plot.symbols`.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+import six
+
 import itertools
 import math
 
@@ -38,12 +42,13 @@ _THICKNESS = 0.1
 def _make_merged_patch(paths):
     # Convert a list of Path instances into a single, black PathPatch.
 
-    # Prepare empty vertex/code arrays for the merged path
-    # The vertex array is initially flat for convenient initialisation, but is then reshaped to (N, 2).
+    # Prepare empty vertex/code arrays for the merged path.
+    # The vertex array is initially flat for convenient initialisation,
+    # but is then reshaped to (N, 2).
     total_len = sum(len(path) for path in paths)
     all_vertices = np.empty(total_len * 2)
     all_codes = np.empty(total_len, dtype=Path.code_type)
-    
+
     # Copy vertex/code details from the source paths
     all_segments = itertools.chain(*(path.iter_segments() for path in paths))
     i_vertices = 0
@@ -53,7 +58,7 @@ def _make_merged_patch(paths):
         all_vertices[i_vertices:i_vertices + n_vertices] = vertices
         i_vertices += n_vertices
 
-        n_codes = n_vertices / 2
+        n_codes = n_vertices // 2
         if code == Path.STOP:
             code = Path.MOVETO
         all_codes[i_codes:i_codes + n_codes] = code
@@ -61,7 +66,8 @@ def _make_merged_patch(paths):
 
     all_vertices.shape = (total_len, 2)
 
-    return PathPatch(Path(all_vertices, all_codes), facecolor='black', edgecolor='none')
+    return PathPatch(Path(all_vertices, all_codes), facecolor='black',
+                     edgecolor='none')
 
 
 def _ring_path():
@@ -69,7 +75,8 @@ def _ring_path():
     # The outer radius is 1, the inner radius is 1 - _THICKNESS.
     circle = Path.unit_circle()
     inner_radius = 1.0 - _THICKNESS
-    vertices = np.concatenate([circle.vertices[:-1], circle.vertices[-2::-1] * inner_radius])
+    vertices = np.concatenate([circle.vertices[:-1],
+                               circle.vertices[-2::-1] * inner_radius])
     codes = np.concatenate([circle.codes[:-1], circle.codes[:-1]])
     return Path(vertices, codes)
 
@@ -86,15 +93,18 @@ def _vertical_bar_path():
         [-width, inner_radius],
         [-width, inner_radius]
     ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY])
+    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
+                      Path.CLOSEPOLY])
     return Path(vertices, codes)
 
 
 def _slot_path():
-    # Returns a Path for a filled unit circle with a vertical rectangle removed.
+    # Returns a Path for a filled unit circle with a vertical rectangle
+    # removed.
     circle = Path.unit_circle()
     vertical_bar = _vertical_bar_path()
-    vertices = np.concatenate([circle.vertices[:-1], vertical_bar.vertices[-2::-1]])
+    vertices = np.concatenate([circle.vertices[:-1],
+                               vertical_bar.vertices[-2::-1]])
     codes = np.concatenate([circle.codes[:-1], vertical_bar.codes[:-1]])
     return Path(vertices, codes)
 
@@ -111,7 +121,8 @@ def _left_bar_path():
         [-inner_radius, height],
         [-inner_radius, height]
     ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY])
+    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
+                      Path.CLOSEPOLY])
     return Path(vertices, codes)
 
 
@@ -120,20 +131,26 @@ def _slash_path():
     # width _THICKNESS, that will nicely overlap the result of _ring_path().
     half_width = _THICKNESS / 2.0
     central_radius = 1.0 - half_width
-    
+
     cos45 = math.cos(math.radians(45))
 
     end_point_offset = cos45 * central_radius
     half_width_offset = cos45 * half_width
 
     vertices = np.array([
-        [-end_point_offset - half_width_offset, -end_point_offset + half_width_offset],
-        [-end_point_offset + half_width_offset, -end_point_offset - half_width_offset],
-        [end_point_offset + half_width_offset, end_point_offset - half_width_offset],
-        [end_point_offset - half_width_offset, end_point_offset + half_width_offset],
-        [-end_point_offset - half_width_offset, -end_point_offset + half_width_offset]
+        [-end_point_offset - half_width_offset,
+         -end_point_offset + half_width_offset],
+        [-end_point_offset + half_width_offset,
+         -end_point_offset - half_width_offset],
+        [end_point_offset + half_width_offset,
+         end_point_offset - half_width_offset],
+        [end_point_offset - half_width_offset,
+         end_point_offset + half_width_offset],
+        [-end_point_offset - half_width_offset,
+         -end_point_offset + half_width_offset]
     ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY])
+    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
+                      Path.CLOSEPOLY])
     return Path(vertices, codes)
 
 
@@ -142,30 +159,43 @@ def _backslash_path():
     # width _THICKNESS, that will nicely overlap the result of _ring_path().
     half_width = _THICKNESS / 2.0
     central_radius = 1.0 - half_width
-    
+
     cos45 = math.cos(math.radians(45))
 
     end_point_offset = cos45 * central_radius
     half_width_offset = cos45 * half_width
 
     vertices = np.array([
-        [-end_point_offset - half_width_offset, end_point_offset - half_width_offset],
-        [end_point_offset - half_width_offset, -end_point_offset - half_width_offset],
-        [end_point_offset + half_width_offset, -end_point_offset + half_width_offset],
-        [-end_point_offset + half_width_offset, end_point_offset + half_width_offset],
-        [-end_point_offset - half_width_offset, end_point_offset - half_width_offset]
+        [-end_point_offset - half_width_offset,
+         end_point_offset - half_width_offset],
+        [end_point_offset - half_width_offset,
+         -end_point_offset - half_width_offset],
+        [end_point_offset + half_width_offset,
+         -end_point_offset + half_width_offset],
+        [-end_point_offset + half_width_offset,
+         end_point_offset + half_width_offset],
+        [-end_point_offset - half_width_offset,
+         end_point_offset - half_width_offset]
     ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY])
+    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
+                      Path.CLOSEPOLY])
     return Path(vertices, codes)
 
 
 def _wedge_fix(wedge_path):
-    # Fixes the problem with Path.wedge where it doesn't initialise the first,
-    # and last two vertices.
-    # This fix should not have any side-effects once Path.wedge has been fixed,
-    # but will then be redundant and should be removed.
-    wedge_path.vertices[0] = 0
-    wedge_path.vertices[-2:] = 0
+    '''
+    Fixes the problem with Path.wedge where it doesn't initialise the first,
+    and last two vertices.
+    This fix should not have any side-effects once Path.wedge has been fixed,
+    but will then be redundant and should be removed.
+
+    This is fixed in MPL v1.3, raising a RuntimeError. A check is performed to
+    allow for backward compatibility with MPL v1.2.x.
+
+    '''
+    if wedge_path.vertices.flags.writeable:
+        wedge_path.vertices[0] = 0
+        wedge_path.vertices[-2:] = 0
     return wedge_path
 
 
@@ -185,14 +215,15 @@ CLOUD_COVER = {
 A dictionary mapping WMO cloud cover codes to their corresponding symbol.
 
 See http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
-    Part II, Appendix II.4, Graphical Representation of Data, Analyses and Forecasts
+    Part II, Appendix II.4, Graphical Representation of Data, Analyses
+    and Forecasts
 
 """
 
 
 def _convert_paths_to_patches():
     # Convert the symbols defined as lists-of-paths into patches.
-    for code, symbol in CLOUD_COVER.iteritems():
+    for code, symbol in six.iteritems(CLOUD_COVER):
         CLOUD_COVER[code] = _make_merged_patch(symbol)
 
 

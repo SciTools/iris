@@ -1,0 +1,92 @@
+
+digraph CubeGraph{
+
+    rankdir = "LR"
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+
+    node [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        shape = "record"
+    ]
+
+#   Nodes
+    ":Cube" [
+        label = "Cube|STASH: m01s16i203\nmy_attribute: foobar\nsource: Data from Met Office Unified Model"
+    ]
+
+    
+    subgraph clusterCubeDimensions {
+        label="Cube data"
+    
+        "CubeDimension_0" [
+            label = "0|len: 73"
+        ]
+
+        "CubeDimension_1" [
+            label = "1|len: 96"
+        ]
+
+    }
+    
+    
+    subgraph clusterCoords {
+        label = "Coords"
+        "Coord_0" [
+            label = "DimCoord|standard_name: forecast_period\nlong_name: None\nunits: hours\ncircular: False"
+        ]
+        "Coord_1" [
+            label = "DimCoord|standard_name: forecast_reference_time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False"
+        ]
+        "Coord_2" [
+            label = "DimCoord|standard_name: latitude\nlong_name: None\nunits: degrees\ncircular: False"
+        ]
+        "Coord_3" [
+            label = "DimCoord|standard_name: longitude\nlong_name: None\nunits: degrees\ncircular: True"
+        ]
+        "Coord_4" [
+            label = "DimCoord|standard_name: None\nlong_name: pressure\nunits: hPa\ncircular: False"
+        ]
+        "Coord_5" [
+            label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False\nbrain: hurts\nmonty: python"
+        ]
+
+    }
+    
+    
+    subgraph clusterCoordSystems {
+        label = "CoordSystems"
+        "CoordSystem_GeogCS_0" [
+            label = "GeogCS|inverse_flattening: 0.0\nlongitude_of_prime_meridian: 0.0\nsemi_major_axis: 6371229.0\nsemi_minor_axis: 6371229.0"
+        ]
+
+    }
+    
+    edge [
+        arrowhead = "normal"
+    ]
+
+#   RELATIONSHIPS
+
+#   Containment
+    
+    ":Cube" -> "Coord_0"
+    ":Cube" -> "Coord_1"
+    "Coord_2" -> "CoordSystem_GeogCS_0"
+    ":Cube" -> "Coord_2"
+    "Coord_3" -> "CoordSystem_GeogCS_0"
+    ":Cube" -> "Coord_3"
+    ":Cube" -> "Coord_4"
+    ":Cube" -> "Coord_5"
+    edge [
+        style="dashed"
+        arrowhead = "onormal"
+    ]
+
+#   Association
+    
+    "Coord_2" -> "CubeDimension_0":w
+    "Coord_3" -> "CubeDimension_1":w
+}
+    

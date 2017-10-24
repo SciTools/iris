@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" standard_name="air_temperature" units="K" var_name="air_temperature">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="STASH" value="m01s16i203"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[-28083.0, 6477.0]]" id="1d45e087" points="[6477]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[243363.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="4a0cb9d8" points="[0.0, 3.75, 7.5, 11.25, 15.0, 18.75, 22.5, 26.25,
+		30.0, 33.75]" shape="(10,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="62e940e0" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
+		70.0, 67.5]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
+      </coord>
+      <coord>
+        <dimCoord id="6eef7051" long_name="pressure" points="[1000.0]" shape="(1,)" units="Unit('hPa')" value_type="float32" var_name="pressure"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[215280.0, 249840.0]]" id="cb784457" points="[249840.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean within years">
+        <coord name="time"/>
+      </cellMethod>
+      <cellMethod method="mean over years">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float64" shape="(10,)" state="deferred"/>
+  </cube>
+</cubes>

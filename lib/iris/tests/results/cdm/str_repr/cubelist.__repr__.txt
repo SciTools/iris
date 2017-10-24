@@ -1,0 +1,2 @@
+[<iris 'Cube' of air_potential_temperature / (K) (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)>,
+<iris 'Cube' of air_temperature / (K) (latitude: 73; longitude: 96)>]

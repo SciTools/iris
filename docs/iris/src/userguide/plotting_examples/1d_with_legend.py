@@ -1,26 +1,31 @@
+
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 import matplotlib.pyplot as plt
 
 import iris
 import iris.plot as iplt
-import iris.quickplot as qplt
+
 
 fname = iris.sample_data_path('air_temp.pp')
 
 # Load exactly one cube from the given file
-temperature = iris.load_strict(fname)
+temperature = iris.load_cube(fname)
 
-# We are only interested in a small number of longitudes (the 4 after and including the 5th element), so index them out
+# We are only interested in a small number of longitudes (the 4 after and
+# including the 5th element), so index them out
 temperature = temperature[5:9, :]
 
-for cube in temperature.slices('longitude'):  
-    
+for cube in temperature.slices('longitude'):
+
     # Create a string label to identify this cube (i.e. latitude: value)
     cube_label = 'latitude: %s' % cube.coord('latitude').points[0]
-    
-    # Plot the cube, and associate it with a label
-    iplt.plot(cube, label=cube_label )
 
-#match the longitude range to global
+    # Plot the cube, and associate it with a label
+    iplt.plot(cube, label=cube_label)
+
+# Match the longitude range to global
 max_lon = temperature.coord('longitude').points.max()
 min_lon = temperature.coord('longitude').points.min()
 plt.xlim(min_lon, max_lon)

@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-0.5, 0.5],
+		[0.5, 1.5],
+		[1.5, 2.5],
+		[2.5, 3.5],
+		[3.5, 4.5],
+		[4.5, 5.5]]" id="78a0dfe8" long_name="x" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]" shape="(6,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <auxCoord id="af0ab254" long_name="xy-aux" points="[[0.0, 100.0, 200.0, 300.0, 0.0, 100.0],
+		[400.0, 500.0, 600.0, 700.0, 200.0, 300.0]]" shape="(2, 6)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[-0.5, 0.5],
+		[0.5, 1.5]]" id="6fdbcbab" long_name="y" points="[0.0, 1.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="70546507" long_name="y-aux" points="[0.0, 10.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x1693595c" dtype="float32" shape="(2, 6)"/>
+  </cube>
+</cubes>

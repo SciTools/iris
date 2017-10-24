@@ -4,12 +4,13 @@
 Introduction
 ===================
 
+.. _iris_data_structures:
 
 Iris data structures
 --------------------
 The top level object in Iris is called a cube. A cube contains data and metadata about a phenomenon.
 
-In Iris, a cube is an interpretation of the *Climate and Forecast (CF) Metadata Conventions* who's purpose is to:
+In Iris, a cube is an interpretation of the *Climate and Forecast (CF) Metadata Conventions* whose purpose is to:
 
     *require conforming datasets to contain sufficient metadata that they are self-describing... including physical 
     units if appropriate, and that each value can be located in space (relative to earth-based coordinates) and time.*
@@ -145,17 +146,19 @@ Printing a cube
 Every Iris cube can be printed to screen as you will see later in the user guide. It is worth familiarising yourself with the
 output as this is the quickest way of inspecting the contents of a cube. Here is the result of printing a real life cube:
 
+.. _hybrid_cube_printout:
+
 .. testcode::
      :hide:
 
      import iris
      filename = iris.sample_data_path('uk_hires.pp')
      # NOTE: Every time the output of this cube changes, the full list of deductions below should be re-assessed. 
-     print iris.load_strict(filename, 'air_potential_temperature')
-     
+     print(iris.load_cube(filename, 'air_potential_temperature'))
+
 .. testoutput::
 
-    air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
               model_level_number             -                      x                 -                    -
@@ -169,9 +172,11 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
          Derived coordinates:
               altitude                       -                      x                 x                    x
          Scalar coordinates:
-              source: Data from Met Office Unified Model 7.03
+              forecast_reference_time: 2009-11-19 04:00:00
          Attributes:
               STASH: m01s00i004
+              source: Data from Met Office Unified Model
+              um_version: 7.3
 
 
 Using this output we can deduce that:
@@ -185,7 +190,7 @@ Using this output we can deduce that:
  * There are 7 distinct values in the "model_level_number" coordinate. Similar inferences can
    be made for the other dimension coordinates.
  * There are 7, not necessarily distinct, values in the ``level_height`` coordinate.
- * There is 1 coordinate (``source``) which represents a scalar value over all of the data dimensions.
+ * There is a single ``forecast_reference_time`` scalar coordinate representing the entire cube.
  * The cube has one further attribute relating to the  phenomenon. 
    In this case the originating file format, PP, encodes information in a STASH code which in some cases can
    be useful for identifying advanced experiment information relating to the phenomenon.

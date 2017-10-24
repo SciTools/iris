@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" units="unknown">
+    <coords>
+      <coord datadims="[0]">
+        <auxCoord id="78c32bc2" long_name="a" points="[2005, 2005, 2005, 2026, 2026, 2026, 2002, 2002,
+		2002, 2002, 2002, 2002, 2502, 2502, 2502, 2502,
+		2502, 2502, 2502, 2502, 2502]" shape="(21,)" units="Unit('1')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="414e1707" long_name="b" points="[ECMWF, ECMWF, ECMWF, UK Met Office,
+		UK Met Office, UK Met Office, CERFACS, CERFACS,
+		CERFACS, IFM-GEOMAR, IFM-GEOMAR, IFM-GEOMAR,
+		UK Met Office, UK Met Office, UK Met Office,
+		UK Met Office, UK Met Office, UK Met Office,
+		UK Met Office, UK Met Office, UK Met Office]" shape="(21,)" units="Unit('1')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="56350344" long_name="c" points="[HOPE-E, Sys 1, Met 1, ENSEMBLES,
+		HOPE-E, Sys 1, Met 1, ENSEMBLES,
+		HOPE-E, Sys 1, Met 1, ENSEMBLES,
+		HadGEM2, Sys 1, Met 1, ENSEMBLES,
+		HadGEM2, Sys 1, Met 1, ENSEMBLES,
+		HadGEM2, Sys 1, Met 1, ENSEMBLES,
+		GELATO, Sys 0, Met 1, ENSEMBLES,
+		GELATO, Sys 0, Met 1, ENSEMBLES,
+		GELATO, Sys 0, Met 1, ENSEMBLES,
+		ECHAM5, Sys 1, Met 10, ENSEMBLES,
+		ECHAM5, Sys 1, Met 10, ENSEMBLES,
+		ECHAM5, Sys 1, Met 10, ENSEMBLES,
+		HadCM3, Sys 51, Met 10, ENSEMBLES,
+		HadCM3, Sys 51, Met 11, ENSEMBLES,
+		HadCM3, Sys 51, Met 12, ENSEMBLES,
+		HadCM3, Sys 51, Met 13, ENSEMBLES,
+		HadCM3, Sys 51, Met 14, ENSEMBLES,
+		HadCM3, Sys 51, Met 15, ENSEMBLES,
+		HadCM3, Sys 51, Met 16, ENSEMBLES,
+		HadCM3, Sys 51, Met 17, ENSEMBLES,
+		HadCM3, Sys 51, Met 18, ENSEMBLES]" shape="(21,)" units="Unit('1')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="32546e8d" long_name="d" points="[0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0,
+		0.0, 1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0]" shape="(21,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="78a0dfe8" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="6fdbcbab" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(21, 4, 5)" state="loaded"/>
+  </cube>
+</cubes>

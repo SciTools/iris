@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="thingness" units="1">
+    <coords>
+      <coord datadims="[0, 1]">
+        <auxCoord id="434cbbd8" long_name="bar" points="[[2.5, 7.5],
+		[10.0, 17.5],
+		[15.0, 22.5]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <auxCoord id="b0d35dcf" long_name="foo" points="[[-7.5, 7.5],
+		[-12.5, 4.0],
+		[2.5, 14.0]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="4252ba3a" points="[0]" shape="(1,)" standard_name="height" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="d7a60179" points="[0, 1, 2]" shape="(3,)" standard_name="latitude" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="0a0f475b" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord>
+        <dimCoord id="10b8e1fc" long_name="wibble" points="[10.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(3, 2)" state="loaded"/>
+  </cube>
+</cubes>

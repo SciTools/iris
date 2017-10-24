@@ -1,0 +1,288 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g/m3">
+    <attributes>
+      <attribute name="End of release" value="1200UTC 26/01/2010"/>
+      <attribute name="Forecast duration" value="3 hours"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="0.000 to 1.000m agl"/>
+      <attribute name="Release location" value="1.9056W   52.4771N"/>
+      <attribute name="Release rate" value="1.000000g/s"/>
+      <attribute name="Run time" value="0907UTC 26/01/2010"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="0900UTC 26/01/2010"/>
+      <attribute name="Time Av or Int" value="003 hr time averaged"/>
+      <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[0.0, 100.0]]" id="c87e380b" long_name="height above ground level" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[52.36655, 52.3676555276],
+		[52.3676555276, 52.3687610552],
+		[52.3687610552, 52.3698665828],
+		..., 
+		[52.5843389372, 52.5854444648],
+		[52.5854444648, 52.5865499924],
+		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
+		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-2.086504, -2.0846949547],
+		[-2.0846949547, -2.0828859094],
+		[-2.0828859094, -2.0810768641],
+		..., 
+		[-1.7301220759, -1.7283130306],
+		[-1.7283130306, -1.7265039853],
+		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
+		..., -1.72921755325, -1.72740850795,
+		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_DOSAGE" units="g s/m3">
+    <attributes>
+      <attribute name="End of release" value="1200UTC 26/01/2010"/>
+      <attribute name="Forecast duration" value="3 hours"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Quantity" value="Dosage"/>
+      <attribute name="Release height" value="0.000 to 1.000m agl"/>
+      <attribute name="Release location" value="1.9056W   52.4771N"/>
+      <attribute name="Release rate" value="1.000000g/s"/>
+      <attribute name="Run time" value="0907UTC 26/01/2010"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="0900UTC 26/01/2010"/>
+      <attribute name="Time Av or Int" value="003 hr time integrated"/>
+      <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[0.0, 100.0]]" id="c87e380b" long_name="height above ground level" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[52.36655, 52.3676555276],
+		[52.3676555276, 52.3687610552],
+		[52.3687610552, 52.3698665828],
+		..., 
+		[52.5843389372, 52.5854444648],
+		[52.5854444648, 52.5865499924],
+		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
+		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-2.086504, -2.0846949547],
+		[-2.0846949547, -2.0828859094],
+		[-2.0828859094, -2.0810768641],
+		..., 
+		[-1.7301220759, -1.7283130306],
+		[-1.7283130306, -1.7265039853],
+		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
+		..., -1.72921755325, -1.72740850795,
+		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_WET_DEPOSITION" units="g/m2">
+    <attributes>
+      <attribute name="End of release" value="1200UTC 26/01/2010"/>
+      <attribute name="Forecast duration" value="3 hours"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Quantity" value="Wet deposition"/>
+      <attribute name="Release height" value="0.000 to 1.000m agl"/>
+      <attribute name="Release location" value="1.9056W   52.4771N"/>
+      <attribute name="Release rate" value="1.000000g/s"/>
+      <attribute name="Run time" value="0907UTC 26/01/2010"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="0900UTC 26/01/2010"/>
+      <attribute name="Time Av or Int" value="003 hr time integrated"/>
+      <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[52.36655, 52.3676555276],
+		[52.3676555276, 52.3687610552],
+		[52.3687610552, 52.3698665828],
+		..., 
+		[52.5843389372, 52.5854444648],
+		[52.5854444648, 52.5865499924],
+		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
+		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-2.086504, -2.0846949547],
+		[-2.0846949547, -2.0828859094],
+		[-2.0828859094, -2.0810768641],
+		..., 
+		[-1.7301220759, -1.7283130306],
+		[-1.7283130306, -1.7265039853],
+		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
+		..., -1.72921755325, -1.72740850795,
+		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_DRY_DEPOSITION" units="g/m2">
+    <attributes>
+      <attribute name="End of release" value="1200UTC 26/01/2010"/>
+      <attribute name="Forecast duration" value="3 hours"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Quantity" value="Dry deposition"/>
+      <attribute name="Release height" value="0.000 to 1.000m agl"/>
+      <attribute name="Release location" value="1.9056W   52.4771N"/>
+      <attribute name="Release rate" value="1.000000g/s"/>
+      <attribute name="Run time" value="0907UTC 26/01/2010"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="0900UTC 26/01/2010"/>
+      <attribute name="Time Av or Int" value="003 hr time integrated"/>
+      <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[52.36655, 52.3676555276],
+		[52.3676555276, 52.3687610552],
+		[52.3687610552, 52.3698665828],
+		..., 
+		[52.5843389372, 52.5854444648],
+		[52.5854444648, 52.5865499924],
+		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
+		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-2.086504, -2.0846949547],
+		[-2.0846949547, -2.0828859094],
+		[-2.0828859094, -2.0810768641],
+		..., 
+		[-1.7301220759, -1.7283130306],
+		[-1.7283130306, -1.7265039853],
+		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
+		..., -1.72921755325, -1.72740850795,
+		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_TOTAL_DEPOSITION" units="g/m2">
+    <attributes>
+      <attribute name="End of release" value="1200UTC 26/01/2010"/>
+      <attribute name="Forecast duration" value="3 hours"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.3)"/>
+      <attribute name="Quantity" value="Total deposition"/>
+      <attribute name="Release height" value="0.000 to 1.000m agl"/>
+      <attribute name="Release location" value="1.9056W   52.4771N"/>
+      <attribute name="Release rate" value="1.000000g/s"/>
+      <attribute name="Run time" value="0907UTC 26/01/2010"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="0900UTC 26/01/2010"/>
+      <attribute name="Time Av or Int" value="003 hr time integrated"/>
+      <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[52.36655, 52.3676555276],
+		[52.3676555276, 52.3687610552],
+		[52.3687610552, 52.3698665828],
+		..., 
+		[52.5843389372, 52.5854444648],
+		[52.5854444648, 52.5865499924],
+		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
+		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-2.086504, -2.0846949547],
+		[-2.0846949547, -2.0828859094],
+		[-2.0828859094, -2.0810768641],
+		..., 
+		[-1.7301220759, -1.7283130306],
+		[-1.7283130306, -1.7265039853],
+		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
+		..., -1.72921755325, -1.72740850795,
+		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
+  </cube>
+</cubes>

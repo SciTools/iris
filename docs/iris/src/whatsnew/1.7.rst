@@ -1,0 +1,248 @@
+What's new in Iris 1.7
+**********************
+
+This document explains the new/changed features of Iris in version 1.7.
+(:doc:`View all changes <index>`.)
+
+:Release: 1.7.4
+:Date: 15th April 2015
+
+Iris 1.7 features
+=================
+
+.. _showcase:
+
+.. admonition:: Showcase: Iris is making use of Biggus
+
+    Iris is now making extensive use of `Biggus <https://github.com/SciTools/biggus>`_
+    for virtual arrays and lazy array evaluation. In practice this means that analyses
+    of cubes with data bigger than the available system memory are now possible.
+
+    Other than the improved functionality the changes are mostly
+    transparent; for example, before the introduction of biggus, MemoryErrors
+    were likely for very large datasets::
+
+        >>> result = extremely_large_cube.collapsed('time', iris.analyis.MEAN)
+        MemoryError
+
+    Now, for supported operations, the evaluation is lazy (i.e. it doesn't take
+    place until the actual data is subsequently requested) and can handle data
+    larger than available system memory::
+
+        >>> result = extremely_large_cube.collapsed('time', iris.analyis.MEAN)
+        >>> print(type(result))
+        <class 'iris.cube.Cube'>
+
+    Memory is still a limiting factor if ever the data is desired as a NumPy array
+    (e.g. via :data:`cube.data <iris.cube.Cube.data>`), but additional methods have
+    been added to the Cube to support querying and subsequently accessing the "lazy"
+    data form (see :meth:`~iris.cube.Cube.has_lazy_data` and
+    :meth:`~iris.cube.Cube.lazy_data`).
+
+.. admonition:: Showcase: New interpolation and regridding API
+
+    New interpolation and regridding interfaces have been added which simplify and
+    extend the existing functionality.
+
+    The interfaces are exposed on the cube in the form of the
+    :meth:`~iris.cube.Cube.interpolate` and :meth:`~iris.cube.Cube.regrid` methods.
+    Conceptually the signatures of the methods are::
+
+        interpolated_cube = cube.interpolate(interpolation_points, interpolation_scheme)
+
+    and::
+
+        regridded_cube = cube.regrid(target_grid_cube, regridding_scheme)
+
+    Whilst not all schemes have been migrated to the new interface,
+    :class:`iris.analysis.Linear` defines both linear interpolation and regridding,
+    and :class:`iris.analysis.AreaWeighted` defines an area weighted regridding
+    scheme.
+
+.. admonition:: Showcase: Merge and concatenate reporting
+
+    Merge reporting is designed as an aid to the merge processes. Should merging
+    a :class:`~iris.cube.CubeList` fail, merge reporting means that a descriptive
+    error will be raised that details the differences between the cubes in the
+    :class:`~iris.cube.CubeList` that prevented the merge from being successful.
+
+    A new :class:`~iris.cube.CubeList` method, called
+    :meth:`~iris.cube.CubeList.merge_cube`, has been introduced. Calling it on a
+    :class:`~iris.cube.CubeList` will result in a single merged
+    :class:`~iris.cube.Cube` being returned or an error message being raised
+    that describes why the merge process failed.
+
+    The following example demonstrates the error message that describes a merge
+    failure caused by cubes having differing attributes::
+
+        >>> cube_list = iris.cube.CubeList((c1, c2))
+        >>> cube_list.merge_cube()
+        Traceback (most recent call last):
+            ...
+            raise iris.exceptions.MergeError(msgs)
+        iris.exceptions.MergeError: failed to merge into a single cube.
+          cube.attributes keys differ: 'foo'
+
+    The naming of this new method mirrors that of Iris load functions, where
+    one would always expect a :class:`~iris.cube.CubeList` from :func:`iris.load`
+    and a :class:`~iris.cube.Cube` from :func:`iris.load_cube`.
+
+    Concatenate reporting is the equivalent process for concatenating a
+    :class:`~iris.cube.CubeList`. It is accessed through the method 
+    :meth:`~iris.cube.CubeList.concatenate_cube`, which will return a single
+    concatenated cube or produce an error message that describes why the
+    concatenate process failed.
+
+.. admonition:: Showcase: Cube broadcasting
+
+    When performing cube arithmetic, cubes now follow similar broadcasting rules
+    as NumPy arrays.
+
+    However, the additional richness of Iris coordinate meta-data provides an
+    enhanced capability beyond the basic broadcasting behaviour of NumPy.
+
+    This means that when performing cube arithmetic, the dimensionality and shape of
+    cubes no longer need to match. For example, if the dimensionality of a cube is
+    reduced by collapsing, then the result can be used to subtract from the original
+    cube to calculate an anomaly::
+
+        >>> time_mean = original_cube.collapsed('time', iris.analysis.MEAN)
+        >>> mean_anomaly = original_cube - time_mean
+
+    Given both broadcasting **and** coordinate meta-data, Iris can now perform
+    arithmetic with cubes that have similar but not identical shape::
+
+        >>> similar_cube = original_cube.copy()
+        >>> similar_cube.transpose()
+        >>> zero_cube = original_cube - similar_cube
+
+* Merge reporting that raises a descriptive error if the merge process fails.
+* Linear interpolation and regridding now make use of SciPy's RegularGridInterpolator
+  for much faster linear interpolation.
+* NAME file loading now handles the "no time averaging" column and translates
+  height/altitude above ground/sea-level columns into appropriate coordinate metadata.
+* The NetCDF saver has been extended to allow saving of cubes with hybrid pressure
+  auxiliary factories.
+* PP/FF loading supports LBLEV of 9999.
+* Extended GRIB1 loading to support data on hybrid pressure levels.
+* :func:`iris.coord_categorisation.add_day_of_year` can be used to add categorised
+  day of year coordinates based on time coordinates with non-Gregorian calendars.
+* Support for loading data on reduced grids from GRIB files in raw form without
+  automatically interpolating to a regular grid.
+* The coordinate systems :class:`iris.coord_systems.Orthographic` and
+  :class:`iris.coord_systems.VerticalPerspective` (for imagery from geostationary
+  satellites) have been added.
+* Extended NetCDF loading to support the "ocean sigma over z" auxiliary coordinate
+  factory.
+* Support added for loading CF-NetCDF data with bounds arrays that are missing a
+  vertex dimension.
+* :meth:`iris.cube.Cube.rolling_window` can now be used with string-based
+  :class:`iris.coords.AuxCoord` instances.
+* Loading of PP and FF files has been optimised through deferring creation of
+  PPField attributes.
+* Automatic association of a coordinate's CF formula terms variable with the
+  data variable associated with that coordinate.
+* PP loading translates cross-section height into a dimensional auxiliary coordinate.
+* String auxiliary coordinates can now be plotted with the Iris plotting wrappers.
+* :func:`iris.analysis.geometry.geometry_area_weights` now allows for the calculation of
+  normalized cell weights.
+* Many new translations between the CF spec and STASH codes or GRIB2 parameter codes.
+* PP save rules add the data's UM Version to the attributes of the  saved file
+  when appropriate.
+* NetCDF reference surface variable promotion available through the
+  :class:`iris.FUTURE` mechanism.
+* A speed improvement in calculation of :func:`iris.analysis.geometry.geometry_area_weights`.
+* The mdtol keyword was added to area-weighted regridding to allow control of the
+  tolerance for missing data. For a further description of this concept, see
+  :class:`iris.analysis.AreaWeighted`.
+* Handling for patching of the CF conventions global attribute via a defined
+  cf_patch_conventions function.
+* Deferred GRIB data loading has been introduced for reduced memory consumption when
+  loading GRIB files.
+* Concatenate reporting that raises a descriptive error if the concatenation
+  process fails.
+* A speed improvement when loading PP or FF data and constraining on STASH code.
+
+Bugs fixed
+==========
+* Data containing more than one reference cube for constructing hybrid height
+  coordinates can now be loaded.
+* Removed cause of increased margin of error when interpolating.
+* Changed floating-point precision used when wrapping points for interpolation.
+* Mappables that can be used to generate colorbars are now returned by Iris
+  plotting wrappers.
+* NetCDF load ignores over-specified formula terms on bounded dimensionless vertical
+  coordinates.
+* Auxiliary coordinate factory loading now correctly interprets formula term
+  varibles for "atmosphere hybrid sigma pressure" coordinate data.
+* Corrected comparison of NumPy NaN values in cube merge process.
+* Fixes for :meth:`iris.cube.Cube.intersection` to correct calculating the intersection
+  of a cube with split bounds, handling of circular coordinates, handling of
+  monotonically descending bounded coordinats and for finding a wrapped two-point
+  result and longitude tolerances.
+* A bug affecting :meth:`iris.cube.Cube.extract` and :meth:`iris.cube.CubeList.extract`
+  that led to unexpected behaviour when operating on scalar cubes has been fixed.
+* Aggregate_by may now be passed single-value coordinates.
+* Making a copy of a :class:`iris.coords.DimCoord` no longer results in the writeable
+  flag on the copied points and bounds arrays being set to True.
+* Can now save to PP a cube that has vertical levels but no orography.
+* Fix a bug causing surface altitude and surface pressure fields to not appear
+  in cubes loaded with a STASH constraint.
+* Fixed support for :class:`iris.fileformats.pp.STASH` objects in STASH constraints.
+* A fix to avoid a problem where cube attribute names clash with NetCDF reserved attribute names.
+* A fix to allow :meth:`iris.cube.CubeList.concatenate` to deal with descending coordinate order.
+* Add missing NetCDF attribute `varname` when constructing a new :class:`iris.coords.AuxCoord`.
+* The datatype of time arrays converted with :func:`iris.util.unify_time_units` is now preserved.
+
+Bugs fixed in v1.7.3
+^^^^^^^^^^^^^^^^^^^^
+* Scalar dimension coordinates can now be concatenated with :meth:`iris.cube.CubeList.concatenate`.
+* Arbitrary names can no longer be set for elements of a :class:`iris.fileformats.pp.SplittableInt`.
+* Cubes that contain a pseudo-level coordinate can now be saved to PP.
+* Fixed a bug in the FieldsFile loader that prevented it always loading all available fields.
+
+Bugs fixed in v1.7.4
+^^^^^^^^^^^^^^^^^^^^
+* :meth:`Coord.guess_bounds` can now deal with circular coordinates.
+* :meth:`Coord.nearest_neighbour_index` can now work with descending bounds.
+* Passing `weights` to :meth:`Cube.rolling_window` no longer prevents other
+  keyword arguments from being passed to the aggregator.
+* Several minor fixes to allow use of Iris on Windows.
+* Made use of the new standard_parallels keyword in Cartopy's LambertConformal
+  projection (Cartopy v0.12). Older versions of Iris will not be able to
+  create LambertConformal coordinate systems with Cartopy >= 0.12.
+
+Incompatible changes
+====================
+* Saving a cube with a STASH attribute to NetCDF now produces a variable
+  with an attribute of "um_stash_source" rather than "ukmo__um_stash_source".
+* Cubes saved to NetCDF with a coordinate system referencing a spherical ellipsoid
+  now result in the grid mapping variable containing only the "earth_radius" attribute,
+  rather than the "semi_major_axis" and "semi_minor_axis".
+* Collapsing a cube over all of its dimensions now results in a scalar cube rather
+  than a 1d cube.
+
+Deprecations
+============
+* :func:`iris.util.ensure_array` has been deprecated.
+* Deprecated the :func:`iris.fileformats.pp.reset_load_rules` and
+  :func:`iris.fileformats.grib.reset_load_rules` functions.
+* Matplotlib is no longer a core Iris dependency.
+
+Documentation Changes
+=====================
+* New sections on :ref:`cube broadcasting <cube-maths_anomaly>` and
+  :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
+  have been added to the :doc:`user guide </userguide/index>`.
+* An example demonstrating custom log-scale colouring has been added.
+  See :ref:`General-anomaly_log_colouring`.
+* An example demonstrating the creation of a custom
+  :class:`iris.analysis.Aggregator` has been added.
+  See :ref:`General-custom_aggregation`.
+* An example of reprojecting data from 2D auxiliary spatial coordinates
+  (such as that from the ORCA grid) has been added. See :ref:`General-orca_projection`.
+* A clarification of the behaviour of :func:`iris.analysis.calculus.differentiate`.
+* A new :doc:`"whitepapers" </whitepapers/index>` section has been added to the documentation along
+  with the addition of a paper providing an :doc:`overview of the load process for UM-like
+  fileformats (e.g. PP and Fieldsfile) </whitepapers/um_files_loading>`.
+

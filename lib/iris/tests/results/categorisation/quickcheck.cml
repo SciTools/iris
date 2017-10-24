@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int32" long_name="test cube" units="metres">
+    <coords>
+      <coord datadims="[0]">
+        <auxCoord id="965fdc2b" long_name="my_day_of_month" points="[1, 28, 24, 23, 19, 16, 12, 9, 5, 1, 28, 25, 21,
+		18, 14, 10, 9, 5, 2, 29, 25, 22, 18]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="d421b0d4" long_name="my_day_of_year" points="[1, 28, 55, 82, 109, 136, 163, 190, 217, 244,
+		271, 298, 325, 352, 14, 41, 68, 95, 122, 149,
+		176, 203, 230]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="c85f5f64" long_name="my_month" points="[Jan, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug,
+		Sep, Sep, Oct, Nov, Dec, Jan, Feb, Mar, Apr,
+		May, May, Jun, Jul, Aug]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="bd3bcb89" long_name="my_month_fullname" points="[January, January, February, March, April, May,
+		June, July, August, September, September,
+		October, November, December, January, February,
+		March, April, May, May, June, July, August]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="58dfe2e3" long_name="my_month_in_quarter" points="[0, 0, 1, 2, 0, 1, 2, 0, 1, 2, 2, 0, 1, 2, 0, 1,
+		2, 0, 1, 1, 2, 0, 1]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="2668e70a" long_name="my_month_number" points="[1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 1,
+		2, 3, 4, 5, 5, 6, 7, 8]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="538bccc4" long_name="my_season" points="[djf, djf, djf, mam, mam, mam, jja, jja, jja,
+		son, son, son, son, djf, djf, djf, mam, mam,
+		mam, mam, jja, jja, jja]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="f0259071" long_name="my_season_number" points="[0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0,
+		1, 1, 1, 1, 2, 2, 2]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="f4f0b7f3" long_name="my_season_year" points="[1970, 1970, 1970, 1970, 1970, 1970, 1970, 1970,
+		1970, 1970, 1970, 1970, 1970, 1971, 1971, 1971,
+		1971, 1971, 1971, 1971, 1971, 1971, 1971]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="0c9978e7" long_name="my_weekday" points="[Thu, Wed, Tue, Mon, Sun, Sat, Fri, Thu, Wed,
+		Tue, Mon, Sun, Sat, Fri, Thu, Wed, Tue, Mon,
+		Sun, Sat, Fri, Thu, Wed]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="34e46a5f" long_name="my_weekday_fullname" points="[Thursday, Wednesday, Tuesday, Monday, Sunday,
+		Saturday, Friday, Thursday, Wednesday, Tuesday,
+		Monday, Sunday, Saturday, Friday, Thursday,
+		Wednesday, Tuesday, Monday, Sunday, Saturday,
+		Friday, Thursday, Wednesday]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="521df3b7" long_name="my_weekday_number" points="[3, 2, 1, 0, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2,
+		1, 0, 6, 5, 4, 3, 2]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="900901aa" long_name="my_year" points="[1970, 1970, 1970, 1970, 1970, 1970, 1970, 1970,
+		1970, 1970, 1970, 1970, 1970, 1970, 1971, 1971,
+		1971, 1971, 1971, 1971, 1971, 1971, 1971]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="c2d27f9e" points="[0, 27, 54, 81, 108, 135, 162, 189, 216, 243,
+		270, 297, 324, 351, 378, 405, 432, 459, 486,
+		513, 540, 567, 594]" shape="(23,)" standard_name="time" units="Unit('days since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xd8ca15fd" dtype="int32" shape="(23,)"/>
+  </cube>
+</cubes>

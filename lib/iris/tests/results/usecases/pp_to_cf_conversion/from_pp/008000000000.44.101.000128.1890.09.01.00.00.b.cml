@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" units="unknown">
+    <attributes>
+      <attribute name="STASH" value="m??s44i101"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="c88482b3" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
+		138.9, 203.7, 300.999, 447.049, 666.299,
+		995.549, 1500.85, 2116.15, 2731.4, 3346.65,
+		3961.9, 4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="down"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="42c82ea7" points="[681540.0, 683340.0, 685140.0, 686940.0,
+		688740.0, 690540.0, 692340.0, 694140.0,
+		695940.0, 697740.0, 699540.0, 701340.0,
+		703140.0, 704940.0, 706740.0, 708540.0]" shape="(16,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="24 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x6475db6b" dtype="float32" shape="(20, 16)"/>
+  </cube>
+</cubes>

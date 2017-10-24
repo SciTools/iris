@@ -2,7 +2,11 @@
 
 {%- block extrahead %}
 {{ super() }}
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+    <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE"> 
+
+    <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
+    <script type="text/javascript" src="http://docs.python.org/2/_static/copybutton.js"></script>
 {% endblock %}
 
 
@@ -15,13 +19,10 @@
 
 
 {% block relbar1 %}
-<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<!-- Enable this to insert a logo...
-<a href="{{ pathto('index') }}"><img src="{{pathto("_static/logo.png", 1) }}" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
--->
-
-<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris {{version}}
+<div style="background-color: white; text-align: left; padding: 1px 10px 1px 15px">
+<p style="margin-left: 15px; font-weight:bolder; letter-spacing:0.1ex;">
+<a href="{{ pathto('index') }}"><img src="{{pathto("_static/Iris7_1_trim_100.png", 1) }}" width=101 height=100 border="0" style="vertical-align:middle" alt="Logo"/></a>
+<span style="font-size: 400%; vertical-align:middle"> Iris {{version}} </span>
 </p>
 
 </div>
@@ -35,7 +36,7 @@ Iris {{version}}
     <div class="footer">
     <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
     {%- if show_copyright %}
-        &copy; <a href="{{ pathto('copyright') }}">British Crown Copyright</a> 2010 - 2012, Met Office
+        &copy; <a href="{{ pathto('copyright') }}">British Crown Copyright</a> {{ copyright_years }}, Met Office
     {%- endif %}
     {%- if last_updated %}
       {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}

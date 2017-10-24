@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<auxCoord bounds="[[-0.5, 0.5],
+		[0.5, 1.5],
+		[1.5, 2.5],
+		[2.5, 3.5]]" id="56772c5e" long_name="my_long_name" points="[0.0, 1.0, 2.0, 3.0]" shape="(4,)" standard_name="air_temperature" units="Unit('K')" value_type="float32">
+  <attributes>
+    <attribute name="count" value="2"/>
+    <attribute name="foo" value="bar"/>
+  </attributes>
+  <geogCS earth_radius="6370000.0"/>
+</auxCoord>

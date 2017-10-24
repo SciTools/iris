@@ -7,14 +7,14 @@ Iris copyright, licensing and contributors
 Iris code
 ---------
 
-All Iris source code, unless explicitly stated, is |copy| ``British Crown copyright, 2012`` and 
+All Iris source code, unless explicitly stated, is |copy| ``British Crown copyright, 2014`` and 
 is licensed under the **GNU Lesser General Public License** as published by the
 Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 You should find all source files with the following header:
 
 .. admonition:: Code License
 
-    |copy| British Crown Copyright 2010 - 2012, Met Office
+    |copy| British Crown Copyright 2010 - 2014, Met Office
     
     This file is part of Iris.
     
@@ -40,7 +40,7 @@ are licensed under the UK's Open Government Licence:
 
 .. admonition:: Documentation, example and data license
  
-    |copy| British Crown copyright, 2012.
+    |copy| British Crown copyright, 2014.
     
     You may use and re-use the information featured on this website (not including logos) free of 
     charge in any format or medium, under the terms of the 
@@ -49,36 +49,3 @@ are licensed under the UK's Open Government Licence:
     
     Any email enquiries regarding the use and re-use of this information resource should be 
     sent to: psi@nationalarchives.gsi.gov.uk.
-
-
-Contributors
-------------
-
-Iris has been blessed with contributions from a wealth of individuals, without whom Iris 
-wouldn't be where it is today:
-
- * `Richard Hattersley <https://github.com/rhattersley>`_ 
- 
-     Technical lead and core developer
-     
- * `Byron Blay <https://github.com/bblay>`_
-
-     Core developer
-     
- * `Ed Campbell <https://github.com/esc24>`_
-
-     Core developer
-     
- * `Philip Elson <https://github.com/pelson>`_
-
-     Core developer
- 
- * `Bill Little <https://github.com/bjlittle>`_
-
-     Core developer
- 
- * `Mark Hedley <https://github.com/marqh>`_
- * Patrick Peglar
- * Andrew Munslow
- 
- 

@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" units="unknown">
+    <attributes>
+      <attribute name="STASH" value="m02s00i???"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <dimCoord id="c88482b3" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
+		138.9, 203.7, 301.0, 447.05, 666.3, 995.55,
+		1500.85, 2116.15, 2731.4, 3346.65, 3961.9,
+		4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="down"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-86400.0, 86400.0],
+		[86400.0, 259200.0],
+		[259200.0, 432000.0],
+		[432000.0, 604800.0]]" id="1d45e087" points="[0.0, 172800.0, 345600.0, 518400.0]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[-864720.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord id="5f25cb9f" points="[-88.75, -87.5, -86.25, ..., 86.25, 87.5, 88.75]" shape="(143,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="0.0" grid_north_pole_longitude="0.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="23cb81ab" long_name="pseudo_level" points="[4, 8, 12, 16]" shape="(4,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-951120.0, -778320.0],
+		[-778320.0, -605520.0],
+		[-605520.0, -432720.0],
+		[-432720.0, -259920.0]]" id="cb784457" points="[-864720.0, -691920.0, -519120.0, -346320.0]" shape="(4,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x2ae7eecc" dtype="float32" mask_checksum="0x6d576d49" shape="(4, 4, 20, 143)"/>
+  </cube>
+</cubes>

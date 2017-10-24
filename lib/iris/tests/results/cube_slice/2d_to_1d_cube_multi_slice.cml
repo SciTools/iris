@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int32" long_name="test 2d dimensional cube" units="meters">
+    <coords>
+      <coord>
+        <auxCoord id="da892976" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="98bd3c83" long_name="dim1" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0, 1],
+		[2, 3]]" id="e4dc1958" long_name="dim2" points="[0, 1]" shape="(2,)" units="Unit('meters')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[0, 1, 2, 3],
+		[4, 5, 6, 7]]" id="b5af630a" long_name="my_multi_dim_coord" points="[0, 1]" shape="(2,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xdd9eb80c" dtype="int32" shape="(2,)"/>
+  </cube>
+</cubes>

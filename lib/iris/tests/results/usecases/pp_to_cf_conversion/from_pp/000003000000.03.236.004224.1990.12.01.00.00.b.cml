@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
+    <attributes>
+      <attribute name="STASH" value="m01s03i236"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[-2160.0, 0.0]]" id="1d45e087" points="[-1080.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[185496.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="a2cbc1ea" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="77a50eb5" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
+		70.0, 67.5, 65.0, 62.5, 60.0, 57.5, 55.0, 52.5,
+		50.0, 47.5, 45.0, 42.5, 40.0, 37.5, 35.0, 32.5,
+		30.0, 27.5, 25.0, 22.5, 20.0, 17.5, 15.0, 12.5,
+		10.0, 7.5, 5.0, 2.5, 0.0, -2.5, -5.0, -7.5,
+		-10.0, -12.5, -15.0, -17.5, -20.0, -22.5, -25.0,
+		-27.5, -30.0, -32.5, -35.0, -37.5, -40.0, -42.5,
+		-45.0, -47.5, -50.0, -52.5, -55.0, -57.5, -60.0,
+		-62.5, -65.0, -67.5, -70.0, -72.5, -75.0, -77.5,
+		-80.0, -82.5, -85.0, -87.5, -90.0]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord circular="True" id="f913a8b3" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[183336.0, 185496.0]]" id="cb784457" points="[184416.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="6 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xcb5be595" dtype="float32" shape="(73, 96)"/>
+  </cube>
+</cubes>

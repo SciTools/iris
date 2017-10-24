@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="change_over_time_in_upward_air_velocity_due_to_advection" units="m s-1">
+    <attributes>
+      <attribute name="STASH" value="m01s12i187"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.1"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[0.0, 2160.0]]" id="1d45e087" points="[1080.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[163440.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="77a50eb5" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0.0, 49.9989],
+		[49.9989, 130.0],
+		[130.0, 249.998],
+		[249.998, 410.001],
+		[410.001, 610.0],
+		[610.0, 850.001],
+		[850.001, 1130.0],
+		[1130.0, 1450.0],
+		[1450.0, 1810.0],
+		[1810.0, 2210.0],
+		[2210.0, 2650.0],
+		[2650.0, 3130.0],
+		[3130.0, 3650.0],
+		[3650.0, 4210.0],
+		[4210.0, 4810.0],
+		[4810.0, 5450.0],
+		[5450.0, 6130.0],
+		[6130.0, 6850.0],
+		[6850.0, 7610.0],
+		[7610.0, 8410.0],
+		[8410.0, 9250.0],
+		[9250.0, 10130.0],
+		[10130.0, 11050.0],
+		[11050.0, 12010.0],
+		[12010.0, 13010.0],
+		[13010.0, 14050.4],
+		[14050.4, 15137.7],
+		[15137.7, 16285.0],
+		[16285.0, 17507.0],
+		[17507.0, 18820.8],
+		[18820.8, 20246.6],
+		[20246.6, 21808.1],
+		[21808.1, 23542.2],
+		[23542.2, 25521.0],
+		[25521.0, 27901.4],
+		[27901.4, 31063.9],
+		[31063.9, 36081.8],
+		[36081.8, 42427.9]]" id="fb105c19" long_name="level_height" points="[20.0003, 80.0014, 179.999, 320.001, 500.001,
+		720.0, 980.001, 1280.0, 1620.0, 2000.0, 2420.0,
+		2880.0, 3380.0, 3920.0, 4500.0, 5120.0, 5780.0,
+		6480.0, 7220.0, 8000.0, 8820.0, 9680.0, 10580.0,
+		11520.0, 12500.0, 13520.0, 14580.8, 15694.6,
+		16875.3, 18138.6, 19503.0, 20990.2, 22626.1,
+		24458.3, 26583.6, 29219.1, 32908.7, 39254.8]" shape="(38,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord circular="True" id="f913a8b3" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="38fd0305" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+		15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]" shape="(38,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[1.0, 0.994296],
+		[0.994296, 0.985204],
+		[0.985204, 0.971644],
+		[0.971644, 0.95371],
+		[0.95371, 0.931527],
+		[0.931527, 0.905253],
+		[0.905253, 0.875075],
+		[0.875075, 0.841212],
+		[0.841212, 0.803914],
+		[0.803914, 0.763465],
+		[0.763465, 0.720176],
+		[0.720176, 0.674393],
+		[0.674393, 0.626491],
+		[0.626491, 0.576877],
+		[0.576877, 0.525991],
+		[0.525991, 0.474301],
+		[0.474301, 0.42231],
+		[0.42231, 0.370549],
+		[0.370549, 0.319582],
+		[0.319582, 0.270005],
+		[0.270005, 0.222443],
+		[0.222443, 0.177555],
+		[0.177555, 0.13603],
+		[0.13603, 0.0985881],
+		[0.0985881, 0.0659808],
+		[0.0659808, 0.0389824],
+		[0.0389824, 0.0183147],
+		[0.0183147, 0.00487211],
+		[0.00487211, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0]]" id="a5c170db" long_name="sigma" points="[0.997716, 0.990882, 0.979543, 0.963777,
+		0.943695, 0.919438, 0.891178, 0.859118,
+		0.823493, 0.784571, 0.742646, 0.69805, 0.651143,
+		0.602314, 0.551989, 0.50062, 0.448693, 0.396726,
+		0.345265, 0.294891, 0.246215, 0.199878,
+		0.156554, 0.116948, 0.0817952, 0.0518637,
+		0.0279368, 0.0107165, 0.00130179, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[163440.0, 165600.0]]" id="cb784457" points="[164520.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="1 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xc92d9fa6" dtype="float32" shape="(38, 145, 192)"/>
+  </cube>
+</cubes>

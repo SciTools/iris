@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int64" units="unknown">
+    <coords/>
+    <cellMethods/>
+    <data checksum="0x254c379c" dtype="int64" mask_checksum="0xb08915ca" shape="(3, 4)"/>
+  </cube>
+</cubes>

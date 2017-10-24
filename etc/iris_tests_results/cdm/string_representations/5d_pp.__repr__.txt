@@ -1,1 +1,0 @@
-<iris 'Cube' of eastward_wind (time: 6; model_level_number: 70; grid_latitude: 412; grid_longitude: 412)>

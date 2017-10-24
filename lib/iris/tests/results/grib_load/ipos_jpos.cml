@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" standard_name="air_temperature" units="K">
+    <coords>
+      <coord>
+        <dimCoord bounds="[[-28587.0, 6477.0]]" id="1d45e087" points="[-11055.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[246987.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="98bcd589" points="[-89.999938, -87.499939, -84.99994, -82.499941,
+		-79.999942, -77.499943, -74.999944, -72.499945,
+		-69.999946, -67.499947, -64.999948, -62.499949,
+		-59.99995, -57.499951, -54.999952, -52.499953,
+		-49.999954, -47.499955, -44.999956, -42.499957,
+		-39.999958, -37.499959, -34.99996, -32.499961,
+		-29.999962, -27.499963, -24.999964, -22.499965,
+		-19.999966, -17.499967, -14.999968, -12.499969,
+		-9.99997, -7.499971, -4.999972, -2.499973,
+		2.59999999912e-05, 2.500025, 5.000024, 7.500023,
+		10.000022, 12.500021, 15.00002, 17.500019,
+		20.000018, 22.500017, 25.000016, 27.500015,
+		30.000014, 32.500013, 35.000012, 37.500011,
+		40.00001, 42.500009, 45.000008, 47.500007,
+		50.000006, 52.500005, 55.000004, 57.500003,
+		60.000002, 62.500001, 65.0, 67.499999,
+		69.999998, 72.499997, 74.999996, 77.499995,
+		79.999994, 82.499993, 84.999992, 87.499991,
+		89.99999]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6367470.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord circular="True" id="160a738f" points="[0.0, 3.749998, 7.499996, ..., 348.749814,
+		352.499812, 356.24981]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6367470.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="302bf438" long_name="pressure" points="[100000.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[218400.0, 253464.0]]" id="cb784457" points="[235932.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x2d4a87f1" dtype="float64" shape="(73, 96)"/>
+  </cube>
+</cubes>

@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int32" long_name="test cube" units="metres">
+    <coords>
+      <coord datadims="[0]">
+        <auxCoord id="3cbe93e2" long_name="season_numbers" points="[0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 0, 0, 0,
+		0, 1, 1, 1, 1, 1, 2]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="d5aebf93" long_name="season_years" points="[1970, 1970, 1970, 1970, 1970, 1970, 1970, 1970,
+		1970, 1970, 1970, 1970, 1970, 1971, 1971, 1971,
+		1971, 1971, 1971, 1971, 1971, 1971, 1971]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="13e3ba2a" long_name="seasons" points="[djfm, djfm, djfm, djfm, amjj, amjj, amjj, amjj,
+		ason, ason, ason, ason, ason, djfm, djfm, djfm,
+		djfm, amjj, amjj, amjj, amjj, amjj, ason]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="c2d27f9e" points="[0, 27, 54, 81, 108, 135, 162, 189, 216, 243,
+		270, 297, 324, 351, 378, 405, 432, 459, 486,
+		513, 540, 567, 594]" shape="(23,)" standard_name="time" units="Unit('days since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xd8ca15fd" dtype="int32" shape="(23,)"/>
+  </cube>
+</cubes>

@@ -1,0 +1,95 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="Zonal Surface Wind Speed" standard_name="eastward_wind" units="m s-1" var_name="uas">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.0"/>
+      <attribute name="cmor_version" value="0.96"/>
+      <attribute name="comment" value="This run was initiated from the end of the corresponding 20C3M run of CCSR/NIES/FRCGC (the same resolution as this run, realization = 1). The conditions including GHGs concentration and various aerosols emissions were changed according to the IPCC SRES A1B scenario in the course of this run."/>
+      <attribute name="contact" value="Seita Emori (emori@nies.go.jp)"/>
+      <attribute name="experiment_id" value="720 ppm stabilization experiment (SRES A1B)"/>
+      <attribute name="history" value=" At   15:14:34 on 01/13/2005: CMOR altered the data in the following ways: converted from type &quot;double&quot; to type &quot;real&quot;; replaced missing value flag (-9.99000E+02) with standard missing value (1.00000E+20);  lat dimension direction was reversed;"/>
+      <attribute name="institution" value="CCSR/NIES/FRCGC (Center for Climate System Research, Tokyo, Japan / National Institute for Environmental Studies, Ibaraki, Japan / Frontier Research Center for Global Change, Kanagawa, Japan)"/>
+      <attribute name="original_name" value="10m zonal wind"/>
+      <attribute name="original_units" value="m/s"/>
+      <attribute name="project_id" value="IPCC Fourth Assessment"/>
+      <attribute name="realization" value="1"/>
+      <attribute name="references" value="K-1 Coupled GCM Description (K-1 Technical Report No.1) in preparation"/>
+      <attribute name="source" value="MIROC3.2 (2004): atmosphere: AGCM (AGCM5.7b, T106 L56); ocean &amp; sea ice: COCO (COCO3.3, T106 4x6 tiling L48); land: MATSIRO (T106 2x2 tiling)"/>
+      <attribute name="table_id" value="Table A2 (17 November 2004)"/>
+      <attribute name="title" value="CCSR/NIES/FRCGC  model output prepared for IPCC Fourth Assessment 720 ppm stabilization experiment (SRES A1B)"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="5cfb02b4" long_name="height" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-90.0, -88.6247285576],
+		[-88.6247285576, -87.4911905887],
+		[-87.4911905887, -86.3651715331],
+		..., 
+		[86.3651715331, 87.4911905887],
+		[87.4911905887, 88.6247285576],
+		[88.6247285576, 90.0]]" id="dab47bb1" long_name="latitude" points="[-89.1415194265, -88.029428868, -86.9107708141,
+		..., 86.9107708141, 88.029428868, 89.1415194265]" shape="(160,)" standard_name="latitude" units="Unit('degrees')" value_type="float64" var_name="lat"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord bounds="[[-0.5625, 0.5625],
+		[0.5625, 1.6875],
+		[1.6875, 2.8125],
+		..., 
+		[356.0625, 357.1875],
+		[357.1875, 358.3125],
+		[358.3125, 359.4375]]" circular="True" id="c15a8e5b" long_name="longitude" points="[0.0, 1.125, 2.25, ..., 356.625, 357.75, 358.875]" shape="(320,)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[71588.0, 71589.0],
+		[71589.0, 71590.0],
+		[71590.0, 71591.0],
+		[71591.0, 71592.0],
+		[71592.0, 71593.0],
+		[71593.0, 71594.0],
+		[71594.0, 71595.0],
+		[71595.0, 71596.0],
+		[71596.0, 71597.0],
+		[71597.0, 71598.0],
+		[71598.0, 71599.0],
+		[71599.0, 71600.0],
+		[71600.0, 71601.0],
+		[71601.0, 71602.0],
+		[71602.0, 71603.0],
+		[71603.0, 71604.0],
+		[71604.0, 71605.0],
+		[71605.0, 71606.0],
+		[71606.0, 71607.0],
+		[71607.0, 71608.0],
+		[71608.0, 71609.0],
+		[71609.0, 71610.0],
+		[71610.0, 71611.0],
+		[71611.0, 71612.0],
+		[71612.0, 71613.0],
+		[71613.0, 71614.0],
+		[71614.0, 71615.0],
+		[71615.0, 71616.0],
+		[71616.0, 71617.0],
+		[71617.0, 71618.0],
+		[71618.0, 71619.0]]" id="7025f8c6" long_name="time" points="[71588.5, 71589.5, 71590.5, 71591.5, 71592.5,
+		71593.5, 71594.5, 71595.5, 71596.5, 71597.5,
+		71598.5, 71599.5, 71600.5, 71601.5, 71602.5,
+		71603.5, 71604.5, 71605.5, 71606.5, 71607.5,
+		71608.5, 71609.5, 71610.5, 71611.5, 71612.5,
+		71613.5, 71614.5, 71615.5, 71616.5, 71617.5,
+		71618.5]" shape="(31,)" standard_name="time" units="Unit('days since 1850-01-01', calendar='gregorian')" value_type="float64" var_name="time"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="6 minutes" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xab9e4b38" dtype="float32" shape="(31, 160, 320)"/>
+  </cube>
+</cubes>

@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" units="unknown">
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="75879334" points="[0, 1, 2, 3]" shape="(4,)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord>
+        <dimCoord id="e81eb67d" points="[10]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="bc1dc451" points="[10, 11, 12, 13]" shape="(4,)" standard_name="time" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="78a0dfe8" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="6fdbcbab" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(4, 4, 5)" state="loaded"/>
+  </cube>
+</cubes>

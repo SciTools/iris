@@ -1,0 +1,331 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+    <attributes>
+      <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
+      <attribute name="Ensemble av info" value="No ensemble averaging"/>
+      <attribute name="Field Name" value="Unnamed Field Req 14"/>
+      <attribute name="Horizontal av/int info" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.Global_PT2_flow"/>
+      <attribute name="NAME Version" value="NAME III (development version 6.6+)"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="0.000 to 50.000m agl"/>
+      <attribute name="Release location" value="3.0999W   51.0214N"/>
+      <attribute name="Run duration" value="1day 0hr 0min"/>
+      <attribute name="Run name" value="Taunton_22122015_0000Z"/>
+      <attribute name="Run time" value="02/06/2016 13:52:31.682 UTC+01:00"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Source/source group" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="19/12/2015 00:00 UTC"/>
+      <attribute name="Time av/int info" value="1hr 0min average"/>
+      <attribute name="Vertical av/int info" value="Finite Z-average"/>
+      <attribute name="X-Y location" value="Taunton"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 50.0],
+		[50.0, 100.0],
+		[100.0, 150.0],
+		[150.0, 200.0],
+		[200.0, 250.0],
+		[250.0, 300.0],
+		[300.0, 350.0],
+		[350.0, 400.0],
+		[400.0, 450.0],
+		[450.0, 500.0]]" id="28673685" long_name="altitude above sea level" points="[25.0, 75.0, 125.0, 175.0, 225.0, 275.0, 325.0,
+		375.0, 425.0, 475.0]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="77a50eb5" points="[51.0214]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-3.09994]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[402912.0, 402913.0],
+		[402913.0, 402914.0],
+		[402914.0, 402915.0],
+		[402915.0, 402916.0],
+		[402916.0, 402917.0],
+		[402917.0, 402918.0],
+		[402918.0, 402919.0],
+		[402919.0, 402920.0],
+		[402920.0, 402921.0],
+		[402921.0, 402922.0],
+		[402922.0, 402923.0],
+		[402923.0, 402924.0],
+		[402924.0, 402925.0],
+		[402925.0, 402926.0],
+		[402926.0, 402927.0],
+		[402927.0, 402928.0],
+		[402928.0, 402929.0],
+		[402929.0, 402930.0],
+		[402930.0, 402931.0],
+		[402931.0, 402932.0],
+		[402932.0, 402933.0],
+		[402933.0, 402934.0],
+		[402934.0, 402935.0],
+		[402935.0, 402936.0]]" id="cb784457" points="[402913.0, 402914.0, 402915.0, 402916.0,
+		402917.0, 402918.0, 402919.0, 402920.0,
+		402921.0, 402922.0, 402923.0, 402924.0,
+		402925.0, 402926.0, 402927.0, 402928.0,
+		402929.0, 402930.0, 402931.0, 402932.0,
+		402933.0, 402934.0, 402935.0, 402936.0]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(24, 10)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+    <attributes>
+      <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
+      <attribute name="Ensemble av info" value="No ensemble averaging"/>
+      <attribute name="Field Name" value="Unnamed Field Req 14"/>
+      <attribute name="Horizontal av/int info" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.Global_PT2_flow"/>
+      <attribute name="NAME Version" value="NAME III (development version 6.6+)"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="0.000 to 50.000m agl"/>
+      <attribute name="Release location" value="3.0999W   51.0214N"/>
+      <attribute name="Run duration" value="1day 0hr 0min"/>
+      <attribute name="Run name" value="Taunton_22122015_0000Z"/>
+      <attribute name="Run time" value="02/06/2016 13:52:31.682 UTC+01:00"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Source/source group" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="19/12/2015 00:00 UTC"/>
+      <attribute name="Time av/int info" value="1hr 0min average"/>
+      <attribute name="Vertical av/int info" value="Finite Z-average"/>
+      <attribute name="X-Y location" value="Exeter"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 50.0],
+		[50.0, 100.0],
+		[100.0, 150.0],
+		[150.0, 200.0],
+		[200.0, 250.0],
+		[250.0, 300.0],
+		[300.0, 350.0],
+		[350.0, 400.0],
+		[400.0, 450.0],
+		[450.0, 500.0]]" id="28673685" long_name="altitude above sea level" points="[25.0, 75.0, 125.0, 175.0, 225.0, 275.0, 325.0,
+		375.0, 425.0, 475.0]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="77a50eb5" points="[50.711]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-3.4991]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[402912.0, 402913.0],
+		[402913.0, 402914.0],
+		[402914.0, 402915.0],
+		[402915.0, 402916.0],
+		[402916.0, 402917.0],
+		[402917.0, 402918.0],
+		[402918.0, 402919.0],
+		[402919.0, 402920.0],
+		[402920.0, 402921.0],
+		[402921.0, 402922.0],
+		[402922.0, 402923.0],
+		[402923.0, 402924.0],
+		[402924.0, 402925.0],
+		[402925.0, 402926.0],
+		[402926.0, 402927.0],
+		[402927.0, 402928.0],
+		[402928.0, 402929.0],
+		[402929.0, 402930.0],
+		[402930.0, 402931.0],
+		[402931.0, 402932.0],
+		[402932.0, 402933.0],
+		[402933.0, 402934.0],
+		[402934.0, 402935.0],
+		[402935.0, 402936.0]]" id="cb784457" points="[402913.0, 402914.0, 402915.0, 402916.0,
+		402917.0, 402918.0, 402919.0, 402920.0,
+		402921.0, 402922.0, 402923.0, 402924.0,
+		402925.0, 402926.0, 402927.0, 402928.0,
+		402929.0, 402930.0, 402931.0, 402932.0,
+		402933.0, 402934.0, 402935.0, 402936.0]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(24, 10)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+    <attributes>
+      <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
+      <attribute name="Ensemble av info" value="No ensemble averaging"/>
+      <attribute name="Field Name" value="Unnamed Field Req 14"/>
+      <attribute name="Horizontal av/int info" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.Global_PT2_flow"/>
+      <attribute name="NAME Version" value="NAME III (development version 6.6+)"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="0.000 to 50.000m agl"/>
+      <attribute name="Release location" value="3.0999W   51.0214N"/>
+      <attribute name="Run duration" value="1day 0hr 0min"/>
+      <attribute name="Run name" value="Taunton_22122015_0000Z"/>
+      <attribute name="Run time" value="02/06/2016 13:52:31.682 UTC+01:00"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Source/source group" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="19/12/2015 00:00 UTC"/>
+      <attribute name="Time av/int info" value="1hr 0min average"/>
+      <attribute name="Vertical av/int info" value="Finite Z-average"/>
+      <attribute name="X-Y location" value="Bristol"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 50.0],
+		[50.0, 100.0],
+		[100.0, 150.0],
+		[150.0, 200.0],
+		[200.0, 250.0],
+		[250.0, 300.0],
+		[300.0, 350.0],
+		[350.0, 400.0],
+		[400.0, 450.0],
+		[450.0, 500.0]]" id="28673685" long_name="altitude above sea level" points="[25.0, 75.0, 125.0, 175.0, 225.0, 275.0, 325.0,
+		375.0, 425.0, 475.0]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="77a50eb5" points="[51.46841]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-2.730792]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[402912.0, 402913.0],
+		[402913.0, 402914.0],
+		[402914.0, 402915.0],
+		[402915.0, 402916.0],
+		[402916.0, 402917.0],
+		[402917.0, 402918.0],
+		[402918.0, 402919.0],
+		[402919.0, 402920.0],
+		[402920.0, 402921.0],
+		[402921.0, 402922.0],
+		[402922.0, 402923.0],
+		[402923.0, 402924.0],
+		[402924.0, 402925.0],
+		[402925.0, 402926.0],
+		[402926.0, 402927.0],
+		[402927.0, 402928.0],
+		[402928.0, 402929.0],
+		[402929.0, 402930.0],
+		[402930.0, 402931.0],
+		[402931.0, 402932.0],
+		[402932.0, 402933.0],
+		[402933.0, 402934.0],
+		[402934.0, 402935.0],
+		[402935.0, 402936.0]]" id="cb784457" points="[402913.0, 402914.0, 402915.0, 402916.0,
+		402917.0, 402918.0, 402919.0, 402920.0,
+		402921.0, 402922.0, 402923.0, 402924.0,
+		402925.0, 402926.0, 402927.0, 402928.0,
+		402929.0, 402930.0, 402931.0, 402932.0,
+		402933.0, 402934.0, 402935.0, 402936.0]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(24, 10)" state="loaded"/>
+  </cube>
+  <cube dtype="float32" long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
+    <attributes>
+      <attribute name="End of release" value="19/12/2015 06:00 UTC"/>
+      <attribute name="Ensemble av info" value="No ensemble averaging"/>
+      <attribute name="Field Name" value="Unnamed Field Req 14"/>
+      <attribute name="Horizontal av/int info" value="No horizontal averaging"/>
+      <attribute name="Met data" value="NWP Flow.Global_PT2_flow"/>
+      <attribute name="NAME Version" value="NAME III (development version 6.6+)"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="0.000 to 50.000m agl"/>
+      <attribute name="Release location" value="3.0999W   51.0214N"/>
+      <attribute name="Run duration" value="1day 0hr 0min"/>
+      <attribute name="Run name" value="Taunton_22122015_0000Z"/>
+      <attribute name="Run time" value="02/06/2016 13:52:31.682 UTC+01:00"/>
+      <attribute name="Source strength" value="1.000000 g / s"/>
+      <attribute name="Source/source group" value="All sources"/>
+      <attribute name="Species" value="TRACER"/>
+      <attribute name="Species category" value="CHEMISTRY-SPECIES"/>
+      <attribute name="Start of release" value="19/12/2015 00:00 UTC"/>
+      <attribute name="Time av/int info" value="1hr 0min average"/>
+      <attribute name="Vertical av/int info" value="Finite Z-average"/>
+      <attribute name="X-Y location" value="Warwick"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 50.0],
+		[50.0, 100.0],
+		[100.0, 150.0],
+		[150.0, 200.0],
+		[200.0, 250.0],
+		[250.0, 300.0],
+		[300.0, 350.0],
+		[350.0, 400.0],
+		[400.0, 450.0],
+		[450.0, 500.0]]" id="28673685" long_name="altitude above sea level" points="[25.0, 75.0, 125.0, 175.0, 225.0, 275.0, 325.0,
+		375.0, 425.0, 475.0]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="77a50eb5" points="[52.27939]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-1.597874]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[402912.0, 402913.0],
+		[402913.0, 402914.0],
+		[402914.0, 402915.0],
+		[402915.0, 402916.0],
+		[402916.0, 402917.0],
+		[402917.0, 402918.0],
+		[402918.0, 402919.0],
+		[402919.0, 402920.0],
+		[402920.0, 402921.0],
+		[402921.0, 402922.0],
+		[402922.0, 402923.0],
+		[402923.0, 402924.0],
+		[402924.0, 402925.0],
+		[402925.0, 402926.0],
+		[402926.0, 402927.0],
+		[402927.0, 402928.0],
+		[402928.0, 402929.0],
+		[402929.0, 402930.0],
+		[402930.0, 402931.0],
+		[402931.0, 402932.0],
+		[402932.0, 402933.0],
+		[402933.0, 402934.0],
+		[402934.0, 402935.0],
+		[402935.0, 402936.0]]" id="cb784457" points="[402913.0, 402914.0, 402915.0, 402916.0,
+		402917.0, 402918.0, 402919.0, 402920.0,
+		402921.0, 402922.0, 402923.0, 402924.0,
+		402925.0, 402926.0, 402927.0, 402928.0,
+		402929.0, 402930.0, 402931.0, 402932.0,
+		402933.0, 402934.0, 402935.0, 402936.0]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(24, 10)" state="loaded"/>
+  </cube>
+</cubes>

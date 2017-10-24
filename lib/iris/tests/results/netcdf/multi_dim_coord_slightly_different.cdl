@@ -1,0 +1,29 @@
+dimensions:
+	latitude_0 = UNLIMITED ; // (10 currently)
+	time = UNLIMITED ; // (2 currently)
+	latitude = 2 ;
+variables:
+	double temp(time, latitude) ;
+		temp:standard_name = "surface_temperature" ;
+		temp:units = "K" ;
+	int64 time(time) ;
+		time:units = "1" ;
+		time:standard_name = "time" ;
+	int64 latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "1" ;
+		latitude:standard_name = "latitude" ;
+	double temp3(latitude_0) ;
+		temp3:long_name = "air_temperature" ;
+		temp3:units = "K" ;
+	int64 latitude_0(latitude_0) ;
+		latitude_0:axis = "Y" ;
+		latitude_0:units = "1" ;
+		latitude_0:standard_name = "latitude" ;
+	double temp3_0(latitude_0) ;
+		temp3_0:long_name = "air_temperature" ;
+		temp3_0:units = "K" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+}

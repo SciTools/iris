@@ -29,11 +29,21 @@ lib/iris/etc/site.cfg
 lib/iris/fileformats/_pyke_rules/compiled_krb/
 lib/iris/std_names.py
 
+# Iris test result files
+lib/iris/tests/result_image_comparison/
+iris_image_test_output/
+
+# Iris test lock file
+lib/iris/tests/results/imagerepo.lock
 
 # Pydev/Eclipse files
 .project
 .pydevproject
 .settings
+
+# PyCharm files
+/.idea
+*.cover
 
 # Auto generated documentation files
 docs/iris/src/_static/random_image.js
@@ -41,7 +51,11 @@ docs/iris/src/_templates/gallery.html
 docs/iris/src/examples/
 docs/iris/src/iris/
 
+# Example test results
+docs/iris/iris_image_test_output/
+
 # Created by editiors
 *~
 \#*
 \.\#*
+*.swp

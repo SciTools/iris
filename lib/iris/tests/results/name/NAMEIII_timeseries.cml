@@ -1,0 +1,335 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq / m^3">
+    <attributes>
+      <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
+      <attribute name="Ens Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Location" value="LIVERPOOL"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Name" value="Unnamed Field Req 5"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="0.000 to 500.000m agl"/>
+      <attribute name="Release location" value="2.9833W   53.4167N"/>
+      <attribute name="Run duration" value="3day 0hr 0min"/>
+      <attribute name="Run name" value="LIVERPOOL_17112010_1407Z"/>
+      <attribute name="Run time" value="17/11/2010 14:16:41.294 UTC"/>
+      <attribute name="Source strength" value="4.6305558E-05 Bq / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="CAESIUM-137"/>
+      <attribute name="Species Category" value="RADIONUCLIDE"/>
+      <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
+      <attribute name="Time Av or Int" value="1hr 0min average"/>
+      <attribute name="Vertical Av or Int" value="Boundary layer average"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="77a50eb5" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-2.9833]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[358285.0, 358286.0],
+		[358286.0, 358287.0],
+		[358287.0, 358288.0],
+		..., 
+		[358354.0, 358355.0],
+		[358355.0, 358356.0],
+		[358356.0, 358357.0]]" id="cb784457" points="[358286.0, 358287.0, 358288.0, 358289.0,
+		358290.0, 358291.0, 358292.0, 358293.0,
+		358294.0, 358295.0, 358296.0, 358297.0,
+		358298.0, 358299.0, 358300.0, 358301.0,
+		358302.0, 358303.0, 358304.0, 358305.0,
+		358306.0, 358307.0, 358308.0, 358309.0,
+		358310.0, 358311.0, 358312.0, 358313.0,
+		358314.0, 358315.0, 358316.0, 358317.0,
+		358318.0, 358319.0, 358320.0, 358321.0,
+		358322.0, 358323.0, 358324.0, 358325.0,
+		358326.0, 358327.0, 358328.0, 358329.0,
+		358330.0, 358331.0, 358332.0, 358333.0,
+		358334.0, 358335.0, 358336.0, 358337.0,
+		358338.0, 358339.0, 358340.0, 358341.0,
+		358342.0, 358343.0, 358344.0, 358345.0,
+		358346.0, 358347.0, 358348.0, 358349.0,
+		358350.0, 358351.0, 358352.0, 358353.0,
+		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
+  </cube>
+  <cube dtype="float64" long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq s / m^3">
+    <attributes>
+      <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
+      <attribute name="Ens Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Location" value="LIVERPOOL"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Name" value="Unnamed Field Req 6"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="0.000 to 500.000m agl"/>
+      <attribute name="Release location" value="2.9833W   53.4167N"/>
+      <attribute name="Run duration" value="3day 0hr 0min"/>
+      <attribute name="Run name" value="LIVERPOOL_17112010_1407Z"/>
+      <attribute name="Run time" value="17/11/2010 14:16:41.294 UTC"/>
+      <attribute name="Source strength" value="4.6305558E-05 Bq / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="CAESIUM-137"/>
+      <attribute name="Species Category" value="RADIONUCLIDE"/>
+      <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
+      <attribute name="Time Av or Int" value="1hr 0min integral"/>
+      <attribute name="Vertical Av or Int" value="Boundary layer average"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="77a50eb5" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-2.9833]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[358285.0, 358286.0],
+		[358286.0, 358287.0],
+		[358287.0, 358288.0],
+		..., 
+		[358354.0, 358355.0],
+		[358355.0, 358356.0],
+		[358356.0, 358357.0]]" id="cb784457" points="[358286.0, 358287.0, 358288.0, 358289.0,
+		358290.0, 358291.0, 358292.0, 358293.0,
+		358294.0, 358295.0, 358296.0, 358297.0,
+		358298.0, 358299.0, 358300.0, 358301.0,
+		358302.0, 358303.0, 358304.0, 358305.0,
+		358306.0, 358307.0, 358308.0, 358309.0,
+		358310.0, 358311.0, 358312.0, 358313.0,
+		358314.0, 358315.0, 358316.0, 358317.0,
+		358318.0, 358319.0, 358320.0, 358321.0,
+		358322.0, 358323.0, 358324.0, 358325.0,
+		358326.0, 358327.0, 358328.0, 358329.0,
+		358330.0, 358331.0, 358332.0, 358333.0,
+		358334.0, 358335.0, 358336.0, 358337.0,
+		358338.0, 358339.0, 358340.0, 358341.0,
+		358342.0, 358343.0, 358344.0, 358345.0,
+		358346.0, 358347.0, 358348.0, 358349.0,
+		358350.0, 358351.0, 358352.0, 358353.0,
+		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
+  </cube>
+  <cube dtype="float64" long_name="CAESIUM-137_DRY_DEPOSITION_RATE" units="Bq / (m^2 s)">
+    <attributes>
+      <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
+      <attribute name="Ens Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Location" value="LIVERPOOL"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Name" value="Unnamed Field Req 7"/>
+      <attribute name="Quantity" value="Dry Deposition Rate"/>
+      <attribute name="Release height" value="0.000 to 500.000m agl"/>
+      <attribute name="Release location" value="2.9833W   53.4167N"/>
+      <attribute name="Run duration" value="3day 0hr 0min"/>
+      <attribute name="Run name" value="LIVERPOOL_17112010_1407Z"/>
+      <attribute name="Run time" value="17/11/2010 14:16:41.294 UTC"/>
+      <attribute name="Source strength" value="4.6305558E-05 Bq / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="CAESIUM-137"/>
+      <attribute name="Species Category" value="RADIONUCLIDE"/>
+      <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
+      <attribute name="Time Av or Int" value="1hr 0min average"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="77a50eb5" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-2.9833]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[358285.0, 358286.0],
+		[358286.0, 358287.0],
+		[358287.0, 358288.0],
+		..., 
+		[358354.0, 358355.0],
+		[358355.0, 358356.0],
+		[358356.0, 358357.0]]" id="cb784457" points="[358286.0, 358287.0, 358288.0, 358289.0,
+		358290.0, 358291.0, 358292.0, 358293.0,
+		358294.0, 358295.0, 358296.0, 358297.0,
+		358298.0, 358299.0, 358300.0, 358301.0,
+		358302.0, 358303.0, 358304.0, 358305.0,
+		358306.0, 358307.0, 358308.0, 358309.0,
+		358310.0, 358311.0, 358312.0, 358313.0,
+		358314.0, 358315.0, 358316.0, 358317.0,
+		358318.0, 358319.0, 358320.0, 358321.0,
+		358322.0, 358323.0, 358324.0, 358325.0,
+		358326.0, 358327.0, 358328.0, 358329.0,
+		358330.0, 358331.0, 358332.0, 358333.0,
+		358334.0, 358335.0, 358336.0, 358337.0,
+		358338.0, 358339.0, 358340.0, 358341.0,
+		358342.0, 358343.0, 358344.0, 358345.0,
+		358346.0, 358347.0, 358348.0, 358349.0,
+		358350.0, 358351.0, 358352.0, 358353.0,
+		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
+  </cube>
+  <cube dtype="float64" long_name="CAESIUM-137_WET_DEPOSITION_RATE" units="Bq / (m^2 s)">
+    <attributes>
+      <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
+      <attribute name="Ens Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Location" value="LIVERPOOL"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Name" value="Unnamed Field Req 8"/>
+      <attribute name="Quantity" value="Wet Deposition Rate"/>
+      <attribute name="Release height" value="0.000 to 500.000m agl"/>
+      <attribute name="Release location" value="2.9833W   53.4167N"/>
+      <attribute name="Run duration" value="3day 0hr 0min"/>
+      <attribute name="Run name" value="LIVERPOOL_17112010_1407Z"/>
+      <attribute name="Run time" value="17/11/2010 14:16:41.294 UTC"/>
+      <attribute name="Source strength" value="4.6305558E-05 Bq / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="CAESIUM-137"/>
+      <attribute name="Species Category" value="RADIONUCLIDE"/>
+      <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
+      <attribute name="Time Av or Int" value="1hr 0min average"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="77a50eb5" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-2.9833]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[358285.0, 358286.0],
+		[358286.0, 358287.0],
+		[358287.0, 358288.0],
+		..., 
+		[358354.0, 358355.0],
+		[358355.0, 358356.0],
+		[358356.0, 358357.0]]" id="cb784457" points="[358286.0, 358287.0, 358288.0, 358289.0,
+		358290.0, 358291.0, 358292.0, 358293.0,
+		358294.0, 358295.0, 358296.0, 358297.0,
+		358298.0, 358299.0, 358300.0, 358301.0,
+		358302.0, 358303.0, 358304.0, 358305.0,
+		358306.0, 358307.0, 358308.0, 358309.0,
+		358310.0, 358311.0, 358312.0, 358313.0,
+		358314.0, 358315.0, 358316.0, 358317.0,
+		358318.0, 358319.0, 358320.0, 358321.0,
+		358322.0, 358323.0, 358324.0, 358325.0,
+		358326.0, 358327.0, 358328.0, 358329.0,
+		358330.0, 358331.0, 358332.0, 358333.0,
+		358334.0, 358335.0, 358336.0, 358337.0,
+		358338.0, 358339.0, 358340.0, 358341.0,
+		358342.0, 358343.0, 358344.0, 358345.0,
+		358346.0, 358347.0, 358348.0, 358349.0,
+		358350.0, 358351.0, 358352.0, 358353.0,
+		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
+  </cube>
+  <cube dtype="float64" long_name="CAESIUM-137_DEPOSITION_RATE" units="Bq / (m^2 s)">
+    <attributes>
+      <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
+      <attribute name="Ens Av" value="No ensemble averaging"/>
+      <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
+      <attribute name="Location" value="LIVERPOOL"/>
+      <attribute name="Met data" value="NWP Flow.4km50L_Flow; NWP Flow.Global_PT1_flow; NWP Flow.Global_PT2_flow; NWP Flow.Global_PT3_flow; NWP Flow.Global_PT4_flow; NWP Flow.Global_PT5_flow; NWP Flow.Global_PT6_flow; NWP Flow.Global_PT7_flow; NWP Flow.Global_PT8_flow; NWP Flow.Global_PT9_flow; NWP Flow.Global_PT10_flow; NWP Flow.Global_PT11_flow; NWP Flow.Global_PT12_flow; NWP Flow.Global_PT13_flow; NWP Flow.Global_PT14_flow"/>
+      <attribute name="NAME Version" value="NAME III (version 5.4)"/>
+      <attribute name="Name" value="Unnamed Field Req 9"/>
+      <attribute name="Quantity" value="Deposition Rate"/>
+      <attribute name="Release height" value="0.000 to 500.000m agl"/>
+      <attribute name="Release location" value="2.9833W   53.4167N"/>
+      <attribute name="Run duration" value="3day 0hr 0min"/>
+      <attribute name="Run name" value="LIVERPOOL_17112010_1407Z"/>
+      <attribute name="Run time" value="17/11/2010 14:16:41.294 UTC"/>
+      <attribute name="Source strength" value="4.6305558E-05 Bq / s"/>
+      <attribute name="Sources" value="All sources"/>
+      <attribute name="Species" value="CAESIUM-137"/>
+      <attribute name="Species Category" value="RADIONUCLIDE"/>
+      <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
+      <attribute name="Time Av or Int" value="1hr 0min average"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="77a50eb5" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="f913a8b3" points="[-2.9833]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[358285.0, 358286.0],
+		[358286.0, 358287.0],
+		[358287.0, 358288.0],
+		..., 
+		[358354.0, 358355.0],
+		[358355.0, 358356.0],
+		[358356.0, 358357.0]]" id="cb784457" points="[358286.0, 358287.0, 358288.0, 358289.0,
+		358290.0, 358291.0, 358292.0, 358293.0,
+		358294.0, 358295.0, 358296.0, 358297.0,
+		358298.0, 358299.0, 358300.0, 358301.0,
+		358302.0, 358303.0, 358304.0, 358305.0,
+		358306.0, 358307.0, 358308.0, 358309.0,
+		358310.0, 358311.0, 358312.0, 358313.0,
+		358314.0, 358315.0, 358316.0, 358317.0,
+		358318.0, 358319.0, 358320.0, 358321.0,
+		358322.0, 358323.0, 358324.0, 358325.0,
+		358326.0, 358327.0, 358328.0, 358329.0,
+		358330.0, 358331.0, 358332.0, 358333.0,
+		358334.0, 358335.0, 358336.0, 358337.0,
+		358338.0, 358339.0, 358340.0, 358341.0,
+		358342.0, 358343.0, 358344.0, 358345.0,
+		358346.0, 358347.0, 358348.0, 358349.0,
+		358350.0, 358351.0, 358352.0, 358353.0,
+		358354.0, 358355.0, 358356.0, 358357.0]" shape="(72,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
+  </cube>
+</cubes>

@@ -1,0 +1,156 @@
+# Please update the test data git references below if appropriate.
+#
+# Note: Contrary to the travis documentation,
+# http://about.travis-ci.org/docs/user/languages/python/#Travis-CI-Uses-Isolated-virtualenvs
+# we will use conda to give us a much faster setup time.
+
+
+language: python
+python:
+  - 2.7
+  - 3.6
+sudo: false
+
+env:
+  matrix:
+    - TEST_TARGET=coding
+    - TEST_TARGET=default TEST_MINIMAL=true
+    - TEST_TARGET=default
+    - TEST_TARGET=example
+    - TEST_TARGET=doctest
+
+  global:
+    # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
+    - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
+
+git:
+  depth: 10000
+
+install:
+  - export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
+  - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
+
+  # Install miniconda
+  # -----------------
+  - export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda
+  - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
+      wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+
+  # Create the basic testing environment
+  # ------------------------------------
+  # Explicitly add defaults channel, see https://github.com/conda/conda/issues/2675
+  - conda config --add channels defaults
+  - conda config --set always_yes yes --set changeps1 no
+  - conda config --set show_channel_urls True
+  - conda update --quiet conda
+  - ENV_NAME='test-environment'
+  - conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION
+  - source activate $ENV_NAME
+
+  # Customise the testing environment
+  # ---------------------------------
+  - conda config --add channels conda-forge
+  - if [[ "$TEST_MINIMAL" == true ]]; then
+      conda install --quiet --file minimal-conda-requirements.txt;
+    else
+      if [[ "$TRAVIS_PYTHON_VERSION" == 3* ]]; then
+        sed -e '/ecmwf_grib/d' -e '/esmpy/d' -e 's/#.\+$//' conda-requirements.txt | xargs conda install --quiet;
+      else
+        conda install --quiet --file conda-requirements.txt;
+      fi
+    fi
+
+  - PREFIX=$HOME/miniconda/envs/$ENV_NAME
+
+  # Output debug info
+  - conda list
+  - conda info -a
+
+# Pre-load Natural Earth data to avoid multiple, overlapping downloads.
+# i.e. There should be no DownloadWarning reports in the log.
+  - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
+
+# iris test data
+  - if [[ "$TEST_MINIMAL" != true ]]; then
+      wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
+      unzip -q iris-test-data.zip;
+      ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data;
+    fi
+
+# prepare iris build directory
+  - if [[ $TEST_TARGET -ne 'coding' ]]; then
+      IRIS=$(ls -d1 build/lib*/iris);
+      mkdir $IRIS/etc;
+    else
+      IRIS=lib/iris;
+    fi
+
+# set config paths
+  - SITE_CFG=$IRIS/etc/site.cfg
+  - echo "[Resources]" > $SITE_CFG
+  - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG
+  - echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG
+  - echo "[System]" >> $SITE_CFG
+  - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
+
+  # The coding standards tests expect all the standard names and PyKE
+  # modules to be present.
+  - if [[ $TEST_TARGET == 'coding' ]]; then
+      python setup.py std_names;
+      PYTHONPATH=lib python setup.py pyke_rules;
+    fi
+
+# iris
+  - python setup.py --quiet build
+  - python setup.py --quiet install
+
+script:
+  - if [[ $TEST_TARGET == 'default' ]]; then
+      python -m iris.tests.runner --default-tests --system-tests --print-failed-images --num-processors=8;
+    fi
+  - if [[ $TEST_TARGET == 'example' ]]; then
+      python -m iris.tests.runner --example-tests --print-failed-images --num-processors=8;
+    fi
+
+  # Capture install-dir: As a test command must be last for get Travis to check
+  # the RC, so it's best to start each operation with an absolute cd.
+  - INSTALL_DIR=$(pwd)
+
+  # "make html" produces an error when run on Travis that does not
+  # affect any downstream functionality but causes the build to fail
+  # spuriously. The echo-backtick workaround gets around this error,
+  # which should be investigated further in the future.
+  - if [[ $TEST_TARGET == 'doctest' ]]; then
+      cd $INSTALL_DIR/docs/iris;
+      echo `make clean html`;
+      make doctest;
+    fi
+
+  # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
+  - ORG=(${TRAVIS_REPO_SLUG//\// })
+
+  # When we merge a change, and we are running in python 3, push some docs. 
+  - if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_EVENT_TYPE} == 'push' && ${TRAVIS_PYTHON_VERSION} == 3* && ${ORG} == "SciTools" ]]; then
+      cd $INSTALL_DIR;
+      pip install doctr;
+      doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
+        --key-path .github/deploy_key.scitools-docs.enc
+        --no-require-master
+        ${TRAVIS_BRANCH:-${TRAVIS_TAG}};
+    fi
+
+  # An extra call to check "whatsnew" contributions are valid, because the
+  # Iris test for it needs a *developer* install to be able to find the docs.
+  - if [[ $TEST_TARGET == 'doctest' ]]; then
+      cd $INSTALL_DIR/docs/iris/src/whatsnew;
+      python aggregate_directory.py --checkonly;
+    fi
+  - if [[ $TEST_TARGET == 'coding' ]]; then
+      cd $INSTALL_DIR;
+      python setup.py test --coding-tests;
+    fi

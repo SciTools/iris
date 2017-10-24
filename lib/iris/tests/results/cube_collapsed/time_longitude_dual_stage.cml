@@ -1,0 +1,104 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-0.12825, -0.12735],
+		[-0.12735, -0.12645],
+		[-0.12645, -0.12555],
+		..., 
+		[-0.04095, -0.04005],
+		[-0.04005, -0.03915],
+		[-0.03915, -0.03825]]" id="f1ab3066" points="[-0.1278, -0.1269, -0.126, ..., -0.0405, -0.0396,
+		-0.0387]" shape="(100,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[359.579, 359.669]]" id="d3676747" points="[359.624]" shape="(1,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0.0, 13.3333],
+		[13.3333, 33.3333],
+		[33.3333, 60.0],
+		..., 
+		[30589.1, 34018.9],
+		[34018.9, 37922.5],
+		[37922.5, 42077.5]]" id="fb105c19" long_name="level_height" points="[5.0, 21.6667, 45.0, 75.0, 111.667, 155.0, 205.0,
+		261.667, 325.0, 395.0, 471.667, 555.0, 645.0,
+		741.667, 845.0, 955.0, 1071.67, 1195.0, 1325.0,
+		1461.67, 1605.0, 1755.0, 1911.67, 2075.0,
+		2245.0, 2421.67, 2605.0, 2795.0, 2991.67,
+		3195.0, 3405.0, 3621.67, 3845.0, 4075.0,
+		4311.67, 4555.0, 4805.0, 5061.67, 5325.0,
+		5595.0, 5871.67, 6155.01, 6445.15, 6742.49,
+		7047.82, 7362.36, 7687.92, 8026.93, 8382.58,
+		8758.92, 9160.94, 9594.76, 10067.7, 10588.3,
+		11166.8, 11814.9, 12546.0, 13375.7, 14321.3,
+		15402.7, 16642.0, 18063.9, 19696.0, 21568.9,
+		23716.1, 26174.7, 28985.5, 32192.7, 35845.0,
+		40000.0]" shape="(70,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="38fd0305" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+		15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+		39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+		51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,
+		63, 64, 65, 66, 67, 68, 69, 70]" shape="(70,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[1.0, 0.998464],
+		[0.998464, 0.996162],
+		[0.996162, 0.993097],
+		..., 
+		[0.0, 0.0],
+		[0.0, 0.0],
+		[0.0, 0.0]]" id="a5c170db" long_name="sigma" points="[0.999424, 0.997504, 0.99482, 0.991375, 0.987171,
+		0.982215, 0.976512, 0.970069, 0.962893,
+		0.954993, 0.946377, 0.937057, 0.927043,
+		0.916346, 0.904981, 0.892961, 0.8803, 0.867014,
+		0.853118, 0.838632, 0.823572, 0.807957,
+		0.791808, 0.775146, 0.757992, 0.740368,
+		0.722298, 0.703807, 0.68492, 0.665662, 0.646062,
+		0.626146, 0.605944, 0.585484, 0.564799,
+		0.543919, 0.522876, 0.501704, 0.480437, 0.45911,
+		0.437758, 0.416418, 0.395119, 0.373871,
+		0.352663, 0.331463, 0.310213, 0.288832,
+		0.267223, 0.245272, 0.222861, 0.199882,
+		0.176257, 0.151965, 0.127085, 0.101852,
+		0.0767339, 0.0525319, 0.0305214, 0.0126308,
+		0.00167859, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0]" shape="(70,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[347921.166667, 347922.0]]" id="cb784457" points="[347921.583333]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="grid_longitude"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(70, 100)" state="loaded"/>
+  </cube>
+</cubes>

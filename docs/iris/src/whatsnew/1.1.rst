@@ -1,0 +1,99 @@
+What's new in Iris 1.1
+**********************
+
+:Release: 1.1.0
+:Date: 7 Dec, 2012
+
+This document explains the new/changed features of Iris in version 1.1.
+(:doc:`View all changes <index>`.)
+
+With the release of Iris 1.1, we are introducing support for Mac OS X.
+Version 1.1 also sees the first batch of performance enhancements, with
+some notable improvements to netCDF/PP import.
+
+
+Iris 1.1 features
+=================
+
+A summary of the main features added with version 1.1:
+
+* Support for Mac OS X.
+* GRIB1 import now supports time units of "3 hours".
+* Fieldsfile import now supports unpacked and "CRAY" 32-bit packed data
+  in 64-bit Fieldsfiles.
+* PP file import now supports "CRAY" 32-bit packed data.
+* Various performance improvements, particularly for netCDF import,
+  PP import, and constraints.
+* GRIB2 export now supports level types of altitude and height
+  (codes 102 and 103).
+* iris.analysis.cartography.area_weights now supports non-standard
+  dimension orders.
+* PP file import now adds the "forecast_reference_time" for fields
+  where LBTIM is 11, 12, 13, 31, or 32.
+* PP file import now supports LBTIM values of 1, 2, and 3.
+* Fieldsfile import now has some support for ancillary files.
+* Coordinate categorisation functions added for day-of-year and
+  user-defined seasons.
+* GRIB2 import now has partial support for probability data defined
+  with product template 4.9.
+
+Bugs fixed
+----------
+* PP export no longer attempts to set/overwrite the STASH code based on
+  the standard_name.
+* Cell comparisons now work consistently, which fixes a bug where
+  bounded_cell > point_cell compares the point to the bounds but,
+  point_cell < bounded_cell compares the points.
+* Fieldsfile import now correctly recognises pre v3.1 and post v5.2
+  versions, which fixes a bug where the two were interchanged.
+* iris.analysis.trajectory.interpolate now handles hybrid-height.
+
+Incompatible changes
+--------------------
+* N/A
+
+Deprecations
+------------
+* N/A
+
+
+Coordinate categorisation
+=========================
+
+An :func:`~iris.coord_categorisation.add_day_of_year` categorisation
+function has been added to the existing suite in
+:mod:`iris.coord_categorisation`.
+
+Custom seasons
+--------------
+
+The conventional seasonal categorisation functions have been
+complemented by two groups of functions which handle user-defined,
+custom seasons.
+
+The first group of functions is:
+
+* :func:`iris.coord_categorisation.add_custom_season`
+* :func:`iris.coord_categorisation.add_custom_season_number`
+* :func:`iris.coord_categorisation.add_custom_season_year`
+
+These functions mimic their non-custom versions, but with the addition
+of a ``seasons`` parameter which is used to define the custom seasons.
+These seasons are defined by concatenating the single letter
+abbreviations of the relevant, consecutive months.
+
+For example, to categorise a Cube based on "winter" and "summer" months,
+one might do::
+
+    >>> seasons = ['mamjja', 'sondjf']
+    >>> iris.coord_categorisation.add_custom_season(cube, 'time', seasons)
+    >>> print(cube.coord('season').points)
+    ['ondjfm' 'ondjfm' 'mamjja' 'mamjja' 'mamjja' 'mamjja' 'mamjja' 'mamjja'
+     'ondjfm' 'ondjfm' 'ondjfm' 'ondjfm']
+
+The other custom season function is:
+
+* :func:`iris.coord_categorisation.add_custom_season_membership`.
+
+This function adds a coordinate containing True/False values determined
+by membership of a single custom season.

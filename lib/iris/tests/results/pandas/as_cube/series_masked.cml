@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" units="unknown">
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="343cbc01" long_name="index" points="[5, 6, 7, 8, 9]" shape="(5,)" units="Unit('unknown')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x88b40b84" dtype="float64" mask_checksum="0x6785a139" shape="(5,)"/>
+  </cube>
+</cubes>

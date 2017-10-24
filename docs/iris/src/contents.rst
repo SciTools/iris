@@ -2,10 +2,14 @@
 Iris documentation table of contents
 =====================================
 .. toctree::
+   :maxdepth: 1
+
+   installing.rst
+   
+.. toctree::
    :maxdepth: 3
 
    userguide/index.rst
-
    
 .. toctree::
    :maxdepth: 1
@@ -13,12 +17,16 @@ Iris documentation table of contents
  
    iris/iris.rst
 
+.. toctree::
+   :maxdepth: 2
+
+   whatsnew/index.rst
 
 .. toctree::
    :maxdepth: 1
 
-   whats_new/changes.rst
    examples/index.rst
    developers_guide/index.rst
+   whitepapers/index.rst
    copyright.rst
 

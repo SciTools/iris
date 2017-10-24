@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,83 +19,176 @@ A package for converting cubes to and from specific file formats.
 
 """
 
-import iris.io.format_picker as fp
-import pp
-import ff
-import grib
-import netcdf
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
+from iris.io.format_picker import (FileExtension, FormatAgent,
+                                   FormatSpecification, MagicNumber,
+                                   UriProtocol, LeadingLine)
+from . import abf
+from . import um
+try:
+    from . import grib as igrib
+except ImportError:
+    igrib = None
+
+from . import name
+from . import netcdf
+from . import nimrod
+from . import pp
 
 
 __all__ = ['FORMAT_AGENT']
 
 
-def _pp_little_endian(filename, *args, **kwargs):
-    raise ValueError('PP file %r contains little-endian data, please convert to big-endian with command line utility "bigend".' % filename)
+FORMAT_AGENT = FormatAgent()
+FORMAT_AGENT.__doc__ = "The FORMAT_AGENT is responsible for identifying the " \
+                       "format of a given URI. New formats can be added " \
+                       "with the **add_spec** method."
 
 
-FORMAT_AGENT = fp.FormatAgent()
-FORMAT_AGENT.__doc__ = "The FORMAT_AGENT is responsible for identifying the format of a given URI. New " \
-                       "formats can be added with the **add_spec** method."
-
-_PP_spec = fp.FormatSpecification('UM Post Processing file (PP)', 
-                                  fp.MAGIC_NUMBER_32_BIT, 0x00000100,
-                                  pp.load_cubes,
-                                  priority=5,
-                                  )
-FORMAT_AGENT.add_spec(_PP_spec)
-
-_PP_little_endian_spec = fp.FormatSpecification('UM Post Processing file (PP) little-endian', 
-                                  fp.MAGIC_NUMBER_32_BIT, 0x00010000,
-                                  _pp_little_endian,
-                                  priority=5,
-                                  )
-
-FORMAT_AGENT.add_spec(_PP_little_endian_spec)
-
-_GRIB_spec = fp.FormatSpecification('GRIB', 
-                                    fp.MAGIC_NUMBER_32_BIT, 0x47524942,
-                                    grib.load_cubes,
-                                    priority=5,
-                                    )
-FORMAT_AGENT.add_spec(_GRIB_spec)
+#
+# PP files.
+#
+FORMAT_AGENT.add_spec(FormatSpecification('UM Post Processing file (PP)',
+                                          MagicNumber(4),
+                                          0x00000100,
+                                          pp.load_cubes,
+                                          priority=5,
+                                          constraint_aware_handler=True))
 
 
-_NetCDF_spec = fp.FormatSpecification('NetCDF', 
-                                      fp.MAGIC_NUMBER_32_BIT, 0x43444601,
-                                      netcdf.load_cubes,
-                                      priority=5,
-                                      )
-FORMAT_AGENT.add_spec(_NetCDF_spec)
+FORMAT_AGENT.add_spec(
+    FormatSpecification('UM Post Processing file (PP) little-endian',
+                        MagicNumber(4),
+                        0x00010000,
+                        pp.load_cubes_little_endian,
+                        priority=3,
+                        constraint_aware_handler=True))
 
 
-_NetCDF_64_bit_offset_spec = fp.FormatSpecification('NetCDF 64 bit offset format', 
-                                      fp.MAGIC_NUMBER_32_BIT, 0x43444602,
-                                      netcdf.load_cubes,
-                                      priority=5,
-                                      )
-FORMAT_AGENT.add_spec(_NetCDF_64_bit_offset_spec)
-    
-# NetCDF4 - recognise a different magicnum, but treat just the same
-# NOTE: this covers both v4 and v4 "classic model", the signature is the same
-_NetCDF_v4_spec = fp.FormatSpecification('NetCDF_v4', 
-                                      fp.MAGIC_NUMBER_64_BIT, 0x894844460d0a1a0a,
-                                      netcdf.load_cubes,
-                                      priority=5,
-                                      )
-FORMAT_AGENT.add_spec(_NetCDF_v4_spec)
-    
-# Fields files    
-_FF_3p1_spec = fp.FormatSpecification('UM Fields file (FF) pre v3.1', 
-                                  fp.MAGIC_NUMBER_64_BIT, 0x0000000000000014,
-                                  ff.load_cubes,
-                                  priority=4
-                                  )
-FORMAT_AGENT.add_spec(_FF_3p1_spec)
-    
-    
-_FF_5p2_spec = fp.FormatSpecification('UM Fields file (FF) post v5.2', 
-                                  fp.MAGIC_NUMBER_64_BIT, 0x000000000000000F,
-                                  ff.load_cubes,
-                                  priority=4,                              
-                                  )
-FORMAT_AGENT.add_spec(_FF_5p2_spec)
+#
+# GRIB files.
+#
+def _load_grib(*args, **kwargs):
+    if igrib is None:
+        raise RuntimeError('Unable to load GRIB file - the ECMWF '
+                           '`gribapi` package is not installed.')
+    return igrib.load_cubes(*args, **kwargs)
+
+
+# NB. Because this is such a "fuzzy" check, we give this a very low
+# priority to avoid collateral damage from false positives.
+FORMAT_AGENT.add_spec(
+    FormatSpecification('GRIB', MagicNumber(100),
+                        lambda header_bytes: b'GRIB' in header_bytes,
+                        _load_grib, priority=1))
+
+
+#
+# netCDF files.
+#
+FORMAT_AGENT.add_spec(FormatSpecification('NetCDF',
+                                          MagicNumber(4),
+                                          0x43444601,
+                                          netcdf.load_cubes,
+                                          priority=5))
+
+
+FORMAT_AGENT.add_spec(FormatSpecification('NetCDF 64 bit offset format',
+                                          MagicNumber(4),
+                                          0x43444602,
+                                          netcdf.load_cubes,
+                                          priority=5))
+
+
+# This covers both v4 and v4 classic model.
+FORMAT_AGENT.add_spec(FormatSpecification('NetCDF_v4',
+                                          MagicNumber(8),
+                                          0x894844460D0A1A0A,
+                                          netcdf.load_cubes,
+                                          priority=5))
+
+
+_nc_dap = FormatSpecification('NetCDF OPeNDAP',
+                              UriProtocol(),
+                              lambda protocol: protocol in ['http', 'https'],
+                              netcdf.load_cubes,
+                              priority=6)
+FORMAT_AGENT.add_spec(_nc_dap)
+del _nc_dap
+
+#
+# UM Fieldsfiles.
+#
+FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) pre v3.1',
+                                          MagicNumber(8),
+                                          0x000000000000000F,
+                                          um.load_cubes,
+                                          priority=3,
+                                          constraint_aware_handler=True))
+
+
+FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) post v5.2',
+                                          MagicNumber(8),
+                                          0x0000000000000014,
+                                          um.load_cubes,
+                                          priority=4,
+                                          constraint_aware_handler=True))
+
+
+FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary',
+                                          MagicNumber(8),
+                                          0xFFFFFFFFFFFF8000,
+                                          um.load_cubes,
+                                          priority=3,
+                                          constraint_aware_handler=True))
+
+
+FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) converted '
+                                          'with ieee to 32 bit',
+                                          MagicNumber(4),
+                                          0x00000014,
+                                          um.load_cubes_32bit_ieee,
+                                          priority=3,
+                                          constraint_aware_handler=True))
+
+
+FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary '
+                                          'converted with ieee to 32 bit',
+                                          MagicNumber(4),
+                                          0xFFFF8000,
+                                          um.load_cubes_32bit_ieee,
+                                          priority=3,
+                                          constraint_aware_handler=True))
+
+
+#
+# NIMROD files.
+#
+FORMAT_AGENT.add_spec(FormatSpecification('NIMROD',
+                                          MagicNumber(4),
+                                          0x00000200,
+                                          nimrod.load_cubes,
+                                          priority=3))
+
+#
+# NAME files.
+#
+FORMAT_AGENT.add_spec(
+    FormatSpecification('NAME III',
+                        LeadingLine(),
+                        lambda line: line.lstrip().startswith(b"NAME III"),
+                        name.load_cubes,
+                        priority=5))
+
+
+#
+# ABF/ABL
+#
+FORMAT_AGENT.add_spec(FormatSpecification('ABF', FileExtension(), '.abf',
+                                          abf.load_cubes, priority=3))
+
+
+FORMAT_AGENT.add_spec(FormatSpecification('ABL', FileExtension(), '.abl',
+                                          abf.load_cubes, priority=3))

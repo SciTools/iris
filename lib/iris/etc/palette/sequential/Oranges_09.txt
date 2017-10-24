@@ -1,0 +1,29 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         Oranges_09
+# scheme:       sequential
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   1.000000 0.960784 0.921569
+   0.996078 0.901961 0.807843
+   0.992157 0.815686 0.635294
+   0.992157 0.682353 0.419608
+   0.992157 0.552941 0.235294
+   0.945098 0.411765 0.074510
+   0.850980 0.282353 0.003922
+   0.650980 0.211765 0.011765
+   0.498039 0.152941 0.015686

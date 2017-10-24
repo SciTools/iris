@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_temperature" units="K">
+    <attributes>
+      <attribute name="STASH" value="m01s16i203"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0, 1]">
+        <auxCoord id="9041e969" points="[[nan, nan, 260.259246826, 260.259246826],
+		[nan, nan, 377.580688477, 374.184997559],
+		[nan, nan, 494.902130127, 488.110778809],
+		[nan, nan, 612.223571777, 602.036560059]]" shape="(4, 4)" standard_name="altitude" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[-28083.0, 6477.0]]" id="1d45e087" points="[6477]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[243363.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="77a50eb5" points="[90.0, 87.5, 85.0, 82.5]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <auxCoord id="fb105c19" long_name="level_height" points="[0]" shape="(1,)" units="Unit('m')" value_type="int64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="f913a8b3" points="[-5.0, -1.25, 2.5, 6.25]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="6eef7051" long_name="pressure" points="[1000.0]" shape="(1,)" units="Unit('hPa')" value_type="float32"/>
+      </coord>
+      <coord>
+        <auxCoord id="a5c170db" long_name="sigma" points="[1]" shape="(1,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <auxCoord id="b15e3a2e" points="[[nan, nan, 260.259, 260.259],
+		[nan, nan, 377.581, 374.185],
+		[nan, nan, 494.902, 488.111],
+		[nan, nan, 612.224, 602.037]]" shape="(4, 4)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[215280.0, 249840.0]]" id="cb784457" points="[249840.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean within years">
+        <coord name="time"/>
+      </cellMethod>
+      <cellMethod method="mean over years">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(4, 4)" state="loaded"/>
+  </cube>
+</cubes>

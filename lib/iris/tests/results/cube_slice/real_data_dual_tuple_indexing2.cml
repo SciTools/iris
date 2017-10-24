@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_pressure_at_sea_level" units="Pa">
+    <attributes>
+      <attribute name="STASH" value="m01s16i222"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.1"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[319536.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="f1ab3066" points="[-22.49, -22.05, -21.94, -22.27]" shape="(4,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </auxCoord>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord id="d3676747" points="[313.35, 313.57, 313.57]" shape="(3,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </auxCoord>
+      </coord>
+      <coord>
+        <dimCoord id="cb784457" points="[319536.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x22389581" dtype="float32" shape="(4, 3)"/>
+  </cube>
+</cubes>

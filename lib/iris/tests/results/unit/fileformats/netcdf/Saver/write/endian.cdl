@@ -1,0 +1,25 @@
+dimensions:
+	dim0 = UNLIMITED ; // (3 currently)
+	bnds = 2 ;
+	dim1 = 4 ;
+variables:
+	float air_pressure_anomaly(dim0, dim1) ;
+		air_pressure_anomaly:standard_name = "air_pressure_anomaly" ;
+	float dim0(dim0) ;
+		dim0:bounds = "dim0_bnds" ;
+		dim0:units = "1" ;
+	float dim0_bnds(dim0, bnds) ;
+data:
+
+ air_pressure_anomaly =
+  0, 1, 2, 3,
+  4, 5, 6, 7,
+  8, 9, 10, 11 ;
+
+ dim0 = 0, 1, 2 ;
+
+ dim0_bnds =
+  0, 1,
+  2, 3,
+  4, 5 ;
+}

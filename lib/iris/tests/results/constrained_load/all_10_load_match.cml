@@ -1,0 +1,209 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="77a50eb5" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[1810.0, 2210.0]]" id="fb105c19" long_name="level_height" points="[2000.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord circular="True" id="f913a8b3" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="38fd0305" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
+        <auxCoord bounds="[[0.803914, 0.763465]]" id="a5c170db" long_name="sigma" points="[0.784571]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="1 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x45a44f1a" dtype="float32" shape="(145, 192)"/>
+  </cube>
+  <cube dtype="float32" standard_name="specific_humidity" units="kg kg-1">
+    <attributes>
+      <attribute name="STASH" value="m01s00i010"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="77a50eb5" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[1810.0, 2210.0]]" id="fb105c19" long_name="level_height" points="[2000.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord circular="True" id="f913a8b3" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="38fd0305" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
+        <auxCoord bounds="[[0.803914, 0.763465]]" id="a5c170db" long_name="sigma" points="[0.784571]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="1 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x0f9c7d63" dtype="float32" shape="(145, 192)"/>
+  </cube>
+  <cube dtype="float32" standard_name="x_wind" units="m s-1">
+    <attributes>
+      <attribute name="STASH" value="m01s00i002"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="77a50eb5" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[1620.0, 2000.0]]" id="fb105c19" long_name="level_height" points="[1810.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord circular="True" id="f913a8b3" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
+		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="38fd0305" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
+        <auxCoord bounds="[[0.823493, 0.784571]]" id="a5c170db" long_name="sigma" points="[0.803914]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="1 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xd841777e" dtype="float32" shape="(145, 192)"/>
+  </cube>
+  <cube dtype="float32" standard_name="y_wind" units="m s-1">
+    <attributes>
+      <attribute name="STASH" value="m01s00i003"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="77a50eb5" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[1620.0, 2000.0]]" id="fb105c19" long_name="level_height" points="[1810.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord circular="True" id="f913a8b3" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="38fd0305" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
+        <auxCoord bounds="[[0.823493, 0.784571]]" id="a5c170db" long_name="sigma" points="[0.803914]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="1 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x31d04486" dtype="float32" shape="(144, 192)"/>
+  </cube>
+</cubes>

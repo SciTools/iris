@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int32" long_name="temperature" units="K">
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="3c412707" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="1c10364f" points="[0.0, 90.0, 180.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="302bf438" long_name="pressure" points="[11]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xda82ec24" dtype="int32" shape="(5, 3)"/>
+  </cube>
+  <cube dtype="int32" units="unknown">
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="3c412707" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="1c10364f" points="[0.0, 90.0, 180.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="302bf438" long_name="pressure" points="[11]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x5a2affc8" dtype="int32" shape="(5, 3)"/>
+  </cube>
+</cubes>

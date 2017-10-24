@@ -1,0 +1,205 @@
+What's new in Iris 1.4
+**********************
+
+:Release: 1.4.0
+:Date: 14 June 2013
+
+This document explains the new/changed features of Iris in version 1.4.
+(:doc:`View all changes <index>`.)
+
+Iris 1.4 features
+=================
+
+A summary of the main features added with version 1.4:
+
+* Multiple cubes can now be exported to a NetCDF file.
+* Correct nearest-neighbour calculation with circular coords.
+* :ref:`Experimental regridding enhancements<exp-regrid>`.
+* :ref:`Iris-Pandas interoperability<iris-pandas>`.
+* NIMROD level type 12 (levels below ground) can now be loaded.
+* :ref:`Load cubes from the internet via OPeNDAP<load-opendap>`.
+* :ref:`GeoTiff export (experimental)<geotiff_export>`.
+* :ref:`Cube merge update<cube-merge-update>`.
+* :ref:`Unambiguous season year naming<season-year-name>`.
+* NIMROD files with multiple fields and period of interest can now be loaded.
+* Missing values are now handled when loading GRIB messages.
+* PP export rule to calculate forecast period.
+* :func:`~iris.cube.Cube.aggregated_by` now maintains array masking.
+* IEEE 32bit fieldsfiles can now be loaded.
+* NetCDF transverse mercator and climatology data can now be loaded.
+* Polar stereographic GRIB data can now be loaded.
+* :ref:`Cubes with no vertical coord can now be exported to GRIB<grib-novert>`.
+* :ref:`Simplified resource configuration<simple_cfg>`.
+* :ref:`Extended GRIB parameter translation<grib_params>`.
+* Added an optimisation for single-valued coordinate constraints.
+* :ref:`One dimensional linear interpolation fix<one-d-linear>`.
+* :ref:`Fix for iris.analysis.calculus.differentiate<calc-diff-fix>`.
+* Fixed pickling of cubes with 2D aux coords from NetCDF.
+* Fixed bug which ignored the "coords" keyword for certain plots.
+* Use the latest release of Cartopy, v0.8.0.
+
+
+Incompatible changes
+--------------------
+* As part of simplifying the mechanism for accessing test data,
+  :func:`iris.io.select_data_path`, :data:`iris.config.DATA_REPOSITORY`,
+  :data:`iris.config.MASTER_DATA_REPOSITORY` and
+  :data:`iris.config.RESOURCE_DIR` have been removed.
+
+Deprecations
+------------
+* The *add_custom_season_** functions from :mod:`~iris.coord_categorisation` have been deprecated in favour of adding their functionality to the *add_season_** functions
+
+
+.. _OPeNDAP: http://www.opendap.org/about
+
+
+.. _exp-regrid:
+
+Experimental regridding enhancements
+====================================
+
+Bilinear, area-weighted and area-conservative regridding functions are now available in
+:mod:`iris.experimental`. These functions support masked data and handle
+derived coordinates such as hybrid height. The final API is still in development.
+In the meantime:
+
+Bilinear rectilinear regridding
+-------------------------------
+:func:`~iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid`
+can be used to regrid a cube onto a horizontal grid defined in a different coordinate system.
+The data values are calculated using bilinear interpolation.
+
+For example::
+
+	from iris.experimental.regrid import regrid_bilinear_rectilinear_src_and_grid
+	regridded_cube = regrid_bilinear_rectilinear_src_and_grid(source_cube, target_grid_cube)
+
+Area-weighted regridding
+------------------------
+:func:`~iris.experimental.regrid.regrid_area_weighted_rectilinear_src_and_grid` can be used to regrid a cube
+such that the data values of the resulting cube are calculated using the
+area-weighted mean.
+
+For example::
+
+	from iris.experimental.regrid import regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted
+	regridded_cube = regrid_area_weighted(source_cube, target_grid_cube)
+
+Area-conservative regridding
+----------------------------
+:func:`~iris.experimental.regrid_conservative.regrid_conservative_via_esmpy`
+can be used for area-conservative regridding between geographical coordinate systems.
+This uses the ESMF library functions, via the ESMPy interface.
+
+For example::
+
+	from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy 
+	regridded_cube = regrid_conservative_via_esmpy(source_cube, target_grid_cube)
+
+
+.. _iris-pandas:
+
+Iris-Pandas interoperablilty
+============================
+Conversion to and from Pandas Series_ and DataFrames_ is now available.
+See :mod:`iris.pandas` for more details.
+
+.. _Series: http://pandas.pydata.org/pandas-docs/stable/api.html#series
+.. _DataFrames: http://pandas.pydata.org/pandas-docs/stable/api.html#dataframe
+
+
+.. _load-opendap:
+
+Load cubes from the internet via OPeNDAP
+========================================
+Cubes can now be loaded directly from the internet, via OPeNDAP_.  
+
+For example::
+
+        cubes = iris.load("http://geoport.whoi.edu/thredds/dodsC/bathy/gom15")
+
+
+.. _geotiff_export:
+
+GeoTiff export
+==============
+With this experimental feature, two dimensional cubes can now be exported to GeoTiff files.
+
+For example::
+
+	from iris.experimental.raster import export_geotiff
+	export_geotiff(cube, filename)
+
+.. note::
+
+	This is a raw data export only and does not save Iris plots.
+
+
+.. _cube-merge-update:
+
+Cube merge update
+=================
+Cube merging now favours numerical coordinates over string coordinates
+to describe a dimension, and :class:`~iris.coords.DimCoord` over
+:class:`~iris.coords.AuxCoord`. These modifications prevent the error:
+*"No functional relationship between separable and inseparable candidate dimensions"*.
+
+
+.. _season-year-name:
+
+Unambiguous season year naming
+==============================
+The default names of categorisation coordinates are now less ambiguous.
+For example, :func:`~iris.coord_categorisation.add_month_number` and
+:func:`~iris.coord_categorisation.add_month_fullname` now create
+"month_number" and "month_fullname" coordinates.
+
+
+.. _grib-novert:
+
+Cubes with no vertical coord can now be exported to GRIB
+========================================================
+Iris can now export cubes with no vertical coord to GRIB.
+The solution is still under discussion: See https://github.com/SciTools/iris/issues/519.
+
+
+.. _simple_cfg:
+
+Simplified resource configuration
+=================================
+A new configuration variable called :data:`iris.config.TEST_DATA_DIR` 
+has been added, replacing the previous combination of
+:data:`iris.config.MASTER_DATA_REPOSITORY` and
+:data:`iris.config.DATA_REPOSITORY`. This constant should be the path
+to a directory containing the test data required by the unit tests. It can
+be set by adding a ``test_data_dir`` entry to the ``Resources`` section of
+``site.cfg``. See :mod:`iris.config` for more details. 
+
+
+.. _grib_params:
+
+Extended GRIB parameter translation
+===================================
+ - More GRIB2 params are recognised on input.
+ - Now translates some codes on GRIB2 output.
+ - Some GRIB2 params may load with a different standard_name.
+
+ 
+
+.. _one-d-linear:
+
+One dimensional linear interpolation fix
+========================================
+:func:`~iris.analysis.interpolate.linear` can now extrapolate from a single point
+assuming a gradient of zero. This prevents an issue when loading cross sections
+with a hybrid height coordinate, on a staggered grid and only a single orography field.
+
+
+.. _calc-diff-fix:
+
+Fix for iris.analysis.calculus.differentiate
+=============================================
+A bug in :func:`~iris.analysis.calculus.differentiate` that had the potential to cause
+the loss of coordinate metadata when calculating the curl or the derivative of a cube has been fixed.
+

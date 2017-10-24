@@ -1,0 +1,57 @@
+[PP Field
+   lbyr: 1970
+   lbmon: 1
+   lbdat: 2
+   lbhr: 0
+   lbmin: 0
+   lbsec: 0
+   lbyrd: 0
+   lbmond: 0
+   lbdatd: 0
+   lbhrd: 0
+   lbmind: 0
+   lbsecd: 0
+   lbtim: 1
+   lbft: 0
+   lblrec: 12
+   lbcode: 1
+   lbhem: 3
+   lbrow: 3
+   lbnpt: 4
+   lbext: 0
+   lbpack: 0
+   lbrel: 3
+   lbfc: 0
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 0
+   lbrvc: 0
+   lbexp: 0
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 0
+   lbtyp: 0
+   lblev: 0
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 0
+   lbuser: (2, -99, 0, 0, 0, 0, 0)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: 0.0
+   blev: 0.0
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -2.0
+   bdy: 1.0
+   bzx: -2.0
+   bdx: 1.0
+   bmdi: -1e+30
+   bmks: 1.0
+   data: [[ 0  1  2  3]
+ [ 4  5  6  7]
+ [ 8  9 10 11]]
+]

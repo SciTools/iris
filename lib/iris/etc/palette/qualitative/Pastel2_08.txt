@@ -1,0 +1,28 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         Pastel2_08
+# scheme:       qualitative
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   0.701961 0.886275 0.803922
+   0.992157 0.803922 0.674510
+   0.796078 0.835294 0.909804
+   0.956863 0.792157 0.894118
+   0.901961 0.960784 0.788235
+   1.000000 0.949020 0.682353
+   0.945098 0.886275 0.800000
+   0.800000 0.800000 0.800000

@@ -1,1 +1,0 @@
-<iris 'Cube' of air_temperature (scalar cube)>

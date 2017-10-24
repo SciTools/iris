@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" standard_name="air_temperature" units="kelvin">
+    <coords>
+      <coord>
+        <dimCoord id="1d45e087" points="[24]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord>
+        <auxCoord id="61bde96d" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <dimCoord id="6eef7051" long_name="pressure" points="[850]" shape="(1,)" units="Unit('hPa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <dimCoord id="cb784457" points="[379824.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x96e64ccb" dtype="float64" shape="(3447,)"/>
+  </cube>
+</cubes>

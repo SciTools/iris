@@ -1,0 +1,7 @@
+failed to merge into a single cube.
+  cube.standard_name differs: 'air_temperature' != 'air_pressure'
+  cube.var_name differs: 'Arthur' != 'Nudge'
+  cube.attributes keys differ: 'stuffed'
+  cube.cell_methods differ
+  cube.shape differs: (3,) != (2,)
+  cube data dtype differs: int64 != int8

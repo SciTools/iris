@@ -1,8 +1,0 @@
-
--- GRIB #1 -- shortName=t paramId=130 stepRange=48 levelType=pl level=0 packingType=grid_simple gridType=regular_ll --
-long [productionStatusOfProcessedData]: [0] != [255]
-long [shapeOfTheEarth]: [0] != [1]
-scaleFactorOfRadiusOfSphericalEarth is set to missing in 1st field is not missing in 2nd field
-scaledValueOfRadiusOfSphericalEarth is set to missing in 1st field is not missing in 2nd field
-long [typeOfGeneratingProcess]: [0] != [255]
-long [generatingProcessIdentifier]: [128] != [255]

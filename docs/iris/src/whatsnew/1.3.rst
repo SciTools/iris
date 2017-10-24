@@ -1,0 +1,128 @@
+What's new in Iris 1.3
+**********************
+
+:Release: 1.3.0
+:Date: 27 March 2013
+
+This document explains the new/changed features of Iris in version 1.3.
+(:doc:`View all changes <index>`.)
+
+Iris 1.3 features
+=================
+
+A summary of the main features added with version 1.3:
+
+* Experimental support for
+  :ref:`loading ABF/ABL files<whats-new-abf>`.
+* Support in :func:`iris.analysis.interpolate.linear` for longitude ranges
+  other than [-180, 180].
+* Support for :ref:`customised CF profiles<whats-new-cf-profile>` on
+  export to netCDF.
+* The documentation now includes guidance on
+  :ref:`how to cite Iris<Citing_Iris>`.
+* The ability to calculate the exponential of a Cube, via
+  :func:`iris.analysis.maths.exp()`.
+* Experimental support for :ref:`concatenating Cubes<whats-new-concat>`
+  along existing dimensions via
+  :func:`iris.experimental.concatenate.concatenate()`.
+
+Bugs fixed
+----------
+* Printing a Cube now supports Unicode attribute values.
+* PP export now sets LBMIN correctly.
+* Converting between reference times now works correctly for
+  units with non-Gregorian calendars.
+* Slicing a :class:`~iris.cube.CubeList` now returns a
+  :class:`~iris.cube.CubeList` instead of a normal list.
+
+Incompatible changes
+--------------------
+* N/A
+
+Deprecations
+------------
+* The boolean methods/properties on the :class:`~iris.unit.Unit` class
+  have been updated to `is_...()` methods, in line with the project's
+  naming conventions.
+
+  ====================================== ===========================================
+  Deprecated property/method             New method
+  ====================================== ===========================================
+  :meth:`~iris.unit.Unit.convertible()`  :meth:`~iris.unit.Unit.is_convertible()`
+  :attr:`~iris.unit.Unit.dimensionless`  :meth:`~iris.unit.Unit.is_dimensionless()`
+  :attr:`~iris.unit.Unit.no_unit`        :meth:`~iris.unit.Unit.is_no_unit()`
+  :attr:`~iris.unit.Unit.time_reference` :meth:`~iris.unit.Unit.is_time_reference()`
+  :attr:`~iris.unit.Unit.unknown`        :meth:`~iris.unit.Unit.is_unknown()`
+  ====================================== ===========================================
+
+
+.. _whats-new-abf:
+
+Loading ABF/ABL files
+=====================
+
+Support for the ABF and ABL file formats (as
+`defined <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_ by the
+climate and vegetation research group of Boston University), is
+currently provided under the "experimental" system. As such, ABF/ABL
+file detection is not automatically enabled.
+
+To enable ABF/ABL file detection, simply import the
+:mod:`iris.experimental.fileformats.abf` module before attempting to
+load an ABF/ABL file.
+
+For example::
+
+        import iris.experimental.fileformats.abf
+        cube = iris.load_cube('/path/to/my/data.abf')
+
+
+.. _whats-new-cf-profile:
+
+Customised CF profiles
+======================
+
+Iris now provides hooks in the CF-netCDF export process to allow
+user-defined routines to check and/or modify the representation in the
+netCDF file.
+
+The following keys within the ``iris.site_configuration`` dictionary have
+been **reserved** as hooks to *external* user-defined CF profile functions:
+
+ * ``cf_profile`` injests a :class:`iris.cube.Cube` for analysis and returns a profile result
+ * ``cf_patch`` modifies the CF-netCDF file associated with export of the :class:`iris.cube.Cube`
+
+The ``iris.site_configuration`` dictionary should be configured via the ``iris/site_config.py`` file.
+
+For further implementation details see ``iris/fileformats/netcdf.py``.
+
+
+.. _whats-new-concat:
+
+Cube concatenation
+==================
+
+Iris now provides initial support for concatenating Cubes along one or
+more existing dimensions. Currently this will force the data to be
+loaded for all the source Cubes, but future work will remove this
+restriction.
+
+For example, if one began with a collection of Cubes, each containing
+data for a different range of times::
+
+        >>> print(cubes)
+        0: air_temperature                     (time: 30; latitude: 145; longitude: 192)
+        1: air_temperature                     (time: 30; latitude: 145; longitude: 192)
+        2: air_temperature                     (time: 30; latitude: 145; longitude: 192)
+
+One could use :func:`iris.experimental.concatenate.concatenate()` to
+combine these into a single Cube as follows::
+
+        >>> new_cubes = iris.experimental.concatenate.concatenate(cubes)
+        >>> print(new_cubes)
+        0: air_temperature                     (time: 90; latitude: 145; longitude: 192)
+
+.. note::
+
+    As this is an experimental feature, your feedback is especially welcome.
+

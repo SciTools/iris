@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int64" units="unknown">
+    <coords>
+      <coord datadims="[2]">
+        <dimCoord id="75879334" points="[0, 1]" shape="(2,)" standard_name="forecast_period" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="e81eb67d" points="[10, 11]" shape="(2,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord id="36e56a08" points="[1, 2]" shape="(2,)" standard_name="realization" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="bc1dc451" points="[1, 2]" shape="(2,)" standard_name="time" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[5]">
+        <dimCoord id="78a0dfe8" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[4]">
+        <dimCoord id="6fdbcbab" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="int64" shape="(2, 2, 2, 2, 4, 5)" state="loaded"/>
+  </cube>
+</cubes>
