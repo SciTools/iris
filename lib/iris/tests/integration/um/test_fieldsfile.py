@@ -52,21 +52,5 @@ class TestStructuredLoadFF(tests.IrisTest):
         self.assertCML(cube)
 
 
-@tests.skip_data
-class TestStructuredLoadPP(tests.IrisTest):
-    def setUp(self):
-        self.fname = tests.get_data_path(('PP', 'structured', 'small.pp'))
-
-    def test_simple(self):
-        [cube] = load(self.fname, None)
-        self.assertCML(cube)
-
-    def test_simple_callback(self):
-        def callback(cube, field, filename):
-            cube.attributes['processing'] = 'fast-pp'
-        [cube] = load(self.fname, callback=callback)
-        self.assertCML(cube)
-
-
 if __name__ == "__main__":
     tests.main()
