@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,10 +23,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import cf_units as unit
 import numpy as np
 import numpy.ma as ma
 
-from iris.analysis import Aggregator
+from iris import coord_categorisation
+from iris.analysis import Aggregator, MEAN
+from iris.coords import DimCoord
+from iris.cube import Cube
 from iris.exceptions import LazyAggregatorError
 from iris.tests import mock
 
@@ -314,6 +318,44 @@ class Test_lazy_aggregate(tests.IrisTest):
         expected_kwargs = init_kwargs.copy()
         expected_kwargs.update(call_kwargs)
         lazy_func.assert_called_once_with(data, axis, **expected_kwargs)
+
+class Test_aggregated_by(tests.IrisTest):
+    def setUp(self):
+        # This sets up a cube with a time coordinate containing two years and
+        # two months.
+        latitude = DimCoord(np.linspace(-90, 90, 4),
+                            standard_name='latitude',
+                            units='degrees')
+        longitude = DimCoord(np.linspace(45, 360, 8),
+                             standard_name='longitude',
+                             units='degrees')
+        time_unit = unit.Unit('days since 1970-01-01 00:00:00',
+                              calendar=unit.CALENDAR_360_DAY)
+        time = DimCoord(np.linspace(0, 750, 26),
+                        standard_name='time',
+                        units=time_unit)
+        self.time_cube = Cube(np.zeros((26, 4, 8), np.float32),
+                               dim_coords_and_dims=[(time, 0),
+                                                    (latitude, 1),
+                                                    (longitude, 2)])
+
+    def test_date_aggregator(self):
+        # Test the ability of the aggregator to correctly calculate
+        # the new points array of an aggregated time coordinate.
+        coord_categorisation.add_month_number(self.time_cube, 'time',
+                                              name='month')
+        agg_cube = self.time_cube.aggregated_by('month', MEAN)
+        # Get a list of point values for the aggregated month coordinate (this
+        # should be 1 to 12):
+        month_numbers = agg_cube.coord('month').points
+        # Get a list of point values in number format for the month on the
+        # aggregated time coordinate (this should also be 1 to 12):
+        months = [agg_cube.coord('time').units.num2date(point).month
+                  for point in agg_cube.coord('time').points]
+        # Check that the months are the same for the aggregated time
+        # coordinate and the aggregated month coordinate:
+        for month_number, month in zip(month_numbers, months):
+            self.assertEquals(month_number, month)
 
 
 if __name__ == "__main__":
