@@ -3699,6 +3699,11 @@ calendar='gregorian')
             this cube will be converted to values on the new grid
             according to the given regridding scheme.
 
+        .. note::
+
+            Both the source and target cubes must have a CoordSystem, otherwise
+            this function is not applicable.
+
         """
         regridder = scheme.regridder(self, grid)
         return regridder(self)
