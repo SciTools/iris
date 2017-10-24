@@ -564,9 +564,10 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving a CF-netCDF file which contains a hybrid height
         # (i.e. dimensionless vertical) coordinate.
         # Read PP input file.
+        names = ['air_potential_temperature', 'surface_altitude']
         file_in = tests.get_data_path(
             ('PP', 'COLPEX', 'small_colpex_theta_p_alt.pp'))
-        cube = iris.load_cube(file_in, 'air_potential_temperature')
+        cube = iris.load_cube(file_in, names[0])
 
         # Write Cube to netCDF file.
         with self.temp_filename(suffix='.nc') as file_out:
@@ -577,10 +578,12 @@ class TestNetCDFSave(tests.IrisTest):
                            ('netcdf', 'netcdf_save_hybrid_height.cdl'))
 
             # Read netCDF file.
-            cube = iris.load_cube(file_out)
+            cubes = iris.load(file_out)
+            cubes_names = [c.name() for c in cubes]
+            self.assertEqual(cubes_names, names)
 
             # Check the PP read, netCDF write, netCDF read mechanism.
-            self.assertCML(cube,
+            self.assertCML(cubes.extract(names[0])[0],
                            ('netcdf', 'netcdf_save_load_hybrid_height.cml'))
 
     @tests.skip_data

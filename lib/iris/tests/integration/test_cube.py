@@ -34,7 +34,7 @@ class Test_aggregated_by(tests.IrisTest):
     def test_agg_by_aux_coord(self):
         problem_test_file = tests.get_data_path(('NetCDF', 'testing',
                                                 'small_theta_colpex.nc'))
-        cube = iris.load_cube(problem_test_file)
+        cube = iris.load_cube(problem_test_file, 'air_potential_temperature')
 
         # Test aggregating by aux coord, notably the `forecast_period` aux
         # coord on `cube`, whose `_points` attribute is a lazy array.
