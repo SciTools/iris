@@ -210,6 +210,7 @@ class Future(threading.local):
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
     deprecated_options = {'cell_datetime_objects': 'warning',
+                          'netcdf_no_unlimited': 'error',
                           'netcdf_promote': 'error',
                           'clip_latitudes': 'warning'}
 

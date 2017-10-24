@@ -1101,21 +1101,16 @@ class Saver(object):
 
         """
         unlimited_dim_names = []
-        if (unlimited_dimensions is None and
-                not iris.FUTURE.netcdf_no_unlimited):
-            if dimension_names:
-                unlimited_dim_names.append(dimension_names[0])
-        else:
-            for coord in unlimited_dimensions:
-                try:
-                    coord = cube.coord(name_or_coord=coord, dim_coords=True)
-                except iris.exceptions.CoordinateNotFoundError:
-                    # coordinate isn't used for this cube, but it might be
-                    # used for a different one
-                    pass
-                else:
-                    dim_name = self._get_coord_variable_name(cube, coord)
-                    unlimited_dim_names.append(dim_name)
+        for coord in unlimited_dimensions:
+            try:
+                coord = cube.coord(name_or_coord=coord, dim_coords=True)
+            except iris.exceptions.CoordinateNotFoundError:
+                # coordinate isn't used for this cube, but it might be
+                # used for a different one
+                pass
+            else:
+                dim_name = self._get_coord_variable_name(cube, coord)
+                unlimited_dim_names.append(dim_name)
 
         for dim_name in dimension_names:
             if dim_name not in self._dataset.dimensions:
