@@ -172,9 +172,15 @@ class Future(threading.local):
 
         For more details, see :ref:`using-time-constraints`.
 
-        The option `netcdf_promote` controls whether the netCDF loader
-        will expose variables which define reference surfaces for
-        dimensionless vertical coordinates as independent Cubes.
+        .. deprecated:: 2.0.0
+
+            The option `netcdf_promote` is deprecated and will be removed in a
+            future release and the deprecated code paths this option used to
+            toggle have been removed.
+
+            The option `netcdf_promote` controlled whether the netCDF loader
+            exposed variables that defined reference surfaces for
+            dimensionless vertical coordinates as independent Cubes.
 
         The option `netcdf_no_unlimited`, when True, changes the
         behaviour of the netCDF saver, such that no dimensions are set to
