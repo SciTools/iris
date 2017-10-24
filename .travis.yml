@@ -65,12 +65,12 @@ install:
       fi
     fi
 
-# JUST FOR NOW : Install iris-grib from a chosen branch.
+# JUST FOR NOW : Install latest master version of iris-grib.
   - if [[ "$TEST_MINIMAL" != true ]]; then
         INSTALL_DIR=$(pwd) ;
-        wget https://github.com/pp-mo/iris-grib/archive/dask_masked_fix.zip ;
-        unzip -q dask_masked_fix.zip ;
-        cd iris-grib-dask_masked_fix ;
+        wget https://github.com/SciTools/iris-grib/archive/master.zip ;
+        unzip -q master.zip ;
+        cd iris-grib-master ;
         python setup.py install ;
         cd - ;
     fi
