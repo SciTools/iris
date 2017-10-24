@@ -80,8 +80,8 @@ def _limited_shape(shape):
     shape = list(shape)
     i_reduce = 0
     while np.prod(shape) > _MAX_CHUNK_SIZE:
-        factor = np.ceil(np.prod(shape) / float(_MAX_CHUNK_SIZE))
-        new_dim = int(np.floor(shape[i_reduce] / factor))
+        factor = np.ceil(np.prod(shape) / _MAX_CHUNK_SIZE)
+        new_dim = int(shape[i_reduce] / factor)
         if new_dim < 1:
             new_dim = 1
         shape[i_reduce] = new_dim
