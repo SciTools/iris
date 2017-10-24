@@ -1233,6 +1233,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             - the units are degrees,
             - all the points are in the range [-90, 90].
 
+        .. deprecated:: 2.0.0
+            The 'iris.FUTURE.clip_latitudes' option is now deprecated 
+            and is set to True by default. Please remove code which
+            uses 'iris.FUTURE.clip_latitudes'.
+
         """
         # XXX Consider moving into DimCoord
         # ensure we have monotonic points
@@ -1322,6 +1327,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             - it is a `latitude` or `grid_latitude` coordinate,
             - the units are degrees,
             - all the points are in the range [-90, 90].
+            
+        .. deprecated:: 2.0.0
+            The 'iris.FUTURE.clip_latitudes' option is now deprecated 
+            and is set to True by default. Please remove code which
+            uses 'iris.FUTURE.clip_latitudes'.
 
         """
         self.bounds = self._guess_bounds(bound_position)
