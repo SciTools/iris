@@ -22,10 +22,6 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    # Enable a future option, to ensure that the netcdf load works the same way
-    # as in future Iris versions.
-    iris.FUTURE.netcdf_promote = True
-
     # Load the gridded temperature and salinity data.
     fname = iris.sample_data_path('atlantic_profiles.nc')
     cubes = iris.load(fname)

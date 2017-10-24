@@ -17,10 +17,6 @@ import iris.quickplot as qplt
 
 
 def main():
-    # Enable a future option, to ensure that the netcdf load works the same way
-    # as in future Iris versions.
-    iris.FUTURE.netcdf_promote = True
-
     # load a single cube of surface temperature between +/- 5 latitude
     fname = iris.sample_data_path('ostia_monthly.nc')
     cube = iris.load_cube(fname,

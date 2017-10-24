@@ -17,9 +17,7 @@ import iris.plot as iplt
 
 
 def main():
-    # Load the data
-    with iris.FUTURE.context(netcdf_promote=True):
-        cube1 = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
+    cube1 = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
     # Slice into cube to retrieve data for the inset map showing the
     # data region
     region = cube1[-1, :, :]
