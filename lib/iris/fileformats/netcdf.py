@@ -2355,9 +2355,8 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
 def _no_unlim_dep_warning():
     msg = ('NetCDF default saving behaviour currently does not assign any '
-           'unlimited dimensions by default, but setting'
-           '`iris.FUTURE.netcdf_no_unlimited` to False will revert to legacy '
-           'saving behaviour and assign the outermost dimension to unlimited. '
+           'unlimited dimensions by default.  Any dimensions required to be '
+           'unlimited must now be specified in the key word arguments.'
            'This `Future` option is deprecated and will be removed in Iris '
            'v3.0.')
     warn_deprecated(msg)
