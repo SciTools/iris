@@ -1073,42 +1073,38 @@ class CFReader(object):
             _build(cf_variable)
 
         # Determine whether there are any formula terms that
-        # may be promoted to a CFDataVariable.
-        if iris.FUTURE.netcdf_promote:
-            # Restrict promotion to only those formula terms
-            # that are reference surface/phenomenon.
-            for cf_var in six.itervalues(self.cf_group.formula_terms):
-                for cf_root, cf_term in six.iteritems(cf_var.cf_terms_by_root):
-                    cf_root_var = self.cf_group[cf_root]
-                    name = cf_root_var.standard_name or cf_root_var.long_name
-                    terms = reference_terms.get(name, [])
-                    if isinstance(terms, six.string_types) or \
-                            not isinstance(terms, Iterable):
-                        terms = [terms]
-                    cf_var_name = cf_var.cf_name
-                    if cf_term in terms and \
-                            cf_var_name not in self.cf_group.promoted:
-                        data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
-                        self.cf_group.promoted[cf_var_name] = data_var
-                        _build(data_var)
-                        break
-            # Promote any ignored variables.
-            promoted = set()
-            not_promoted = ignored.difference(promoted)
-            while not_promoted:
-                cf_name = not_promoted.pop()
-                if cf_name not in self.cf_group.data_variables and \
-                        cf_name not in self.cf_group.promoted:
-                    data_var = CFDataVariable(cf_name,
-                                              self.cf_group[cf_name].cf_data)
-                    self.cf_group.promoted[cf_name] = data_var
+        # may be promoted to a CFDataVariable and restrict promotion to only
+        # those formula terms that are reference surface/phenomenon.
+        for cf_var in six.itervalues(self.cf_group.formula_terms):
+            for cf_root, cf_term in six.iteritems(cf_var.cf_terms_by_root):
+                cf_root_var = self.cf_group[cf_root]
+                name = cf_root_var.standard_name or cf_root_var.long_name
+                terms = reference_terms.get(name, [])
+                if isinstance(terms, six.string_types) or \
+                        not isinstance(terms, Iterable):
+                    terms = [terms]
+                cf_var_name = cf_var.cf_name
+                if cf_term in terms and \
+                        cf_var_name not in self.cf_group.promoted:
+                    data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
+                    self.cf_group.promoted[cf_var_name] = data_var
                     _build(data_var)
-                # Determine whether there are still any ignored variables
-                # yet to be promoted.
-                promoted.add(cf_name)
-                not_promoted = ignored.difference(promoted)
-        else:
-            _netcdf_promote_warning()
+                    break
+        # Promote any ignored variables.
+        promoted = set()
+        not_promoted = ignored.difference(promoted)
+        while not_promoted:
+            cf_name = not_promoted.pop()
+            if cf_name not in self.cf_group.data_variables and \
+                    cf_name not in self.cf_group.promoted:
+                data_var = CFDataVariable(cf_name,
+                                          self.cf_group[cf_name].cf_data)
+                self.cf_group.promoted[cf_name] = data_var
+                _build(data_var)
+            # Determine whether there are still any ignored variables
+            # yet to be promoted.
+            promoted.add(cf_name)
+            not_promoted = ignored.difference(promoted)
 
 
     def _reset(self):
@@ -1132,12 +1128,3 @@ def _getncattr(dataset, attr, default=None):
     except AttributeError:
         value = default
     return value
-
-
-def _netcdf_promote_warning():
-    msg = ('NetCDF default loading behaviour currently does not expose '
-           'variables which define reference surfaces for dimensionless '
-           'vertical coordinates as independent Cubes. This behaviour is '
-           'deprecated in favour of automatic promotion to Cubes. To switch '
-           'to the new behaviour, set iris.FUTURE.netcdf_promote to True.')
-    warn_deprecated(msg)

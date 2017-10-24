@@ -143,7 +143,7 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=True, netcdf_promote=False,
+    def __init__(self, cell_datetime_objects=True, netcdf_promote=True,
                  netcdf_no_unlimited=False, clip_latitudes=False):
         """
         A container for run-time options controls.
@@ -197,13 +197,18 @@ class Future(threading.local):
         return msg.format(self.cell_datetime_objects, self.netcdf_promote,
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
-    deprecated_options = {'cell_datetime_objects': 'warning'}
+    deprecated_options = {'cell_datetime_objects': 'warning',
+                          'netcdf_promote': 'error'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
             level = self.deprecated_options[name]
             if level == 'error':
-                pass
+                emsg = ("deprecated {prop!r} behaviour has been removed and "
+                        "setting the 'Future' property {prop!r} has been "
+                        "deprecated to be removed in a future release. "
+                        "PLease remove code that sets this property.")
+                raise AttributeError(emsg.format(prop=name))
             else:
                 msg = ("setting the 'Future' property {!r} is deprecated "
                        "and will be removed in a future release. "
