@@ -24,13 +24,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
-from contextlib import contextmanager
-import getpass
-import os
-import os.path
-import platform
-import sys
-import types
 import warnings
 
 import cf_units

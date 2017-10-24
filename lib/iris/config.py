@@ -118,6 +118,7 @@ PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
 
 # Runtime options
 
+
 class NetCDF(object):
     """Control Iris NetCDF options."""
 
