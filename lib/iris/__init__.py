@@ -144,7 +144,7 @@ class Future(threading.local):
     """Run-time configuration controller."""
 
     def __init__(self, cell_datetime_objects=True, netcdf_promote=True,
-                 netcdf_no_unlimited=False, clip_latitudes=False):
+                 netcdf_no_unlimited=False, clip_latitudes=True):
         """
         A container for run-time options controls.
 
@@ -204,7 +204,8 @@ class Future(threading.local):
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
     deprecated_options = {'cell_datetime_objects': 'warning',
-                          'netcdf_promote': 'error'}
+                          'netcdf_promote': 'error',
+		          'clip_latitudes': 'warning'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
