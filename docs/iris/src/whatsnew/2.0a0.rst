@@ -97,12 +97,6 @@ Incompatible Changes
 
 * The :meth:`~iris.cube.Cube.lazy_data` method no longer accepts any arguments.
 
-* Using :meth:`~iris.cube.Cube.convert_units` on a cube with unknown units will
-  result in a :data:`UnitConversionError` being raised.
-
-* Using :meth:`~iris.coords.Coord.convert_units` on a coordinate with unknown
-  units will result in a :data:`UnitConversionError` being raised.
-
 .. admonition:: Significant Changes in Calculated Results
 
   Due to the replacement of `Biggus`_ with `Dask`_, as described above, the results
