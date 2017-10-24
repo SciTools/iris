@@ -869,8 +869,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # If the cube has units convert the data.
-        if not self.units.is_unknown():
-            self.data = self.units.convert(self.data, unit)
+        if self.units.is_unknown():
+            raise iris.exceptions.UnitConversionError(
+                'Cannot convert from unknown units. '
+                'The "cube.units" attribute may be set directly.')
+        self.data = self.units.convert(self.data, unit)
         self.units = unit
 
     def add_cell_method(self, cell_method):

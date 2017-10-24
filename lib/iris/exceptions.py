@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -151,4 +151,9 @@ class DuplicateDataError(MergeError):
 
 
 class LazyAggregatorError(Exception):
+    pass
+
+
+class UnitConversionError(IrisError):
+    """Raised when Iris is unable to convert a unit."""
     pass

@@ -37,7 +37,8 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord, CellMeasure
-from iris.exceptions import CoordinateNotFoundError, CellMeasureNotFoundError
+from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
+                             UnitConversionError)
 from iris.tests import mock
 import iris.tests.stock as stock
 from iris._lazy_data import as_lazy_data
@@ -1692,6 +1693,15 @@ class Test_transpose(tests.IrisTest):
         exp_emsg = 'Incorrect number of dimensions'
         with self.assertRaisesRegexp(ValueError, exp_emsg):
             self.cube.transpose([1])
+
+
+class Test_convert_units(tests.IrisTest):
+    def test_convert_unknown_units(self):
+        cube = iris.cube.Cube(1)
+        emsg = ('Cannot convert from unknown units. '
+                'The "cube.units" attribute may be set directly.')
+        with self.assertRaisesRegexp(UnitConversionError, emsg):
+            cube.convert_units('mm day-1')
 
 
 if __name__ == '__main__':

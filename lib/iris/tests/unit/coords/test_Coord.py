@@ -30,6 +30,7 @@ import numpy as np
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
 from iris.tests import mock
+from iris.exceptions import UnitConversionError
 
 
 Pair = collections.namedtuple('Pair', 'points bounds')
@@ -342,6 +343,14 @@ class Test_is_compatible(tests.IrisTest):
         self.other_coord.attributes['array_test'] = np.array([1.0, 2, 777.7])
         self.assertFalse(self.test_coord.is_compatible(self.other_coord))
 
+
+class Test_convert_units(tests.IrisTest):
+    def test_convert_unknown_units(self):
+        coord = iris.coords.AuxCoord(1, units='unknown')
+        emsg = ('Cannot convert from unknown units. '
+                'The "coord.units" attribute may be set directly.')
+        with self.assertRaisesRegexp(UnitConversionError, emsg):
+            coord.convert_units('degrees')
 
 if __name__ == '__main__':
     tests.main()

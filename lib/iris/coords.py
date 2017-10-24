@@ -904,10 +904,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         # If the coord has units convert the values in points (and bounds if
         # present).
-        if not self.units.is_unknown():
-            self.points = self.units.convert(self.points, unit)
-            if self.has_bounds():
-                self.bounds = self.units.convert(self.bounds, unit)
+        if self.units.is_unknown():
+            raise iris.exceptions.UnitConversionError(
+                'Cannot convert from unknown units. '
+                'The "coord.units" attribute may be set directly.')
+        self.points = self.units.convert(self.points, unit)
+        if self.has_bounds():
+            self.bounds = self.units.convert(self.bounds, unit)
         self.units = unit
 
     def cells(self):
