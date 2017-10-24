@@ -187,9 +187,15 @@ class Future(threading.local):
         unlimited.  The current default is that the leading dimension is
         unlimited unless otherwise specified.
 
-        The option `clip_latitudes` controls whether the
-        :meth:`iris.coords.Coord.guess_bounds()` method limits the
-        guessed bounds to [-90, 90] for latitudes.
+        .. deprecated:: 2.0.0
+
+            The option `clip_latitudes` is deprecated and will be removed in a
+            future release and the deprecated code paths this option used to
+            toggle have been removed.
+
+            The option `clip_latitudes` controlled whether the
+            :meth:`iris.coords.Coord.guess_bounds()` method would limit the
+            guessed bounds to [-90, 90] for latitudes.
 
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
