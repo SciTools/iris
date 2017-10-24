@@ -47,6 +47,14 @@ class Test___setattr__(tests.IrisTest):
         with self.assertRaises(AttributeError):
             future.numberwang = 7
 
+    def test_invalid_netcdf_promote_attributes(self):
+        future = Future()
+        states = [True, False]
+        exp_emsg = ''
+        for state in states:
+            with self.assertRaisesRegexp(AttributeError, exp_emsg):
+                future.netcdf_promote = state
+
     def test_cell_datetime_objects(self):
         future = Future()
         new_value = not future.cell_datetime_objects

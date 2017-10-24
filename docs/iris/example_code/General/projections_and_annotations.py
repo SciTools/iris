@@ -106,10 +106,6 @@ def make_plot(projection_name, projection_crs):
 
 
 def main():
-    # Enable a future option, to ensure that the netcdf load works the same way
-    # as in future Iris versions.
-    iris.FUTURE.netcdf_promote = True
-
     # Demonstrate with two different display projections.
     make_plot('Equidistant Cylindrical', ccrs.PlateCarree())
     make_plot('North Polar Stereographic', ccrs.NorthPolarStereo())

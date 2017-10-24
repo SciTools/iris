@@ -348,7 +348,7 @@ class TestAttributePositive(tests.GraphicsTest):
     def test_2d_positive_up(self):
         path = tests.get_data_path(('NetCDF', 'testing',
                                     'small_theta_colpex.nc'))
-        cube = iris.load_cube(path)[0, :, 42, :]
+        cube = iris.load_cube(path, 'air_potential_temperature')[0, :, 42, :]
         qplt.pcolormesh(cube)
         self.check_graphic()
 

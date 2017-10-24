@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -249,9 +249,8 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 self.assertIs(aux_coord_group[name_bnds].cf_data,
                               getattr(self, name_bnds))
 
-    def test_future_promote_reference(self):
-        with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
-                iris.FUTURE.context(netcdf_promote=True):
+    def test_promote_reference(self):
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset):
             cf_group = CFReader('dummy').cf_group
             self.assertEqual(len(cf_group), len(self.variables))
             # Check the number of data variables.
@@ -270,44 +269,31 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
 
     def test_formula_terms_ignore(self):
         self.orography.dimensions = ['lat', 'wibble']
-        for state in [False, True]:
-            with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
-                    iris.FUTURE.context(netcdf_promote=state), \
-                    mock.patch('warnings.warn') as warn:
-                cf_group = CFReader('dummy').cf_group
-                if state:
-                    group = cf_group.promoted
-                    self.assertEqual(list(group.keys()), ['orography'])
-                    self.assertIs(group['orography'].cf_data, self.orography)
-                    self.assertEqual(warn.call_count, 1)
-                else:
-                    self.assertEqual(len(cf_group.promoted), 0)
-                    self.assertEqual(warn.call_count, 2)
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                mock.patch('warnings.warn') as warn:
+            cf_group = CFReader('dummy').cf_group
+            group = cf_group.promoted
+            self.assertEqual(list(group.keys()), ['orography'])
+            self.assertIs(group['orography'].cf_data, self.orography)
+            self.assertEqual(warn.call_count, 1)
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ['lat', 'wibble']
-        for state in [False, True]:
-            with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
-                    iris.FUTURE.context(netcdf_promote=state), \
-                    mock.patch('warnings.warn') as warn:
-                cf_group = CFReader('dummy').cf_group
-                if state:
-                    promoted = ['x', 'orography']
-                    group = cf_group.promoted
-                    self.assertEqual(set(group.keys()), set(promoted))
-                    for name in promoted:
-                        self.assertIs(group[name].cf_data, getattr(self, name))
-                    self.assertEqual(warn.call_count, 1)
-                else:
-                    self.assertEqual(len(cf_group.promoted), 0)
-                    self.assertEqual(warn.call_count, 2)
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                mock.patch('warnings.warn') as warn:
+            cf_group = CFReader('dummy').cf_group
+            promoted = ['x', 'orography']
+            group = cf_group.promoted
+            self.assertEqual(set(group.keys()), set(promoted))
+            for name in promoted:
+                self.assertIs(group[name].cf_data, getattr(self, name))
+            self.assertEqual(warn.call_count, 1)
 
     def test_promoted_auxiliary_ignore(self):
         self.wibble = netcdf_variable('wibble', 'lat wibble', np.float)
         self.variables['wibble'] = self.wibble
         self.orography.coordinates = 'wibble'
         with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
-                iris.FUTURE.context(netcdf_promote=True), \
                 mock.patch('warnings.warn') as warn:
             cf_group = CFReader('dummy').cf_group.promoted
             promoted = ['wibble', 'orography']

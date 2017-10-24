@@ -15,10 +15,6 @@ import iris.quickplot as qplt
 
 
 def main():
-    # Enable a future option, to ensure that the netcdf load works the same way
-    # as in future Iris versions.
-    iris.FUTURE.netcdf_promote = True
-
     # Load some test data.
     fname = iris.sample_data_path('hybrid_height.nc')
     theta = iris.load_cube(fname, 'air_potential_temperature')

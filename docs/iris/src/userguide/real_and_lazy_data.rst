@@ -186,7 +186,7 @@ coordinates' lazy points and bounds:
 
 .. doctest::
 
-    >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'))
+    >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'), 'air_potential_temperature')
 
     >>> dim_coord = cube.coord('model_level_number')
     >>> print(dim_coord.has_lazy_points())

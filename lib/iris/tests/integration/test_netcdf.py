@@ -74,9 +74,10 @@ class TestHybridPressure(tests.IrisTest):
         with self.temp_filename(suffix='.nc') as filename, \
                 self.temp_filename(suffix='.nc') as other_filename:
             iris.save(self.cube, filename)
-            cube = iris.load_cube(filename)
+            cube = iris.load_cube(filename, 'air_potential_temperature')
             iris.save(cube, other_filename)
-            other_cube = iris.load_cube(other_filename)
+            other_cube = iris.load_cube(other_filename,
+                                        'air_potential_temperature')
             self.assertEqual(cube, other_cube)
 
 
@@ -120,7 +121,7 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         sa.points = sa.points * 10
         with self.temp_filename('.nc') as fname:
             iris.save([hh1, hh2], fname)
-            cubes = iris.load(fname)
+            cubes = iris.load(fname, 'air_temperature')
             cubes = sorted(cubes, key=lambda cube: cube.attributes['cube'])
             self.assertCML(cubes)
 
@@ -203,7 +204,7 @@ class TestLazySave(tests.IrisTest):
     def test_lazy_preserved_save(self):
         fpath = tests.get_data_path(('NetCDF', 'label_and_climate',
                                      'small_FC_167_mon_19601101.nc'))
-        acube = iris.load_cube(fpath)
+        acube = iris.load_cube(fpath, 'air_temperature')
         self.assertTrue(acube.has_lazy_data())
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:

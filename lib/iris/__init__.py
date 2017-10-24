@@ -143,7 +143,7 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=True, netcdf_promote=False,
+    def __init__(self, cell_datetime_objects=True, netcdf_promote=True,
                  netcdf_no_unlimited=False, clip_latitudes=False):
         """
         A container for run-time options controls.
@@ -172,9 +172,15 @@ class Future(threading.local):
 
         For more details, see :ref:`using-time-constraints`.
 
-        The option `netcdf_promote` controls whether the netCDF loader
-        will expose variables which define reference surfaces for
-        dimensionless vertical coordinates as independent Cubes.
+        .. deprecated:: 2.0.0
+
+            The option `netcdf_promote` is deprecated and will be removed in a
+            future release and the deprecated code paths this option used to
+            toggle have been removed.
+
+            The option `netcdf_promote` controlled whether the netCDF loader
+            exposed variables that defined reference surfaces for
+            dimensionless vertical coordinates as independent Cubes.
 
         The option `netcdf_no_unlimited`, when True, changes the
         behaviour of the netCDF saver, such that no dimensions are set to
@@ -197,13 +203,18 @@ class Future(threading.local):
         return msg.format(self.cell_datetime_objects, self.netcdf_promote,
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
-    deprecated_options = {'cell_datetime_objects': 'warning'}
+    deprecated_options = {'cell_datetime_objects': 'warning',
+                          'netcdf_promote': 'error'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
             level = self.deprecated_options[name]
             if level == 'error':
-                pass
+                emsg = ("setting the 'Future' property {prop!r} has been "
+                        "deprecated to be removed in a future release, and "
+                        "deprecated {prop!r} behaviour has been removed. "
+                        "Please remove code that sets this property.")
+                raise AttributeError(emsg.format(prop=name))
             else:
                 msg = ("setting the 'Future' property {!r} is deprecated "
                        "and will be removed in a future release. "

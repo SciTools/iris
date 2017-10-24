@@ -123,7 +123,8 @@ For instance, the :class:`iris.analysis.Linear` scheme requires 1D numeric,
 monotonic, coordinates. Supposing we have a single column cube such as
 the one defined below:
 
-    >>> column = iris.load_cube(iris.sample_data_path('hybrid_height.nc'))[:, 0, 0]
+    >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'), 'air_potential_temperature')
+    >>> column = cube[:, 0, 0]
     >>> print(column.summary(shorten=True))
     air_potential_temperature / (K)     (model_level_number: 15)
 

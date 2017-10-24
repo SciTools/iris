@@ -254,7 +254,7 @@ class TestLoad(tests.IrisTest):
     def test_attributes_populated(self):
         filename = tests.get_data_path(
             ('NetCDF', 'label_and_climate', 'small_FC_167_mon_19601101.nc'))
-        cube = iris.load_cube(filename)
+        cube = iris.load_cube(filename, 'air_temperature')
         self.assertEqual(
             sorted(cube.coord('longitude').attributes.items()), 
             [('data_type', 'float'), 

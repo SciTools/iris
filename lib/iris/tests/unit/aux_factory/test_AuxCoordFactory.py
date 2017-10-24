@@ -154,9 +154,9 @@ class Test__nd_bounds(tests.IrisTest):
 @tests.skip_data
 class Test_lazy_aux_coords(tests.IrisTest):
     def setUp(self):
-        self.cube = iris.load_cube(tests.get_data_path
-                                   (['NetCDF', 'testing',
-                                     'small_theta_colpex.nc']))
+        path = tests.get_data_path(['NetCDF', 'testing',
+                                    'small_theta_colpex.nc'])
+        self.cube = iris.load_cube(path, 'air_potential_temperature')
 
     def _check_lazy(self):
         coords = self.cube.aux_coords + self.cube.derived_coords

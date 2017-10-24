@@ -52,10 +52,6 @@ def low_pass_weights(window, cutoff):
 
 
 def main():
-    # Enable a future option, to ensure that the netcdf load works the same way
-    # as in future Iris versions.
-    iris.FUTURE.netcdf_promote = True
-
     # Load the monthly-valued Southern Oscillation Index (SOI) time-series.
     fname = iris.sample_data_path('SOI_Darwin.nc')
     soi = iris.load_cube(fname)
