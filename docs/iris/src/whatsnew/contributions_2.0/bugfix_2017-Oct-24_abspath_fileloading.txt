@@ -1,0 +1,1 @@
+* Lazy data now refers to absolute paths rather than preserving the form that was passed to iris.load functions. This means that it is possible to use relative paths at load, change working directory, and still expect to be able to load any lazy data. (#2325)
