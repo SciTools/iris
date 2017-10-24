@@ -1383,12 +1383,13 @@ class Saver(object):
         return coord.standard_name, coord.long_name, units
 
     def _ensure_valid_dtype(self, values, src_name, src_object):
-        # NetCDF3 does not support int64 or unsigned ints, so we check
-        # if we can store them as int32 instead.
+        # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints, 
+        # so we check if we can store them as int32 instead.
         if ((np.issubdtype(values.dtype, np.int64) or
                 np.issubdtype(values.dtype, np.unsignedinteger)) and
                 self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                              'NETCDF3_64BIT')):
+                                              'NETCDF3_64BIT',
+                                              'NETCDF4_CLASSIC')):
             # Cast to an integer type supported by netCDF3.
             if not np.can_cast(values.max(), np.int32) or \
                     not np.can_cast(values.min(), np.int32):
