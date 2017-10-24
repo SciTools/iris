@@ -169,12 +169,12 @@ class Test_guess_bounds__default_latitude_clipping(tests.IrisTest):
     def test_points_inside_bounds_outside(self):
         lat = DimCoord([-80, 0, 70], units='degree', standard_name='latitude')
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
+        self.assertArrayEqual(lat.bounds, [[-90, -40], [-40, 35], [35, 90]])
 
     def test_points_to_edges_bounds_outside(self):
         lat = DimCoord([-90, 0, 90], units='degree', standard_name='latitude')
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-135, -45], [-45, 45], [45, 135]])
+        self.assertArrayEqual(lat.bounds, [[-90, -45], [-45, 45], [45, 90]])
 
     def test_points_outside(self):
         lat = DimCoord([-100, 0, 120], units='degree',
@@ -184,12 +184,6 @@ class Test_guess_bounds__default_latitude_clipping(tests.IrisTest):
 
 
 class Test_guess_bounds__enabled_latitude_clipping(tests.IrisTest):
-    def setUp(self):
-        iris.FUTURE.clip_latitudes = True
-
-    def tearDown(self):
-        iris.FUTURE.clip_latitudes = False
-
     def test_all_inside(self):
         lat = DimCoord([-10, 0, 20], units='degree', standard_name='latitude')
         lat.guess_bounds()
