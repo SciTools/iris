@@ -1008,9 +1008,14 @@ class CFReader(object):
             for variable_type in self._variable_types:
                 # Prevent grid mapping variables being mis-identified as
                 # CF coordinate variables.
-                ignore = None if issubclass(variable_type, CFGridMappingVariable) else coordinate_names
-                match = variable_type.identify(self._dataset.variables, ignore=ignore,
-                                               target=cf_variable.cf_name, warn=False)
+                if issubclass(variable_type, CFGridMappingVariable):
+                    ignore = None
+                else:
+                    ignore = coordinate_names
+                match = variable_type.identify(self._dataset.variables,
+                                               ignore=ignore,
+                                               target=cf_variable.cf_name,
+                                               warn=False)
                 # Sanity check dimensionality coverage.
                 for cf_name, cf_var in six.iteritems(match):
                     if cf_var.spans(cf_variable):
@@ -1030,7 +1035,8 @@ class CFReader(object):
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
                 # Add global netCDF attributes.
-                cf_group.global_attributes.update(self.cf_group.global_attributes)
+                cf_group.global_attributes.update(
+                    self.cf_group.global_attributes)
                 # Add appropriate "dimensioned" CF coordinate variables.
                 cf_group.update({cf_name: self.cf_group[cf_name] for cf_name
                                     in cf_variable.dimensions if cf_name in
@@ -1043,7 +1049,8 @@ class CFReader(object):
                 # Add appropriate formula terms.
                 for cf_var in six.itervalues(self.cf_group.formula_terms):
                     for cf_root in cf_var.cf_terms_by_root:
-                        if cf_root in cf_group and cf_var.cf_name not in cf_group:
+                        if (cf_root in cf_group and
+                                cf_var.cf_name not in cf_group):
                             # Sanity check dimensionality.
                             if cf_var.spans(cf_variable):
                                 cf_group[cf_var.cf_name] = cf_var
