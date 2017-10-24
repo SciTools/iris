@@ -1,1 +1,8 @@
 * Removed deprecated module ```iris.experimental.fieldsfile```.
+  Note that there is no direct replacment for
+  ```:meth:iris.experimental.fieldsfile.load```, which specifically performed
+  fast loading from _either_ PP or FF files.
+  Instead, please enable `:meth:iris.fileformats.um.structured_um_loading` and
+  within that context call `:meth:iris.load`, or the format-specific
+  `:meth:iris.fileformats.pp.load_cubes` or
+  `:meth:iris.fileformats.um.load_cubes`.
