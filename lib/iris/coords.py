@@ -576,7 +576,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def _points_getter(self):
         """The coordinate points values as a NumPy array."""
-        return self._points_dm.data
+        return self._points_dm.data.view()
 
     def _points_setter(self, points):
         # Set the points to a new array - as long as it's the same shape.
@@ -605,7 +605,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         bounds = None
         if self.has_bounds():
-            bounds = self._bounds_dm.data
+            bounds = self._bounds_dm.data.view()
         return bounds
 
     def _bounds_setter(self, bounds):
@@ -670,7 +670,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         or a dask array.
 
         """
-        return self._points_dm.core_data()
+        result = self._points_dm.core_data()
+        if not is_lazy_data(result):
+            result = result.view()
+        return result
 
     def core_bounds(self):
         """
@@ -681,6 +684,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()
+            if not is_lazy_data(result):
+                result = result.view()
         return result
 
     def has_lazy_points(self):
@@ -1616,17 +1621,17 @@ class DimCoord(Coord):
         """
         new_coord = copy.deepcopy(super(DimCoord, self), memo)
         # Ensure points and bounds arrays are read-only.
-        new_coord.points.flags.writeable = False
-        if new_coord.bounds is not None:
-            new_coord.bounds.flags.writeable = False
+        new_coord._points_dm.data.flags.writeable = False
+        if new_coord._bounds_dm is not None:
+            new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
 
     def copy(self, points=None, bounds=None):
         new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
         # Make the arrays read-only.
-        new_coord.points.flags.writeable = False
+        new_coord._points_dm.data.flags.writeable = False
         if bounds is not None:
-            new_coord.bounds.flags.writeable = False
+            new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
 
     def __eq__(self, other):
@@ -1690,11 +1695,10 @@ class DimCoord(Coord):
 
     def _points_setter(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
-        copy = is_lazy_data(points)
+        # Ensure it is an actual array, and also make our own copy so that we
+        # can make it read-only.
         points = as_concrete_data(points)
-        # Ensure it is an actual array, and also make our own distinct view
-        # so that we can make it read-only.
-        points = np.array(points, copy=copy)
+        points = np.array(points)
 
         # Check validity requirements for dimension-coordinate points.
         self._new_points_requirements(points)
@@ -1752,9 +1756,8 @@ class DimCoord(Coord):
     def _bounds_setter(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
-            copy = is_lazy_data(bounds)
             bounds = as_concrete_data(bounds)
-            bounds = np.array(bounds, copy=copy)
+            bounds = np.array(bounds)
 
             # Check validity requirements for dimension-coordinate bounds.
             self._new_bounds_requirements(bounds)

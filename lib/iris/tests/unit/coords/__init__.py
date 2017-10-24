@@ -55,14 +55,12 @@ def is_real_data(array):
 
 def arrays_share_data(a1, a2):
     # Check whether 2 real arrays with the same content view the same data.
-    # Notes:
-    # *  !! destructive !!
-    # *  requires that array contents are initially identical
-    # *  forces a1 to be writeable and modifies it
-    assert np.all(a1 == a2)
-    a1.flags.writeable = True
-    a1 += np.array(1.0, dtype=a1.dtype)
-    return np.all(a1 == a2)
+    # For an ndarray x, x.base will either be None (if x owns its data) or a
+    # reference to the array which owns its data (if x is a view).
+    return a1 is a2 or \
+           a1.base is a2 or \
+           a2.base is a1 or \
+           a1.base is a2.base and a1.base is not None
 
 
 def lazyness_string(data):
