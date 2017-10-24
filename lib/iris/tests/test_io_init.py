@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,14 +25,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import unittest
 from io import BytesIO
 
 import iris.fileformats as iff
 import iris.io
 
 
-class TestDecodeUri(unittest.TestCase):
+class TestDecodeUri(tests.IrisTest):
     def test_decode_uri(self):
         tests = {
             '/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp': (

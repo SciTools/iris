@@ -122,7 +122,7 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = '1.12.0'
+__version__ = '2.0a0'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
@@ -143,16 +143,15 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
-                 strict_grib_load=False, netcdf_no_unlimited=False,
-                 clip_latitudes=False):
+    def __init__(self, cell_datetime_objects=True, netcdf_promote=False,
+                 netcdf_no_unlimited=False, clip_latitudes=False):
         """
         A container for run-time options controls.
 
         To adjust the values simply update the relevant attribute from
         within your code. For example::
 
-            iris.FUTURE.cell_datetime_objects = True
+            iris.FUTURE.cell_datetime_objects = False
 
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
@@ -177,20 +176,6 @@ class Future(threading.local):
         will expose variables which define reference surfaces for
         dimensionless vertical coordinates as independent Cubes.
 
-        The option `strict_grib_load` controls whether GRIB files are
-        loaded as Cubes using a new template-based conversion process.
-        This new conversion process will raise an exception when it
-        encounters a GRIB message which uses a template not supported
-        by the conversion.
-
-        .. note::
-            .. deprecated:: 1.10
-            The 'strict_grib_load' option is now deprecated, as it affects
-            only the internal grib module :mod:`iris.fileformats.grib`,
-            which is now itself deprecated in favour of 'iris_grib'.
-            Please remove code which sets this, and instead install the
-            'iris_grib' package : <https://github.com/SciTools/iris-grib>.
-
         The option `netcdf_no_unlimited`, when True, changes the
         behaviour of the netCDF saver, such that no dimensions are set to
         unlimited.  The current default is that the leading dimension is
@@ -203,29 +188,27 @@ class Future(threading.local):
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
         self.__dict__['netcdf_promote'] = netcdf_promote
-        self.__dict__['strict_grib_load'] = strict_grib_load
         self.__dict__['netcdf_no_unlimited'] = netcdf_no_unlimited
         self.__dict__['clip_latitudes'] = clip_latitudes
 
     def __repr__(self):
         msg = ('Future(cell_datetime_objects={}, netcdf_promote={}, '
-               'strict_grib_load={}, netcdf_no_unlimited={}, '
-               'clip_latitudes={})')
+               'netcdf_no_unlimited={}, clip_latitudes={})')
         return msg.format(self.cell_datetime_objects, self.netcdf_promote,
-                          self.strict_grib_load, self.netcdf_no_unlimited,
-                          self.clip_latitudes)
+                          self.netcdf_no_unlimited, self.clip_latitudes)
 
-    deprecated_options = {
-        'strict_grib_load': ('This is because "iris.fileformats.grib" is now '
-                             'deprecated :  Please install the "iris_grib" '
-                             'package instead.')}
+    deprecated_options = {'cell_datetime_objects': 'warning'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
-            reason = self.deprecated_options[name]
-            msg = ("the 'Future' object property {!r} is now deprecated. "
-                   "Please remove code which uses this.  {}")
-            warn_deprecated(msg.format(name, reason))
+            level = self.deprecated_options[name]
+            if level == 'error':
+                pass
+            else:
+                msg = ("setting the 'Future' property {!r} is deprecated "
+                       "and will be removed in a future release. "
+                       "Please remove code that sets this property.")
+                warn_deprecated(msg.format(name))
         if name not in self.__dict__:
             msg = "'Future' object has no attribute {!r}".format(name)
             raise AttributeError(msg)
@@ -242,15 +225,8 @@ class Future(threading.local):
         statement, the previous state is restored.
 
         For example::
-
-            with iris.FUTURE.context():
-                iris.FUTURE.cell_datetime_objects = True
-                # ... code which expects time objects
-
-        Or more concisely::
-
-            with iris.FUTURE.context(cell_datetime_objects=True):
-                # ... code which expects time objects
+            with iris.FUTURE.context(cell_datetime_objects=False):
+                # ... code that expects numbers and not datetimes
 
         """
         # Save the current context
@@ -368,7 +344,8 @@ def load_cube(uris, constraint=None, callback=None):
     if len(constraints) != 1:
         raise ValueError('only a single constraint is allowed')
 
-    cubes = _load_collection(uris, constraints, callback).merged().cubes()
+    cubes = _load_collection(uris, constraints, callback)
+    cubes = cubes.merged().cubes()
 
     try:
         cube = cubes.merge_cube()
@@ -474,11 +451,8 @@ def sample_data_path(*path_to_join):
     if iris_sample_data is not None:
         target = os.path.join(iris_sample_data.path, target)
     else:
-        wmsg = ("iris.config.SAMPLE_DATA_DIR was deprecated in v1.10.0 and "
-                "will be removed in a future Iris release. Install the "
-                "'iris_sample_data' package.")
-        warn_deprecated(wmsg)
-        target = os.path.join(iris.config.SAMPLE_DATA_DIR, target)
+        raise ImportError("Please install the 'iris_sample_data' package to "
+                          "access sample data.")
     if not glob.glob(target):
         raise ValueError('Sample data file(s) at {!r} not found.\n'
                          'NB. This function is only for locating files in the '

@@ -1,0 +1,8 @@
+* The deprecated module ```iris.analysis.interpolate``` has been removed, along with the following deprecated classes and functions:
+    * ```iris.analysis.interpolate.linear```
+    * ```iris.analysis.interpolate.nearest_neighbour_data_value```
+    * ```iris.analysis.interpolate.regrid```
+    * ```iris.analysis.interpolate.regrid_to_max_resolution```
+    * ```iris.analysis.interpolate.extract_nearest_neighbour```
+    * ```iris.analysis.interpolate.nearest_neighbour_indices```
+    * ```iris.analysis.interpolate.Linear1dExtrapolator```

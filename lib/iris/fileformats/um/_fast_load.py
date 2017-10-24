@@ -28,7 +28,7 @@ When enabled, that function calls private functions in this module, to replace
 the 'normal' calls with 'structured' loading.
 
 At present, there is *no* public low-level fields-to-cube interface, equivalent
-to the pp or iris_grib "as_pairs" functions.
+to the pp "as_pairs" functions.
 
 """
 
@@ -129,11 +129,12 @@ def _convert_collation(collation):
 
     """
     from iris.fileformats.rules import ConversionMetadata
-    from iris.fileformats.pp_rules import (_convert_time_coords,
-                                           _convert_vertical_coords,
-                                           _convert_scalar_realization_coords,
-                                           _convert_scalar_pseudo_level_coords,
-                                           _all_other_rules)
+    from iris.fileformats.pp_load_rules import \
+        (_convert_time_coords,
+         _convert_vertical_coords,
+         _convert_scalar_realization_coords,
+         _convert_scalar_pseudo_level_coords,
+         _all_other_rules)
 
     # For all the scalar conversions, all fields in the collation will
     # give the same result, so the choice is arbitrary.

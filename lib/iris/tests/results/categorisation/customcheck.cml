@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="test cube" units="metres">
+  <cube dtype="int32" long_name="test cube" units="metres">
     <coords>
       <coord datadims="[0]">
         <auxCoord id="3cbe93e2" long_name="season_numbers" points="[0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 0, 0, 0,

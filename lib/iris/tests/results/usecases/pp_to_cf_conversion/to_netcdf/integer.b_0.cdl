@@ -4,6 +4,7 @@ dimensions:
 	longitude = 96 ;
 variables:
 	int land_binary_mask(latitude, longitude) ;
+		land_binary_mask:_FillValue = -2147483647 ;
 		land_binary_mask:standard_name = "land_binary_mask" ;
 		land_binary_mask:units = "1" ;
 		land_binary_mask:cell_methods = "time: mean" ;

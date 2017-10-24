@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,34 +24,33 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-from xml.dom.minidom import Document
 import collections
-import copy
+from copy import deepcopy
 import datetime
+from functools import reduce
 import operator
 import warnings
+from xml.dom.minidom import Document
 import zlib
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._deprecation import warn_deprecated
+from iris._cube_coord_common import CFVariableMixin
+import iris._concatenate
+import iris._constraints
+from iris._data_manager import DataManager
+
+import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
-import iris.analysis._interpolate_private
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
-import iris._concatenate
-import iris._constraints
-import iris._merge
 import iris.exceptions
 import iris.util
-
-from iris._cube_coord_common import CFVariableMixin
-from functools import reduce
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
@@ -660,9 +659,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
-            It can be a biggus array, a numpy array, a numpy array
-            subclass (such as :class:`numpy.ma.MaskedArray`), or an
-            *array_like* as described in :func:`numpy.asarray`.
+            ``data`` can be a dask array, a NumPy array, a NumPy array
+            subclass (such as :class:`numpy.ma.MaskedArray`), or
+            array_like (as described in :func:`numpy.asarray`).
 
             See :attr:`Cube.data<iris.cube.Cube.data>`.
 
@@ -713,9 +712,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, six.string_types):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if not isinstance(data, (biggus.Array, ma.MaskedArray)):
-            data = np.asarray(data)
-        self._my_data = data
+        # Initialise the cube data manager.
+        self._data_manager = DataManager(data)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -871,12 +869,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # If the cube has units convert the data.
-        if not self.units.is_unknown():
-            self.data = self.units.convert(self.data, unit)
+        if self.units.is_unknown():
+            raise iris.exceptions.UnitConversionError(
+                'Cannot convert from unknown units. '
+                'The "cube.units" attribute may be set directly.')
+        self.data = self.units.convert(self.data, unit)
         self.units = unit
 
     def add_cell_method(self, cell_method):
-        """Add a CellMethod to the Cube."""
+        """Add a :class:`~iris.coords.CellMethod` to the Cube."""
         self.cell_methods += (cell_method, )
 
     def add_aux_coord(self, coord, data_dims=None):
@@ -1222,8 +1223,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def coords(self, name_or_coord=None, standard_name=None,
                long_name=None, var_name=None, attributes=None, axis=None,
-               contains_dimension=None, dimensions=None, coord=None,
-               coord_system=None, dim_coords=None, name=None):
+               contains_dimension=None, dimensions=None, coord_system=None,
+               dim_coords=None):
         """
         Return a list of coordinates in this cube fitting the given criteria.
 
@@ -1242,8 +1243,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
             :class:`iris.aux_factory.AuxCoordFactory`
             or :class:`iris.coords.CoordDefn`.
-        * name
-            .. deprecated:: 1.6. Please use the name_or_coord kwarg.
         * standard_name
             The CF standard name of the desired coordinate. If None, does not
             check for standard name.
@@ -1267,8 +1266,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty tuple or list
             (i.e. ``()`` or ``[]``). If None, does not check for dimensions.
-        * coord
-            .. deprecated:: 1.6. Please use the name_or_coord kwarg.
         * coord_system
             Whether the desired coordinates have coordinate systems equal to
             the given coordinate system. If None, no check is done.
@@ -1281,23 +1278,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.coord()<iris.cube.Cube.coord>`.
 
         """
-        # Handle deprecated kwargs
-        if name is not None:
-            name_or_coord = name
-            warn_deprecated('the name kwarg is deprecated and will be removed '
-                            'in a future release. Consider converting '
-                            'existing code to use the name_or_coord '
-                            'kwarg as a replacement.',
-                            stacklevel=2)
-        if coord is not None:
-            name_or_coord = coord
-            warn_deprecated('the coord kwarg is deprecated and will be '
-                            'removed in a future release. Consider converting '
-                            'existing code to use the name_or_coord '
-                            'kwarg as a replacement.',
-                            stacklevel=2)
-        # Finish handling deprecated kwargs
-
         name = None
         coord = None
 
@@ -1393,8 +1373,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def coord(self, name_or_coord=None, standard_name=None,
               long_name=None, var_name=None, attributes=None, axis=None,
-              contains_dimension=None, dimensions=None, coord=None,
-              coord_system=None, dim_coords=None, name=None):
+              contains_dimension=None, dimensions=None, coord_system=None,
+              dim_coords=None):
         """
         Return a single coord given the same arguments as :meth:`Cube.coords`.
 
@@ -1410,23 +1390,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             documentation.
 
         """
-        # Handle deprecated kwargs
-        if name is not None:
-            name_or_coord = name
-            warn_deprecated('the name kwarg is deprecated and will be removed '
-                            'in a future release. Consider converting '
-                            'existing code to use the name_or_coord '
-                            'kwarg as a replacement.',
-                            stacklevel=2)
-        if coord is not None:
-            name_or_coord = coord
-            warn_deprecated('the coord kwarg is deprecated and will be '
-                            'removed in a future release. Consider converting '
-                            'existing code to use the name_or_coord '
-                            'kwarg as a replacement.',
-                            stacklevel=2)
-        # Finish handling deprecated kwargs
-
         coords = self.coords(name_or_coord=name_or_coord,
                              standard_name=standard_name,
                              long_name=long_name, var_name=var_name,
@@ -1442,8 +1405,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                              coord in coords))
             raise iris.exceptions.CoordinateNotFoundError(msg)
         elif len(coords) == 0:
-            bad_name = name or standard_name or long_name or \
-                (coord and coord.name()) or ''
+            _name = name_or_coord
+            if name_or_coord is not None:
+                if not isinstance(name_or_coord, six.string_types):
+                    _name = name_or_coord.name()
+            bad_name = _name or standard_name or long_name or ''
             msg = 'Expected to find exactly 1 %s coordinate, but found ' \
                   'none.' % bad_name
             raise iris.exceptions.CoordinateNotFoundError(msg)
@@ -1588,64 +1554,54 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def cell_methods(self, cell_methods):
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
+    def core_data(self):
+        """
+        Retrieve the data array of this :class:`~iris.cube.Cube` in its
+        current state, which will either be real or lazy.
+
+        If this :class:`~iris.cube.Cube` has lazy data, accessing its data
+        array via this method **will not** realise the data array. This means
+        you can perform operations using this method that work equivalently
+        on real or lazy data, and will maintain lazy data if present.
+
+        """
+        return self._data_manager.core_data()
+
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        shape = self.lazy_data().shape
-        return shape
+        return self._data_manager.shape
 
     @property
     def dtype(self):
-        """The :class:`numpy.dtype` of the data of this cube."""
-        return self.lazy_data().dtype
+        """
+        The data type of the values in the data array of this
+        :class:`~iris.cube.Cube`.
+
+        """
+        return self._data_manager.dtype
 
     @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
-        return len(self.shape)
+        return self._data_manager.ndim
 
-    def lazy_data(self, array=None):
+    def lazy_data(self):
         """
-        Return a :class:`biggus.Array` representing the
-        multi-dimensional data of the Cube, and optionally provide a
-        new array of values.
+        Return a lazy array representing the Cube data.
 
         Accessing this method will never cause the data to be loaded.
         Similarly, calling methods on, or indexing, the returned Array
         will not cause the Cube to have loaded data.
 
         If the data have already been loaded for the Cube, the returned
-        Array will be a :class:`biggus.NumpyArrayAdapter` which wraps
-        the numpy array from `self.data`.
-
-        Kwargs:
-
-        * array (:class:`biggus.Array` or None):
-            When this is not None it sets the multi-dimensional data of
-            the cube to the given value.
+        Array will be a new lazy array wrapper.
 
         Returns:
-            A :class:`biggus.Array` representing the multi-dimensional
-            data of the Cube.
+            A lazy array, representing the Cube data array.
 
         """
-        if array is not None:
-            if not isinstance(array, biggus.Array):
-                raise TypeError('new values must be a biggus.Array')
-            if self.shape != array.shape:
-                # The _ONLY_ data reshape permitted is converting a
-                # 0-dimensional array into a 1-dimensional array of
-                # length one.
-                # i.e. self.shape = () and array.shape == (1,)
-                if self.shape or array.shape != (1,):
-                    raise ValueError('Require cube data with shape %r, got '
-                                     '%r.' % (self.shape, array.shape))
-            self._my_data = array
-        else:
-            array = self._my_data
-            if not isinstance(array, biggus.Array):
-                array = biggus.NumpyArrayAdapter(array)
-        return array
+        return self._data_manager.lazy_data()
 
     @property
     def data(self):
@@ -1680,42 +1636,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        data = self._my_data
-        if not isinstance(data, np.ndarray):
-            try:
-                data = data.masked_array()
-            except MemoryError:
-                msg = "Failed to create the cube's data as there was not" \
-                      " enough memory available.\n" \
-                      "The array shape would have been {0!r} and the data" \
-                      " type {1}.\n" \
-                      "Consider freeing up variables or indexing the cube" \
-                      " before getting its data."
-                msg = msg.format(self.shape, data.dtype)
-                raise MemoryError(msg)
-            # Unmask the array only if it is filled.
-            if isinstance(data, np.ndarray) and ma.count_masked(data) == 0:
-                data = data.data
-            # data may be a numeric type, so ensure an np.ndarray is returned
-            self._my_data = np.asanyarray(data)
-        return self._my_data
+        return self._data_manager.data
 
     @data.setter
-    def data(self, value):
-        data = np.asanyarray(value)
-
-        if self.shape != data.shape:
-            # The _ONLY_ data reshape permitted is converting a 0-dimensional
-            # array i.e. self.shape == () into a 1-dimensional array of length
-            # one i.e. data.shape == (1,)
-            if self.shape or data.shape != (1,):
-                raise ValueError('Require cube data with shape %r, got '
-                                 '%r.' % (self.shape, data.shape))
-
-        self._my_data = data
+    def data(self, data):
+        self._data_manager.data = data
 
     def has_lazy_data(self):
-        return isinstance(self._my_data, biggus.Array)
+        """
+        Details whether this :class:`~iris.cube.Cube` has lazy data.
+
+        Returns:
+            Boolean.
+
+        """
+        return self._data_manager.has_lazy_data()
 
     @property
     def dim_coords(self):
@@ -2018,9 +1953,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                         unit = ' {!s}'.format(coord.units)
 
                     # Format cell depending on type of point and whether it
-                    # has a bound
-                    with iris.FUTURE.context(cell_datetime_objects=False):
-                        coord_cell = coord.cell(0)
+                    # has a bound.
+                    coord_cell = coord.cell(0)
                     if isinstance(coord_cell.point, six.string_types):
                         # Indent string type coordinates
                         coord_cell_split = [iris.util.clip_string(str(item))
@@ -2030,20 +1964,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             pad=' ', width=indent + len(coord.name()) + 2)
                         coord_cell_str = line_sep.join(coord_cell_split) + unit
                     else:
-                        # Human readable times
-                        if coord.units.is_time_reference():
-                            coord_cell_cpoint = coord.units.num2date(
-                                coord_cell.point)
-                            if coord_cell.bound is not None:
-                                coord_cell_cbound = coord.units.num2date(
-                                    coord_cell.bound)
-                        else:
-                            coord_cell_cpoint = coord_cell.point
-                            coord_cell_cbound = coord_cell.bound
+                        coord_cell_cpoint = coord_cell.point
+                        coord_cell_cbound = coord_cell.bound
 
                         coord_cell_str = '{!s}{}'.format(coord_cell_cpoint,
                                                          unit)
-                        if coord_cell.bound is not None:
+                        if coord_cell_cbound is not None:
                             bound = '({})'.format(', '.join(str(val) for
                                                   val in coord_cell_cbound))
                             coord_cell_str += ', bound={}{}'.format(bound,
@@ -2119,15 +2045,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return summary
 
-    def assert_valid(self):
-        """
-        Does nothing and returns None.
-
-        .. deprecated:: 0.8
-
-        """
-        warn_deprecated('Cube.assert_valid() has been deprecated.')
-
     def __str__(self):
         # six has a decorator for this bit, but it doesn't do errors='replace'.
         if six.PY3:
@@ -2155,14 +2072,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # turn the keys into a full slice spec (all dims)
-        full_slice = iris.util._build_full_slice_given_keys(keys,
-                                                            len(self.shape))
-
-        # make indexing on the cube column based by using the
-        # column_slices_generator (potentially requires slicing the data
-        # multiple times)
-        dimension_mapping, slice_gen = iris.util.column_slices_generator(
-            full_slice, len(self.shape))
+        full_slice = iris.util._build_full_slice_given_keys(keys, self.ndim)
 
         def new_coord_dims(coord_):
             return [dimension_mapping[d]
@@ -2174,32 +2084,32 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     for d in self.cell_measure_dims(cm_)
                     if dimension_mapping[d] is not None]
 
-        try:
-            first_slice = next(slice_gen)
-        except StopIteration:
-            first_slice = None
+        # Fetch the data as a generic array-like object.
+        cube_data = self._data_manager.core_data()
 
-        if first_slice is not None:
-            data = self._my_data[first_slice]
-        else:
-            data = copy.deepcopy(self._my_data)
+        # Index with the keys, using orthogonal slicing.
+        dimension_mapping, data = iris.util._slice_data_with_keys(
+            cube_data, keys)
 
-        for other_slice in slice_gen:
-            data = data[other_slice]
-
-        # We don't want a view of the data, so take a copy of it if it's
-        # not already our own.
-        if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
-            data = copy.deepcopy(data)
+        # We don't want a view of the data, so take a copy of it.
+        data = deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
-        if isinstance(data, ma.core.MaskedArray):
+        if ma.isMaskedArray(data):
             if ma.count_masked(data) == 0:
                 data = data.filled()
 
+        # XXX: Slicing a single item from a masked array that is masked,
+        #      results in numpy (v1.11.1) *always* returning a MaskedConstant
+        #      with a dtype of float64, regardless of the original masked
+        #      array dtype!
+        if isinstance(data, ma.core.MaskedConstant) and \
+                data.dtype != cube_data.dtype:
+            data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
+
         # Make the new cube slice
         cube = Cube(data)
-        cube.metadata = copy.deepcopy(self.metadata)
+        cube.metadata = deepcopy(self.metadata)
 
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
@@ -2429,16 +2339,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if len(chunks) == 1:
             result = chunks[0]
         else:
+            chunk_data = [chunk.core_data() for chunk in chunks]
             if self.has_lazy_data():
-                data = biggus.LinearMosaic([chunk.lazy_data()
-                                            for chunk in chunks],
-                                           dim)
+                func = da.concatenate
             else:
                 module = ma if ma.isMaskedArray(self.data) else np
-                data = module.concatenate([chunk.data for chunk in chunks],
-                                          dim)
+                func = module.concatenate
+            data = func(chunk_data, dim)
             result = iris.cube.Cube(data)
-            result.metadata = copy.deepcopy(self.metadata)
+            result.metadata = deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
             # for subsequent use in creating updated aux_factories.
@@ -2808,18 +2717,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Example usage::
 
             # put the second dimension first, followed by the third dimension,
-            and finally put the first dimension third cube.transpose([1, 2, 0])
+            and finally put the first dimension third::
+
+                >>> cube.transpose([1, 2, 0])
 
         """
         if new_order is None:
             new_order = np.arange(self.ndim)[::-1]
-        elif len(new_order) != self.ndim:
+
+        # `new_order` must be an iterable for checking with `self.ndim`.
+        # Dask transpose only supports lists, so ensure `new_order` is
+        # always a list.
+        new_order = list(new_order)
+
+        if len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        if self.has_lazy_data():
-            self._my_data = self.lazy_data().transpose(new_order)
-        else:
-            self._my_data = self.data.transpose(new_order)
+        # Transpose the data payload.
+        dm = self._data_manager
+        data = dm.core_data().transpose(new_order)
+        self._data_manager = DataManager(data)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -2861,6 +2778,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.var_name:
             cube_xml_element.setAttribute('var_name', self.var_name)
         cube_xml_element.setAttribute('units', str(self.units))
+        cube_xml_element.setAttribute('dtype', self.dtype.name)
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
@@ -2925,7 +2843,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     data.dtype = data.dtype.newbyteorder('<')
                 return data
 
-            if isinstance(data, ma.MaskedArray):
+            if ma.isMaskedArray(data):
                 # Fill in masked values to avoid the checksum being
                 # sensitive to unused numbers. Use a fixed value so
                 # a change in fill_value doesn't affect the
@@ -2939,8 +2857,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 else:
                     crc = 'no-masked-elements'
                 data_xml_element.setAttribute("mask_checksum", crc)
-                data_xml_element.setAttribute('fill_value',
-                                              str(data.fill_value))
             else:
                 crc = '0x%08x' % (zlib.crc32(normalise(data)) & 0xffffffff, )
                 data_xml_element.setAttribute("checksum", crc)
@@ -2973,7 +2889,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if array_byteorder is not None:
                     data_xml_element.setAttribute('byteorder', array_byteorder)
 
-            if order and isinstance(data, ma.core.MaskedArray):
+            if order and ma.isMaskedArray(data):
                 data_xml_element.setAttribute('mask_order',
                                               _order(data.mask))
         else:
@@ -2997,7 +2913,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             A copy instance of the :class:`Cube`.
 
         """
-        return self._deepcopy({}, data)
+        memo = {}
+        cube = self._deepcopy(memo, data=data)
+        return cube
 
     def __copy__(self):
         """Shallow copying is disallowed for Cubes."""
@@ -3008,45 +2926,28 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return self._deepcopy(memo)
 
     def _deepcopy(self, memo, data=None):
-        if data is None:
-            # Use a copy of the source cube data.
-            if self.has_lazy_data():
-                # Use copy.copy, as lazy arrays don't have a copy method.
-                new_cube_data = copy.copy(self.lazy_data())
-            else:
-                # Do *not* use copy.copy, as NumPy 0-d arrays do that wrong.
-                new_cube_data = self.data.copy()
-        else:
-            # Use the provided data (without copying it).
-            if not isinstance(data, biggus.Array):
-                data = np.asanyarray(data)
+        dm = self._data_manager.copy(data=data)
 
-            if data.shape != self.shape:
-                msg = 'Cannot copy cube with new data of a different shape ' \
-                      '(slice or subset the cube first).'
-                raise ValueError(msg)
-
-            new_cube_data = data
-
-        new_dim_coords_and_dims = copy.deepcopy(self._dim_coords_and_dims,
-                                                memo)
-        new_aux_coords_and_dims = copy.deepcopy(self._aux_coords_and_dims,
-                                                memo)
+        new_dim_coords_and_dims = deepcopy(self._dim_coords_and_dims, memo)
+        new_aux_coords_and_dims = deepcopy(self._aux_coords_and_dims, memo)
 
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
         coord_mapping = {}
+
         for old_pair, new_pair in zip(self._dim_coords_and_dims,
                                       new_dim_coords_and_dims):
             coord_mapping[id(old_pair[0])] = new_pair[0]
+
         for old_pair, new_pair in zip(self._aux_coords_and_dims,
                                       new_aux_coords_and_dims):
             coord_mapping[id(old_pair[0])] = new_pair[0]
 
-        new_cube = Cube(new_cube_data,
+        new_cube = Cube(dm.core_data(),
                         dim_coords_and_dims=new_dim_coords_and_dims,
                         aux_coords_and_dims=new_aux_coords_and_dims)
-        new_cube.metadata = copy.deepcopy(self.metadata, memo)
+
+        new_cube.metadata = deepcopy(self.metadata, memo)
 
         for factory in self.aux_factories:
             new_cube.add_aux_factory(factory.updated(coord_mapping))
@@ -3081,65 +2982,47 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = not result
         return result
 
-    # Must supply __hash__, Python 3 does not enable it if __eq__ is defined
-    # This is necessary for merging, but probably shouldn't be used otherwise.
-    # See #962 and #1772.
+    # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
+    # NOTE: Violates "objects which compare equal must have the same hash".
+    # We ought to remove this, as equality of two cube can *change*, so they
+    # really should not be hashable.
+    # However, current code needs it, e.g. so we can put them in sets.
+    # Fixing it will require changing those uses.  See #962 and #1772.
     def __hash__(self):
         return hash(id(self))
 
     def __add__(self, other):
-        return iris.analysis.maths.add(self, other, ignore=True)
+        return iris.analysis.maths.add(self, other)
+
+    def __iadd__(self, other):
+        return iris.analysis.maths.add(self, other, in_place=True)
+
     __radd__ = __add__
 
     def __sub__(self, other):
-        return iris.analysis.maths.subtract(self, other, ignore=True)
+        return iris.analysis.maths.subtract(self, other)
+
+    def __isub__(self, other):
+        return iris.analysis.maths.subtract(self, other, in_place=True)
 
     __mul__ = iris.analysis.maths.multiply
     __rmul__ = iris.analysis.maths.multiply
+
+    def __imul__(self, other):
+        return iris.analysis.maths.multiply(self, other, in_place=True)
+
     __div__ = iris.analysis.maths.divide
+
+    def __idiv__(self, other):
+        return iris.analysis.maths.divide(self, other, in_place=True)
+
     __truediv__ = iris.analysis.maths.divide
+
+    def __itruediv__(self, other):
+        return iris.analysis.maths.divide(self, other, in_place=True)
+
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
-
-    def add_history(self, string):
-        """
-        Add the given string to the cube's history.
-        If the history coordinate does not exist, then one will be created.
-
-        .. deprecated:: 1.6
-            Add/modify history metadata within
-            attr:`~iris.cube.Cube.attributes` as needed.
-
-        """
-        warn_deprecated("Cube.add_history() has been deprecated - "
-                        "please modify/create cube.attributes['history'] "
-                        "as needed.")
-
-        timestamp = datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")
-        string = '%s Iris: %s' % (timestamp, string)
-
-        try:
-            history = self.attributes['history']
-            self.attributes['history'] = '%s\n%s' % (history, string)
-        except KeyError:
-            self.attributes['history'] = string
-
-    # START ANALYSIS ROUTINES
-
-    regridded = iris.util._wrap_function_for_method(
-        iris.analysis._interpolate_private.regrid,
-        """
-        Returns a new cube with values derived from this cube on the
-        horizontal grid specified by the grid_cube.
-
-        .. deprecated:: 1.10
-            Please replace usage of :meth:`~Cube.regridded` with
-            :meth:`~Cube.regrid`.  See :meth:`iris.analysis.interpolate.regrid`
-            for details of exact usage equivalents.
-
-        """)
-
-    # END ANALYSIS ROUTINES
 
     def collapsed(self, coords, aggregator, **kwargs):
         """
@@ -3325,8 +3208,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_result = unrolled_data
 
         # Perform the aggregation in lazy form if possible.
-        elif (aggregator.lazy_func is not None and
-                len(dims_to_collapse) == 1 and self.has_lazy_data()):
+        elif (aggregator.lazy_func is not None and self.has_lazy_data()):
             # Use a lazy operation separately defined by the aggregator, based
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
@@ -3506,7 +3388,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Determine aggregation result data type for the aggregate-by cube
             # data on first pass.
             if i == 0:
-                if isinstance(self.data, ma.MaskedArray):
+                if ma.isMaskedArray(self.data):
                     aggregateby_data = ma.zeros(data_shape, dtype=result.dtype)
                 else:
                     aggregateby_data = np.zeros(data_shape, dtype=result.dtype)
@@ -3817,6 +3699,11 @@ calendar='gregorian')
             this cube will be converted to values on the new grid
             according to the given regridding scheme.
 
+        .. note::
+
+            Both the source and target cubes must have a CoordSystem, otherwise
+            this function is not applicable.
+
         """
         regridder = scheme.regridder(self, grid)
         return regridder(self)
@@ -3940,7 +3827,10 @@ class _SliceIterator(collections.Iterator):
 
         if self._ordered:
             if any(self._mod_requested_dims != list(range(len(cube.shape)))):
-                cube.transpose(self._mod_requested_dims)
+                n = len(self._mod_requested_dims)
+                sliced_dims = np.empty(n, dtype=int)
+                sliced_dims[self._mod_requested_dims] = np.arange(n)
+                cube.transpose(sliced_dims)
 
         return cube
 

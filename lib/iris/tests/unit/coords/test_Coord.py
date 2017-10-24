@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import numpy as np
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
 from iris.tests import mock
+from iris.exceptions import UnitConversionError
 
 
 Pair = collections.namedtuple('Pair', 'points bounds')
@@ -241,26 +242,15 @@ class Test_cell(tests.IrisTest):
                                             mock.sentinel.upper]]))
         return coord
 
-    def test_time_as_number(self):
-        # Make sure Coord.cell() normally returns the values straight
-        # out of the Coord's points/bounds arrays.
-        coord = self._mock_coord()
-        cell = Coord.cell(coord, 0)
-        self.assertIs(cell.point, mock.sentinel.time)
-        self.assertEqual(cell.bound,
-                         (mock.sentinel.lower, mock.sentinel.upper))
-
     def test_time_as_object(self):
-        # When iris.FUTURE.cell_datetime_objects is True, ensure
-        # Coord.cell() converts the point/bound values to "datetime"
-        # objects.
+        # Ensure Coord.cell() converts the point/bound values to
+        # "datetime" objects.
         coord = self._mock_coord()
         coord.units.num2date = mock.Mock(
             side_effect=[mock.sentinel.datetime,
                          (mock.sentinel.datetime_lower,
                           mock.sentinel.datetime_upper)])
-        with mock.patch('iris.FUTURE', cell_datetime_objects=True):
-            cell = Coord.cell(coord, 0)
+        cell = Coord.cell(coord, 0)
         self.assertIs(cell.point, mock.sentinel.datetime)
         self.assertEqual(cell.bound,
                          (mock.sentinel.datetime_lower,
@@ -324,6 +314,12 @@ class Test_collapsed(tests.IrisTest):
         with self.assertRaises(ValueError):
             coord.collapsed()
 
+    def test_collapsed_overflow(self):
+        coord = DimCoord(points=np.array([1493892000, 1493895600, 1493899200],
+                                         dtype=np.int32))
+        result = coord.collapsed()
+        self.assertEqual(result.points, 1493895600)
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):
@@ -348,25 +344,13 @@ class Test_is_compatible(tests.IrisTest):
         self.assertFalse(self.test_coord.is_compatible(self.other_coord))
 
 
-class Test_DimCoord_copy(tests.IrisTest):
-    def test_writable_points(self):
-        coord1 = DimCoord(np.arange(5),
-                          bounds=[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
-        coord2 = coord1.copy()
-        msg = 'destination is read-only'
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord1.points[:] = 0
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord2.points[:] = 0
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord1.bounds[:] = 0
-
-        with self.assertRaisesRegexp(ValueError, msg):
-            coord2.bounds[:] = 0
-
+class Test_convert_units(tests.IrisTest):
+    def test_convert_unknown_units(self):
+        coord = iris.coords.AuxCoord(1, units='unknown')
+        emsg = ('Cannot convert from unknown units. '
+                'The "coord.units" attribute may be set directly.')
+        with self.assertRaisesRegexp(UnitConversionError, emsg):
+            coord.convert_units('degrees')
 
 if __name__ == '__main__':
     tests.main()

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i???"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -36,6 +36,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xf4816e76" dtype="float32" fill_value="1e-09" mask_checksum="0x54a64fdc" shape="(8, 20, 20)"/>
+    <data checksum="0xf4816e76" dtype="float32" mask_checksum="0x54a64fdc" shape="(8, 20, 20)"/>
   </cube>
 </cubes>

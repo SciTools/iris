@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ import os
 
 import iris
 import iris.fileformats.pp
-import iris.fileformats.pp_rules
+import iris.fileformats.pp_load_rules
 import iris.fileformats.rules
 import iris.io
 import iris.util
@@ -41,7 +41,7 @@ class TestPPLoadCustom(tests.IrisTest):
 
     def _field_to_cube(self, field):
         cube, _, _ = iris.fileformats.rules._make_cube(
-            field, iris.fileformats.pp_rules.convert)
+            field, iris.fileformats.pp_load_rules.convert)
         return cube
 
     def test_lbtim_2(self):
@@ -52,7 +52,7 @@ class TestPPLoadCustom(tests.IrisTest):
             cube = self._field_to_cube(field)
             self.subcubes.append(cube)
         cube = self.subcubes.merge()[0]
-        self.assertCML(cube, ('pp_rules', 'lbtim_2.cml'))
+        self.assertCML(cube, ('pp_load_rules', 'lbtim_2.cml'))
 
     def _ocean_depth(self, bounded=False):
         lbuser = list(self.template.lbuser)
@@ -76,12 +76,12 @@ class TestPPLoadCustom(tests.IrisTest):
     def test_ocean_depth(self):
         self._ocean_depth()
         cube = self.subcubes.merge()[0]
-        self.assertCML(cube, ('pp_rules', 'ocean_depth.cml'))
+        self.assertCML(cube, ('pp_load_rules', 'ocean_depth.cml'))
 
     def test_ocean_depth_bounded(self):
         self._ocean_depth(bounded=True)
         cube = self.subcubes.merge()[0]
-        self.assertCML(cube, ('pp_rules', 'ocean_depth_bounded.cml'))
+        self.assertCML(cube, ('pp_load_rules', 'ocean_depth_bounded.cml'))
 
 
 class TestReferences(tests.IrisTest):
@@ -133,11 +133,11 @@ class TestPPLoadRules(tests.IrisTest):
         # Test PP loading and rule evaluation.
 
         cube = iris.tests.stock.simple_pp()
-        self.assertCML(cube, ('pp_rules', 'global.cml'))
+        self.assertCML(cube, ('pp_load_rules', 'global.cml'))
 
         data_path = tests.get_data_path(('PP', 'rotated_uk', 'rotated_uk.pp'))
         cube = iris.load(data_path)[0]
-        self.assertCML(cube, ('pp_rules', 'rotated_uk.cml'))
+        self.assertCML(cube, ('pp_load_rules', 'rotated_uk.cml'))
 
     def test_lbproc(self):
         data_path = tests.get_data_path(('PP', 'meanMaxMin', '200806081200__qwpb.T24.pp'))
@@ -145,7 +145,7 @@ class TestPPLoadRules(tests.IrisTest):
         constraint = iris.Constraint('air_temperature', forecast_period=24)
         cubes = iris.load(data_path, constraint)
         cubes = iris.cube.CubeList([cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]])
-        self.assertCML(cubes, ('pp_rules', 'lbproc_mean_max_min.cml'))
+        self.assertCML(cubes, ('pp_load_rules', 'lbproc_mean_max_min.cml'))
 
     def test_cell_methods(self):
         # Test cell methods are created for correct values of lbproc

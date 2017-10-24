@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="soil_temperature" units="K">
+  <cube dtype="float32" standard_name="soil_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s08i225"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -44,6 +44,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6d6010c1" dtype="float32" fill_value="-1.07374e+09" mask_checksum="0xd796e332" shape="(73, 96)"/>
+    <data checksum="0x6d6010c1" dtype="float32" mask_checksum="0xd796e332" shape="(73, 96)"/>
   </cube>
 </cubes>

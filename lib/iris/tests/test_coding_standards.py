@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,10 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+# import iris.tests first so that some things can be initialised before
+# importing anything else
+import iris.tests as tests
+
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
@@ -25,7 +29,6 @@ from itertools import chain
 import os
 import re
 import subprocess
-import unittest
 
 import pep8
 
@@ -79,13 +82,11 @@ PYCODESTYLE_IGNORE_OPTIONS = (
 class StandardReportWithExclusions(pep8.StandardReport):
     expected_bad_files = [
         '*/iris/std_names.py',
-        '*/iris/analysis/_interpolate_private.py',
         '*/iris/fileformats/cf.py',
         '*/iris/fileformats/dot.py',
-        '*/iris/fileformats/grib/__init__.py',
         '*/iris/fileformats/grib/_grib_cf_map.py',
-        '*/iris/fileformats/grib/load_rules.py',
-        '*/iris/fileformats/pp_rules.py',
+        '*/iris/fileformats/grib/_grib1_load_rules.py',
+        '*/iris/fileformats/pp_load_rules.py',
         '*/iris/fileformats/rules.py',
         '*/iris/fileformats/um_cf_map.py',
         '*/iris/fileformats/_pyke_rules/compiled_krb/compiled_pyke_files.py',
@@ -113,19 +114,16 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_grib_save.py',
         '*/iris/tests/test_grib_save_rules.py',
         '*/iris/tests/test_hybrid.py',
-        '*/iris/tests/test_interpolation.py',
         '*/iris/tests/test_intersect.py',
         '*/iris/tests/test_io_init.py',
         '*/iris/tests/test_iterate.py',
         '*/iris/tests/test_load.py',
         '*/iris/tests/test_merge.py',
-        '*/iris/tests/test_pickling.py',
         '*/iris/tests/test_pp_cf.py',
         '*/iris/tests/test_pp_module.py',
         '*/iris/tests/test_pp_stash.py',
         '*/iris/tests/test_pp_to_cube.py',
         '*/iris/tests/test_quickplot.py',
-        '*/iris/tests/test_regrid.py',
         '*/iris/tests/test_std_names.py',
         '*/iris/tests/test_unit.py',
         '*/iris/tests/test_uri_callback.py',
@@ -170,7 +168,7 @@ class StandardReportWithExclusions(pep8.StandardReport):
                      self).get_file_results()
 
 
-class TestCodeFormat(unittest.TestCase):
+class TestCodeFormat(tests.IrisTest):
     def test_pep8_conformance(self):
         #
         #    Tests the iris codebase against the "pep8" tool.
@@ -218,7 +216,7 @@ class TestCodeFormat(unittest.TestCase):
                           '{}'.format('\n  '.join(unexpectedly_good)))
 
 
-class TestLicenseHeaders(unittest.TestCase):
+class TestLicenseHeaders(tests.IrisTest):
     @staticmethod
     def years_of_license_in_file(fh):
         """
@@ -345,7 +343,7 @@ class TestLicenseHeaders(unittest.TestCase):
             raise ValueError('There were license header failures. See stdout.')
 
 
-class TestFutureImports(unittest.TestCase):
+class TestFutureImports(tests.IrisTest):
     excluded = (
         '*/iris/fileformats/_old_pp_packing.py',
         '*/iris/fileformats/_pyke_rules/__init__.py',
@@ -406,4 +404,4 @@ class TestFutureImports(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    tests.main()

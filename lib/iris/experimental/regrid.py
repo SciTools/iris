@@ -18,7 +18,6 @@
 Regridding functions.
 
 """
-
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
@@ -42,7 +41,7 @@ from iris.analysis._interpolation import (get_xy_dim_coords, get_xy_coords,
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
-from iris.util import promote_aux_coord_to_dim_coord
+from iris.util import _meshgrid, promote_aux_coord_to_dim_coord
 
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))
@@ -384,21 +383,22 @@ def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
         Numpy array (possibly masked) or scalar.
 
     """
-    res = ma.average(data, weights=weights, axis=axis)
-    if ma.isMaskedArray(data) and mdtol < 1:
-        weights_total = weights.sum(axis=axis)
-        masked_weights = weights.copy()
-        masked_weights[~ma.getmaskarray(data)] = 0
-        masked_weights_total = masked_weights.sum(axis=axis)
-        frac_masked = np.true_divide(masked_weights_total, weights_total)
-        mask_pt = frac_masked > mdtol
-        if np.any(mask_pt):
-            if np.isscalar(res):
-                res = ma.masked
-            elif ma.isMaskedArray(res):
-                res.mask |= mask_pt
-            else:
-                res = ma.masked_array(res, mask=mask_pt)
+    if ma.is_masked(data):
+        res, unmasked_weights_sum = ma.average(data, weights=weights,
+                                               axis=axis, returned=True)
+        if mdtol < 1:
+            weights_sum = weights.sum(axis=axis)
+            frac_masked = 1 - np.true_divide(unmasked_weights_sum, weights_sum)
+            mask_pt = frac_masked > mdtol
+            if np.any(mask_pt):
+                if np.isscalar(res):
+                    res = ma.masked
+                elif ma.isMaskedArray(res):
+                    res.mask |= mask_pt
+                else:
+                    res = ma.masked_array(res, mask=mask_pt)
+    else:
+        res = np.average(data, weights=weights, axis=axis)
     return res
 
 
@@ -755,7 +755,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
 
     # Wrap up the data as a Cube.
     # Create 2d meshgrids as required by _create_cube func.
-    meshgrid_x, meshgrid_y = np.meshgrid(grid_x.points, grid_y.points)
+    meshgrid_x, meshgrid_y = _meshgrid(grid_x.points, grid_y.points)
     regrid_callback = RectilinearRegridder._regrid
     new_cube = RectilinearRegridder._create_cube(new_data, src_cube,
                                                  src_x_dim, src_y_dim,
@@ -1420,7 +1420,7 @@ class _ProjectedUnstructuredRegridder(object):
             src_projection, src_x_coord.points, src_y_coord.points)
 
         tgt_projection = tgt_x_coord.coord_system.as_cartopy_projection()
-        tgt_x, tgt_y = np.meshgrid(tgt_x_coord.points, tgt_y_coord.points)
+        tgt_x, tgt_y = _meshgrid(tgt_x_coord.points, tgt_y_coord.points)
         projected_tgt_grid = projection.transform_points(
             tgt_projection, tgt_x, tgt_y)
 

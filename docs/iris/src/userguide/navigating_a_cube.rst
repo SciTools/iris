@@ -80,7 +80,7 @@ Each cube also has a :mod:`numpy` array which represents the phenomenon of the c
 
 .. note::
 
-    When loading some file formats in Iris, the data itself is not loaded until the **first** time that the data is requested. 
+    When loading from most file formats in Iris, the data itself is not loaded until the **first** time that the data is requested. 
     Hence you may have noticed that running the previous command for the first time takes a little longer than it does for 
     subsequent calls.
 
@@ -91,6 +91,10 @@ Each cube also has a :mod:`numpy` array which represents the phenomenon of the c
 
        print(cube.shape)
        print(cube.ndim)
+
+    For more on the benefits, handling and uses of lazy data, see
+    :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`
+
 
 You can change the units of a cube using the :meth:`~iris.cube.Cube.convert_units` method. For example::
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,6 +28,8 @@ import iris.tests as tests
 
 import types
 
+import numpy as np
+
 from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
 from iris.fileformats.rules import (ConcreteReferenceTarget,
@@ -35,12 +37,8 @@ from iris.fileformats.rules import (ConcreteReferenceTarget,
                                     Reference, ReferenceTarget, load_cubes,
                                     scalar_cell_method)
 from iris.coords import CellMethod
+from iris.tests import mock
 import iris.tests.stock as stock
-
-
-class Mock(object):
-    def __repr__(self):
-        return '<Mock {!r}>'.format(self.__dict__)
 
 
 class TestConcreteReferenceTarget(tests.IrisTest):
@@ -109,17 +107,20 @@ class TestLoadCubes(tests.IrisTest):
         # Test the creation process for a factory definition which only
         # uses simple dict arguments.
 
-        # The fake PPField which will be supplied to our converter.
-        field = Mock()
-        field.data = None
+        # Make a minimal fake data object that passes as lazy data.
+        core_data_array = mock.Mock(compute=None, dtype=np.dtype('f4'))
+        # Make a fake PPField which will be supplied to our converter.
+        field = mock.Mock(core_data=mock.Mock(return_value=core_data_array),
+                          realised_dtype=np.dtype('f4'),
+                          bmdi=None)
 
         def field_generator(filename):
             return [field]
 
         # A fake conversion function returning:
         #   1) A parameter cube needing a simple factory construction.
-        aux_factory = Mock()
-        factory = Mock()
+        aux_factory = mock.Mock()
+        factory = mock.Mock()
         factory.args = [{'name': 'foo'}]
         factory.factory_class = lambda *args: \
             setattr(aux_factory, 'fake_args', args) or aux_factory
@@ -128,7 +129,7 @@ class TestLoadCubes(tests.IrisTest):
             return ConversionMetadata([factory], [], '', '', '', {}, [], [],
                                       [])
         # Finish by making a fake Loader
-        fake_loader = Loader(field_generator, {}, converter, None)
+        fake_loader = Loader(field_generator, {}, converter)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
 
         # Check the result is a generator with a single entry.
@@ -175,10 +176,13 @@ class TestLoadCubes(tests.IrisTest):
         assert not param_cube.coords('surface_altitude')
 
         # The fake PPFields which will be supplied to our converter.
-        press_field = Mock()
-        press_field.data = param_cube.data
-        orog_field = Mock()
-        orog_field.data = orog_cube.data
+        press_field = mock.Mock(
+            core_data=mock.Mock(return_value=param_cube.data),
+            bmdi=-1e20, realised_dtype=param_cube.dtype)
+
+        orog_field = mock.Mock(
+            core_data=mock.Mock(return_value=orog_cube.data),
+            bmdi=-1e20, realised_dtype=orog_cube.dtype)
 
         def field_generator(filename):
             return [press_field, orog_field]
@@ -206,7 +210,7 @@ class TestLoadCubes(tests.IrisTest):
                                       src.cell_methods, dim_coords_and_dims,
                                       aux_coords_and_dims)
         # Finish by making a fake Loader
-        fake_loader = Loader(field_generator, {}, converter, None)
+        fake_loader = Loader(field_generator, {}, converter)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
 
         # Check the result is a generator containing two Cubes.

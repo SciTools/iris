@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="leaf_area_index" units="%">
+  <cube dtype="uint8" standard_name="leaf_area_index" units="%">
     <attributes>
       <attribute name="source" value="Boston University"/>
     </attributes>
@@ -34,6 +34,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xbf5ea7c7" dtype="uint8" fill_value="255" mask_checksum="0x90665a57" shape="(2160, 4320)"/>
+    <data checksum="0xbf5ea7c7" dtype="uint8" mask_checksum="0x90665a57" shape="(2160, 4320)"/>
   </cube>
 </cubes>

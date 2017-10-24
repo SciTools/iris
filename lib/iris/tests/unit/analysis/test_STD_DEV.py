@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,26 +25,35 @@ import iris.tests as tests
 
 import numpy as np
 
-import biggus
+from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.analysis import STD_DEV
 
 
 class Test_lazy_aggregate(tests.IrisTest):
-    def test_unsupported_mdtol(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
-        msg = "unexpected keyword argument 'mdtol'"
-        with self.assertRaisesRegexp(TypeError, msg):
-            STD_DEV.lazy_aggregate(array, axis=0, mdtol=0.8)
+    def test_mdtol(self):
+        na = -999.888
+        array = np.ma.masked_equal([[1., 2., 1., 2.],
+                                    [1., 2., 3., na],
+                                    [1., 2., na, na]],
+                                   na)
+        array = as_lazy_data(array)
+        var = STD_DEV.lazy_aggregate(array, axis=1, mdtol=0.3)
+        masked_result = as_concrete_data(var)
+        masked_expected = np.ma.masked_array([0.57735, 1., 0.707107],
+                                             mask=[0, 0, 1])
+        self.assertMaskedArrayAlmostEqual(masked_result, masked_expected)
 
     def test_ddof_one(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = as_lazy_data(np.arange(8))
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=1)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(2.449489))
+        result = as_concrete_data(var)
+        self.assertArrayAlmostEqual(result, np.array(2.449489))
 
     def test_ddof_zero(self):
-        array = biggus.NumpyArrayAdapter(np.arange(8))
+        array = as_lazy_data(np.arange(8))
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=0)
-        self.assertArrayAlmostEqual(var.ndarray(), np.array(2.291287))
+        result = as_concrete_data(var)
+        self.assertArrayAlmostEqual(result, np.array(2.291287))
 
 
 class Test_name(tests.IrisTest):

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="eastward_wind" units="m s-1" var_name="wind1">
+  <cube dtype="int32" standard_name="eastward_wind" units="m s-1" var_name="wind1">
     <attributes>
       <attribute name="test" value="weak-monotonic time coordinate"/>
     </attributes>
@@ -18,7 +18,7 @@
     <cellMethods/>
     <data checksum="0xd4e7a32f" dtype="int32" shape="(3, 3, 3)"/>
   </cube>
-  <cube standard_name="eastward_wind" units="m s-1" var_name="wind2">
+  <cube dtype="int32" standard_name="eastward_wind" units="m s-1" var_name="wind2">
     <attributes>
       <attribute name="test" value="masked monotonic time coordinate"/>
     </attributes>
@@ -36,7 +36,7 @@
     <cellMethods/>
     <data checksum="0xd4e7a32f" dtype="int32" shape="(3, 3, 3)"/>
   </cube>
-  <cube standard_name="eastward_wind" units="m s-1" var_name="wind3">
+  <cube dtype="int32" standard_name="eastward_wind" units="m s-1" var_name="wind3">
     <attributes>
       <attribute name="test" value="masked non-monotonic time coordinate"/>
     </attributes>
@@ -52,6 +52,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x0f7cfdf3" dtype="int32" fill_value="-2147483647" mask_checksum="0xc0aeb298" shape="(3, 3, 3)"/>
+    <data checksum="0x0f7cfdf3" dtype="int32" mask_checksum="0xc0aeb298" shape="(3, 3, 3)"/>
   </cube>
 </cubes>

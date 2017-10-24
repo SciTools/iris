@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="(MOCK) 2km mean orography" units="metres">
+  <cube dtype="int64" long_name="(MOCK) 2km mean orography" units="metres">
     <attributes>
       <attribute name="field_code" value="73"/>
       <attribute name="source" value="GLOBE DTM"/>

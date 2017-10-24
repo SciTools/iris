@@ -51,8 +51,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
+from functools import wraps
 
-import biggus
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
@@ -64,6 +65,7 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
+import iris._lazy_data as iris_lazy_data
 
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
@@ -440,7 +442,7 @@ class _Aggregator(object):
         Args:
 
         * data (array):
-            A lazy array (:class:`biggus.Array`).
+            A lazy array (:class:`dask.array.Array`).
 
         * axis (int or list of int):
             The dimensions to aggregate over -- note that this is defined
@@ -455,7 +457,7 @@ class _Aggregator(object):
 
         Returns:
             A lazy array representing the aggregation operation
-            (:class:`biggus.Array`).
+            (:class:`dask.array.Array`).
 
         """
         if self.lazy_func is None:
@@ -561,11 +563,7 @@ class _Aggregator(object):
             The collapsed cube with its aggregated data payload.
 
         """
-        if isinstance(data_result, biggus.Array):
-            collapsed_cube.lazy_data(data_result)
-        else:
-            collapsed_cube.data = data_result
-
+        collapsed_cube.data = data_result
         return collapsed_cube
 
     def aggregate_shape(self, **kwargs):
@@ -1017,7 +1015,8 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-def _percentile(data, axis, percent, **kwargs):
+def _percentile(data, axis, percent, fast_percentile_method=False,
+                **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1026,18 +1025,34 @@ def _percentile(data, axis, percent, **kwargs):
     If a new additive dimension is formed, then it will always be the last
     dimension of the resulting percentile data payload.
 
+    Kwargs:
+
+    * fast_percentile_method (boolean) :
+        When set to True, uses the numpy.percentiles method as a faster
+        alternative to the scipy.mstats.mquantiles method. Does not handle
+        masked arrays.
+
     """
     # Ensure that the target axis is the last dimension.
     data = np.rollaxis(data, axis, start=data.ndim)
-    quantiles = np.array(percent) / 100.
     shape = data.shape[:-1]
     # Flatten any leading dimensions.
     if shape:
         data = data.reshape([np.prod(shape), data.shape[-1]])
     # Perform the percentile calculation.
-    result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1, **kwargs)
+    if fast_percentile_method:
+        msg = 'Cannot use fast np.percentile method with masked array.'
+        if ma.isMaskedArray(data):
+            raise TypeError(msg)
+        result = np.percentile(data, percent, axis=-1)
+        result = result.T
+    else:
+        quantiles = np.array(percent) / 100.
+        result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1,
+                                               **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
+
     # Ensure to unflatten any leading dimensions.
     if shape:
         if not isinstance(percent, collections.Iterable):
@@ -1079,7 +1094,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
         of weights is zero or masked)
     """
     # Return np.nan if no useable points found
-    if np.isclose(weights.sum(), 0.) or weights.sum() is ma.masked:
+    if np.isclose(weights.sum(), 0.) or ma.is_masked(weights.sum()):
         return np.resize(np.array(np.nan), len(quantiles))
     # Sort the data
     ind_sorted = ma.argsort(data)
@@ -1186,7 +1201,7 @@ def _count(array, function, axis, **kwargs):
 def _proportion(array, function, axis, **kwargs):
     # if the incoming array is masked use that to count the total number of
     # values
-    if isinstance(array, ma.MaskedArray):
+    if ma.isMaskedArray(array):
         # calculate the total number of non-masked values across the given axis
         total_non_masked = _count(array.mask, np.logical_not,
                                   axis=axis, **kwargs)
@@ -1194,7 +1209,16 @@ def _proportion(array, function, axis, **kwargs):
     else:
         total_non_masked = array.shape[axis]
 
-    return _count(array, function, axis=axis, **kwargs) / total_non_masked
+    # Sanitise the result of this operation thru ma.asarray to ensure that
+    # the dtype of the fill-value and the dtype of the array are aligned.
+    # Otherwise, it is possible for numpy to return a masked array that has
+    # a dtype for its data that is different to the dtype of the fill-value,
+    # which can cause issues outside this function.
+    # Reference - tests/unit/analyis/test_PROPORTION.py Test_masked.test_ma
+    numerator = _count(array, function, axis=axis, **kwargs)
+    result = ma.asarray(numerator / total_non_masked)
+
+    return result
 
 
 def _rms(array, axis, **kwargs):
@@ -1412,7 +1436,41 @@ This aggregator handles masked data.
 """
 
 
-MEAN = WeightedAggregator('mean', ma.average, lazy_func=biggus.mean)
+def _build_dask_mdtol_function(dask_stats_function):
+    """
+    Make a wrapped dask statistic function that supports the 'mdtol' keyword.
+
+    'dask_function' must be a dask statistical function, compatible with the
+    call signature : "dask_stats_function(data, axis, **kwargs)".
+    It must be masked-data tolerant, i.e. it ignores masked input points and
+    performs a calculation on only the unmasked points.
+    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
+
+    The returned value is a new function operating on dask arrays.
+    It has the call signature `stat(data, axis=-1, mdtol=None, **kwargs)`.
+
+    """
+    @wraps(dask_stats_function)
+    def inner_stat(array, axis=-1, mdtol=None, **kwargs):
+        # Call the statistic to get the basic result (missing-data tolerant).
+        dask_result = dask_stats_function(array, axis=axis, **kwargs)
+        if mdtol is None or mdtol >= 1.0:
+            result = dask_result
+        else:
+            # Build a lazy computation to compare the fraction of missing
+            # input points at each output point to the 'mdtol' threshold.
+            point_mask_counts = da.sum(da.ma.getmaskarray(array), axis=axis)
+            points_per_calc = array.size / dask_result.size
+            masked_point_fractions = point_mask_counts / points_per_calc
+            boolean_mask = masked_point_fractions > mdtol
+            # Return an mdtol-masked version of the basic result.
+            result = da.ma.masked_array(da.ma.getdata(dask_result),
+                                        boolean_mask)
+        return result
+    return inner_stat
+
+MEAN = WeightedAggregator('mean', ma.average,
+                          lazy_func=_build_dask_mdtol_function(da.mean))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1452,7 +1510,7 @@ To compute a weighted area average::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.mean`.
+    Lazy operation is supported, via :func:`dask.array.nanmean`.
 
 This aggregator handles masked data.
 
@@ -1611,7 +1669,7 @@ This aggregator handles masked data.
 
 
 STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1,
-                     lazy_func=biggus.std)
+                     lazy_func=_build_dask_mdtol_function(da.std))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the standard deviation over a :class:`~iris.cube.Cube`, as
@@ -1635,7 +1693,7 @@ To obtain the biased standard deviation::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.std`.
+    Lazy operation is supported, via :func:`dask.array.nanstd`.
 
 This aggregator handles masked data.
 
@@ -1678,7 +1736,8 @@ This aggregator handles masked data.
 VARIANCE = Aggregator('variance',
                       ma.var,
                       units_func=lambda units: units * units,
-                      lazy_func=biggus.var, ddof=1)
+                      lazy_func=_build_dask_mdtol_function(da.var),
+                      ddof=1)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the variance over a :class:`~iris.cube.Cube`, as computed by
@@ -1702,7 +1761,7 @@ To obtain the biased variance::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.var`.
+    Lazy operation is supported, via :func:`dask.array.nanvar`.
 
 This aggregator handles masked data.
 
@@ -2435,8 +2494,3 @@ class UnstructuredNearest(object):
         from iris.analysis.trajectory import \
             UnstructuredNearestNeigbourRegridder
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
-
-
-# Import "iris.analysis.interpolate" to replicate older automatic imports.
-# NOTE: do this at end, as otherwise its import of 'Linear' will fail.
-from . import _interpolate_backdoor as interpolate

@@ -37,6 +37,7 @@ import six
 import codecs
 import collections
 import contextlib
+import datetime
 import difflib
 import filecmp
 import functools
@@ -48,6 +49,7 @@ import logging
 import math
 import os
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -76,6 +78,7 @@ import iris.util
 try:
     import matplotlib
     matplotlib.use('agg')
+    matplotlib.rcdefaults()
     import matplotlib.testing.compare as mcompare
     import matplotlib.pyplot as plt
 except ImportError:
@@ -91,16 +94,11 @@ else:
     GDAL_AVAILABLE = True
 
 try:
-    import iris_grib
+    import gribapi
     GRIB_AVAILABLE = True
-    from iris_grib.message import GribMessage
+    from iris.fileformats.grib.message import GribMessage
 except ImportError:
-    try:
-        import gribapi
-        GRIB_AVAILABLE = True
-        from iris.fileformats.grib.message import GribMessage
-    except ImportError:
-        GRIB_AVAILABLE = False
+    GRIB_AVAILABLE = False
 
 try:
     import iris_sample_data
@@ -120,6 +118,12 @@ try:
     INET_AVAILABLE = True
 except requests.exceptions.ConnectionError:
     INET_AVAILABLE = False
+
+try:
+    import stratify
+    STRATIFY_AVAILABLE = True
+except ImportError:
+    STRATIFY_AVAILABLE = False
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
@@ -219,7 +223,7 @@ def get_data_path(relative_path):
     return data_path
 
 
-class IrisTest(unittest.TestCase):
+class IrisTest_nometa(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
     _assertion_counts = collections.defaultdict(int)
@@ -245,6 +249,16 @@ class IrisTest(unittest.TestCase):
         if not isinstance(relative_path, six.string_types):
             relative_path = os.path.join(*relative_path)
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
+
+    def assertStringEqual(self, reference_str, test_str,
+                          type_comparison_name='strings'):
+        if reference_str != test_str:
+            diff = '\n'.join(difflib.unified_diff(reference_str.splitlines(),
+                                                test_str.splitlines(),
+                                                'Reference', 'Test result',
+                                                '', '', 0))
+            self.fail("{} do not match:\n{}".format(type_comparison_name,
+                                                    diff))
 
     def result_path(self, basename=None, ext=''):
         """
@@ -294,7 +308,7 @@ class IrisTest(unittest.TestCase):
             if fname[-1].endswith(".cml"):
                 fname[-1] = fname[-1][:-4]
             fname[-1] += '.data.%d.json' % i
-            self.assertCubeDataAlmostEqual(cube, fname, **kwargs)
+            self.assertDataAlmostEqual(cube.data, fname, **kwargs)
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags='-h'):
@@ -406,36 +420,35 @@ class IrisTest(unittest.TestCase):
             diff = ''.join(difflib.unified_diff(reference_text, source_text, 'Reference', 'Test result', '', '', 0))
             self.fail("%s does not match reference file: %s\n%s" % (desc, reference_filename, diff))
 
-    def assertCubeDataAlmostEqual(self, cube, reference_filename, **kwargs):
+    def assertDataAlmostEqual(self, data, reference_filename, **kwargs):
         reference_path = self.get_result_path(reference_filename)
         if self._check_reference_file(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
             with open(reference_path, 'r') as reference_file:
                 stats = json.load(reference_file)
-                self.assertEqual(stats.get('shape', []), list(cube.shape))
+                self.assertEqual(stats.get('shape', []), list(data.shape))
                 self.assertEqual(stats.get('masked', False),
-                                       isinstance(cube.data, ma.MaskedArray))
+                                 ma.is_masked(data))
                 nstats = np.array((stats.get('mean', 0.), stats.get('std', 0.),
                                    stats.get('max', 0.), stats.get('min', 0.)),
                                   dtype=np.float_)
                 if math.isnan(stats.get('mean', 0.)):
-                    self.assertTrue(math.isnan(cube.data.mean()))
+                    self.assertTrue(math.isnan(data.mean()))
                 else:
-                    cube_stats = np.array((cube.data.mean(), cube.data.std(),
-                                           cube.data.max(), cube.data.min()),
+                    data_stats = np.array((data.mean(), data.std(),
+                                           data.max(), data.min()),
                                           dtype=np.float_)
-                    self.assertArrayAllClose(nstats, cube_stats, **kwargs)
+                    self.assertArrayAllClose(nstats, data_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            masked = False
-            if isinstance(cube.data, ma.MaskedArray):
-                masked = True
-            stats = {'mean': np.float_(cube.data.mean()),
-                     'std': np.float_(cube.data.std()),
-                     'max': np.float_(cube.data.max()),
-                     'min': np.float_(cube.data.min()),
-                     'shape': cube.shape, 'masked': masked}
+            stats = collections.OrderedDict([
+                ('std', np.float_(data.std())),
+                ('min', np.float_(data.min())),
+                ('max', np.float_(data.max())),
+                ('shape', data.shape),
+                ('masked', ma.is_masked(data)),
+                ('mean', np.float_(data.mean()))])
             with open(reference_path, 'w') as reference_file:
                 reference_file.write(json.dumps(stats))
 
@@ -511,10 +524,47 @@ class IrisTest(unittest.TestCase):
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
 
+    def assertRaisesRegexp(self, *args, **kwargs):
+        """
+        Emulate the old :meth:`unittest.TestCase.assertRaisesRegexp`.
+
+        Because the original function is now deprecated in Python 3.
+        Now calls :meth:`six.assertRaisesRegex()` (no final "p") instead.
+        It is the same, except for providing an additional 'msg' argument.
+
+        """
+        # Note: invoke via parent class to avoid recursion as, in Python 2,
+        # "six.assertRaisesRegex" calls getattr(self, 'assertRaisesRegexp').
+        return six.assertRaisesRegex(super(IrisTest_nometa, self),
+                                     *args, **kwargs)
+
+    @contextlib.contextmanager
+    def assertGivesWarning(self, expected_regexp='', expect_warning=True):
+        # Check that a warning is raised matching a given expression, or that
+        # no warning matching the given expression is raised.
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            yield
+        messages = [str(warning.message) for warning in w]
+        expr = re.compile(expected_regexp)
+        matches = [message for message in messages if expr.search(message)]
+        warning_raised = any(matches)
+        if expect_warning:
+            if not warning_raised:
+                msg = "Warning matching '{}' not raised."
+                msg = msg.format(expected_regexp)
+                self.assertEqual(expect_warning, warning_raised, msg)
+        else:
+            if warning_raised:
+                msg = "Unexpected warning(s) raised, matching '{}' : {!r}."
+                msg = msg.format(expected_regexp, matches)
+                self.assertEqual(expect_warning, warning_raised, msg)
+
     def _assertMaskedArray(self, assertion, a, b, strict, **kwargs):
         # Define helper function to extract unmasked values as a 1d
         # array.
         def unmasked_data_as_1d_array(array):
+            array = ma.asarray(array)
             if array.ndim == 0:
                 if array.mask:
                     data = np.array([])
@@ -762,7 +812,7 @@ class IrisTest(unittest.TestCase):
                 else:
                     figure.savefig(result_fname)
                     emsg = 'Missing image test result: {}.'
-                    raise ValueError(emsg.format(unique_id))
+                    raise AssertionError(emsg.format(unique_id))
             else:
                 uris = repo[unique_id]
                 # Create the expected perceptual image hashes from the uris.
@@ -787,7 +837,7 @@ class IrisTest(unittest.TestCase):
                             print(emsg.format(msg))
                         else:
                             emsg = 'Image comparison failed: {}'
-                            raise ValueError(emsg.format(msg))
+                            raise AssertionError(emsg.format(msg))
 
             if _DISPLAY_FIGURES:
                 plt.show()
@@ -852,10 +902,84 @@ class IrisTest(unittest.TestCase):
         self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
 
 
+# An environment variable controls whether test timings are output.
+#
+# NOTE: to run tests with timing output, nosetests cannot be used.
+# At present, that includes not using "python setup.py test"
+# The typically best way is like this :
+#    $ export IRIS_TEST_TIMINGS=1
+#    $ python -m unittest discover -s iris.tests
+# and commonly adding ...
+#    | grep "TIMING TEST" >iris_test_output.txt
+#
+_PRINT_TEST_TIMINGS = bool(int(os.environ.get('IRIS_TEST_TIMINGS', 0)))
+
+
+def _method_path(meth):
+    cls = meth.im_class
+    return '.'.join([cls.__module__, cls.__name__, meth.__name__])
+
+
+def _testfunction_timing_decorator(fn):
+    # Function decorator for making a testcase print its execution time.
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        start_time = datetime.datetime.now()
+        try:
+            result = fn(*args, **kwargs)
+        finally:
+            end_time = datetime.datetime.now()
+            elapsed_time = (end_time - start_time).total_seconds()
+            msg = '\n  TEST TIMING -- "{}" took : {:12.6f} sec.'
+            name = _method_path(fn)
+            print(msg.format(name, elapsed_time))
+        return result
+    return inner
+
+
+def iristest_timing_decorator(cls):
+    # Class decorator to make all "test_.." functions print execution timings.
+    if _PRINT_TEST_TIMINGS:
+        # NOTE: 'dir' scans *all* class properties, including inherited ones.
+        attr_names = dir(cls)
+        for attr_name in attr_names:
+            attr = getattr(cls, attr_name)
+            if callable(attr) and attr_name.startswith('test'):
+                attr = _testfunction_timing_decorator(attr)
+                setattr(cls, attr_name, attr)
+    return cls
+
+
+class _TestTimingsMetaclass(type):
+    # An alternative metaclass for IrisTest subclasses, which makes
+    # them print execution timings for all the testcases.
+    # This is equivalent to applying the @iristest_timing_decorator to
+    # every test class that inherits from IrisTest.
+    # NOTE: however, it means you *cannot* specify a different metaclass for
+    # your test class inheriting from IrisTest.
+    # See below for how to solve that where needed.
+    def __new__(cls, clsname, base_classes, attrs):
+        result = type.__new__(cls, clsname, base_classes, attrs)
+        if _PRINT_TEST_TIMINGS:
+            result = iristest_timing_decorator(result)
+        return result
+
+
+class IrisTest(six.with_metaclass(_TestTimingsMetaclass, IrisTest_nometa)):
+    # Derive the 'ordinary' IrisTest from IrisTest_nometa, but add the
+    # metaclass that enables test timings output.
+    # This means that all subclasses also get the timing behaviour.
+    # However, if a different metaclass is *wanted* for an IrisTest subclass,
+    # this would cause a metaclass conflict.
+    # Instead, you can inherit from IrisTest_nometa and apply the
+    # @iristest_timing_decorator explicitly to your new testclass.
+    pass
+
+
 get_result_path = IrisTest.get_result_path
 
 
-class GraphicsTest(IrisTest):
+class GraphicsTestMixin(object):
 
     # nose directive: dispatch tests concurrently.
     _multiprocess_can_split_ = True
@@ -876,6 +1000,15 @@ class GraphicsTest(IrisTest):
             plt.close('all')
         # Release the non re-entrant blocking lock.
         _lock.release()
+
+
+class GraphicsTest(GraphicsTestMixin, IrisTest):
+    pass
+
+
+class GraphicsTest_nometa(GraphicsTestMixin, IrisTest_nometa):
+    # Graphicstest without the metaclass providing test timings.
+    pass
 
 
 class TestGribMessage(IrisTest):
@@ -1050,6 +1183,11 @@ skip_nc_time_axis = unittest.skipIf(
 skip_inet = unittest.skipIf(not INET_AVAILABLE,
                             ('Test(s) require an "internet connection", '
                              'which is not available.'))
+
+
+skip_stratify = unittest.skipIf(
+    not STRATIFY_AVAILABLE,
+    'Test(s) require "python-stratify", which is not available.')
 
 
 def no_warnings(func):

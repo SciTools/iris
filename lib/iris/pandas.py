@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,12 @@ import cf_units
 from cf_units import Unit
 import netcdftime
 import numpy as np
+import numpy.ma as ma
 import pandas
+try:
+    from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
+except ImportError:
+    from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
 from iris.coords import AuxCoord, DimCoord
@@ -49,7 +54,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         calendar = cf_units.CALENDAR_GREGORIAN
 
     # Convert pandas datetime objects to python datetime obejcts.
-    if isinstance(points, pandas.tseries.index.DatetimeIndex):
+    if isinstance(points, DatetimeIndex):
         points = np.array([i.to_datetime() for i in points])
 
     # Convert datetime objects to Iris' current datetime representation.
@@ -138,15 +143,18 @@ def _assert_shared(np_obj, pandas_obj):
     if base is None:
         base = pandas_obj.values
 
-    # Chase the stack of NumPy `base` references back to see if any of
-    # them are our original array.
-    while base is not None:
-        if base is np_obj:
-            return
-        # Take the next step up the stack of `base` references.
-        base = base.base
-    msg = 'Pandas {} does not share memory'.format(type(pandas_obj).__name__)
-    raise AssertionError(msg)
+    def _get_base(array):
+        # Chase the stack of NumPy `base` references back to the original array
+        while array.base is not None:
+            array = array.base
+        return array
+
+    base = _get_base(base)
+    np_base = _get_base(np_obj)
+    if base is not np_base:
+        msg = ('Pandas {} does not share memory'
+               .format(type(pandas_obj).__name__))
+        raise AssertionError(msg)
 
 
 def as_series(cube, copy=True):
@@ -170,7 +178,7 @@ def as_series(cube, copy=True):
 
     """
     data = cube.data
-    if isinstance(data, np.ma.MaskedArray):
+    if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
         data = data.astype('f').filled(np.nan)
@@ -216,7 +224,7 @@ def as_data_frame(cube, copy=True):
 
     """
     data = cube.data
-    if isinstance(data, np.ma.MaskedArray):
+    if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
         data = data.astype('f').filled(np.nan)

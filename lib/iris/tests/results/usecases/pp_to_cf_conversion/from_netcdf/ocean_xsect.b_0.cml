@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="sea_water_potential_temperature" units="degC" var_name="sea_water_potential_temperature">
+  <cube dtype="float32" standard_name="sea_water_potential_temperature" units="degC" var_name="sea_water_potential_temperature">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="STASH" value="m02s00i101"/>
@@ -57,6 +57,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x91244c3f" dtype="float32" fill_value="-1e+30" mask_checksum="0x2f42f34e" shape="(20, 144)"/>
+    <data checksum="0x91244c3f" dtype="float32" mask_checksum="0x2f42f34e" shape="(20, 144)"/>
   </cube>
 </cubes>

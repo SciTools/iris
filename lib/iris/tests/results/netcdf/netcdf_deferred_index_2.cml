@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="Total column Carbon Dioxide" units="kg m**-2" var_name="tcco2">
+  <cube dtype="float64" long_name="Total column Carbon Dioxide" units="kg m**-2" var_name="tcco2">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="history" value="Thu Feb 11 10:56:57 2010: ncks total_column_co2.nc -o SMALL_total_column_co2.nc -d time,,30

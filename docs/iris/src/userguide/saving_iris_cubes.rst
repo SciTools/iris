@@ -82,7 +82,7 @@ For example, a GRIB2 message with a particular known long_name may need to be sa
 Similarly a PP field may need to be written out with a specific value for LBEXP.  This can be achieved by::
 
         def tweaked_fields(cube):
-            for cube, field in iris.fileformats.pp.as_pairs(cube):
+            for cube, field in iris.fileformats.pp.save_pairs_from_cube(cube):
                 # post process the PP field, prior to saving
                 if cube.name() == 'air_pressure':
                     field.lbexp = 'meaxp'

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,11 +24,11 @@ import six
 # importing anything else
 import iris.tests as tests
 
-import biggus
 import numpy as np
 
 import iris
 import iris.tests.stock as istk
+from iris._lazy_data import as_lazy_data
 
 from iris.analysis.trajectory import (Trajectory,
                                       interpolate as traj_interpolate)
@@ -203,7 +203,7 @@ class TestTriPolar(tests.IrisTest):
         # TODO: arguably, we should support masked data properly in the
         # interpolation routine.  In the legacy code, that is unfortunately
         # just not the case.
-        test_cube.data.set_fill_value(0.0)
+        test_cube.data.fill_value = 0
 
         # Test points on a regular global grid, with unrelated steps + offsets
         # and an extended range of longitude values.
@@ -232,8 +232,8 @@ class TestTriPolar(tests.IrisTest):
 class TestLazyData(tests.IrisTest):
     def test_hybrid_height(self):
         cube = istk.simple_4d_with_hybrid_height()
-        # Put a biggus array on the cube so we can test deferred loading.
-        cube.lazy_data(biggus.NumpyArrayAdapter(cube.data))
+        # Put a lazy array into the cube so we can test deferred loading.
+        cube.data = as_lazy_data(cube.data)
 
         traj = (('grid_latitude', [20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude', [31, 32, 33, 34]))

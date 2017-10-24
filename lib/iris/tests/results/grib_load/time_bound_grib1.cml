@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="UNKNOWN LOCAL PARAM 106.137" units="unknown">
+  <cube dtype="float64" long_name="UNKNOWN LOCAL PARAM 106.137" units="unknown">
     <coords>
       <coord>
         <dimCoord bounds="[[0.0, 3.0]]" id="1d45e087" points="[1.5]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>

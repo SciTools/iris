@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -23,7 +23,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -46,7 +46,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -69,7 +69,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -92,7 +92,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -115,7 +115,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -138,7 +138,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -161,7 +161,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -184,7 +184,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],
@@ -207,7 +207,7 @@
     <cellMethods/>
     <data checksum="0xd8e50ea8" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
-  <cube units="unknown">
+  <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[2, 3]">
         <auxCoord id="78a0dfe8" long_name="x" points="[[0, 1, 2, 3, 4],

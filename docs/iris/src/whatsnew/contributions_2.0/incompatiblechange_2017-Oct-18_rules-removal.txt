@@ -1,0 +1,13 @@
+* The following classes and functions have been removed from :mod:`iris.fileformats.rules`:
+	* ```iris.fileformat.rules.calculate_forecast_period```
+	* ```iris.fileformat.rules.log```
+	* ```iris.fileformat.rules.CMAttribute```
+	* ```iris.fileformat.rules.CMCustomAttribute```
+	* ```iris.fileformat.rules.CoordAndDims```
+	* ```iris.fileformat.rules.DebugString```
+	* ```iris.fileformat.rules.FunctionRule```
+	* ```iris.fileformat.rules.ProcedureRule```
+	* ```iris.fileformat.rules.Rule```
+	* ```iris.fileformat.rules.RulesContainer```
+	* ```iris.fileformat.rules.RuleResult```
+* Removed deprecated keyword argument ```legacy_custom_rules``` from :class:`iris.fileformats.rules.Loader`.

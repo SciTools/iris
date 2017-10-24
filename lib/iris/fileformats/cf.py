@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Provides the capability to load netCDF files and interprete them
+Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 References:
@@ -678,13 +678,16 @@ class CFLabelVariable(CFVariable):
         str_dim_name = str_dim_name[0]
         label_data = self[:]
 
-        if isinstance(label_data, ma.MaskedArray):
+        if ma.isMaskedArray(label_data):
             label_data = label_data.filled()
 
         # Determine whether we have a string-valued scalar label
         # i.e. a character variable that only has one dimension (the length of the string).
         if self.ndim == 1:
-            data = np.array([''.join(label_data).strip()])
+            label_string = b''.join(label_data).strip()
+            if six.PY3:
+                label_string = label_string.decode('utf8')
+            data = np.array([label_string])
         else:
             # Determine the index of the string dimension.
             str_dim = self.dimensions.index(str_dim_name)

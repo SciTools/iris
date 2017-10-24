@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -209,19 +209,6 @@ class TestLazySave(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(acube)
         self.assertTrue(acube.has_lazy_data())
-
-    def test_lazy_mask_preserve_fill_value(self):
-        cube = iris.cube.Cube(np.ma.array([0, 1], mask=[False, True],
-                                          fill_value=-1))
-        with self.temp_filename(suffix='.nc') as filename, \
-                self.temp_filename(suffix='.nc') as other_filename:
-            iris.save(cube, filename, unlimited_dimensions=[])
-            ncube = iris.load_cube(filename)
-            # Lazy save of the masked cube
-            iris.save(ncube, other_filename, unlimited_dimensions=[])
-            ds = nc.Dataset(other_filename, 'r')
-            avar = ds['unknown']
-            self.assertEqual(avar._FillValue, -1)
 
 
 @tests.skip_data

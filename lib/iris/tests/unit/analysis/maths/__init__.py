@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,10 +23,14 @@ import six
 from abc import ABCMeta, abstractproperty
 
 import numpy as np
+from numpy import ma
 
 from iris.analysis import MEAN
+from iris.coords import DimCoord
 from iris.cube import Cube
+import iris.tests as tests
 import iris.tests.stock as stock
+import iris.tests as tests
 
 
 class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
@@ -134,8 +138,8 @@ class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
 
     def _test_partial_mask(self, in_place):
         # Helper method for masked data tests.
-        dat_a = np.ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
-        dat_b = np.ma.array([2., 2., 2., 2.], mask=[1, 1, 0, 0])
+        dat_a = ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
+        dat_b = ma.array([2., 2., 2., 2.], mask=[1, 1, 0, 0])
 
         cube_a = Cube(dat_a)
         cube_b = Cube(dat_b)
@@ -158,3 +162,60 @@ class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
 
         self.assertMaskedArrayEqual(com, res.data)
         self.assertIsNot(res, orig_cube)
+
+
+class CubeArithmeticCoordsTest(tests.IrisTest):
+    # This class sets up pairs of cubes to test iris' ability to reject
+    # arithmetic operations on coordinates which do not match.
+    def SetUpNonMatching(self):
+        # On this cube pair, the coordinates to perform operations on do not
+        # match in either points array or name.
+        data = np.zeros((3, 4))
+        a = DimCoord([1, 2, 3], long_name='a')
+        b = DimCoord([1, 2, 3, 4], long_name='b')
+        x = DimCoord([4, 5, 6], long_name='x')
+        y = DimCoord([5, 6, 7, 8], long_name='y')
+
+        nomatch1 = Cube(data, dim_coords_and_dims=[(a, 0), (b, 1)])
+        nomatch2 = Cube(data, dim_coords_and_dims=[(x, 0), (y, 1)])
+
+        return nomatch1, nomatch2
+
+    def SetUpReversed(self):
+        # On this cube pair, the coordinates to perform operations on have
+        # matching long names but the points array on one cube is reversed
+        # with respect to that on the other.
+        data = np.zeros((3, 4))
+        a1 = DimCoord([1, 2, 3], long_name='a')
+        b1 = DimCoord([1, 2, 3, 4], long_name='b')
+        a2 = DimCoord([3, 2, 1], long_name='a')
+        b2 = DimCoord([1, 2, 3, 4], long_name='b')
+
+        reversed1 = Cube(data, dim_coords_and_dims=[(a1, 0), (b1, 1)])
+        reversed2 = Cube(data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
+
+        return reversed1, reversed2
+
+
+class CubeArithmeticMaskedConstantTestMixin(
+        six.with_metaclass(ABCMeta, object)):
+
+    def test_masked_constant_in_place(self):
+        # Cube in_place arithmetic operation.
+        dtype = np.int64
+        dat = ma.masked_array(0, 1, dtype)
+        cube = Cube(dat)
+        res = self.cube_func(cube, 5, in_place=True)
+        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
+        self.assertEqual(dtype, res.dtype)
+        self.assertIs(res, cube)
+
+    def test_masked_constant_not_in_place(self):
+        # Cube in_place arithmetic operation.
+        dtype = np.int64
+        dat = ma.masked_array(0, 1, dtype)
+        cube = Cube(dat)
+        res = self.cube_func(cube, 5, in_place=False)
+        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
+        self.assertEqual(dtype, res.dtype)
+        self.assertIsNot(res, cube)

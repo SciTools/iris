@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,9 +23,9 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
+from collections import OrderedDict
 import glob
 import os.path
-import types
 import re
 import collections
 
@@ -148,25 +148,35 @@ def expand_filespecs(file_specs):
         File paths which may contain '~' elements or wildcards.
 
     Returns:
-        A list of matching file paths.  If any of the file-specs matches no
-        existing files, an exception is raised.
+        A well-ordered list of matching absolute file paths.
+        If any of the file-specs match no existing files, an
+        exception is raised.
 
     """
     # Remove any hostname component - currently unused
-    filenames = [os.path.expanduser(fn[2:] if fn.startswith('//') else fn)
+    filenames = [os.path.abspath(os.path.expanduser(
+                    fn[2:] if fn.startswith('//') else fn))
                  for fn in file_specs]
 
     # Try to expand all filenames as globs
-    glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
+    glob_expanded = OrderedDict([[fn, sorted(glob.glob(fn))]
+                                 for fn in filenames])
 
     # If any of the specs expanded to an empty list then raise an error
-    value_lists = glob_expanded.values()
-    if not all(value_lists):
-        raise IOError("One or more of the files specified did not exist %s." %
-        ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
-         for pattern, expanded in six.iteritems(glob_expanded)])
+    all_expanded = glob_expanded.values()
 
-    return sum(value_lists, [])
+    if not all(all_expanded):
+        msg = "One or more of the files specified did not exist:"
+        for pattern, expanded in six.iteritems(glob_expanded):
+            if expanded:
+                file_list = '\n       - {}'.format(', '.join(expanded))
+            else:
+                file_list = ''
+            msg += '\n    - "{}" matched {} file(s){}'.format(
+                    pattern, len(expanded), file_list)
+        raise IOError(msg)
+
+    return [fname for fnames in all_expanded for fname in fnames]
 
 
 def load_files(filenames, callback, constraints=None):
@@ -246,14 +256,11 @@ def _grib_save(cube, target, append=False, **kwargs):
     # A simple wrapper for the grib save routine, which allows the saver to be
     # registered without having the grib implementation installed.
     try:
-        import iris_grib as igrib
+        import gribapi
     except ImportError:
-        try:
-            import gribapi
-        except ImportError:
-            raise RuntimeError('Unable to save GRIB file - the ECMWF '
-                               '`gribapi` package is not installed.')
-        from iris.fileformats import grib as igrib
+        raise RuntimeError('Unable to save GRIB file - the ECMWF '
+                           '`gribapi` package is not installed.')
+    from iris.fileformats import grib as igrib
 
     return igrib.save_grib2(cube, target, append, **kwargs)
 
@@ -324,7 +331,7 @@ def save(source, target, saver=None, **kwargs):
         * netCDF - the Unidata network Common Data Format:
             * see :func:`iris.fileformats.netcdf.save`
         * GRIB2 - the WMO GRIdded Binary data format:
-            * see :func:`iris-grib.save_grib2`.
+            * see :func:`iris.fileformats.grib.save_grib2`.
         * PP - the Met Office UM Post Processing Format:
             * see :func:`iris.fileformats.pp.save`
 

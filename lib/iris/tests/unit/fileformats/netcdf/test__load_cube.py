@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,78 +30,6 @@ from iris.coords import DimCoord
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _load_cube
 from iris.tests import mock
-
-
-class TestFillValue(tests.IrisTest):
-    def setUp(self):
-        name = 'iris.fileformats.netcdf._assert_case_specific_facts'
-        patch = mock.patch(name)
-        patch.start()
-        self.addCleanup(patch.stop)
-
-        self.engine = mock.Mock()
-        self.cf = None
-        self.filename = 'DUMMY'
-
-    def _make_cf_var(self, dtype):
-        variable = mock.Mock(spec=netCDF4.Variable, dtype=dtype)
-        cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
-                                cf_data=variable, cf_name='DUMMY_VAR',
-                                cf_group=mock.Mock(), dtype=dtype,
-                                shape=mock.MagicMock())
-        return cf_var
-
-    def _test(self, cf_var, expected_fill_value):
-        cube = _load_cube(self.engine, self.cf, cf_var, self.filename)
-        self.assertEqual(cube._my_data.fill_value, expected_fill_value)
-
-    def test_from_attribute_dtype_f4(self):
-        # A _FillValue attribute on the netCDF variable should end up as
-        # the fill_value for the cube.
-        dtype = np.dtype('f4')
-        cf_var = self._make_cf_var(dtype)
-        cf_var.cf_data._FillValue = mock.sentinel.FILL_VALUE
-        self._test(cf_var, mock.sentinel.FILL_VALUE)
-
-    def test_from_default_dtype_f4(self):
-        # Without an explicit _FillValue attribute on the netCDF
-        # variable, the fill value should be selected from the default
-        # netCDF fill values.
-        dtype = np.dtype('f4')
-        cf_var = self._make_cf_var(dtype)
-        self._test(cf_var, netCDF4.default_fillvals['f4'])
-
-    def test_from_attribute_dtype_i4(self):
-        # A _FillValue attribute on the netCDF variable should end up as
-        # the fill_value for the cube.
-        dtype = np.dtype('i4')
-        cf_var = self._make_cf_var(dtype)
-        cf_var.cf_data._FillValue = mock.sentinel.FILL_VALUE
-        self._test(cf_var, mock.sentinel.FILL_VALUE)
-
-    def test_from_default_dtype_i4(self):
-        # Without an explicit _FillValue attribute on the netCDF
-        # variable, the fill value should be selected from the default
-        # netCDF fill values.
-        dtype = np.dtype('i4')
-        cf_var = self._make_cf_var(dtype)
-        self._test(cf_var, netCDF4.default_fillvals['i4'])
-
-    def test_from_attribute_with_scale_offset(self):
-        # The _FillValue attribute still takes priority even when an
-        # offset/scale transformation takes place on the data.
-        dtype = np.dtype('i2')
-        cf_var = self._make_cf_var(dtype)
-        cf_var.scale_factor = np.float64(1.5)
-        cf_var.cf_data._FillValue = mock.sentinel.FILL_VALUE
-        self._test(cf_var, mock.sentinel.FILL_VALUE)
-
-    def test_from_default_with_scale_offset(self):
-        # The fill value should be related to the *non-scaled* dtype.
-        dtype = np.dtype('i2')
-        cf_var = self._make_cf_var(dtype)
-        cf_var.scale_factor = np.float64(1.5)
-        self._test(cf_var, netCDF4.default_fillvals['i2'])
 
 
 class TestCoordAttributes(tests.IrisTest):
@@ -138,7 +66,7 @@ class TestCoordAttributes(tests.IrisTest):
 
         cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
                                 dtype=np.dtype('i4'),
-                                cf_data=mock.Mock(),
+                                cf_data=mock.Mock(_FillValue=None),
                                 cf_name='DUMMY_VAR',
                                 cf_group=coords,
                                 shape=(1,))
@@ -204,11 +132,11 @@ class TestCubeAttributes(tests.IrisTest):
         cf_attrs_unused = mock.Mock(return_value=attrs)
         cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
                                 dtype=np.dtype('i4'),
-                                cf_data=mock.Mock(),
+                                cf_data=mock.Mock(_FillValue=None),
                                 cf_name='DUMMY_VAR',
                                 cf_group=mock.Mock(),
                                 cf_attrs_unused=cf_attrs_unused,
-                                shape=mock.MagicMock())
+                                shape=(1,))
         return cf_var
 
     def test_flag_pass_thru(self):

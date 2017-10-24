@@ -1,0 +1,1 @@
+* The deprecated methods ```iris.cube.Cube.add_history```, ```iris.cube.Cube.assert_valid``` and ```iris.cube.Cube.regridded``` have been removed from :class:`iris.cube.Cube`.

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,10 +24,14 @@ import six
 # importing anything else.
 import iris.tests as tests
 
+from contextlib import contextmanager
+
 import netCDF4 as nc
 import numpy as np
+from numpy import ma
 
 import iris
+from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
                                 LambertConformal, Mercator, Stereographic,
                                 LambertAzimuthalEqualArea)
@@ -325,6 +329,148 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
             ds.close()
 
 
+class Test_write_fill_value(tests.IrisTest):
+    def _make_cube(self, dtype, lazy=False, masked_value=None,
+                   masked_index=None):
+        data = np.arange(12, dtype=dtype).reshape(3, 4)
+        if masked_value is not None:
+            data = ma.masked_equal(data, masked_value)
+        if masked_index is not None:
+            data = np.ma.masked_array(data)
+            data[masked_index] = ma.masked
+        if lazy:
+            data = as_lazy_data(data)
+        lat = DimCoord(np.arange(3), 'latitude', units='degrees')
+        lon = DimCoord(np.arange(4), 'longitude', units='degrees')
+        return Cube(data, standard_name='air_temperature', units='K',
+                    dim_coords_and_dims=[(lat, 0), (lon, 1)])
+
+    @contextmanager
+    def _netCDF_var(self, cube, **kwargs):
+        # Get the netCDF4 Variable for a cube from a temp file
+        standard_name = cube.standard_name
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, **kwargs)
+            ds = nc.Dataset(nc_path)
+            var, = [var for var in ds.variables.values()
+                    if var.standard_name == standard_name]
+            yield var
+
+    def test_fill_value(self):
+        # Test that a passed fill value is saved as a _FillValue attribute.
+        cube = self._make_cube('>f4')
+        fill_value = 12345.
+        with self._netCDF_var(cube, fill_value=fill_value) as var:
+            self.assertEqual(fill_value, var._FillValue)
+
+    def test_default_fill_value(self):
+        # Test that if no fill value is passed then there is no _FillValue.
+        # attribute.
+        cube = self._make_cube('>f4')
+        with self._netCDF_var(cube) as var:
+            self.assertNotIn('_FillValue', var.ncattrs())
+
+    def test_mask_fill_value(self):
+        # Test that masked data saves correctly when given a fill value.
+        index = (1, 1)
+        fill_value = 12345.
+        cube = self._make_cube('>f4', masked_index=index)
+        with self._netCDF_var(cube, fill_value=fill_value) as var:
+            self.assertEqual(fill_value, var._FillValue)
+            self.assertTrue(var[index].mask)
+
+    def test_mask_default_fill_value(self):
+        # Test that masked data saves correctly using the default fill value.
+        index = (1, 1)
+        cube = self._make_cube('>f4', masked_index=index)
+        with self._netCDF_var(cube) as var:
+            self.assertNotIn('_FillValue', var.ncattrs())
+            self.assertTrue(var[index].mask)
+
+    def test_mask_lazy_fill_value(self):
+        # Test that masked lazy data saves correctly when given a fill value.
+        index = (1, 1)
+        fill_value = 12345.
+        cube = self._make_cube('>f4', masked_index=index, lazy=True)
+        with self._netCDF_var(cube, fill_value=fill_value) as var:
+            self.assertEqual(var._FillValue, fill_value)
+            self.assertTrue(var[index].mask)
+
+    def test_mask_lazy_default_fill_value(self):
+        # Test that masked lazy data saves correctly using the default fill
+        # value.
+        index = (1, 1)
+        cube = self._make_cube('>f4', masked_index=index, lazy=True)
+        with self._netCDF_var(cube) as var:
+            self.assertNotIn('_FillValue', var.ncattrs())
+            self.assertTrue(var[index].mask)
+
+    def test_contains_fill_value_passed(self):
+        # Test that a warning is raised if the data contains the fill value.
+        cube = self._make_cube('>f4')
+        fill_value = 1
+        with self.assertGivesWarning(
+                'contains unmasked data points equal to the fill-value'):
+            with self._netCDF_var(cube, fill_value=fill_value):
+                pass
+
+    def test_contains_fill_value_byte(self):
+        # Test that a warning is raised if the data contains the fill value
+        # when it is of a byte type.
+        cube = self._make_cube('>i1')
+        fill_value = 1
+        with self.assertGivesWarning(
+                'contains unmasked data points equal to the fill-value'):
+            with self._netCDF_var(cube, fill_value=fill_value):
+                pass
+
+    def test_contains_default_fill_value(self):
+        # Test that a warning is raised if the data contains the default fill
+        # value if no fill_value argument is supplied.
+        cube = self._make_cube('>f4')
+        cube.data[0, 0] = nc.default_fillvals['f4']
+        with self.assertGivesWarning(
+                'contains unmasked data points equal to the fill-value'):
+            with self._netCDF_var(cube):
+                pass
+
+    def test_contains_default_fill_value_byte(self):
+        # Test that no warning is raised if the data contains the default fill
+        # value if no fill_value argument is supplied when the data is of a
+        # byte type.
+        cube = self._make_cube('>i1')
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
+            with self._netCDF_var(cube):
+                pass
+
+    def test_contains_masked_fill_value(self):
+        # Test that no warning is raised if the data contains the fill_value at
+        # a masked point.
+        fill_value = 1
+        cube = self._make_cube('>f4', masked_value=fill_value)
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
+            with self._netCDF_var(cube, fill_value=fill_value):
+                pass
+
+    def test_masked_byte_default_fill_value(self):
+        # Test that a warning is raised when saving masked byte data with no
+        # fill value supplied.
+        cube = self._make_cube('>i1', masked_value=1)
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
+            with self._netCDF_var(cube):
+                pass
+
+    def test_masked_byte_fill_value_passed(self):
+        # Test that no warning is raised when saving masked byte data with a
+        # fill value supplied if the the data does not contain the fill_value.
+        fill_value = 100
+        cube = self._make_cube('>i1', masked_value=2)
+        with self.assertGivesWarning(r'\(fill\|mask\)', expect_warning=False):
+            with self._netCDF_var(cube, fill_value=fill_value):
+                pass
+
+
 class _Common__check_attribute_compliance(object):
     def setUp(self):
         self.container = mock.Mock(name='container', attributes={})
@@ -610,6 +756,34 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                     'longitude_of_prime_meridian': 0,
                     }
         self._test(coord_system, expected)
+
+
+class Test__create_cf_cell_measure_variable(tests.IrisTest):
+    # Saving of masked data is disallowed.
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+        self.names_map = ['latitude', 'longitude']
+        masked_array = np.ma.masked_array([0, 1, 2], mask=[True, False, True])
+        self.cm = iris.coords.CellMeasure(masked_array,
+                                          measure='area', var_name='cell_area')
+        self.cube.add_cell_measure(self.cm, data_dims=0)
+        self.exp_emsg = 'Cell measures with missing data are not supported.'
+
+    def test_masked_data__insitu(self):
+        # Test that the error is raised in the right place.
+        with self.temp_filename('.nc') as nc_path:
+            saver = Saver(nc_path, 'NETCDF4')
+            with self.assertRaisesRegexp(ValueError, self.exp_emsg):
+                saver._create_cf_cell_measure_variable(self.cube,
+                                                       self.names_map,
+                                                       self.cm)
+
+    def test_masked_data__save_pipeline(self):
+        # Test that the right error is raised by the saver pipeline.
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                with self.assertRaisesRegexp(ValueError, self.exp_emsg):
+                    saver.write(self.cube)
 
 
 if __name__ == "__main__":

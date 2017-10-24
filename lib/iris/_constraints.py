@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -445,7 +445,7 @@ class AttributeConstraint(Constraint):
             iris.AttributeConstraint(STASH='m01s16i004')
 
             iris.AttributeConstraint(
-                STASH=lambda stash: stash.endswith('i005'))
+                STASH=lambda stash: str(stash).endswith('i005'))
 
         .. note:: Attribute constraint names are case sensitive.
 

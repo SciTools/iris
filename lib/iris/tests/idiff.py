@@ -41,6 +41,7 @@ import imagehash
 import matplotlib.pyplot as plt
 import matplotlib.image as mimg
 import matplotlib.testing.compare as mcompare
+from matplotlib.testing.exceptions import ImageComparisonFailure
 import matplotlib.widgets as mwidget
 import numpy as np
 import requests
@@ -236,7 +237,18 @@ def step_over_diffs(result_dir, action, display=True):
                         # So copy the local file to the exected file to
                         # maintain this helpfulness.
                         shutil.copy(local_fname, expected_fname)
-                mcompare.compare_images(expected_fname, result_fname, tol=0)
+                try:
+                    mcompare.compare_images(expected_fname, result_fname,
+                                            tol=0)
+                except Exception as e:
+                    if isinstance(e,  ValueError) or \
+                            isinstance(e, ImageComparisonFailure):
+                        print('Could not compare {}: {}'.format(result_fname,
+                                                                e.message))
+                        continue
+                    else:
+                        # Propagate the exception, keeping the stack trace
+                        raise
                 diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
                 args = expected_fname, result_fname, diff_fname
                 if display:

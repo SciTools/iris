@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -51,7 +51,7 @@
     </cellMethods>
     <data checksum="0x45a44f1a" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="specific_humidity" units="kg kg-1">
+  <cube dtype="float32" standard_name="specific_humidity" units="kg kg-1">
     <attributes>
       <attribute name="STASH" value="m01s00i010"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -102,7 +102,7 @@
     </cellMethods>
     <data checksum="0x0f9c7d63" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="x_wind" units="m s-1">
+  <cube dtype="float32" standard_name="x_wind" units="m s-1">
     <attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -154,7 +154,7 @@
     </cellMethods>
     <data checksum="0xd841777e" dtype="float32" shape="(145, 192)"/>
   </cube>
-  <cube standard_name="y_wind" units="m s-1">
+  <cube dtype="float32" standard_name="y_wind" units="m s-1">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

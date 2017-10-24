@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,10 +23,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import biggus
+from itertools import permutations
+
 import numpy as np
 import numpy.ma as ma
 
+import iris.analysis
 import iris.aux_factory
 import iris.coords
 import iris.exceptions
@@ -35,9 +37,11 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord, CellMeasure
-from iris.exceptions import CoordinateNotFoundError, CellMeasureNotFoundError
+from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
+                             UnitConversionError)
 from iris.tests import mock
 import iris.tests.stock as stock
+from iris._lazy_data import as_lazy_data
 
 
 class Test___init___data(tests.IrisTest):
@@ -49,10 +53,10 @@ class Test___init___data(tests.IrisTest):
         self.assertArrayEqual(cube.data, data)
 
     def test_masked(self):
-        # np.ma.MaskedArray should be allowed through
-        data = np.ma.masked_greater(np.arange(12).reshape(3, 4), 1)
+        # ma.MaskedArray should be allowed through
+        data = ma.masked_greater(np.arange(12).reshape(3, 4), 1)
         cube = Cube(data)
-        self.assertEqual(type(cube.data), np.ma.MaskedArray)
+        self.assertEqual(type(cube.data), ma.MaskedArray)
         self.assertMaskedArrayEqual(cube.data, data)
 
     def test_matrix(self):
@@ -62,6 +66,122 @@ class Test___init___data(tests.IrisTest):
         cube = Cube(data)
         self.assertEqual(type(cube.data), np.ndarray)
         self.assertArrayEqual(cube.data, data)
+
+
+class Test_data_dtype_fillvalue(tests.IrisTest):
+    def _sample_data(self, dtype=('f4'), masked=False, fill_value=None,
+                     lazy=False):
+        data = np.arange(6).reshape((2, 3))
+        dtype = np.dtype(dtype)
+        data = data.astype(dtype)
+        if masked:
+            data = ma.masked_array(data, mask=[[0, 1, 0], [0, 0, 0]],
+                                   fill_value=fill_value)
+        if lazy:
+            data = as_lazy_data(data)
+        return data
+
+    def _sample_cube(self, dtype=('f4'), masked=False, fill_value=None,
+                     lazy=False):
+        data = self._sample_data(dtype=dtype, masked=masked,
+                                 fill_value=fill_value, lazy=lazy)
+        cube = Cube(data)
+        return cube
+
+    def test_realdata_change(self):
+        # Check re-assigning real data.
+        cube = self._sample_cube()
+        self.assertEqual(cube.dtype, np.float32)
+        new_dtype = np.dtype('i4')
+        new_data = self._sample_data(dtype=new_dtype)
+        cube.data = new_data
+        self.assertIs(cube.core_data(), new_data)
+        self.assertEqual(cube.dtype, new_dtype)
+
+    def test_realmaskdata_change(self):
+        # Check re-assigning real masked data.
+        cube = self._sample_cube(masked=True, fill_value=1234)
+        self.assertEqual(cube.dtype, np.float32)
+        new_dtype = np.dtype('i4')
+        new_fill_value = 4321
+        new_data = self._sample_data(masked=True,
+                                     fill_value=new_fill_value,
+                                     dtype=new_dtype)
+        cube.data = new_data
+        self.assertIs(cube.core_data(), new_data)
+        self.assertEqual(cube.dtype, new_dtype)
+        self.assertEqual(cube.data.fill_value, new_fill_value)
+
+    def test_lazydata_change(self):
+        # Check re-assigning lazy data.
+        cube = self._sample_cube(lazy=True)
+        self.assertEqual(cube.core_data().dtype, np.float32)
+        new_dtype = np.dtype('f8')
+        new_data = self._sample_data(new_dtype, lazy=True)
+        cube.data = new_data
+        self.assertIs(cube.core_data(), new_data)
+        self.assertEqual(cube.dtype, new_dtype)
+
+    def test_lazymaskdata_change(self):
+        # Check re-assigning lazy masked data.
+        cube = self._sample_cube(masked=True, fill_value=1234,
+                                 lazy=True)
+        self.assertEqual(cube.core_data().dtype, np.float32)
+        new_dtype = np.dtype('f8')
+        new_fill_value = 4321
+        new_data = self._sample_data(dtype=new_dtype, masked=True,
+                                     fill_value=new_fill_value, lazy=True)
+        cube.data = new_data
+        self.assertIs(cube.core_data(), new_data)
+        self.assertEqual(cube.dtype, new_dtype)
+        self.assertEqual(cube.data.fill_value, new_fill_value)
+
+    def test_lazydata_realise(self):
+        # Check touching lazy data.
+        cube = self._sample_cube(lazy=True)
+        data = cube.data
+        self.assertIs(cube.core_data(), data)
+        self.assertEqual(cube.dtype, np.float32)
+
+    def test_lazymaskdata_realise(self):
+        # Check touching masked lazy data.
+        fill_value = 27.3
+        cube = self._sample_cube(masked=True, fill_value=fill_value, lazy=True)
+        data = cube.data
+        self.assertIs(cube.core_data(), data)
+        self.assertEqual(cube.dtype, np.float32)
+        self.assertEqual(data.fill_value, np.float32(fill_value))
+
+    def test_realmaskedconstantint_realise(self):
+        masked_data = ma.masked_array([666], mask=True)
+        masked_constant = masked_data[0]
+        cube = Cube(masked_constant)
+        data = cube.data
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertNotIsInstance(data, ma.core.MaskedConstant)
+
+    def test_lazymaskedconstantint_realise(self):
+        dtype = np.dtype('i2')
+        masked_data = ma.masked_array([666], mask=True, dtype=dtype)
+        masked_constant = masked_data[0]
+        masked_constant_lazy = as_lazy_data(masked_constant)
+        cube = Cube(masked_constant_lazy)
+        data = cube.data
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertNotIsInstance(data, ma.core.MaskedConstant)
+
+    def test_lazydata___getitem__dtype(self):
+        fill_value = 1234
+        dtype = np.dtype('int16')
+        masked_array = ma.masked_array(np.arange(5),
+                                       mask=[0, 0, 1, 0, 0],
+                                       fill_value=fill_value,
+                                       dtype=dtype)
+        lazy_masked_array = as_lazy_data(masked_array)
+        cube = Cube(lazy_masked_array)
+        subcube = cube[3:]
+        self.assertEqual(subcube.dtype, dtype)
+        self.assertEqual(subcube.data.fill_value, fill_value)
 
 
 class Test_extract(tests.IrisTest):
@@ -117,16 +237,16 @@ class Test_extract(tests.IrisTest):
 class Test_xml(tests.IrisTest):
     def test_checksum_ignores_masked_values(self):
         # Mask out an single element.
-        data = np.ma.arange(12).reshape(3, 4)
-        data[1, 2] = np.ma.masked
+        data = ma.arange(12).reshape(3, 4)
+        data[1, 2] = ma.masked
         cube = Cube(data)
         self.assertCML(cube)
 
         # If we change the underlying value before masking it, the
         # checksum should be unaffected.
-        data = np.ma.arange(12).reshape(3, 4)
+        data = ma.arange(12).reshape(3, 4)
         data[1, 2] = 42
-        data[1, 2] = np.ma.masked
+        data[1, 2] = ma.masked
         cube = Cube(data)
         self.assertCML(cube)
 
@@ -146,7 +266,7 @@ class Test_xml(tests.IrisTest):
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))
-        self.lazydata = biggus.NumpyArrayAdapter(self.data)
+        self.lazydata = as_lazy_data(self.data)
         cube = Cube(self.lazydata)
         for i_dim, name in enumerate(('y', 'x')):
             npts = cube.shape[i_dim]
@@ -166,10 +286,11 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.assertArrayAlmostEqual(cube_collapsed.data, [1.0, 4.0])
         self.assertFalse(cube_collapsed.has_lazy_data())
 
-    def test_fail_multidims(self):
-        # Check that MEAN produces a suitable error message for multiple dims.
-        # N.B. non-lazy op can do this
-        self.cube.collapsed(('x', 'y'), MEAN)
+    def test_multidims(self):
+        # Check that MEAN works with multiple dims.
+        cube_collapsed = self.cube.collapsed(('x', 'y'), MEAN)
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAllClose(cube_collapsed.data, 2.5)
 
     def test_non_lazy_aggregator(self):
         # An aggregator which doesn't have a lazy function should still work.
@@ -277,14 +398,21 @@ class Test_collapsed__warning(tests.IrisTest):
 
 
 class Test_summary(tests.IrisTest):
+    def setUp(self):
+        self.cube = Cube(0)
+
     def test_cell_datetime_objects(self):
         # Check the scalar coordinate summary still works even when
         # iris.FUTURE.cell_datetime_objects is True.
-        cube = Cube(0)
-        cube.add_aux_coord(AuxCoord(42, units='hours since epoch'))
-        with FUTURE.context(cell_datetime_objects=True):
-            summary = cube.summary()
+        self.cube.add_aux_coord(AuxCoord(42, units='hours since epoch'))
+        summary = self.cube.summary()
         self.assertIn('1970-01-02 18:00:00', summary)
+
+    def test_scalar_str_coord(self):
+        str_value = 'foo'
+        self.cube.add_aux_coord(AuxCoord(str_value))
+        summary = self.cube.summary()
+        self.assertIn(str_value, summary)
 
 
 class Test_is_compatible(tests.IrisTest):
@@ -398,15 +526,91 @@ class Test_rolling_window(tests.IrisTest):
     def test_kwargs(self):
         # Rolling window with missing data not tolerated
         window = 2
-        self.cube.data = np.ma.array(self.cube.data,
-                                     mask=([True, False, False,
-                                            False, True, False]))
+        self.cube.data = ma.array(self.cube.data,
+                                  mask=([True, False, False,
+                                         False, True, False]))
         res_cube = self.cube.rolling_window('val', iris.analysis.MEAN,
                                             window, mdtol=0)
-        expected_result = np.ma.array([-99., 1.5, 2.5, -99., -99.],
-                                      mask=[True, False, False, True, True],
-                                      dtype=np.float64)
+        expected_result = ma.array([-99., 1.5, 2.5, -99., -99.],
+                                   mask=[True, False, False, True, True],
+                                   dtype=np.float64)
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
+
+
+class Test_slices_dim_order(tests.IrisTest):
+    '''
+    This class tests the capability of iris.cube.Cube.slices(), including its
+    ability to correctly re-order the dimensions.
+    '''
+    def setUp(self):
+        '''
+        setup a 4D iris cube, each dimension is length 1.
+        The dimensions are;
+            dim1: time
+            dim2: height
+            dim3: latitude
+            dim4: longitude
+        '''
+        self.cube = iris.cube.Cube(np.array([[[[8.]]]]))
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [0])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "height"), [1])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "latitude"), [2])
+        self.cube.add_dim_coord(iris.coords.DimCoord([0], "longitude"), [3])
+
+    @staticmethod
+    def expected_cube_setup(dim1name, dim2name, dim3name):
+        '''
+        input:
+        ------
+            dim1name: str
+                name of the first dimension coordinate
+            dim2name: str
+                name of the second dimension coordinate
+            dim3name: str
+                name of the third dimension coordinate
+        output:
+        ------
+            cube: iris cube
+                iris cube with the specified axis holding the data 8
+        '''
+        cube = iris.cube.Cube(np.array([[[8.]]]))
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim1name), [0])
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim2name), [1])
+        cube.add_dim_coord(iris.coords.DimCoord([0], dim3name), [2])
+        return cube
+
+    def check_order(self, dim1, dim2, dim3, dim_to_remove):
+        '''
+        does two things:
+        (1) slices the 4D cube in dim1, dim2, dim3 (and removes the scalar
+        coordinate) and
+        (2) sets up a 3D cube with dim1, dim2, dim3.
+        input:
+        -----
+            dim1: str
+                name of first dimension
+            dim2: str
+                name of second dimension
+            dim3: str
+                name of third dimension
+            dim_to_remove: str
+                name of the dimension that transforms into a scalar coordinate
+                when slicing the cube.
+        output:
+        ------
+            sliced_cube: 3D cube
+                the cube that results if slicing the original cube
+            expected_cube: 3D cube
+                a cube set up with the axis corresponding to the dims
+        '''
+        sliced_cube = next(self.cube.slices([dim1, dim2, dim3]))
+        sliced_cube.remove_coord(dim_to_remove)
+        expected_cube = self.expected_cube_setup(dim1, dim2, dim3)
+        self.assertEqual(sliced_cube, expected_cube)
+
+    def test_all_permutations(self):
+        for perm in permutations(["time", "height", "latitude", "longitude"]):
+            self.check_order(*perm)
 
 
 @tests.skip_data
@@ -542,8 +746,8 @@ class Test_slices_over(tests.IrisTest):
 
 def create_cube(lon_min, lon_max, bounds=False):
     n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
-    data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, n_lons)
-    data = biggus.NumpyArrayAdapter(data)
+    data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, -1)
+    data = as_lazy_data(data)
     cube = Cube(data, standard_name='x_wind', units='ms-1')
     cube.add_dim_coord(iris.coords.DimCoord([0, 20, 40, 80],
                                             long_name='level_height',
@@ -560,7 +764,7 @@ def create_cube(lon_min, lon_max, bounds=False):
     if bounds:
         cube.coord('longitude').guess_bounds()
     cube.add_aux_coord(iris.coords.AuxCoord(
-        np.arange(3 * n_lons).reshape(3, n_lons) * 10, 'surface_altitude',
+        np.arange(3 * n_lons).reshape(3, -1) * 10, 'surface_altitude',
         units='m'), [1, 2])
     cube.add_aux_factory(iris.aux_factory.HybridHeightFactory(
         cube.coord('level_height'), cube.coord('sigma'),
@@ -1184,7 +1388,7 @@ class Test_copy(tests.IrisTest):
         self.assertIsNot(cube_copy, cube)
         self.assertEqual(cube_copy, cube)
         self.assertIsNot(cube_copy.data, cube.data)
-        if isinstance(cube.data, np.ma.MaskedArray):
+        if ma.isMaskedArray(cube.data):
             self.assertMaskedArrayEqual(cube_copy.data, cube.data)
             if cube.data.mask is not ma.nomask:
                 # "No mask" is a constant : all other cases must be distinct.
@@ -1197,11 +1401,11 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__masked_emptymask(self):
-        cube = Cube(np.ma.array([0, 1]))
+        cube = Cube(ma.array([0, 1]))
         self._check_copy(cube, cube.copy())
 
     def test__masked_arraymask(self):
-        cube = Cube(np.ma.array([0, 1], mask=[True, False]))
+        cube = Cube(ma.array([0, 1], mask=[True, False]))
         self._check_copy(cube, cube.copy())
 
     def test__scalar(self):
@@ -1209,34 +1413,69 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__masked_scalar_emptymask(self):
-        cube = Cube(np.ma.array(0))
+        cube = Cube(ma.array(0))
         self._check_copy(cube, cube.copy())
 
     def test__masked_scalar_arraymask(self):
-        cube = Cube(np.ma.array(0, mask=False))
+        cube = Cube(ma.array(0, mask=False))
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
-        cube = Cube(biggus.NumpyArrayAdapter(np.array([1, 0])))
+        cube = Cube(as_lazy_data(np.array([1, 0])))
         self._check_copy(cube, cube.copy())
 
 
 class Test_dtype(tests.IrisTest):
-    def test_int8(self):
-        cube = Cube(np.array([0, 1], dtype=np.int8))
-        self.assertEqual(cube.dtype, np.int8)
+    def setUp(self):
+        self.dtypes = (np.dtype('int'), np.dtype('uint'),
+                       np.dtype('bool'), np.dtype('float'))
 
-    def test_float32(self):
-        cube = Cube(np.array([0, 1], dtype=np.float32))
-        self.assertEqual(cube.dtype, np.float32)
+    def test_real_data(self):
+        for dtype in self.dtypes:
+            data = np.array([0, 1], dtype=dtype)
+            cube = Cube(data)
+            self.assertEqual(cube.dtype, dtype)
 
-    def test_lazy(self):
-        data = np.arange(6, dtype=np.float32).reshape(2, 3)
-        lazydata = biggus.NumpyArrayAdapter(data)
-        cube = Cube(lazydata)
-        self.assertEqual(cube.dtype, np.float32)
-        # Check that accessing the dtype does not trigger loading of the data.
-        self.assertTrue(cube.has_lazy_data())
+    def test_real_data_masked__mask_unset(self):
+        for dtype in self.dtypes:
+            data = ma.array([0, 1], dtype=dtype)
+            cube = Cube(data)
+            self.assertEqual(cube.dtype, dtype)
+
+    def test_real_data_masked__mask_set(self):
+        for dtype in self.dtypes:
+            data = ma.array([0, 1], dtype=dtype)
+            data[0] = ma.masked
+            cube = Cube(data)
+            self.assertEqual(cube.dtype, dtype)
+
+    def test_lazy_data(self):
+        for dtype in self.dtypes:
+            data = np.array([0, 1], dtype=dtype)
+            cube = Cube(as_lazy_data(data))
+            self.assertEqual(cube.dtype, dtype)
+            # Check that accessing the dtype does not trigger loading
+            # of the data.
+            self.assertTrue(cube.has_lazy_data())
+
+    def test_lazy_data_masked__mask_unset(self):
+        for dtype in self.dtypes:
+            data = ma.array([0, 1], dtype=dtype)
+            cube = Cube(as_lazy_data(data))
+            self.assertEqual(cube.dtype, dtype)
+            # Check that accessing the dtype does not trigger loading
+            # of the data.
+            self.assertTrue(cube.has_lazy_data())
+
+    def test_lazy_data_masked__mask_set(self):
+        for dtype in self.dtypes:
+            data = ma.array([0, 1], dtype=dtype)
+            data[0] = ma.masked
+            cube = Cube(as_lazy_data(data))
+            self.assertEqual(cube.dtype, dtype)
+            # Check that accessing the dtype does not trigger loading
+            # of the data.
+            self.assertTrue(cube.has_lazy_data())
 
 
 class TestSubset(tests.IrisTest):
@@ -1410,20 +1649,59 @@ class TestCellMeasures(tests.IrisTest):
 
 
 class Test_transpose(tests.IrisTest):
+    def setUp(self):
+        self.data = np.arange(24).reshape(3, 2, 4)
+        self.cube = Cube(self.data)
+        self.lazy_cube = Cube(as_lazy_data(self.data))
+
     def test_lazy_data(self):
-        data = np.arange(12).reshape(3, 4)
-        cube = Cube(biggus.NumpyArrayAdapter(data))
+        cube = self.lazy_cube
         cube.transpose()
         self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(data.T, cube.data)
+        self.assertArrayEqual(self.data.T, cube.data)
 
-    def test_not_lazy_data(self):
-        data = np.arange(12).reshape(3, 4)
-        cube = Cube(data)
-        cube.transpose()
-        self.assertFalse(cube.has_lazy_data())
-        self.assertIs(data.base, cube.data.base)
-        self.assertArrayEqual(data.T, cube.data)
+    def test_real_data(self):
+        self.cube.transpose()
+        self.assertFalse(self.cube.has_lazy_data())
+        self.assertIs(self.data.base, self.cube.data.base)
+        self.assertArrayEqual(self.data.T, self.cube.data)
+
+    def test_real_data__new_order(self):
+        new_order = [2, 0, 1]
+        self.cube.transpose(new_order)
+        self.assertFalse(self.cube.has_lazy_data())
+        self.assertIs(self.data.base, self.cube.data.base)
+        self.assertArrayEqual(self.data.transpose(new_order), self.cube.data)
+
+    def test_lazy_data__new_order(self):
+        new_order = [2, 0, 1]
+        cube = self.lazy_cube
+        cube.transpose(new_order)
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayEqual(self.data.transpose(new_order), cube.data)
+
+    def test_lazy_data__transpose_order_ndarray(self):
+        # Check that a transpose order supplied as an array does not trip up
+        # a dask transpose operation.
+        new_order = np.array([2, 0, 1])
+        cube = self.lazy_cube
+        cube.transpose(new_order)
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayEqual(self.data.transpose(new_order), cube.data)
+
+    def test_bad_transpose_order(self):
+        exp_emsg = 'Incorrect number of dimensions'
+        with self.assertRaisesRegexp(ValueError, exp_emsg):
+            self.cube.transpose([1])
+
+
+class Test_convert_units(tests.IrisTest):
+    def test_convert_unknown_units(self):
+        cube = iris.cube.Cube(1)
+        emsg = ('Cannot convert from unknown units. '
+                'The "cube.units" attribute may be set directly.')
+        with self.assertRaisesRegexp(UnitConversionError, emsg):
+            cube.convert_units('mm day-1')
 
 
 if __name__ == '__main__':

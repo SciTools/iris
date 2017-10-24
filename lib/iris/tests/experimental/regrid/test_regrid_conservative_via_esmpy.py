@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,8 +36,6 @@ import numpy as np
 # Import ESMF if installed, else fail quietly + disable all the tests.
 try:
     import ESMF
-    # Check it *is* the real module, and not an iris.proxy FakeModule.
-    ESMF.Manager
 except ImportError as AttributeError:
     ESMF = None
 skip_esmf = unittest.skipIf(

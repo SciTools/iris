@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,6 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-from iris.analysis._interpolate_private import regrid
 from iris.analysis import Nearest
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
@@ -157,19 +156,8 @@ class MixinCheckingCode(object):
                 [3., 4., 5.]]
         src_cube = grid_cube(src_x, src_y, data)
         dst_cube = grid_cube(dst_x, dst_y)
-        # Account for a behavioural difference in this case :
-        # The Nearest scheme does wrapping of modular coordinate values.
-        # Thus target of 352.0 --> -8.0, which is nearest to -10.
-        # This looks just like "circular" handling, but only because it happens
-        # to produce the same results *for nearest-neighbour in particular*.
-        if isinstance(self, TestInterpolateRegridNearest):
-            # interpolate.regrid --> Wrapping-free results (non-circular).
-            expected_result = [[3., 3., 4., 4., 5., 5., 5., 5.],
-                               [3., 3., 4., 4., 5., 5., 5., 5.]]
-        else:
-            # cube regrid --> Wrapped results.
-            expected_result = [[4., 3., 4., 4., 5., 5., 3., 4.],
-                               [4., 3., 4., 4., 5., 5., 3., 4.]]
+        expected_result = [[4., 3., 4., 4., 5., 5., 3., 4.],
+                           [4., 3., 4., 4., 5., 5., 3., 4.]]
         _debug_data(src_cube, "noncircular SOURCE")
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "noncircular RESULT")
@@ -238,18 +226,6 @@ class MixinCheckingCode(object):
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "nan RESULT")
         self.assertArrayEqual(result_cube.data, expected_result)
-
-
-# perform identical tests on the old + new approaches
-class TestInterpolateRegridNearest(MixinCheckingCode, tests.IrisTest):
-    def regrid(self, src_cube, dst_cube,
-               translate_nans_to_mask=False, **kwargs):
-        result = regrid(src_cube, dst_cube, mode='nearest')
-        data = result.data
-        if translate_nans_to_mask and np.any(np.isnan(data)):
-            data = np.ma.masked_array(data, mask=np.isnan(data))
-            result.data = data
-        return result
 
 
 class TestCubeRegridNearest(MixinCheckingCode, tests.IrisTest):

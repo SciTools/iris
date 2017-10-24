@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="thingness" units="1">
+  <cube dtype="int32" long_name="thingness" units="1">
     <coords>
       <coord datadims="[1]">
         <dimCoord id="434cbbd8" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>

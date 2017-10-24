@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,6 @@ import os
 from types import GeneratorType
 import unittest
 
-import biggus
 import netcdftime
 from numpy.testing import assert_array_equal
 
@@ -34,7 +33,6 @@ import iris.fileformats
 import iris.fileformats.pp as pp
 from iris.tests import mock
 import iris.util
-
 
 @tests.skip_data
 class TestPPCopy(tests.IrisTest):
@@ -44,7 +42,6 @@ class TestPPCopy(tests.IrisTest):
     def test_copy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = field.copy()
-        self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -52,7 +49,6 @@ class TestPPCopy(tests.IrisTest):
     def test_deepcopy_field_deferred(self):
         field = next(pp.load(self.filename))
         clone = deepcopy(field)
-        self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -98,7 +94,7 @@ class IrisPPTest(tests.IrisTest):
                 reference_fh.writelines(test_string)
 
 
-class TestPPHeaderDerived(unittest.TestCase):
+class TestPPHeaderDerived(tests.IrisTest):
 
     def setUp(self):
         self.pp = pp.PPField2()
@@ -126,12 +122,10 @@ class TestPPHeaderDerived(unittest.TestCase):
     def test_lbproc_access(self):
         # lbproc == 65539
         with mock.patch('warnings.warn') as warn:
-            self.assertEqual(self.pp.lbproc[0], 9)
-            self.assertEqual(self.pp.lbproc[19], 0)
             self.assertEqual(self.pp.lbproc.flag1, 1)
             self.assertEqual(self.pp.lbproc.flag65536, 1)
             self.assertEqual(self.pp.lbproc.flag131072, 0)
-        self.assertEqual(warn.call_count, 5)
+        self.assertEqual(warn.call_count, 3)
     
     def test_set_lbuser(self):
         self.pp.stash = 'm02s12i003'
@@ -336,118 +330,9 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         
         self.assertEqual(self.file_checksum(temp_filename), self.file_checksum(filepath))
         os.remove(temp_filename)
-    
-
-class TestBitwiseInt(unittest.TestCase):
-
-    def test_3(self):
-        with mock.patch('warnings.warn') as warn:
-            t = pp.BitwiseInt(3)
-        self.assertEqual(warn.call_count, 1)
-        self.assertEqual(t[0], 3)
-        self.assertTrue(t.flag1)
-        self.assertTrue(t.flag2)
-        self.assertRaises(AttributeError, getattr, t, "flag1024")
-        
-    def test_setting_flags(self):
-        with mock.patch('warnings.warn') as warn:
-            t = pp.BitwiseInt(3)
-        self.assertEqual(warn.call_count, 1)
-        self.assertEqual(t._value, 3)
-
-        t.flag1 = False
-        self.assertEqual(t._value, 2)
-        t.flag2 = False
-        self.assertEqual(t._value, 0)
-        
-        t.flag1 = True
-        self.assertEqual(t._value, 1)
-        t.flag2 = True
-        self.assertEqual(t._value, 3)
-        
-        self.assertRaises(AttributeError, setattr, t, "flag1024", True)
-        self.assertRaises(TypeError, setattr, t, "flag2", 1)
-
-        with mock.patch('warnings.warn') as warn:
-            t = pp.BitwiseInt(3, num_bits=11)
-        self.assertEqual(warn.call_count, 1)
-        t.flag1024 = True
-        self.assertEqual(t._value, 1027)
-
-    def test_standard_operators(self):
-        with mock.patch('warnings.warn') as warn:
-            t = pp.BitwiseInt(323)
-        self.assertEqual(warn.call_count, 1)
-        
-        self.assertTrue(t == 323)
-        self.assertFalse(t == 324)
-        
-        self.assertFalse(t != 323)
-        self.assertTrue(t != 324)
-        
-        self.assertTrue(t >= 323)
-        self.assertFalse(t >= 324)
-        
-        self.assertFalse(t > 323)
-        self.assertTrue(t > 322)
-        
-        self.assertTrue(t <= 323)
-        self.assertFalse(t <= 322)
-        
-        self.assertFalse(t < 323)
-        self.assertTrue(t < 324)
-
-        self.assertTrue(t in [323])
-        self.assertFalse(t in [324])
-
-    def test_323(self):
-        with mock.patch('warnings.warn') as warn:
-            t = pp.BitwiseInt(323)
-        self.assertEqual(warn.call_count, 1)
-        self.assertRaises(AttributeError, getattr, t, 'flag0')
-        
-        self.assertEqual(t.flag1, 1)
-        self.assertEqual(t.flag2, 1)
-        self.assertEqual(t.flag4, 0)
-        self.assertEqual(t.flag8, 0)
-        self.assertEqual(t.flag16, 0)
-        self.assertEqual(t.flag32, 0)
-        self.assertEqual(t.flag64, 1)
-        self.assertEqual(t.flag128, 0)
-        self.assertEqual(t.flag256, 1)
 
 
-    def test_33214(self):
-        with mock.patch('warnings.warn') as warn:
-            t = pp.BitwiseInt(33214)
-        self.assertEqual(warn.call_count, 1)
-        self.assertEqual(t[0], 4)
-        self.assertEqual(t.flag1, 0)
-        self.assertEqual(t.flag2, 1)
-
-    def test_negative_number(self):
-        with mock.patch('warnings.warn') as warn:
-            try:
-                _ = pp.BitwiseInt(-5)
-            except ValueError as err:
-                self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
-        self.assertEqual(warn.call_count, 1)
-
-    def test_128(self):
-        with mock.patch('warnings.warn') as warn:
-            t = pp.BitwiseInt(128)
-        self.assertEqual(warn.call_count, 1)
-        self.assertEqual(t.flag1, 0)
-        self.assertEqual(t.flag2, 0)
-        self.assertEqual(t.flag4, 0)
-        self.assertEqual(t.flag8, 0)
-        self.assertEqual(t.flag16, 0)
-        self.assertEqual(t.flag32, 0)
-        self.assertEqual(t.flag64, 0)
-        self.assertEqual(t.flag128, 1)
-        
-
-class TestSplittableInt(unittest.TestCase):
+class TestSplittableInt(tests.IrisTest):
 
     def test_3(self):
         t = pp.SplittableInt(3)
@@ -546,7 +431,7 @@ class TestSplittableInt(unittest.TestCase):
             self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
 
             
-class TestSplittableIntEquality(unittest.TestCase):
+class TestSplittableIntEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object): pass
         sin = pp.SplittableInt(0)
@@ -554,7 +439,7 @@ class TestSplittableIntEquality(unittest.TestCase):
         self.assertIs(sin.__ne__(Terry()), NotImplemented)
 
 
-class TestPPDataProxyEquality(unittest.TestCase):
+class TestPPDataProxyEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object): pass
         pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian",
@@ -563,7 +448,7 @@ class TestPPDataProxyEquality(unittest.TestCase):
         self.assertIs(pox.__ne__(Terry()), NotImplemented)
 
 
-class TestPPFieldEquality(unittest.TestCase):
+class TestPPFieldEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object): pass
         pox = pp.PPField3()

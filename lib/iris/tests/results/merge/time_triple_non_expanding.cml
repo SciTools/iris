@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube dtype="float32" units="unknown">
     <coords>
       <coord>
         <dimCoord id="75879334" points="[0]" shape="(1,)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
