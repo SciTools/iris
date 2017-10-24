@@ -34,4 +34,3 @@ nc_time_axis
 pandas
 python-stratify
 pyugrid
-iris_grib

@@ -65,6 +65,16 @@ install:
       fi
     fi
 
+# JUST FOR NOW : Install iris-grib from a chosen branch.
+  - if [[ "$TEST_MINIMAL" != true ]]; then
+        INSTALL_DIR=$(pwd) ;
+        wget https://github.com/pp-mo/iris-grib/archive/dask_masked_fix.zip ;
+        unzip -q dask_masked_fix.zip ;
+        cd iris-grib-dask_masked_fix ;
+        python setup.py install ;
+        cd - ;
+    fi
+
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
   # Output debug info
