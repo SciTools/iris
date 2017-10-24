@@ -204,10 +204,10 @@ class Future(threading.local):
         if name in self.deprecated_options:
             level = self.deprecated_options[name]
             if level == 'error':
-                emsg = ("deprecated {prop!r} behaviour has been removed and "
-                        "setting the 'Future' property {prop!r} has been "
-                        "deprecated to be removed in a future release. "
-                        "PLease remove code that sets this property.")
+                emsg = ("setting the 'Future' property {prop!r} has been "
+                        "deprecated to be removed in a future release, and "
+                        "deprecated {prop!r} behaviour has been removed. "
+                        "Please remove code that sets this property.")
                 raise AttributeError(emsg.format(prop=name))
             else:
                 msg = ("setting the 'Future' property {!r} is deprecated "
