@@ -23,10 +23,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import numpy as np
+
 import iris
 from iris.analysis import MEAN
+from iris.cube import Cube
 
-from iris._lazy_data import is_lazy_data
+from iris._lazy_data import is_lazy_data, as_lazy_data
 
 
 class Test_aggregated_by(tests.IrisTest):
@@ -53,6 +56,21 @@ class Test_aggregated_by(tests.IrisTest):
         res_cell_methods = res_cube.cell_methods[0]
         self.assertEqual(res_cell_methods.coord_names, ('forecast_period',))
         self.assertEqual(res_cell_methods.method, 'mean')
+
+
+class TestDataFillValue(tests.IrisTest):
+    def test_real(self):
+        data = np.ma.masked_array([1, 2, 3], [0, 1, 0], fill_value=10)
+        cube = Cube(data)
+        cube.data.fill_value = 20
+        self.assertEqual(cube.data.fill_value, 20)
+
+    def test_lazy(self):
+        data = np.ma.masked_array([1, 2, 3], [0, 1, 0], fill_value=10)
+        data = as_lazy_data(data)
+        cube = Cube(data)
+        cube.data.fill_value = 20
+        self.assertEqual(cube.data.fill_value, 20)
 
 
 if __name__ == '__main__':
