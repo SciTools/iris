@@ -1268,12 +1268,19 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         bounds = np.array([min_bounds, max_bounds]).transpose()
 
-        if (iris.FUTURE.clip_latitudes and
-                self.name() in ('latitude', 'grid_latitude') and
-                self.units == 'degree'):
-            points = self.points
-            if (points >= -90).all() and (points <= 90).all():
-                np.clip(bounds, -90, 90, out=bounds)
+        if iris.FUTURE.clip_latitudes:
+            if (self.name() in ('latitude', 'grid_latitude') 
+                    and self.units == 'degree'):
+                points = self.points
+                if (points >= -90).all() and (points <= 90).all():
+                    np.clip(bounds, -90, 90, out=bounds)
+
+        else:
+            wmsg = ("guessing latitude bounds outside of [-90, 90] is "
+                    "deprecated behaviour. "
+                    "All latitude points will be clipped to the range "
+                    "[-90, 90].")
+            warn_deprecated(wmsg)
 
         return bounds
 
