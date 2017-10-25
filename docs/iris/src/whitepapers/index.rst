@@ -10,4 +10,3 @@ Extra information on specific technical issues.
    :numbered:
 
    um_files_loading.rst
-   change_management.rst
