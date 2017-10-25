@@ -190,8 +190,8 @@ class Future(threading.local):
         .. deprecated:: 2.0.0
 
             The option `clip_latitudes` is deprecated and will be removed in a
-            future release and the deprecated code paths this option used to
-            toggle have been removed.
+            future release. `clip_latitudes` is set to True by default and
+            should not be altered.
 
             The option `clip_latitudes` controlled whether the
             :meth:`iris.coords.Coord.guess_bounds()` method would limit the

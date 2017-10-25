@@ -1234,9 +1234,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             - all the points are in the range [-90, 90].
 
         .. deprecated:: 2.0.0
-            The 'iris.FUTURE.clip_latitudes' option is now deprecated
+
+            The `iris.FUTURE.clip_latitudes` option is now deprecated
             and is set to True by default. Please remove code which
-            uses 'iris.FUTURE.clip_latitudes'.
+            relies on coordinate bounds being outside the range
+            [-90, 90].
 
         """
         # XXX Consider moving into DimCoord
@@ -1279,7 +1281,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 points = self.points
                 if (points >= -90).all() and (points <= 90).all():
                     np.clip(bounds, -90, 90, out=bounds)
-
         else:
             wmsg = ("guessing latitude bounds outside of [-90, 90] is "
                     "deprecated behaviour. "
@@ -1329,9 +1330,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             - all the points are in the range [-90, 90].
 
         .. deprecated:: 2.0.0
-            The 'iris.FUTURE.clip_latitudes' option is now deprecated
+
+            The `iris.FUTURE.clip_latitudes` option is now deprecated
             and is set to True by default. Please remove code which
-            uses 'iris.FUTURE.clip_latitudes'.
+            relies on coordinate bounds being outside the range
+            [-90, 90].
 
         """
         self.bounds = self._guess_bounds(bound_position)

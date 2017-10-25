@@ -160,30 +160,7 @@ class Test_guess_bounds(tests.IrisTest):
         self.assertArrayEqual(target, self.coord.bounds)
 
 
-class Test_guess_bounds__default_latitude_clipping(tests.IrisTest):
-    def test_all_inside(self):
-        lat = DimCoord([-10, 0, 20], units='degree', standard_name='latitude')
-        lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-15, -5], [-5, 10], [10, 30]])
-
-    def test_points_inside_bounds_outside(self):
-        lat = DimCoord([-80, 0, 70], units='degree', standard_name='latitude')
-        lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-90, -40], [-40, 35], [35, 90]])
-
-    def test_points_to_edges_bounds_outside(self):
-        lat = DimCoord([-90, 0, 90], units='degree', standard_name='latitude')
-        lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-90, -45], [-45, 45], [45, 90]])
-
-    def test_points_outside(self):
-        lat = DimCoord([-100, 0, 120], units='degree',
-                       standard_name='latitude')
-        lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-150, -50], [-50, 60], [60, 180]])
-
-
-class Test_guess_bounds__enabled_latitude_clipping(tests.IrisTest):
+class Test_guess_bounds__default_enabled_latitude_clipping(tests.IrisTest):
     def test_all_inside(self):
         lat = DimCoord([-10, 0, 20], units='degree', standard_name='latitude')
         lat.guess_bounds()
