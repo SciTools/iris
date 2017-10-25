@@ -487,8 +487,8 @@ class CFCoordinateVariable(CFVariable):
             # String variables can't be coordinates
             if _is_str_dtype(nc_var):
                 continue
-            # Restrict to one-dimensional with name as dimension OR zero-dimensional scalar
-            if not ((nc_var.ndim == 1 and nc_var_name in nc_var.dimensions) or (nc_var.ndim == 0)):
+            # Restrict to one-dimensional with name as dimension
+            if not (nc_var.ndim == 1 and nc_var_name in nc_var.dimensions):
                 continue
             # Restrict to monotonic?
             if monotonic:
