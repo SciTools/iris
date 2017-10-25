@@ -1,8 +1,8 @@
 dimensions:
-	model_level_number = 38 ;
 	bnds = 2 ;
 	latitude = 145 ;
 	longitude = 192 ;
+	model_level_number = 38 ;
 variables:
 	float change_over_time_in_upward_air_velocity_due_to_advection(model_level_number, latitude, longitude) ;
 		change_over_time_in_upward_air_velocity_due_to_advection:_FillValue = 9.96921e+36f ;

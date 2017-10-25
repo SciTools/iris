@@ -1,7 +1,7 @@
 dimensions:
+	latitude = 2 ;
 	latitude_0 = 10 ;
 	time = 2 ;
-	latitude = 2 ;
 variables:
 	double temp(time, latitude) ;
 		temp:standard_name = "surface_temperature" ;

@@ -1,7 +1,7 @@
 dimensions:
 	dim0 = 1 ;
-	lon = 2 ;
 	lat = 2 ;
+	lon = 2 ;
 variables:
 	double temp(lon, lat) ;
 		temp:standard_name = "surface_temperature" ;

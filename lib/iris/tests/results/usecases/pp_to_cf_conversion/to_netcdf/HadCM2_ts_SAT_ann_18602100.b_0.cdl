@@ -1,7 +1,7 @@
 dimensions:
-	time = 240 ;
 	bnds = 2 ;
 	site_number = 3 ;
+	time = 240 ;
 variables:
 	float air_temperature(time, site_number) ;
 		air_temperature:_FillValue = 9.96921e+36f ;

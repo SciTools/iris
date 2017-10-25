@@ -1,7 +1,7 @@
 dimensions:
-	pressure = 15 ;
 	bnds = 2 ;
 	latitude = 73 ;
+	pressure = 15 ;
 variables:
 	float geopotential_height(pressure, latitude) ;
 		geopotential_height:_FillValue = 9.96921e+36f ;

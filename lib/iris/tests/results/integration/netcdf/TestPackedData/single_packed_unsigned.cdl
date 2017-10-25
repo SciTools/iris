@@ -1,6 +1,6 @@
 dimensions:
-	latitude = 73 ;
 	bnds = 2 ;
+	latitude = 73 ;
 	longitude = 96 ;
 variables:
 	ubyte air_temperature(latitude, longitude) ;
