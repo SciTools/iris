@@ -91,8 +91,8 @@ class Test(tests.IrisTest, GdtTestMixin):
         self._check_key("longitudeOfLastGridPoint", 7000000)
         self._check_key("latitudeOfFirstGridPoint", 4000000)
         self._check_key("latitudeOfLastGridPoint", 9000000)
-        self._check_key("DxInDegrees", 2.0)
-        self._check_key("DyInDegrees", 5.0)
+        self._check_key("iDirectionIncrement", 2000000)
+        self._check_key("jDirectionIncrement", 5000000)
 
     def test__scanmode(self):
         grid_definition_template_1(self.test_cube, self.mock_grib)

@@ -54,7 +54,12 @@ class Test_messages_from_filename(tests.IrisTest):
         filename = tests.get_data_path(('GRIB', '3_layer_viz',
                                         '3_layer.grib2'))
         my_file = open(filename)
-        self.patch('__builtin__.open', mock.Mock(return_value=my_file))
+        if six.PY2:
+            self.patch('__builtin__.open', mock.Mock(return_value=my_file))
+        else:
+            import builtins
+            self.patch('builtins.open', mock.Mock(return_value=my_file))
+
         messages = list(GribMessage.messages_from_filename(filename))
         self.assertFalse(my_file.closed)
         del messages

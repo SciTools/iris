@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -72,21 +72,19 @@ class TestNameToGRIB(tests.IrisTest):
     def test_name2_field(self):
         filepath = tests.get_data_path(('NAME', 'NAMEII_field.txt'))
         name_cubes = iris.load(filepath)
-        # Check gribapi version, because we currently have a known load/save
-        # problem with gribapi 1v14 (at least).
-        gribapi_ver = gribapi.grib_get_api_version()
-        gribapi_fully_supported_version = \
-            (StrictVersion(gribapi.grib_get_api_version()) <
-             StrictVersion('1.13'))
+
+        # There is a known load/save problem with numerous
+        # gribapi/eccodes versions and
+        # zero only data, where min == max.
+        # This may be a problem with data scaling.
         for i, name_cube in enumerate(name_cubes):
-            if not gribapi_fully_supported_version:
-                data = name_cube.data
-                if np.min(data) == np.max(data):
-                    msg = ('NAMEII cube #{}, "{}" has empty data : '
-                           'SKIPPING test for this cube, as save/load will '
-                           'not currently work with gribabi > 1v12.')
-                    warnings.warn(msg.format(i, name_cube.name()))
-                    continue
+            data = name_cube.data
+            if np.min(data) == np.max(data):
+                msg = ('NAMEII cube #{}, "{}" has empty data : '
+                       'SKIPPING test for this cube, as save/load will '
+                       'not currently work.')
+                warnings.warn(msg.format(i, name_cube.name()))
+                continue
 
             with self.temp_filename('.grib2') as temp_filename:
                 iris.save(name_cube, temp_filename)

@@ -59,7 +59,7 @@ class Test(tests.IrisTest):
     def test_array_mdi(self):
         result = unscale([1, MDI, 100, 1000], [1, 1, 1, MDI])
         self.assertTrue(ma.isMaskedArray(result))
-        expected = ma.masked_values([0.1, MDI, 10.0, MDI], MDI)
+        expected = ma.masked_values([0.1, 0, 10.0, 0], 0)
         np.testing.assert_array_almost_equal(result, expected)
 
 
