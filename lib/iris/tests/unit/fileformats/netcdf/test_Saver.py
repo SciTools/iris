@@ -235,15 +235,6 @@ class Test_write(tests.IrisTest):
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
 
-    def test_future_netcdf_no_unlimited_error(self):
-        cube = self._simple_cube('>f4')
-        with self.temp_filename('.nc') as nc_path:
-            # Should get an exception if flag has been set to False.
-            with iris.FUTURE.context(netcdf_no_unlimited=False):
-                with Saver(nc_path, 'NETCDF4') as saver:
-                    with self.assertRaises(Exception):
-                        saver.write(cube)
-
     def test_reserved_attributes(self):
         cube = self._simple_cube('>f4')
         cube.attributes['dimensions'] = 'something something_else'

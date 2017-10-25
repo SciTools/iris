@@ -182,10 +182,15 @@ class Future(threading.local):
             exposed variables that defined reference surfaces for
             dimensionless vertical coordinates as independent Cubes.
 
-        The option `netcdf_no_unlimited`, when False, changes the
-        behaviour of the netCDF saver, such that the leading dimension is
-        unlimited unless otherwise specified.  The current default is that no
-        dimensions are set to unlimited.
+        .. deprecated:: 2.0.0
+
+            The option `netcdf_no_unlimited` is deprecated and will be removed
+            in a future release. The deprecated code paths this option used to
+            toggle have been removed.
+
+            The option `netcdf_no_unlimited` changed the behaviour of the
+            netCDF saver regarding unlimited dimensions. The netCDF saver now
+            sets no dimensions to unlimited.
 
         .. deprecated:: 2.0.0
 

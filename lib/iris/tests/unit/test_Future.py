@@ -30,12 +30,6 @@ from iris import Future
 
 
 class Test___setattr__(tests.IrisTest):
-    def test_valid_netcdf_no_unlimited(self):
-        future = Future()
-        new_value = not future.netcdf_no_unlimited
-        future.netcdf_no_unlimited = new_value
-        self.assertEqual(future.netcdf_no_unlimited, new_value)
-
     def test_valid_clip_latitudes(self):
         future = Future()
         new_value = not future.clip_latitudes
@@ -56,6 +50,14 @@ class Test___setattr__(tests.IrisTest):
         for state in states:
             with self.assertRaisesRegexp(AttributeError, exp_emsg):
                 future.netcdf_promote = state
+
+    def test_invalid_netcdf_no_unlimited_attributes(self):
+        future = Future()
+        states = [True, False]
+        exp_emsg = ''
+        for state in states:
+            with self.assertRaisesRegexp(AttributeError, exp_emsg):
+                future.netcdf_no_unlimited = state
 
     def test_cell_datetime_objects(self):
         future = Future()
