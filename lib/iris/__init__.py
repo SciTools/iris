@@ -211,7 +211,7 @@ class Future(threading.local):
 
     deprecated_options = {'cell_datetime_objects': 'warning',
                           'netcdf_promote': 'error',
-		          'clip_latitudes': 'warning'}
+                          'clip_latitudes': 'warning'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
