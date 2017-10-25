@@ -1,25 +1,2 @@
 The :meth:`iris.coords.Coord.guess_bounds()` now limits the guessed bounds to [-90, 90] for latitudes by default.
-
-
-:class:`iris.coords.Cell` objects in time coordinates now contain datetime objects by default and not numbers.
-For example::
-    >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-    >>> print(cube.coord('time').cell(0).point)
-        1998-12-01 00:00:00
-
-This change particularly impacts constraining datasets on time. All time constraints
-must now be constructed with datetime objects or :class:`~iris.time.PartialDateTime` objects.
-See userguide section 2.2.1 for more details on producing time constraints.
-
-
-            The option `clip_latitudes` controlled whether the
-            :meth:`iris.coords.Coord.guess_bounds()` method would limit the
-            guessed bounds to [-90, 90] for latitudes.
-            
-            
-            
-            +* Deprecated FUTURE flag :attr:`iris.Future.netcdf_promote`.
-+
-+* Removed deprecated behaviour that does not automatically promote NetCDF variables to cubes.
-+  This change means that NetCDF variables that define reference surfaces for dimensionless vertical coordinates
-+  will always be promoted and loaded as independent cubes.
+The ability to turn this behaviour off is now deprecated.
