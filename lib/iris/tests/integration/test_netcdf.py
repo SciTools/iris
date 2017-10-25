@@ -420,5 +420,14 @@ class TestPackedData(tests.IrisTest):
         self._multi_test('multi_packed_multi_dtype.cdl', multi_dtype=True)
 
 
+class TestScalarCube(tests.IrisTest):
+    def test_scalar_cube_save_load(self):
+        cube = iris.cube.Cube(1, long_name='scalar_cube')
+        with self.temp_filename(suffix='.nc') as fout:
+            iris.save(cube, fout)
+            scalar_cube = iris.load_cube(fout)
+            self.assertEqual(scalar_cube.name(), 'scalar_cube')
+
+
 if __name__ == "__main__":
     tests.main()
