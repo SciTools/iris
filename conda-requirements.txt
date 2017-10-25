@@ -34,3 +34,6 @@ nc_time_axis
 pandas
 python-stratify
 pyugrid
+
+# Iris extensions (i.e. key tools that depend on Iris)
+# iris_grib

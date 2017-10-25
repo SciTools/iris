@@ -258,9 +258,8 @@ def _grib_save(cube, target, append=False, **kwargs):
     try:
         from iris_grib import save_grib2
     except ImportError:
-        msg = ('Unable to save GRIB file - the `iris_grib` package is not '
-               'available.')
-        raise RuntimeError(msg)
+        raise RuntimeError('Unable to save GRIB file - '
+                           '"iris_grib" package is not installed.')
 
     save_grib2(cube, target, append, **kwargs)
 

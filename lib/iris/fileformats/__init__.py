@@ -28,9 +28,9 @@ from iris.io.format_picker import (FileExtension, FormatAgent,
 from . import abf
 from . import um
 try:
-    import iris_grib
+    import iris_grib as igrib
 except ImportError:
-    iris_grib = None
+    igrib = None
 
 from . import name
 from . import netcdf
@@ -71,11 +71,10 @@ FORMAT_AGENT.add_spec(
 # GRIB files.
 #
 def _load_grib(*args, **kwargs):
-    if iris_grib is None:
-        msg = ('Unable to load GRIB file - the `iris_grib` package is not '
-               'available.')
-        raise RuntimeError(msg)
-    return iris_grib.load_cubes(*args, **kwargs)
+    if igrib is None:
+        raise RuntimeError('Unable to load GRIB file - '
+                           '"iris_grib" package is not installed.')
+    return igrib.load_cubes(*args, **kwargs)
 
 
 # NB. Because this is such a "fuzzy" check, we give this a very low

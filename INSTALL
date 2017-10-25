@@ -122,11 +122,9 @@ gdal 1.9.1 or later (https://pypi.python.org/pypi/GDAL/)
 graphviz 2.18 or later (http://www.graphviz.org/)
     Graph visualisation software.
 
-grib-api 1.9.16 or later
-    (https://software.ecmwf.int/wiki/display/GRIB/Releases)
-    API for the encoding and decoding WMO FM-92 GRIB edition 1 and 
-    edition 2 messages. A compression library such as Jasper is required 
-    to read JPEG2000 compressed GRIB2 files.
+iris-grib 0.11 or later
+    (https://github.com/scitools/iris-grib)
+    Iris interface to ECMWF's GRIB API
 
 matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
     Python package for 2D plotting.  

@@ -94,9 +94,8 @@ else:
     GDAL_AVAILABLE = True
 
 try:
-    import iris_grib
-    GRIB_AVAILABLE = True
     from iris_grib.message import GribMessage
+    GRIB_AVAILABLE = True
 except ImportError:
     GRIB_AVAILABLE = False
 
@@ -1166,8 +1165,9 @@ def skip_plot(fn):
     return skip(fn)
 
 
-skip_grib = unittest.skipIf(not GRIB_AVAILABLE, 'Test(s) require "gribapi", '
-                                                'which is not available.')
+skip_grib = unittest.skipIf(not GRIB_AVAILABLE,
+                            'Test(s) require "iris-grib" package, '
+                            'which is not available.')
 
 
 skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,
