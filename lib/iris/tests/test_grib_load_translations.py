@@ -330,8 +330,8 @@ class TestGribTimecodes(tests.IrisTest):
                 temp_gribfile_path)
             with self.assertRaises(iris.exceptions.TranslationError) as te:
                 cube = next(cube_generator)
-                self.assertEqual('Product definition template [5]'
-                                 ' is not supported', str(te.exception))
+            self.assertEqual('Product definition template [5]'
+                             ' is not supported', str(te.exception))
 
 
 @tests.skip_grib
