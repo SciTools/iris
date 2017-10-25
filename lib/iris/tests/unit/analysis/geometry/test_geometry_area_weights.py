@@ -89,7 +89,7 @@ class Test(tests.IrisTest):
             [0, half, half, 0],
             [0, quarter, quarter, 0],
             [0, 0, 0, 0]])
-        self.assertTrue(np.allclose(weights, target))
+        self.assertArrayAllClose(weights, target)
 
     @tests.skip_data
     def test_distinct_xy_bounds(self):
@@ -119,8 +119,8 @@ class Test(tests.IrisTest):
             [0, half, full, full],
             [0, quarter, half, half],
             [0, 0, 0, 0]])
-        self.assertTrue(np.allclose(weights, target))
-        self.assertTrue(np.allclose(weights_overshoot, target))
+        self.assertArrayAllClose(weights, target)
+        self.assertArrayAllClose(weights_overshoot, target)
 
     @tests.skip_data
     def test_distinct_xy_bounds_pole(self):
@@ -134,6 +134,7 @@ class Test(tests.IrisTest):
         from iris.util import regular_step
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
+        top_cell_half = abs(regular_step(lon) * (90 - lat.bounds[0, 1]) * 0.5) 
         minx = 3.7499990463256836
         maxx = 7.499998092651367
         miny = 84.99998474121094
@@ -147,18 +148,18 @@ class Test(tests.IrisTest):
                              "cube's y dimension at the upper end.")
             self.assertTrue(issubclass(w[-1].category, UserWarning))
         target = np.array([
-            [0, half, half, 0],
+            [0, top_cell_half, top_cell_half, 0],
             [0, half, half, 0],
             [0, quarter, quarter, 0],
             [0, 0, 0, 0]])
-        self.assertTrue(np.allclose(weights, target))
+        self.assertArrayAllClose(weights, target)
 
     def test_shared_xy(self):
         cube = stock.track_1d()
         geometry = shapely.geometry.box(1, 4, 3.5, 7)
         weights = geometry_area_weights(cube, geometry)
         target = np.array([0, 0, 2, 0.5, 0, 0, 0, 0, 0, 0, 0])
-        self.assertTrue(np.allclose(weights, target))
+        self.assertArrayAllClose(weights, target)
 
 
 if __name__ == "__main__":
