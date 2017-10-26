@@ -33,7 +33,7 @@ class LimitedAttributeDict(dict):
                        'calendar', 'leap_month', 'leap_year', 'month_lengths',
                        'coordinates', 'grid_mapping', 'climatology',
                        'cell_methods', 'formula_terms', 'compress',
-                       'missing_value', 'add_offset', 'scale_factor',
+                       'add_offset', 'scale_factor',
                        '_FillValue')
 
     def __init__(self, *args, **kwargs):
