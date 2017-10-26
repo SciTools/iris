@@ -93,7 +93,7 @@ Backwards compatibility
 
 "Backwards-compatible" changes are those that leave any existing valid API
 usages unchanged (see :ref:`terminology <iris_api>` below).
-Only such changes may be included in minor releases.
+Minor releases may only include backwards-compatible changes.
 
 The following are examples of backward-compatible changes :
 
