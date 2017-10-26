@@ -165,9 +165,11 @@ class Future(threading.local):
             The option `cell_datetime_objects` controlled whether the
             :meth:`iris.coords.Coord.cell()` method would return time
             coordinate values as simple numbers or as time objects with
-            attributes for year, month, day, etc. In particular, this allows
-            one to express certain time constraints using a simpler, more
-            transparent syntax, such as::
+            attributes for year, month, day, etc.
+
+            Cells are now represented as time objects by default, allowing
+            you to express time constraints using a simpler syntax. For
+            example::
 
                 # To select all data defined at midday.
                 Constraint(time=lambda cell: cell.point.hour == 12)
