@@ -473,7 +473,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.coord('longitude').guess_bounds()
         dest = _resampled_grid(src, 0.4, 0.3)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (21, 38), 280.137698, 15.998966)
+        self.assertArrayShapeStats(res, (21, 38), 280.484932, 15.831545)
 
     @tests.skip_data
     def test_global_data_increase_res(self):
@@ -482,7 +482,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.coord('longitude').guess_bounds()
         dest = _resampled_grid(src, 1.5, 1.5)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (109, 144), 279.955722, 16.313940)
+        self.assertArrayShapeStats(res, (109, 144), 280.349625, 16.073397)
 
     @tests.skip_data
     def test_global_data_same_res(self):

@@ -144,7 +144,7 @@ class Future(threading.local):
     """Run-time configuration controller."""
 
     def __init__(self, cell_datetime_objects=True, netcdf_promote=True,
-                 netcdf_no_unlimited=False, clip_latitudes=False):
+                 netcdf_no_unlimited=False, clip_latitudes=True):
         """
         A container for run-time options controls.
 
@@ -187,9 +187,15 @@ class Future(threading.local):
         unlimited.  The current default is that the leading dimension is
         unlimited unless otherwise specified.
 
-        The option `clip_latitudes` controls whether the
-        :meth:`iris.coords.Coord.guess_bounds()` method limits the
-        guessed bounds to [-90, 90] for latitudes.
+        .. deprecated:: 2.0.0
+
+            The option `clip_latitudes` is deprecated and will be removed in a
+            future release. `clip_latitudes` is set to True by default and
+            should not be altered.
+
+            The option `clip_latitudes` controlled whether the
+            :meth:`iris.coords.Coord.guess_bounds()` method would limit the
+            guessed bounds to [-90, 90] for latitudes.
 
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
@@ -204,7 +210,8 @@ class Future(threading.local):
                           self.netcdf_no_unlimited, self.clip_latitudes)
 
     deprecated_options = {'cell_datetime_objects': 'warning',
-                          'netcdf_promote': 'error'}
+                          'netcdf_promote': 'error',
+                          'clip_latitudes': 'warning'}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:

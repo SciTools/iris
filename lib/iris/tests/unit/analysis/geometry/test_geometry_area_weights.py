@@ -134,6 +134,7 @@ class Test(tests.IrisTest):
         from iris.util import regular_step
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
+        top_cell_half = abs(regular_step(lon) * (90 - lat.bounds[0, 1]) * 0.5)
         minx = 3.7499990463256836
         maxx = 7.499998092651367
         miny = 84.99998474121094
@@ -147,7 +148,7 @@ class Test(tests.IrisTest):
                              "cube's y dimension at the upper end.")
             self.assertTrue(issubclass(w[-1].category, UserWarning))
         target = np.array([
-            [0, half, half, 0],
+            [0, top_cell_half, top_cell_half, 0],
             [0, half, half, 0],
             [0, quarter, quarter, 0],
             [0, 0, 0, 0]])

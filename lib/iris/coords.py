@@ -1233,6 +1233,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             - the units are degrees,
             - all the points are in the range [-90, 90].
 
+        .. deprecated:: 2.0.0
+
+            The `iris.FUTURE.clip_latitudes` option is now deprecated
+            and is set to True by default. Please remove code which
+            relies on coordinate bounds being outside the range
+            [-90, 90].
+
         """
         # XXX Consider moving into DimCoord
         # ensure we have monotonic points
@@ -1268,12 +1275,18 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         bounds = np.array([min_bounds, max_bounds]).transpose()
 
-        if (iris.FUTURE.clip_latitudes and
-                self.name() in ('latitude', 'grid_latitude') and
-                self.units == 'degree'):
-            points = self.points
-            if (points >= -90).all() and (points <= 90).all():
-                np.clip(bounds, -90, 90, out=bounds)
+        if iris.FUTURE.clip_latitudes:
+            if (self.name() in ('latitude', 'grid_latitude') and
+                    self.units == 'degree'):
+                points = self.points
+                if (points >= -90).all() and (points <= 90).all():
+                    np.clip(bounds, -90, 90, out=bounds)
+        else:
+            wmsg = ("guessing latitude bounds outside of [-90, 90] is "
+                    "deprecated behaviour. "
+                    "All latitude points will be clipped to the range "
+                    "[-90, 90].")
+            warn_deprecated(wmsg)
 
         return bounds
 
@@ -1315,6 +1328,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             - it is a `latitude` or `grid_latitude` coordinate,
             - the units are degrees,
             - all the points are in the range [-90, 90].
+
+        .. deprecated:: 2.0.0
+
+            The `iris.FUTURE.clip_latitudes` option is now deprecated
+            and is set to True by default. Please remove code which
+            relies on coordinate bounds being outside the range
+            [-90, 90].
 
         """
         self.bounds = self._guess_bounds(bound_position)

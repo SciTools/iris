@@ -220,7 +220,7 @@ class TestBoundedCube(tests.GraphicsTest):
         np_testing.assert_array_almost_equal(
             iplt.default_projection_extent(
                 self.cube, mode=iris.coords.BOUND_MODE),
-            [-1.875046, 358.124954, -91.24995422, 91.24998474])
+            [-1.875046, 358.124954, -90, 90])
 
 
 @tests.skip_data

@@ -1,0 +1,2 @@
+The :meth:`iris.coords.Coord.guess_bounds()` now limits the guessed bounds to [-90, 90] for latitudes by default.
+The ability to turn this behaviour off is now deprecated.

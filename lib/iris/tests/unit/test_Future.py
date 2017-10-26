@@ -39,7 +39,9 @@ class Test___setattr__(tests.IrisTest):
     def test_valid_clip_latitudes(self):
         future = Future()
         new_value = not future.clip_latitudes
-        future.clip_latitudes = new_value
+        msg = "'Future' property 'clip_latitudes' is deprecated"
+        with self.assertGivesWarning(msg):
+            future.clip_latitudes = new_value
         self.assertEqual(future.clip_latitudes, new_value)
 
     def test_invalid_attribute(self):
