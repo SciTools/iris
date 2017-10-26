@@ -46,7 +46,7 @@ class Test___setattr__(tests.IrisTest):
     def test_invalid_netcdf_promote_attributes(self):
         future = Future()
         states = [True, False]
-        exp_emsg = ''
+        exp_emsg = "deprecated 'netcdf_promote' behaviour has been removed"
         for state in states:
             with self.assertRaisesRegexp(AttributeError, exp_emsg):
                 future.netcdf_promote = state
@@ -54,7 +54,8 @@ class Test___setattr__(tests.IrisTest):
     def test_invalid_netcdf_no_unlimited_attributes(self):
         future = Future()
         states = [True, False]
-        exp_emsg = ''
+        exp_emsg =\
+            "deprecated 'netcdf_no_unlimited' behaviour has been removed"
         for state in states:
             with self.assertRaisesRegexp(AttributeError, exp_emsg):
                 future.netcdf_no_unlimited = state
