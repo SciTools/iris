@@ -37,11 +37,6 @@ import iris.fileformats.pp as pp
 import iris.tests as tests
 
 
-if tests.GRIB_AVAILABLE:
-    import gribapi
-    import iris.fileformats.grib as grib
-
-
 class SystemInitialTest(tests.IrisTest):
 
     def system_test_supported_filetypes(self):

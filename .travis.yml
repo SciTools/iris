@@ -65,6 +65,16 @@ install:
       fi
     fi
 
+# JUST FOR NOW : Install latest master version of iris-grib.
+  - if [[ "$TEST_MINIMAL" != true ]]; then
+        INSTALL_DIR=$(pwd) ;
+        wget https://github.com/SciTools/iris-grib/archive/master.zip ;
+        unzip -q master.zip ;
+        cd iris-grib-master ;
+        python setup.py install ;
+        cd - ;
+    fi
+
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
   # Output debug info

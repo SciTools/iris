@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,8 +30,6 @@ import iris.coords
 class TestCallbacks(tests.IrisTest):
     @tests.skip_grib
     def test_grib_callback(self):
-        import iris.fileformats.grib
-
         def grib_thing_getter(cube, field, filename):
             if hasattr(field, 'sections'):
                 # New-style loader callback : 'field' is a GribMessage, which has 'sections'.

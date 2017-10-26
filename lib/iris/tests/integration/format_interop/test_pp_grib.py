@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,9 +24,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import iris
-
-if tests.GRIB_AVAILABLE:
-    import gribapi
 
 
 @tests.skip_grib

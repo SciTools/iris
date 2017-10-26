@@ -84,8 +84,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/std_names.py',
         '*/iris/fileformats/cf.py',
         '*/iris/fileformats/dot.py',
-        '*/iris/fileformats/grib/_grib_cf_map.py',
-        '*/iris/fileformats/grib/_grib1_load_rules.py',
         '*/iris/fileformats/pp_load_rules.py',
         '*/iris/fileformats/rules.py',
         '*/iris/fileformats/um_cf_map.py',
@@ -310,8 +308,7 @@ class TestLicenseHeaders(tests.IrisTest):
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
                             'docs/iris/build/*',
                             'lib/iris/analysis/_scipy_interpolate.py',
-                            'lib/iris/fileformats/_pyke_rules/*',
-                            'lib/iris/fileformats/grib/_grib_cf_map.py')
+                            'lib/iris/fileformats/_pyke_rules/*')
 
         try:
             last_change_by_fname = self.last_change_by_fname()
