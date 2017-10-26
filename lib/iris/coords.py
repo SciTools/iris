@@ -1104,6 +1104,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             attributes contain either datetime.datetime instances or
             netcdftime.datetime instances (depending on the calendar).
 
+        .. deprecated:: 2.0.0
+
+            The option `iris.FUTURE.cell_datetime_objects` is deprecated and
+            will be removed in a future release; it is now set to True by
+            default. Please update your code to support using cells as
+            datetime objects.
+
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
