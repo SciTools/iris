@@ -146,7 +146,7 @@ class Test_save(tests.IrisTest):
         # Set underlying data value at masked point to BMDI value.
         field.data.data[1] = field.bmdi
         self.assertArrayAllClose(field.data.data[1], field.bmdi)
-        with self.assertGivesWarning(r'\(mask\|fill\)', expect_warning=False):
+        with self.assertDoesNotGiveWarning(r'\(mask\|fill\)'):
             with self.temp_filename('.pp') as temp_filename:
                 with open(temp_filename, 'wb') as pp_file:
                     field.save(pp_file)
