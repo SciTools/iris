@@ -551,7 +551,7 @@ class IrisTest_nometa(unittest.TestCase):
                         if expr.search(message))
 
     @contextlib.contextmanager
-    def assertGivesWarning(self, expected_regexp=''):
+    def assertWarnsRegexp(self, expected_regexp=''):
         # Check that a warning is raised matching a given expression.
         with self._recordWarningMatches(expected_regexp) as matches:
             yield
@@ -562,7 +562,7 @@ class IrisTest_nometa(unittest.TestCase):
 
 
     @contextlib.contextmanager
-    def assertDoesNotGiveWarning(self, expected_regexp=''):
+    def assertNoWarningsRegexp(self, expected_regexp=''):
         # Check that no warning matching the given expression is raised.
         with self._recordWarningMatches(expected_regexp) as matches:
             yield
