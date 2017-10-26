@@ -31,10 +31,6 @@ import numpy as np
 import numpy.ma as ma
 
 
-# A container for Iris defaults for dask lazy data processing.
-DASK_OPTS = {}
-
-
 def _iris_dask_defaults():
     """
     Set dask defaults for Iris. The current default dask operation mode for
@@ -51,15 +47,16 @@ def _iris_dask_defaults():
         not change user-specified options that have already been set.
 
     """
-    global DASK_OPTS
+    dask_opts = {}
     if 'pool' not in dask.context._globals and \
             'get' not in dask.context._globals:
-        DASK_OPTS.update(get=dget_sync)
+        dask_opts.update(get=dget_sync)
     else:
         # We may need to unset a previously-set default.
-        if DASK_OPTS.get('get') is not None:
-            DASK_OPTS = {key: value for key, value in DASK_OPTS.items()
+        if dask_opts.get('get') is not None:
+            dask_opts = {key: value for key, value in dask_opts.items()
                          if key != 'get'}
+    return dask_opts
 
 
 def is_lazy_data(data):
@@ -131,12 +128,12 @@ def as_concrete_data(data):
     if is_lazy_data(data):
         # Check dask options at runtime to see if we need to set dask options
         # for use in Iris.
-        _iris_dask_defaults()
+        dask_opts = _iris_dask_defaults()
         # Realise dask array, ensuring the data result is always a NumPy array.
         # In some cases dask may return a scalar numpy.int/numpy.float object
         # rather than a numpy.ndarray object.
         # Recorded in https://github.com/dask/dask/issues/2111.
-        data = np.asanyarray(data.compute(**DASK_OPTS))
+        data = np.asanyarray(data.compute(**dask_opts))
 
     return data
 
