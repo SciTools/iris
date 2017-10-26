@@ -156,21 +156,29 @@ class Future(threading.local):
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
-        The option `cell_datetime_objects` controls whether the
-        :meth:`iris.coords.Coord.cell()` method returns time coordinate
-        values as simple numbers or as time objects with attributes for
-        year, month, day, etc. In particular, this allows one to express
-        certain time constraints using a simpler, more transparent
-        syntax, such as::
+        .. deprecated:: 2.0.0
 
-            # To select all data defined at midday.
-            Constraint(time=lambda cell: cell.point.hour == 12)
+            The option `cell_datetime_objects` is deprecated and will be
+            removed in a future release. `cell_datetime_objects` is set
+            to True by default and should not be altered.
 
-            # To ignore the 29th of February.
-            Constraint(time=lambda cell: cell.point.day != 29 and
-                                         cell.point.month != 2)
+            The option `cell_datetime_objects` controlled whether the
+            :meth:`iris.coords.Coord.cell()` method would return time
+            coordinate values as simple numbers or as time objects with
+            attributes for year, month, day, etc.
 
-        For more details, see :ref:`using-time-constraints`.
+            Cells are now represented as time objects by default, allowing
+            you to express time constraints using a simpler syntax. For
+            example::
+
+                # To select all data defined at midday.
+                Constraint(time=lambda cell: cell.point.hour == 12)
+
+                # To ignore the 29th of February.
+                Constraint(time=lambda cell: cell.point.day != 29 and
+                                             cell.point.month != 2)
+
+            For more details, see :ref:`using-time-constraints`.
 
         .. deprecated:: 2.0.0
 
