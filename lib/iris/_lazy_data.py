@@ -48,14 +48,16 @@ def _iris_dask_defaults():
 
     """
     dask_opts = {}
-    if 'pool' not in dask.context._globals and \
-            'get' not in dask.context._globals:
-        dask_opts.update(get=dget_sync)
-    else:
-        # We may need to unset a previously-set default.
-        if dask_opts.get('get') is not None:
-            dask_opts = {key: value for key, value in dask_opts.items()
-                         if key != 'get'}
+    dask_globals = getattr(dask.context, '_globals')
+    if dask_globals is not None:
+        if 'pool' not in dask_globals and \
+                'get' not in dask_globals:
+            dask_opts.update(get=dget_sync)
+        else:
+            # We may need to unset a previously-set default.
+            if dask_opts.get('get') is not None:
+                dask_opts = {key: value for key, value in dask_opts.items()
+                             if key != 'get'}
     return dask_opts
 
 

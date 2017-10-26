@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+import dask.context
 
 from iris._lazy_data import _iris_dask_defaults
 
@@ -35,6 +36,11 @@ class Test__iris_dask_defaults(tests.IrisTest):
         get_sync = 'iris._lazy_data.dget_sync'
         self.patch_get_sync = self.patch(get_sync, self.mock_get_sync)
         self.iris_defaults = {'get': self.patch_get_sync}
+
+    def test_dask_context_api(self):
+        # A first line of defence to check `dask.context._globals`
+        # still exists.
+        self.assertTrue(hasattr(dask.context, '_globals'))
 
     def test_no_user_options(self):
         with tests.mock.patch('dask.context._globals', {}):
