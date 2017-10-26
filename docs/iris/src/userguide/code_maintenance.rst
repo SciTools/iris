@@ -20,19 +20,41 @@ maintenance effort is probably still necessary :
      as you don't change anything else.
 
    * However, such "version statis" can easily become a growing burden, if you
-     are simply waiting until an update becomes unavoidable :
+     are simply waiting until an update becomes unavoidable :  Often, that will
+     eventually occur when you need to update some other software component,
+     for some completely unconnected reason.
 
-     Often, that will eventually occur when you need to update some other
-     software component, for a completely unconnected reason.
 
+Principles of Change Management
+-------------------------------
 
-Goals of Change Management
---------------------------
+When you upgrade software to a new version, you often find that you need to
+rewrite your legacy code, simply to keep it working.
 
-When you do upgrade Iris to a new version, you could potentially find
-that you need to rewrite your legacy code, simply to keep it working.
+In Iris, however, we aim to reduce code maintenance problems to an absolute
+minimum by following defined change management rules.
+These ensure that, *within a major release number* :
 
-.. include:: change_management_goals.txt
+    * you can be confident that your code will still work with subsequent minor
+      releases
 
-To take advantage of this, you should read the basic change management
-recommendations laid out in :ref:`change_management`.
+    * you will be aware of future incompatibility problems in advance
+
+    * you can defer making code compatibility changes for some time, until it
+      suits you
+
+The above applies to minor version upgrades : e.g. code that works with version
+"1.4.2" should still work with a subsequent minor release such as "1.5.0" or
+"1.7.2".
+
+A *major* release however, e.g. "v2.0.0" or "v3.0.0", can include more
+significant changes, including so-called "breaking" changes:  This means that
+existing code may need to be modified to make it work with the new version.
+
+Since breaking change can only occur at major releases, these are the *only*
+times we can alter or remove existing behaviours (even deprecated
+ones).  This is what a major release is for : it enables the removal and
+replacement of old features.
+
+Of course, even at a major release, we do still aim to keep breaking changes to
+a minimum.
