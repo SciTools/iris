@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Provides iris loading support for UM file types, FieldsFile and PP.
+Provides iris loading support for UM Fieldsfile-like file types, and PP.
+
+At present, the only UM file types supported are true FieldsFiles and LBCs.
+Other types of UM file may fail to load correctly (or at all).
 
 """
 
