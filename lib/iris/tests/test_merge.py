@@ -248,6 +248,24 @@ class TestDataMergeCombos(tests.IrisTest):
             self.assertEqual(result.dtype, self.dtype)
             self._check_fill_value(result, fill0=fill)
 
+    def test_maksed_array_preserved(self):
+        for (lazy0, lazy1), (fill,) in self.mixed_combos:
+            cubes = iris.cube.CubeList()
+            mask = False
+            cubes.append(self._make_cube(0, mask=mask, lazy=lazy0,
+                                         dtype=self.dtype,
+                                         fill_value=fill))
+            cubes.append(self._make_cube(1, lazy=lazy1, dtype=self.dtype))
+            result = cubes.merge_cube()
+            mask = False
+            expected_fill_value = self._expected_fill_value(fill)
+            expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
+                                       fill_value=expected_fill_value)
+            self.assertEqual(type(result.data), ma.MaskedArray)
+            self.assertMaskedArrayEqual(result.data, expected)
+            self.assertEqual(result.dtype, self.dtype)
+            self._check_fill_value(result, fill0=fill)
+
     def test_fill_value_invariant_to_order__same_non_None(self):
         fill_value = 1234
         cubes = [self._make_cube(i, mask=True,
