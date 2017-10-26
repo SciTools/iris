@@ -274,6 +274,10 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         # Paste regridded slice back into parent array
         fullcube_data[slice_indices_tuple] = data
 
+    # Remove the data mask if completely unused.
+    if not np.ma.is_masked(fullcube_data):
+        fullcube_data = np.array(fullcube_data)
+
     # Generate a full 2d sample grid, as required for regridding orography
     # NOTE: as seen in "regrid_bilinear_rectilinear_src_and_grid"
     # TODO: can this not also be wound into the _create_cube method ?

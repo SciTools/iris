@@ -1050,6 +1050,8 @@ def _percentile(data, axis, percent, fast_percentile_method=False,
         quantiles = np.array(percent) / 100.
         result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1,
                                                **kwargs)
+    if not ma.isMaskedArray(data) and not ma.is_masked(result):
+        result = np.asarray(result)
 
     # Ensure to unflatten any leading dimensions.
     if shape:
