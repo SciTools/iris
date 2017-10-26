@@ -505,7 +505,7 @@ def _load_cube(engine, cf, cf_var, filename):
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
     proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
                             filename, cf_var.cf_name, fill_value)
-    data = as_lazy_data(proxy, chunks=cf_var.shape)
+    data = as_lazy_data(proxy)
     cube = iris.cube.Cube(data)
 
     # Reset the pyke inference engine.

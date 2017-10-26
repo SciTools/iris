@@ -1630,7 +1630,7 @@ fc_extras
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
                 cf_var.shape, dtype, engine.filename,
                 cf_var.cf_name, fill_value)
-            return as_lazy_data(proxy, chunks=proxy.shape)
+            return as_lazy_data(proxy)
 
         # Get any coordinate point data.
         if isinstance(cf_coord_var, cf.CFLabelVariable):
@@ -1701,7 +1701,7 @@ fc_extras
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
                 cf_var.shape, dtype, engine.filename,
                 cf_var.cf_name, fill_value)
-            return as_lazy_data(proxy, chunks=proxy.shape)
+            return as_lazy_data(proxy)
 
         data = cf_var_as_array(cf_cm_attr)
 

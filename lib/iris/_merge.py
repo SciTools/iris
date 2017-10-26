@@ -1221,7 +1221,7 @@ class ProtoCube(object):
                 if is_lazy_data(data):
                     all_have_data = False
                 else:
-                    data = as_lazy_data(data, chunks=data.shape)
+                    data = as_lazy_data(data)
                 stack[nd_index] = data
                 # Determine the largest dtype.
                 if dtype is None:
