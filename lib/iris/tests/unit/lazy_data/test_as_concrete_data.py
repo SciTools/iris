@@ -30,6 +30,16 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.tests import mock
 
 
+class MyProxy(object):
+    def __init__(self, a):
+        self.shape = a.shape
+        self.dtype = a.dtype
+        self.a = a
+
+    def __getitem__(self, keys):
+        return self.a[keys]
+
+
 class Test_as_concrete_data(tests.IrisTest):
     def test_concrete_input_data(self):
         data = np.arange(24).reshape((4, 6))
@@ -61,6 +71,24 @@ class Test_as_concrete_data(tests.IrisTest):
         self.assertFalse(is_lazy_data(result))
         self.assertMaskedArrayEqual(result, mask_data)
         self.assertEqual(result.fill_value, fill_value)
+
+    def test_lazy_scalar_proxy(self):
+        a = np.array(5)
+        proxy = MyProxy(a)
+        lazy_array = as_lazy_data(proxy)
+        self.assertTrue(is_lazy_data(lazy_array))
+        result = as_concrete_data(lazy_array)
+        self.assertFalse(is_lazy_data(result))
+        self.assertEqual(result, a)
+
+    def test_lazy_scalar_proxy_masked(self):
+        a = np.ma.masked_array(5, True)
+        proxy = MyProxy(a)
+        lazy_array = as_lazy_data(proxy)
+        self.assertTrue(is_lazy_data(lazy_array))
+        result = as_concrete_data(lazy_array)
+        self.assertFalse(is_lazy_data(result))
+        self.assertMaskedArrayEqual(result, a)
 
 
 if __name__ == '__main__':
