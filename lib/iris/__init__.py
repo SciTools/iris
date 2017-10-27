@@ -224,7 +224,7 @@ class Future(threading.local):
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
             level = self.deprecated_options[name]
-            if level == 'error':
+            if level == 'error' and not value:
                 emsg = ("setting the 'Future' property {prop!r} has been "
                         "deprecated to be removed in a future release, and "
                         "deprecated {prop!r} behaviour has been removed. "
