@@ -22,7 +22,7 @@ style tests have been split out of there.
 
 The remainder of the old 'tests/test_grib_load.py' is now renamed as
 'tests/test_grib_load_translations.py'.  Those tests are implementation-
-specific, and target the module 'iris.fileformats.grib'.
+specific, and target the module 'iris_grib'.
 
 """
 from __future__ import (absolute_import, division, print_function)
