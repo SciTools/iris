@@ -1250,8 +1250,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             An unconstrained description of the coordinate. If None, does not
             check for long_name.
         * var_name
-            The netCDF variable name of the desired coordinate. If None, does not
-            check for var_name.
+            The netCDF variable name of the desired coordinate. If None, does
+            not check for var_name.
         * attributes
             A dictionary of attributes desired on the coordinates. If None,
             does not check for attributes.
