@@ -23,7 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from xml.dom.minidom import Document
-import logging
 
 import cf_units
 import numpy as np
@@ -37,7 +36,6 @@ from iris._data_manager import DataManager
 import iris.tests.stock
 
 
-logger = logging.getLogger('tests')
 
 
 @tests.skip_data

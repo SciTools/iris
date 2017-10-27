@@ -27,7 +27,6 @@ import iris.tests as tests
 import codecs
 import itertools
 import json
-import logging
 import os
 import requests
 import unittest

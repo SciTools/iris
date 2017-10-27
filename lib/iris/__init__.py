@@ -103,7 +103,6 @@ import six
 import contextlib
 import glob
 import itertools
-import logging
 import os.path
 import threading
 
@@ -129,11 +128,6 @@ __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
            'site_configuration', 'Future', 'FUTURE',
            'IrisDeprecation']
-
-
-# When required, log the usage of Iris.
-if iris.config.IMPORT_LOGGER:
-    logging.getLogger(iris.config.IMPORT_LOGGER).info('iris %s' % __version__)
 
 
 Constraint = iris._constraints.Constraint

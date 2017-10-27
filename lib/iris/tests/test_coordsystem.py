@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import logging
 
 import cartopy.crs as ccrs
 import cf_units
@@ -34,7 +33,6 @@ import iris.tests.stock
 from iris.coord_systems import *
 
 
-logger = logging.getLogger('tests')
 
 
 def osgb():

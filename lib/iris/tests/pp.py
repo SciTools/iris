@@ -58,7 +58,6 @@ class PPTest(object):
         """
         # Watch out for a missing reference text file
         if not os.path.isfile(reference_txt_path):
-            tests.logger.warning('Creating result file: %s', reference_txt_path)
             if reference_cubes:
                 temp_pp_path = iris.util.create_temp_filename(".pp")
                 try:
