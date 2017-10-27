@@ -59,6 +59,13 @@ class Test___init___data(tests.IrisTest):
         self.assertEqual(type(cube.data), ma.MaskedArray)
         self.assertMaskedArrayEqual(cube.data, data)
 
+    def test_masked_no_mask(self):
+        # ma.MaskedArray should be allowed through even if it has no mask
+        data = ma.masked_array(np.arange(12).reshape(3, 4), False)
+        cube = Cube(data)
+        self.assertEqual(type(cube.data), ma.MaskedArray)
+        self.assertMaskedArrayEqual(cube.data, data)
+
     def test_matrix(self):
         # Subclasses of np.ndarray should be coerced back to np.ndarray.
         # (Except for np.ma.MaskedArray.)
