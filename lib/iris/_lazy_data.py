@@ -51,8 +51,8 @@ def _iris_dask_defaults():
         dask.set_options(get=dget_sync)
 
 
-# Run this at import time to set dask options for Iris.
-_iris_dask_defaults()
+## Run this at import time to set dask options for Iris.
+#_iris_dask_defaults()
 
 
 def is_lazy_data(data):
