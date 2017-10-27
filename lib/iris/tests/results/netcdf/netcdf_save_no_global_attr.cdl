@@ -1,8 +1,8 @@
 dimensions:
-	dim0 = UNLIMITED ; // (2 currently)
-	dim0_0 = UNLIMITED ; // (1 currently)
-	dim0_1 = UNLIMITED ; // (10 currently)
-	dim0_2 = UNLIMITED ; // (20 currently)
+	dim0 = 2 ;
+	dim0_0 = 1 ;
+	dim0_1 = 10 ;
+	dim0_2 = 20 ;
 	dim1 = 2 ;
 	dim2 = 2 ;
 variables:

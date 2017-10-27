@@ -1,6 +1,6 @@
 dimensions:
-	latitude = UNLIMITED ; // (144 currently)
 	bnds = 2 ;
+	latitude = 144 ;
 	longitude = 288 ;
 variables:
 	float unknown(latitude, longitude) ;

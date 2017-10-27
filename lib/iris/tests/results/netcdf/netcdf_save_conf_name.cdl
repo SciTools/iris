@@ -1,6 +1,6 @@
 dimensions:
-	dim0 = UNLIMITED ; // (10 currently)
-	time = UNLIMITED ; // (10 currently)
+	dim0 = 10 ;
+	time = 10 ;
 variables:
 	double temp(time) ;
 		temp:standard_name = "air_temperature" ;

@@ -1,8 +1,8 @@
 dimensions:
-	time = UNLIMITED ; // (4 currently)
 	bnds = 2 ;
 	rlat = 190 ;
 	rlon = 174 ;
+	time = 4 ;
 variables:
 	float pr(time, rlat, rlon) ;
 		pr:standard_name = "precipitation_flux" ;

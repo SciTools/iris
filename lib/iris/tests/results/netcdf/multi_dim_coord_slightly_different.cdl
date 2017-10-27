@@ -1,7 +1,7 @@
 dimensions:
-	latitude_0 = UNLIMITED ; // (10 currently)
-	time = UNLIMITED ; // (2 currently)
 	latitude = 2 ;
+	latitude_0 = 10 ;
+	time = 2 ;
 variables:
 	double temp(time, latitude) ;
 		temp:standard_name = "surface_temperature" ;

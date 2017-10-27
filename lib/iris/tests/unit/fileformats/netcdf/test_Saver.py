@@ -186,12 +186,13 @@ class Test_write(tests.IrisTest):
             self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
 
     def test_default_unlimited_dimensions(self):
+        # Default is no unlimited dimensions.
         cube = self._simple_cube('>f4')
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             ds = nc.Dataset(nc_path)
-            self.assertTrue(ds.dimensions['dim0'].isunlimited())
+            self.assertFalse(ds.dimensions['dim0'].isunlimited())
             self.assertFalse(ds.dimensions['dim1'].isunlimited())
             ds.close()
 
@@ -199,7 +200,7 @@ class Test_write(tests.IrisTest):
         cube = self._simple_cube('>f4')
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
-                saver.write(cube, unlimited_dimensions=[])
+                saver.write(cube, unlimited_dimensions=None)
             ds = nc.Dataset(nc_path)
             for dim in six.itervalues(ds.dimensions):
                 self.assertFalse(dim.isunlimited())

@@ -851,13 +851,11 @@ class Saver(object):
 
         * unlimited_dimensions (iterable of strings and/or
           :class:`iris.coords.Coord` objects):
-            Explicit list of coordinate names (or coordinate objects)
+            List of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
-            NetCDF dimension variable length 'UNLIMITED'. By default, the
-            outermost (first) dimension for each cube is used. Only the
-            'NETCDF4' format supports multiple 'UNLIMITED' dimensions. To save
-            no unlimited dimensions, use `unlimited_dimensions=[]` (an empty
-            list).
+            NetCDF dimension variable length 'UNLIMITED'. By default, no
+            unlimited dimensions are saved. Only the 'NETCDF4' format
+            supports multiple 'UNLIMITED' dimensions.
 
         * zlib (bool):
             If `True`, the data will be compressed in the netCDF file using
@@ -942,19 +940,9 @@ class Saver(object):
             `chunksizes` and `endian` keywords are silently ignored for netCDF
             3 files that do not use HDF5.
 
-        .. deprecated:: 1.8.0
-
-            NetCDF default saving behaviour currently assigns the outermost
-            dimension as unlimited. This behaviour is to be deprecated, in
-            favour of no automatic assignment. To switch to the new behaviour,
-            set `iris.FUTURE.netcdf_no_unlimited` to True.
-
-        """
+            """
         if unlimited_dimensions is None:
-            if iris.FUTURE.netcdf_no_unlimited:
                 unlimited_dimensions = []
-            else:
-                _no_unlim_dep_warning()
 
         cf_profile_available = (iris.site_configuration.get('cf_profile') not
                                 in [None, False])
@@ -1088,29 +1076,23 @@ class Saver(object):
 
         * unlimited_dimensions (iterable of strings and/or
           :class:`iris.coords.Coord` objects):
-            List of coordinates to make unlimited. By default, the
-            outermost dimension is made unlimited.
+            List of coordinates to make unlimited (None by default).
 
         Returns:
             None.
 
         """
         unlimited_dim_names = []
-        if (unlimited_dimensions is None and
-                not iris.FUTURE.netcdf_no_unlimited):
-            if dimension_names:
-                unlimited_dim_names.append(dimension_names[0])
-        else:
-            for coord in unlimited_dimensions:
-                try:
-                    coord = cube.coord(name_or_coord=coord, dim_coords=True)
-                except iris.exceptions.CoordinateNotFoundError:
-                    # coordinate isn't used for this cube, but it might be
-                    # used for a different one
-                    pass
-                else:
-                    dim_name = self._get_coord_variable_name(cube, coord)
-                    unlimited_dim_names.append(dim_name)
+        for coord in unlimited_dimensions:
+            try:
+                coord = cube.coord(name_or_coord=coord, dim_coords=True)
+            except iris.exceptions.CoordinateNotFoundError:
+                # coordinate isn't used for this cube, but it might be
+                # used for a different one
+                pass
+            else:
+                dim_name = self._get_coord_variable_name(cube, coord)
+                unlimited_dim_names.append(dim_name)
 
         for dim_name in dimension_names:
             if dim_name not in self._dataset.dimensions:
@@ -2127,12 +2109,11 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
     * unlimited_dimensions (iterable of strings and/or
       :class:`iris.coords.Coord` objects):
-        Explicit list of coordinate names (or coordinate objects) corresponding
+        List of coordinate names (or coordinate objects) corresponding
         to coordinate dimensions of `cube` to save with the NetCDF dimension
-        variable length 'UNLIMITED'. By default, the outermost (first)
-        dimension for each cube is used. Only the 'NETCDF4' format supports
-        multiple 'UNLIMITED' dimensions. To save no unlimited dimensions, use
-        `unlimited_dimensions=[]` (an empty list).
+        variable length 'UNLIMITED'. By default, no unlimited dimensions are
+        saved. Only the 'NETCDF4' format supports multiple 'UNLIMITED'
+        dimensions.
 
     * zlib (bool):
         If `True`, the data will be compressed in the netCDF file using gzip
@@ -2225,19 +2206,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
         NetCDF Context manager (:class:`~Saver`).
 
-    .. deprecated:: 1.8.0
-
-        NetCDF default saving behaviour currently assigns the outermost
-        dimensions to unlimited. This behaviour is to be deprecated, in
-        favour of no automatic assignment. To switch to the new behaviour,
-        set `iris.FUTURE.netcdf_no_unlimited` to True.
-
     """
     if unlimited_dimensions is None:
-        if iris.FUTURE.netcdf_no_unlimited:
             unlimited_dimensions = []
-        else:
-            _no_unlim_dep_warning()
 
     if isinstance(cube, iris.cube.Cube):
         cubes = iris.cube.CubeList()
@@ -2347,12 +2318,3 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=conventions)
-
-
-def _no_unlim_dep_warning():
-    msg = ('NetCDF default saving behaviour currently assigns the '
-           'outermost dimensions to unlimited. This behaviour is to be '
-           'deprecated, in favour of no automatic assignment. To switch '
-           'to the new behaviour, set iris.FUTURE.netcdf_no_unlimited to '
-           'True.')
-    warn_deprecated(msg)
