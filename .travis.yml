@@ -65,12 +65,6 @@ install:
       fi
     fi
 
-  # JUST FOR NOW : Install latest version of iris-grib.
-  # TODO : remove when this release is available on conda-forge.
-  - if [[ "$TEST_MINIMAL" != true ]]; then
-        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0 ;
-    fi
-
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
   # Output debug info

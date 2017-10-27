@@ -35,4 +35,4 @@ python-stratify
 pyugrid
 
 # Iris extensions (i.e. key tools that depend on Iris)
-iris_grib
+iris_grib>=0.12
