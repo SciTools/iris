@@ -253,7 +253,7 @@ def coord_comparison(*cubes):
                     for other_coord in all_coords[other_cube_i]:
                         # for optimisation, check that the name is equivalent
                         # *before* checking all of the metadata is equivalent
-                        eq = (id(other_coord) not in processed_coords and
+                        eq = (other_coord is coord or
                               other_coord.name() == coord.name() and
                               other_coord._as_defn() == coord._as_defn())
                         if eq:
