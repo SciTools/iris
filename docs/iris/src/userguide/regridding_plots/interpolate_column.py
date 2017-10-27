@@ -10,7 +10,7 @@ import numpy as np
 
 
 fname = iris.sample_data_path('hybrid_height.nc')
-column = iris.load_cube(fname)[:, 0, 0]
+column = iris.load_cube(fname, 'air_potential_temperature')[:, 0, 0]
 
 alt_coord = column.coord('altitude')
 
