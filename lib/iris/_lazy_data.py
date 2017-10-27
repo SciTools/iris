@@ -31,30 +31,6 @@ import numpy as np
 import numpy.ma as ma
 
 
-def _iris_dask_defaults():
-    """
-    Set dask defaults for Iris. The current default dask operation mode for
-    Iris is running single-threaded using `dask.local.get_sync`. This default
-    ensures that running Iris under "normal" conditions will not use up all
-    available computational resource.
-
-    Otherwise, by default, `dask` will use a multi-threaded scheduler that uses
-    all available CPUs.
-
-    .. note::
-        We only want Iris to set dask options in the case where doing so will
-        not change user-specified options that have already been set.
-
-    """
-    if 'pool' not in dask.context._globals and \
-            'get' not in dask.context._globals:
-        dask.set_options(get=dget_sync)
-
-
-# Run this at import time to set dask options for Iris.
-_iris_dask_defaults()
-
-
 def is_lazy_data(data):
     """
     Return whether the argument is an Iris 'lazy' data array.
