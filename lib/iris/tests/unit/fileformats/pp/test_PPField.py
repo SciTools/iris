@@ -108,7 +108,7 @@ class Test_save(tests.IrisTest):
         data_64 = np.linspace(0, 1, num=10, endpoint=False).reshape(2, 5)
         checksum_32 = field_checksum(data_64.astype('>f4'))
         msg = 'Downcasting array precision from float64 to float32 for save.'
-        with self.assertGivesWarning(msg):
+        with self.assertWarnsRegexp(msg):
             checksum_64 = field_checksum(data_64.astype('>f8'))
         self.assertEqual(checksum_32, checksum_64)
 
@@ -119,7 +119,7 @@ class Test_save(tests.IrisTest):
         # Make float32 data, as float64 default produces an extra warning.
         field.data = np.ma.masked_array([1., field.bmdi, 3.], dtype=np.float32)
         msg = 'PPField data contains unmasked points'
-        with self.assertGivesWarning(msg):
+        with self.assertWarnsRegexp(msg):
             with self.temp_filename('.pp') as temp_filename:
                 with open(temp_filename, 'wb') as pp_file:
                     field.save(pp_file)
@@ -131,7 +131,7 @@ class Test_save(tests.IrisTest):
         # Make float32 data, as float64 default produces an extra warning.
         field.data = np.array([1., field.bmdi, 3.], dtype=np.float32)
         msg = 'PPField data contains unmasked points'
-        with self.assertGivesWarning(msg):
+        with self.assertWarnsRegexp(msg):
             with self.temp_filename('.pp') as temp_filename:
                 with open(temp_filename, 'wb') as pp_file:
                     field.save(pp_file)
@@ -146,7 +146,7 @@ class Test_save(tests.IrisTest):
         # Set underlying data value at masked point to BMDI value.
         field.data.data[1] = field.bmdi
         self.assertArrayAllClose(field.data.data[1], field.bmdi)
-        with self.assertGivesWarning(r'\(mask\|fill\)', expect_warning=False):
+        with self.assertNoWarningsRegexp(r'\(mask\|fill\)'):
             with self.temp_filename('.pp') as temp_filename:
                 with open(temp_filename, 'wb') as pp_file:
                     field.save(pp_file)
