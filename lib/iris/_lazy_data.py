@@ -42,17 +42,23 @@ def _iris_dask_defaults():
     all available CPUs.
 
     .. note::
+
         We only want Iris to set dask options in the case where doing so will
         not change user-specified options that have already been set.
 
     """
-    if 'pool' not in dask.context._globals and \
-            'get' not in dask.context._globals:
-        dask.set_options(get=dget_sync)
-
-
-# Run this at import time to set dask options for Iris.
-_iris_dask_defaults()
+    dask_opts = {}
+    dask_globals = getattr(dask.context, '_globals')
+    if dask_globals is not None:
+        if 'pool' not in dask_globals and \
+                'get' not in dask_globals:
+            dask_opts.update(get=dget_sync)
+        else:
+            # We may need to unset a previously-set default.
+            if dask_opts.get('get') is not None:
+                dask_opts = {key: value for key, value in dask_opts.items()
+                             if key != 'get'}
+    return dask_opts
 
 
 def is_lazy_data(data):
@@ -144,11 +150,14 @@ def as_concrete_data(data):
 
     """
     if is_lazy_data(data):
+        # Check dask options at runtime to see if we need to set dask options
+        # for use in Iris.
+        dask_opts = _iris_dask_defaults()
         # Realise dask array, ensuring the data result is always a NumPy array.
         # In some cases dask may return a scalar numpy.int/numpy.float object
         # rather than a numpy.ndarray object.
         # Recorded in https://github.com/dask/dask/issues/2111.
-        data = np.asanyarray(data.compute())
+        data = np.asanyarray(data.compute(**dask_opts))
 
     return data
 
