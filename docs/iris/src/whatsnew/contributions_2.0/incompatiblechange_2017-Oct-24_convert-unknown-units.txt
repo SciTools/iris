@@ -1,5 +1,0 @@
-* Using :meth:`~iris.cube.Cube.convert_units` on a cube with unknown units will
-  result in a :data:`UnitConversionError` being raised.
-
-* Using :meth:`~iris.coords.Coord.convert_units` on a coordinate with unknown
-  units will result in a :data:`UnitConversionError` being raised.

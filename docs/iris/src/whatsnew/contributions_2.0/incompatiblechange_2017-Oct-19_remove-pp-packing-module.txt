@@ -1,1 +1,0 @@
-* The deprecated module ```iris.fileformats.pp_packing``` has been removed.

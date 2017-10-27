@@ -1,2 +1,0 @@
-* Removed deprecated module ```iris.fileformats.ff```.
-  Please use facilities in `:mod:iris.fileformats.um` instead.
