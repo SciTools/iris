@@ -672,7 +672,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * long_name
             An unconstrained description of the cube.
         * var_name
-            The CF variable name for the cube.
+            The netCDF variable name for the cube.
         * units
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
         * attributes
@@ -724,7 +724,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         #: The "long name" for the Cube's phenomenon.
         self.long_name = long_name
 
-        #: The CF variable name for the Cube.
+        #: The netCDF variable name for the Cube.
         self.var_name = var_name
 
         self.cell_methods = cell_methods
@@ -1180,7 +1180,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             An unconstrained description of the coordinate factory.
             If None, does not check for long_name.
         * var_name
-            The CF variable name of the desired coordinate factory.
+            The netCDF variable name of the desired coordinate factory.
             If None, does not check for var_name.
 
         .. note::
@@ -1250,7 +1250,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             An unconstrained description of the coordinate. If None, does not
             check for long_name.
         * var_name
-            The CF variable name of the desired coordinate. If None, does not
+            The netCDF variable name of the desired coordinate. If None, does not
             check for var_name.
         * attributes
             A dictionary of attributes desired on the coordinates. If None,
