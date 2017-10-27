@@ -136,8 +136,7 @@
     ],
     "iris.tests.test_mapping.TestBoundedCube.test_grid.0": [
         "https://scitools.github.io/test-iris-imagehash/images/5f81897ea17e7681a17e5ea15e81895e5e81a17ea17e7e81a17e5e815e81a174.png",
-        "https://scitools.github.io/test-iris-imagehash/images/5f81a17ea17e5e81a17e5e815e81817e5e81a17ea17e5e81a17e5e815e81a17e.png",
-        "https://scitools.github.io/test-iris-imagehash/images/5f81a17ea17e5e81a17e5e815e81a15e5e81a17ea17e5ea1a17e5e815e81a15e.png"
+        "https://scitools.github.io/test-iris-imagehash/images/5f81a17ea17e5e81a17e5e815e81817e5e81a17ea17e5e81a17e5e815e81a17e.png"
     ],
     "iris.tests.test_mapping.TestBoundedCube.test_pcolormesh.0": [
         "https://scitools.github.io/test-iris-imagehash/images/5f81a7aca17e49537143bc848d3c877a5e8178a5237e585a83dea6b4dca0274f.png"
