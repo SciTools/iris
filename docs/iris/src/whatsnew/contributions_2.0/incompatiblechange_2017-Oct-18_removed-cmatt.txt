@@ -1,1 +1,0 @@
-* The class ```CMAttribute``` has been removed from :mod:`iris.fileformats.rules`.

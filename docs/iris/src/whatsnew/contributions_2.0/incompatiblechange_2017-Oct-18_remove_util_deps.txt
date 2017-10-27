@@ -1,1 +1,0 @@
-* Deprecated functions ```iris.util.broadcast_weights```, ```iris.util.ensure_array``` and ```iris.util.timers``` have been removed from :mod:`iris.util`.

@@ -1,3 +1,0 @@
-* A 'fill_value' key can no longer be specified as part of the `packing` argument to `iris.save` when saving in netCDF format. Instead, a fill value or list of fill values should be specified as a separate `fill_value` argument if required.
-
-* If the `packing` argument to `iris.save` is a dictionary, an error is raised if it contains any keys other than 'dtype', 'scale_factor' and 'add_offset'.

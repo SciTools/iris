@@ -1,5 +1,0 @@
-* Deprecated FUTURE flag :attr:`iris.Future.netcdf_promote`.
-
-* Removed deprecated behaviour that does not automatically promote NetCDF variables to cubes.
-  This change means that NetCDF variables that define reference surfaces for dimensionless vertical coordinates
-  will always be promoted and loaded as independent cubes.

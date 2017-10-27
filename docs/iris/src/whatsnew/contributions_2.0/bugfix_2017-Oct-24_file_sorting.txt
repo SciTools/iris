@@ -1,1 +1,0 @@
-* The order in which files are passed to iris.load functions is now the order in which they are processed. (#2325)
