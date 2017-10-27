@@ -1,0 +1,1 @@
+* The deprecated :mod:`iris.fileformats.grib` was removed. All Iris GRIB functionality is now delivered through :mod:`iris-grib`.
