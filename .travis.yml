@@ -131,8 +131,10 @@ script:
   # affect any downstream functionality but causes the build to fail
   # spuriously. The echo-backtick workaround gets around this error,
   # which should be investigated further in the future.
-  - if [[ $TEST_TARGET == 'doctest' ]]; then
+  - >
+    if [[ $TEST_TARGET == 'doctest' ]]; then
       cd $INSTALL_DIR/docs/iris;
+      echo 'image.cmap: viridis' > matplotlibrc;
       echo `make clean html`;
       make doctest;
     fi
