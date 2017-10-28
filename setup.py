@@ -68,6 +68,22 @@ def temporary_path(directory):
 with temporary_path('lib/iris/tests/runner'):
     from _runner import TestRunner  # noqa:
 
+SETUP_DIR = os.path.dirname(__file__)
+
+def requirements(name):
+    fname = os.path.join(SETUP_DIR, 'requirements', '{}.txt'.format(name))
+    if not os.path.exists(fname):
+        raise RuntimeError('Unable to find the {} requirements file at {}'
+                           ''.format(name, fname))
+    reqs = []
+    with open(fname, 'r') as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            reqs.append(line)
+    return reqs
+
 
 class SetupTestRunner(TestRunner, Command):
     pass
@@ -186,8 +202,7 @@ def custom_cmd(command_to_override, functions, help_doc=""):
 
 def extract_version():
     version = None
-    fdir = os.path.dirname(__file__)
-    fnme = os.path.join(fdir, 'lib', 'iris', '__init__.py')
+    fnme = os.path.join(SETUP_DIR, 'lib', 'iris', '__init__.py')
     with open(fnme) as fd:
         for line in fd:
             if (line.startswith('__version__')):
@@ -214,8 +229,11 @@ custom_commands = {
     }
 
 
+pypi_name = 'scitools-iris'
+
+
 setup(
-    name='Iris',
+    name=pypi_name,
     version=extract_version(),
     url='http://scitools.org.uk/iris/',
     author='UK Met Office',
@@ -223,7 +241,15 @@ setup(
     packages=find_package_tree('lib/iris', 'iris'),
     package_dir={'': 'lib'},
     include_package_data=True,
-    tests_require=['nose'],
     cmdclass=custom_commands,
+
     zip_safe=False,
-   )
+
+    setup_requires=requirements('setup'),
+    install_requires=requirements('core'),
+    tests_require=['{}[test]'.format(pypi_name)],
+    extras_require = {
+                      'test': requirements('test'),
+                      'all': requirements('full'),
+                      },
+)

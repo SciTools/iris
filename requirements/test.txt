@@ -1,0 +1,9 @@
+# Dependencies needed to run the iris tests
+#------------------------------------------
+
+mock
+nose
+pep8
+filelock
+imagehash
+requests

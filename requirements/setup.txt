@@ -1,0 +1,5 @@
+# Dependencies necessary to run setup.py of iris
+# ----------------------------------------------
+
+setuptools
+numpy

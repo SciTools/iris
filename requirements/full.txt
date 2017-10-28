@@ -1,0 +1,26 @@
+# Dependencies for a feature complete installation
+# ------------------------------------------------
+
+# esmpy regridding not available through pip.
+#conda: esmpy>=7.0  (only python=2)
+
+gdal
+mo_pack
+nc_time_axis
+pandas
+stratify  #conda: python-stratify
+pyugrid
+
+# Iris sample data is not available through pip. It can be installed from
+# https://github.com/SciTools/iris-sample-data/archive/master.zip
+#conda: iris-sample-data
+
+
+# Iris extensions (i.e. key tools that depend on Iris)
+# ----------------------------------------------------
+
+# Note: pip can handle the circularity of these extensions, but conda will
+# struggle. To install these extensions, ensure iris[core] has been installed
+# first.
+
+iris_grib;python_version<"3"  #conda:
