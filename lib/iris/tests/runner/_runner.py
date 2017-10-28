@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -127,7 +127,9 @@ class TestRunner():
         if self.stop:
             print('Stopping tests after the first error or failure')
         if self.num_processors is None:
-            self.num_processors = multiprocessing.cpu_count() - 1
+            # Choose a magic number that works reasonably well for the default
+            # number of processes.
+            self.num_processors = (multiprocessing.cpu_count() + 1) // 4 + 1
         else:
             self.num_processors = int(self.num_processors)
 

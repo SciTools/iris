@@ -117,10 +117,10 @@ install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python -m iris.tests.runner --default-tests --system-tests --print-failed-images --num-processors=8;
+      python -m iris.tests.runner --default-tests --system-tests --print-failed-images --num-processors=3;
     fi
   - if [[ $TEST_TARGET == 'example' ]]; then
-      python -m iris.tests.runner --example-tests --print-failed-images --num-processors=8;
+      python -m iris.tests.runner --example-tests --print-failed-images --num-processors=3;
     fi
 
   # Capture install-dir: As a test command must be last for get Travis to check
