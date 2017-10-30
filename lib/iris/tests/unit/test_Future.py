@@ -55,14 +55,17 @@ class Test___setattr__(tests.IrisTest):
         with self.assertRaisesRegexp(AttributeError, exp_emsg):
             future.netcdf_promote = False
 
-    def test_invalid_netcdf_no_unlimited_attributes(self):
+    def test_netcdf_no_unlimited(self):
         future = Future()
-        states = [True, False]
-        exp_emsg =\
-            "deprecated 'netcdf_no_unlimited' behaviour has been removed"
-        for state in states:
-            with self.assertRaisesRegexp(AttributeError, exp_emsg):
-                future.netcdf_no_unlimited = state
+        exp_emsg = "'Future' property 'netcdf_promote' is deprecated"
+        with self.assertWarnsRegexp(exp_emsg):
+            future.netcdf_promote = True
+
+    def test_invalid_netcdf_no_unlimited(self):
+        future = Future()
+        exp_emsg = "'Future' property 'netcdf_promote' has been deprecated"
+        with self.assertRaisesRegexp(AttributeError, exp_emsg):
+            future.netcdf_promote = False
 
     def test_cell_datetime_objects(self):
         future = Future()
