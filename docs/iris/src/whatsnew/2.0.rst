@@ -28,9 +28,7 @@ Iris 2.0.0 Features
 
   In particular, Dask's *threaded*, *multiprocessing* or *distributed*
   `schedulers`_ can be used in order to best utilise available compute and
-  memory resource.
-
-  For fuller details, see :doc:`Real and Lazy Data
+  memory resource. For further details, see :doc:`Real and Lazy Data
   </userguide/real_and_lazy_data>`.
 
 * Changes to the :class:`iris.cube.Cube`:

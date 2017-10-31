@@ -226,41 +226,10 @@ coordinates' lazy points and bounds:
 Dask processing options
 -----------------------
 
-As stated earlier in this discussion, Iris uses dask to provide
-lazy data arrays for both Iris cubes and coordinates. Iris also uses dask
-functionality for processing deferred operations on lazy arrays.
+Iris uses dask to provide lazy data arrays for both Iris cubes and coordinates,
+and for computing deferred operations on lazy arrays.
 
 Dask provides processing options to control how deferred operations on lazy arrays
-are computed. This is provided via the ``dask.set_options`` interface.
-We can make use of this functionality in Iris. This means we can
-control how dask arrays in Iris are processed, for example giving us power to
-run Iris processing in parallel.
-
-Iris by default applies a single dask processing option. This specifies that
-all dask processing in Iris should be run in serial (that is, without any
-parallel processing enabled).
-
-The dask processing option applied by Iris can be overridden by manually setting
-dask processing options for either or both of:
-
- * the number of parallel workers to use,
- * the scheduler to use.
-
-This must be done **before** importing Iris. For example, to specify that dask
-processing within Iris should use four workers in a thread pool::
-
-    >>> from multiprocessing.pool import ThreadPool
-    >>> import dask
-    >>> dask.set_options(get=dask.threaded.get, pool=ThreadPool(4))
-
-    >>> import iris
-    >>> # Iris processing here...
-
-.. note::
-    These dask processing options will last for the lifetime of the Python session
-    and must be re-applied in other or subsequent sessions.
-
-Other dask processing options are also available. See the
+are computed. This is provided via the ``dask.set_options`` interface. See the
 `dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
 for more information on setting dask processing options.
-
