@@ -186,11 +186,15 @@ def _get_plot_defn(cube, mode, ndims=2):
                     coords[axes.index(axis)] = coord
 
     # Re-order the coordinates to achieve the preferred
-    # horizontal/vertical associations.
+    # horizontal/vertical associations. If we can't associate
+    # an axis to order the coordinates, fall back to using the cube dimension
+    # followed by the name of the coordinate.
     def sort_key(coord):
         order = {'X': 2, 'T': 1, 'Y': -1, 'Z': -2}
         axis = guess_axis(coord)
-        return (order.get(axis, 0), coord and coord.name())
+        return (order.get(axis, 0),
+                coords.index(coord),
+                coord and coord.name())
     sorted_coords = sorted(coords, key=sort_key)
 
     transpose = (sorted_coords != coords)
