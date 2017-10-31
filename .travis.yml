@@ -151,5 +151,7 @@ script:
     fi
   - if [[ $TEST_TARGET == 'coding' ]]; then
       cd $INSTALL_DIR;
+      python setup.py pyke_rules;
+      python setup.py std_names;
       python setup.py test --coding-tests;
     fi
