@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -127,11 +127,8 @@ def _get_titles(u_object, v_object):
 
 
 def _label_1d_plot(*args):
-    if len(args) > 1 and isinstance(args[1],
-                                    (iris.cube.Cube, iris.coords.Coord)):
-        xlabel, ylabel, title = _get_titles(*args[:2])
-    else:
-        xlabel, ylabel, title = _get_titles(None, args[0])
+    u_obj, v_obj, _, _, _ = iplt._get_plot_objects(args)
+    xlabel, ylabel, title = _get_titles(u_obj, v_obj)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)

@@ -244,7 +244,7 @@ def step_over_diffs(result_dir, action, display=True):
                     if isinstance(e,  ValueError) or \
                             isinstance(e, ImageComparisonFailure):
                         print('Could not compare {}: {}'.format(result_fname,
-                                                                e.message))
+                                                                str(e)))
                         continue
                     else:
                         # Propagate the exception, keeping the stack trace

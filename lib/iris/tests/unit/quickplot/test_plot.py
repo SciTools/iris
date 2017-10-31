@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,6 +22,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import TestGraphicStringCoord
 
 if tests.MPL_AVAILABLE:
@@ -42,6 +43,29 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         qplt.plot(self.cube.coord('str_coord'), self.cube)
         self.assertPointsTickLabels('xaxis')
 
+
+class TestAxisLabels(tests.GraphicsTest):
+    def test_xy_cube(self):
+        c = simple_2d()[:, 0]
+        qplt.plot(c)
+        ax = qplt.plt.gca()
+        x = ax.xaxis.get_label().get_text()
+        self.assertEqual(x, 'Bar')
+        y = ax.yaxis.get_label().get_text()
+        self.assertEqual(y, 'Thingness')
+
+    def test_yx_cube(self):
+        c = simple_2d()[:, 0]
+        c.transpose()
+        # Making the cube a vertical coordinate should change the default
+        # orientation of the plot.
+        c.coord('bar').attributes['positive'] = 'up'
+        qplt.plot(c)
+        ax = qplt.plt.gca()
+        x = ax.xaxis.get_label().get_text()
+        self.assertEqual(x, 'Thingness')
+        y = ax.yaxis.get_label().get_text()
+        self.assertEqual(y, 'Bar')
 
 if __name__ == "__main__":
     tests.main()

@@ -1,0 +1,1 @@
+* iris.plot.plot an iris.quickplot.plot now automatically place the cube on the x axis if the primary coordinate being plotted against is a vertical coordinate. (e.g. ``iris.plot.plot(z_cube)`` would produce an z vs phenomenon plot, where before it would have produced a phenomenon vs z one)
