@@ -29,7 +29,7 @@ $(document).ready(function() {
     // Only use first 5 images
     for (var i = 0; i < 5; i++) {
         var img = images[i];
-		$ss.append('<a href="'+img[2]+'"><img src="'+img[1]+'" class="slideshowImage"/></a>');
+		$ss.append('<a href="'+img[2]+'" style="background-color: white;" ><img src="'+img[1]+'" class="slideshowImage"/></a>');
     }
 
     $ss.cycle({
