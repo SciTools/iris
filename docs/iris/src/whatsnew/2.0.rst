@@ -199,8 +199,8 @@ been removed. In particular:
   Note that there is no direct replacement for
   ``:meth:iris.experimental.fieldsfile.load``, which specifically performed
   fast loading from _either_ PP or FF files.
-  Instead, please enable `:meth:iris.fileformats.um.structured_um_loading` and
-  within that context call `:meth:iris.load`, or the format-specific
+  Instead, please use the `:meth:iris.fileformats.um.structured_um_loading`
+  context manager, and within that context call `:meth:iris.load`, or the format-specific
   `:meth:iris.fileformats.pp.load_cubes` or
   `:meth:iris.fileformats.um.load_cubes`.
 
