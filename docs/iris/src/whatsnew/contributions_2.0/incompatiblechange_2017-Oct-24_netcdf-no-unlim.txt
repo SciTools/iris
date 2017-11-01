@@ -1,8 +1,0 @@
-* Deprecated FUTURE flag :attr:`iris.Future.netcdf_no_unlimited`.
-
-* Removed deprecated behaviour that automatically set the length of the outer netCDF variable to 'UNLIMITED' on save.
-  This change means that no cube dimension coordinates will be automatically saved as netCDF variables with 'UNLIMITED' length.
-  You can manually specify cube dimension coordinates to save with 'UNLIMITED' length.
-
-  For example::
-    >>> iris.save(my_cube, 'my_result_file.nc', unlimited_dimensions=['latitude'])
