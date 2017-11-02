@@ -136,6 +136,11 @@ Bugs Fixed
 * The order in which files are passed to iris.load functions is now the order in
   which they are processed. (#2325)
 
+* Loading from netCDF files with :func:`iris.load` will load a cube for each scalar variable,
+  a variable that does not reference a netCDF dimension, unless that scalar variable is identified as
+  a CF scalar coordinate, referenced from another data variable via the 'coordinates' attribute.
+  Previously such data variables were ignored during load.
+
 
 Incompatible Changes
 ====================
