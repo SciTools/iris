@@ -73,7 +73,7 @@ all existing toggles in :attr:`iris.FUTURE` now default to :data:`True`.
 
  * :attr:`iris.Future.cell_datetime_objects`
 
-   * Use of this FUTURE toggle is now deprecated
+   * Use of this FUTURE toggle is now deprecated.
    *  :class:`iris.coords.Cell` objects in time coordinates now contain datetime objects by default and not numbers.
       For example::
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
@@ -87,19 +87,26 @@ all existing toggles in :attr:`iris.FUTURE` now default to :data:`True`.
 
  * :attr:`iris.Future.netcdf_promote`
 
-   * Use of this FUTURE toggle is now deprecated Removed deprecated behaviour
-   * that does not automatically promote NetCDF variables to cubes. This change
-   * means that NetCDF variables that define reference surfaces for
-   * dimensionless vertical coordinates will always be promoted and loaded as
-   * independent cubes.
+   * Use of this FUTURE toggle is now deprecated.
+   * Removed deprecated behaviour that does not automatically promote NetCDF variables to cubes.
+     This change means that NetCDF variables that define reference surfaces for
+     dimensionless vertical coordinates will always be promoted and loaded as
+     independent cubes.
 
  * :attr:`iris.Future.netcdf_no_unlimited`
 
-   * Use of this FUTURE toggle is now deprecated
+   * Use of this FUTURE toggle is now deprecated.
+   * Removed deprecated behaviour that automatically set the length of the outer
+     netCDF variable to 'UNLIMITED' on save. This change means that no cube
+     dimension coordinates will be automatically saved as netCDF variables with
+     'UNLIMITED' length.
+   * You can manually specify cube dimension coordinates to save with 'UNLIMITED'
+     length. For example::
+       >>> iris.save(my_cube, 'my_result_file.nc', unlimited_dimensions=['latitude'])
 
  * :attr:`iris.Future.clip_latitudes`
 
-   * Use of this FUTURE toggle is now deprecated
+   * Use of this FUTURE toggle is now deprecated.
    * The :meth:`iris.coords.Coord.guess_bounds()` now limits the guessed bounds
      to [-90, 90] for latitudes by default. The ability to turn this behaviour
      off is now deprecated.
@@ -153,6 +160,32 @@ Incompatible Changes
 
 * Using :meth:`~iris.cube.Cube.convert_units` on a cube with unknown units will
   now result in a :data:`UnitConversionError` being raised.
+
+* ``iris.fileformats.pp_rules`` has been renamed to
+  :mod:`iris.fileformats.pp_load_rules` for consistency with the new
+  :mod:`iris.fileformats.pp_save_rules`.
+
+* Fill values are no longer taken from the cube's `data` attribute when it is
+  a masked array.
+
+* When saving a cube or list of cubes in NetCDF format, a fill value or list of
+  fill values can be specified via a new `fill_value` argument. If a list is
+  supplied, each fill value will be applied to each cube in turn. If a
+  `fill_value` argument is not specified, the default fill value for the file
+  format and the cube's data type will be used.
+
+* When saving to PP, the "standard" BMDI of -1e30 is now always applied in
+  ``PPField`` generation. To save PP data with an alternative BMDI, use
+  :func:`iris.fileformats.pp.save_pairs_from_cube` to generate ``PPFields``,
+  and modify these before saving them to file.
+
+* A 'fill_value' key can no longer be specified as part of the `packing`
+  argument to `iris.save` when saving in netCDF format. Instead, a fill value or
+  list of fill values should be specified as a separate `fill_value` argument if
+  required.
+
+* If the `packing` argument to `iris.save` is a dictionary, an error is raised
+  if it contains any keys other than 'dtype', 'scale_factor' and 'add_offset'.
 
 
 
@@ -233,25 +266,6 @@ been removed. In particular:
 
 * In addition the deprecated keyword argument ``legacy_custom_rules`` has been
   removed from the :class:`iris.fileformats.rules.Loader` constructor.
-
-* ``iris.fileformats.pp_rules`` has been renamed to
-  :mod:`iris.fileformats.pp_load_rules` for consistency with the new
-  :mod:`iris.fileformats.pp_save_rules`.
-
-* When saving a cube or list of cubes in NetCDF format, a fill value or list of
-  fill values can be specified via a new `fill_value` argument. If a list is
-  supplied, each fill value will be applied to each cube in turn. If a
-  `fill_value` argument is not specified, the default fill value for the file
-  format and the cube's data type will be used. Fill values are no longer taken
-  from the cube's `data` attribute when it is a masked array.
-
-* A 'fill_value' key can no longer be specified as part of the `packing`
-  argument to `iris.save` when saving in netCDF format. Instead, a fill value or
-  list of fill values should be specified as a separate `fill_value` argument if
-  required.
-
-* If the `packing` argument to `iris.save` is a dictionary, an error is raised
-  if it contains any keys other than 'dtype', 'scale_factor' and 'add_offset'.
 
 
 Documentation Changes
