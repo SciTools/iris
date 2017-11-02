@@ -102,7 +102,7 @@ class TestUnmappable(tests.GraphicsTest):
         self.cube = cube
 
     def test_simple(self):
-        iplt.contourf(self.cube)
+        iplt.contourf(self.cube, coords=['y', 'x'])
         self.check_graphic()
 
 
