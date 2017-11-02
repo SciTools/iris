@@ -76,6 +76,13 @@ install:
       conda install --quiet --file ${CONDA_REQS_FILE};
     fi
 
+
+  - >
+    if [[ "${TEST_TARGET}" == 'doctest' ]]; then
+        conda install --quiet --file requirements/docs.txt
+    fi
+
+
   # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when this release is available on conda-forge.
   - if [[ "$TEST_MINIMAL" != true ]]; then

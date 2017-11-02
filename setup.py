@@ -1,14 +1,13 @@
 from __future__ import print_function
 
 from contextlib import contextmanager
-from distutils.core import Command
 from distutils.util import convert_path
 import os
 from shutil import copyfile
 import sys
 import textwrap
 
-from setuptools import setup
+from setuptools import setup, Command
 from setuptools.command.develop import develop as develop_cmd
 from setuptools.command.build_py import build_py
 
