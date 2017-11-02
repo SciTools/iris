@@ -113,7 +113,6 @@ def compile_pyke_rules(cmd, directory):
     shelled_code = textwrap.dedent("""\
 
     import os
-    from pyke import knowledge_engine
 
     # Monkey patch the load method to avoid "ModuleNotFoundError: No module
     # named 'iris.fileformats._pyke_rules.compiled_krb'". In this instance
@@ -125,7 +124,11 @@ def compile_pyke_rules(cmd, directory):
     # Compile the rules by hand, without importing iris. That way we can
     # avoid the need for all of iris' dependencies being installed.
     os.chdir(os.path.join('{bld_dir}', 'iris', 'fileformats', '_pyke_rules'))
-
+    
+    # Import pyke *after* changing directory. Without this we get the compiled
+    # rules in the wrong place. Identified in
+    # https://github.com/SciTools/iris/pull/2891#issuecomment-341404187
+    from pyke import knowledge_engine
     knowledge_engine.engine('')
 
     """.format(bld_dir=directory)).split('\n')
