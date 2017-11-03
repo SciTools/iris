@@ -169,7 +169,7 @@ def _get_lon_lat_coords(cube):
                   if "longitude" in coord.name()]
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
-            "Calling _get_lat_lon_coords() with multiple lat or lon coords"
+            "Calling `_get_lon_lat_coords` with multiple lat or lon coords"
             " is currently disallowed")
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
@@ -379,7 +379,7 @@ def area_weights(cube, normalize=False):
 
     # Get the lon and lat coords and axes
     try:
-        lat, lon = _get_lat_lon_coords(cube)
+        lon, lat = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError('Cannot get latitude/longitude '
                          'coordinates from cube {!r}.'.format(cube.name()))
