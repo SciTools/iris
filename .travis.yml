@@ -118,8 +118,7 @@ script:
     if [[ $TEST_TARGET == 'doctest' ]]; then
       MPL_RC_DIR=$HOME/.config/matplotlib;
       mkdir -p $MPL_RC_DIR;
-      echo 'backend : Qt4Agg' > $MPL_RC_DIR/matplotlibrc;
-      echo 'backend.qt4 : PyQt4' >> $MPL_RC_DIR/matplotlibrc;
+      echo 'backend : agg' > $MPL_RC_DIR/matplotlibrc;
       echo 'image.cmap : viridis' >> $MPL_RC_DIR/matplotlibrc;
       cd $INSTALL_DIR/docs/iris;
       echo `make clean html`;
