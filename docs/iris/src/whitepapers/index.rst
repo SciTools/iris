@@ -7,6 +7,6 @@ Extra information on specific technical issues.
 
 .. toctree::
    :maxdepth: 1
-   :numbered:
 
    um_files_loading.rst
+   missing_data_handling.rst
