@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <area_type_table xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="area-type-table-1.1.xsd">
   <title>Area Type Table</title>
-  <version_number>4</version_number>
-  <date>17 May 2016</date>
-  <institution>National Centre for Atmospheric Science</institution>
+  <version_number>6</version_number>
+  <date>22 February 2017</date>
+  <institution>Centre for Environmental Data Analysis</institution>
   <contact>support@ceda.ac.uk</contact>
 
   <entry id="all_area_types">
@@ -39,11 +39,20 @@
   <entry id="floating_ice">
     <description>All ice floating on water including lake-ice, sea-ice, ice-shelves and icebergs.</description>
   </entry>
+  <entry id="floating_ice_shelf">
+    <description>An area type of "floating ice shelf" indicates where ice shelves are present. Ice shelves are the component of ice sheets that flow over the ocean.</description>
+  </entry>
+  <entry id="grounded_ice_sheet">
+    <description>An area type of "grounded ice sheet" indicates where the ice sheet rest over bedrock and is thus grounded. It excludes ice-caps, glaciers and floating ice shelves.</description>
+  </entry>
   <entry id="ice_free_land">
     <description></description>
   </entry>
   <entry id="ice_free_sea">
     <description></description>
+  </entry>
+  <entry id="ice_sheet">
+    <description>An area type of "ice sheet" indicates where ice sheets are present. It includes both grounded ice sheets resting over bedrock and ice shelves flowing over the ocean, but excludes ice-caps and glaciers (in contrast to land_ice, which includes all components).</description>
   </entry>
   <entry id="lake_ice_or_sea_ice">
     <description>Floating ice excluding ice-shelves and icebergs.</description>
@@ -52,7 +61,7 @@
     <description></description>
   </entry>
   <entry id="land_ice">
-    <description></description>
+    <description>"Land ice" means glaciers, ice-caps, grounded ice sheets resting on bedrock and floating ice-shelves.</description>
   </entry>
   <entry id="melt_pond_free_sea_ice">
     <description>The area occupied by type "sea_ice" is the sum of the areas of types "sea_ice_melt_pond" and "melt_pond_free_sea_ice".</description>
@@ -61,7 +70,10 @@
     <description></description>
   </entry>
   <entry id="pastures">
-    <description>Pastures are assumed to be anthropogenic in origin.</description>
+    <description>Pastures are assumed to be anthropogenic in origin. They include anthropogenically managed pastureland and rangeland.</description>
+  </entry>
+  <entry id="primary_and_secondary_land">
+    <description>"Primary and secondary land" is land that is not in use as crop land or pasture land, including forests, grasslands, bare ground and vegetated wetlands. "Primary land" is land that has not undergone lulcc (land use or land cover change) due to human disturbance. "Secondary land" is land that has previously been used for agriculture, urban development or logging and has subsequently been abandoned. Reference: Hurtt et al. (2011), Climatic Change, 109 - 117, Harmonization of land-use scenarios for the period 1500–2100: 600 years of global gridded annual land-use transitions, wood harvest, and resulting secondary lands, doi: 10.1007/s10584-011-0153-2. "Primary and secondary land" refers to land use or management, rather than to specific categories of vegetation cover, e.g. the primary and secondary succession of plant species.</description>
   </entry>
   <entry id="primary_deciduous_trees">
     <description>A primary forest is a naturally regenerated forest of native species, where there are no clearly visible indications of human activities and the ecological processes are not significantly disturbed. Reference: 'Global Forest Resources Assessment: Terms and Definitions', Forestry Department of Food and Agriculture Organization (FAO) of the United Nations, Rome 2010, www.fao.org/forestry/14241-0d7b74f45b0d2cfef31599cc17e4c28cd.pdf. Deciduous trees lose their leaves seasonally, for example, during winter in high latitudes or following seasonal variations in rainfall.</description>
@@ -101,6 +113,9 @@
   </entry>
   <entry id="trees">
     <description>The distinction between trees and shrubs is model dependent. All trees are C3 plant functional type.</description>
+  </entry>
+  <entry id="urban">
+    <description>Urban land is comprised of areas where much of the land is covered by structures. Included in this category are cities, towns and villages. Reference: Anderson, J.R, E. E. Hardy, J. T. Roach and R. E. Witmer (1976), A Land Use And Land Cover Classification System For Use With Remote Sensor Data, Appendix C Land Use Definitions, Geological Survey Professional Paper 964, A revision of the land use classification system as presented in U.S. Geological Survey Circular 671, https://www.usbr.gov/lc/socal/reports/SMappend_C.pdf.</description>
   </entry>
   <entry id="vegetation">
     <description></description>
