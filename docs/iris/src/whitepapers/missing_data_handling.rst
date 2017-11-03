@@ -10,7 +10,7 @@ indicate that data point is missing or not set.
 This value is included as part of a dataset's metadata.
 
 For example, in a gridded global ocean dataset, no data values will be recorded
-over land, so land point will be missing data.
+over land, so land points will be missing data.
 In such a case, land points could be indicated by being set to the dataset's
 missing data value.
 
