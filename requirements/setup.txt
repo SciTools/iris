@@ -2,4 +2,5 @@
 # ----------------------------------------------
 
 setuptools
-numpy
+# pyke (not pip installable)  #conda: pyke
+six

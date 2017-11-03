@@ -7,6 +7,6 @@ cartopy
 matplotlib<1.9
 netcdf4
 numpy
-pyke
+# pyke (not pip installable)  #conda: pyke
 cf_units
 dask>=0.15.0

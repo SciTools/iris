@@ -69,7 +69,7 @@ with temporary_path('lib/iris/tests/runner'):
 
 SETUP_DIR = os.path.dirname(__file__)
 
-def requirements(name):
+def pip_requirements(name):
     fname = os.path.join(SETUP_DIR, 'requirements', '{}.txt'.format(name))
     if not os.path.exists(fname):
         raise RuntimeError('Unable to find the {} requirements file at {}'
@@ -244,11 +244,11 @@ setup(
 
     zip_safe=False,
 
-    setup_requires=requirements('setup'),
-    install_requires=requirements('core'),
+    setup_requires=pip_requirements('setup'),
+    install_requires=pip_requirements('core'),
     tests_require=['{}[test]'.format(pypi_name)],
     extras_require = {
-                      'test': requirements('test'),
-                      'all': requirements('full'),
+                      'test': pip_requirements('test'),
+                      'all': pip_requirements('full'),
                       },
 )

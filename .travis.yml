@@ -56,26 +56,18 @@ install:
   # ---------------------------------
   - conda config --add channels conda-forge
   - >
-    if [[ "$TEST_MINIMAL" == true ]]; then
-      CONDA_REQS_FILE=conda-requirements.txt
-      if [[ "$TRAVIS_PYTHON_VERSION" == 3* ]]; then
-          python requirements/gen_conda_requirements.py --groups test > ${CONDA_REQS_FILE};
-      else
-          python requirements/gen_conda_requirements.py --py2 --groups test > ${CONDA_REQS_FILE};
-      fi
-      cat ${CONDA_REQS_FILE};
-      conda install --quiet --file ${CONDA_REQS_FILE};
-    else
-      CONDA_REQS_FILE=conda-requirements.txt
-      if [[ "$TRAVIS_PYTHON_VERSION" == 3* ]]; then
-          python requirements/gen_conda_requirements.py --groups test full > ${CONDA_REQS_FILE};
-      else
-          python requirements/gen_conda_requirements.py --py2 --groups test full > ${CONDA_REQS_FILE};
-      fi
-      cat ${CONDA_REQS_FILE};
-      conda install --quiet --file ${CONDA_REQS_FILE};
+    CONDA_REQ_FLAGS=""
+    CONDA_REQ_GROUPS="test"
+    if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
+        CONDA_REQ_FLAGS="${CONDA_REQ_FLAGS} --py2"
     fi
-
+    if [[ "$TEST_MINIMAL" == false ]]; then
+        CONDA_REQ_GROUPS="${CONDA_REQ_GROUPS} all"
+    fi
+    CONDA_REQS_FILE=conda-requirements.txt
+    python requirements/gen_conda_requirements.py ${CONDA_REQ_GROUPS} ${CONDA_REQ_FLAGS} > ${CONDA_REQS_FILE}
+    cat ${CONDA_REQS_FILE}
+    conda install --quiet --file ${CONDA_REQS_FILE}
 
   - >
     if [[ "${TEST_TARGET}" == 'doctest' ]]; then
