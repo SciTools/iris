@@ -162,18 +162,18 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     return rotated_lon, rotated_lat
 
 
-def _get_lat_lon_coords(cube):
+def _get_lon_lat_coords(cube):
     lat_coords = [coord for coord in cube.coords()
                   if "latitude" in coord.name()]
     lon_coords = [coord for coord in cube.coords()
                   if "longitude" in coord.name()]
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
-            "Calling _get_lat_lon_coords() with multiple lat or lon coords"
+            "Calling `_get_lon_lat_coords` with multiple lat or lon coords"
             " is currently disallowed")
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
-    return (lat_coord, lon_coord)
+    return (lon_coord, lat_coord)
 
 
 def _xy_range(cube, mode=None):
@@ -379,7 +379,7 @@ def area_weights(cube, normalize=False):
 
     # Get the lon and lat coords and axes
     try:
-        lat, lon = _get_lat_lon_coords(cube)
+        lon, lat = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError('Cannot get latitude/longitude '
                          'coordinates from cube {!r}.'.format(cube.name()))
@@ -575,7 +575,7 @@ def project(cube, target_proj, nx=None, ny=None):
 
     """
     try:
-        lat_coord, lon_coord = _get_lat_lon_coords(cube)
+        lon_coord, lat_coord = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError('Cannot get latitude/longitude '
                          'coordinates from cube {!r}.'.format(cube.name()))
