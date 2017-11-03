@@ -83,11 +83,11 @@ SPATIO_TEMPORAL_AXES = ['t', 'z', 'y', 'x']
 #  - positive
 #
 _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
-             'cell_measures', 'cell_methods', 'climatology', 'compress',
-             'coordinates', '_FillValue', 'formula_terms', 'grid_mapping',
-             'leap_month', 'leap_year', 'long_name', 'missing_value',
-             'month_lengths', 'scale_factor', 'standard_error_multiplier',
-             'standard_name', 'units']
+             'cell_measures', 'cell_methods', 'compress', 'coordinates',
+             '_FillValue', 'formula_terms', 'grid_mapping', 'leap_month',
+             'leap_year', 'long_name', 'missing_value', 'month_lengths',
+             'scale_factor', 'standard_error_multiplier', 'standard_name',
+             'units']
 
 # CF attributes that should not be global.
 _CF_DATA_ATTRS = ['flag_masks', 'flag_meanings', 'flag_values',

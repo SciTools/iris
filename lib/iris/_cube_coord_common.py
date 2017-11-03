@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,10 +31,9 @@ import iris.std_names
 class LimitedAttributeDict(dict):
     _forbidden_keys = ('standard_name', 'long_name', 'units', 'bounds', 'axis',
                        'calendar', 'leap_month', 'leap_year', 'month_lengths',
-                       'coordinates', 'grid_mapping', 'climatology',
-                       'cell_methods', 'formula_terms', 'compress',
-                       'missing_value', 'add_offset', 'scale_factor',
-                       '_FillValue')
+                       'coordinates', 'grid_mapping', 'cell_methods',
+                       'formula_terms', 'compress', 'missing_value',
+                       'add_offset', 'scale_factor', '_FillValue')
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)

@@ -472,6 +472,24 @@ class Test_write_fill_value(tests.IrisTest):
                 pass
 
 
+class Test_write_climatology_coord_attributes(tests.IrisTest):
+    def test_climatology_saved(self):
+        cube = tests.stock.realistic_3d()
+        climatology_bounds = cube.coord('time').copy()
+        climatology_bounds.rename('climatology_bounds')
+        climatology_bounds.guess_bounds()
+        cube.add_aux_coord(climatology_bounds, 0)
+
+        cube.coord('time').attributes['climatology'] = 'climatology_bounds'
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=[])
+            ds = nc.Dataset(nc_path)
+            self.assertArrayEqual(ds.variables['time'].climatology,
+                                  'climatology_bounds')
+            ds.close()
+
+
 class _Common__check_attribute_compliance(object):
     def setUp(self):
         self.container = mock.Mock(name='container', attributes={})
