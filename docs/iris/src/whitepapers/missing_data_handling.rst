@@ -5,7 +5,7 @@ Missing Data Handling in Iris
 This document provides a brief overview of how Iris handles missing data values
 when datasets are loaded as cubes, and when cubes are saved or modified.
 
-A fill-value or missing data value defines the value used within a dataset to
+A missing data value, or fill-value, defines the value used within a dataset to
 indicate that data point is missing or not set.
 This value is included as part of a dataset's metadata.
 
@@ -18,7 +18,7 @@ missing data value.
 Loading
 -------
 
-On loading, any fill-value or missing data value defined in the loaded dataset
+On load, any fill-value or missing data value defined in the loaded dataset
 should be used as the ``fill_value`` of the NumPy masked array data attribute of the
 :class:`~iris.cube.Cube`. This will only appear when the cube's data is realised.
 
@@ -27,8 +27,8 @@ Saving
 ------
 
 On save, the fill-value of a cube's masked data array is **not** used in saving data.
-Instead, Iris **always** uses the default fill-value for the file-format,
-**except** when a fill-value is specified by the user via a fileformat-specific saver.
+Instead, Iris always uses the default fill-value for the fileformat, *except*
+when a fill-value is specified by the user via a fileformat-specific saver.
 
 For example::
 
@@ -43,7 +43,7 @@ as masked, we issue a warning and suggest a workaround.
 
 This will occur in the following cases:
 
-* where masked data contains _unmasked_ points matching the fill-value, or
+* where masked data contains *unmasked* points matching the fill-value, or
 * where unmasked data contains the fill-value (either the format-specific default fill-value,
   or a fill-value specified by the user in the save call).
 
@@ -61,7 +61,7 @@ The exceptions to this are:
   That is, there is no default fill-value for ``byte`` types in NetCDF.
 * Data may be tagged with a ``_NoFill`` attribute. This is not currently officially
   documented or widely implemented.
-* Small integers create problems by _not_ having the exemption applied to byte data.
+* Small integers create problems by *not* having the exemption applied to byte data.
   Thus, in principle, ``int32`` data cannot use the full range of 2**16 valid values.
 
 
