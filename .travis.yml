@@ -56,30 +56,22 @@ install:
   # ---------------------------------
   - conda config --add channels conda-forge
   - >
-    CONDA_REQ_FLAGS=""
-    CONDA_REQ_GROUPS="test"
+    CONDA_REQS_FLAGS="";
+    CONDA_REQS_GROUPS="test";
     if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
-        CONDA_REQ_FLAGS="${CONDA_REQ_FLAGS} --py2"
-    fi
+        CONDA_REQS_FLAGS="${CONDA_REQS_FLAGS} --py2";
+    fi;
     if [[ "$TEST_MINIMAL" == false ]]; then
-        CONDA_REQ_GROUPS="${CONDA_REQ_GROUPS} all"
-    fi
-    CONDA_REQS_FILE=conda-requirements.txt
-    python requirements/gen_conda_requirements.py ${CONDA_REQ_GROUPS} ${CONDA_REQ_FLAGS} > ${CONDA_REQS_FILE}
-    cat ${CONDA_REQS_FILE}
-    conda install --quiet --file ${CONDA_REQS_FILE}
-
-  - >
+        CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} all";
+    fi;
     if [[ "${TEST_TARGET}" == 'doctest' ]]; then
-        conda install --quiet --file requirements/docs.txt
-    fi
+        CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} docs";
+    fi;
 
-
-  # JUST FOR NOW : Install latest version of iris-grib.
-  # TODO : remove when this release is available on conda-forge.
-  - if [[ "$TEST_MINIMAL" != true ]]; then
-        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0 ;
-    fi
+    CONDA_REQS_FILE=conda-requirements.txt;
+    python requirements/gen_conda_requirements.py ${CONDA_REQS_FLAGS} --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
+    cat ${CONDA_REQS_FILE};
+    conda install --quiet --file ${CONDA_REQS_FILE};
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
@@ -107,6 +99,12 @@ install:
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
 
   - python setup.py --quiet install
+
+  # JUST FOR NOW : Install latest version of iris-grib.
+  # TODO : remove when iris doesn't do an integration test requiring iris-grib.
+  - if [[ "$TEST_MINIMAL" != true ]]; then
+        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0 ;
+    fi
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then

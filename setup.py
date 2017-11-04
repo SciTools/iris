@@ -249,6 +249,7 @@ setup(
     tests_require=['{}[test]'.format(pypi_name)],
     extras_require = {
                       'test': pip_requirements('test'),
-                      'all': pip_requirements('full'),
+                      'all': pip_requirements('all'),
+                      'extensions': pip_requirements('extensions'),
                       },
 )
