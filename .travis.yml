@@ -116,8 +116,11 @@ script:
   # which should be investigated further in the future.
   - >
     if [[ $TEST_TARGET == 'doctest' ]]; then
+      MPL_RC_DIR=$HOME/.config/matplotlib;
+      mkdir -p $MPL_RC_DIR;
+      echo 'backend : agg' > $MPL_RC_DIR/matplotlibrc;
+      echo 'image.cmap : viridis' >> $MPL_RC_DIR/matplotlibrc;
       cd $INSTALL_DIR/docs/iris;
-      echo 'image.cmap: viridis' > matplotlibrc;
       echo `make clean html`;
       make doctest;
     fi
