@@ -24,12 +24,13 @@ env:
     - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
 
 git:
+  # We need a deep clone so that we can compute the age of the files using their git history.
   depth: 10000
 
 install:
   - >
-    export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
-    export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
+    export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96";
+    export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//");
 
   # Install miniconda
   # -----------------
@@ -37,9 +38,9 @@ install:
     echo 'Installing miniconda';
     export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda;
     if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
-      wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
+      wget --quiet ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
-      wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
+      wget --quiet ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi;
     bash miniconda.sh -b -p $HOME/miniconda;
     export PATH="$HOME/miniconda/bin:$PATH";
@@ -89,10 +90,11 @@ install:
   - python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
 
 # iris test data
-  - if [[ "$TEST_MINIMAL" != true ]]; then
-      wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
+  - >
+    if [[ "$TEST_MINIMAL" != true ]]; then
+      wget --quiet -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
       unzip -q iris-test-data.zip;
-      ln -s $(pwd)/iris-test-data-${IRIS_TEST_DATA_SUFFIX} iris-test-data;
+      mv "iris-test-data-${IRIS_TEST_DATA_SUFFIX}" iris-test-data;
     fi
 
 # set config paths
