@@ -27,47 +27,51 @@ git:
   depth: 10000
 
 install:
-  - export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
-  - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
+  - >
+    export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96"
+    export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   # Install miniconda
   # -----------------
-  - export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
+  - >
+    echo 'Installing miniconda';
+    export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda;
+    if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
       wget ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
       wget ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
+    fi;
+    bash miniconda.sh -b -p $HOME/miniconda;
+    export PATH="$HOME/miniconda/bin:$PATH";
 
   # Create the basic testing environment
   # ------------------------------------
   # Explicitly add defaults channel, see https://github.com/conda/conda/issues/2675
-  - conda config --add channels defaults
-  - conda config --set always_yes yes --set changeps1 no
-  - conda config --set show_channel_urls True
-  - conda update --quiet conda
-  - ENV_NAME='test-environment'
-  - conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION
-  - source activate $ENV_NAME
+  - >
+    echo 'Configure conda and create an environment';
+    conda config --set always_yes yes --set changeps1 no;
+    conda config --set show_channel_urls True;
+    conda config --add channels conda-forge;
+    conda update --quiet conda;
+    ENV_NAME='test-environment';
+    conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION;
+    source activate $ENV_NAME;
 
   # Customise the testing environment
   # ---------------------------------
-  - conda config --add channels conda-forge
   - >
+    echo 'Install Iris dependencies';
     CONDA_REQS_FLAGS="";
     CONDA_REQS_GROUPS="test";
     if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
         CONDA_REQS_FLAGS="${CONDA_REQS_FLAGS} --py2";
     fi;
-    if [[ "$TEST_MINIMAL" == false ]]; then
+    if [[ "$TEST_MINIMAL" != true ]]; then
         CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} all";
     fi;
     if [[ "${TEST_TARGET}" == 'doctest' ]]; then
         CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} docs";
     fi;
-
     CONDA_REQS_FILE=conda-requirements.txt;
     python requirements/gen_conda_requirements.py ${CONDA_REQS_FLAGS} --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
     cat ${CONDA_REQS_FILE};
@@ -76,8 +80,9 @@ install:
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
   # Output debug info
-  - conda list
-  - conda info -a
+  - >
+    conda list;
+    conda info -a;
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
 # i.e. There should be no DownloadWarning reports in the log.
@@ -91,19 +96,20 @@ install:
     fi
 
 # set config paths
-  - SITE_CFG=lib/iris/etc/site.cfg
-  - echo "[Resources]" > $SITE_CFG
-  - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG
-  - echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG
-  - echo "[System]" >> $SITE_CFG
-  - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
+  - >
+    SITE_CFG=lib/iris/etc/site.cfg;
+    echo "[Resources]" > $SITE_CFG;
+    echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG;
+    echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG;
+    echo "[System]" >> $SITE_CFG;
+    echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG;
 
   - python setup.py --quiet install
 
   # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
   - if [[ "$TEST_MINIMAL" != true ]]; then
-        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0 ;
+        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
     fi
 
 script:
