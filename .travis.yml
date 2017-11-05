@@ -55,7 +55,7 @@ install:
     conda config --add channels conda-forge;
     conda update --quiet conda;
     ENV_NAME='test-environment';
-    conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION;
+    conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION pip;
     source activate $ENV_NAME;
 
   # Customise the testing environment
@@ -111,6 +111,7 @@ install:
   # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
   - if [[ "$TEST_MINIMAL" != true ]]; then
+        conda install python-eccodes
         pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
     fi
 
