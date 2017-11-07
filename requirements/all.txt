@@ -3,13 +3,14 @@
 
 # esmpy regridding not available through pip.
 #conda: esmpy>=7.0  (only python=2)
-
 gdal
 mo_pack
 nc_time_axis
 pandas
 stratify  #conda: python-stratify
 pyugrid
+
+#conda: graphviz
 
 # Iris sample data is not available through pip. It can be installed from
 # https://github.com/SciTools/iris-sample-data/archive/master.zip
