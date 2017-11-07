@@ -110,8 +110,8 @@ install:
 
   # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
-  - if [[ "$TEST_MINIMAL" != true ]]; then
-        conda install python-eccodes;
+  - if [[ "$TEST_MINIMAL" != true && ${TRAVIS_PYTHON_VERSION} == 2* ]]; then
+        conda install python-ecmwf_grib;
         pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
     fi
 
