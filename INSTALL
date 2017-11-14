@@ -149,6 +149,23 @@ mo_pack (https://github.com/SciTools/mo_pack)
     A Python wrapper to libmo_unpack, giving WGDOS packing and unpacking.
 
 
+Generating conda requirements
+'''''''''''''''''''''''''''''
+
+Requirements for Iris are stored in the ``requirements`` directory in the root of the source repository.
+It is possible to generate a requirements file suitable for conda use with::
+
+    python requirements/gen_conda_requirements.py > conda_requirements.txt
+
+This may be installed with::
+
+    conda create -n my_iris_env --file conda_requirements.txt
+
+Alternatively, a full requirements file that includes all optional dependencies can be produced with::
+
+    python requirements/gen_conda_requirements.py --groups all > conda_requirements.txt
+
+
 Custom site configuration
 =========================
 The default site configuration values can be overridden by creating the file
