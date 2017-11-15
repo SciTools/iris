@@ -23,23 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from itertools import permutations
-
-import numpy as np
-import numpy.ma as ma
-
-import iris.analysis
-import iris.aux_factory
 from iris.coords import CellMethod
-import iris.exceptions
-from iris import FUTURE
-from iris.analysis import WeightedAggregator, Aggregator
-from iris.analysis import MEAN
 from iris.cube import _CubeRepresentation
-from iris.coords import AuxCoord, DimCoord, CellMeasure
-from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
-                             UnitConversionError)
-from iris.tests import mock
 import iris.tests.stock as stock
 
 
