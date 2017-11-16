@@ -718,19 +718,21 @@ class _CubeRepresentation(object):
                 continue
             else:
                 start_inds.append(start_ind)
+        # Make sure the indices are in order.
+        start_inds = sorted(start_inds)
         # Mark the end of the file.
-        start_inds.append(0)
+        start_inds.append(None)
 
         # Retrieve info for each heading from the printout.
         for i0, i1 in zip(start_inds[:-1], start_inds[1:]):
             str_heading_name = bits[i0].strip()
-            if i1 != 0:
+            if i1 is not None:
                 content = bits[i0 + 1: i1]
             else:
                 content = bits[i0 + 1:]
             self.str_headings[str_heading_name] = content
 
-    def make_content(self):
+    def _make_content(self):
         elements = []
         for k, v in self.str_headings.items():
             if v is not None:
@@ -749,7 +751,7 @@ class _CubeRepresentation(object):
         """Produce an html representation of a cube and return it."""
         self._get_bits()
         summary = self.summary
-        content = self.make_content()
+        content = self._make_content()
         return self._template.format(summary=summary,
                                      content=content,
                                      obj_id=self.cube_id,

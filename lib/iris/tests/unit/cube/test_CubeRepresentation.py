@@ -109,12 +109,12 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(str(cell_method), content_str)
 
 
-class Test_make_content(tests.IrisTest):
+class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
         self.representer = _CubeRepresentation(self.cube)
         self.representer._get_bits()
-        self.result = self.representer.make_content()
+        self.result = self.representer._make_content()
 
     def test_included(self):
         included = 'Dimension coordinates:'
