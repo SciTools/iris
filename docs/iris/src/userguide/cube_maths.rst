@@ -66,9 +66,7 @@ but with the data representing their difference:
 
     Notice that the coordinates "time" and "forecast_period" have been removed 
     from the resultant cube; 
-    this is because these coordinates differed between the two input cubes. 
-    For more control on whether or not coordinates should be automatically 
-    ignored :func:`iris.analysis.maths.subtract` can be used instead.
+    this is because these coordinates differed between the two input cubes.
 
 
 .. _cube-maths_anomaly:
