@@ -162,9 +162,13 @@ def expand_filespecs(file_specs):
     # If any of the specs expanded to an empty list then raise an error
     value_lists = glob_expanded.viewvalues()
     if not all(value_lists):
-        raise IOError("One or more of the files specified did not exist %s." %
-        ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
-         for pattern, expanded in glob_expanded.iteritems()])
+        emsg = "One or more of the files specified did not exist:"
+        for fn, expanded in glob_expanded.viewitems():
+            if expanded:
+                emsg += "\n  - %s matches %d files" % (fn, len(expanded))
+            else:
+                emsg += "\n  * %s expanded to empty" % fn
+        raise IOError(emsg)
 
     return sum(value_lists, [])
 
