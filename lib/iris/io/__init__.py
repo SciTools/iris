@@ -169,10 +169,10 @@ def expand_filespecs(file_specs):
         msg = "One or more of the files specified did not exist:"
         for pattern, expanded in six.iteritems(glob_expanded):
             if expanded:
-                msg += '\n  - "{}" matched {} file(s)'.format(pattern,
-                                                              len(expanded))
+                msg += '\n    - "{}" matched {} file(s)'.format(pattern,
+                                                                len(expanded))
             else:
-                msg += '\n  * "{}" expanded to empty'.format(pattern)
+                msg += '\n    * "{}" expanded to empty'.format(pattern)
         raise IOError(msg)
 
     return [fname for fnames in all_expanded for fname in fnames]
