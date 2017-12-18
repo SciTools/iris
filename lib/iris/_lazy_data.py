@@ -124,7 +124,10 @@ def as_concrete_data(data):
         # In some cases dask may return a scalar numpy.int/numpy.float object
         # rather than a numpy.ndarray object.
         # Recorded in https://github.com/dask/dask/issues/2111.
+        dtype = data.dtype
         data = np.asanyarray(data.compute())
+        if isinstance(data, ma.core.MaskedConstant):
+            data = ma.masked_array(data.data, dtype=dtype, mask=data.mask)
 
     return data
 
