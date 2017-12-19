@@ -65,15 +65,6 @@ def _limited_shape(shape):
     return tuple(shape)
 
 
-def _getall(a):
-    res = a[()]
-    if isinstance(res, ma.core.MaskedConstant):
-        res = ma.masked_array(res.data, mask=res.mask)
-    return res
-
-_getall_delayed = dask.delayed(_getall)
-
-
 def as_lazy_data(data, chunks=None, asarray=False):
     """
     Convert the input array `data` to a dask array.
@@ -104,15 +95,10 @@ def as_lazy_data(data, chunks=None, asarray=False):
         # but reduce it if larger than a default maximum size.
         chunks = _limited_shape(data.shape)
 
+    if isinstance(data, ma.core.MaskedConstant):
+        data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
-        if data.shape == ():
-            # Workaround for https://github.com/dask/dask/issues/2823. Make
-            # sure scalar dask arrays return numpy objects.
-            dtype = data.dtype
-            data = _getall_delayed(data)
-            data = da.from_delayed(data, (), dtype)
-        else:
-            data = da.from_array(data, chunks=chunks, asarray=asarray)
+        data = da.from_array(data, chunks=chunks, asarray=asarray)
     return data
 
 
@@ -138,7 +124,10 @@ def as_concrete_data(data):
         # In some cases dask may return a scalar numpy.int/numpy.float object
         # rather than a numpy.ndarray object.
         # Recorded in https://github.com/dask/dask/issues/2111.
+        dtype = data.dtype
         data = np.asanyarray(data.compute())
+        if isinstance(data, ma.core.MaskedConstant):
+            data = ma.masked_array(data.data, dtype=dtype, mask=data.mask)
 
     return data
 
