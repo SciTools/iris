@@ -91,7 +91,7 @@ _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
 
 # CF attributes that should not be global.
 _CF_DATA_ATTRS = ['flag_masks', 'flag_meanings', 'flag_values',
-                  'instance_dimension', 'sample_dimension',
+                  'instance_dimension', 'missing_value', 'sample_dimension',
                   'standard_error_multiplier']
 
 # CF attributes that should only be global.
