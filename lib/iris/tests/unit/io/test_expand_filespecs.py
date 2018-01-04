@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -80,7 +80,7 @@ class TestExpandFilespecs(tests.IrisTest):
         self.assertEqual(result, expected[::-1])
 
     def test_no_files_found(self):
-        msg = r'\/no_exist.txt\" expanded to empty'
+        msg = r'\/no_exist.txt\" didn\'t match any files'
         with self.assertRaisesRegexp(IOError, msg):
             iio.expand_filespecs([os.path.join(self.tmpdir, 'no_exist.txt')])
 
@@ -91,7 +91,7 @@ class TestExpandFilespecs(tests.IrisTest):
                  os.path.join(self.tmpdir, '*')])
         expected = textwrap.dedent("""
             One or more of the files specified did not exist:
-                * "{0}/does_not_exist.txt" expanded to empty
+                * "{0}/does_not_exist.txt" didn\'t match any files
                 - "{0}/*" matched 2 file(s)
             """).strip().format(self.tmpdir)
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -172,7 +172,7 @@ def expand_filespecs(file_specs):
                 msg += '\n    - "{}" matched {} file(s)'.format(pattern,
                                                                 len(expanded))
             else:
-                msg += '\n    * "{}" expanded to empty'.format(pattern)
+                msg += '\n    * "{}" didn\'t match any files'.format(pattern)
         raise IOError(msg)
 
     return [fname for fnames in all_expanded for fname in fnames]
