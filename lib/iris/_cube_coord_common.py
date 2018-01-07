@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -88,12 +88,13 @@ class CFVariableMixin(object):
         """
         Returns a human-readable name.
 
-        First it tries :attr:`standard_name`, then 'long_name', then 'var_name'
-        before falling back to the value of `default` (which itself defaults to
-        'unknown').
+        First it tries :attr:`standard_name`, then 'long_name', then
+        'var_name', then the STASH attribute before falling back to
+        the value of `default` (which itself defaults to 'unknown').
 
         """
-        return self.standard_name or self.long_name or self.var_name or default
+        return self.standard_name or self.long_name or self.var_name or \
+            str(self.attributes.get('STASH', default))
 
     def rename(self, name):
         """
