@@ -233,6 +233,19 @@ then specific STASH codes can be filtered::
     For advanced usage there are further examples in the 
     :class:`iris.Constraint` reference documentation. 
 
+
+Constraining across the dateline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Occasionally you may need to constrain your cube with a region that crosses either
+the dateline or the meridian. An example use-case of this is to extract the entire
+Pacific Ocean from a cube whose longitudes are bounded by the dateline.
+
+This functionality cannot be provided reliably using contraints. Instead you should use the
+functionality provided by :meth:`cube.intersection <iris.cube.Cube.intersection>`
+to extract this region.
+
+
 .. _using-time-constraints:
 
 Constraining on Time
