@@ -6,7 +6,7 @@ Iris
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.51860.svg)](https://dx.doi.org/10.5281/zenodo.51860)
 [![Documentation for master branch ](https://img.shields.io/badge/docs-master-blue.svg)](https://scitools-docs.github.io/iris/master/index.html)
 
-(C) British Crown Copyright 2010 - 2017, Met Office
+(C) British Crown Copyright 2010 - 2018, Met Office
 
 Iris is a powerful, easy to use, community-driven Python library for
 analysing and visualising meteorological and oceanographic data sets.
@@ -53,7 +53,7 @@ There is also a documentation build for the latest code in the main GitHub repos
 Copyright and licence
 ---------------------
 
-(C) British Crown Copyright 2010 - 2017, Met Office
+(C) British Crown Copyright 2010 - 2018, Met Office
 
 This file is part of Iris.
 

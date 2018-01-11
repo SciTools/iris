@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -121,7 +121,7 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = '2.1.0.dev0'
+__version__ = '2.0.0rc1'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
