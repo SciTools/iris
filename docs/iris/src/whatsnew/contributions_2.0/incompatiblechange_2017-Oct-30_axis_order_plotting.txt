@@ -1,1 +1,0 @@
-* When coordinates have no well defined plot axis, iris.plot and iris.quickplot routines now use the order of the cube's dimensions to determine the coordinates to plot as the x and y axis of a plot. 

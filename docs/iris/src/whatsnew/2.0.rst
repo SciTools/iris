@@ -192,6 +192,18 @@ Incompatible Changes
 * If the `packing` argument to `iris.save` is a dictionary, an error is raised
   if it contains any keys other than 'dtype', 'scale_factor' and 'add_offset'.
 
+* The deprecated :mod:`iris.fileformats.grib` was removed. All Iris GRIB
+  functionality is now delivered through :mod:`iris-grib`.
+
+* In Iris v1 it was possible to configure Iris to log at import time through
+  :attr:`iris.config.LOGGING`. This capability has been removed in iris v2.
+
+* When coordinates have no well defined plot axis, iris.plot and iris.quickplot
+  routines now use the order of the cube's dimensions to determine the
+  coordinates to plot as the x and y axis of a plot. 
+
+* The cf_units dependency version has been updated to v1.2.0, which prints shorter
+  unit strings.
 
 
 Deprecation removals
