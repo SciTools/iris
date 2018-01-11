@@ -1,2 +1,0 @@
-* The cf_units dependency version has been updated to v1.2.0, which prints shorter unit strings.
-  For example, the unit ``meter-second^-1`` is now printed as ``m.s-1``.
