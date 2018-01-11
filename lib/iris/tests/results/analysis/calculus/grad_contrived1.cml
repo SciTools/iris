@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float64" long_name="w curl of wind" units="0.277777777777778 second^-1-radian^-1">
+  <cube dtype="float64" long_name="w curl of wind" units="0.277777777777778 s-1.rad-1">
     <coords>
       <coord datadims="[0]">
         <dimCoord id="620d7656" points="[-87.0, -81.0, -75.0, -69.0, -63.0, -57.0, -51.0,
