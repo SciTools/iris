@@ -121,7 +121,7 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = '2.0.0rc1'
+__version__ = '2.0.0rc2.dev0'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',

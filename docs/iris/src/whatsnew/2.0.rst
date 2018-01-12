@@ -196,14 +196,15 @@ Incompatible Changes
   functionality is now delivered through :mod:`iris-grib`.
 
 * In Iris v1 it was possible to configure Iris to log at import time through
-  :attr:`iris.config.LOGGING`. This capability has been removed in iris v2.
+  `iris.config.LOGGING`. This capability has been removed in Iris v2.
 
-* When coordinates have no well defined plot axis, iris.plot and iris.quickplot
-  routines now use the order of the cube's dimensions to determine the
-  coordinates to plot as the x and y axis of a plot. 
+* When coordinates have no well defined plot axis, :mod:`iris.plot` and
+  :mod:`iris.quickplot` routines now use the order of the cube's dimensions
+  to determine the coordinates to plot as the x and y axis of a plot. 
 
-* The cf_units dependency version has been updated to v1.2.0, which prints shorter
-  unit strings.
+* The cf_units dependency version has been updated to v1.2.0, which prints
+  shorter unit strings. For example, the unit ``meter-second^-1`` is now
+  printed as ``m.s-1``.
 
 
 Deprecation removals
