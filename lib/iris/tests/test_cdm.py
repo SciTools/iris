@@ -733,7 +733,7 @@ class TestCubeAPI(TestCube2d):
     def test_default_name(self):
         self.t.long_name = ''
         self.assertEqual(self.t.name(), 'unknown')
-        self.assertEqual(self.t.name('a_different_default'), 'a_different_default')
+        self.assertEqual(self.t.name('a_default'), 'a_default')
 
     def test_stash_name(self):
         self.t.long_name = ''
