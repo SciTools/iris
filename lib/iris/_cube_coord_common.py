@@ -94,7 +94,7 @@ class CFVariableMixin(object):
 
         """
         return self.standard_name or self.long_name or self.var_name or \
-            str(self.attributes.get('STASH', default))
+            str(self.attributes.get('STASH', '')) or default
 
     def rename(self, name):
         """
