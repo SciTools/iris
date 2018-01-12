@@ -1,0 +1,1 @@
+* A cube resulting from a regrid operation using the `iris.analysis.AreaWeighted` regridding scheme will now have the smallest floating point data type to which the source cube's data type can be safely converted using NumPy's type promotion rules.
