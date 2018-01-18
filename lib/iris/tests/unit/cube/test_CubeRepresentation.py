@@ -28,6 +28,7 @@ from iris.cube import _CubeRepresentation
 import iris.tests.stock as stock
 
 
+@tests.skip_data
 class Test__instantiation(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
@@ -46,6 +47,7 @@ class Test__instantiation(tests.IrisTest):
         self.assertIsNone(list(content)[0])
 
 
+@tests.skip_data
 class Test__get_bits(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_4d()
@@ -109,6 +111,7 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(str(cell_method), content_str)
 
 
+@tests.skip_data
 class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
@@ -131,6 +134,7 @@ class Test__make_content(tests.IrisTest):
             self.assertNotIn(heading, self.result)
 
 
+@tests.skip_data
 class Test_repr_html(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
