@@ -52,8 +52,8 @@ install:
     echo 'Configure conda and create an environment';
     conda config --set always_yes yes --set changeps1 no;
     conda config --set show_channel_urls True;
-    conda config --add default_channels conda-forge;
     conda config --add default_channels anaconda;
+    conda config --add default_channels conda-forge;
     conda update --quiet conda;
     ENV_NAME='test-environment';
     conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION pip;
