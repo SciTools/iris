@@ -71,6 +71,7 @@ class Test_as_cartopy_projection(tests.IrisTest):
         self.semi_minor_axis = 6356256.909
         self.false_easting = 0.0
         self.false_northing = 0.0
+        self.standard_parallels = (-18., -36.)
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
         self.aea_cs = AlbersEqualArea(
             self.latitude_of_projection_origin,
