@@ -772,9 +772,10 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                     'longitude_of_central_meridian': 10,
                     'false_easting': 100,
                     'false_northing': 200,
-                    'standard_parallels': (38, 50),
+                    'standard_parallel': (38, 50),
                     'semi_major_axis': 6377563.396,
                     'semi_minor_axis': 6356256.909,
+                    'longitude_of_prime_meridian': 0,
                     }
         self._test(coord_system, expected)
 
