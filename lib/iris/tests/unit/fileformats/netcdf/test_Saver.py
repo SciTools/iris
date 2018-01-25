@@ -769,13 +769,12 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=GeogCS(6377563.396, 6356256.909))
         expected = {'grid_mapping_name': b'albers_conical_equal_area',
                     'latitude_of_projection_origin': 52,
-                    'longitude_of_projection_origin': 10,
+                    'longitude_of_central_meridian': 10,
                     'false_easting': 100,
                     'false_northing': 200,
                     'standard_parallels': (38, 50),
                     'semi_major_axis': 6377563.396,
                     'semi_minor_axis': 6356256.909,
-                    'longitude_of_prime_meridian': 0,
                     }
         self._test(coord_system, expected)
 
