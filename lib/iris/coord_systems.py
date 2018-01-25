@@ -991,12 +991,13 @@ class AlbersEqualArea(CoordSystem):
     def __repr__(self):
         return ("AlbersEqualArea(latitude_of_projection_origin={!r},"
                 " longitude_of_central_meridian={!r}, false_easting={!r},"
-                " false_northing={!r}, standard_parallels=({!r},{!r}),"
+                " false_northing={!r}, standard_parallels={!r},"
                 " ellipsoid={!r})").format(
                     self.latitude_of_projection_origin,
                     self.longitude_of_central_meridian,
                     self.false_easting,
                     self.false_northing,
+                    self.standard_parallels,
                     self.ellipsoid)
 
     def as_cartopy_crs(self):
