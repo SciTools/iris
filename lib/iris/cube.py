@@ -1597,9 +1597,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         will not cause the Cube data to be loaded.
 
         If the Cube data have already been loaded (for example by calling
-        :meth:`~iris.cube.Cube.data`), the returned Array will be the loaded
-        cube data represented as a lazy array object. Note that this does _not_
-        make the Cube data lazy again; the Cube data remains loaded in memory.
+        :meth:`~iris.cube.Cube.data`), the returned Array will be a view of the
+        loaded cube data represented as a lazy array object. Note that this
+        does _not_ make the Cube data lazy again; the Cube data remains loaded
+        in memory.
 
         Returns:
             A lazy array, representing the Cube data.
