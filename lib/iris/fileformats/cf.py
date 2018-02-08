@@ -923,8 +923,15 @@ class CFReader(object):
     to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
     """
-    def __init__(self, filename, warn=False, monotonic=False):
-        self._filename = os.path.expanduser(filename)
+    def __init__(self, filename_or_dataset, warn=False, monotonic=False):
+        if isinstance(filename_or_dataset, six.string_types):
+            self._filename = os.path.expanduser(filename_or_dataset)
+            dataset = netCDF4.Dataset(self._filename, mode='r')
+            self._dataset = dataset
+        else:
+            # Handle an already-open dataset as an alternative.
+            self._dataset = filename_or_dataset
+
         # All CF variable types EXCEPT for the "special cases" of
         # CFDataVariable, CFCoordinateVariable and _CFFormulaTermsVariable.
         self._variable_types = (CFAncillaryDataVariable, CFAuxiliaryCoordinateVariable,
@@ -933,8 +940,6 @@ class CFReader(object):
 
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = CFGroup()
-
-        self._dataset = netCDF4.Dataset(self._filename, mode='r')
 
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in ['NETCDF3_CLASSIC', 'NETCDF3_64BIT']:
