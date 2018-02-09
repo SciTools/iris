@@ -1588,17 +1588,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def lazy_data(self):
         """
-        Return a lazy array representing the Cube data.
+        Return a "lazy array" representing the Cube data. A lazy array
+        describes an array whose data values have not been loaded into memory
+        from disk.
 
-        Accessing this method will never cause the data to be loaded.
+        Accessing this method will never cause the Cube data to be loaded.
         Similarly, calling methods on, or indexing, the returned Array
-        will not cause the Cube to have loaded data.
+        will not cause the Cube data to be loaded.
 
-        If the data have already been loaded for the Cube, the returned
-        Array will be a new lazy array wrapper.
+        If the Cube data have already been loaded (for example by calling
+        :meth:`~iris.cube.Cube.data`), the returned Array will be a view of the
+        loaded cube data represented as a lazy array object. Note that this
+        does _not_ make the Cube data lazy again; the Cube data remains loaded
+        in memory.
 
         Returns:
-            A lazy array, representing the Cube data array.
+            A lazy array, representing the Cube data.
 
         """
         return self._data_manager.lazy_data()
