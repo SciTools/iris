@@ -1412,7 +1412,7 @@ fc_extras
             attributes['invalid_units'] = attr_units
             attr_units = cf_units._UNKNOWN_UNIT_STRING
 
-        if np.issubdtype(cf_var.dtype, np.str):
+        if np.issubdtype(cf_var.dtype, np.str_):
             attr_units = cf_units._NO_UNIT_STRING
 
         # Get any assoicated calendar for a time reference coordinate.
