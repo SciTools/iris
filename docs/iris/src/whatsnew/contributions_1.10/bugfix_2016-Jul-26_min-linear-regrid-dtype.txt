@@ -1,0 +1,1 @@
+Fixed a bug in :class:`iris.analysis.RectilinearInterpolator` for 'linear' regridding, where the resulting dtype could remain not a float when the source was unsigned integer or of boolean dtype.  Under these circumstances, the dtype is now the smallest possible float dtype that can accurately preserve values.
