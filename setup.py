@@ -245,7 +245,7 @@ setup(
     zip_safe=False,
 
     setup_requires=pip_requirements('setup'),
-    install_requires=pip_requirements('core'),
+    install_requires=pip_requirements('setup') + pip_requirements('core'),
     tests_require=['{}[test]'.format(pypi_name)],
     extras_require = {
                       'test': pip_requirements('test'),
