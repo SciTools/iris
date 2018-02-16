@@ -61,7 +61,7 @@ class Test(tests.IrisTest):
 
     def test_compatible_cubes(self):
         r = stats.pearsonr(self.cube_a, self.cube_b,
-                            ['latitude', 'longitude'])
+                           ['latitude', 'longitude'])
         self.assertArrayAlmostEqual(r.data, [0.81114936,
                                              0.81690538,
                                              0.79833135,
@@ -83,8 +83,8 @@ class Test(tests.IrisTest):
 
     def test_compatible_cubes_weighted(self):
         r = stats.pearsonr(self.cube_a, self.cube_b,
-                            ['latitude', 'longitude'],
-                            self.weights)
+                           ['latitude', 'longitude'],
+                           self.weights)
         self.assertArrayAlmostEqual(r.data, [0.79106045,
                                              0.79989169,
                                              0.78826918,
