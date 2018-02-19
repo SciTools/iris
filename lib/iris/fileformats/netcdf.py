@@ -1570,7 +1570,7 @@ class Saver(object):
         cf_dimensions = [dimension_names[dim] for dim in
                          cube.coord_dims(coord)]
 
-        if np.issubdtype(coord.points.dtype, np.str):
+        if np.issubdtype(coord.points.dtype, np.str_):
             string_dimension_depth = coord.points.dtype.itemsize
             if coord.points.dtype.kind == 'U':
                 string_dimension_depth //= 4

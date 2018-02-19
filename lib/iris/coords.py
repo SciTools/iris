@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -1159,7 +1159,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('Cannot partially collapse a coordinate (%s).'
                              % self.name())
 
-        if np.issubdtype(self.dtype, np.str):
+        if np.issubdtype(self.dtype, np.str_):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
             def serialize(x):

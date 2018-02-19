@@ -3556,7 +3556,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             new_bounds = iris.util.rolling_window(coord_.points, window)
 
-            if np.issubdtype(new_bounds.dtype, np.str):
+            if np.issubdtype(new_bounds.dtype, np.str_):
                 # Handle case where the AuxCoord contains string. The points
                 # are the serialized form of the points contributing to each
                 # window and the bounds are the first and last points in the

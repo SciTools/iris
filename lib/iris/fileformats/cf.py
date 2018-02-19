@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -73,7 +73,7 @@ reference_terms = dict(atmosphere_sigma_coordinate=['ps'],
 
 # NetCDF returns a different type for strings depending on Python version.
 def _is_str_dtype(var):
-    return ((six.PY2 and np.issubdtype(var.dtype, np.str)) or
+    return ((six.PY2 and np.issubdtype(var.dtype, np.str_)) or
             (six.PY3 and np.issubdtype(var.dtype, np.bytes_)))
 
 
