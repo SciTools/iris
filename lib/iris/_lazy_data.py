@@ -102,6 +102,29 @@ def as_lazy_data(data, chunks=None, asarray=False):
     return data
 
 
+def _co_realise_lazy_arrays(arrays):
+    """
+    Compute multiple lazy arrays together + return a list of real values.
+
+    Also converts any MaskedConstants to arrays, to ensure that the dtypes of
+    the results are the same as the inputs.
+    This part is only necessary because of problems with masked constants.
+
+    """
+    results = list(da.compute(*arrays))
+    for i_array, (array, result) in enumerate(zip(arrays, results)):
+        if isinstance(result, ma.core.MaskedConstant):
+            # Convert any masked constants into NumPy masked arrays :  In some
+            # cases dask may return a scalar numpy.int/numpy.float object
+            # rather than a numpy.ndarray object.
+            # Recorded in https://github.com/dask/dask/issues/2111.
+            result = ma.masked_array(result.data, mask=result.mask,
+                                     dtype=array.dtype)
+            # Replace the original result array.
+            results[i_array] = result
+    return results
+
+
 def as_concrete_data(data):
     """
     Return the actual content of a lazy array, as a numpy array.
@@ -120,14 +143,7 @@ def as_concrete_data(data):
 
     """
     if is_lazy_data(data):
-        # Realise dask array, ensuring the data result is always a NumPy array.
-        # In some cases dask may return a scalar numpy.int/numpy.float object
-        # rather than a numpy.ndarray object.
-        # Recorded in https://github.com/dask/dask/issues/2111.
-        dtype = data.dtype
-        data = np.asanyarray(data.compute())
-        if isinstance(data, ma.core.MaskedConstant):
-            data = ma.masked_array(data.data, dtype=dtype, mask=data.mask)
+        data, = _co_realise_lazy_arrays([data])
 
     return data
 
@@ -169,7 +185,7 @@ def co_realise_cubes(cubes):
     calculations, improving performance.
 
     """
-    results = da.compute(list(cube.core_data() for cube in cubes))
+    results = _co_realise_lazy_arrays([cube.core_data() for cube in cubes])
     for cube, result in zip(cubes, results):
         cube.data = result
     return cubes
