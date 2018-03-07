@@ -112,6 +112,7 @@ import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.fileformats
 import iris.io
+from iris._lazy_data import co_realise_cubes
 
 
 try:
@@ -127,7 +128,7 @@ __version__ = '2.1.0dev0'
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
            'site_configuration', 'Future', 'FUTURE',
-           'IrisDeprecation']
+           'IrisDeprecation', 'co_realise_cubes']
 
 
 Constraint = iris._constraints.Constraint

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -158,3 +158,18 @@ def multidim_lazy_stack(stack):
         result = da.stack([multidim_lazy_stack(subarray)
                            for subarray in stack])
     return result
+
+
+def co_realise_cubes(cubes):
+    """
+    Fetch real data for multiple cubes at one time.
+
+    This fetches lazy content, equivalent to accessing each cube.data.
+    However, lazy calculations and data fetches can be shared between the
+    calculations, improving performance.
+
+    """
+    results = da.compute(list(cube.core_data() for cube in cubes))
+    for cube, result in zip(cubes, results):
+        cube.data = result
+    return cubes
