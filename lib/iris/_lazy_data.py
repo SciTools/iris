@@ -104,11 +104,13 @@ def as_lazy_data(data, chunks=None, asarray=False):
 
 def _co_realise_lazy_arrays(arrays):
     """
-    Compute multiple lazy arrays together + return a list of real values.
+    Compute multiple lazy arrays and return a list of real values.
 
-    Also converts any MaskedConstants to arrays, to ensure that the dtypes of
-    the results are the same as the inputs.
-    This part is only necessary because of problems with masked constants.
+    All the arrays are computed together, so they can share results from common
+    graph elements.
+
+    Also converts any MaskedConstants returned into masked arrays, to ensure
+    that all return values are writeable NumPy array objects.
 
     """
     results = list(da.compute(*arrays))
@@ -120,7 +122,7 @@ def _co_realise_lazy_arrays(arrays):
             # Recorded in https://github.com/dask/dask/issues/2111.
             result = ma.masked_array(result.data, mask=result.mask,
                                      dtype=array.dtype)
-            # Replace the original result array.
+            # When we change one, update the result list.
             results[i_array] = result
     return results
 
@@ -182,7 +184,7 @@ def co_realise_cubes(cubes):
 
     This fetches lazy content, equivalent to accessing each cube.data.
     However, lazy calculations and data fetches can be shared between the
-    calculations, improving performance.
+    computations, improving performance.
 
     """
     results = _co_realise_lazy_arrays([cube.core_data() for cube in cubes])
