@@ -196,7 +196,7 @@ def co_realise_cubes(*cubes):
 
     Args:
 
-    * cubes : (list of `~iris.cube.Cube`)
+    * cubes (list of :class:`~iris.cube.Cube`):
         Arguments, each of which is a cube to be realised.
 
     For example::
