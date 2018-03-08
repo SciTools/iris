@@ -46,30 +46,29 @@ class ArrayAccessCounter(object):
 
 class Test_co_realise_cubes(tests.IrisTest):
     def test_empty(self):
-        self.assertEqual(co_realise_cubes([]), [])
+        # Ensure that 'no args' case does not raise an error.
+        co_realise_cubes()
 
     def test_basic(self):
         real_data = np.arange(3.)
         cube = Cube(as_lazy_data(real_data))
-        self.assertTrue(cube.has_lazy_data())
-        result, = co_realise_cubes([cube])
-        self.assertEqual(result, cube)
+        co_realise_cubes(cube)
         self.assertFalse(cube.has_lazy_data())
         self.assertArrayAllClose(cube.core_data(), real_data)
 
     def test_multi(self):
         real_data = np.arange(3.)
-        cube = Cube(as_lazy_data(real_data))
-        self.assertTrue(cube.has_lazy_data())
-        cube_2 = cube + 1
-        cube_3 = cube + 2
-        cubes = [cube, cube_2, cube_3]
-        for cube in cubes:
-            self.assertTrue(cube.has_lazy_data())
-        results = co_realise_cubes(cubes)
-        self.assertEqual(results, cubes)
-        for cube in cubes:
-            self.assertFalse(cube.has_lazy_data())
+        cube_base = Cube(as_lazy_data(real_data))
+        cube_inner = cube_base + 1
+        result_a = cube_base + 1
+        result_b = cube_inner + 1
+        co_realise_cubes(result_a, result_b)
+        # Check that target cubes were realised.
+        self.assertFalse(result_a.has_lazy_data())
+        self.assertFalse(result_b.has_lazy_data())
+        # Check that other cubes referenced remain lazy.
+        self.assertTrue(cube_base.has_lazy_data())
+        self.assertTrue(cube_inner.has_lazy_data())
 
     def test_combined_access(self):
         wrapped_array = ArrayAccessCounter(np.arange(3.))
@@ -78,7 +77,7 @@ class Test_co_realise_cubes(tests.IrisTest):
         derived_b = lazy_array + 2
         cube_a = Cube(derived_a)
         cube_b = Cube(derived_b)
-        co_realise_cubes([cube_a, cube_b])
+        co_realise_cubes(cube_a, cube_b)
         # Though used twice, the source data should only get fetched once.
         self.assertEqual(wrapped_array.access_count, 1)
 
