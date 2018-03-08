@@ -135,7 +135,7 @@ class Test_nearest_neighbour_index__descending(tests.IrisTest):
         self._test_nearest_neighbour_index(target, bounds=True)
 
     def test_bounded_circular(self):
-        target = [0, 3, 1, 0, 3]
+        target = [0, 3, 1, 0, 2]
         self._test_nearest_neighbour_index(target, bounds=True, circular=True)
 
 

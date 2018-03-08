@@ -1418,66 +1418,63 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('Nearest-neighbour is currently limited'
                              ' to one-dimensional coordinates.')
         do_circular = getattr(self, 'circular', False)
-        if do_circular:
+
+        def wrap_values(point, points_or_bounds, increasing):
             wrap_modulus = self.units.modulus
-            # wrap 'point' to a range based on lowest points or bounds value.
-            wrap_origin = np.min(np.hstack((points, bounds.flatten())))
+            # add an extra, wrapped point or bound
+            shift = wrap_modulus if increasing else -wrap_modulus
+            points_or_bounds = np.concatenate((points_or_bounds,
+                                               points_or_bounds[:1] + shift))
+            # wrap 'point' to a range based on lowest bounds value.
+            wrap_origin = np.min(points_or_bounds)
             point = wrap_origin + (point - wrap_origin) % wrap_modulus
+            return point, points_or_bounds
 
         # Calculate the nearest neighbour.
         # The algorithm:  given a single value (V),
         #   if coord has bounds,
-        #     make bounds cells complete and non-overlapping
-        #     return first cell containing V
+        #     find the first cell containing V
+        #     if none, find the cell which is closes to V
+        #     or if two are equally close, return the lowest index
         #   else (no bounds),
         #     find the point which is closest to V
         #     or if two are equally close, return the lowest index
         if self.has_bounds():
-            # make bounds ranges complete+separate, so point is in at least one
-            increasing = self.bounds[0, 1] > self.bounds[0, 0]
-            bounds = bounds.copy()
-            # sort the bounds cells by their centre values
-            sort_inds = np.argsort(np.mean(bounds, axis=1))
-            bounds = bounds[sort_inds]
-            # replace all adjacent bounds with their averages
-            if increasing:
-                mid_bounds = 0.5 * (bounds[:-1, 1] + bounds[1:, 0])
-                bounds[:-1, 1] = mid_bounds
-                bounds[1:, 0] = mid_bounds
+            if do_circular:
+                # NOTE: circular implies a DimCoord, so *must* be monotonic
+                increasing = bounds[-1, 0] >= bounds[0, 0]
+                point, bounds = wrap_values(point, bounds, increasing)
+
+            lower_bounds = np.min(bounds, axis=1)
+            upper_bounds = np.max(bounds, axis=1)
+
+            inside_cells = np.logical_and(point >= lower_bounds,
+                                          point <= upper_bounds)
+            indices = np.where(inside_cells)[0]
+            if len(indices) > 0:
+                result_index = indices[0]
             else:
-                mid_bounds = 0.5 * (bounds[:-1, 0] + bounds[1:, 1])
-                bounds[:-1, 0] = mid_bounds
-                bounds[1:, 1] = mid_bounds
-
-            # if point lies beyond either end, fix the end cell to include it
-            bounds[0, 0] = min(point, bounds[0, 0])
-            bounds[-1, 1] = max(point, bounds[-1, 1])
-            # get index of first-occurring cell that contains the point
-            inside_cells = np.logical_and(point >= np.min(bounds, axis=1),
-                                          point <= np.max(bounds, axis=1))
-            result_index = np.where(inside_cells)[0][0]
-            # return the original index of the cell (before the bounds sort)
-            result_index = sort_inds[result_index]
-
+                # The point does not lie inside a cell, so find the nearest.
+                ldists = np.abs(lower_bounds - point)
+                udists = np.abs(upper_bounds - point)
+                nearest_lower_index = np.argmin(ldists)
+                nearest_upper_index = np.argmin(udists)
+                result_index = (nearest_lower_index
+                                if (ldists[nearest_lower_index] <=
+                                    udists[nearest_upper_index])
+                                else nearest_upper_index)
         # Or, if no bounds, we always have points ...
         else:
             if do_circular:
-                # add an extra, wrapped max point (simpler than bounds case)
                 # NOTE: circular implies a DimCoord, so *must* be monotonic
-                if points[-1] >= points[0]:
-                    # ascending value order : add wrapped lowest value to end
-                    index_offset = 0
-                    points = np.hstack((points, points[0] + wrap_modulus))
-                else:
-                    # descending order : add wrapped lowest value at start
-                    index_offset = 1
-                    points = np.hstack((points[-1] + wrap_modulus, points))
+                increasing = points[-1] >= points[0]
+                point, points = wrap_values(point, points, increasing)
             # return index of first-occurring nearest point
             distances = np.abs(points - point)
-            result_index = np.where(distances == np.min(distances))[0][0]
-            if do_circular:
-                # convert index back from circular-adjusted points
-                result_index = (result_index - index_offset) % self.shape[0]
+            result_index = np.argmin(distances)
+
+        # convert index back from circular-adjusted values
+        result_index = result_index % self.shape[0]
 
         return result_index
 
