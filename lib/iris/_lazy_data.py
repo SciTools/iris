@@ -106,24 +106,26 @@ def _co_realise_lazy_arrays(arrays):
     """
     Compute multiple lazy arrays and return a list of real values.
 
-    All the arrays are computed together, so they can share results from common
+    All the arrays are computed together, so they can share results for common
     graph elements.
 
     Also converts any MaskedConstants returned into masked arrays, to ensure
     that all return values are writeable NumPy array objects.
 
     """
-    results = list(da.compute(*arrays))
-    for i_array, (array, result) in enumerate(zip(arrays, results)):
-        if isinstance(result, ma.core.MaskedConstant):
+    computed_arrays = da.compute(*arrays)
+    results = []
+    for lazy_in, real_out in zip(arrays, computed_arrays):
+        real_out = np.asanyarray(real_out)
+        if isinstance(real_out, ma.core.MaskedConstant):
             # Convert any masked constants into NumPy masked arrays :  In some
             # cases dask may return a scalar numpy.int/numpy.float object
             # rather than a numpy.ndarray object.
             # Recorded in https://github.com/dask/dask/issues/2111.
-            result = ma.masked_array(result.data, mask=result.mask,
-                                     dtype=array.dtype)
-            # When we change one, update the result list.
-            results[i_array] = result
+            # NOTE: also in this case, apply the original lazy-array dtype.
+            real_out = ma.masked_array(real_out.data, mask=real_out.mask,
+                                       dtype=lazy_in.dtype)
+        results.append(real_out)
     return results
 
 
