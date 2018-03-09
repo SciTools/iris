@@ -42,14 +42,16 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
         self.coord = DimCoord(points, circular=False,
                               units='degrees')
 
-    def _test_nearest_neighbour_index(self, target, bounds=None,
+    def _test_nearest_neighbour_index(self, target, bounds=None, ext_pnts=None,
                                       circular=False):
         _bounds = [[-20, 10], [10, 100], [100, 260], [260, 340]]
-        ext_pnts = [-70, -10, 110, 275, 370]
+        _ext_pnts = [-70, -10, 110, 275, 370]
         if bounds is True:
             self.coord.bounds = _bounds
         else:
             self.coord.bounds = bounds
+        if ext_pnts is None:
+            ext_pnts = _ext_pnts
         self.coord.circular = circular
         results = [self.coord.nearest_neighbour_index(ind) for ind in ext_pnts]
         self.assertEqual(results, target)
@@ -79,6 +81,23 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
         _bounds = [[-20, 10], [80, 170], [180, 190], [240, 340]]
         target = [0, 0, 1, 3, 3]
         self._test_nearest_neighbour_index(target, bounds=_bounds)
+
+    def test_bounded_disjointed_float_points(self):
+        _bounds = [[-20, 15], [20, 100], [100, 260], [260, 340]]
+        _ext_pnts = [17., 17.2, 17.8, 18.2]
+        target = [0, 0, 1, 1]
+        self._test_nearest_neighbour_index(target, bounds=_bounds,
+                                           ext_pnts=_ext_pnts)
+
+    def test_bounded_outside_float_points(self):
+        _bounds = [[-10, 45], [45, 135], [135, 225], [225, 280]]
+        _ext_pnts = [-11.7, 281.7]
+        target = [0, 3]
+        self._test_nearest_neighbour_index(target, bounds=_bounds,
+                                           ext_pnts=_ext_pnts)
+
+    def test_bounded_disjointed(self):
+        _bounds = [[-20, 10], [80, 170], [180, 190], [240, 340]]
 
     def test_scalar(self):
         self.coord = DimCoord([0], circular=False, units='degrees')
