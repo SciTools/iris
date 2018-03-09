@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -77,19 +77,20 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
         target = [0, 0, 1, 2, 3]
         self._test_nearest_neighbour_index(target, bounds=_bounds)
 
-    def test_bounded_disjointed(self):
-        _bounds = [[-20, 10], [80, 170], [180, 190], [240, 340]]
-        target = [0, 0, 1, 3, 3]
-        self._test_nearest_neighbour_index(target, bounds=_bounds)
+    def test_bounded_disjointed_circular(self):
+        _bounds = [[-5, 10], [80, 170], [180, 190], [240, 340]]
+        target = [3, 0, 1, 3, 0]
+        self._test_nearest_neighbour_index(target, bounds=_bounds,
+                                           circular=True)
 
-    def test_bounded_disjointed_float_points(self):
+    def test_bounded_disjointed_float_point(self):
         _bounds = [[-20, 15], [20, 100], [100, 260], [260, 340]]
         _ext_pnts = [17., 17.2, 17.8, 18.2]
         target = [0, 0, 1, 1]
         self._test_nearest_neighbour_index(target, bounds=_bounds,
                                            ext_pnts=_ext_pnts)
 
-    def test_bounded_outside_float_points(self):
+    def test_bounded_outside_float_point(self):
         _bounds = [[-10, 45], [45, 135], [135, 225], [225, 280]]
         _ext_pnts = [-11.7, 281.7]
         target = [0, 3]
