@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -102,6 +102,39 @@ def as_lazy_data(data, chunks=None, asarray=False):
     return data
 
 
+def _co_realise_lazy_arrays(arrays):
+    """
+    Compute multiple lazy arrays and return a list of real values.
+
+    All the arrays are computed together, so they can share results for common
+    graph elements.
+
+    Casts all results with `np.asanyarray`, and converts any MaskedConstants
+    appearing into masked arrays, to ensure that all return values are
+    writeable NumPy array objects.
+
+    Any non-lazy arrays are passed through, as they are by `da.compute`.
+    They undergo the same result standardisation.
+
+    """
+    computed_arrays = da.compute(*arrays)
+    results = []
+    for lazy_in, real_out in zip(arrays, computed_arrays):
+        # Ensure we always have arrays.
+        # Note : in some cases dask (and numpy) will return a scalar
+        # numpy.int/numpy.float object rather than an ndarray.
+        # Recorded in https://github.com/dask/dask/issues/2111.
+        real_out = np.asanyarray(real_out)
+        if isinstance(real_out, ma.core.MaskedConstant):
+            # Convert any masked constants into NumPy masked arrays.
+            # NOTE: in this case, also apply the original lazy-array dtype, as
+            # masked constants *always* have dtype float64.
+            real_out = ma.masked_array(real_out.data, mask=real_out.mask,
+                                       dtype=lazy_in.dtype)
+        results.append(real_out)
+    return results
+
+
 def as_concrete_data(data):
     """
     Return the actual content of a lazy array, as a numpy array.
@@ -120,14 +153,7 @@ def as_concrete_data(data):
 
     """
     if is_lazy_data(data):
-        # Realise dask array, ensuring the data result is always a NumPy array.
-        # In some cases dask may return a scalar numpy.int/numpy.float object
-        # rather than a numpy.ndarray object.
-        # Recorded in https://github.com/dask/dask/issues/2111.
-        dtype = data.dtype
-        data = np.asanyarray(data.compute())
-        if isinstance(data, ma.core.MaskedConstant):
-            data = ma.masked_array(data.data, dtype=dtype, mask=data.mask)
+        data, = _co_realise_lazy_arrays([data])
 
     return data
 
@@ -158,3 +184,39 @@ def multidim_lazy_stack(stack):
         result = da.stack([multidim_lazy_stack(subarray)
                            for subarray in stack])
     return result
+
+
+def co_realise_cubes(*cubes):
+    """
+    Fetch 'real' data for multiple cubes, in a shared calculation.
+
+    This computes any lazy data, equivalent to accessing each `cube.data`.
+    However, lazy calculations and data fetches can be shared between the
+    computations, improving performance.
+
+    Args:
+
+    * cubes (list of :class:`~iris.cube.Cube`):
+        Arguments, each of which is a cube to be realised.
+
+    For example::
+
+        # Form stats.
+        a_std = cube_a.collapsed(['x', 'y'], iris.analysis.STD_DEV)
+        b_std = cube_b.collapsed(['x', 'y'], iris.analysis.STD_DEV)
+        ab_mean_diff = (cube_b - cube_a).collapsed(['x', 'y'],
+                                                   iris.analysis.MEAN)
+        std_err = (a_std * a_std + b_std * b_std) ** 0.5
+
+        # Compute stats together (to avoid multiple data passes).
+        iris.co_realise_cubes(a_std, b_std, ab_mean_diff, std_err)
+
+
+    .. Note::
+
+        Cubes with non-lazy data may also be passed, with no ill effect.
+
+    """
+    results = _co_realise_lazy_arrays([cube.core_data() for cube in cubes])
+    for cube, result in zip(cubes, results):
+        cube.data = result
