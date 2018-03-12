@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -1624,7 +1624,7 @@ fc_extras
         attr_units = get_attr_units(cf_coord_var, attributes)
 
         def cf_var_as_array(cf_var):
-            dtype = cf_var.dtype
+            dtype = iris.fileformats.netcdf.get_actual_dtype(cf_var)
             fill_value = getattr(cf_var.cf_data, '_FillValue',
                                  netCDF4.default_fillvals[dtype.str[1:]])
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(
