@@ -105,7 +105,7 @@ install:
   - export OVERRIDE_TEST_DATA_REPOSITORY=$(pwd)/iris-test-data/test_data
 
 # show config in action
-  - python -c "import iris.config; print iris.config.TEST_DATA_DIR"
+  - python -c "import iris.config; print(iris.config.TEST_DATA_DIR)"
 
   # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
