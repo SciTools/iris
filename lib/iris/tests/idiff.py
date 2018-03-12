@@ -140,7 +140,7 @@ def diff_viewer(repo, key, repo_fname, phash, status,
 
 def _calculate_hit(uris, phash, action):
     # Create the expected perceptual image hashes from the uris.
-    to_hash = imagehash.hex_to_hash
+    to_hash = imagehash.old_hex_to_hash
     expected = [to_hash(os.path.splitext(os.path.basename(uri))[0],
                         hash_size=iris.tests._HASH_SIZE)
                 for uri in uris]
