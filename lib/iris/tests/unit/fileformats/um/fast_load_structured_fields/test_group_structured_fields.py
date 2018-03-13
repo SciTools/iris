@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -71,9 +71,7 @@ class Test__grouping(tests.IrisTest):
 
     def _group_result(self, fields):
         # Run the testee, but returning just the groups (not FieldCollations).
-        with mock.patch('iris.fileformats.um._fast_load_structured_fields.'
-                        'FieldCollation', new=lambda args: args):
-            result = list(group_structured_fields(fields))
+        result = list(group_structured_fields(fields, collation_class=tuple))
         return result
 
     def _test_fields(self, item):
