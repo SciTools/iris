@@ -34,7 +34,6 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-from iris.fileformats.um import structured_um_loading
 
 from iris.tests.integration.fast_load.test_fast_load import Mixin_FieldTest
 
