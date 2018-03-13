@@ -18,7 +18,7 @@
 Code for fast loading of structured UM data.
 
 This module defines which pp-field elements take part in structured loading,
-and provides creation of :class:`FieldCollation` objects from lists of
+and provides creation of :class:`BasicFieldCollation` objects from lists of
 :class:`iris.fileformats.pp.PPField`.
 
 """
@@ -36,7 +36,7 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
 
-class FieldCollation(object):
+class BasicFieldCollation(object):
     """
     An object representing a group of UM fields with array structure that can
     be vectorized into a single cube.
@@ -44,10 +44,10 @@ class FieldCollation(object):
     For example:
 
     Suppose we have a set of 28 fields repeating over 7 vertical levels for
-    each of 4 different data times.  If a FieldCollation is created to contain
-    these, it can identify that this is a 4*7 regular array structure.
+    each of 4 different data times.  If a BasicFieldCollation is created to
+    contain these, it can identify that this is a 4*7 regular array structure.
 
-    This FieldCollation will then have the following properties:
+    This BasicFieldCollation will then have the following properties:
 
     * within 'element_arrays_and_dims' :
         Element 'blev' have the array shape (7,) and dims of (1,).
@@ -259,7 +259,9 @@ def _um_collation_key_function(field):
     # vector pseudo-level coordinate directly in the structured load analysis.
 
 
-def group_structured_fields(field_iterator):
+def group_structured_fields(field_iterator,
+                            collation_class=BasicFieldCollation,
+                            **collation_kwargs):
     """
     Collect structured fields into identified groups whose fields can be
     combined to form a single cube.
@@ -268,6 +270,13 @@ def group_structured_fields(field_iterator):
 
     * field_iterator (iterator of :class:`iris.fileformats.pp.PPField`):
         A source of PP or FF fields.  N.B. order is significant.
+
+    Kwargs:
+
+    * collation_class (class):
+        Type of collation wrapper to create from each group of fields.
+    * collation_kwargs (dict):
+        Additional constructor keywords for collation creation.
 
     The function sorts and collates on phenomenon-relevant metadata only,
     defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
@@ -285,8 +294,8 @@ def group_structured_fields(field_iterator):
        :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
 
     Returns:
-        A generator of FieldCollation objects, each of which contains a single
-        collated group from the input fields.
+        A generator of BasicFieldCollation objects, each of which contains a
+        single collated group from the input fields.
 
     .. note::
 
@@ -297,4 +306,4 @@ def group_structured_fields(field_iterator):
     """
     _fields = sorted(field_iterator, key=_um_collation_key_function)
     for _, fields in itertools.groupby(_fields, _um_collation_key_function):
-        yield FieldCollation(tuple(fields))
+        yield collation_class(tuple(fields), **collation_kwargs)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,7 +27,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Publish the FF-replacement features here, and include documentation.
 from ._ff_replacement import um_to_pp, load_cubes, load_cubes_32bit_ieee
-from ._fast_load import structured_um_loading
-from ._fast_load_structured_fields import FieldCollation
+from ._fast_load import structured_um_loading, FieldCollation
 __all__ = ['um_to_pp', 'load_cubes', 'load_cubes_32bit_ieee',
            'structured_um_loading', 'FieldCollation']

@@ -831,7 +831,7 @@ def _pp_attribute_names(header_defn):
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = list(EXTRA_DATA.values())
     special_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack',
-                          'boundary_packing']
+                          'boundary_packing', '_index_in_structured_load_file']
     return normal_headers + special_headers + extra_data + special_attributes
 
 
@@ -864,6 +864,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         self.raw_lbtim = None
         self.raw_lbpack = None
         self.boundary_packing = None
+        self._index_in_structured_load_file = None
         if header is not None:
             self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
