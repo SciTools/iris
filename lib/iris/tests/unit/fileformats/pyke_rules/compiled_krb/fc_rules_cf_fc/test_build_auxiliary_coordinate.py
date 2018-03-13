@@ -47,6 +47,8 @@ class TestBoundsVertexDim(tests.IrisTest):
             units='m',
             shape=points.shape,
             dtype=points.dtype,
+            scale_factor=1,
+            add_offset=0,
             __getitem__=lambda self, key: points[key])
 
         self.engine = mock.Mock(
@@ -77,6 +79,8 @@ class TestBoundsVertexDim(tests.IrisTest):
             cf_name='wibble_bnds',
             shape=bounds.shape,
             dtype=bounds.dtype,
+            scale_factor=1,
+            add_offset=0,
             __getitem__=lambda self, key: bounds[key])
 
         # Expected bounds on the resulting coordinate should be rolled so that
@@ -116,6 +120,8 @@ class TestBoundsVertexDim(tests.IrisTest):
             cf_name='wibble_bnds',
             shape=bounds.shape,
             dtype=bounds.dtype,
+            scale_factor=1,
+            add_offset=0,
             __getitem__=lambda self, key: bounds[key])
 
         expected_coord = AuxCoord(
@@ -153,6 +159,8 @@ class TestBoundsVertexDim(tests.IrisTest):
             cf_name='wibble_bnds',
             shape=bounds.shape,
             dtype=bounds.dtype,
+            scale_factor=1,
+            add_offset=0,
             __getitem__=lambda self, key: bounds[key])
 
         expected_coord = AuxCoord(
