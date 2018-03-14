@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,24 +26,24 @@ import iris.tests as tests
 import netCDF4
 import numpy as np
 
-from iris.coords import DimCoord
+from iris.coords import AuxCoord, DimCoord
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _load_cube
 from iris.tests import mock
 
 
-class TestCoordAttributes(tests.IrisTest):
-    @staticmethod
-    def _patcher(engine, cf, cf_group):
-        coordinates = []
-        for coord in cf_group:
-            engine.cube.add_aux_coord(coord)
-            coordinates.append((coord, coord.name()))
-        engine.provides['coordinates'] = coordinates
+def _patcher(engine, cf, cf_group):
+    coordinates = []
+    for coord in cf_group:
+        engine.cube.add_aux_coord(coord)
+        coordinates.append((coord, coord.name()))
+    engine.provides['coordinates'] = coordinates
 
+
+class TestCoordAttributes(tests.IrisTest):
     def setUp(self):
         this = 'iris.fileformats.netcdf._assert_case_specific_facts'
-        patch = mock.patch(this, side_effect=self._patcher)
+        patch = mock.patch(this, side_effect=_patcher)
         patch.start()
         self.addCleanup(patch.stop)
         self.engine = mock.Mock()
@@ -61,7 +61,8 @@ class TestCoordAttributes(tests.IrisTest):
         cf_group = {}
         for name, cf_attrs in zip(names, attrs):
             cf_attrs_unused = mock.Mock(return_value=cf_attrs)
-            cf_group[name] = mock.Mock(cf_attrs_unused=cf_attrs_unused)
+            cf_group[name] = mock.Mock(spec=iris.fileformats.cf.CFVariable,
+                                       cf_attrs_unused=cf_attrs_unused)
         cf = mock.Mock(cf_group=cf_group)
 
         cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
@@ -110,6 +111,62 @@ class TestCoordAttributes(tests.IrisTest):
         for name, expect in zip(names, expected):
             attributes = cube.coord(name).attributes
             self.assertEqual(set(attributes.items()), set(expect))
+
+
+class TestValidRangeAttributes(tests.IrisTest):
+    def setUp(self):
+        this = 'iris.fileformats.netcdf._assert_case_specific_facts'
+        patch = mock.patch(this, side_effect=_patcher)
+        patch.start()
+        self.addCleanup(patch.stop)
+        self.engine = mock.Mock()
+        self.filename = 'DUMMY'
+
+    def _test(self, attrs, dtype, expected_attrs):
+        # Test that given a set of attributes and values, and a dtype for a
+        # coordinate, the attributes on the coordinate are as expected.
+        coord = AuxCoord(np.array([1], dtype=dtype), long_name='x')
+        cf_group = {}
+        cf_attrs_unused = mock.Mock(return_value=[])
+        cf_group['x'] = mock.Mock(spec=iris.fileformats.cf.CFVariable,
+                                  cf_attrs_unused=cf_attrs_unused,
+                                  **attrs)
+        cf = mock.Mock(cf_group=cf_group)
+        cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
+                                dtype=np.dtype('i4'),
+                                cf_data=mock.Mock(_FillValue=None),
+                                cf_name='DUMMY_VAR',
+                                cf_group=[coord],
+                                shape=(1,))
+
+        _load_cube(self.engine, cf, cf_var, self.filename)
+
+        self.assertEqual(set(coord.attributes.items()),
+                         set(expected_attrs.items()))
+
+    def test_valid_range_bool(self):
+        attrs = {'valid_range': (0, 1)}
+        self._test(attrs, np.bool, {})
+
+    def test_valid_range_byte(self):
+        attrs = {'valid_range': (0, 100)}
+        self._test(attrs, np.byte, attrs)
+
+    def test_valid_range_int(self):
+        attrs = {'valid_range': (0, 1)}
+        self._test(attrs, np.int, attrs)
+
+    def test_valid_min_max_bool(self):
+        attrs = {'valid_min': 0, 'valid_max': 1}
+        self._test(attrs, np.bool, {})
+
+    def test_valid_min_max_byte(self):
+        attrs = {'valid_min': 0, 'valid_max': 100}
+        self._test(attrs, np.byte, attrs)
+
+    def test_valid_min_max_int(self):
+        attrs = {'valid_min': 0, 'valid_max': 1}
+        self._test(attrs, np.int, attrs)
 
 
 class TestCubeAttributes(tests.IrisTest):

@@ -250,5 +250,93 @@ class TestDtype(tests.IrisTest):
         self.assertEqual(coord.dtype.kind, 'f')
 
 
+class TestValidRange(tests.IrisTest):
+    def _test(self, points, attributes, expected_dtype):
+        # Create coordinate cf variables and pyke engine.
+        self.cf_coord_var = mock.Mock(
+            spec=CFVariable,
+            dimensions=('foo', 'bar'),
+            cf_name='wibble',
+            cf_data=mock.Mock(),
+            standard_name=None,
+            long_name='wibble',
+            units='m',
+            shape=points.shape,
+            dtype=points.dtype,
+            __getitem__=lambda self, key: points[key],
+            **attributes)
+
+        self.engine = mock.Mock(
+            cube=mock.Mock(),
+            cf_var=mock.Mock(dimensions=('foo', 'bar')),
+            filename='DUMMY',
+            provides=dict(coordinates=[]))
+
+        def patched__getitem__(proxy_self, keys):
+            if proxy_self.variable_name == self.cf_coord_var.cf_name:
+                return self.cf_coord_var[keys]
+            raise RuntimeError()
+
+        self.deferred_load_patch = mock.patch(
+            'iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
+            new=patched__getitem__)
+
+        with self.deferred_load_patch:
+            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+        coord, _ = self.engine.provides['coordinates'][0]
+        self.assertEqual(coord.dtype, expected_dtype)
+
+    def test_valid_range_bool(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_range': (0, 1)}
+        self._test(points, attributes, np.dtype('bool'))
+
+    def test_valid_range_byte(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_range': (0, 100)}
+        self._test(points, attributes, np.dtype('byte'))
+
+    def test_valid_range_int(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('int'))
+        attributes = {'valid_range': (0, 1)}
+        self._test(points, attributes, np.dtype('int'))
+
+    def test_valid_range_scale_factor_byte(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_range': (0, 1), 'scale_factor': 5}
+        self._test(points, attributes, np.dtype('byte'))
+
+    def test_valid_range_add_offset_byte(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_range': (0, 1), 'add_offset': 3}
+        self._test(points, attributes, np.dtype('byte'))
+
+    def test_valid_min_max_bool(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_min': 0, 'valid_max': 1}
+        self._test(points, attributes, np.dtype('bool'))
+
+    def test_valid_min_max_byte(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_min': 0, 'valid_max': 100}
+        self._test(points, attributes, np.dtype('byte'))
+
+    def test_valid_min_max_int(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('int'))
+        attributes = {'valid_min': 0, 'valid_max': 1}
+        self._test(points, attributes, np.dtype('int'))
+
+    def test_valid_min_max_scale_factor_byte(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_min': 0, 'valid_max': 1, 'scale_factor': 5}
+        self._test(points, attributes, np.dtype('byte'))
+
+    def test_valid_min_max_add_offset_byte(self):
+        points = np.array([1, 0, 1], dtype=np.dtype('byte'))
+        attributes = {'valid_min': 0, 'valid_max': 1, 'add_offset': 3}
+        self._test(points, attributes, np.dtype('byte'))
+
+
 if __name__ == '__main__':
     tests.main()

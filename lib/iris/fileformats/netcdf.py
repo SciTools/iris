@@ -30,6 +30,7 @@ from six.moves import zip_longest  # Previous line may not be tampered with!
 import six
 
 import collections
+from functools import partial
 from itertools import repeat
 import os
 import os.path
@@ -395,7 +396,7 @@ class NetCDFDataProxy(object):
             var = variable[keys]
         finally:
             dataset.close()
-        return np.asanyarray(var)
+        return np.asanyarray(var, dtype=self.dtype)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \
@@ -491,24 +492,33 @@ def _set_attributes(attributes, key, value):
 
 
 def _get_actual_dtype(cf_var):
-    # Figure out what the eventual data type will be after any scale/offset
-    # transforms.
-    dummy_data = np.zeros(1, dtype=cf_var.dtype)
-    if hasattr(cf_var, 'scale_factor'):
-        dummy_data = cf_var.scale_factor * dummy_data
-    if hasattr(cf_var, 'add_offset'):
-        dummy_data = cf_var.add_offset + dummy_data
-    return dummy_data.dtype
+    # Check if we should interpret this data as boolean.
+    if (cf_var.dtype == np.byte and
+            getattr(cf_var, 'scale_factor', 1) == 1 and
+            getattr(cf_var, 'add_offset', 0) == 0 and
+            (tuple(getattr(cf_var, 'valid_range', ())) == (0, 1) or
+             getattr(cf_var, 'valid_min', None) == 0 and
+             getattr(cf_var, 'valid_max', None) == 1)):
+        return np.bool
+    else:
+        # Figure out what the eventual data type will be after any scale/offset
+        # transforms.
+        dummy_data = np.zeros(1, dtype=cf_var.dtype)
+        if hasattr(cf_var, 'scale_factor'):
+            dummy_data = cf_var.scale_factor * dummy_data
+        if hasattr(cf_var, 'add_offset'):
+            dummy_data = cf_var.add_offset + dummy_data
+        return dummy_data.dtype
 
 
 def _load_cube(engine, cf, cf_var, filename):
     """Create the cube associated with the CF-netCDF data variable."""
-    dtype = _get_actual_dtype(cf_var)
+    cube_dtype = _get_actual_dtype(cf_var)
 
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue',
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
-    proxy = NetCDFDataProxy(cf_var.shape, dtype, filename, cf_var.cf_name,
+    proxy = NetCDFDataProxy(cf_var.shape, cube_dtype, filename, cf_var.cf_name,
                             fill_value)
     data = as_lazy_data(proxy)
     cube = iris.cube.Cube(data)
@@ -537,13 +547,22 @@ def _load_cube(engine, cf, cf_var, filename):
     def attribute_predicate(item):
         return item[0] not in _CF_ATTRS
 
+    def get_unused_attrs(cf_var, dtype):
+        valid_range_items = tuple(
+            (key, getattr(cf_var, key))
+            for key in ('valid_min', 'valid_max', 'valid_range')
+            if hasattr(cf_var, key))
+        # We consider attributes defining a valid range to be unused if and
+        # only if the data has not been interpreted as boolean.
+        return (tuple(filter(attribute_predicate, cf_var.cf_attrs_unused())) +
+                valid_range_items if dtype != np.bool else ())
+
     for coord, cf_var_name in coordinates:
-        tmpvar = filter(attribute_predicate,
-                        cf.cf_group[cf_var_name].cf_attrs_unused())
+        tmpvar = get_unused_attrs(cf.cf_group[cf_var_name], coord.dtype)
         for attr_name, attr_value in tmpvar:
             _set_attributes(coord.attributes, attr_name, attr_value)
 
-    tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
+    tmpvar = get_unused_attrs(cf_var, cube_dtype)
     # Attach untouched attributes of the associated CF-netCDF data variable to
     # the cube.
     for attr_name, attr_value in tmpvar:
