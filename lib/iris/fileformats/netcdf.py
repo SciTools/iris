@@ -490,7 +490,7 @@ def _set_attributes(attributes, key, value):
         attributes[str(key)] = value
 
 
-def get_actual_dtype(cf_var):
+def _get_actual_dtype(cf_var):
     # Figure out what the eventual data type will be after any scale/offset
     # transforms.
     dummy_data = np.zeros(1, dtype=cf_var.dtype)
@@ -503,7 +503,7 @@ def get_actual_dtype(cf_var):
 
 def _load_cube(engine, cf, cf_var, filename):
     """Create the cube associated with the CF-netCDF data variable."""
-    dtype = get_actual_dtype(cf_var)
+    dtype = _get_actual_dtype(cf_var)
 
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue',
