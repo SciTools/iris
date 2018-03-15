@@ -1995,6 +1995,10 @@ class Saver(object):
         if cube.units != 'unknown':
             _setncattr(cf_var, 'units', str(cube.units))
 
+        # Add the CF-netCDF calendar attribute.
+        if cube.units.calendar:
+            _setncattr(cf_var, 'calendar', cube.units.calendar)
+
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:
             local_keys = set()
