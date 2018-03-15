@@ -493,13 +493,13 @@ def _set_attributes(attributes, key, value):
 
 def _get_actual_dtype(cf_var):
     # Check if we should interpret this data as boolean.
-    if (cf_var.dtype == np.byte and
+    if (cf_var.dtype == np.dtype('byte') and
             getattr(cf_var, 'scale_factor', 1) == 1 and
             getattr(cf_var, 'add_offset', 0) == 0 and
             (tuple(getattr(cf_var, 'valid_range', ())) == (0, 1) or
              getattr(cf_var, 'valid_min', None) == 0 and
              getattr(cf_var, 'valid_max', None) == 1)):
-        return np.bool
+        return np.dtype('bool')
     else:
         # Figure out what the eventual data type will be after any scale/offset
         # transforms.
