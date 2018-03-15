@@ -6,7 +6,6 @@ recursive-include lib/iris/tests/results *.cml *.cdl *.txt *.xml *.json
 recursive-include lib/iris/etc *
 include lib/iris/fileformats/_pyke_rules/*.k?b
 include lib/iris/tests/stock*.npz
-exclude lib/iris/etc/site.cfg
 
 include requirements/*.txt
 
