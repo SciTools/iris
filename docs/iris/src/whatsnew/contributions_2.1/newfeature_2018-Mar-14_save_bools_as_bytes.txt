@@ -1,0 +1,2 @@
+* It is now possible to save boolean data to netCDF format. The data are saved with a data type of 'byte', and a 'valid_range' attribute with value (0, 1).
+* NetCDF variables with data type 'byte', and a 'valid_range' attribute with value (0, 1) or 'valid_min' and 'valid_max' attributes with values 0 and 1 respectively, are interpreted as boolean values on load.
