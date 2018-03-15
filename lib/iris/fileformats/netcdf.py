@@ -1406,11 +1406,15 @@ class Saver(object):
                                  self._dataset.file_format)
                 raise ValueError(msg)
             values = values.astype(np.int32)
-        # NetCDF does not support booleans, so save them as bytes.
-        valid_range = None
+        return values
+
+    def _handle_boolean(self, values):
         if values.dtype == np.bool:
+            # NetCDF does not support booleans, so save them as bytes.
             values = values.astype(np.byte)
             valid_range = np.array([0, 1], np.byte)
+        else:
+            valid_range = None
         return values, valid_range
 
     def _create_cf_bounds(self, coord, cf_var, cf_name):
@@ -1432,8 +1436,9 @@ class Saver(object):
         """
         if coord.has_bounds():
             # Get the values in a form which is valid for the file format.
-            bounds, valid_range = self._ensure_valid_dtype(
-                coord.bounds,
+            bounds, valid_range = self._handle_boolean(coord.bounds)
+            bounds = self._ensure_valid_dtype(
+                bounds,
                 'the bounds of coordinate',
                 coord)
             n_bounds = bounds.shape[-1]
@@ -1547,8 +1552,9 @@ class Saver(object):
             raise ValueError(msg)
 
         # Get the values in a form which is valid for the file format.
-        data, valid_range = self._ensure_valid_dtype(data, 'coordinate',
-                                                     cell_measure)
+
+        data, valid_range = self._handle_boolean(data)
+        data = self._ensure_valid_dtype(data, 'coordinate', cell_measure)
 
         # Create the CF-netCDF variable.
         cf_var = self._dataset.createVariable(
@@ -1646,9 +1652,10 @@ class Saver(object):
                 cf_name = cf_dimensions[0]
 
             # Get the values in a form which is valid for the file format.
-            points, valid_range = self._ensure_valid_dtype(coord.points,
-                                                           'coordinate',
-                                                           coord)
+
+            points, valid_range = self._handle_boolean(coord.points)
+            points = self._ensure_valid_dtype(points, 'coordinate',
+                                              coord)
 
             # Create the CF-netCDF variable.
             cf_var = self._dataset.createVariable(
@@ -1971,8 +1978,7 @@ class Saver(object):
                                           'NETCDF3_64BIT')):
 
             # Get the values in a form which is valid for the file format.
-            data, valid_range = self._ensure_valid_dtype(cube.data, 'cube',
-                                                         cube)
+            data = self._ensure_valid_dtype(cube.data, 'cube', cube)
 
             def store(data, cf_var, fill_value):
                 cf_var[:] = data
@@ -1981,7 +1987,6 @@ class Saver(object):
                 return is_masked, contains_value
         else:
             data = cube.lazy_data()
-            valid_range = None
 
             def store(data, cf_var, fill_value):
                 # Store lazy data and check whether it is masked and contains
@@ -1991,7 +1996,10 @@ class Saver(object):
                 return target.is_masked, target.contains_value
 
         if not packing:
+            data, valid_range = self._handle_boolean(data)
             dtype = data.dtype.newbyteorder('=')
+        else:
+            valid_range = None
 
         # Create the cube CF-netCDF data variable with data payload.
         cf_var = self._dataset.createVariable(cf_name, dtype, dimension_names,

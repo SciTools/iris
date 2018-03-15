@@ -113,7 +113,7 @@ class TestCoordAttributes(tests.IrisTest):
             self.assertEqual(set(attributes.items()), set(expect))
 
 
-class TestValidRangeAttributes(tests.IrisTest):
+class TestCoordValidRangeAttributes(tests.IrisTest):
     def setUp(self):
         this = 'iris.fileformats.netcdf._assert_case_specific_facts'
         patch = mock.patch(this, side_effect=_patcher)
@@ -146,27 +146,27 @@ class TestValidRangeAttributes(tests.IrisTest):
 
     def test_valid_range_bool(self):
         attrs = {'valid_range': (0, 1)}
-        self._test(attrs, np.bool, {})
+        self._test(attrs, np.dtype('bool'), {})
 
     def test_valid_range_byte(self):
         attrs = {'valid_range': (0, 100)}
-        self._test(attrs, np.byte, attrs)
+        self._test(attrs, np.dtype('byte'), attrs)
 
     def test_valid_range_int(self):
         attrs = {'valid_range': (0, 1)}
-        self._test(attrs, np.int, attrs)
+        self._test(attrs, np.dtype('int'), attrs)
 
     def test_valid_min_max_bool(self):
         attrs = {'valid_min': 0, 'valid_max': 1}
-        self._test(attrs, np.bool, {})
+        self._test(attrs, np.dtype('bool'), {})
 
     def test_valid_min_max_byte(self):
         attrs = {'valid_min': 0, 'valid_max': 100}
-        self._test(attrs, np.byte, attrs)
+        self._test(attrs, np.dtype('byte'), attrs)
 
     def test_valid_min_max_int(self):
         attrs = {'valid_min': 0, 'valid_max': 1}
-        self._test(attrs, np.int, attrs)
+        self._test(attrs, np.dtype('int'), attrs)
 
 
 class TestCubeAttributes(tests.IrisTest):
@@ -225,6 +225,57 @@ class TestCubeAttributes(tests.IrisTest):
         cube = _load_cube(self.engine, self.cf, cf_var, self.filename)
         self.assertEqual(len(cube.attributes), len(expected))
         self.assertEqual(set(cube.attributes.items()), expected)
+
+
+class TestCubeValidRangeAttributes(tests.IrisTest):
+    def setUp(self):
+        this = 'iris.fileformats.netcdf._assert_case_specific_facts'
+        patch = mock.patch(this)
+        patch.start()
+        self.addCleanup(patch.stop)
+        self.engine = mock.Mock()
+        self.filename = 'DUMMY'
+
+    def _test(self, attrs, dtype, expected_attrs):
+        # Test that given a set of attributes and values, and a dtype for a
+        # coordinate, the attributes on the coordinate are as expected.
+        cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
+                                dtype=dtype,
+                                cf_data=mock.Mock(_FillValue=None),
+                                cf_name='DUMMY_VAR',
+                                cf_group=mock.Mock(),
+                                cf_attrs_unused=mock.Mock(return_value=[]),
+                                shape=(1,),
+                                **attrs)
+
+        cube = _load_cube(self.engine, None, cf_var, self.filename)
+
+        self.assertEqual(set(cube.attributes.items()),
+                         set(expected_attrs.items()))
+
+    def test_valid_range_bool(self):
+        attrs = {'valid_range': (0, 1)}
+        self._test(attrs, np.dtype('byte'), {})
+
+    def test_valid_range_byte(self):
+        attrs = {'valid_range': (0, 100)}
+        self._test(attrs, np.dtype('byte'), attrs)
+
+    def test_valid_range_int(self):
+        attrs = {'valid_range': (0, 1)}
+        self._test(attrs, np.dtype('int'), attrs)
+
+    def test_valid_min_max_bool(self):
+        attrs = {'valid_min': 0, 'valid_max': 1}
+        self._test(attrs, np.dtype('byte'), {})
+
+    def test_valid_min_max_byte(self):
+        attrs = {'valid_min': 0, 'valid_max': 100}
+        self._test(attrs, np.dtype('byte'), attrs)
+
+    def test_valid_min_max_int(self):
+        attrs = {'valid_min': 0, 'valid_max': 1}
+        self._test(attrs, np.dtype('int'), attrs)
 
 
 if __name__ == "__main__":
