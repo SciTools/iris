@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,7 +35,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris.coords import CellMethod
+from iris.coords import AuxCoord, CellMethod
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 from iris.fileformats.netcdf import Saver
@@ -427,6 +427,26 @@ class TestScalarCube(tests.IrisTest):
             iris.save(cube, fout)
             scalar_cube = iris.load_cube(fout)
             self.assertEqual(scalar_cube.name(), 'scalar_cube')
+
+
+class TestBooleanData(tests.IrisTest):
+    def test_boolean_data_save_load(self):
+        coord = AuxCoord([False, True], long_name='bool_coord')
+        cube = Cube([True, False], long_name='bool_cube',
+                    aux_coords_and_dims=[(coord, 0)])
+        valid_range_attrs = {'valid_range', 'valid_min', 'valid_max'}
+        with self.temp_filename(suffix='.nc') as fout:
+            iris.save(cube, fout)
+            bool_cube = iris.load_cube(fout)
+            bool_coord = bool_cube.coord('bool_coord')
+            self.assertEqual(bool_cube.dtype, np.dtype('bool'))
+            self.assertArrayEqual(bool_cube.data, [True, False])
+            self.assertEqual(bool_coord.dtype, np.dtype('bool'))
+            self.assertArrayEqual(bool_coord.points, [False, True])
+            self.assertEqual(set(bool_cube.attributes) & valid_range_attrs,
+                             set())
+            self.assertEqual(set(bool_coord.attributes) & valid_range_attrs,
+                             set())
 
 
 if __name__ == "__main__":
