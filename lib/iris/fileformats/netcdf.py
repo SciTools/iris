@@ -490,8 +490,7 @@ def _set_attributes(attributes, key, value):
         attributes[str(key)] = value
 
 
-def _load_cube(engine, cf, cf_var, filename):
-    """Create the cube associated with the CF-netCDF data variable."""
+def _get_actual_dtype(cf_var):
     # Figure out what the eventual data type will be after any scale/offset
     # transforms.
     dummy_data = np.zeros(1, dtype=cf_var.dtype)
@@ -499,12 +498,18 @@ def _load_cube(engine, cf, cf_var, filename):
         dummy_data = cf_var.scale_factor * dummy_data
     if hasattr(cf_var, 'add_offset'):
         dummy_data = cf_var.add_offset + dummy_data
+    return dummy_data.dtype
+
+
+def _load_cube(engine, cf, cf_var, filename):
+    """Create the cube associated with the CF-netCDF data variable."""
+    dtype = _get_actual_dtype(cf_var)
 
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue',
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
-    proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
-                            filename, cf_var.cf_name, fill_value)
+    proxy = NetCDFDataProxy(cf_var.shape, dtype, filename, cf_var.cf_name,
+                            fill_value)
     data = as_lazy_data(proxy)
     cube = iris.cube.Cube(data)
 
