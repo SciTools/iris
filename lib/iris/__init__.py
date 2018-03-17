@@ -478,7 +478,7 @@ def sample_data_path(*path_to_join):
     if iris_sample_data is not None:
         target = os.path.join(iris_sample_data.path, target)
     else:
-        raise ImportError("Please install the 'iris_sample_data' package to "
+        raise ImportError("Please install the 'iris-sample-data' package to "
                           "access sample data.")
     if not glob.glob(target):
         raise ValueError('Sample data file(s) at {!r} not found.\n'
