@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -552,7 +552,6 @@ class IrisTest_nometa(unittest.TestCase):
         msg = msg.format(expected_regexp)
         self.assertTrue(matches, msg)
 
-
     @contextlib.contextmanager
     def assertNoWarningsRegexp(self, expected_regexp=''):
         # Check that no warning matching the given expression is raised.
@@ -817,16 +816,43 @@ class IrisTest_nometa(unittest.TestCase):
                     raise AssertionError(emsg.format(unique_id))
             else:
                 uris = repo[unique_id]
-                # Create the expected perceptual image hashes from the uris.
+                # Extract the hex basename strings from the uris.
+                hexes = [os.path.splitext(os.path.basename(uri))[0]
+                         for uri in uris]
+                # See https://github.com/JohannesBuchner/imagehash#changelog
+                # for details on imagehash release 4.0 old_hex_to_hash() fix.
+                hex_fix_available = hasattr(imagehash, 'old_hex_to_hash')
                 to_hash = imagehash.hex_to_hash
-                expected = [to_hash(os.path.splitext(os.path.basename(uri))[0],
-                                    hash_size=_HASH_SIZE)
-                            for uri in uris]
 
-                # Calculate the hamming distance vector for the result hash.
-                distances = [e - phash for e in expected]
+                def _image_match(expected):
+                    # Calculate hamming distance vector for the result hash.
+                    distances = [e - phash for e in expected]
+                    result = np.all([d > _HAMMING_DISTANCE for d in distances])
+                    return not result
 
-                if np.all([hd > _HAMMING_DISTANCE for hd in distances]):
+                if hex_fix_available:
+                    # Create expected perceptual image hashes from the uris.
+                    # Note that, the "hash_size" kwarg is unavailable and old
+                    # style hashes will not be corrected.
+                    expected = [to_hash(uri_hex) for uri_hex in hexes]
+                    matching = _image_match(expected)
+
+                    if not matching:
+                        # Retry, correcting old hex strings.
+                        # Note that, the "hash_size" kwarg is required.
+                        to_hash = imagehash.old_hex_to_hash
+                        expected = [to_hash(uri_hex, hash_size=_HASH_SIZE)
+                                    for uri_hex in hexes]
+                        matching = _image_match(expected)
+                else:
+                    # Create expected perceptual image hashes from the uris.
+                    # The version of imagehash will be prior to v4.0, so the
+                    # "hash_size" kwarg is required.
+                    expected = [to_hash(uri_hex, hash_size=_HASH_SIZE)
+                                for uri_hex in hexes]
+                    matching = _image_match(expected)
+
+                if not matching:
                     if dev_mode:
                         _create_missing()
                     else:
@@ -1104,7 +1130,7 @@ class TestGribMessage(IrisTest):
                         # for each message.
                         self.assertEqual(m1_value, diffs[key][0],
                                          msg=msg.format(key, m1_value,
-                                                         diffs[key][0]))
+                                                        diffs[key][0]))
 
                         self.assertEqual(m2_value, diffs[key][1],
                                          msg=msg.format(key, m2_value,
