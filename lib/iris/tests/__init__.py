@@ -820,7 +820,7 @@ class IrisTest_nometa(unittest.TestCase):
                 hexes = [os.path.splitext(os.path.basename(uri))[0]
                          for uri in uris]
                 # See https://github.com/JohannesBuchner/imagehash#changelog
-                # for details on imagehash release 4.0 old_hex_to_hash() fix.
+                # for details on imagehash release v4.0 old_hex_to_hash() fix.
                 hex_fix_available = hasattr(imagehash, 'old_hex_to_hash')
                 to_hash = imagehash.hex_to_hash
 
@@ -844,8 +844,8 @@ class IrisTest_nometa(unittest.TestCase):
                     matching, distances = _image_matcher(expected)
 
                     if not matching:
-                        # Retry, correcting old hex strings.
-                        # Note that, the "hash_size" kwarg is required.
+                        # Retry, correcting old hex strings. Note that,
+                        # the "hash_size" kwarg is required.
                         to_hash = imagehash.old_hex_to_hash
                         expected = [to_hash(uri_hex, hash_size=_HASH_SIZE)
                                     for uri_hex in hexes]
