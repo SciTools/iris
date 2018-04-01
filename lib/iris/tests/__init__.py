@@ -781,7 +781,7 @@ class IrisTest_nometa(unittest.TestCase):
             def _create_missing():
                 fname = '{}.png'.format(phash)
                 base_uri = ('https://scitools.github.io/test-iris-imagehash/'
-                            'images/{}')
+                            'images/v4/{}')
                 uri = base_uri.format(fname)
                 hash_fname = os.path.join(image_output_directory, fname)
                 uris = repo.setdefault(unique_id, [])
@@ -819,46 +819,14 @@ class IrisTest_nometa(unittest.TestCase):
                 # Extract the hex basename strings from the uris.
                 hexes = [os.path.splitext(os.path.basename(uri))[0]
                          for uri in uris]
-                # See https://github.com/JohannesBuchner/imagehash#changelog
-                # for details on imagehash release v4.0 old_hex_to_hash() fix.
-                hex_fix_available = hasattr(imagehash, 'old_hex_to_hash')
+                # Create the expected perceptual image hashes from the uris.
                 to_hash = imagehash.hex_to_hash
+                expected = [to_hash(uri_hex) for uri_hex in hexes]
 
-                def _image_matcher(expected):
-                    """
-                    Returns whether at least one expected image is similar
-                    enough to the actual image, and the vector of hamming
-                    distances of each expected image from the actual image.
+                # Calculate hamming distance vector for the result hash.
+                distances = [e - phash for e in expected]
 
-                    """
-                    # Calculate hamming distance vector for the result hash.
-                    distances = [e - phash for e in expected]
-                    result = np.all([d > _HAMMING_DISTANCE for d in distances])
-                    return not result, distances
-
-                if hex_fix_available:
-                    # Create expected perceptual image hashes from the uris.
-                    # Note that, the "hash_size" kwarg is unavailable and old
-                    # style hashes will not be corrected.
-                    expected = [to_hash(uri_hex) for uri_hex in hexes]
-                    matching, distances = _image_matcher(expected)
-
-                    if not matching:
-                        # Retry, correcting old hex strings. Note that,
-                        # the "hash_size" kwarg is required.
-                        to_hash = imagehash.old_hex_to_hash
-                        expected = [to_hash(uri_hex, hash_size=_HASH_SIZE)
-                                    for uri_hex in hexes]
-                        matching, distances = _image_matcher(expected)
-                else:
-                    # Create expected perceptual image hashes from the uris.
-                    # The version of imagehash will be prior to v4.0, so the
-                    # "hash_size" kwarg is required.
-                    expected = [to_hash(uri_hex, hash_size=_HASH_SIZE)
-                                for uri_hex in hexes]
-                    matching, distances = _image_matcher(expected)
-
-                if not matching:
+                if np.all([hd > _HAMMING_DISTANCE for hd in distances]):
                     if dev_mode:
                         _create_missing()
                     else:

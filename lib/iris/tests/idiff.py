@@ -83,7 +83,7 @@ def diff_viewer(repo, key, repo_fname, phash, status,
 
     result_dir = os.path.dirname(result_fname)
     fname = '{}.png'.format(phash)
-    base_uri = 'https://scitools.github.io/test-iris-imagehash/images/{}'
+    base_uri = 'https://scitools.github.io/test-iris-imagehash/images/v4/{}'
     uri = base_uri.format(fname)
     phash_fname = os.path.join(result_dir, fname)
 
@@ -139,77 +139,27 @@ def diff_viewer(repo, key, repo_fname, phash, status,
 
 
 def _calculate_hit(uris, phash, action):
+    # Extract the hex basename strings from the uris.
     hexes = [os.path.splitext(os.path.basename(uri))[0] for uri in uris]
-    # See https://github.com/JohannesBuchner/imagehash#changelog
-    # for details on imagehash release v4.0 old_hex_to_hash() fix.
-    hex_fix_available = hasattr(imagehash, 'old_hex_to_hash')
+    # Create the expected perceptual image hashes from the uris.
     to_hash = imagehash.hex_to_hash
-
-    if hex_fix_available:
-        # Note that, the "hash_size" kwarg is unavailable and old
-        # style hashes will not be corrected.
-        expected = [to_hash(uri_hex) for uri_hex in hexes]
-        # Calculate the hamming distance vector for the result hash.
-        dnew = [e - phash for e in expected]
-        # Retry, correcting old hex strings. Note that, the
-        # "hash_size" kwarg is required.
-        to_hash = imagehash.old_hex_to_hash
-        expected = [to_hash(uri_hex, hash_size=iris.tests._HASH_SIZE)
-                    for uri_hex in hexes]
-        # Calculate the hamming distance vector for the result hash.
-        dold = [e - phash for e in expected]
-    else:
-        # The version of imagehash will be prior to v4.0, so the
-        # "hash_size" kwarg is required.
-        expected = [to_hash(uri_hex, hash_size=iris.tests._HASH_SIZE)
-                    for uri_hex in hexes]
-        dold = [e - phash for e in expected]
-
-    dmsg = '{} (old={})' if hex_fix_available else '{}'
+    expected = [to_hash(uri_hex) for uri_hex in hexes]
+    # Calculate the hamming distance vector for the result hash.
+    distances = [e - phash for e in expected]
 
     if action == 'first':
         index = 0
-        if hex_fix_available:
-            distance = dmsg.format(dnew[index], dold[index])
-        else:
-            distance = dmsg.format(dold[index])
     elif action == 'last':
         index = -1
-        if hex_fix_available:
-            distance = dmsg.format(dnew[index], dold[index])
-        else:
-            distance = dmsg.format(dold[index])
     elif action == 'similar':
-        if hex_fix_available:
-            inew, iold = np.argmin(dnew), np.argmin(dold)
-            vnew, vold = dnew[inew], dold[iold]
-            if vnew <= vold:
-                index = inew
-                distance = '{} (old={})'.format(vnew, vold)
-            else:
-                index = iold
-                distance = '{} (new={})'.format(vold, vnew)
-        else:
-            index = np.argmin(dold)
-            distance = '{}'.format(dold[index])
+        index = np.argmin(distances)
     elif action == 'different':
-        if hex_fix_available:
-            inew, iold = np.argmax(dnew), np.argmax(dold)
-            vnew, vold = dnew[inew], dold[iold]
-            if vnew >= vold:
-                index = inew
-                distance = '{} (old={})'.format(vnew, vold)
-            else:
-                index = iold
-                distance = '{} (new={})'.format(vold, vnew)
-        else:
-            index = np.argmax(dold)
-            distance = '{}'.format(dold[index])
+        index = np.argmax(distances)
     else:
         emsg = 'Unknown action: {!r}'
         raise ValueError(emsg.format(action))
 
-    return index, distance
+    return index, distances[index]
 
 
 def step_over_diffs(result_dir, action, display=True):
@@ -282,7 +232,7 @@ def step_over_diffs(result_dir, action, display=True):
                                                os.path.basename(uri))
                     if not os.path.isfile(local_fname):
                         emsg = 'Bad URI {!r} for test {!r}.'
-                        raise ValueError(uri, key)
+                        raise ValueError(emsg.format(uri, key))
                     else:
                         # The temporary expected filename has the test name
                         # baked into it, and is used in the diff plot title.
