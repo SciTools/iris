@@ -1,0 +1,8 @@
+* The :class:`iris.fileformats.um.FieldCollation` objects, which are passed
+  into load callbacks when using
+  :func:`iris.fileformats.um.structured_um_loading`, now
+  have the additional properties :
+  :data:`iris.fileformats.um.FieldCollation.data_filepath` and
+  :data:`iris.fileformats.um.FieldCollation.data_field_indices`.
+  These provide the file locations of the original data fields, which are
+  otherwise lost in the structured loading process.
