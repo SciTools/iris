@@ -35,7 +35,7 @@ def _test_elementwise_op(array):
     return array + 1
 
 
-class Test_is_lazy_data(tests.IrisTest):
+class Test_lazy_elementwise(tests.IrisTest):
     def test_basic(self):
         concrete_array = np.arange(30).reshape((2, 5, 3))
         lazy_array = as_lazy_data(concrete_array)

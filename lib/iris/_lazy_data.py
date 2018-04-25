@@ -249,7 +249,7 @@ def lazy_elementwise(lazy_array, elementwise_op):
     # Explicitly determine the return type with a dummy call.
     # This makes good practical sense for unit conversions, as a Unit.convert
     # call may cast to float, or not, depending on unit equality : Thus, it's
-    # much safer to get cf_units to decide that for us.
+    # much safer to get udunits to decide that for us.
     dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
 
     return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
