@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,13 +23,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
 from iris._lazy_data import as_lazy_data, _MAX_CHUNK_SIZE, _limited_shape
+from iris.tests import mock
 
 
 class Test_as_lazy_data(tests.IrisTest):

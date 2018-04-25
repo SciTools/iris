@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import netCDF4 as nc
 import numpy as np
 
@@ -31,6 +30,7 @@ import iris
 from iris.coords import DimCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import save, CF_CONVENTIONS_VERSION
+from iris.tests import mock
 from iris.tests.stock import lat_lon_cube
 
 

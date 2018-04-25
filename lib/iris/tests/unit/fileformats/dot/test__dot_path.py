@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,9 +26,8 @@ import iris.tests as tests
 import os.path
 import subprocess
 
-import mock
-
 from iris.fileformats.dot import _dot_path, _DOT_EXECUTABLE_PATH
+from iris.tests import mock
 
 
 class Test(tests.IrisTest):
