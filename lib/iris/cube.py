@@ -876,8 +876,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 'The "cube.units" attribute may be set directly.')
         if self.has_lazy_data():
             # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = self.units.copy()
-            new_unit = unit.copy()
+            old_unit = self.units
+            new_unit = unit
 
             # Define a delayed conversion operation (i.e. a callback).
             def pointwise_convert(values):

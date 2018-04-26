@@ -911,8 +911,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 'The "coord.units" attribute may be set directly.')
         if self.has_lazy_points() or self.has_lazy_bounds():
             # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = self.units.copy()
-            new_unit = unit.copy()
+            old_unit = self.units
+            new_unit = unit
 
             # Define a delayed conversion operation (i.e. a callback).
             def pointwise_convert(values):
