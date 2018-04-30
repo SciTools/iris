@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -83,7 +83,7 @@ def diff_viewer(repo, key, repo_fname, phash, status,
 
     result_dir = os.path.dirname(result_fname)
     fname = '{}.png'.format(phash)
-    base_uri = 'https://scitools.github.io/test-iris-imagehash/images/{}'
+    base_uri = 'https://scitools.github.io/test-iris-imagehash/images/v4/{}'
     uri = base_uri.format(fname)
     phash_fname = os.path.join(result_dir, fname)
 
@@ -139,24 +139,26 @@ def diff_viewer(repo, key, repo_fname, phash, status,
 
 
 def _calculate_hit(uris, phash, action):
+    # Extract the hex basename strings from the uris.
+    hexes = [os.path.splitext(os.path.basename(uri))[0] for uri in uris]
     # Create the expected perceptual image hashes from the uris.
     to_hash = imagehash.hex_to_hash
-    expected = [to_hash(os.path.splitext(os.path.basename(uri))[0],
-                        hash_size=iris.tests._HASH_SIZE)
-                for uri in uris]
+    expected = [to_hash(uri_hex) for uri_hex in hexes]
     # Calculate the hamming distance vector for the result hash.
     distances = [e - phash for e in expected]
+
     if action == 'first':
         index = 0
     elif action == 'last':
         index = -1
     elif action == 'similar':
         index = np.argmin(distances)
-    elif action == 'difference':
+    elif action == 'different':
         index = np.argmax(distances)
     else:
         emsg = 'Unknown action: {!r}'
         raise ValueError(emsg.format(action))
+
     return index, distances[index]
 
 
@@ -230,7 +232,7 @@ def step_over_diffs(result_dir, action, display=True):
                                                os.path.basename(uri))
                     if not os.path.isfile(local_fname):
                         emsg = 'Bad URI {!r} for test {!r}.'
-                        raise ValueError(uri, key)
+                        raise ValueError(emsg.format(uri, key))
                     else:
                         # The temporary expected filename has the test name
                         # baked into it, and is used in the diff plot title.
