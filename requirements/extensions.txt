@@ -6,3 +6,4 @@
 # first.
 
 iris_grib;python_version<"3"  #conda:
+gdal

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -1412,7 +1412,7 @@ fc_extras
             attributes['invalid_units'] = attr_units
             attr_units = cf_units._UNKNOWN_UNIT_STRING
 
-        if np.issubdtype(cf_var.dtype, np.str):
+        if np.issubdtype(cf_var.dtype, np.str_):
             attr_units = cf_units._NO_UNIT_STRING
 
         # Get any assoicated calendar for a time reference coordinate.
@@ -1624,7 +1624,7 @@ fc_extras
         attr_units = get_attr_units(cf_coord_var, attributes)
 
         def cf_var_as_array(cf_var):
-            dtype = cf_var.dtype
+            dtype = iris.fileformats.netcdf._get_actual_dtype(cf_var)
             fill_value = getattr(cf_var.cf_data, '_FillValue',
                                  netCDF4.default_fillvals[dtype.str[1:]])
             proxy = iris.fileformats.netcdf.NetCDFDataProxy(

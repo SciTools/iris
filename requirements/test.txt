@@ -5,5 +5,5 @@ mock
 nose
 pep8
 filelock
-imagehash
+imagehash>=4.0
 requests

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -112,6 +112,7 @@ import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.fileformats
 import iris.io
+from iris._lazy_data import co_realise_cubes
 
 
 try:
@@ -121,13 +122,13 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = '2.1.0.dev0'
+__version__ = '2.1.0dev0'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
            'site_configuration', 'Future', 'FUTURE',
-           'IrisDeprecation']
+           'IrisDeprecation', 'co_realise_cubes']
 
 
 Constraint = iris._constraints.Constraint
@@ -477,7 +478,7 @@ def sample_data_path(*path_to_join):
     if iris_sample_data is not None:
         target = os.path.join(iris_sample_data.path, target)
     else:
-        raise ImportError("Please install the 'iris_sample_data' package to "
+        raise ImportError("Please install the 'iris-sample-data' package to "
                           "access sample data.")
     if not glob.glob(target):
         raise ValueError('Sample data file(s) at {!r} not found.\n'

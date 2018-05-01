@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -169,11 +169,10 @@ def expand_filespecs(file_specs):
         msg = "One or more of the files specified did not exist:"
         for pattern, expanded in six.iteritems(glob_expanded):
             if expanded:
-                file_list = '\n       - {}'.format(', '.join(expanded))
+                msg += '\n    - "{}" matched {} file(s)'.format(pattern,
+                                                                len(expanded))
             else:
-                file_list = ''
-            msg += '\n    - "{}" matched {} file(s){}'.format(
-                    pattern, len(expanded), file_list)
+                msg += '\n    * "{}" didn\'t match any files'.format(pattern)
         raise IOError(msg)
 
     return [fname for fnames in all_expanded for fname in fnames]

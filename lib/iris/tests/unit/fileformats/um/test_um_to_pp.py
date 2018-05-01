@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,9 +27,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # before importing anything else.
 import iris.tests as tests
 
-import mock
-
 from iris.fileformats.um import um_to_pp
+from iris.tests import mock
 
 
 class Test_call(tests.IrisTest):

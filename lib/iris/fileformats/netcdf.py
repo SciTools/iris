@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -91,7 +91,7 @@ _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
 
 # CF attributes that should not be global.
 _CF_DATA_ATTRS = ['flag_masks', 'flag_meanings', 'flag_values',
-                  'instance_dimension', 'sample_dimension',
+                  'instance_dimension', 'missing_value', 'sample_dimension',
                   'standard_error_multiplier']
 
 # CF attributes that should only be global.
@@ -490,8 +490,7 @@ def _set_attributes(attributes, key, value):
         attributes[str(key)] = value
 
 
-def _load_cube(engine, cf, cf_var, filename):
-    """Create the cube associated with the CF-netCDF data variable."""
+def _get_actual_dtype(cf_var):
     # Figure out what the eventual data type will be after any scale/offset
     # transforms.
     dummy_data = np.zeros(1, dtype=cf_var.dtype)
@@ -499,12 +498,18 @@ def _load_cube(engine, cf, cf_var, filename):
         dummy_data = cf_var.scale_factor * dummy_data
     if hasattr(cf_var, 'add_offset'):
         dummy_data = cf_var.add_offset + dummy_data
+    return dummy_data.dtype
+
+
+def _load_cube(engine, cf, cf_var, filename):
+    """Create the cube associated with the CF-netCDF data variable."""
+    dtype = _get_actual_dtype(cf_var)
 
     # Create cube with deferred data, but no metadata
     fill_value = getattr(cf_var.cf_data, '_FillValue',
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
-    proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
-                            filename, cf_var.cf_name, fill_value)
+    proxy = NetCDFDataProxy(cf_var.shape, dtype, filename, cf_var.cf_name,
+                            fill_value)
     data = as_lazy_data(proxy)
     cube = iris.cube.Cube(data)
 
@@ -1570,7 +1575,7 @@ class Saver(object):
         cf_dimensions = [dimension_names[dim] for dim in
                          cube.coord_dims(coord)]
 
-        if np.issubdtype(coord.points.dtype, np.str):
+        if np.issubdtype(coord.points.dtype, np.str_):
             string_dimension_depth = coord.points.dtype.itemsize
             if coord.points.dtype.kind == 'U':
                 string_dimension_depth //= 4
@@ -1994,6 +1999,10 @@ class Saver(object):
 
         if cube.units != 'unknown':
             _setncattr(cf_var, 'units', str(cube.units))
+
+        # Add the CF-netCDF calendar attribute.
+        if cube.units.calendar:
+            _setncattr(cf_var, 'calendar', cube.units.calendar)
 
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:

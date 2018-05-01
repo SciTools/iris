@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -473,12 +473,17 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     if y_dim is not None:
         new_shape[y_dim] = grid_y_bounds.shape[0]
 
+    # Use input cube dtype or convert values to the smallest possible float
+    # dtype when necessary.
+    dtype = np.promote_types(src_data.dtype, np.float16)
+
     # Flag to indicate whether the original data was a masked array.
     src_masked = ma.isMaskedArray(src_data)
     if src_masked:
-        new_data = ma.zeros(new_shape, fill_value=src_data.fill_value)
+        new_data = ma.zeros(new_shape, fill_value=src_data.fill_value,
+                            dtype=dtype)
     else:
-        new_data = ma.zeros(new_shape)
+        new_data = ma.zeros(new_shape, dtype=dtype)
     # Assign to mask to explode it, allowing indexed assignment.
     new_data.mask = False
 

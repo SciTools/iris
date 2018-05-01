@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -490,7 +490,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.coord('latitude').guess_bounds()
         src.coord('longitude').guess_bounds()
         res = regrid_area_weighted(src, src)
-        self.assertArrayShapeStats(res, (73, 96), 279.945167, 16.345842)
+        self.assertArrayShapeStats(res, (73, 96), 279.945160, 16.345842)
 
     @tests.skip_data
     def test_global_data_subset(self):
@@ -510,7 +510,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 30), 280.979336, 16.640421)
+        self.assertArrayShapeStats(res, (40, 30), 280.979310, 16.640421)
 
     @tests.skip_data
     def test_circular_subset(self):
@@ -530,7 +530,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 7), 285.653967, 15.212710)
+        self.assertArrayShapeStats(res, (40, 7), 285.653960, 15.212710)
 
     @tests.skip_data
     def test_non_circular_subset(self):
@@ -551,7 +551,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 7), 285.550800, 15.190245)
+        self.assertArrayShapeStats(res, (40, 7), 285.550814, 15.190245)
 
 
 if __name__ == "__main__":

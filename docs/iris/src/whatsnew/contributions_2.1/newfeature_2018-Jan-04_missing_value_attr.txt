@@ -1,0 +1,1 @@
+* It is now possible to add an attribute of missing_value to a cube. https://github.com/SciTools/iris/issues/1588 refers

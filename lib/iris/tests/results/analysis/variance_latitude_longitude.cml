@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float64" standard_name="air_pressure_at_sea_level" units="meter^-4-kilogram^4-second^-8">
+  <cube dtype="float64" standard_name="air_pressure_at_sea_level" units="m-4.kg4.s-8">
     <attributes>
       <attribute name="STASH" value="m01s16i222"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>

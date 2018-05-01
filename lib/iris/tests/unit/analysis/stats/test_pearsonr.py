@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,6 +39,7 @@ class Test(tests.IrisTest):
             ('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
         self.cube_a = cube_temp[0:6]
         self.cube_b = cube_temp[20:26]
+        self.cube_b.replace_coord(self.cube_a.coord('time').copy())
         cube_temp = self.cube_a.copy()
         cube_temp.coord('latitude').guess_bounds()
         cube_temp.coord('longitude').guess_bounds()
@@ -59,15 +60,14 @@ class Test(tests.IrisTest):
                            'longitude')
 
     def test_compatible_cubes(self):
-        with self.assertRaises(ValueError):
-            r = stats.pearsonr(self.cube_a, self.cube_b,
-                               ['latitude', 'longitude'])
-            self.assertArrayAlmostEqual(r.data, [0.81114936,
-                                                 0.81690538,
-                                                 0.79833135,
-                                                 0.81118674,
-                                                 0.79745386,
-                                                 0.81278484])
+        r = stats.pearsonr(self.cube_a, self.cube_b,
+                           ['latitude', 'longitude'])
+        self.assertArrayAlmostEqual(r.data, [0.81114936,
+                                             0.81690538,
+                                             0.79833135,
+                                             0.81118674,
+                                             0.79745386,
+                                             0.81278484])
 
     def test_broadcast_cubes(self):
         r1 = stats.pearsonr(self.cube_a, self.cube_b[0, :, :],
@@ -82,16 +82,15 @@ class Test(tests.IrisTest):
         self.assertArrayEqual(r2.data, np.array(r_by_slice))
 
     def test_compatible_cubes_weighted(self):
-        with self.assertRaises(ValueError):
-            r = stats.pearsonr(self.cube_a, self.cube_b,
-                               ['latitude', 'longitude'],
-                               self.weights)
-            self.assertArrayAlmostEqual(r.data, [0.79106045,
-                                                 0.79989169,
-                                                 0.78826918,
-                                                 0.79925855,
-                                                 0.79011544,
-                                                 0.80115837])
+        r = stats.pearsonr(self.cube_a, self.cube_b,
+                           ['latitude', 'longitude'],
+                           self.weights)
+        self.assertArrayAlmostEqual(r.data, [0.79105429,
+                                             0.79988078,
+                                             0.78825089,
+                                             0.79925653,
+                                             0.79009810,
+                                             0.80115292])
 
     def test_broadcast_cubes_weighted(self):
         r = stats.pearsonr(self.cube_a, self.cube_b[0, :, :],

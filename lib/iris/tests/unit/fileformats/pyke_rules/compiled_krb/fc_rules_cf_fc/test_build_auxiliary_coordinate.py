@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import iris.tests as tests
 import numpy as np
 
 from iris.coords import AuxCoord
+from iris.fileformats.cf import CFVariable
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_auxiliary_coordinate
 from iris.tests import mock
@@ -40,8 +41,10 @@ class TestBoundsVertexDim(tests.IrisTest):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
         self.cf_coord_var = mock.Mock(
+            spec=CFVariable,
             dimensions=('foo', 'bar'),
             cf_name='wibble',
+            cf_data=mock.Mock(),
             standard_name=None,
             long_name='wibble',
             units='m',
@@ -73,8 +76,10 @@ class TestBoundsVertexDim(tests.IrisTest):
         # Create the bounds cf variable.
         bounds = np.arange(24).reshape(4, 2, 3)
         self.cf_bounds_var = mock.Mock(
+            spec=CFVariable,
             dimensions=('nv', 'foo', 'bar'),
             cf_name='wibble_bnds',
+            cf_data=mock.Mock(),
             shape=bounds.shape,
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
@@ -112,8 +117,10 @@ class TestBoundsVertexDim(tests.IrisTest):
     def test_fastest_varying_vertex_dim(self):
         bounds = np.arange(24).reshape(2, 3, 4)
         self.cf_bounds_var = mock.Mock(
+            spec=CFVariable,
             dimensions=('foo', 'bar', 'nv'),
             cf_name='wibble_bnds',
+            cf_data=mock.Mock(),
             shape=bounds.shape,
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
@@ -149,8 +156,10 @@ class TestBoundsVertexDim(tests.IrisTest):
         # this should still work because the vertex dim is the fastest varying.
         bounds = np.arange(24).reshape(2, 3, 4)
         self.cf_bounds_var = mock.Mock(
+            spec=CFVariable,
             dimensions=('x', 'y', 'nv'),
             cf_name='wibble_bnds',
+            cf_data=mock.Mock(),
             shape=bounds.shape,
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
@@ -179,6 +188,66 @@ class TestBoundsVertexDim(tests.IrisTest):
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
             self.assertEqual(self.engine.provides['coordinates'],
                              expected_list)
+
+
+class TestDtype(tests.IrisTest):
+    def setUp(self):
+        # Create coordinate cf variables and pyke engine.
+        points = np.arange(6).reshape(2, 3)
+        self.cf_coord_var = mock.Mock(
+            spec=CFVariable,
+            dimensions=('foo', 'bar'),
+            cf_name='wibble',
+            cf_data=mock.Mock(),
+            standard_name=None,
+            long_name='wibble',
+            units='m',
+            shape=points.shape,
+            dtype=points.dtype,
+            __getitem__=lambda self, key: points[key])
+
+        self.engine = mock.Mock(
+            cube=mock.Mock(),
+            cf_var=mock.Mock(dimensions=('foo', 'bar')),
+            filename='DUMMY',
+            provides=dict(coordinates=[]))
+
+        def patched__getitem__(proxy_self, keys):
+            if proxy_self.variable_name == self.cf_coord_var.cf_name:
+                return self.cf_coord_var[keys]
+            raise RuntimeError()
+
+        self.deferred_load_patch = mock.patch(
+            'iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
+            new=patched__getitem__)
+
+    def test_scale_factor_add_offset_int(self):
+        self.cf_coord_var.scale_factor = 3
+        self.cf_coord_var.add_offset = 5
+
+        with self.deferred_load_patch:
+            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+        coord, _ = self.engine.provides['coordinates'][0]
+        self.assertEqual(coord.dtype.kind, 'i')
+
+    def test_scale_factor_float(self):
+        self.cf_coord_var.scale_factor = 3.
+
+        with self.deferred_load_patch:
+            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+        coord, _ = self.engine.provides['coordinates'][0]
+        self.assertEqual(coord.dtype.kind, 'f')
+
+    def test_add_offset_float(self):
+        self.cf_coord_var.add_offset = 5.
+
+        with self.deferred_load_patch:
+            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+        coord, _ = self.engine.provides['coordinates'][0]
+        self.assertEqual(coord.dtype.kind, 'f')
 
 
 if __name__ == '__main__':

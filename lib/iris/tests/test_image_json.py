@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2017, Met Office
+# (C) British Crown Copyright 2016 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -56,15 +56,15 @@ class TestImageFile(tests.IrisTest):
             return unittest.skip("Less than {} anonymous calls to "
                                  "GH API left!".format(amin))
         iuri = ('https://api.github.com/repos/scitools/'
-                'test-iris-imagehash/contents/images')
+                'test-iris-imagehash/contents/images/v4')
         r = requests.get(iuri, headers=headers)
         if r.status_code != 200:
             raise ValueError('Github API get failed: {}'.format(iuri,
                                                                 r.text))
         rj = r.json()
-        prefix = 'https://scitools.github.io/test-iris-imagehash/images/'
+        base = 'https://scitools.github.io/test-iris-imagehash/images/v4'
 
-        known_image_uris = set([prefix + rji['name'] for rji in rj])
+        known_image_uris = set([os.path.join(base, rji['name']) for rji in rj])
 
         repo_fname = os.path.join(os.path.dirname(__file__), 'results',
                                   'imagerepo.json')
@@ -72,11 +72,10 @@ class TestImageFile(tests.IrisTest):
             repo = json.load(codecs.getreader('utf-8')(fi))
         uris = set(itertools.chain.from_iterable(six.itervalues(repo)))
 
-        amsg = ('Images are referenced in imagerepo.json but not published'
-                ' in https://scitools.github.io/test-iris-imagehash/'
-                'images:\n{}')
+        amsg = ('Images are referenced in imagerepo.json but not published '
+                'in {}:\n{}')
         diffs = list(uris.difference(known_image_uris))
-        amsg = amsg.format('\n'.join(diffs))
+        amsg = amsg.format(base, '\n'.join(diffs))
 
         self.assertTrue(uris.issubset(known_image_uris), msg=amsg)
 

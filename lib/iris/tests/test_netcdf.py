@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -714,6 +714,7 @@ class TestNetCDFSave(tests.IrisTest):
                  'flag_masks': 'a',
                  'flag_meanings': 'b',
                  'flag_values': 'c',
+                 'missing_value': 1.e20,
                  'STASH': iris.fileformats.pp.STASH(1, 2, 3)}
         for k, v in six.iteritems(avars):
             self.cube.attributes[k] = v

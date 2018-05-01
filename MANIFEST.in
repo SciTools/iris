@@ -7,6 +7,8 @@ recursive-include lib/iris/etc *
 include lib/iris/fileformats/_pyke_rules/*.k?b
 include lib/iris/tests/stock*.npz
 
+include requirements/*.txt
+
 # File required to build docs
 recursive-include docs Makefile *.js *.png *.py *.rst
 prune docs/iris/build
