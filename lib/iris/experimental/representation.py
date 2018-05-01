@@ -20,6 +20,9 @@ Definitions of how Iris objects should be represented.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 
 class CubeRepresentation(object):
     """
