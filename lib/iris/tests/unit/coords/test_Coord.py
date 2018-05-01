@@ -323,6 +323,7 @@ class Test_convert_units(tests.IrisTest):
         with self.assertRaisesRegexp(UnitConversionError, emsg):
             coord.convert_units('degrees')
 
+
 class Test___str__(tests.IrisTest):
 
     def test_short_time_interval(self):

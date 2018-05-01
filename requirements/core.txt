@@ -9,5 +9,5 @@ netcdf4
 numpy
 scipy
 # pyke (not pip installable)  #conda: pyke
-cf_units
+cf_units>=1.2
 dask>=0.17.1
