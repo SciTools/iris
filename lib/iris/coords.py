@@ -1219,7 +1219,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             # Calculate the bounds and points along the right dims
             bounds = al.stack([item.min(axis=dims_to_collapse),
                                item.max(axis=dims_to_collapse)]).T
-            points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
+            points = item.mean(axis=dims_to_collapse, dtype=self.dtype)
 
             # Create the new collapsed coordinate.
             coord = self.copy(points=points, bounds=bounds)
