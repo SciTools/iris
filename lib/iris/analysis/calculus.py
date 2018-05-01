@@ -445,8 +445,7 @@ def _trig_method(coord, trig_function):
 
 def curl(i_cube, j_cube, k_cube=None):
     r"""
-    Calculate the 2-dimensional or 3-dimensional spherical or cartesian
-    curl of the given vector of cubes.
+    Calculate the 2-dimensional cartesian curl of the given vector of cubes.
 
     As well as the standard x and y coordinates, this function requires each
     cube to possess a vertical or z-like coordinate (representing some form
