@@ -497,7 +497,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if bounds is not None:
             bounds = bounds.copy()
 
-        # The new coordinate is a copy of the old one with replaced content.
+        # The new coordinate is a copy of the old one with replaced
+        #  content.
         new_coord = self.copy(points=points, bounds=bounds)
         return new_coord
 
