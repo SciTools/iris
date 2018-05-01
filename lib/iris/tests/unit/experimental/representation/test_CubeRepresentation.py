@@ -24,7 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from iris.coords import CellMethod
-from iris.cube import _CubeRepresentation
+from iris.experimental.representation import CubeRepresentation
 import iris.tests.stock as stock
 
 
@@ -32,7 +32,7 @@ import iris.tests.stock as stock
 class Test__instantiation(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
-        self.representer = _CubeRepresentation(self.cube)
+        self.representer = CubeRepresentation(self.cube)
 
     def test_cube_attributes(self):
         self.assertEqual(id(self.cube), self.representer.cube_id)
@@ -53,7 +53,7 @@ class Test__get_bits(tests.IrisTest):
         self.cube = stock.realistic_4d()
         cm = CellMethod('mean', 'time', '6hr')
         self.cube.add_cell_method(cm)
-        self.representer = _CubeRepresentation(self.cube)
+        self.representer = CubeRepresentation(self.cube)
         self.representer._get_bits()
         self.summary = self.representer.summary
 
@@ -115,7 +115,7 @@ class Test__get_bits(tests.IrisTest):
 class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
-        self.representer = _CubeRepresentation(self.cube)
+        self.representer = CubeRepresentation(self.cube)
         self.representer._get_bits()
         self.result = self.representer._make_content()
 
@@ -138,7 +138,7 @@ class Test__make_content(tests.IrisTest):
 class Test_repr_html(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
-        representer = _CubeRepresentation(self.cube)
+        representer = CubeRepresentation(self.cube)
         self.result = representer.repr_html()
 
     def test_summary_added(self):
