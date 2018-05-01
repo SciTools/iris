@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -53,7 +53,7 @@ def compute_requirements(requirement_names=('core', ), options=None):
         conda_reqs_lines.append('# Python 3 conda configuration')
 
     for req_name in requirement_names:
-        fname = os.path.join(REQS_DIR, '{}.txt'.format(req_name))
+        fname = os.path.join(REQS_DIR, '{0}.txt'.format(req_name))
         if not os.path.exists(fname):
             raise RuntimeError('Unable to find the requirements file for {} '
                                'in {}'.format(req_name, fname))

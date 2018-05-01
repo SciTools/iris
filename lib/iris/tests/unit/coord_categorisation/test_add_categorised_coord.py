@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,8 +39,8 @@ class Test_add_categorised_coord(tests.IrisTest):
     def setUp(self):
         # Factor out common variables and objects.
         self.cube = mock.Mock(name='cube', coords=mock.Mock(return_value=[]))
-        self.coord = mock.Mock(name='coord',
-                               points=np.arange(12).reshape(3, 4))
+        self.coord = mock.Mock(
+            name='coord', points=np.arange(12).reshape(3, 4), attributes={})
         self.units = 'units'
         self.vectorised = mock.Mock(name='vectorized_result')
 
@@ -73,22 +73,15 @@ class Test_add_categorised_coord(tests.IrisTest):
         self.cube.add_aux_coord.assert_called_once_with(
             aux_coord_constructor(), self.cube.coord_dims(self.coord))
 
-    def test_string_vectorised(self):
-        # Check that special case handling of a vectorized string returning
-        # function is taking place.
-        def fn(coord, v):
-            return '0123456789'[:v]
+    def test_no_vectorize_call(self):
+        fn = mock.Mock(return_value=self.coord.points ** 2)
+        add_categorised_coord(self.cube, 'foobar', self.coord, fn,
+                              units=self.units, vectorize=False)
 
-        with mock.patch('numpy.vectorize',
-                        return_value=self.vectorised) as vectorise_patch:
-            with mock.patch('iris.coords.AuxCoord') as aux_coord_constructor:
-                add_categorised_coord(self.cube, 'foobar', self.coord, fn,
-                                      units=self.units)
-
-        self.assertEqual(
-            aux_coord_constructor.call_args[0][0],
-            vectorise_patch(fn, otypes=[object])(self.coord, self.coord.points)
-            .astype('|S64'))
+        fn.assert_called_once()
+        self.assertEqual(fn.call_args[0][0], self.coord)
+        np.testing.assert_array_equal(
+            fn.call_args[0][1], self.coord.points)
 
 
 class Test_add_day_of_year(tests.IrisTest):
