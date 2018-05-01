@@ -297,7 +297,7 @@ class TestPrint(tests.IrisTest):
     def test_summary_stash(self):
         self.cubes[0].attributes['STASH'] = STASH.from_msi('m01s00i004')
         expected = ('0: m01s00i004 / (unknown)       '
-                    '                   (latitude: 3; longitude: 4)')
+                    '       (latitude: 3; longitude: 4)')
         self.assertEqual(str(self.cubes), expected)
 
 
