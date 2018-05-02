@@ -733,7 +733,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             fmt = '{cls}({points}{bounds}' \
                   ', standard_name={self.standard_name!r}' \
                   ', calendar={self.units.calendar!r}{other_metadata})'
-            points = self._str_dates(self.points)
+            if self.units.is_long_time_interval():
+                # A time unit with a long time interval ("months" or "years")
+                # cannot be converted to a date using `num2date` so gracefully
+                # fall back to printing points as numbers, not datetimes.
+                points = self.points
+            else:
+                points = self._str_dates(self.points)
             bounds = ''
             if self.has_bounds():
                 bounds = ', bounds=' + self._str_dates(self.bounds)
