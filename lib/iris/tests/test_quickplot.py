@@ -146,6 +146,30 @@ class TestLabels(tests.GraphicsTest):
         qplt.contourf(self._small(), coords=['grid_longitude', 'model_level_number'])
         self.check_graphic()
 
+    def test_contourf_axes_specified(self):
+        # Check that the contourf function does not modify the matplotlib
+        # pyplot state machine.
+        fig1 = plt.figure()
+        axes = plt.axes()
+
+        # Create another figure and axes which will be the new results
+        # of plt.gcf and plt.gca.
+        fig2 = plt.figure()
+        axes2 = plt.axes()
+
+        # Add a title to the axes we don't care about.
+        plt.title('This should not be changed')
+        # Draw the contour on a specific axes.
+        qplt.contourf(self._small(), axes=axes)
+
+        # Ensure that the correct axes got the appropriate title.
+        self.assertEqual(axes2.get_title(), 'This should not be changed')
+        self.assertEqual(axes.get_title(), 'Air potential temperature')
+
+        # Check that the axes labels were set correctly.
+        self.assertEqual(axes.get_xlabel(), 'Grid longitude / degrees')
+        self.assertEqual(axes.get_ylabel(), 'Altitude / m')
+
     def test_contourf_nameless(self):
         cube = self._small()
         cube.standard_name = None
