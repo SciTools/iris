@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,6 +28,8 @@ from itertools import permutations
 import numpy as np
 import numpy.ma as ma
 
+from cf_units import Unit
+
 import iris.analysis
 import iris.aux_factory
 import iris.coords
@@ -39,9 +41,9 @@ from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord, CellMeasure
 from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
                              UnitConversionError)
+from iris._lazy_data import as_lazy_data
 from iris.tests import mock
 import iris.tests.stock as stock
-from iris._lazy_data import as_lazy_data
 
 
 class Test___init___data(tests.IrisTest):
@@ -1709,6 +1711,15 @@ class Test_convert_units(tests.IrisTest):
                 'The "cube.units" attribute may be set directly.')
         with self.assertRaisesRegexp(UnitConversionError, emsg):
             cube.convert_units('mm day-1')
+
+    def test_preserves_lazy(self):
+        real_data = np.arange(12.).reshape((3, 4))
+        lazy_data = as_lazy_data(real_data)
+        cube = iris.cube.Cube(lazy_data, units='m')
+        real_data_ft = Unit('m').convert(real_data, 'ft')
+        cube.convert_units('ft')
+        self.assertTrue(cube.has_lazy_data())
+        self.assertArrayAllClose(cube.data, real_data_ft)
 
 
 if __name__ == '__main__':

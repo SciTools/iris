@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -35,7 +35,9 @@ from iris.tests.unit.coords import (CoordTestMixin,
                                     lazyness_string,
                                     coords_all_dtypes_and_lazynesses)
 
+from cf_units import Unit
 from iris.coords import AuxCoord
+from iris._lazy_data import as_lazy_data
 
 
 class AuxCoordTestMixin(CoordTestMixin):
@@ -601,6 +603,25 @@ class Test_bounds__setter(tests.IrisTest, AuxCoordTestMixin):
         new_bounds = self.bds_real + 102.3
         coord.bounds = new_bounds
         self.assertTrue(coord.has_lazy_points())
+
+
+class Test_convert_units(tests.IrisTest):
+    def test_preserves_lazy(self):
+        test_bounds = np.array([[[11.0, 12.0], [12.0, 13.0], [13.0, 14.0]],
+                                [[21.0, 22.0], [22.0, 23.0], [23.0, 24.0]]])
+        test_points = np.array([[11.1, 12.2, 13.3],
+                                [21.4, 22.5, 23.6]])
+        lazy_points = as_lazy_data(test_points)
+        lazy_bounds = as_lazy_data(test_bounds)
+        coord = AuxCoord(points=lazy_points, bounds=lazy_bounds,
+                         units='m')
+        coord.convert_units('ft')
+        self.assertTrue(coord.has_lazy_points())
+        self.assertTrue(coord.has_lazy_bounds())
+        test_points_ft = Unit('m').convert(test_points, 'ft')
+        test_bounds_ft = Unit('m').convert(test_bounds, 'ft')
+        self.assertArrayAllClose(coord.points, test_points_ft)
+        self.assertArrayAllClose(coord.bounds, test_bounds_ft)
 
 
 if __name__ == '__main__':
