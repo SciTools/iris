@@ -26,7 +26,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[0.0, 42077.5]]" id="fb105c19" long_name="level_height" points="[21038.8]" shape="(1,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[[0.0, 42077.5]]" id="fb105c19" long_name="level_height" points="[7621.54]" shape="(1,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -40,7 +40,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <auxCoord bounds="[[0.0, 1.0]]" id="a5c170db" long_name="sigma" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[[0.0, 1.0]]" id="a5c170db" long_name="sigma" points="[0.519373]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="cb784457" points="[347921.166667, 347921.333333, 347921.5,
