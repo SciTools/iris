@@ -61,8 +61,11 @@ def _title(cube_or_coord, with_units):
     return title
 
 
-def _label(cube, mode, result=None, ndims=2, coords=None):
+def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
     """Puts labels on the current plot using the given cube."""
+
+    if axes is not None:
+        plt.sca(axes)
 
     plt.title(_title(cube, with_units=False))
 
@@ -103,8 +106,8 @@ def _label_with_bounds(cube, result=None, ndims=2, coords=None):
     _label(cube, iris.coords.BOUND_MODE, result, ndims, coords)
 
 
-def _label_with_points(cube, result=None, ndims=2, coords=None):
-    _label(cube, iris.coords.POINT_MODE, result, ndims, coords)
+def _label_with_points(cube, result=None, ndims=2, coords=None, axes=None):
+    _label(cube, iris.coords.POINT_MODE, result, ndims, coords, axes)
 
 
 def _get_titles(u_object, v_object):
@@ -184,8 +187,9 @@ def contourf(cube, *args, **kwargs):
 
     """
     coords = kwargs.get('coords')
+    axes = kwargs.get('axes')
     result = iplt.contourf(cube, *args, **kwargs)
-    _label_with_points(cube, result, coords=coords)
+    _label_with_points(cube, result, coords=coords, axes=axes)
     return result
 
 
