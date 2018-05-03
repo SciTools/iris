@@ -41,6 +41,7 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
+from iris._lazy_data import lazy_elementwise
 
 import iris._merge
 import iris.analysis
@@ -873,7 +874,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise iris.exceptions.UnitConversionError(
                 'Cannot convert from unknown units. '
                 'The "cube.units" attribute may be set directly.')
-        self.data = self.units.convert(self.data, unit)
+        if self.has_lazy_data():
+            # Make fixed copies of old + new units for a delayed conversion.
+            old_unit = self.units
+            new_unit = unit
+
+            # Define a delayed conversion operation (i.e. a callback).
+            def pointwise_convert(values):
+                return old_unit.convert(values, new_unit)
+
+            new_data = lazy_elementwise(self.lazy_data(), pointwise_convert)
+        else:
+            new_data = self.units.convert(self.data, unit)
+        self.data = new_data
         self.units = unit
 
     def add_cell_method(self, cell_method):

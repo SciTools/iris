@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -131,6 +131,73 @@ class Trajectory(object):
     def __repr__(self):
         return 'Trajectory(%s, sample_count=%s)' % (self.waypoints,
                                                     self.sample_count)
+
+    def _get_interp_points(self):
+        """
+        Translate `self.sampled_points` to the format expected by the
+        interpolator.
+
+        Returns:
+            `self.sampled points` in the format required by
+            `:func:`~iris.analysis.trajectory.interpolate`.
+
+        """
+        points = {k: [point_dict[k] for point_dict in self.sampled_points]
+                  for k in self.sampled_points[0].keys()}
+        return [(k, v) for k, v in points.items()]
+
+    def _src_cube_anon_dims(self, cube):
+        """
+        A helper method to locate the index of anonymous dimensions on the
+        interpolation target, ``cube``.
+
+        Returns:
+            The index of any anonymous dimensions in ``cube``.
+
+        """
+        named_dims = [cube.coord_dims(c)[0] for c in cube.dim_coords]
+        return list(set(range(cube.ndim)) - set(named_dims))
+
+    def interpolate(self, cube, method=None):
+        """
+        Calls :func:`~iris.analysis.trajectory.interpolate` to interpolate
+        ``cube`` on the defined trajectory.
+
+        Assumes that the coordinate names supplied in the waypoints
+        dictionaries match to coordinate names in `cube`, and that points are
+        supplied in the same coord_system as in `cube`, where appropriate (i.e.
+        for horizontal coordinate points).
+
+        Args:
+
+        * cube
+             The source Cube to interpolate.
+
+        Kwargs:
+
+        * method:
+            The interpolation method to use; "linear" (default) or "nearest".
+            Only nearest is available when specifying multi-dimensional
+            coordinates.
+
+        """
+        sample_points = self._get_interp_points()
+        interpolated_cube = interpolate(cube, sample_points, method=method)
+        # Add an "index" coord to name the anonymous dimension produced by
+        # the interpolation, if present.
+        if len(interpolated_cube.dim_coords) < interpolated_cube.ndim:
+            # Add a new coord `index` to describe the new dimension created by
+            # interpolating.
+            index_coord = iris.coords.DimCoord(range(self.sample_count),
+                                               long_name='index')
+            # Make sure anonymous dims in `cube` do not mistakenly get labelled
+            # as the new `index` dimension created by interpolating.
+            src_anon_dims = self._src_cube_anon_dims(cube)
+            interp_anon_dims = self._src_cube_anon_dims(interpolated_cube)
+            anon_dim_index, = list(set(interp_anon_dims) - set(src_anon_dims))
+            # Add the new coord to the interpolated cube.
+            interpolated_cube.add_dim_coord(index_coord, anon_dim_index)
+        return interpolated_cube
 
 
 def interpolate(cube, sample_points, method=None):

@@ -1340,6 +1340,27 @@ class Saver(object):
         return dimension_names
 
     @staticmethod
+    def cf_valid_var_name(var_name):
+        """
+        Return a valid CF var_name given a potentially invalid name.
+
+        Args:
+
+        * var_name (str):
+            The var_name to normalise
+
+        Returns:
+            A var_name suitable for passing through for variable creation.
+
+        """
+        # Replace invalid charaters with an underscore ("_").
+        var_name = re.sub(r'[^a-zA-Z0-9]', "_", var_name)
+        # Ensure the variable name starts with a letter.
+        if re.match(r'^[^a-zA-Z]', var_name):
+            var_name = 'var_{}'.format(var_name)
+        return var_name
+
+    @staticmethod
     def _cf_coord_identity(coord):
         """
         Determine a suitable units from a given coordinate.
@@ -1448,6 +1469,7 @@ class Saver(object):
             # Convert to lower case and replace whitespace by underscores.
             cf_name = '_'.join(cube.name().lower().split())
 
+        cf_name = self.cf_valid_var_name(cf_name)
         return cf_name
 
     def _get_coord_variable_name(self, cube, coord):
@@ -1480,6 +1502,8 @@ class Saver(object):
                     name = 'unknown_scalar'
             # Convert to lower case and replace whitespace by underscores.
             cf_name = '_'.join(name.lower().split())
+
+        cf_name = self.cf_valid_var_name(cf_name)
         return cf_name
 
     def _create_cf_cell_measure_variable(self, cube, dimension_names,

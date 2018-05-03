@@ -1,0 +1,4 @@
+* The methods :meth:`iris.cube.Cube.convert_units` and
+  :meth:`iris.coords.Coord.convert_units` no longer forcibly realise the cube
+  data or coordinate points/bounds :  The converted values are now lazy arrays
+  if the originals were.

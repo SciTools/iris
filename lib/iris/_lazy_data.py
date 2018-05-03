@@ -220,3 +220,36 @@ def co_realise_cubes(*cubes):
     results = _co_realise_lazy_arrays([cube.core_data() for cube in cubes])
     for cube, result in zip(cubes, results):
         cube.data = result
+
+
+def lazy_elementwise(lazy_array, elementwise_op):
+    """
+    Apply a (numpy-style) elementwise array operation to a lazy array.
+
+    Elementwise means that it performs a independent calculation at each point
+    of the input, producing a result array of the same shape.
+
+    Args:
+
+    * lazy_array:
+        The lazy array object to operate on.
+    * elementwise_op:
+        The elementwise operation, a function operating on numpy arrays.
+
+    .. note:
+
+        A single-point "dummy" call is made to the operation function, to
+        determine dtype of the result.
+        This return dtype must be stable in actual operation (!)
+
+    """
+    # This is just a wrapper to provide an Iris-specific abstraction for a
+    # lazy operation in Dask (map_blocks).
+
+    # Explicitly determine the return type with a dummy call.
+    # This makes good practical sense for unit conversions, as a Unit.convert
+    # call may cast to float, or not, depending on unit equality : Thus, it's
+    # much safer to get udunits to decide that for us.
+    dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
+
+    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)

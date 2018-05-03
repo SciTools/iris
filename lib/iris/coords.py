@@ -38,7 +38,8 @@ import numpy.ma as ma
 
 from iris._data_manager import DataManager
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import as_concrete_data, is_lazy_data, multidim_lazy_stack
+from iris._lazy_data import (as_concrete_data, is_lazy_data,
+                             multidim_lazy_stack, lazy_elementwise)
 import iris.aux_factory
 import iris.exceptions
 import iris.time
@@ -732,7 +733,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             fmt = '{cls}({points}{bounds}' \
                   ', standard_name={self.standard_name!r}' \
                   ', calendar={self.units.calendar!r}{other_metadata})'
-            points = self._str_dates(self.points)
+            if self.units.is_long_time_interval():
+                # A time unit with a long time interval ("months" or "years")
+                # cannot be converted to a date using `num2date` so gracefully
+                # fall back to printing points as numbers, not datetimes.
+                points = self.points
+            else:
+                points = self._str_dates(self.points)
             bounds = ''
             if self.has_bounds():
                 bounds = ', bounds=' + self._str_dates(self.bounds)
@@ -908,9 +915,28 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise iris.exceptions.UnitConversionError(
                 'Cannot convert from unknown units. '
                 'The "coord.units" attribute may be set directly.')
-        self.points = self.units.convert(self.points, unit)
+        if self.has_lazy_points() or self.has_lazy_bounds():
+            # Make fixed copies of old + new units for a delayed conversion.
+            old_unit = self.units
+            new_unit = unit
+
+            # Define a delayed conversion operation (i.e. a callback).
+            def pointwise_convert(values):
+                return old_unit.convert(values, new_unit)
+
+        if self.has_lazy_points():
+            new_points = lazy_elementwise(self.lazy_points(),
+                                          pointwise_convert)
+        else:
+            new_points = self.units.convert(self.points, unit)
+        self.points = new_points
         if self.has_bounds():
-            self.bounds = self.units.convert(self.bounds, unit)
+            if self.has_lazy_bounds():
+                new_bounds = lazy_elementwise(self.lazy_bounds(),
+                                              pointwise_convert)
+            else:
+                new_bounds = self.units.convert(self.bounds, unit)
+            self.bounds = new_bounds
         self.units = unit
 
     def cells(self):

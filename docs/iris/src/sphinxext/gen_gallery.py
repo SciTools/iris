@@ -15,6 +15,7 @@ import re
 import warnings
 import matplotlib.image as image
 
+from sphinx.util import status_iterator
 
 template = '''\
 {{% extends "layout.html" %}}
@@ -193,9 +194,9 @@ images = new Array();
         with open(gallery_path, 'w') as fh:
             fh.write(content)
 
-    for key in app.builder.status_iterator(thumbnails,
-                                           'generating thumbnails... ',
-                                           length=len(thumbnails)):
+    for key in status_iterator(thumbnails,
+                               'generating thumbnails... ',
+                               length=len(thumbnails)):
         image.thumbnail(key, thumbnails[key], 0.3)
 
 
