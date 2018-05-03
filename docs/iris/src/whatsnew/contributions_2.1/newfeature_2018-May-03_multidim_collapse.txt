@@ -1,2 +1,5 @@
 * The partial collapse of multi-dimensional auxiliary coordinates is now
   supported. Collapsed bounds span the range of the collapsed dimension(s).
+  *Note* the collapsed points now represent the mean over the collapsed
+  dimensions(s) rather than the mid-point as was previously used (for full
+  collapse).
