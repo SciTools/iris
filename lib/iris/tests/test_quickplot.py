@@ -149,6 +149,7 @@ class TestLabels(tests.GraphicsTest):
     def test_contourf_nameless(self):
         cube = self._small()
         cube.standard_name = None
+        cube.attributes['STASH'] = ''
         qplt.contourf(cube, coords=['grid_longitude', 'model_level_number'])
         self.check_graphic()
 
