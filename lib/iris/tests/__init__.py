@@ -1174,7 +1174,7 @@ skip_grib = unittest.skipIf(not GRIB_AVAILABLE,
 
 
 skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,
-                                   ('Test(s) require "iris_sample_data", '
+                                   ('Test(s) require "iris-sample-data", '
                                     'which is not available.'))
 
 
