@@ -3,12 +3,12 @@ dimensions:
 	depth = 20 ;
 	latitude = 73 ;
 variables:
-	float unknown(depth, latitude) ;
-		unknown:_FillValue = 9.96921e+36f ;
-		unknown:um_stash_source = "m??s44i101" ;
-		unknown:ukmo__process_flags = "Mean_over_an_ensemble_of_parallel_runs Time_mean_field" ;
-		unknown:grid_mapping = "latitude_longitude" ;
-		unknown:coordinates = "forecast_period forecast_reference_time time" ;
+	float m__s44i101(depth, latitude) ;
+		m__s44i101:_FillValue = 9.96921e+36f ;
+		m__s44i101:um_stash_source = "m??s44i101" ;
+		m__s44i101:ukmo__process_flags = "Mean_over_an_ensemble_of_parallel_runs Time_mean_field" ;
+		m__s44i101:grid_mapping = "latitude_longitude" ;
+		m__s44i101:coordinates = "forecast_period forecast_reference_time time" ;
 	int latitude_longitude ;
 		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
 		latitude_longitude:longitude_of_prime_meridian = 0. ;
