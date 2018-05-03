@@ -5,12 +5,12 @@ dimensions:
 	pseudo_level = 4 ;
 	time = 4 ;
 variables:
-	float unknown(pseudo_level, time, depth, grid_latitude) ;
-		unknown:_FillValue = 9.96921e+36f ;
-		unknown:um_stash_source = "m02s00i???" ;
-		unknown:cell_methods = "time: mean" ;
-		unknown:grid_mapping = "rotated_latitude_longitude" ;
-		unknown:coordinates = "forecast_period forecast_reference_time" ;
+	float m02s00i___(pseudo_level, time, depth, grid_latitude) ;
+		m02s00i___:_FillValue = 9.96921e+36f ;
+		m02s00i___:um_stash_source = "m02s00i???" ;
+		m02s00i___:cell_methods = "time: mean" ;
+		m02s00i___:grid_mapping = "rotated_latitude_longitude" ;
+		m02s00i___:coordinates = "forecast_period forecast_reference_time" ;
 	int rotated_latitude_longitude ;
 		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
 		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
