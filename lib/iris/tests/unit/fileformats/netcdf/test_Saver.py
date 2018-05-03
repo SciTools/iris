@@ -486,8 +486,8 @@ class Test_cf_valid_var_name(tests.IrisTest):
                          'var__invalid')
 
     def test_leading_number(self):
-        self.assertEqual(Saver.cf_valid_var_name('_invalid'),
-                         'var__invalid')
+        self.assertEqual(Saver.cf_valid_var_name('2invalid'),
+                         'var_2invalid')
 
     def test_leading_invalid(self):
         self.assertEqual(Saver.cf_valid_var_name('?invalid'),
