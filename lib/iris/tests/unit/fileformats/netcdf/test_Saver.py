@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -470,6 +470,33 @@ class Test_write_fill_value(tests.IrisTest):
         with self.assertNoWarningsRegexp(r'\(fill\|mask\)'):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
+
+
+class Test_cf_valid_var_name(tests.IrisTest):
+    def test_no_replacement(self):
+        self.assertEqual(Saver.cf_valid_var_name('valid_Nam3'),
+                         'valid_Nam3')
+
+    def test_special_chars(self):
+        self.assertEqual(Saver.cf_valid_var_name('inv?alid'),
+                         'inv_alid')
+
+    def test_leading_underscore(self):
+        self.assertEqual(Saver.cf_valid_var_name('_invalid'),
+                         'var__invalid')
+
+    def test_leading_number(self):
+        self.assertEqual(Saver.cf_valid_var_name('2invalid'),
+                         'var_2invalid')
+
+    def test_leading_invalid(self):
+        self.assertEqual(Saver.cf_valid_var_name('?invalid'),
+                         'var__invalid')
+
+    def test_no_hyphen(self):
+        # CF explicitly prohibits hyphen, even though it is fine in NetCDF.
+        self.assertEqual(Saver.cf_valid_var_name('valid-netcdf'),
+                         'valid_netcdf')
 
 
 class _Common__check_attribute_compliance(object):

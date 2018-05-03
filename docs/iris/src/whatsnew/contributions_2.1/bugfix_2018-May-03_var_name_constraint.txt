@@ -1,0 +1,2 @@
+* All var names being written to NetCDF are now CF compliant. Non alpha-numeric characters are replaced with '_', and must always have a leading letter.
+  Ref: https://github.com/SciTools/iris/pull/2930
