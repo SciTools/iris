@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -149,6 +149,7 @@ class TestLabels(tests.GraphicsTest):
     def test_contourf_nameless(self):
         cube = self._small()
         cube.standard_name = None
+        cube.attributes['STASH'] = ''
         qplt.contourf(cube, coords=['grid_longitude', 'model_level_number'])
         self.check_graphic()
 

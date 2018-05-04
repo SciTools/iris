@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -296,8 +296,8 @@ class TestPrint(tests.IrisTest):
 
     def test_summary_stash(self):
         self.cubes[0].attributes['STASH'] = STASH.from_msi('m01s00i004')
-        expected = ('0: m01s00i004       '
-                    '                   (latitude: 3; longitude: 4)')
+        expected = ('0: m01s00i004 / (unknown)       '
+                    '       (latitude: 3; longitude: 4)')
         self.assertEqual(str(self.cubes), expected)
 
 

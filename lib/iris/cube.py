@@ -1788,9 +1788,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         nameunit = '{name} / ({units})'.format(name=self.name(),
                                                units=self.units)
-        # If all unknown and a STASH attribute exists, use it.
-        if nameunit == 'unknown / (unknown)' and 'STASH' in self.attributes:
-            nameunit = '{}'.format(self.attributes['STASH'])
         cube_header = '{nameunit!s:{length}} ({dimension})'.format(
             length=name_padding,
             nameunit=nameunit,

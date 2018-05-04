@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -729,6 +729,16 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.var_name, None)
         self.t.var_name = 'bar'
         self.assertEqual(self.t.var_name, 'bar')
+
+    def test_default_name(self):
+        self.t.long_name = ''
+        self.assertEqual(self.t.name(), 'unknown')
+        self.assertEqual(self.t.name('a_default'), 'a_default')
+
+    def test_stash_name(self):
+        self.t.long_name = ''
+        self.t.attributes['STASH'] = iris.fileformats.pp.STASH(1, 2, 3)
+        self.assertEqual(self.t.name(), 'm01s02i003')
 
     def test_name_and_var_name(self):
         # Assign only var_name.

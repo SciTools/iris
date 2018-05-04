@@ -88,12 +88,13 @@ class CFVariableMixin(object):
         """
         Returns a human-readable name.
 
-        First it tries :attr:`standard_name`, then 'long_name', then 'var_name'
-        before falling back to the value of `default` (which itself defaults to
-        'unknown').
+        First it tries :attr:`standard_name`, then 'long_name', then
+        'var_name', then the STASH attribute before falling back to
+        the value of `default` (which itself defaults to 'unknown').
 
         """
-        return self.standard_name or self.long_name or self.var_name or default
+        return self.standard_name or self.long_name or self.var_name or \
+            str(self.attributes.get('STASH', '')) or default
 
     def rename(self, name):
         """
