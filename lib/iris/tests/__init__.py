@@ -495,6 +495,8 @@ class IrisTest_nometa(unittest.TestCase):
             with open(reference_path, 'rb') as reference_fh:
                 reference = ''.join(part.decode('utf-8')
                                     for part in reference_fh.readlines())
+                # Remove windows carriage returns
+                reference = reference.replace("\r", "")
             self._assert_str_same(reference, item, reference_path,
                                   type_comparison_name)
         else:
