@@ -50,7 +50,6 @@ import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris.experimental.representation import CubeRepresentation
 import iris.util
 
 
@@ -2066,6 +2065,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                     name_padding=1)
 
     def _repr_html_(self):
+        from iris.experimental.representation import CubeRepresentation
         representer = CubeRepresentation(self)
         return representer.repr_html()
 
