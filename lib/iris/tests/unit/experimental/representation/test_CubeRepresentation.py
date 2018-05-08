@@ -38,13 +38,51 @@ class Test__instantiation(tests.IrisTest):
         self.assertEqual(id(self.cube), self.representer.cube_id)
         self.assertStringEqual(str(self.cube), self.representer.cube_str)
 
-    def test_summary(self):
-        self.assertIsNone(self.representer.summary)
-
     def test__heading_contents(self):
         content = set(self.representer.str_headings.values())
         self.assertEqual(len(content), 1)
         self.assertIsNone(list(content)[0])
+
+
+@tests.skip_data
+class Test__summary_content(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.realistic_4d()
+        self.representer = CubeRepresentation(self.cube)
+        self.representer._summary_content()
+
+    def test_name(self):
+        # Check the cube name is being set and formatted correctly.
+        expected = self.cube.name().replace('_', ' ').title()
+        result = self.representer.name
+        self.assertEqual(expected, result)
+
+    def test_names(self):
+        # Check the dimension names used as column headings are split out and
+        # formatted correctly.
+        expected_coord_names = [c.name().replace('_', ' ')
+                                for c in self.cube.coords(dim_coords=True)]
+        result_coord_names = self.representer.names[1:]
+        for result in result_coord_names:
+            self.assertIn(result, expected_coord_names)
+
+    def test_units(self):
+        # Check the units is being set correctly.
+        expected = self.cube.units
+        result = self.representer.units
+        self.assertEqual(expected, result)
+
+    def test_shapes(self):
+        # Check cube dim lengths are split out correctly from the
+        # summary string.
+        expected = [str(s) for s in self.cube.shape]
+        result = self.representer.shapes
+        self.assertEqual(expected, result)
+
+    def test_ndims(self):
+        expected = self.cube.ndim
+        result = self.representer.ndims
+        self.assertEqual(expected, result)
 
 
 @tests.skip_data
@@ -112,6 +150,120 @@ class Test__get_bits(tests.IrisTest):
 
 
 @tests.skip_data
+class Test__make_header(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.simple_3d()
+        self.representer = CubeRepresentation(self.cube)
+        self.representer._get_bits()
+        self.header_emts = self.representer._make_header().split('\n')
+
+    def test_name_and_units(self):
+        # Check the correct name and units are being written into the top-left
+        # table cell.
+        # This is found in the first cell after the `<th>` is defined.
+        name_and_units_cell = self.header_emts[1]
+        expected = '{name} ({units})'.format(name=self.cube.name(),
+                                             units=self.cube.units)
+        self.assertIn(expected.lower(), name_and_units_cell.lower())
+
+    def test_number_of_columns(self):
+        # There should be one headings column, plus a column per dimension.
+        # Ignore opening and closing <tr> tags.
+        result_cols = self.header_emts[1:-1]
+        expected = self.cube.ndim + 1
+        self.assertEqual(len(result_cols), expected)
+
+    def test_row_headings(self):
+        # Get only the dimension heading cells and not the headings column.
+        dim_coord_names = [c.name() for c in self.cube.coords(dim_coords=True)]
+        dim_col_headings = self.header_emts[2:-1]
+        for coord_name, col_heading in zip(dim_coord_names, dim_col_headings):
+            self.assertIn(coord_name, col_heading)
+
+
+@tests.skip_data
+class Test__make_shapes_row(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.simple_3d()
+        self.representer = CubeRepresentation(self.cube)
+        self.representer._get_bits()
+        self.result = self.representer._make_shapes_row().split('\n')
+
+    def test_row_title(self):
+        title_cell = self.result[1]
+        self.assertIn('Shape', title_cell)
+
+    def test_shapes(self):
+        expected_shapes = self.cube.shape
+        result_shapes = self.result[2:-1]
+        for expected, result in zip(expected_shapes, result_shapes):
+            self.assertIn(str(expected), result)
+
+
+@tests.skip_data
+class Test__make_row(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.simple_3d()
+        cm = CellMethod('mean', 'time', '6hr')
+        self.cube.add_cell_method(cm)
+        self.representer = CubeRepresentation(self.cube)
+        self.representer._get_bits()
+
+    def test__title_row(self):
+        title = 'Wibble:'
+        row = self.representer._make_row(title)
+        # A cell for the title, an empty cell for each cube dimension, plus row
+        # opening and closing tags.
+        expected_len = self.cube.ndim + 3
+        self.assertEqual(len(row), expected_len)
+        # Check for specific content.
+        row_str = '\n'.join(element for element in row)
+        self.assertIn(title.strip(':'), row_str)
+        expected_html_class = 'iris-title'
+        self.assertIn(expected_html_class, row_str)
+
+    def test__inclusion_row(self):
+        # An inclusion row has x/- to indicate whether a coordinate describes
+        # a dimension.
+        title = 'time'
+        body = ['x', '-', '-', '-']
+        row = self.representer._make_row(title, body)
+        # A cell for the title, a cell for each cube dimension, plus row
+        # opening and closing tags.
+        expected_len = len(body) + 3
+        self.assertEqual(len(row), expected_len)
+        # Check for specific content.
+        row_str = '\n'.join(element for element in row)
+        self.assertIn(title, row_str)
+        self.assertIn('x', row_str)
+        self.assertIn('-', row_str)
+        expected_html_class_1 = 'iris-word-cell'
+        expected_html_class_2 = 'iris-inclusion-cell'
+        self.assertIn(expected_html_class_1, row_str)
+        self.assertIn(expected_html_class_2, row_str)
+        # We do not expect a colspan to be set.
+        self.assertNotIn('colspan', row_str)
+
+    def test__attribute_row(self):
+        # An attribute row does not contain inclusion indicators.
+        title = 'source'
+        body = 'Iris test case'
+        colspan = 5
+        row = self.representer._make_row(title, body, colspan)
+        # We only expect two cells here: the row title cell and one other cell
+        # that spans a number of columns. We also need to open and close the
+        # tr html element, giving 4 bits making up the row.
+        self.assertEqual(len(row), 4)
+        # Check for specific content.
+        row_str = '\n'.join(element for element in row)
+        self.assertIn(title, row_str)
+        self.assertIn(body, row_str)
+        # We expect a colspan to be set.
+        colspan_str = 'colspan="{}"'.format(colspan)
+        self.assertIn(colspan_str, row_str)
+
+
+@tests.skip_data
 class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
@@ -120,7 +272,7 @@ class Test__make_content(tests.IrisTest):
         self.result = self.representer._make_content()
 
     def test_included(self):
-        included = 'Dimension coordinates:'
+        included = 'Dimension coordinates'
         self.assertIn(included, self.result)
         dim_coord_names = [c.name() for c in self.cube.dim_coords]
         for coord_name in dim_coord_names:
@@ -141,13 +293,10 @@ class Test_repr_html(tests.IrisTest):
         representer = CubeRepresentation(self.cube)
         self.result = representer.repr_html()
 
-    def test_summary_added(self):
-        self.assertIn(self.cube.summary(True), self.result)
-
     def test_contents_added(self):
-        included = 'Dimension coordinates:'
+        included = 'Dimension coordinates'
         self.assertIn(included, self.result)
-        not_included = 'Auxiliary coordinates:'
+        not_included = 'Auxiliary coordinates'
         self.assertNotIn(not_included, self.result)
 
 

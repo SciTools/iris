@@ -23,6 +23,8 @@ Definitions of how Iris objects should be represented.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import re
+
 
 class CubeRepresentation(object):
     """
@@ -31,22 +33,48 @@ class CubeRepresentation(object):
     This includes:
 
     * ``_html_repr_``: a representation of the cube as an html object,
-      available in jupyter notebooks.
+      available in Jupyter notebooks. Specifically, this is presented as an
+      html table.
 
     """
+
     _template = """
 <style>
   a.iris {{
       text-decoration: none !important;
   }}
-  .iris {{
+  table.iris {{
+      white-space: pre;
+      border: 1px solid;
+      border-color: #9c9c9c;
+      font-family: monaco, monospace;
+  }}
+  th.iris {{
+      background: #303f3f;
+      color: #e0e0e0;
+      border-left: 1px solid;
+      border-color: #9c9c9c;
+      font-size: 1.05em;
+      min-width: 50px;
+      max-width: 125px;
+  }}
+  tr.iris :first-child {{
+      border-right: 1px solid #9c9c9c !important;
+  }}
+  td.iris-title {{
+      background: #d5dcdf;
+      border-top: 1px solid #9c9c9c;
+      font-weight: bold;
+  }}
+  .iris-word-cell {{
+      text-align: left !important;
       white-space: pre;
   }}
-  .iris-panel-group {{
-      display: block;
-      overflow: visible;
-      width: max-content;
-      font-family: monaco, monospace;
+  .iris-subheading-cell {{
+      padding-left: 2em !important;
+  }}
+  .iris-inclusion-cell {{
+      padding-right: 1em !important;
   }}
   .iris-panel-body {{
       padding-top: 0px;
@@ -58,55 +86,19 @@ class CubeRepresentation(object):
       margin-top: 7px;
   }}
 </style>
-<div class="panel-group iris-panel-group">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a class="iris" data-toggle="collapse" href="#collapse1-{obj_id}">
-{summary}
-        </a>
-      </h4>
-    </div>
-    <div id="collapse1-{obj_id}" class="panel-collapse collapse in">
-      {content}
-    </div>
-  </div>
-</div>
+<table class="iris" id="{id}">
+    {header}
+    {shape}
+    {content}
+</table>
         """
-
-    # Need to format the keywords:
-    #     `emt_id`, `obj_id`, `str_heading`, `opened`, `content`.
-    _insert_content = """
-      <div class="panel-body iris-panel-body">
-        <h4 class="panel-title iris-panel-title">
-          <a class="iris" data-toggle="collapse" href="#{emt_id}-{obj_id}">
-{str_heading}
-          </a>
-        </h4>
-      </div>
-      <div id="{emt_id}-{obj_id}" class="panel-collapse collapse{opened}">
-          <div class="panel-body iris-panel-body">
-              <p class="iris">{content}</p>
-          </div>
-      </div>
-    """
 
     def __init__(self, cube):
-        """
-        Produce different representations of a :class:`~iris.cube.Cube`.
-
-        Args:
-
-        * cube
-            the cube to produce representations of.
-
-        """
-
         self.cube = cube
         self.cube_id = id(self.cube)
         self.cube_str = str(self.cube)
 
-        self.summary = None
+        self.summary = self.cube.summary(True)
         self.str_headings = {
             'Dimension coordinates:': None,
             'Auxiliary coordinates:': None,
@@ -115,18 +107,32 @@ class CubeRepresentation(object):
             'Attributes:': None,
             'Cell methods:': None,
         }
-        self.major_headings = ['Dimension coordinates:',
-                               'Auxiliary coordinates:',
-                               'Attributes:']
+        self.dim_desc_coords = ['Dimension coordinates:',
+                                'Auxiliary coordinates:',
+                                'Derived coordinates:']
+
+    def _summary_content(self):
+        """
+        Deal with the content in the summary (the first line of printout).
+
+        This contains:
+            * name (unit),
+            * dim name (len of dim) for each dim.
+
+        """
+        emts = re.findall(r'\w+', self.summary)
+        self.names = [' '.join(name.split('_')) for name in emts[::2]]
+        self.shapes = emts[1::2]
+
+        # Name and unit are the first item in names and descs respectively.
+        self.name = self.names.pop(0).title()
+        self.units = self.shapes.pop(0)
+        self.ndims = self.cube.ndim
 
     def _get_bits(self):
-        """
-        Parse the str representation of the cube to retrieve the elements
-        to add to an html representation of the cube.
-
-        """
         bits = self.cube_str.split('\n')
-        self.summary = bits[0]
+        # self.summary = bits[0]
+        self._summary_content()
         left_indent = bits[1].split('D')[0]
 
         # Get heading indices within the printout.
@@ -139,41 +145,123 @@ class CubeRepresentation(object):
                 continue
             else:
                 start_inds.append(start_ind)
-        # Make sure the indices are in order.
-        start_inds = sorted(start_inds)
         # Mark the end of the file.
-        start_inds.append(None)
+        start_inds.append(0)
 
         # Retrieve info for each heading from the printout.
         for i0, i1 in zip(start_inds[:-1], start_inds[1:]):
             str_heading_name = bits[i0].strip()
-            if i1 is not None:
+            if i1 != 0:
                 content = bits[i0 + 1: i1]
             else:
                 content = bits[i0 + 1:]
             self.str_headings[str_heading_name] = content
 
+    def _make_header(self):
+        """
+        Make the table header. This is similar to the summary of the cube,
+        but does not include dim shapes. These are included on the next table
+        row down, and produced with `make_shapes_row`.
+
+        """
+        # Header row.
+        tlc_template = \
+            '<th class="iris iris-word-cell">{self.name} ({self.units})</th>'
+        top_left_cell = tlc_template.format(self=self)
+        cells = ['<tr class="iris">', top_left_cell]
+        for dim_name in self.names:
+            cells.append(
+                '<th class="iris iris-word-cell">{}</th>'.format(dim_name))
+        cells.append('</tr>')
+        return '\n'.join(cell for cell in cells)
+
+    def _make_shapes_row(self):
+        """Add a row to show data / dimensions shape."""
+        title_cell = \
+            '<td class="iris-word-cell iris-subheading-cell">Shape</td>'
+        cells = ['<tr class="iris">', title_cell]
+        for shape in self.shapes:
+            cells.append(
+                '<td class="iris iris-inclusion-cell">{}</td>'.format(shape))
+        cells.append('</td>')
+        return '\n'.join(cell for cell in cells)
+
+    def _make_row(self, title, body=None, col_span=0):
+        """
+        Produce one row for the table body; i.e.
+            <tr><td>Coord name</td><td>x</td><td>-</td>...</tr>
+
+        `body` contains the content for each cell not in the left-most (title)
+               column.
+               If None, indicates this row is a title row (see below).
+        `title` contains the row heading. If `body` is None, indicates
+                that the row contains a sub-heading;
+                e.g. 'Dimension coordinates:'.
+        `col_span` indicates how many columns the string should span.
+
+        """
+        row = ['<tr class="iris">']
+        template = '    <td{html_cls}>{content}</td>'
+        if body is None:
+            # This is a title row.
+            # Strip off the trailing ':' from the title string.
+            title = title.strip()[:-1]
+            row.append(
+                template.format(html_cls=' class="iris-title iris-word-cell"',
+                                content=title))
+            # Add blank cells for the rest of the rows.
+            for _ in range(self.ndims):
+                row.append(template.format(html_cls=' class="iris-title"',
+                                           content=''))
+        else:
+            # This is not a title row.
+            # Deal with name of coord/attr etc. first.
+            sub_title = '\t{}'.format(title)
+            row.append(template.format(
+                html_cls=' class="iris-word-cell iris-subheading-cell"',
+                content=sub_title))
+            # One further item or more than that?
+            if col_span != 0:
+                html_cls = ' class="{}" colspan="{}"'.format('iris-word-cell',
+                                                             col_span)
+                row.append(template.format(html_cls=html_cls, content=body))
+            else:
+                # "Inclusion" - `x` or `-`.
+                for itm in body:
+                    row.append(template.format(
+                        html_cls=' class="iris-inclusion-cell"',
+                        content=itm))
+        row.append('</tr>')
+        return row
+
     def _make_content(self):
         elements = []
         for k, v in self.str_headings.items():
             if v is not None:
-                html_id = k.split(' ')[0].lower().strip(':')
-                content = '\n'.join(line for line in v)
-                collapse = ' in' if k in self.major_headings else ''
-                element = self._insert_content.format(emt_id=html_id,
-                                                      obj_id=self.cube_id,
-                                                      str_heading=k,
-                                                      opened=collapse,
-                                                      content=content)
-                elements.append(element)
+                # Add the sub-heading title.
+                elements.extend(self._make_row(k))
+                for line in v:
+                    # Add every other row in the sub-heading.
+                    if k in self.dim_desc_coords:
+                        body = re.findall(r'[\w-]+', line)
+                        title = body.pop(0)
+                        colspan = 0
+                    else:
+                        split_point = line.index(':')
+                        title = line[:split_point].strip()
+                        body = line[split_point + 2:].strip()
+                        colspan = self.ndims
+                    elements.extend(
+                        self._make_row(title, body=body, col_span=colspan))
         return '\n'.join(element for element in elements)
 
     def repr_html(self):
-        """Produce an html representation of a cube and return it."""
+        """The `repr` interface to Jupyter."""
         self._get_bits()
-        summary = self.summary
+        header = self._make_header()
+        shape = self._make_shapes_row()
         content = self._make_content()
-        return self._template.format(summary=summary,
-                                     content=content,
-                                     obj_id=self.cube_id,
-                                     )
+        return self._template.format(header=header,
+                                     id=self.cube_id,
+                                     shape=shape,
+                                     content=content)
