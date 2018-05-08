@@ -77,7 +77,7 @@ we can pass the coordinate name and the aggregation definition to the
               altitude                       -                 x                    x
          Scalar coordinates:
               forecast_reference_time: 2009-11-19 04:00:00
-              level_height: 696.6666 m, bound=(0.0, 1393.3333) m
+              level_height: 516.667 m, bound=(0.0, 1393.3333) m
               model_level_number: 10, bound=(1, 19)
               sigma: 0.92292976, bound=(0.8458596, 1.0)
          Attributes:
@@ -139,9 +139,9 @@ These areas can now be passed to the ``collapsed`` method as weights:
               altitude                       -                      x
          Scalar coordinates:
               forecast_reference_time: 2009-11-19 04:00:00
-              grid_latitude: 1.5145501 degrees, bound=(0.14430022, 2.8848) degrees
-              grid_longitude: 358.74948 degrees, bound=(357.494, 360.00497) degrees
-              surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
+              grid_latitude: 1.51455 degrees, bound=(0.14430022, 2.8848) degrees
+              grid_longitude: 358.75 degrees, bound=(357.494, 360.00497) degrees
+              surface_altitude: 77.746 m, bound=(-14.0, 813.25) m
          Attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model
