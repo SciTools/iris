@@ -209,7 +209,7 @@ def co_realise_cubes(*cubes):
         std_err = (a_std * a_std + b_std * b_std) ** 0.5
 
         # Compute stats together (to avoid multiple data passes).
-        iris.co_realise_cubes(a_std, b_std, ab_mean_diff, std_err)
+        co_realise_cubes(a_std, b_std, ab_mean_diff, std_err)
 
 
     .. Note::

@@ -41,7 +41,7 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
-from iris._lazy_data import lazy_elementwise
+from iris._lazy_data import lazy_elementwise, co_realise_cubes
 
 import iris._merge
 import iris.analysis
@@ -591,6 +591,33 @@ class CubeList(list):
         """
         return iris._concatenate.concatenate(self,
                                              check_aux_coords=check_aux_coords)
+
+    def realise_data(self):
+        """
+        Fetch 'real' data for all cubes, in a shared calculation.
+
+        This computes any lazy data, equivalent to accessing each `cube.data`.
+        However, lazy calculations and data fetches can be shared between the
+        computations, improving performance.
+
+        For example::
+
+            # Form stats.
+            a_std = cube_a.collapsed(['x', 'y'], iris.analysis.STD_DEV)
+            b_std = cube_b.collapsed(['x', 'y'], iris.analysis.STD_DEV)
+            ab_mean_diff = (cube_b - cube_a).collapsed(['x', 'y'],
+                                                       iris.analysis.MEAN)
+            std_err = (a_std * a_std + b_std * b_std) ** 0.5
+
+            # Compute these stats together (avoiding multiple data passes).
+            CubeList([a_std, b_std, ab_mean_diff, std_err]).realise_data()
+
+        .. Note::
+
+            Cubes with non-lazy data are not affected.
+
+        """
+        co_realise_cubes(*self)
 
 
 def _is_single_item(testee):
