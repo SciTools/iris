@@ -79,7 +79,7 @@ we can pass the coordinate name and the aggregation definition to the
               forecast_reference_time: 2009-11-19 04:00:00
               level_height: 516.667 m, bound=(0.0, 1393.3333) m
               model_level_number: 10, bound=(1, 19)
-              sigma: 0.92292976, bound=(0.8458596, 1.0)
+              sigma: 0.942023, bound=(0.8458596, 1.0)
          Attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model
