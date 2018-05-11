@@ -28,7 +28,7 @@ import iris.tests as tests
 
 import numpy as np
 from cf_units import Unit, CALENDAR_GREGORIAN, CALENDAR_360_DAY
-from netcdftime import datetime as nc_datetime
+from cftime import datetime as nc_datetime
 
 import cartopy.crs as ccrs
 import iris

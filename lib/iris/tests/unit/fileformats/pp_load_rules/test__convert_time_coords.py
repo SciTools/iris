@@ -28,7 +28,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from cf_units import Unit, CALENDAR_GREGORIAN
-from netcdftime import datetime as nc_datetime
+from cftime import datetime as nc_datetime
 import numpy as np
 
 from iris.coords import DimCoord, AuxCoord

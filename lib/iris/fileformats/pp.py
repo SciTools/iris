@@ -35,7 +35,7 @@ import warnings
 import cf_units
 import numpy as np
 import numpy.ma as ma
-import netcdftime
+import cftime
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
@@ -1425,8 +1425,8 @@ class PPField2(PPField):
 
     def _get_t1(self):
         if not hasattr(self, '_t1'):
-            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat,
-                                           self.lbhr, self.lbmin)
+            self._t1 = cftime.datetime(self.lbyr, self.lbmon, self.lbdat,
+                                       self.lbhr, self.lbmin)
         return self._t1
 
     def _set_t1(self, dt):
@@ -1440,14 +1440,14 @@ class PPField2(PPField):
             delattr(self, '_t1')
 
     t1 = property(_get_t1, _set_t1, None,
-                  "A netcdftime.datetime object consisting of the lbyr, lbmon,"
+                  "A cftime.datetime object consisting of the lbyr, lbmon,"
                   " lbdat, lbhr, and lbmin attributes.")
 
     def _get_t2(self):
         if not hasattr(self, '_t2'):
-            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond,
-                                           self.lbdatd, self.lbhrd,
-                                           self.lbmind)
+            self._t2 = cftime.datetime(self.lbyrd, self.lbmond,
+                                       self.lbdatd, self.lbhrd,
+                                       self.lbmind)
         return self._t2
 
     def _set_t2(self, dt):
@@ -1461,7 +1461,7 @@ class PPField2(PPField):
             delattr(self, '_t2')
 
     t2 = property(_get_t2, _set_t2, None,
-                  "A netcdftime.datetime object consisting of the lbyrd, "
+                  "A cftime.datetime object consisting of the lbyrd, "
                   "lbmond, lbdatd, lbhrd, and lbmind attributes.")
 
 
@@ -1478,8 +1478,8 @@ class PPField3(PPField):
 
     def _get_t1(self):
         if not hasattr(self, '_t1'):
-            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat,
-                                           self.lbhr, self.lbmin, self.lbsec)
+            self._t1 = cftime.datetime(self.lbyr, self.lbmon, self.lbdat,
+                                       self.lbhr, self.lbmin, self.lbsec)
         return self._t1
 
     def _set_t1(self, dt):
@@ -1493,14 +1493,14 @@ class PPField3(PPField):
             delattr(self, '_t1')
 
     t1 = property(_get_t1, _set_t1, None,
-                  "A netcdftime.datetime object consisting of the lbyr, lbmon,"
+                  "A cftime.datetime object consisting of the lbyr, lbmon,"
                   " lbdat, lbhr, lbmin, and lbsec attributes.")
 
     def _get_t2(self):
         if not hasattr(self, '_t2'):
-            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond,
-                                           self.lbdatd, self.lbhrd,
-                                           self.lbmind, self.lbsecd)
+            self._t2 = cftime.datetime(self.lbyrd, self.lbmond,
+                                       self.lbdatd, self.lbhrd,
+                                       self.lbmind, self.lbsecd)
         return self._t2
 
     def _set_t2(self, dt):
@@ -1514,7 +1514,7 @@ class PPField3(PPField):
             delattr(self, '_t2')
 
     t2 = property(_get_t2, _set_t2, None,
-                  "A netcdftime.datetime object consisting of the lbyrd, "
+                  "A cftime.datetime object consisting of the lbyrd, "
                   "lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.")
 
 

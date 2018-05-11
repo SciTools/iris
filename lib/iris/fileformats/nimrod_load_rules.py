@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import warnings
 
 import cf_units
-import netcdftime
+import cftime
 import numpy as np
 
 import iris
@@ -76,9 +76,9 @@ def units(cube, field):
 
 def time(cube, field):
     """Add a time coord to the cube."""
-    valid_date = netcdftime.datetime(field.vt_year, field.vt_month,
-                                     field.vt_day, field.vt_hour,
-                                     field.vt_minute, field.vt_second)
+    valid_date = cftime.datetime(field.vt_year, field.vt_month,
+                                 field.vt_day, field.vt_hour,
+                                 field.vt_minute, field.vt_second)
     point = TIME_UNIT.date2num(valid_date)
 
     bounds = None
@@ -97,9 +97,9 @@ def time(cube, field):
 def reference_time(cube, field):
     """Add a 'reference time' to the cube, if present in the field."""
     if field.dt_year != field.int_mdi:
-        data_date = netcdftime.datetime(field.dt_year, field.dt_month,
-                                        field.dt_day, field.dt_hour,
-                                        field.dt_minute)
+        data_date = cftime.datetime(field.dt_year, field.dt_month,
+                                    field.dt_day, field.dt_hour,
+                                    field.dt_minute)
 
         ref_time_coord = DimCoord(TIME_UNIT.date2num(data_date),
                                   standard_name='forecast_reference_time',

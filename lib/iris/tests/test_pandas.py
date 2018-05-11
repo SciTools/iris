@@ -29,7 +29,6 @@ import unittest
 import cf_units
 import matplotlib.units
 import netCDF4
-import netcdftime
 import numpy as np
 
 
@@ -111,6 +110,7 @@ class TestAsSeries(tests.IrisTest):
                               cftime.Datetime360Day(2001, 2, 11, 9, 36)]
 
         else:
+            import netcdftime
             expected_index = [netcdftime.Datetime360Day(2000, 1, 1, 0, 0),
                               netcdftime.Datetime360Day(2000, 4, 11, 2, 24),
                               netcdftime.Datetime360Day(2000, 7, 21, 4, 48),
@@ -256,6 +256,7 @@ class TestAsDataFrame(tests.IrisTest):
             expected_index = [cftime.Datetime360Day(2000, 4, 11, 2, 24),
                               cftime.Datetime360Day(2000, 7, 21, 4, 48)]
         else:
+            import netcdftime
             expected_index = [netcdftime.Datetime360Day(2000, 4, 11, 2, 24),
                               netcdftime.Datetime360Day(2000, 7, 21, 4, 48)]
         expected_columns = [0, 1, 2, 3, 4]
@@ -355,14 +356,14 @@ class TestSeriesAsCube(tests.IrisTest):
             tests.get_result_path(('pandas', 'as_cube',
                                    'series_datetime_gregorian.cml')))
 
-    def test_series_netcdftime_360(self):
+    def test_series_cftime_360(self):
         series = pandas.Series(
             [0, 1, 2, 3, 4],
-            index=[netcdftime.datetime(2001, 1, 1, 1, 1, 1),
-                   netcdftime.datetime(2002, 2, 2, 2, 2, 2),
-                   netcdftime.datetime(2003, 3, 3, 3, 3, 3),
-                   netcdftime.datetime(2004, 4, 4, 4, 4, 4),
-                   netcdftime.datetime(2005, 5, 5, 5, 5, 5)])
+            index=[cftime.datetime(2001, 1, 1, 1, 1, 1),
+                   cftime.datetime(2002, 2, 2, 2, 2, 2),
+                   cftime.datetime(2003, 3, 3, 3, 3, 3),
+                   cftime.datetime(2004, 4, 4, 4, 4, 4),
+                   cftime.datetime(2005, 5, 5, 5, 5, 5)])
         self.assertCML(
             iris.pandas.as_cube(series,
                                 calendars={0: cf_units.CALENDAR_360_DAY}),
@@ -415,12 +416,12 @@ class TestDataFrameAsCube(tests.IrisTest):
             tests.get_result_path(('pandas', 'as_cube',
                                    'data_frame_masked.cml')))
 
-    def test_data_frame_netcdftime_360(self):
+    def test_data_frame_cftime_360(self):
         data_frame = pandas.DataFrame(
             [[0, 1, 2, 3, 4],
              [5, 6, 7, 8, 9]],
-            index=[netcdftime.datetime(2001, 1, 1, 1, 1, 1),
-                   netcdftime.datetime(2002, 2, 2, 2, 2, 2)],
+            index=[cftime.datetime(2001, 1, 1, 1, 1, 1),
+                   cftime.datetime(2002, 2, 2, 2, 2, 2)],
             columns=[10, 11, 12, 13, 14])
         self.assertCML(
             iris.pandas.as_cube(

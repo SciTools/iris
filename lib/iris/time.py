@@ -35,7 +35,7 @@ class PartialDateTime(object):
     Comparisons are defined against any other class with all of the
     attributes: year, month, day, hour, minute, and second.
     Notably, this includes :class:`datetime.datetime` and
-    :class:`netcdftime.datetime`. Comparison also extends to the
+    :class:`cftime.datetime`. Comparison also extends to the
     microsecond attribute for classes, such as
     :class:`datetime.datetime`, which define it.
 

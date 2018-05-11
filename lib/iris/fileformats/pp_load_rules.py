@@ -295,7 +295,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
     All dimensions are tested, and if degenerate are reduced to length 1.
 
     Value equivalence is controlled by a tolerance, to avoid problems with
-    numbers from netcdftime.date2num, which has limited precision because of
+    numbers from cftime.date2num, which has limited precision because of
     the way it calculates with floats of days.
 
     Args:

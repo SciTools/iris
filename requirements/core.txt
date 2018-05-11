@@ -5,7 +5,8 @@
 
 cartopy
 matplotlib<1.9
-netcdf4<1.4
+netcdf4
+cftime
 numpy
 scipy
 # pyke (not pip installable)  #conda: pyke
