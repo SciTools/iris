@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import math
+from pykdtree.kdtree import KDTree
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -618,11 +619,11 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
 
         # Convert to cartesian coordinates. Flatten for kdtree compatibility.
         cartesian_space_data_coords = \
-            _cartesian_sample_points(sample_space_data_positions,
-                                     sample_point_coord_names)
+            np.array(_cartesian_sample_points(sample_space_data_positions,
+                                              sample_point_coord_names))
 
         # Create a kdtree for the nearest-distance lookup to these 3d points.
-        kdtree = cKDTree(cartesian_space_data_coords)
+        kdtree = KDTree(cartesian_space_data_coords)
         # This can find the nearest datum point to any given target point,
         # which is the goal of this function.
 
@@ -633,8 +634,8 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     # Convert the sample points to cartesian (3d) coords.
     # If there is no latlon within the coordinate there will be no change.
     # Otherwise, geographic latlon is replaced with cartesian xyz.
-    cartesian_sample_points = _cartesian_sample_points(
-        coord_values, sample_point_coord_names)
+    cartesian_sample_points = np.array(_cartesian_sample_points(
+        coord_values, sample_point_coord_names))
 
     # Use kdtree to get the nearest sourcepoint index for each target point.
     _, datum_index_lists = kdtree.query(cartesian_sample_points)
