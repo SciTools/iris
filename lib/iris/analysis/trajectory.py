@@ -28,7 +28,6 @@ import math
 from pykdtree.kdtree import KDTree
 
 import numpy as np
-from scipy.spatial import cKDTree
 
 import iris.analysis
 import iris.coord_systems
