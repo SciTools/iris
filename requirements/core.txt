@@ -4,11 +4,11 @@
 # Without these, iris won't even import.
 
 cartopy
-matplotlib<1.9
-netcdf4
-cftime
-numpy
-scipy
-# pyke (not pip installable)  #conda: pyke
 cf_units
+cftime
 dask>=0.17.1
+matplotlib<1.9
+netcdf4<1.4
+numpy
+# pyke (not pip installable)  #conda: pyke
+scipy

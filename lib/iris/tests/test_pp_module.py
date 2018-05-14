@@ -176,7 +176,8 @@ class TestPPField_GlobalTemperature(IrisPPTest):
         self.assertEqual(warn.call_count, 3)
 
     def test_t1_t2_access(self):
-        self.assertEqual(self.r[0].t1.timetuple(), cftime.datetime(1994, 12, 1, 0, 0).timetuple())
+        self.assertEqual(self.r[0].t1.timetuple(),
+                         cftime.datetime(1994, 12, 1, 0, 0).timetuple())
 
     def test_save_single(self):
         temp_filename = iris.util.create_temp_filename(".pp")
