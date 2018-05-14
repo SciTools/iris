@@ -308,7 +308,7 @@ class TestRealiseData(tests.IrisTest):
         # _lazy_data.co_realise_cubes.
         mock_cubes_list = [mock.Mock(ident=count) for count in range(3)]
         test_cubelist = CubeList(mock_cubes_list)
-        call_patch = self.patch('iris.cube.co_realise_cubes')
+        call_patch = self.patch('iris.cube._lazy_co_realise_cubes')
         test_cubelist.realise_data()
         # Check it was called once, passing cubes as *args.
         self.assertEqual(call_patch.call_args_list,
