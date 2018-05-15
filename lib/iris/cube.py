@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
+import copy
 from copy import deepcopy
 import datetime
 from functools import reduce
@@ -41,8 +42,7 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
-from iris._lazy_data import (lazy_elementwise as _lazy_elementwise,
-                             co_realise_cubes as _lazy_co_realise_cubes)
+import iris._lazy_data as _lazy
 
 import iris._merge
 import iris.analysis
@@ -618,7 +618,7 @@ class CubeList(list):
             Cubes with non-lazy data are not affected.
 
         """
-        _lazy_co_realise_cubes(*self)
+        _lazy.co_realise_cubes(*self)
 
 
 def _is_single_item(testee):
@@ -911,7 +911,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             def pointwise_convert(values):
                 return old_unit.convert(values, new_unit)
 
-            new_data = _lazy_elementwise(self.lazy_data(), pointwise_convert)
+            new_data = _lazy.lazy_elementwise(self.lazy_data(),
+                                              pointwise_convert)
         else:
             new_data = self.units.convert(self.data, unit)
         self.data = new_data

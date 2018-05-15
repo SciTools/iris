@@ -38,10 +38,7 @@ import numpy.ma as ma
 
 from iris._data_manager import DataManager
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import (as_concrete_data as _lazy_as_concrete_data,
-                             is_lazy_data as _lazy_is_lazy_data,
-                             multidim_lazy_stack as lazy_multidim_stack,
-                             lazy_elementwise as _lazy_elementwise)
+import iris._lazy_data as _lazy
 import iris.aux_factory
 import iris.exceptions
 import iris.time
@@ -556,7 +553,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return cls(**kwargs)
 
     def _sanitise_array(self, src, ndmin):
-        if _lazy_is_lazy_data(src):
+        if _lazy.is_lazy_data(src):
             # Lazy data : just ensure ndmin requirement.
             ndims_missing = ndmin - src.ndim
             if ndims_missing <= 0:
@@ -674,7 +671,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         result = self._points_dm.core_data()
-        if not _lazy_is_lazy_data(result):
+        if not _lazy.is_lazy_data(result):
             result = result.view()
         return result
 
@@ -687,7 +684,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()
-            if not _lazy_is_lazy_data(result):
+            if not _lazy.is_lazy_data(result):
                 result = result.view()
         return result
 
@@ -927,15 +924,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 return old_unit.convert(values, new_unit)
 
         if self.has_lazy_points():
-            new_points = _lazy_elementwise(self.lazy_points(),
-                                          pointwise_convert)
+            new_points = _lazy.lazy_elementwise(self.lazy_points(),
+                                                pointwise_convert)
         else:
             new_points = self.units.convert(self.points, unit)
         self.points = new_points
         if self.has_bounds():
             if self.has_lazy_bounds():
-                new_bounds = _lazy_elementwise(self.lazy_bounds(),
-                                              pointwise_convert)
+                new_bounds = _lazy.lazy_elementwise(self.lazy_bounds(),
+                                                    pointwise_convert)
             else:
                 new_bounds = self.units.convert(self.bounds, unit)
             self.bounds = new_bounds
@@ -1232,8 +1229,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             points = (float(lower) + float(upper)) * 0.5
 
             # Create the new collapsed coordinate.
-            if _lazy_is_lazy_data(item):
-                bounds = lazy_multidim_stack(bounds)
+            if _lazy.is_lazy_data(item):
+                bounds = _lazy.multidim_lazy_stack(bounds)
                 coord = self.copy(points=points, bounds=bounds)
             else:
                 bounds = np.concatenate(bounds)
@@ -1755,7 +1752,7 @@ class DimCoord(Coord):
         # DimCoord always realises the points, to allow monotonicity checks.
         # Ensure it is an actual array, and also make our own copy so that we
         # can make it read-only.
-        points = _lazy_as_concrete_data(points)
+        points = _lazy.as_concrete_data(points)
         points = np.array(points)
 
         # Check validity requirements for dimension-coordinate points.
@@ -1814,7 +1811,7 @@ class DimCoord(Coord):
     def _bounds_setter(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
-            bounds = _lazy_as_concrete_data(bounds)
+            bounds = _lazy.as_concrete_data(bounds)
             bounds = np.array(bounds)
 
             # Check validity requirements for dimension-coordinate bounds.
@@ -1940,7 +1937,7 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if data is None:
             raise ValueError('The data payload of a CellMeasure may not be '
                              'None; it must be a numpy array or equivalent.')
-        if _lazy_is_lazy_data(data) and data.dtype.kind in 'biu':
+        if _lazy.is_lazy_data(data) and data.dtype.kind in 'biu':
             # Non-floating cell measures are not valid up to CF v1.7
             msg = ('Cannot create cell measure with lazy data of type {}, as '
                    'integer types are not currently supported.')
