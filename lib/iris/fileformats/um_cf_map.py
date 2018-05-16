@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,11 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
-# Created on 12 January 2017 09:01 from 
+# Created on 03 May 2018 12:05 from 
 # http://www.metarelate.net/metOcean
-# at commit c8b9eaf6733843702297f9770e166bc9ad756235
+# at commit 21a706f9d3c123007a2cdf4b681b0e42eb8e79da
 
-# https://github.com/metarelate/metOcean/commit/c8b9eaf6733843702297f9770e166bc9ad756235
+# https://github.com/metarelate/metOcean/commit/21a706f9d3c123007a2cdf4b681b0e42eb8e79da
 
 """
 Provides UM/CF phenomenon translations.
@@ -148,7 +148,7 @@ STASH_TO_CF = {
     'm01s00i116': CFName(None, 'mass_fraction_of_cloud_organic_carbon_from_fossil_fuel_dry_aerosol_in_air', 'kg/kg'),
     'm01s00i117': CFName(None, 'mass_fraction_of_accumulation_mode_nitrate_dry_aerosol_expressed_as_nitrogen_in_air', 'kg/kg'),
     'm01s00i118': CFName(None, 'mass_fraction_of_dissolved_nitrate_dry_aerosol_expressed_as_nitrogen_in_air', 'kg/kg'),
-    'm01s00i121': CFName(None, 'tendency_of_atmosphere_mass_content_of_sulfur_dioxide_expressed_as_sulfur_due_to_volcanic_emission', 'kg/kg'),
+    'm01s00i121': CFName(None, '3D NATURAL SO2 EMISSIONS', 'kg m-2 s-1'),
     'm01s00i122': CFName(None, 'molecular_concentration_of_hydroxyl_radical_in_air', 'cm-3'),
     'm01s00i123': CFName(None, 'molecular_concentration_of_hydroperoxyl_radical_in_air', 'cm-3'),
     'm01s00i124': CFName('mass_fraction_of_hydrogen_peroxide_in_air', None, 'kg/kg'),
@@ -274,7 +274,7 @@ STASH_TO_CF = {
     'm01s01i233': CFName('tendency_of_air_temperature_due_to_shortwave_heating_assuming_clear_sky', None, 'K s-1'),
     'm01s01i235': CFName('surface_downwelling_shortwave_flux_in_air', None, 'W m-2'),
     'm01s01i237': CFName('net_downward_shortwave_flux_in_air', None, 'W m-2'),
-    'm01s01i238': CFName('tropopause_upwelling_shortwave_flux', None, 'unknown'),
+    'm01s01i238': CFName('tropopause_upwelling_shortwave_flux', None, 'W m-2'),
     'm01s01i241': CFName(None, 'product_of_number_concentration_of_stratiform_cloud_liquid_water_particles_and_stratiform_cloud_liquid_water_area_fraction_and_sunlit_binary_mask', 'cm-3'),
     'm01s01i242': CFName(None, 'product_of_stratiform_cloud_liquid_water_content_and_stratiform_cloud_liquid_water_area_fraction_and_sunlit_binary_mask', 'g cm-3'),
     'm01s01i243': CFName(None, 'product_of_mass_concentration_of_sulfate_ion_and_sunlit_binary_mask', 'ug m-3'),
@@ -377,7 +377,7 @@ STASH_TO_CF = {
     'm01s03i010': CFName('specific_humidity', None, '1'),
     'm01s03i025': CFName('atmosphere_boundary_layer_thickness', None, 'm'),
     'm01s03i201': CFName('downward_heat_flux_in_sea_ice', None, 'W m-2'),
-    'm01s03i202': CFName('downward_heat_flux_in_soil', None, 'unknown'),
+    'm01s03i202': CFName('downward_heat_flux_in_soil', None, 'W m-2'),
     'm01s03i209': CFName('x_wind', None, 'm s-1'),
     'm01s03i210': CFName('y_wind', None, 'm s-1'),
     'm01s03i217': CFName('surface_upward_sensible_heat_flux', None, 'W m-2'),
@@ -431,6 +431,8 @@ STASH_TO_CF = {
     'm01s03i337': CFName('downward_heat_flux_in_soil', None, 'W m-2'),
     'm01s03i340': CFName(None, 'Shear driven boundary layer indicator', '1'),
     'm01s03i353': CFName(None, 'Sublimation of sea ice meaned over sea portion of grid box', 'kg/m^2/s'),
+    'm01s03i365': CFName('x_wind', None, 'm s-1'),
+    'm01s03i366': CFName('y_wind', None, 'm s-1'),
     'm01s03i391': CFName('surface_downward_eastward_stress', None, 'Pa'),
     'm01s03i392': CFName('surface_downward_eastward_stress', None, 'Pa'),
     'm01s03i393': CFName('surface_downward_northward_stress', None, 'Pa'),
@@ -492,7 +494,7 @@ STASH_TO_CF = {
     'm01s05i207': CFName('air_pressure_at_convective_cloud_base', None, 'Pa'),
     'm01s05i208': CFName('air_pressure_at_convective_cloud_top', None, 'Pa'),
     'm01s05i209': CFName('air_temperature', None, 'K'),
-    'm01s05i212': CFName('convective_cloud_area_fraction_in_atmosphere_layer', None, 'unknown'),
+    'm01s05i212': CFName('convective_cloud_area_fraction_in_atmosphere_layer', None, '1'),
     'm01s05i213': CFName('mass_fraction_of_convective_cloud_liquid_water_in_air', None, '1'),
     'm01s05i214': CFName('rainfall_flux', None, 'kg m-2 s-1'),
     'm01s05i215': CFName('snowfall_flux', None, 'kg m-2 s-1'),
@@ -526,15 +528,15 @@ STASH_TO_CF = {
     'm01s06i241': CFName('upward_eastward_momentum_flux_in_air_due_to_orographic_gravity_waves', None, 'Pa'),
     'm01s06i247': CFName('tendency_of_eastward_wind_due_to_orographic_gravity_wave_drag', None, 'm s-2'),
     'm01s08i023': CFName('surface_snow_amount', None, 'kg m-2'),
-    'm01s08i202': CFName(None, 'surface_snow_melt_flux_where_land', 'kg m-2 s-1'),
+    'm01s08i202': CFName(None, 'surface_snow_melt_flux_where_land', 'W m-2'),
     'm01s08i204': CFName('surface_runoff_amount', None, 'kg m-2'),
     'm01s08i205': CFName('subsurface_runoff_amount', None, 'kg m-2'),
-    'm01s08i208': CFName('soil_moisture_content', None, 'unknown'),
-    'm01s08i209': CFName('canopy_water_amount', None, 'unknown'),
+    'm01s08i208': CFName('soil_moisture_content', None, 'kg m-2'),
+    'm01s08i209': CFName('canopy_water_amount', None, 'kg m-2'),
     'm01s08i223': CFName('moisture_content_of_soil_layer', None, 'kg m-2'),
     'm01s08i225': CFName('soil_temperature', None, 'K'),
-    'm01s08i229': CFName('mass_fraction_of_unfrozen_water_in_soil_moisture', None, 'unknown'),
-    'm01s08i230': CFName('mass_fraction_of_frozen_water_in_soil_moisture', None, 'unknown'),
+    'm01s08i229': CFName('mass_fraction_of_unfrozen_water_in_soil_moisture', None, 'kg kg-1'),
+    'm01s08i230': CFName('mass_fraction_of_frozen_water_in_soil_moisture', None, 'kg kg-1'),
     'm01s08i231': CFName(None, 'surface_snow_melt_flux_where_land', 'kg m-2 s-1'),
     'm01s08i233': CFName('canopy_throughfall_flux', None, 'kg/m^2/s'),
     'm01s08i234': CFName('surface_runoff_flux', None, 'kg m-2 s-1'),
@@ -562,8 +564,8 @@ STASH_TO_CF = {
     'm01s09i221': CFName(None, 'wet_bulb_freezing_level_altitude', 'm'),
     'm01s09i222': CFName('wet_bulb_temperature', None, 'K'),
     'm01s09i226': CFName(None, 'binary_mask_where_cloud_area_fraction_in_atmosphere_layer_gt_0', '1'),
-    'm01s09i228': CFName(None, 'relative_humidity_at_which_cloud_assumed_to_form', '1'),
-    'm01s09i229': CFName('relative_humidity', None, '1'),
+    'm01s09i228': CFName(None, 'relative_humidity_at_which_cloud_assumed_to_form', '%'),
+    'm01s09i229': CFName('relative_humidity', None, '%'),
     'm01s09i230': CFName(None, 'visibility_in_atmosphere_layer', 'm'),
     'm01s12i004': CFName('air_temperature', None, 'K'),
     'm01s12i010': CFName('specific_humidity', None, '1'),
@@ -685,7 +687,7 @@ STASH_TO_CF = {
     'm01s30i203': CFName('upward_air_velocity', None, 'm s-1'),
     'm01s30i204': CFName('air_temperature', None, 'K'),
     'm01s30i205': CFName('specific_humidity', None, '1'),
-    'm01s30i206': CFName('relative_humidity', None, '1'),
+    'm01s30i206': CFName('relative_humidity', None, '%'),
     'm01s30i207': CFName('geopotential_height', None, 'm'),
     'm01s30i208': CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'),
     'm01s30i211': CFName('square_of_eastward_wind', None, 'm2 s-2'),
@@ -824,30 +826,30 @@ STASH_TO_CF = {
     'm01s34i096': CFName(None, 'mass_fraction_of_methyl_ethyl_ketone_in_air', 'kg kg-1'),
     'm01s34i097': CFName('mass_fraction_of_toluene_in_air', None, 'kg kg-1'),
     'm01s34i100': CFName(None, 'mass_fraction_of_lumped_chlorine_expressed_as_hydrogen_chloride', 'kg kg-1'),
-    'm01s34i101': CFName(None, 'number_of_soluble_nucleation_mode_particles_per_molecule_of_air', '1'),
+    'm01s34i101': CFName(None, 'number_of_particles_per_air_molecule_of_soluble_nucleation_mode_aerosol_in_air', '1'),
     'm01s34i102': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_nucleation_mode_dry_aerosol_in_air', 'kg kg-1'),
-    'm01s34i103': CFName(None, 'number_of_soluble_Aitken_mode_particles_per_molecule_of_air', '1'),
+    'm01s34i103': CFName(None, 'number_of_particles_per_air_molecule_of_soluble_aitken_mode_aerosol_in_air', '1'),
     'm01s34i104': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i105': CFName(None, 'mass_fraction_of_black_carbon_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i106': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
-    'm01s34i107': CFName(None, 'number_of_soluble_accumulation_mode_particles_per_molecule_of_air', '1'),
+    'm01s34i107': CFName(None, 'number_of_particles_per_air_molecule_of_soluble_accumulation_mode_aerosol_in_air', '1'),
     'm01s34i108': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i109': CFName(None, 'mass_fraction_of_black_carbon_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i110': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i111': CFName(None, 'mass_fraction_of_seasalt_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i112': CFName(None, 'mass_fraction_of_dust_in_soluble_accumulation_mode_dry_aerosol_in_air', 'kg kg-1'),
-    'm01s34i113': CFName(None, 'number_of_soluble_coarse_mode_particles_per_molecule_of_air', '1'),
+    'm01s34i113': CFName(None, 'number_of_particles_per_air_molecule_of_soluble_coarse_mode_aerosol_in_air', '1'),
     'm01s34i114': CFName(None, 'mass_fraction_of_sulfuric_acid_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i115': CFName(None, 'mass_fraction_of_black_carbon_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i116': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i117': CFName(None, 'mass_fraction_of_seasalt_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i118': CFName(None, 'mass_fraction_of_dust_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
-    'm01s34i119': CFName(None, 'number_of_insoluble_Aitken_mode_particles_per_molecule_of_air', '1'),
+    'm01s34i119': CFName(None, 'number_of_particles_per_air_molecule_of_insoluble_aitken_mode_aerosol_in_air', '1'),
     'm01s34i120': CFName(None, 'mass_fraction_of_black_carbon_in_insoluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i121': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_insoluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
-    'm01s34i122': CFName(None, 'number_of_insoluble_accumulation_mode_particles_per_molecule_of_air', '1'),
+    'm01s34i122': CFName(None, 'number_of_particles_per_air_molecule_of_insoluble_accumulation_mode_aerosol_in_air', '1'),
     'm01s34i123': CFName(None, 'mass_fraction_of_dust_in_insoluble_accumulation_mode_aerosol_in_air', 'kg kg-1'),
-    'm01s34i124': CFName(None, 'number_of_insoluble_coarse_mode_particles_per_molecule_of_air', '1'),
+    'm01s34i124': CFName(None, 'number_of_particles_per_air_molecule_of_insoluble_coarse_mode_aerosol_in_air', '1'),
     'm01s34i125': CFName(None, 'mass_fraction_of_dust_in_insoluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i126': CFName(None, 'mass_fraction_of_particulate_organic_matter_in_soluble_nucleation_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i127': CFName(None, 'mass_fraction_of_seasalt_in_soluble_aitken_mode_dry_aerosol_in_air', 'kg kg-1'),
@@ -865,6 +867,9 @@ STASH_TO_CF = {
     'm01s34i139': CFName(None, 'mass_fraction_of_nitrate_in_soluble_coarse_mode_dry_aerosol_in_air', 'kg kg-1'),
     'm01s34i150': CFName('age_of_stratospheric_air', None, 's'),
     'm01s34i159': CFName('equivalent_thickness_at_stp_of_atmosphere_ozone_content', None, 'DU'),
+    'm01s50i228': CFName('photolysis_rate_of_ozone_to_1D_oxygen_atom', None, 's-1'),
+    'm01s50i229': CFName('photolysis_rate_of_nitrogen_dioxide', None, 's-1'),
+    'm01s50i230': CFName('mass_concentration_of_nmvoc_expressed_as_carbon_in_air', None, 'ug m-3'),
     'm02s00i101': CFName('sea_water_potential_temperature', None, 'degC'),
     'm02s00i102': CFName('sea_water_salinity', None, '1e3 @0.035'),
     'm02s00i121': CFName('baroclinic_eastward_sea_water_velocity', None, 'cm s-1'),
@@ -934,6 +939,8 @@ STASHCODE_IMPLIED_HEIGHTS = {
     'm01s03i247': (1.5,),
     'm01s03i250': (1.5,),
     'm01s03i281': (1.5,),
+    'm01s03i365': (10.0,),
+    'm01s03i366': (10.0,),
     'm01s03i463': (10.0,),
     'm01s15i212': (50.0,),
     'm01s15i213': (50.0,),
