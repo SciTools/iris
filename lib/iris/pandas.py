@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -55,7 +55,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
 
     # Convert pandas datetime objects to python datetime obejcts.
     if isinstance(points, DatetimeIndex):
-        points = np.array([i.to_datetime() for i in points])
+        points = np.array([i.to_pydatetime() for i in points])
 
     # Convert datetime objects to Iris' current datetime representation.
     if points.dtype == object:
