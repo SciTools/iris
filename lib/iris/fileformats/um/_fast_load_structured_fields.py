@@ -28,7 +28,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import itertools
 
-from netCDF4 import netcdftime
+import netcdftime
 import numpy as np
 
 from iris._lazy_data import as_lazy_data, multidim_lazy_stack
