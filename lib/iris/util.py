@@ -943,26 +943,17 @@ def format_array(arr):
     ffunc = str
     formatArray = np.core.arrayprint._formatArray
     max_line_len = 50
-    try:
-        if arr.size > summary_threshold:
-            summary_insert = '..., '
-        result = formatArray(arr, ffunc, len(arr.shape),
-                             max_line_len=max_line_len,
-                             next_line_prefix='\t\t', separator=', ',
-                             edge_items=edge_items,
-                             summary_insert=summary_insert)[:-1]
-    except TypeError:
-        legacy = '1.13'
-        if arr.size > summary_threshold:
-            summary_insert = '...'
-        options = np.get_printoptions()
-        options['legacy'] = legacy
-        np.set_printoptions(**options)
-        result = formatArray(arr, ffunc, max_line_len,
-                             next_line_prefix='\t\t', separator=', ',
-                             edge_items=edge_items,
-                             summary_insert=summary_insert,
-                             legacy=legacy)
+    legacy = '1.13'
+    if arr.size > summary_threshold:
+        summary_insert = '...'
+    options = np.get_printoptions()
+    options['legacy'] = legacy
+    np.set_printoptions(**options)
+    result = formatArray(arr, ffunc, max_line_len,
+                         next_line_prefix='\t\t', separator=', ',
+                         edge_items=edge_items,
+                         summary_insert=summary_insert,
+                         legacy=legacy)
 
     return result
 
