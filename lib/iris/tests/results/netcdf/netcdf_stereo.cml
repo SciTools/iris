@@ -8,7 +8,7 @@
       <attribute name="creator_email" value="sat_systems@metoffice.gov.uk"/>
       <attribute name="creator_name" value="Satellite Applications, Met Office"/>
       <attribute name="creator_type" value="group"/>
-      <attribute name="geospatial_lat_max" value="2.2e-44"/>
+      <attribute name="geospatial_lat_max" value="2.24208e-44"/>
       <attribute name="geospatial_lat_min" value="0.0"/>
       <attribute name="geospatial_lon_max" value="0.0"/>
       <attribute name="geospatial_lon_min" value="0.0"/>
