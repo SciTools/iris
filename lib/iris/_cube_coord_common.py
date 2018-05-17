@@ -149,7 +149,7 @@ class CFVariableMixin(object):
                                  'variable name.')
             elif set(name).intersection(string.whitespace):
                 raise ValueError('{!r} is not a valid netCDF variable name '
-                                 'because it contains whitespace.'.format(name))
+                                 'as it contains whitespace.'.format(name))
         self._var_name = name
 
     @property
