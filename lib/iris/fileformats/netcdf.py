@@ -663,14 +663,15 @@ def _load_aux_factory(engine, cube):
         cube.add_aux_factory(factory)
 
 
-def load_cubes(filenames, callback=None):
+def load_cubes(filenames_or_datasets, callback=None):
     """
     Loads cubes from a list of NetCDF filenames/URLs.
 
     Args:
 
-    * filenames (string/list):
-        One or more NetCDF filenames/DAP URLs to load from.
+    * filenames_or_datasets (list):
+        One or more open :class:`netCDF4.Dataset`, or filenames/DAP URLs to
+        load from.
 
     Kwargs:
 
@@ -684,18 +685,19 @@ def load_cubes(filenames, callback=None):
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
-    if isinstance(filenames, six.string_types):
-        filenames = [filenames]
+    if (isinstance(filenames_or_datasets, six.string_types) or
+            hasattr(filenames_or_datasets, 'getncattr')):
+        filenames_or_datasets = [filenames_or_datasets]
 
-    for filename in filenames:
+    for filename_or_dataset in filenames_or_datasets:
         # Ingest the netCDF file.
-        cf = iris.fileformats.cf.CFReader(filename)
+        cf = iris.fileformats.cf.CFReader(filename_or_dataset)
 
         # Process each CF data variable.
         data_variables = (list(cf.cf_group.data_variables.values()) +
                           list(cf.cf_group.promoted.values()))
         for cf_var in data_variables:
-            cube = _load_cube(engine, cf, cf_var, filename)
+            cube = _load_cube(engine, cf, cf_var, filename_or_dataset)
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.
@@ -705,7 +707,8 @@ def load_cubes(filenames, callback=None):
                 warnings.warn('{}'.format(e))
 
             # Perform any user registered callback function.
-            cube = iris.io.run_callback(callback, cube, cf_var, filename)
+            cube = iris.io.run_callback(callback, cube, cf_var,
+                                        filename_or_dataset)
 
             # Callback mechanism may return None, which must not be yielded
             if cube is None:
