@@ -1,7 +1,7 @@
 *.py[co]
 
 # Packages
-*.egg
+*.egg?
 *.egg-info
 dist
 build
@@ -32,6 +32,7 @@ lib/iris/std_names.py
 # Iris test result files
 lib/iris/tests/result_image_comparison/
 iris_image_test_output/
+*.ESMF_LogFile
 
 # Iris test lock file
 lib/iris/tests/results/imagerepo.lock
