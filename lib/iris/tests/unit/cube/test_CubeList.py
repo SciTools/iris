@@ -32,6 +32,7 @@ from iris.coords import AuxCoord, DimCoord
 import iris.coord_systems
 import iris.exceptions
 from iris.fileformats.pp import STASH
+from iris.tests import mock
 
 
 class Test_concatenate_cube(tests.IrisTest):
@@ -299,6 +300,19 @@ class TestPrint(tests.IrisTest):
         expected = ('0: m01s00i004 / (unknown)       '
                     '       (latitude: 3; longitude: 4)')
         self.assertEqual(str(self.cubes), expected)
+
+
+class TestRealiseData(tests.IrisTest):
+    def test_realise_data(self):
+        # Simply check that calling CubeList.realise_data is calling
+        # _lazy_data.co_realise_cubes.
+        mock_cubes_list = [mock.Mock(ident=count) for count in range(3)]
+        test_cubelist = CubeList(mock_cubes_list)
+        call_patch = self.patch('iris._lazy_data.co_realise_cubes')
+        test_cubelist.realise_data()
+        # Check it was called once, passing cubes as *args.
+        self.assertEqual(call_patch.call_args_list,
+                         [mock.call(*mock_cubes_list)])
 
 
 if __name__ == "__main__":

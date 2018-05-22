@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
+import copy
 from copy import deepcopy
 import datetime
 from functools import reduce
@@ -41,7 +42,7 @@ from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
-from iris._lazy_data import lazy_elementwise
+import iris._lazy_data as _lazy
 
 import iris._merge
 import iris.analysis
@@ -592,6 +593,33 @@ class CubeList(list):
         return iris._concatenate.concatenate(self,
                                              check_aux_coords=check_aux_coords)
 
+    def realise_data(self):
+        """
+        Fetch 'real' data for all cubes, in a shared calculation.
+
+        This computes any lazy data, equivalent to accessing each `cube.data`.
+        However, lazy calculations and data fetches can be shared between the
+        computations, improving performance.
+
+        For example::
+
+            # Form stats.
+            a_std = cube_a.collapsed(['x', 'y'], iris.analysis.STD_DEV)
+            b_std = cube_b.collapsed(['x', 'y'], iris.analysis.STD_DEV)
+            ab_mean_diff = (cube_b - cube_a).collapsed(['x', 'y'],
+                                                       iris.analysis.MEAN)
+            std_err = (a_std * a_std + b_std * b_std) ** 0.5
+
+            # Compute these stats together (avoiding multiple data passes).
+            CubeList([a_std, b_std, ab_mean_diff, std_err]).realise_data()
+
+        .. Note::
+
+            Cubes with non-lazy data are not affected.
+
+        """
+        _lazy.co_realise_cubes(*self)
+
 
 def _is_single_item(testee):
     """
@@ -883,7 +911,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             def pointwise_convert(values):
                 return old_unit.convert(values, new_unit)
 
-            new_data = lazy_elementwise(self.lazy_data(), pointwise_convert)
+            new_data = _lazy.lazy_elementwise(self.lazy_data(),
+                                              pointwise_convert)
         else:
             new_data = self.units.convert(self.data, unit)
         self.data = new_data
