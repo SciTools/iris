@@ -91,9 +91,9 @@ same way as loading with constraints:
          Scalar coordinates:
               forecast_period: 6.0 hours
               forecast_reference_time: 2009-11-19 04:00:00
-              level_height: 395.0 m, bound=(360.0, 433.333) m
+              level_height: 395.0 m, bound=(360.0, 433.3332) m
               model_level_number: 10
-              sigma: 0.954993, bound=(0.958939, 0.95068)
+              sigma: 0.9549927, bound=(0.9589389, 0.95068014)
               time: 2009-11-19 10:00:00
          Attributes:
               STASH: m01s00i004

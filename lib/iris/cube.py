@@ -3684,7 +3684,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, \
 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
             >>> print(cube.coord('time').points)
-            [ 349618.  349619.  349620.]
+            [349618. 349619. 349620.]
             >>> samples = [('time', 349618.5)]
             >>> result = cube.interpolate(samples, iris.analysis.Linear())
             >>> print(result.summary(shorten=True))
@@ -3694,7 +3694,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
             >>> print(result.coord('time').points)
-            [ 349618.5]
+            [349618.5]
             >>> # For datetime-like coordinates, we can also use
             >>> # datetime-like objects.
             >>> samples = [('time', datetime.datetime(2009, 11, 19, 10, 30))]
@@ -3706,7 +3706,7 @@ calendar='gregorian')
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
             >>> print(result2.coord('time').points)
-            [ 349618.5]
+            [349618.5]
             >>> print(result == result2)
             True
 
