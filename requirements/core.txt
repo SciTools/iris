@@ -4,7 +4,7 @@
 # Without these, iris won't even import.
 
 cartopy
-matplotlib
+matplotlib<1.9
 netcdf4<1.4
 numpy
 scipy

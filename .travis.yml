@@ -77,6 +77,11 @@ install:
     python requirements/gen_conda_requirements.py ${CONDA_REQS_FLAGS} --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
     cat ${CONDA_REQS_FILE};
     conda install --quiet --file ${CONDA_REQS_FILE};
+    conda list;
+
+  - >
+    conda install --force numpy=1.14 matplotlib=1.5.3;
+    conda list;
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
