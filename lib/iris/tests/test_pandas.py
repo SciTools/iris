@@ -31,6 +31,11 @@ import matplotlib.units
 import netCDF4
 import numpy as np
 
+# TODO Remove this if statement as we move to cftime
+if cf_units.__version__ > '1':
+    import cftime
+else:
+    import netcdtime as cftime
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
@@ -100,22 +105,11 @@ class TestAsSeries(tests.IrisTest):
         time_coord = DimCoord([0, 100.1, 200.2, 300.3, 400.4],
                               long_name="time", units=time_unit)
         cube.add_dim_coord(time_coord, 0)
-        # TODO Remove this if statement as we move to cftime
-        if cf_units.__version__ > '1':
-            import cftime
-            expected_index = [cftime.Datetime360Day(2000, 1, 1, 0, 0),
-                              cftime.Datetime360Day(2000, 4, 11, 2, 24),
-                              cftime.Datetime360Day(2000, 7, 21, 4, 48),
-                              cftime.Datetime360Day(2000, 11, 1, 7, 12),
-                              cftime.Datetime360Day(2001, 2, 11, 9, 36)]
-
-        else:
-            import netcdftime
-            expected_index = [netcdftime.Datetime360Day(2000, 1, 1, 0, 0),
-                              netcdftime.Datetime360Day(2000, 4, 11, 2, 24),
-                              netcdftime.Datetime360Day(2000, 7, 21, 4, 48),
-                              netcdftime.Datetime360Day(2000, 11, 1, 7, 12),
-                              netcdftime.Datetime360Day(2001, 2, 11, 9, 36)]
+        expected_index = [cftime.Datetime360Day(2000, 1, 1, 0, 0),
+                          cftime.Datetime360Day(2000, 4, 11, 2, 24),
+                          cftime.Datetime360Day(2000, 7, 21, 4, 48),
+                          cftime.Datetime360Day(2000, 11, 1, 7, 12),
+                          cftime.Datetime360Day(2001, 2, 11, 9, 36)]
 
         series = iris.pandas.as_series(cube)
         self.assertArrayEqual(series, cube.data)
@@ -248,17 +242,9 @@ class TestAsDataFrame(tests.IrisTest):
         time_coord = DimCoord([100.1, 200.2], long_name="time",
                               units=time_unit)
         cube.add_dim_coord(time_coord, 0)
-        # TODO: Remove this if statement once we move to exclusive cftime.
-        if cf_units.__version__ > '1':
-            # cf_units depends upon cftime, so we can safely assume we
-            # have it.
-            import cftime
-            expected_index = [cftime.Datetime360Day(2000, 4, 11, 2, 24),
-                              cftime.Datetime360Day(2000, 7, 21, 4, 48)]
-        else:
-            import netcdftime
-            expected_index = [netcdftime.Datetime360Day(2000, 4, 11, 2, 24),
-                              netcdftime.Datetime360Day(2000, 7, 21, 4, 48)]
+        expected_index = [cftime.Datetime360Day(2000, 4, 11, 2, 24),
+                          cftime.Datetime360Day(2000, 7, 21, 4, 48)]
+
         expected_columns = [0, 1, 2, 3, 4]
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data)
