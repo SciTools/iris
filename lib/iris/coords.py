@@ -418,11 +418,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Kwargs:
 
         * standard_name:
-            CF standard name of coordinate
+            CF standard name of the coordinate.
         * long_name:
-            Descriptive name of coordinate
+            Descriptive name of the coordinate.
         * var_name:
-            CF variable name of coordinate
+            The netCDF variable name for the coordinate.
         * units
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
@@ -446,7 +446,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: Descriptive name of the coordinate.
         self.long_name = long_name
 
-        #: The CF variable name for the coordinate.
+        #: The netCDF variable name for the coordinate.
         self.var_name = var_name
 
         #: Unit of the quantity that the coordinate represents.
@@ -1883,11 +1883,11 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Kwargs:
 
         * standard_name:
-            CF standard name of coordinate
+            CF standard name of the coordinate.
         * long_name:
-            Descriptive name of coordinate
+            Descriptive name of the coordinate.
         * var_name:
-            CF variable name of coordinate
+            The netCDF variable name for the coordinate.
         * units
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
@@ -1904,7 +1904,7 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: Descriptive name of the coordinate.
         self.long_name = long_name
 
-        #: The CF variable name for the coordinate.
+        #: The netCDF variable name for the coordinate.
         self.var_name = var_name
 
         #: Unit of the quantity that the coordinate represents.

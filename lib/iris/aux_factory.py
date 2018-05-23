@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -51,7 +51,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         #: Descriptive name of the coordinate made by the factory
         self.long_name = None
 
-        #: CF variable name of the coordinate made by the factory
+        #: netCDF variable name for the coordinate made by the factory
         self.var_name = None
 
         #: Coordinate system (if any) of the coordinate made by the factory
