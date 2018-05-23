@@ -44,6 +44,8 @@ import iris._constraints
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 
+from iris import _space
+
 import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
@@ -763,41 +765,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self.attributes = attributes
 
         # Coords
-        self._dim_coords_and_dims = []
-        self._aux_coords_and_dims = []
-        self._aux_factories = []
+        # TODO: Make wrapper properties for these.
+#        self._dim_coords_and_dims = []
+#        self._aux_coords_and_dims = []
+#        self._aux_factories = []
 
         # Cell Measures
-        self._cell_measures_and_dims = []
+#        self._cell_measures_and_dims = []
 
-        identities = set()
-        if dim_coords_and_dims:
-            dims = set()
-            for coord, dim in dim_coords_and_dims:
-                identity = coord.standard_name, coord.long_name
-                if identity not in identities and dim not in dims:
-                    self._add_unique_dim_coord(coord, dim)
-                else:
-                    self.add_dim_coord(coord, dim)
-                identities.add(identity)
-                dims.add(dim)
-
-        if aux_coords_and_dims:
-            for coord, dims in aux_coords_and_dims:
-                identity = coord.standard_name, coord.long_name
-                if identity not in identities:
-                    self._add_unique_aux_coord(coord, dims)
-                else:
-                    self.add_aux_coord(coord, dims)
-                identities.add(identity)
-
-        if aux_factories:
-            for factory in aux_factories:
-                self.add_aux_factory(factory)
-
-        if cell_measures_and_dims:
-            for cell_measure, dims in cell_measures_and_dims:
-                self.add_cell_measure(cell_measure, dims)
+        self._space = _space.Space(
+            self.shape,
+            dim_coords_and_dims=dim_coords_and_dims,
+            aux_coords_and_dims=aux_coords_and_dims,
+            aux_factories=aux_factories,
+            cell_measures_and_dims=cell_measures_and_dims)
 
     @property
     def metadata(self):
@@ -944,9 +925,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
-        if self.coords(coord):  # TODO: just fail on duplicate object
-            raise ValueError('Duplicate coordinates are not permitted.')
-        self._add_unique_aux_coord(coord, data_dims)
+        return self._space.add_aux_coord(coord, data_dims=data_dims)
 
     def _check_multi_dim_metadata(self, metadata, data_dims):
         # Convert to a tuple of integers
@@ -977,10 +956,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError(msg)
         return data_dims
 
-    def _add_unique_aux_coord(self, coord, data_dims):
-        data_dims = self._check_multi_dim_metadata(coord, data_dims)
-        self._aux_coords_and_dims.append([coord, data_dims])
-
     def add_aux_factory(self, aux_factory):
         """
         Adds an auxiliary coordinate factory to the cube.
@@ -991,10 +966,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The :class:`iris.aux_factory.AuxCoordFactory` instance to add.
 
         """
-        if not isinstance(aux_factory, iris.aux_factory.AuxCoordFactory):
-            raise TypeError('Factory must be a subclass of '
-                            'iris.aux_factory.AuxCoordFactory.')
-        self._aux_factories.append(aux_factory)
+        return self._space.add_aux_factory(aux_factory)
 
     def add_cell_measure(self, cell_measure, data_dims=None):
         """
@@ -1019,12 +991,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         :meth:`Cube.remove_cell_measure()<iris.cube.Cube.remove_cell_measure>`.
 
         """
-        if self.cell_measures(cell_measure):
-            raise ValueError('Duplicate cell_measures are not permitted.')
-        data_dims = self._check_multi_dim_metadata(cell_measure, data_dims)
-        self._cell_measures_and_dims.append([cell_measure, data_dims])
-        self._cell_measures_and_dims.sort(key=lambda cm_dims:
-                                          (cm_dims[0]._as_defn(), cm_dims[1]))
+        return self._space.add_cell_measure(
+                cell_measure=cell_measure, data_dims=data_dims)
 
     def add_dim_coord(self, dim_coord, data_dim):
         """
@@ -1044,53 +1012,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
-        if self.coords(dim_coord):
-            raise ValueError('The coordinate already exists on the cube. '
-                             'Duplicate coordinates are not permitted.')
-        # Check dimension is available
-        if self.coords(dimensions=data_dim, dim_coords=True):
-            raise ValueError('A dim_coord is already associated with '
-                             'dimension %d.' % data_dim)
-        self._add_unique_dim_coord(dim_coord, data_dim)
-
-    def _add_unique_dim_coord(self, dim_coord, data_dim):
-        if isinstance(dim_coord, iris.coords.AuxCoord):
-            raise ValueError('The dim_coord may not be an AuxCoord instance.')
-
-        # Convert data_dim to a single integer
-        if isinstance(data_dim, collections.Container):
-            if len(data_dim) != 1:
-                raise ValueError('The supplied data dimension must be a'
-                                 ' single number.')
-            data_dim = int(list(data_dim)[0])
-        else:
-            data_dim = int(data_dim)
-
-        # Check data_dim value is valid
-        if data_dim < 0 or data_dim >= self.ndim:
-            raise ValueError('The cube does not have the specified dimension '
-                             '(%d)' % data_dim)
-
-        # Check compatibility with the shape of the data
-        if dim_coord.shape[0] != self.shape[data_dim]:
-            msg = 'Unequal lengths. Cube dimension {} => {}; coord {!r} => {}.'
-            raise ValueError(msg.format(data_dim, self.shape[data_dim],
-                                        dim_coord.name(),
-                                        len(dim_coord.points)))
-
-        self._dim_coords_and_dims.append([dim_coord, int(data_dim)])
+        return self._space.add_dim_coord(dim_coord, data_dim)
 
     def remove_aux_factory(self, aux_factory):
         """Removes the given auxiliary coordinate factory from the cube."""
-        self._aux_factories.remove(aux_factory)
-
-    def _remove_coord(self, coord):
-        self._dim_coords_and_dims = [(coord_, dim) for coord_, dim in
-                                     self._dim_coords_and_dims if coord_
-                                     is not coord]
-        self._aux_coords_and_dims = [(coord_, dims) for coord_, dims in
-                                     self._aux_coords_and_dims if coord_
-                                     is not coord]
+        return self._space.remove_aux_factory(aux_factory=aux_factory)
 
     def remove_coord(self, coord):
         """
@@ -1105,11 +1031,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
 
         """
-        coord = self.coord(coord)
-        self._remove_coord(coord)
-
-        for factory in self.aux_factories:
-            factory.update(coord)
+        return self._space.remove_coord(coord=coord)
 
     def remove_cell_measure(self, cell_measure):
         """
@@ -1124,26 +1046,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
 
         """
-        self._cell_measures_and_dims = [[cell_measure_, dim] for cell_measure_,
-                                        dim in self._cell_measures_and_dims
-                                        if cell_measure_ is not cell_measure]
+        return self._space.remove_cell_measure(cell_measure=cell_measure)
 
     def replace_coord(self, new_coord):
         """
         Replace the coordinate whose metadata matches the given coordinate.
 
         """
-        old_coord = self.coord(new_coord)
-        dims = self.coord_dims(old_coord)
-        was_dimensioned = old_coord in self.dim_coords
-        self._remove_coord(old_coord)
-        if was_dimensioned and isinstance(new_coord, iris.coords.DimCoord):
-            self.add_dim_coord(new_coord, dims[0])
-        else:
-            self.add_aux_coord(new_coord, dims)
-
-        for factory in self.aux_factories:
-            factory.update(old_coord, new_coord)
+        return self._space.replace_coord(new_coord)
 
     def coord_dims(self, coord):
         """
@@ -1161,30 +1071,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The (name of the) coord to look for.
 
         """
-
-        coord = self.coord(coord)
-
-        # Search for existing coordinate (object) on the cube, faster lookup
-        # than equality - makes no functional difference.
-        matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
-                   coord_ is coord]
-        if not matches:
-            matches = [dims for coord_, dims in self._aux_coords_and_dims if
-                       coord_ is coord]
-
-        # Search derived aux coords
-        target_defn = coord._as_defn()
-        if not matches:
-            def match(factory):
-                return factory._as_defn() == target_defn
-            factories = filter(match, self._aux_factories)
-            matches = [factory.derived_dims(self.coord_dims) for factory in
-                       factories]
-
-        if not matches:
-            raise iris.exceptions.CoordinateNotFoundError(coord.name())
-
-        return matches[0]
+        return self._space.coord_dims(coord)
 
     def cell_measure_dims(self, cell_measure):
         """
@@ -1195,15 +1082,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The CellMeasure to look for.
 
         """
-        # Search for existing cell measure (object) on the cube, faster lookup
-        # than equality - makes no functional difference.
-        matches = [dims for cm_, dims in self._cell_measures_and_dims if
-                   cm_ is cell_measure]
-
-        if not matches:
-            raise iris.exceptions.CellMeasureNotFoundError(cell_measure.name())
-
-        return matches[0]
+        return self._space.cell_measure_dims(cell_measure=cell_measure)
 
     def aux_factory(self, name=None, standard_name=None, long_name=None,
                     var_name=None):
@@ -1232,36 +1111,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :class:`iris.exceptions.CoordinateNotFoundError` is raised.
 
         """
-        factories = self.aux_factories
-
-        if name is not None:
-            factories = [factory for factory in factories if
-                         factory.name() == name]
-
-        if standard_name is not None:
-            factories = [factory for factory in factories if
-                         factory.standard_name == standard_name]
-
-        if long_name is not None:
-            factories = [factory for factory in factories if
-                         factory.long_name == long_name]
-
-        if var_name is not None:
-            factories = [factory for factory in factories if
-                         factory.var_name == var_name]
-
-        if len(factories) > 1:
-            factory_names = (factory.name() for factory in factories)
-            msg = 'Expected to find exactly one coordinate factory, but ' \
-                  'found {}. They were: {}.'.format(len(factories),
-                                                    ', '.join(factory_names))
-            raise iris.exceptions.CoordinateNotFoundError(msg)
-        elif len(factories) == 0:
-            msg = 'Expected to find exactly one coordinate factory, but ' \
-                  'found none.'
-            raise iris.exceptions.CoordinateNotFoundError(msg)
-
-        return factories[0]
+        return self._space.aux_factory(
+                name=name,
+                standard_name=standard_name,
+                long_name=long_name,
+                var_name=var_name)
 
     def coords(self, name_or_coord=None, standard_name=None,
                long_name=None, var_name=None, attributes=None, axis=None,
@@ -1320,98 +1174,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.coord()<iris.cube.Cube.coord>`.
 
         """
-        name = None
-        coord = None
-
-        if isinstance(name_or_coord, six.string_types):
-            name = name_or_coord
-        else:
-            coord = name_or_coord
-
-        coords_and_factories = []
-
-        if dim_coords in [True, None]:
-            coords_and_factories += list(self.dim_coords)
-
-        if dim_coords in [False, None]:
-            coords_and_factories += list(self.aux_coords)
-            coords_and_factories += list(self.aux_factories)
-
-        if name is not None:
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if coord_.name() == name]
-
-        if standard_name is not None:
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if coord_.standard_name == standard_name]
-
-        if long_name is not None:
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if coord_.long_name == long_name]
-
-        if var_name is not None:
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if coord_.var_name == var_name]
-
-        if axis is not None:
-            axis = axis.upper()
-            guess_axis = iris.util.guess_coord_axis
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if guess_axis(coord_) == axis]
-
-        if attributes is not None:
-            if not isinstance(attributes, collections.Mapping):
-                msg = 'The attributes keyword was expecting a dictionary ' \
-                      'type, but got a %s instead.' % type(attributes)
-                raise ValueError(msg)
-
-            def attr_filter(coord_):
-                return all(k in coord_.attributes and coord_.attributes[k] == v
-                           for k, v in six.iteritems(attributes))
-
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if attr_filter(coord_)]
-
-        if coord_system is not None:
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if coord_.coord_system == coord_system]
-
-        if coord is not None:
-            if isinstance(coord, iris.coords.CoordDefn):
-                defn = coord
-            else:
-                defn = coord._as_defn()
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if coord_._as_defn() == defn]
-
-        if contains_dimension is not None:
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if contains_dimension in
-                                    self.coord_dims(coord_)]
-
-        if dimensions is not None:
-            if not isinstance(dimensions, collections.Container):
-                dimensions = [dimensions]
-            dimensions = tuple(dimensions)
-            coords_and_factories = [coord_ for coord_ in coords_and_factories
-                                    if self.coord_dims(coord_) == dimensions]
-
-        # If any factories remain after the above filters we have to make the
-        # coords so they can be returned
-        def extract_coord(coord_or_factory):
-            if isinstance(coord_or_factory, iris.aux_factory.AuxCoordFactory):
-                coord = coord_or_factory.make_coord(self.coord_dims)
-            elif isinstance(coord_or_factory, iris.coords.Coord):
-                coord = coord_or_factory
-            else:
-                msg = 'Expected Coord or AuxCoordFactory, got ' \
-                      '{!r}.'.format(type(coord_or_factory))
-                raise ValueError(msg)
-            return coord
-        coords = [extract_coord(coord_or_factory) for coord_or_factory in
-                  coords_and_factories]
-
-        return coords
+        return self._space.coords(
+            name_or_coord=name_or_coord, standard_name=standard_name,
+            long_name=long_name, var_name=var_name, attributes=attributes,
+            axis=axis, contains_dimension=contains_dimension,
+            dimensions=dimensions, coord_system=coord_system,
+            dim_coords=dim_coords)
 
     def coord(self, name_or_coord=None, standard_name=None,
               long_name=None, var_name=None, attributes=None, axis=None,
@@ -1432,31 +1200,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             documentation.
 
         """
-        coords = self.coords(name_or_coord=name_or_coord,
-                             standard_name=standard_name,
-                             long_name=long_name, var_name=var_name,
-                             attributes=attributes, axis=axis,
-                             contains_dimension=contains_dimension,
-                             dimensions=dimensions,
-                             coord_system=coord_system,
-                             dim_coords=dim_coords)
-
-        if len(coords) > 1:
-            msg = 'Expected to find exactly 1 coordinate, but found %s. ' \
-                  'They were: %s.' % (len(coords), ', '.join(coord.name() for
-                                                             coord in coords))
-            raise iris.exceptions.CoordinateNotFoundError(msg)
-        elif len(coords) == 0:
-            _name = name_or_coord
-            if name_or_coord is not None:
-                if not isinstance(name_or_coord, six.string_types):
-                    _name = name_or_coord.name()
-            bad_name = _name or standard_name or long_name or ''
-            msg = 'Expected to find exactly 1 %s coordinate, but found ' \
-                  'none.' % bad_name
-            raise iris.exceptions.CoordinateNotFoundError(msg)
-
-        return coords[0]
+        return self._space.coord(
+            name_or_coord=name_or_coord, standard_name=standard_name,
+            long_name=long_name, var_name=var_name, attributes=attributes,
+            axis=axis, contains_dimension=contains_dimension,
+            dimensions=dimensions, coord_system=coord_system,
+            dim_coords=dim_coords)
 
     def coord_system(self, spec=None):
         """
@@ -1484,29 +1233,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The :class:`iris.coord_systems.CoordSystem` or None.
 
         """
-        if isinstance(spec, six.string_types) or spec is None:
-            spec_name = spec
-        else:
-            msg = "type %s is not a subclass of CoordSystem" % spec
-            assert issubclass(spec, iris.coord_systems.CoordSystem), msg
-            spec_name = spec.__name__
-
-        # Gather a temporary list of our unique CoordSystems.
-        coord_systems = ClassDict(iris.coord_systems.CoordSystem)
-        for coord in self.coords():
-            if coord.coord_system:
-                coord_systems.add(coord.coord_system, replace=True)
-
-        result = None
-        if spec_name is None:
-            for key in sorted(coord_systems.keys(),
-                              key=lambda class_: class_.__name__):
-                result = coord_systems[key]
-                break
-        else:
-            result = coord_systems.get(spec_name)
-
-        return result
+        return self._space.coord_system(spec=spec)
 
     def cell_measures(self, name_or_cell_measure=None):
         """
@@ -1528,23 +1255,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.cell_measure()<iris.cube.Cube.cell_measure>`.
 
         """
-        name = None
-
-        if isinstance(name_or_cell_measure, six.string_types):
-            name = name_or_cell_measure
-        else:
-            cell_measure = name_or_cell_measure
-        cell_measures = []
-        for cm, _ in self._cell_measures_and_dims:
-            if name is not None:
-                if cm.name() == name:
-                    cell_measures.append(cm)
-            elif cell_measure is not None:
-                if cm == cell_measure:
-                    cell_measures.append(cm)
-            else:
-                cell_measures.append(cm)
-        return cell_measures
+        return self._space.cell_measures(
+            name_or_cell_measure=name_or_cell_measure)
 
     def cell_measure(self, name_or_cell_measure=None):
         """
@@ -1563,25 +1275,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for full keyword documentation.
 
         """
-        cell_measures = self.cell_measures(name_or_cell_measure)
-
-        if len(cell_measures) > 1:
-            msg = ('Expected to find exactly 1 cell_measure, but found {}. '
-                   'They were: {}.')
-            msg = msg.format(len(cell_measures),
-                             ', '.join(cm.name() for cm in cell_measures))
-            raise iris.exceptions.CellMeasureNotFoundError(msg)
-        elif len(cell_measures) == 0:
-            if isinstance(name_or_cell_measure, six.string_types):
-                bad_name = name_or_cell_measure
-            else:
-                bad_name = (name_or_cell_measure and
-                            name_or_cell_measure.name()) or ''
-            msg = 'Expected to find exactly 1 %s cell_measure, but found ' \
-                  'none.' % bad_name
-            raise iris.exceptions.CellMeasureNotFoundError(msg)
-
-        return cell_measures[0]
+        return self._space.cell_measure(
+            name_or_cell_measure=name_or_cell_measure)
 
     @property
     def cell_methods(self):
@@ -1714,9 +1409,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             ``dimensions`` and ``dim_coords`` keyword arguments.
 
         """
-        return tuple((coord for coord, dim in
-                      sorted(self._dim_coords_and_dims,
-                             key=lambda co_di: (co_di[1], co_di[0].name()))))
+        return self._space.dim_coords
 
     @property
     def aux_coords(self):
@@ -1725,9 +1418,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimension(s).
 
         """
-        return tuple((coord for coord, dims in
-                      sorted(self._aux_coords_and_dims,
-                             key=lambda co_di: (co_di[1], co_di[0].name()))))
+        return self._space.aux_coords
 
     @property
     def derived_coords(self):
@@ -1736,14 +1427,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         factories.
 
         """
-        return tuple(factory.make_coord(self.coord_dims) for factory in
-                     sorted(self.aux_factories,
-                            key=lambda factory: factory.name()))
+        return self._space.derived_coords
 
     @property
     def aux_factories(self):
         """Return a tuple of all the coordinate factories."""
-        return tuple(self._aux_factories)
+        return self._space.aux_factories
 
     def _summary_coord_extra(self, coord, indent):
         # Returns the text needed to ensure this coordinate can be
@@ -1791,6 +1480,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         versus length and optionally relevant coordinate information.
 
         """
+        # TODO: Integrate this with self._space.
+
         # Create a set to contain the axis names for each data dimension.
         dim_names = [set() for dim in range(len(self.shape))]
 
@@ -2118,16 +1809,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # turn the keys into a full slice spec (all dims)
         full_slice = iris.util._build_full_slice_given_keys(keys, self.ndim)
 
-        def new_coord_dims(coord_):
-            return [dimension_mapping[d]
-                    for d in self.coord_dims(coord_)
-                    if dimension_mapping[d] is not None]
-
-        def new_cell_measure_dims(cm_):
-            return [dimension_mapping[d]
-                    for d in self.cell_measure_dims(cm_)
-                    if dimension_mapping[d] is not None]
-
         # Fetch the data as a generic array-like object.
         cube_data = self._data_manager.core_data()
 
@@ -2150,55 +1831,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         cube = Cube(data)
         cube.metadata = deepcopy(self.metadata)
 
-        # Record a mapping from old coordinate IDs to new coordinates,
-        # for subsequent use in creating updated aux_factories.
-        coord_mapping = {}
-
-        # Slice the coords
-        for coord in self.aux_coords:
-            coord_keys = tuple([full_slice[dim] for dim in
-                                self.coord_dims(coord)])
-            try:
-                new_coord = coord[coord_keys]
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
-                # Attempt to slice it by converting to AuxCoord first
-                new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-            cube.add_aux_coord(new_coord, new_coord_dims(coord))
-            coord_mapping[id(coord)] = new_coord
-
-        for coord in self.dim_coords:
-            coord_keys = tuple([full_slice[dim] for dim in
-                                self.coord_dims(coord)])
-            new_dims = new_coord_dims(coord)
-            # Try/Catch to handle slicing that makes the points/bounds
-            # non-monotonic
-            try:
-                new_coord = coord[coord_keys]
-                if not new_dims:
-                    # If the associated dimension has been sliced so the coord
-                    # is a scalar move the coord to the aux_coords container
-                    cube.add_aux_coord(new_coord, new_dims)
-                else:
-                    cube.add_dim_coord(new_coord, new_dims)
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
-                # Attempt to slice it by converting to AuxCoord first
-                new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-                cube.add_aux_coord(new_coord, new_dims)
-            coord_mapping[id(coord)] = new_coord
-
-        for factory in self.aux_factories:
-            cube.add_aux_factory(factory.updated(coord_mapping))
-
-        # slice the cell measures and add them to the cube
-        for cellmeasure in self.cell_measures():
-            dims = self.cell_measure_dims(cellmeasure)
-            cm_keys = tuple([full_slice[dim] for dim in dims])
-            new_cm = cellmeasure[cm_keys]
-            cube.add_cell_measure(new_cm,
-                                  new_cell_measure_dims(cellmeasure))
-
+        cube._space = self._space.__getitem__(keys)
         return cube
 
     def subset(self, coord):
@@ -2777,19 +2410,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         data = dm.core_data().transpose(new_order)
         self._data_manager = DataManager(data)
 
-        dim_mapping = {src: dest for dest, src in enumerate(new_order)}
-
-        def remap_dim_coord(coord_and_dim):
-            coord, dim = coord_and_dim
-            return coord, dim_mapping[dim]
-        self._dim_coords_and_dims = list(map(remap_dim_coord,
-                                             self._dim_coords_and_dims))
-
-        def remap_aux_coord(coord_and_dims):
-            coord, dims = coord_and_dims
-            return coord, tuple(dim_mapping[dim] for dim in dims)
-        self._aux_coords_and_dims = list(map(remap_aux_coord,
-                                             self._aux_coords_and_dims))
+        self._space.transpose(new_order=new_order)
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """
@@ -2841,20 +2462,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             cube_xml_element.appendChild(attributes_element)
 
-        coords_xml_element = doc.createElement("coords")
-        for coord in sorted(self.coords(), key=lambda coord: coord.name()):
-            # make a "cube coordinate" element which holds the dimensions (if
-            # appropriate) which itself will have a sub-element of the
-            # coordinate instance itself.
-            cube_coord_xml_element = doc.createElement("coord")
-            coords_xml_element.appendChild(cube_coord_xml_element)
-
-            dims = list(self.coord_dims(coord))
-            if dims:
-                cube_coord_xml_element.setAttribute("datadims", repr(dims))
-
-            coord_xml_element = coord.xml_element(doc)
-            cube_coord_xml_element.appendChild(coord_xml_element)
+        coords_xml_element = self._space._xml_element(doc)
         cube_xml_element.appendChild(coords_xml_element)
 
         # cell methods (no sorting!)
@@ -2967,29 +2575,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def _deepcopy(self, memo, data=None):
         dm = self._data_manager.copy(data=data)
 
-        new_dim_coords_and_dims = deepcopy(self._dim_coords_and_dims, memo)
-        new_aux_coords_and_dims = deepcopy(self._aux_coords_and_dims, memo)
+        new_cube = Cube(dm.core_data())
 
-        # Record a mapping from old coordinate IDs to new coordinates,
-        # for subsequent use in creating updated aux_factories.
-        coord_mapping = {}
-
-        for old_pair, new_pair in zip(self._dim_coords_and_dims,
-                                      new_dim_coords_and_dims):
-            coord_mapping[id(old_pair[0])] = new_pair[0]
-
-        for old_pair, new_pair in zip(self._aux_coords_and_dims,
-                                      new_aux_coords_and_dims):
-            coord_mapping[id(old_pair[0])] = new_pair[0]
-
-        new_cube = Cube(dm.core_data(),
-                        dim_coords_and_dims=new_dim_coords_and_dims,
-                        aux_coords_and_dims=new_aux_coords_and_dims)
-
+        new_cube._space = deepcopy(self._space, memo)
         new_cube.metadata = deepcopy(self.metadata, memo)
-
-        for factory in self.aux_factories:
-            new_cube.add_aux_factory(factory.updated(coord_mapping))
 
         return new_cube
 

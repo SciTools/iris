@@ -843,7 +843,6 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.attributes, metadata.attributes)
         self.assertIsNot(self.t.attributes, metadata.attributes)
         self.assertEqual(self.t.cell_methods, ())
-        self.assertEqual(self.t._cell_measures_and_dims, [])
 
     def test_metadata_fail(self):
         with self.assertRaises(TypeError):

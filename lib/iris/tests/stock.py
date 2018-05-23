@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -521,8 +521,8 @@ def realistic_4d_no_derived():
     """
     cube = realistic_4d()
 
-    # TODO determine appropriate way to remove aux_factory from a cube
-    cube._aux_factories = []
+    for factory in cube.aux_factories:
+        cube.remove_aux_factory(factory)
 
     return cube
 

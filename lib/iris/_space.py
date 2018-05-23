@@ -25,23 +25,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import collections
-from copy import deepcopy
-import datetime
+import copy
 from functools import reduce
 import operator
 import warnings
-from xml.dom.minidom import Document
-import zlib
 
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
-
-from iris._cube_coord_common import CFVariableMixin
-import iris._concatenate
-import iris._constraints
-from iris._data_manager import DataManager
-from iris._lazy_data import lazy_elementwise
 
 import iris._merge
 import iris.analysis
@@ -54,586 +45,15 @@ import iris.exceptions
 import iris.util
 
 
-__all__ = ['Cube', 'CubeList', 'CubeMetadata']
+__all__ = ['Space']
+
+# NOTE: No import of iris.cube here. That would be the wrong way around!
+# Space should have no knowledge of a cube.
 
 
-class CubeMetadata(collections.namedtuple('CubeMetadata',
-                                          ['standard_name',
-                                           'long_name',
-                                           'var_name',
-                                           'units',
-                                           'attributes',
-                                           'cell_methods'])):
+class Space(object):
     """
-    Represents the phenomenon metadata for a single :class:`Cube`.
-
-    """
-
-    __slots__ = ()
-
-    def name(self, default='unknown'):
-        """
-        Returns a human-readable name.
-
-        First it tries self.standard_name, then it tries the 'long_name'
-        attribute, then the 'var_name' attribute, before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        """
-        return self.standard_name or self.long_name or self.var_name or default
-
-
-# The XML namespace to use for CubeML documents
-XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
-
-
-class _CubeFilter(object):
-    """
-    A constraint, paired with a list of cubes matching that constraint.
-
-    """
-    def __init__(self, constraint, cubes=None):
-        self.constraint = constraint
-        if cubes is None:
-            cubes = CubeList()
-        self.cubes = cubes
-
-    def __len__(self):
-        return len(self.cubes)
-
-    def add(self, cube):
-        """
-        Adds the appropriate (sub)cube to the list of cubes where it
-        matches the constraint.
-
-        """
-        sub_cube = self.constraint.extract(cube)
-        if sub_cube is not None:
-            self.cubes.append(sub_cube)
-
-    def merged(self, unique=False):
-        """
-        Returns a new :class:`_CubeFilter` by merging the list of
-        cubes.
-
-        Kwargs:
-
-        * unique:
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
-        """
-        return _CubeFilter(self.constraint, self.cubes.merge(unique))
-
-
-class _CubeFilterCollection(object):
-    """
-    A list of _CubeFilter instances.
-
-    """
-    @staticmethod
-    def from_cubes(cubes, constraints=None):
-        """
-        Creates a new collection from an iterable of cubes, and some
-        optional constraints.
-
-        """
-        constraints = iris._constraints.list_of_constraints(constraints)
-        pairs = [_CubeFilter(constraint) for constraint in constraints]
-        collection = _CubeFilterCollection(pairs)
-        for cube in cubes:
-            collection.add_cube(cube)
-        return collection
-
-    def __init__(self, pairs):
-        self.pairs = pairs
-
-    def add_cube(self, cube):
-        """
-        Adds the given :class:`~iris.cube.Cube` to all of the relevant
-        constraint pairs.
-
-        """
-        for pair in self.pairs:
-            pair.add(cube)
-
-    def cubes(self):
-        """
-        Returns all the cubes in this collection concatenated into a
-        single :class:`CubeList`.
-
-        """
-        result = CubeList()
-        for pair in self.pairs:
-            result.extend(pair.cubes)
-        return result
-
-    def merged(self, unique=False):
-        """
-        Returns a new :class:`_CubeFilterCollection` by merging all the cube
-        lists of this collection.
-
-        Kwargs:
-
-        * unique:
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
-        """
-        return _CubeFilterCollection([pair.merged(unique) for pair in
-                                      self.pairs])
-
-
-class CubeList(list):
-    """
-    All the functionality of a standard :class:`list` with added "Cube"
-    context.
-
-    """
-
-    def __new__(cls, list_of_cubes=None):
-        """Given a :class:`list` of cubes, return a CubeList instance."""
-        cube_list = list.__new__(cls, list_of_cubes)
-
-        # Check that all items in the incoming list are cubes. Note that this
-        # checking does not guarantee that a CubeList instance *always* has
-        # just cubes in its list as the append & __getitem__ methods have not
-        # been overridden.
-        if not all([isinstance(cube, Cube) for cube in cube_list]):
-            raise ValueError('All items in list_of_cubes must be Cube '
-                             'instances.')
-        return cube_list
-
-    def __str__(self):
-        """Runs short :meth:`Cube.summary` on every cube."""
-        result = ['%s: %s' % (i, cube.summary(shorten=True)) for i, cube in
-                  enumerate(self)]
-        if result:
-            result = '\n'.join(result)
-        else:
-            result = '< No cubes >'
-        return result
-
-    def __repr__(self):
-        """Runs repr on every cube."""
-        return '[%s]' % ',\n'.join([repr(cube) for cube in self])
-
-    # TODO #370 Which operators need overloads?
-    def __add__(self, other):
-        return CubeList(list.__add__(self, other))
-
-    def __getitem__(self, keys):
-        """x.__getitem__(y) <==> x[y]"""
-        result = super(CubeList, self).__getitem__(keys)
-        if isinstance(result, list):
-            result = CubeList(result)
-        return result
-
-    def __getslice__(self, start, stop):
-        """
-        x.__getslice__(i, j) <==> x[i:j]
-
-        Use of negative indices is not supported.
-
-        """
-        result = super(CubeList, self).__getslice__(start, stop)
-        result = CubeList(result)
-        return result
-
-    def xml(self, checksum=False, order=True, byteorder=True):
-        """Return a string of the XML that this list of cubes represents."""
-        doc = Document()
-        cubes_xml_element = doc.createElement("cubes")
-        cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
-
-        for cube_obj in self:
-            cubes_xml_element.appendChild(
-                cube_obj._xml_element(
-                    doc, checksum=checksum, order=order, byteorder=byteorder))
-
-        doc.appendChild(cubes_xml_element)
-
-        # return our newly created XML string
-        return doc.toprettyxml(indent="  ")
-
-    def extract(self, constraints, strict=False):
-        """
-        Filter each of the cubes which can be filtered by the given
-        constraints.
-
-        This method iterates over each constraint given, and subsets each of
-        the cubes in this CubeList where possible. Thus, a CubeList of length
-        **n** when filtered with **m** constraints can generate a maximum of
-        **m * n** cubes.
-
-        Keywords:
-
-        * strict - boolean
-            If strict is True, then there must be exactly one cube which is
-            filtered per constraint.
-
-        """
-        return self._extract_and_merge(self, constraints, strict,
-                                       merge_unique=None)
-
-    @staticmethod
-    def _extract_and_merge(cubes, constraints, strict, merge_unique=False):
-        # * merge_unique - if None: no merging, if false: non unique merging,
-        # else unique merging (see merge)
-
-        constraints = iris._constraints.list_of_constraints(constraints)
-
-        # group the resultant cubes by constraints in a dictionary
-        constraint_groups = dict([(constraint, CubeList()) for constraint in
-                                 constraints])
-        for cube in cubes:
-            for constraint, cube_list in six.iteritems(constraint_groups):
-                sub_cube = constraint.extract(cube)
-                if sub_cube is not None:
-                    cube_list.append(sub_cube)
-
-        if merge_unique is not None:
-            for constraint, cubelist in six.iteritems(constraint_groups):
-                constraint_groups[constraint] = cubelist.merge(merge_unique)
-
-        result = CubeList()
-        for constraint in constraints:
-            constraint_cubes = constraint_groups[constraint]
-            if strict and len(constraint_cubes) != 1:
-                msg = 'Got %s cubes for constraint %r, ' \
-                      'expecting 1.' % (len(constraint_cubes), constraint)
-                raise iris.exceptions.ConstraintMismatchError(msg)
-            result.extend(constraint_cubes)
-
-        if strict and len(constraints) == 1:
-            result = result[0]
-
-        return result
-
-    def extract_strict(self, constraints):
-        """
-        Calls :meth:`CubeList.extract` with the strict keyword set to True.
-
-        """
-        return self.extract(constraints, strict=True)
-
-    def extract_overlapping(self, coord_names):
-        """
-        Returns a :class:`CubeList` of cubes extracted over regions
-        where the coordinates overlap, for the coordinates
-        in coord_names.
-
-        Args:
-
-        * coord_names:
-           A string or list of strings of the names of the coordinates
-           over which to perform the extraction.
-
-        """
-        if isinstance(coord_names, six.string_types):
-            coord_names = [coord_names]
-
-        def make_overlap_fn(coord_name):
-            def overlap_fn(cell):
-                return all(cell in cube.coord(coord_name).cells()
-                           for cube in self)
-            return overlap_fn
-
-        coord_values = {coord_name: make_overlap_fn(coord_name)
-                        for coord_name in coord_names}
-
-        return self.extract(iris.Constraint(coord_values=coord_values))
-
-    def merge_cube(self):
-        """
-        Return the merged contents of the :class:`CubeList` as a single
-        :class:`Cube`.
-
-        If it is not possible to merge the `CubeList` into a single
-        `Cube`, a :class:`~iris.exceptions.MergeError` will be raised
-        describing the reason for the failure.
-
-        For example:
-
-            >>> cube_1 = iris.cube.Cube([1, 2])
-            >>> cube_1.add_aux_coord(iris.coords.AuxCoord(0, long_name='x'))
-            >>> cube_2 = iris.cube.Cube([3, 4])
-            >>> cube_2.add_aux_coord(iris.coords.AuxCoord(1, long_name='x'))
-            >>> cube_2.add_dim_coord(
-            ...     iris.coords.DimCoord([0, 1], long_name='z'), 0)
-            >>> single_cube = iris.cube.CubeList([cube_1, cube_2]).merge_cube()
-            Traceback (most recent call last):
-            ...
-            iris.exceptions.MergeError: failed to merge into a single cube.
-              Coordinates in cube.dim_coords differ: z.
-              Coordinate-to-dimension mapping differs for cube.dim_coords.
-
-        """
-        if not self:
-            raise ValueError("can't merge an empty CubeList")
-
-        # Register each of our cubes with a single ProtoCube.
-        proto_cube = iris._merge.ProtoCube(self[0])
-        for cube in self[1:]:
-            proto_cube.register(cube, error_on_mismatch=True)
-
-        # Extract the merged cube from the ProtoCube.
-        merged_cube, = proto_cube.merge()
-        return merged_cube
-
-    def merge(self, unique=True):
-        """
-        Returns the :class:`CubeList` resulting from merging this
-        :class:`CubeList`.
-
-        Kwargs:
-
-        * unique:
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
-        This combines cubes with different values of an auxiliary scalar
-        coordinate, by constructing a new dimension.
-
-        .. testsetup::
-
-            import iris
-            c1 = iris.cube.Cube([0,1,2], long_name='some_parameter')
-            xco = iris.coords.DimCoord([11, 12, 13], long_name='x_vals')
-            c1.add_dim_coord(xco, 0)
-            c1.add_aux_coord(iris.coords.AuxCoord([100], long_name='y_vals'))
-            c2 = c1.copy()
-            c2.coord('y_vals').points = [200]
-
-        For example::
-
-            >>> print(c1)
-            some_parameter / (unknown)          (x_vals: 3)
-                 Dimension coordinates:
-                      x_vals                           x
-                 Scalar coordinates:
-                      y_vals: 100
-            >>> print(c2)
-            some_parameter / (unknown)          (x_vals: 3)
-                 Dimension coordinates:
-                      x_vals                           x
-                 Scalar coordinates:
-                      y_vals: 200
-            >>> cube_list = iris.cube.CubeList([c1, c2])
-            >>> new_cube = cube_list.merge()[0]
-            >>> print(new_cube)
-            some_parameter / (unknown)          (y_vals: 2; x_vals: 3)
-                 Dimension coordinates:
-                      y_vals                           x          -
-                      x_vals                           -          x
-            >>> print(new_cube.coord('y_vals').points)
-            [100 200]
-            >>>
-
-        Contrast this with :meth:`iris.cube.CubeList.concatenate`, which joins
-        cubes along an existing dimension.
-
-        .. note::
-
-            If time coordinates in the list of cubes have differing epochs then
-            the cubes will not be able to be merged. If this occurs, use
-            :func:`iris.util.unify_time_units` to normalise the epochs of the
-            time coordinates so that the cubes can be merged.
-
-        """
-        # Register each of our cubes with its appropriate ProtoCube.
-        proto_cubes_by_name = {}
-        for cube in self:
-            name = cube.standard_name
-            proto_cubes = proto_cubes_by_name.setdefault(name, [])
-            proto_cube = None
-
-            for target_proto_cube in proto_cubes:
-                if target_proto_cube.register(cube):
-                    proto_cube = target_proto_cube
-                    break
-
-            if proto_cube is None:
-                proto_cube = iris._merge.ProtoCube(cube)
-                proto_cubes.append(proto_cube)
-
-        # Emulate Python 2 behaviour.
-        def _none_sort(item):
-            return (item is not None, item)
-
-        # Extract all the merged cubes from the ProtoCubes.
-        merged_cubes = CubeList()
-        for name in sorted(proto_cubes_by_name, key=_none_sort):
-            for proto_cube in proto_cubes_by_name[name]:
-                merged_cubes.extend(proto_cube.merge(unique=unique))
-
-        return merged_cubes
-
-    def concatenate_cube(self, check_aux_coords=True):
-        """
-        Return the concatenated contents of the :class:`CubeList` as a single
-        :class:`Cube`.
-
-        If it is not possible to concatenate the `CubeList` into a single
-        `Cube`, a :class:`~iris.exceptions.ConcatenateError` will be raised
-        describing the reason for the failure.
-
-        Kwargs:
-
-        * check_aux_coords
-            Checks the auxilliary coordinates of the cubes match. This check
-            is not applied to auxilliary coordinates that span the dimension
-            the concatenation is occuring along. Defaults to True.
-
-        .. note::
-
-            Concatenation cannot occur along an anonymous dimension.
-
-        """
-        if not self:
-            raise ValueError("can't concatenate an empty CubeList")
-
-        names = [cube.metadata.name() for cube in self]
-        unique_names = list(collections.OrderedDict.fromkeys(names))
-        if len(unique_names) == 1:
-            res = iris._concatenate.concatenate(
-                self, error_on_mismatch=True,
-                check_aux_coords=check_aux_coords)
-            n_res_cubes = len(res)
-            if n_res_cubes == 1:
-                return res[0]
-            else:
-                msgs = []
-                msgs.append('An unexpected problem prevented concatenation.')
-                msgs.append('Expected only a single cube, '
-                            'found {}.'.format(n_res_cubes))
-                raise iris.exceptions.ConcatenateError(msgs)
-        else:
-            msgs = []
-            msgs.append('Cube names differ: {} != {}'.format(names[0],
-                                                             names[1]))
-            raise iris.exceptions.ConcatenateError(msgs)
-
-    def concatenate(self, check_aux_coords=True):
-        """
-        Concatenate the cubes over their common dimensions.
-
-        Kwargs:
-
-        * check_aux_coords
-            Checks the auxilliary coordinates of the cubes match. This check
-            is not applied to auxilliary coordinates that span the dimension
-            the concatenation is occuring along. Defaults to True.
-
-        Returns:
-            A new :class:`iris.cube.CubeList` of concatenated
-            :class:`iris.cube.Cube` instances.
-
-        This combines cubes with a common dimension coordinate, but occupying
-        different regions of the coordinate value.  The cubes are joined across
-        that dimension.
-
-        .. testsetup::
-
-            import iris
-            import numpy as np
-            xco = iris.coords.DimCoord([11, 12, 13, 14], long_name='x_vals')
-            yco1 = iris.coords.DimCoord([4, 5], long_name='y_vals')
-            yco2 = iris.coords.DimCoord([7, 9, 10], long_name='y_vals')
-            c1 = iris.cube.Cube(np.zeros((2,4)), long_name='some_parameter')
-            c1.add_dim_coord(xco, 1)
-            c1.add_dim_coord(yco1, 0)
-            c2 = iris.cube.Cube(np.zeros((3,4)), long_name='some_parameter')
-            c2.add_dim_coord(xco, 1)
-            c2.add_dim_coord(yco2, 0)
-
-        For example::
-
-            >>> print(c1)
-            some_parameter / (unknown)          (y_vals: 2; x_vals: 4)
-                 Dimension coordinates:
-                      y_vals                           x          -
-                      x_vals                           -          x
-            >>> print(c1.coord('y_vals').points)
-            [4 5]
-            >>> print(c2)
-            some_parameter / (unknown)          (y_vals: 3; x_vals: 4)
-                 Dimension coordinates:
-                      y_vals                           x          -
-                      x_vals                           -          x
-            >>> print(c2.coord('y_vals').points)
-            [ 7  9 10]
-            >>> cube_list = iris.cube.CubeList([c1, c2])
-            >>> new_cube = cube_list.concatenate()[0]
-            >>> print(new_cube)
-            some_parameter / (unknown)          (y_vals: 5; x_vals: 4)
-                 Dimension coordinates:
-                      y_vals                           x          -
-                      x_vals                           -          x
-            >>> print(new_cube.coord('y_vals').points)
-            [ 4  5  7  9 10]
-            >>>
-
-        Contrast this with :meth:`iris.cube.CubeList.merge`, which makes a new
-        dimension from values of an auxiliary scalar coordinate.
-
-        .. note::
-
-            If time coordinates in the list of cubes have differing epochs then
-            the cubes will not be able to be concatenated. If this occurs, use
-            :func:`iris.util.unify_time_units` to normalise the epochs of the
-            time coordinates so that the cubes can be concatenated.
-
-        .. note::
-
-            Concatenation cannot occur along an anonymous dimension.
-
-        """
-        return iris._concatenate.concatenate(self,
-                                             check_aux_coords=check_aux_coords)
-
-
-def _is_single_item(testee):
-    """
-    Return whether this is a single item, rather than an iterable.
-
-    We count string types as 'single', also.
-
-    """
-    return (isinstance(testee, six.string_types) or
-            not isinstance(testee, collections.Iterable))
-
-
-class Cube(CFVariableMixin):
-    """
-    A single Iris cube of data and metadata.
-
-    Typically obtained from :func:`iris.load`, :func:`iris.load_cube`,
-    :func:`iris.load_cubes`, or from the manipulation of existing cubes.
-
-    For example:
-
-        >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-        >>> print(cube)
-        air_temperature / (K)               (latitude: 73; longitude: 96)
-             Dimension coordinates:
-                  latitude                           x              -
-                  longitude                          -              x
-             Scalar coordinates:
-                  forecast_period: 6477 hours, bound=(-28083.0, 6477.0) hours
-                  forecast_reference_time: 1998-03-01 03:00:00
-                  pressure: 1000.0 hPa
-                  time: 1998-12-01 00:00:00, \
-bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-             Attributes:
-                  STASH: m01s16i203
-                  source: Data from Met Office Unified Model
-             Cell methods:
-                  mean within years: time
-                  mean over years: time
-
-
-    See the :doc:`user guide</userguide/index>` for more information.
+    TODO
 
     """
 
@@ -643,44 +63,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     #: is similar to Fortran or Matlab, but different than numpy.
     __orthogonal_indexing__ = True
 
-    def __init__(self, data, standard_name=None, long_name=None,
-                 var_name=None, units=None, attributes=None,
-                 cell_methods=None, dim_coords_and_dims=None,
-                 aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None):
+    def __init__(self,
+                 shape,
+                 dim_coords_and_dims=None,
+                 aux_coords_and_dims=None,
+                 aux_factories=None,
+                 cell_measures_and_dims=None,
+                 ):
         """
-        Creates a cube with data and optional metadata.
-
-        Not typically used - normally cubes are obtained by loading data
-        (e.g. :func:`iris.load`) or from manipulating existing cubes.
-
-        Args:
-
-        * data
-            This object defines the shape of the cube and the phenomenon
-            value in each cell.
-
-            ``data`` can be a dask array, a NumPy array, a NumPy array
-            subclass (such as :class:`numpy.ma.MaskedArray`), or
-            array_like (as described in :func:`numpy.asarray`).
-
-            See :attr:`Cube.data<iris.cube.Cube.data>`.
+        Creates a space.
 
         Kwargs:
 
-        * standard_name
-            The standard name for the Cube's data.
-        * long_name
-            An unconstrained description of the cube.
-        * var_name
-            The netCDF variable name for the cube.
-        * units
-            The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
-        * attributes
-            A dictionary of cube attributes
-        * cell_methods
-            A tuple of CellMethod objects, generally set by Iris, e.g.
-            ``(CellMethod("mean", coords='latitude'), )``.
         * dim_coords_and_dims
             A list of coordinates with scalar dimension mappings, e.g
             ``[(lat_coord, 0), (lon_coord, 1)]``.
@@ -692,47 +86,24 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * aux_factories
             A list of auxiliary coordinate factories. See
             :mod:`iris.aux_factory`.
-        * cell_measures_and_dims
-            A list of CellMeasures with dimension mappings.
 
         For example::
             >>> from iris.coords import DimCoord
-            >>> from iris.cube import Cube
+            >>> from iris._space import Space
             >>> latitude = DimCoord(np.linspace(-90, 90, 4),
             ...                     standard_name='latitude',
             ...                     units='degrees')
             >>> longitude = DimCoord(np.linspace(45, 360, 8),
             ...                      standard_name='longitude',
             ...                      units='degrees')
-            >>> cube = Cube(np.zeros((4, 8), np.float32),
-            ...             dim_coords_and_dims=[(latitude, 0),
-            ...                                  (longitude, 1)])
+            >>> space = Space(
+            ...     shape=(4, 8),
+            ...     dim_coords_and_dims=[(latitude, 0),
+            ...                          (longitude, 1)])
 
         """
-        # Temporary error while we transition the API.
-        if isinstance(data, six.string_types):
-            raise TypeError('Invalid data type: {!r}.'.format(data))
-
-        # Initialise the cube data manager.
-        self._data_manager = DataManager(data)
-
-        #: The "standard name" for the Cube's phenomenon.
-        self.standard_name = standard_name
-
-        #: An instance of :class:`cf_units.Unit` describing the Cube's data.
-        self.units = units
-
-        #: The "long name" for the Cube's phenomenon.
-        self.long_name = long_name
-
-        #: The netCDF variable name for the Cube.
-        self.var_name = var_name
-
-        self.cell_methods = cell_methods
-
-        #: A dictionary, with a few restricted keys, for arbitrary
-        #: Cube metadata.
-        self.attributes = attributes
+        # TODO: Should this be cast to tuple?
+        self._shape = shape
 
         # Coords
         self._dim_coords_and_dims = []
@@ -770,128 +141,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if cell_measures_and_dims:
             for cell_measure, dims in cell_measures_and_dims:
                 self.add_cell_measure(cell_measure, dims)
-
-    @property
-    def metadata(self):
-        """
-        An instance of :class:`CubeMetadata` describing the phenomenon.
-
-        This property can be updated with any of:
-         - another :class:`CubeMetadata` instance,
-         - a tuple/dict which can be used to make a :class:`CubeMetadata`,
-         - or any object providing the attributes exposed by
-           :class:`CubeMetadata`.
-
-        """
-        return CubeMetadata(self.standard_name, self.long_name, self.var_name,
-                            self.units, self.attributes, self.cell_methods)
-
-    @metadata.setter
-    def metadata(self, value):
-        try:
-            value = CubeMetadata(**value)
-        except TypeError:
-            try:
-                value = CubeMetadata(*value)
-            except TypeError:
-                missing_attrs = [field for field in CubeMetadata._fields
-                                 if not hasattr(value, field)]
-                if missing_attrs:
-                    raise TypeError('Invalid/incomplete metadata')
-        for name in CubeMetadata._fields:
-            setattr(self, name, getattr(value, name))
-
-    def is_compatible(self, other, ignore=None):
-        """
-        Return whether the cube is compatible with another.
-
-        Compatibility is determined by comparing :meth:`iris.cube.Cube.name()`,
-        :attr:`iris.cube.Cube.units`, :attr:`iris.cube.Cube.cell_methods` and
-        :attr:`iris.cube.Cube.attributes` that are present in both objects.
-
-        Args:
-
-        * other:
-            An instance of :class:`iris.cube.Cube` or
-            :class:`iris.cube.CubeMetadata`.
-        * ignore:
-           A single attribute key or iterable of attribute keys to ignore when
-           comparing the cubes. Default is None. To ignore all attributes set
-           this to other.attributes.
-
-        Returns:
-           Boolean.
-
-        .. seealso::
-
-            :meth:`iris.util.describe_diff()`
-
-        .. note::
-
-            This function does not indicate whether the two cubes can be
-            merged, instead it checks only the four items quoted above for
-            equality. Determining whether two cubes will merge requires
-            additional logic that is beyond the scope of this method.
-
-        """
-        compatible = (self.name() == other.name() and
-                      self.units == other.units and
-                      self.cell_methods == other.cell_methods)
-
-        if compatible:
-            common_keys = set(self.attributes).intersection(other.attributes)
-            if ignore is not None:
-                if isinstance(ignore, six.string_types):
-                    ignore = (ignore,)
-                common_keys = common_keys.difference(ignore)
-            for key in common_keys:
-                if np.any(self.attributes[key] != other.attributes[key]):
-                    compatible = False
-                    break
-
-        return compatible
-
-    def convert_units(self, unit):
-        """
-        Change the cube's units, converting the values in the data array.
-
-        For example, if a cube's :attr:`~iris.cube.Cube.units` are
-        kelvin then::
-
-            cube.convert_units('celsius')
-
-        will change the cube's :attr:`~iris.cube.Cube.units` attribute to
-        celsius and subtract 273.15 from each value in
-        :attr:`~iris.cube.Cube.data`.
-
-        .. warning::
-            Calling this method will trigger any deferred loading, causing
-            the cube's data array to be loaded into memory.
-
-        """
-        # If the cube has units convert the data.
-        if self.units.is_unknown():
-            raise iris.exceptions.UnitConversionError(
-                'Cannot convert from unknown units. '
-                'The "cube.units" attribute may be set directly.')
-        if self.has_lazy_data():
-            # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = self.units
-            new_unit = unit
-
-            # Define a delayed conversion operation (i.e. a callback).
-            def pointwise_convert(values):
-                return old_unit.convert(values, new_unit)
-
-            new_data = lazy_elementwise(self.lazy_data(), pointwise_convert)
-        else:
-            new_data = self.units.convert(self.data, unit)
-        self.data = new_data
-        self.units = unit
-
-    def add_cell_method(self, cell_method):
-        """Add a :class:`~iris.coords.CellMethod` to the Cube."""
-        self.cell_methods += (cell_method, )
 
     def add_aux_coord(self, coord, data_dims=None):
         """
@@ -1555,120 +804,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return cell_measures[0]
 
     @property
-    def cell_methods(self):
-        """
-        Tuple of :class:`iris.coords.CellMethod` representing the processing
-        done on the phenomenon.
-
-        """
-        return self._cell_methods
-
-    @cell_methods.setter
-    def cell_methods(self, cell_methods):
-        self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
-
-    def core_data(self):
-        """
-        Retrieve the data array of this :class:`~iris.cube.Cube` in its
-        current state, which will either be real or lazy.
-
-        If this :class:`~iris.cube.Cube` has lazy data, accessing its data
-        array via this method **will not** realise the data array. This means
-        you can perform operations using this method that work equivalently
-        on real or lazy data, and will maintain lazy data if present.
-
-        """
-        return self._data_manager.core_data()
-
-    @property
     def shape(self):
         """The shape of the data of this cube."""
-        return self._data_manager.shape
-
-    @property
-    def dtype(self):
-        """
-        The data type of the values in the data array of this
-        :class:`~iris.cube.Cube`.
-
-        """
-        return self._data_manager.dtype
+        return self._shape
 
     @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
-        return self._data_manager.ndim
-
-    def lazy_data(self):
-        """
-        Return a "lazy array" representing the Cube data. A lazy array
-        describes an array whose data values have not been loaded into memory
-        from disk.
-
-        Accessing this method will never cause the Cube data to be loaded.
-        Similarly, calling methods on, or indexing, the returned Array
-        will not cause the Cube data to be loaded.
-
-        If the Cube data have already been loaded (for example by calling
-        :meth:`~iris.cube.Cube.data`), the returned Array will be a view of the
-        loaded cube data represented as a lazy array object. Note that this
-        does _not_ make the Cube data lazy again; the Cube data remains loaded
-        in memory.
-
-        Returns:
-            A lazy array, representing the Cube data.
-
-        """
-        return self._data_manager.lazy_data()
-
-    @property
-    def data(self):
-        """
-        The :class:`numpy.ndarray` representing the multi-dimensional data of
-        the cube.
-
-        .. note::
-
-            Cubes obtained from netCDF, PP, and FieldsFile files will only
-            populate this attribute on its first use.
-
-            To obtain the shape of the data without causing it to be loaded,
-            use the Cube.shape attribute.
-
-        Example::
-            >>> fname = iris.sample_data_path('air_temp.pp')
-            >>> cube = iris.load_cube(fname, 'air_temperature')
-            >>> # cube.data does not yet have a value.
-            ...
-            >>> print(cube.shape)
-            (73, 96)
-            >>> # cube.data still does not have a value.
-            ...
-            >>> cube = cube[:10, :20]
-            >>> # cube.data still does not have a value.
-            ...
-            >>> data = cube.data
-            >>> # Only now is the data loaded.
-            ...
-            >>> print(data.shape)
-            (10, 20)
-
-        """
-        return self._data_manager.data
-
-    @data.setter
-    def data(self, data):
-        self._data_manager.data = data
-
-    def has_lazy_data(self):
-        """
-        Details whether this :class:`~iris.cube.Cube` has lazy data.
-
-        Returns:
-            Boolean.
-
-        """
-        return self._data_manager.has_lazy_data()
+        return len(self.shape)
 
     @property
     def dim_coords(self):
@@ -1761,6 +904,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Unicode string summary of the Cube with name, a list of dim coord names
         versus length and optionally relevant coordinate information.
 
+        TODO: Fix this - it is the cube version still
         """
         # Create a set to contain the axis names for each data dimension.
         dim_names = [set() for dim in range(len(self.shape))]
@@ -2071,21 +1215,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return self.summary()
 
     def __repr__(self):
-        return "<iris 'Cube' of %s>" % self.summary(shorten=True,
-                                                    name_padding=1)
+        return "<iris 'Space' of %s>" % self.summary(shorten=True,
+                                                     name_padding=1)
 
     def __iter__(self):
         raise TypeError('Cube is not iterable')
 
     def __getitem__(self, keys):
-        """
-        Cube indexing (through use of square bracket notation) has been
-        implemented at the data level. That is, the indices provided to this
-        method should be aligned to the data of the cube, and thus the indices
-        requested must be applicable directly to the cube.data attribute. All
-        metadata will be subsequently indexed appropriately.
-
-        """
         # turn the keys into a full slice spec (all dims)
         full_slice = iris.util._build_full_slice_given_keys(keys, self.ndim)
 
@@ -2099,15 +1235,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     for d in self.cell_measure_dims(cm_)
                     if dimension_mapping[d] is not None]
 
-        # Fetch the data as a generic array-like object.
-        cube_data = self._data_manager.core_data()
+        # TODO: Refactor this so we don't need actual data.
+        cube_data = np.empty(self.shape)
 
         # Index with the keys, using orthogonal slicing.
         dimension_mapping, data = iris.util._slice_data_with_keys(
             cube_data, keys)
 
         # We don't want a view of the data, so take a copy of it.
-        data = deepcopy(data)
+        data = copy.deepcopy(data)
 
         # XXX: Slicing a single item from a masked array that is masked,
         #      results in numpy (v1.11.1) *always* returning a MaskedConstant
@@ -2118,8 +1254,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
 
         # Make the new cube slice
-        cube = Cube(data)
-        cube.metadata = deepcopy(self.metadata)
+        cube = Space(data.shape)
 
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
@@ -2177,6 +1312,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Get a subset of the cube by providing the desired resultant
         coordinate. If the coordinate provided applies to the whole cube; the
         whole cube is returned. As such, the operation is not strict.
+
+        TODO: Make it possible to return the index and get cube.subset
+        using it.
 
         """
         if not isinstance(coord, iris.coords.Coord):
@@ -2357,7 +1495,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 func = module.concatenate
             data = func(chunk_data, dim)
             result = iris.cube.Cube(data)
-            result.metadata = deepcopy(self.metadata)
+            result.metadata = copy.deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
             # for subsequent use in creating updated aux_factories.
@@ -2465,7 +1603,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 subsets = [
                     slice(index_of_second_chunk, None),
                     slice(None, inside_indices[end_of_first_chunk] + 1)
-                    ]
+                ]
 
             return subsets
 
@@ -2743,12 +1881,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if len(new_order) != self.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        # Transpose the data payload.
-        dm = self._data_manager
-        data = dm.core_data().transpose(new_order)
-        self._data_manager = DataManager(data)
-
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
+
+        self._shape = tuple(self._shape[i] for i in new_order)
 
         def remap_dim_coord(coord_and_dim):
             coord, dim = coord_and_dim
@@ -2762,56 +1897,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._aux_coords_and_dims = list(map(remap_aux_coord,
                                              self._aux_coords_and_dims))
 
-    def xml(self, checksum=False, order=True, byteorder=True):
-        """
-        Returns a fully valid CubeML string representation of the Cube.
-
-        """
-        doc = Document()
-
-        cube_xml_element = self._xml_element(doc, checksum=checksum,
-                                             order=order,
-                                             byteorder=byteorder)
-        cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
-        doc.appendChild(cube_xml_element)
-
-        # Print our newly created XML
-        return doc.toprettyxml(indent="  ")
-
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
-        cube_xml_element = doc.createElement("cube")
-
-        if self.standard_name:
-            cube_xml_element.setAttribute('standard_name', self.standard_name)
-        if self.long_name:
-            cube_xml_element.setAttribute('long_name', self.long_name)
-        if self.var_name:
-            cube_xml_element.setAttribute('var_name', self.var_name)
-        cube_xml_element.setAttribute('units', str(self.units))
-        cube_xml_element.setAttribute('dtype', self.dtype.name)
-
-        if self.attributes:
-            attributes_element = doc.createElement('attributes')
-            for name in sorted(six.iterkeys(self.attributes)):
-                attribute_element = doc.createElement('attribute')
-                attribute_element.setAttribute('name', name)
-
-                value = self.attributes[name]
-                # Strict check because we don't want namedtuples.
-                if type(value) in (list, tuple):
-                    delimiter = '[]' if isinstance(value, list) else '()'
-                    value = ', '.join(("'%s'"
-                                       if isinstance(item, six.string_types)
-                                       else '%s') % (item, ) for item in value)
-                    value = delimiter[0] + value + delimiter[1]
-                else:
-                    value = str(value)
-
-                attribute_element.setAttribute('value', value)
-                attributes_element.appendChild(attribute_element)
-
-            cube_xml_element.appendChild(attributes_element)
-
         coords_xml_element = doc.createElement("coords")
         for coord in sorted(self.coords(), key=lambda coord: coord.name()):
             # make a "cube coordinate" element which holds the dimensions (if
@@ -2826,106 +1912,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             coord_xml_element = coord.xml_element(doc)
             cube_coord_xml_element.appendChild(coord_xml_element)
-        cube_xml_element.appendChild(coords_xml_element)
+        return coords_xml_element
 
-        # cell methods (no sorting!)
-        cell_methods_xml_element = doc.createElement("cellMethods")
-        for cm in self.cell_methods:
-            cell_method_xml_element = cm.xml_element(doc)
-            cell_methods_xml_element.appendChild(cell_method_xml_element)
-        cube_xml_element.appendChild(cell_methods_xml_element)
-
-        data_xml_element = doc.createElement("data")
-
-        data_xml_element.setAttribute("shape", str(self.shape))
-
-        # NB. Getting a checksum triggers any deferred loading,
-        # in which case it also has the side-effect of forcing the
-        # byte order to be native.
-        if checksum:
-            data = self.data
-
-            # Ensure consistent memory layout for checksums.
-            def normalise(data):
-                data = np.ascontiguousarray(data)
-                if data.dtype.newbyteorder('<') != data.dtype:
-                    data = data.byteswap(False)
-                    data.dtype = data.dtype.newbyteorder('<')
-                return data
-
-            if ma.isMaskedArray(data):
-                # Fill in masked values to avoid the checksum being
-                # sensitive to unused numbers. Use a fixed value so
-                # a change in fill_value doesn't affect the
-                # checksum.
-                crc = '0x%08x' % (
-                    zlib.crc32(normalise(data.filled(0))) & 0xffffffff, )
-                data_xml_element.setAttribute("checksum", crc)
-                if ma.is_masked(data):
-                    crc = '0x%08x' % (
-                        zlib.crc32(normalise(data.mask)) & 0xffffffff, )
-                else:
-                    crc = 'no-masked-elements'
-                data_xml_element.setAttribute("mask_checksum", crc)
-            else:
-                crc = '0x%08x' % (zlib.crc32(normalise(data)) & 0xffffffff, )
-                data_xml_element.setAttribute("checksum", crc)
-        elif self.has_lazy_data():
-            data_xml_element.setAttribute("state", "deferred")
-        else:
-            data_xml_element.setAttribute("state", "loaded")
-
-        # Add the dtype, and also the array and mask orders if the
-        # data is loaded.
-        if not self.has_lazy_data():
-            data = self.data
-            dtype = data.dtype
-
-            def _order(array):
-                order = ''
-                if array.flags['C_CONTIGUOUS']:
-                    order = 'C'
-                elif array.flags['F_CONTIGUOUS']:
-                    order = 'F'
-                return order
-            if order:
-                data_xml_element.setAttribute('order', _order(data))
-
-            # NB. dtype.byteorder can return '=', which is bad for
-            # cross-platform consistency - so we use dtype.str
-            # instead.
-            if byteorder:
-                array_byteorder = {'>': 'big', '<': 'little'}.get(dtype.str[0])
-                if array_byteorder is not None:
-                    data_xml_element.setAttribute('byteorder', array_byteorder)
-
-            if order and ma.isMaskedArray(data):
-                data_xml_element.setAttribute('mask_order',
-                                              _order(data.mask))
-        else:
-            dtype = self.lazy_data().dtype
-        data_xml_element.setAttribute('dtype', dtype.name)
-
-        cube_xml_element.appendChild(data_xml_element)
-
-        return cube_xml_element
-
-    def copy(self, data=None):
+    def copy(self):
         """
-        Returns a deep copy of this cube.
-
-        Kwargs:
-
-        * data:
-            Replace the data of the cube copy with provided data payload.
-
-        Returns:
-            A copy instance of the :class:`Cube`.
+        Returns a deep copy of this space.
 
         """
         memo = {}
-        cube = self._deepcopy(memo, data=data)
-        return cube
+        space = self._deepcopy(memo)
+        return space
 
     def __copy__(self):
         """Shallow copying is disallowed for Cubes."""
@@ -2935,11 +1931,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __deepcopy__(self, memo):
         return self._deepcopy(memo)
 
-    def _deepcopy(self, memo, data=None):
-        dm = self._data_manager.copy(data=data)
-
-        new_dim_coords_and_dims = deepcopy(self._dim_coords_and_dims, memo)
-        new_aux_coords_and_dims = deepcopy(self._aux_coords_and_dims, memo)
+    def _deepcopy(self, memo):
+        new_dim_coords_and_dims = copy.deepcopy(
+            self._dim_coords_and_dims, memo)
+        new_aux_coords_and_dims = copy.deepcopy(
+            self._aux_coords_and_dims, memo)
 
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
@@ -2953,14 +1949,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                       new_aux_coords_and_dims):
             coord_mapping[id(old_pair[0])] = new_pair[0]
 
-        new_cube = Cube(dm.core_data(),
-                        dim_coords_and_dims=new_dim_coords_and_dims,
-                        aux_coords_and_dims=new_aux_coords_and_dims)
-
-        new_cube.metadata = deepcopy(self.metadata, memo)
+        new_cube = Space(
+            self.shape,
+            dim_coords_and_dims=new_dim_coords_and_dims,
+            aux_coords_and_dims=new_aux_coords_and_dims)
 
         for factory in self.aux_factories:
             new_cube.add_aux_factory(factory.updated(coord_mapping))
+
+        # TODO: Fix the bug that cell measures aren't handled.
 
         return new_cube
 
@@ -2968,20 +1965,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __eq__(self, other):
         result = NotImplemented
 
-        if isinstance(other, Cube):
-            result = self.metadata == other.metadata
-
-            # having checked the metadata, now check the coordinates
-            if result:
-                coord_comparison = iris.analysis.coord_comparison(self, other)
-                # if there are any coordinates which are not equal
-                result = not (coord_comparison['not_equal'] or
-                              coord_comparison['non_equal_data_dimension'])
-
-            # having checked everything else, check approximate data
-            # equality - loading the data if has not already been loaded.
-            if result:
-                result = np.all(np.abs(self.data - other.data) < 1e-8)
+        if isinstance(other, Space):
+            coord_comparison = iris.analysis.coord_comparison(self, other)
+            # if there are any coordinates which are not equal
+            result = not (coord_comparison['not_equal'] or
+                          coord_comparison['non_equal_data_dimension'])
 
         return result
 

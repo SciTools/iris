@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -230,31 +230,31 @@ class TestCellMeasures(tests.IrisTest):
     def test_merge_cell_measure_aware(self):
         cube1, = iris.load_raw(self.fname)
         cube2, = iris.load_raw(self.fname)
-        cube2._cell_measures_and_dims[0][0].var_name = 'not_areat'
+        cube2._space._cell_measures_and_dims[0][0].var_name = 'not_areat'
         cubes = CubeList([cube1, cube2]).merge()
         self.assertEqual(len(cubes), 2)
 
     def test_concatenate_cell_measure_aware(self):
         cube1, = iris.load_raw(self.fname)
         cube1 = cube1[:, :, 0, 0]
-        cm_and_dims = cube1._cell_measures_and_dims
+        cm_and_dims = cube1._space._cell_measures_and_dims
         cube2, = iris.load_raw(self.fname)
         cube2 = cube2[:, :, 0, 0]
-        cube2._cell_measures_and_dims[0][0].var_name = 'not_areat'
+        cube2._space._cell_measures_and_dims[0][0].var_name = 'not_areat'
         cube2.coord('time').points = cube2.coord('time').points + 1
         cubes = CubeList([cube1, cube2]).concatenate()
-        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
+        self.assertEqual(cubes[0]._space._cell_measures_and_dims, cm_and_dims)
         self.assertEqual(len(cubes), 2)
 
     def test_concatenate_cell_measure_match(self):
         cube1, = iris.load_raw(self.fname)
         cube1 = cube1[:, :, 0, 0]
-        cm_and_dims = cube1._cell_measures_and_dims
+        cm_and_dims = cube1._space._cell_measures_and_dims
         cube2, = iris.load_raw(self.fname)
         cube2 = cube2[:, :, 0, 0]
         cube2.coord('time').points = cube2.coord('time').points + 1
         cubes = CubeList([cube1, cube2]).concatenate()
-        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
+        self.assertEqual(cubes[0]._space._cell_measures_and_dims, cm_and_dims)
         self.assertEqual(len(cubes), 1)
 
     def test_round_trip(self):

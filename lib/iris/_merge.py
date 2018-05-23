@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -1132,7 +1132,7 @@ class ProtoCube(object):
 
         # cell measures are not merge candidates
         # they are checked and preserved through merge
-        self._cell_measures_and_dims = cube._cell_measures_and_dims
+        self._cell_measures_and_dims = cube._space._cell_measures_and_dims
 
     def _report_duplicate(self, nd_indexes, group_by_nd_index):
         # Find the first offending source-cube with duplicate metadata.
@@ -1605,9 +1605,9 @@ class ProtoCube(object):
             The cube signature.
 
         """
-
+        # TODO: Don't access private attributes.
         return _CubeSignature(cube.metadata, cube.shape,
-                              cube.dtype, cube._cell_measures_and_dims)
+                              cube.dtype, cube._space._cell_measures_and_dims)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""

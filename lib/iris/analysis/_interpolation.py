@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -663,10 +663,10 @@ class RectilinearInterpolator(object):
         def gen_new_cube():
             if (isinstance(new_coord, DimCoord) and len(dims) > 0 and
                     dims[0] not in dims_with_dim_coords):
-                new_cube._add_unique_dim_coord(new_coord, dims)
+                new_cube._space._add_unique_dim_coord(new_coord, dims)
                 dims_with_dim_coords.append(dims[0])
             else:
-                new_cube._add_unique_aux_coord(new_coord, dims)
+                new_cube._space._add_unique_aux_coord(new_coord, dims)
             coord_mapping[id(coord)] = new_coord
 
         # Copy/interpolate the coordinates.

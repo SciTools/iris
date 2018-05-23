@@ -1573,7 +1573,7 @@ class Test_remove_metadata(tests.IrisTest):
 
     def test_remove_cell_measure(self):
         self.cube.remove_cell_measure(self.cube.cell_measure('area'))
-        self.assertEqual(self.cube._cell_measures_and_dims,
+        self.assertEqual(self.cube._space._cell_measures_and_dims,
                          [[self.b_cell_measure, (0, 1)]])
 
 
