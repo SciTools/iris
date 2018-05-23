@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,7 +40,7 @@ MERIDIAN_SCALING_BNG = 0.9996012717
 NIMROD_DEFAULT = -32767.0
 
 TIME_UNIT = cf_units.Unit('hours since 1970-01-01 00:00:00',
-                          calendar=cf_units.CALENDAR_STANDARD)
+                          calendar=cf_units.CALENDAR_GREGORIAN)
 
 
 FIELD_CODES = {73: "orography"}
