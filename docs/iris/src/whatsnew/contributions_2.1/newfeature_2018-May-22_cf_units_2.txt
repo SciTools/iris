@@ -1,0 +1,4 @@
+Iris updated its cf_units dependency to cf_units v2. cf_units 2 is almost entirely backwards compatible,
+although the ability to preserve some alias calendars has been removed. For this reason, it is possible
+that NetCDF load of a variable with a "standard" calendar will result in a saved NetCDF of a "gregorian"
+calendar.

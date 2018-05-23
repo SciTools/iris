@@ -90,7 +90,7 @@ netcdf4-python (http://netcdf4-python.googlecode.com/)
     thread-safe build of HDF5 to avoid segmentation faults when using
     lazy evaluation.)
 
-cf_units v1.0 or later (https://github.com/SciTools/cf_units)
+cf_units v2.0 or later (https://github.com/SciTools/cf_units)
     CF data units handling, using udunits.
 
 setuptools v36.0 or later (http://pypi.python.org/pypi/setuptools/)
