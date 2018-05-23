@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -48,6 +48,7 @@ from six.moves import configparser
 
 import contextlib
 import os.path
+import sys
 import warnings
 
 
@@ -91,7 +92,10 @@ ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 CONFIG_PATH = os.path.join(ROOT_PATH, 'etc')
 
 # Load the optional "site.cfg" file if it exists.
-config = configparser.SafeConfigParser()
+if sys.version_info >= (3, 2):
+    config = configparser.ConfigParser()
+else:
+    config = configparser.SafeConfigParser()
 config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
 
 
