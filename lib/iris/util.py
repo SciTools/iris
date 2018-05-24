@@ -1536,6 +1536,167 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube.add_aux_coord(dim_coord, coord_dim)
 
 
+def flatten_multidim_coord(cube, name_or_coord):
+    """
+    Flatten the Aux coord and associated dimensions on the cube
+
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * name_or_coord:
+        Either
+
+        (a) An instance of :class:`iris.coords.DimCoord`
+
+        or
+
+        (b) the :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name` of an instance of an instance of
+        :class:`iris.coords.DimCoord`.
+
+    For example::
+
+        >>> print(cube)
+        rainfall_rate / (kg m-2 s-1)        (x: 5; y: 3)
+             Dimension coordinates:
+                  x                           x     -
+                  y                           -     x
+             Auxiliary coordinates:
+                  latitude                    x     x
+                  longitude                   x     x
+
+        >>> flatten_multidim_coord(cube, 'longitude')
+        >>> print(cube)
+        rainfall_rate / (kg m-2 s-1)        (--: 15)
+             Auxiliary coordinates:
+                  x                           x
+                  y                           x
+                  latitude                    x
+                  longitude                   x
+    """
+    if isinstance(name_or_coord, six.string_types):
+        coord = cube.coord(name_or_coord)
+    elif isinstance(name_or_coord, iris.coords.Coord):
+        coord = name_or_coord
+    else:
+        # Don't know how to handle this type
+        msg = ("Don't know how to handle coordinate of type {}. "
+               "Ensure all coordinates are of type six.string_types or "
+               "iris.coords.Coord.")
+        msg = msg.format(type(name_or_coord))
+        raise TypeError(msg)
+
+    coord_dims = cube.coord_dims(coord)
+
+    if len(coord_dims) == 1:
+        # Do nothing
+        return cube
+
+    return flatten_cube(cube, coord_dims)
+
+
+def flatten_cube(cube, dims=None):
+    """
+    Flatten the cube along the specified dimensionss or all (by default).
+    Coordinates along those dimensions are flattened. DimCoords are
+    demoted to AuxCoords before flattening. The new (anonymous)
+    flattened dimension will be along the first dimension of the
+    specified dims.
+
+    * cube
+        An instance of :class:`iris.cube.Cube`
+
+    * dims (:class:`list`, :class:`tuple` etc.):
+        The dimensions of the cube to flatten
+
+
+    For example::
+
+        >>> print(cube)
+        rainfall_rate / (kg m-2 s-1)        (x: 5; y: 3)
+             Dimension coordinates:
+                  x                           x     -
+                  y                           -     x
+             Auxiliary coordinates:
+                  latitude                    x     x
+                  longitude                   x     x
+
+        >>> flatten_cube(cube)
+        >>> print(cube)
+        rainfall_rate / (kg m-2 s-1)        (--: 15)
+             Auxiliary coordinates:
+                  x                           x
+                  y                           x
+                  latitude                    x
+                  longitude                   x
+    """
+    import numpy as np
+    from iris.cube import Cube
+    from iris.coords import AuxCoord
+
+    all_dims = range(cube.ndim)
+
+    dims = dims if dims is not None else all_dims
+
+    other_dims = list(set(all_dims) - set(dims))
+    shape_array = np.asarray(cube.shape)
+    # The new (flat) dimension will be in the first dimension of the aux coord
+    flat_dim = dims[0]
+    dim_shape = shape_array[list(dims)]
+    new_dim_shape = np.product(dim_shape)
+    new_shape = np.insert(shape_array[other_dims], flat_dim, new_dim_shape)
+
+    # Figure out the new dimensions (so we know where to put the dim-coords)
+    new_dims = np.zeros_like(shape_array, dtype=int)
+    new_dims[other_dims] = np.arange(0, len(other_dims))
+    new_dims[flat_dim:] += 1
+
+    # Get all the coords which span the dimensions to be flattened
+    coords_to_flatten = cube.coords(dimensions=dims)
+    # And any other coords which span any one of the dimensions
+    # These (1-D) coordinates are expanded before being flattened
+    coords_to_ignore = []
+    for aux_dim, coord_dim in enumerate(dims):
+        # Expand the coords which need expanding, then add to flatten list
+        for c in cube.coords(dimensions=coord_dim):
+            # I have to add these here separately since they change
+            coords_to_ignore.append(c)
+            # Broadcast the coord (which must be one-dimensional)
+            new_points = broadcast_to_shape(c.points, dim_shape, (aux_dim,))
+            new_bounds = None if c.bounds is None else \
+                broadcast_to_shape(c.bounds, list(dim_shape) + [2],
+                                   (aux_dim, -1))
+            coords_to_flatten.append(
+                AuxCoord.from_coord(c).copy(new_points, new_bounds))
+
+    other_dim_coords = [(c, new_dims[cube.coord_dims(c)]) for c in
+                        cube.coords(dim_coords=True)
+                        if c not in coords_to_flatten and
+                        c not in coords_to_ignore]
+    other_aux_coords = [(c, cube.coord_dims(c)) for c in
+                        cube.coords(dim_coords=False)
+                        if c not in coords_to_flatten and
+                        c not in coords_to_ignore]
+
+    new_data = cube.core_data().reshape(new_shape)
+    new_aux_coords = other_aux_coords
+    for c in coords_to_flatten:
+        # The new (flat) AuxCoords are always the last dimension
+        new_bounds = None if c.bounds is None else c.bounds.reshape(-1, 2)
+        # Any DimCoords spanning these dimensions have been demoted so
+        # there should only be AuxCoords left
+        new_aux_coords.append((c.copy(c.points.flat, new_bounds), flat_dim))
+    # TODO: Deal with Aux Factories and cell measures....
+
+    new_cube = Cube(new_data, cube.standard_name, cube.long_name,
+                    cube.var_name, cube.units, cube.attributes,
+                    cube.cell_methods, dim_coords_and_dims=other_dim_coords,
+                    aux_coords_and_dims=new_aux_coords)
+
+    return new_cube
+
+
 @functools.wraps(np.meshgrid)
 def _meshgrid(*xi, **kwargs):
     """
