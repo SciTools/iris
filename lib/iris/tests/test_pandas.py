@@ -27,15 +27,11 @@ import datetime
 import unittest
 
 import cf_units
+import cftime
 import matplotlib.units
 import netCDF4
 import numpy as np
 
-# TODO Remove this if statement as we move to cftime
-if cf_units.__version__ > '1':
-    import cftime
-else:
-    import netcdtime as cftime
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
