@@ -82,7 +82,8 @@ install:
 
   # Output debug info
   - >
-    conda list;
+    conda list -n $ENV_NAME;
+    conda list -n $ENV_NAME --explicit;
     conda info -a;
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
