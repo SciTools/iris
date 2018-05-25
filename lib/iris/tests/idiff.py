@@ -35,6 +35,12 @@ import shutil
 import sys
 import warnings
 
+# Force iris.tests to use the ```tkagg``` backend by using the '-d'
+# command-line argument as idiff is an interactive tool that requires a
+# gui interface.
+sys.argv.append('-d')
+import iris.tests
+
 from PIL import Image
 import filelock
 import imagehash
@@ -46,11 +52,6 @@ import matplotlib.widgets as mwidget
 import numpy as np
 import requests
 
-# Force iris.tests to use the ```tkagg``` backend by using the '-d'
-# command-line argument as idiff is an interactive tool that requires a
-# gui interface.
-sys.argv.append('-d')
-import iris.tests
 import iris.util as iutil
 
 
@@ -246,7 +247,7 @@ def step_over_diffs(result_dir, action, display=True):
                     if isinstance(e,  ValueError) or \
                             isinstance(e, ImageComparisonFailure):
                         print('Could not compare {}: {}'.format(result_fname,
-                                                                e.message))
+                                                                e))
                         continue
                     else:
                         # Propagate the exception, keeping the stack trace

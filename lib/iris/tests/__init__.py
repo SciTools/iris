@@ -78,6 +78,9 @@ try:
     import matplotlib
     matplotlib.use('agg')
     matplotlib.rcdefaults()
+    # Standardise the figure size across matplotlib versions.
+    # This permits matplotlib png image comparison.
+    matplotlib.rcParams['figure.figsize'] = [8.0, 6.0]
     import matplotlib.testing.compare as mcompare
     import matplotlib.pyplot as plt
 except ImportError:
@@ -835,7 +838,7 @@ class IrisTest_nometa(unittest.TestCase):
                                'for test {}.')
                         msg = msg.format(phash, distances, unique_id)
                         if _DISPLAY_FIGURES:
-                            emsg = 'Image comparion would have failed: {}'
+                            emsg = 'Image comparison would have failed: {}'
                             print(emsg.format(msg))
                         else:
                             emsg = 'Image comparison failed: {}'
