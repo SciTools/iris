@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,10 +34,10 @@ from cartopy.geodesic import Geodesic
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
-import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
+from matplotlib.offsetbox import AnchoredText
 import matplotlib.ticker as mpl_ticker
-from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
+import matplotlib.transforms as mpl_transforms
 import netcdftime
 import numpy as np
 import numpy.ma as ma
