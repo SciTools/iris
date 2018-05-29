@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,11 +36,11 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 
     def test_yaxis_labels(self):
         qplt.plot(self.cube, self.cube.coord('str_coord'))
-        self.assertPointsTickLabels('yaxis')
+        self.assertBoundsTickLabels('yaxis')
 
     def test_xaxis_labels(self):
         qplt.plot(self.cube.coord('str_coord'), self.cube)
-        self.assertPointsTickLabels('xaxis')
+        self.assertBoundsTickLabels('xaxis')
 
 
 if __name__ == "__main__":
