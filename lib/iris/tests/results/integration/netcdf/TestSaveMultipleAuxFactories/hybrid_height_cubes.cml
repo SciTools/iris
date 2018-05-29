@@ -62,7 +62,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x2acdccca" dtype="int64" shape="(3, 4, 5, 6)"/>
+    <data checksum="0x2acdccca" dtype="int64" mask_checksum="no-masked-elements" shape="(3, 4, 5, 6)"/>
   </cube>
   <cube dtype="int64" standard_name="air_temperature" units="K" var_name="air_temperature_0">
     <attributes>
@@ -126,6 +126,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x2acdccca" dtype="int64" shape="(3, 4, 5, 6)"/>
+    <data checksum="0x2acdccca" dtype="int64" mask_checksum="no-masked-elements" shape="(3, 4, 5, 6)"/>
   </cube>
 </cubes>
