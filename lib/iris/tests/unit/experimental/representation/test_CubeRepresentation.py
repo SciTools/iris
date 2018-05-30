@@ -24,8 +24,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from iris.coords import CellMethod
-from iris.experimental.representation import CubeRepresentation
 import iris.tests.stock as stock
+
+from iris.experimental.representation import CubeRepresentation
 
 
 @tests.skip_data
@@ -45,11 +46,44 @@ class Test__instantiation(tests.IrisTest):
 
 
 @tests.skip_data
-class Test__summary_content(tests.IrisTest):
+class Test__get_dim_names(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_4d()
+        self.dim_names = [c.name() for c in self.cube.coords(dim_coords=True)]
         self.representer = CubeRepresentation(self.cube)
-        self.representer._summary_content()
+
+    def test_basic(self):
+        result_names = self.representer._get_dim_names()
+        self.assertEqual(result_names, self.dim_names)
+
+    def test_one_anonymous_dim(self):
+        self.cube.remove_coord('time')
+        expected_names = ['--']
+        expected_names.extend(self.dim_names[1:])
+        result_names = self.representer._get_dim_names()
+        self.assertEqual(result_names, expected_names)
+
+    def test_anonymous_dims(self):
+        target_dims = [1, 3]
+        # Replicate this here as we're about to modify it.
+        expected_names = [c.name() for c in self.cube.coords(dim_coords=True)]
+        for dim in target_dims:
+            this_dim_coord, = self.cube.coords(contains_dimension=dim,
+                                               dim_coords=True)
+            self.cube.remove_coord(this_dim_coord)
+            expected_names[dim] = '--'
+        result_names = self.representer._get_dim_names()
+        self.assertEqual(result_names, expected_names)
+
+
+@tests.skip_data
+class Test__summary_content(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+        # Check we're not tripped up by names containing spaces.
+        self.cube.rename('Electron density')
+        self.cube.units = '1e11 e/m^3'
+        self.representer = CubeRepresentation(self.cube)
 
     def test_name(self):
         # Check the cube name is being set and formatted correctly.
@@ -75,7 +109,7 @@ class Test__summary_content(tests.IrisTest):
     def test_shapes(self):
         # Check cube dim lengths are split out correctly from the
         # summary string.
-        expected = [str(s) for s in self.cube.shape]
+        expected = self.cube.shape
         result = self.representer.shapes
         self.assertEqual(expected, result)
 
@@ -92,18 +126,11 @@ class Test__get_bits(tests.IrisTest):
         cm = CellMethod('mean', 'time', '6hr')
         self.cube.add_cell_method(cm)
         self.representer = CubeRepresentation(self.cube)
-        self.representer._get_bits()
-        self.summary = self.representer.summary
+        self.representer._get_bits(self.representer._get_lines())
 
     def test_population(self):
-        self.assertIsNotNone(self.summary)
         for v in self.representer.str_headings.values():
             self.assertIsNotNone(v)
-
-    def test_summary(self):
-        expected = self.cube.summary(True)
-        result = self.summary
-        self.assertStringEqual(expected, result)
 
     def test_headings__dimcoords(self):
         contents = self.representer.str_headings['Dimension coordinates:']
@@ -154,7 +181,7 @@ class Test__make_header(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
-        self.representer._get_bits()
+        self.representer._get_bits(self.representer._get_lines())
         self.header_emts = self.representer._make_header().split('\n')
 
     def test_name_and_units(self):
@@ -186,7 +213,7 @@ class Test__make_shapes_row(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
-        self.representer._get_bits()
+        self.representer._get_bits(self.representer._get_lines())
         self.result = self.representer._make_shapes_row().split('\n')
 
     def test_row_title(self):
@@ -207,7 +234,7 @@ class Test__make_row(tests.IrisTest):
         cm = CellMethod('mean', 'time', '6hr')
         self.cube.add_cell_method(cm)
         self.representer = CubeRepresentation(self.cube)
-        self.representer._get_bits()
+        self.representer._get_bits(self.representer._get_lines())
 
     def test__title_row(self):
         title = 'Wibble:'
@@ -268,7 +295,7 @@ class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
-        self.representer._get_bits()
+        self.representer._get_bits(self.representer._get_lines())
         self.result = self.representer._make_content()
 
     def test_included(self):

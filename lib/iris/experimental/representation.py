@@ -98,7 +98,6 @@ class CubeRepresentation(object):
         self.cube_id = id(self.cube)
         self.cube_str = str(self.cube)
 
-        self.summary = self.cube.summary(True)
         self.str_headings = {
             'Dimension coordinates:': None,
             'Auxiliary coordinates:': None,
@@ -111,29 +110,54 @@ class CubeRepresentation(object):
                                 'Auxiliary coordinates:',
                                 'Derived coordinates:']
 
-    def _summary_content(self):
-        """
-        Deal with the content in the summary (the first line of printout).
-
-        This contains:
-            * name (unit),
-            * dim name (len of dim) for each dim.
-
-        """
-        emts = re.findall(r'\w+', self.summary)
-        self.names = [' '.join(name.split('_')) for name in emts[::2]]
-        self.shapes = emts[1::2]
-
-        # Name and unit are the first item in names and descs respectively.
-        self.name = self.names.pop(0).title()
-        self.units = self.shapes.pop(0)
+        # Important content that summarises a cube is defined here.
+        self.shapes = self.cube.shape
+        self.scalar_cube = self.shapes == ()
         self.ndims = self.cube.ndim
 
-    def _get_bits(self):
-        bits = self.cube_str.split('\n')
-        # self.summary = bits[0]
-        self._summary_content()
-        left_indent = bits[1].split('D')[0]
+        self.name = self.cube.name().title().replace('_', ' ')
+        self.names = self._dim_names()
+        self.units = self.cube.units
+
+    def _get_dim_names(self):
+        """
+        Get dimension-describing coordinate names, or '--' if no coordinate]
+        describes the dimension.
+
+        Note: borrows from `cube.summary`.
+
+        """
+        # Create a set to contain the axis names for each data dimension.
+        dim_names = list(range(len(self.cube.shape)))
+
+        # Add the dim_coord names that participate in the associated data
+        # dimensions.
+        for dim in range(len(self.cube.shape)):
+            dim_coords = self.cube.coords(contains_dimension=dim,
+                                          dim_coords=True)
+            if dim_coords:
+                dim_names[dim] = dim_coords[0].name()
+            else:
+                dim_names[dim] = '--'
+        return dim_names
+
+    def _dim_names(self):
+        if self.scalar_cube:
+            dim_names = ['(scalar cube)']
+        else:
+            dim_names = self._get_dim_names()
+        return dim_names
+
+    def _get_lines(self):
+        return self.cube_str.split('\n')
+
+    def _get_bits(self, bits):
+        """
+        Parse the body content (`bits`) of the cube string in preparation for
+        being converted into table rows.
+
+        """
+        left_indent = re.split(r'\w+', bits[1])[0]
 
         # Get heading indices within the printout.
         start_inds = []
@@ -256,11 +280,28 @@ class CubeRepresentation(object):
         return '\n'.join(element for element in elements)
 
     def repr_html(self):
-        """The `repr` interface to Jupyter."""
-        self._get_bits()
+        """The `repr` interface for Jupyter."""
+        # Deal with the header first.
         header = self._make_header()
-        shape = self._make_shapes_row()
-        content = self._make_content()
+
+        # Check if we have a scalar cube.
+        if self.scalar_cube:
+            shape = ''
+            # We still need a single content column!
+            self.ndims = 1
+        else:
+            shape = self._make_shapes_row()
+
+        # Now deal with the rest of the content.
+        lines = self._get_lines()
+        # If we only have a single line `cube_str` we have no coords / attrs!
+        # We need to handle this case specially.
+        if len(lines) == 1:
+            content = ''
+        else:
+            self._get_bits(lines)
+            content = self._make_content()
+
         return self._template.format(header=header,
                                      id=self.cube_id,
                                      shape=shape,
