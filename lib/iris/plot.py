@@ -343,6 +343,12 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         data = cube.data
         if plot_defn.transpose:
             data = data.T
+            # Also transpose the scatter marker color array,
+            # as now mpl 2.x does not do this for free.
+            if draw_method_name == 'scatter' and 'c' in kwargs:
+                c = kwargs['c']
+                if hasattr(c, 'T') and cube.data.shape == c.shape:
+                    kwargs['c'] = c.T
 
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
