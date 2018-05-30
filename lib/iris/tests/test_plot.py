@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -935,6 +935,29 @@ class TestPlotOtherCoordSystems(tests.GraphicsTest):
         self.cube = iris.load_cube(filename)
         iplt.pcolormesh(self.cube[0])
         plt.gca().coastlines()
+        self.check_graphic()
+
+
+@tests.skip_plot
+class TestPlotCitation(tests.GraphicsTest):
+    def setUp(self):
+        super(TestPlotCitation, self).setUp()
+        self.figure = plt.figure()
+        self.axes = self.figure.gca()
+        self.text = ('Lorem ipsum dolor sit amet, consectetur adipiscing '
+                     'elit, sed do eiusmod tempor incididunt ut labore et '
+                     'dolore magna aliqua.')
+
+    def test(self):
+        iplt.citation(self.text)
+        self.check_graphic()
+
+    def test_figure(self):
+        iplt.citation(self.text, figure=self.figure)
+        self.check_graphic()
+
+    def test_axes(self):
+        iplt.citation(self.text, axes=self.axes)
         self.check_graphic()
 
 

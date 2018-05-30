@@ -76,13 +76,14 @@ install:
     CONDA_REQS_FILE=conda-requirements.txt;
     python requirements/gen_conda_requirements.py ${CONDA_REQS_FLAGS} --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
     cat ${CONDA_REQS_FILE};
-    conda install --quiet --file ${CONDA_REQS_FILE};
+    conda install --quiet -n $ENV_NAME --file ${CONDA_REQS_FILE};
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
   # Output debug info
   - >
-    conda list;
+    conda list -n $ENV_NAME;
+    conda list -n $ENV_NAME --explicit;
     conda info -a;
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
@@ -111,7 +112,7 @@ install:
   # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
   - if [[ "$TEST_MINIMAL" != true && ${TRAVIS_PYTHON_VERSION} == 2* ]]; then
-        conda install python-ecmwf_grib;
+        conda install --quiet -n $ENV_NAME python-ecmwf_grib;
         pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
     fi
 

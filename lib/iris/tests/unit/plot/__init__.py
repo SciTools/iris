@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -56,8 +56,8 @@ class TestGraphicStringCoord(tests.GraphicsTest):
 
     def assertBoundsTickLabels(self, axis, axes=None):
         actual = self.tick_loc_and_label(axis, axes)
-        expected = [(-1.0, ''), (0.0, 'a'), (1.0, 'b'),
-                    (2.0, 'c'), (3.0, 'd'), (4.0, '')]
+        expected = [(-1.0, 'a'), (0.0, 'a'), (1.0, 'b'),
+                    (2.0, 'c'), (3.0, 'd'), (4.0, u'')]
         self.assertEqual(expected, actual)
 
     def assertPointsTickLabels(self, axis, axes=None):

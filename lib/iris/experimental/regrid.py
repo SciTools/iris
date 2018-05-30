@@ -390,7 +390,7 @@ def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
             weights_sum = weights.sum(axis=axis)
             frac_masked = 1 - np.true_divide(unmasked_weights_sum, weights_sum)
             mask_pt = frac_masked > mdtol
-            if np.any(mask_pt):
+            if np.any(mask_pt) and not isinstance(res, ma.core.MaskedConstant):
                 if np.isscalar(res):
                     res = ma.masked
                 elif ma.isMaskedArray(res):
