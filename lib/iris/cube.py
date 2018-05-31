@@ -2103,6 +2103,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return "<iris 'Cube' of %s>" % self.summary(shorten=True,
                                                     name_padding=1)
 
+    def _repr_html_(self):
+        from iris.experimental.representation import CubeRepresentation
+        representer = CubeRepresentation(self)
+        return representer.repr_html()
+
     def __iter__(self):
         raise TypeError('Cube is not iterable')
 
