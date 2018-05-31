@@ -230,6 +230,8 @@ custom_commands = {
 
 pypi_name = 'scitools-iris'
 
+with open(os.path.join(SETUP_DIR, 'README.md'), 'r') as fh:
+    description = ''.join(fh.readlines())
 
 setup(
     name=pypi_name,
@@ -237,6 +239,10 @@ setup(
     url='http://scitools.org.uk/iris/',
     author='UK Met Office',
     author_email='scitools-iris-dev@googlegroups.com',
+    description="A powerful, easy to use, and community-driven Python "
+                "library for analysing and visualising Earth science data",
+    long_description=description,
+    long_description_content_type='text/markdown',
     packages=find_package_tree('lib/iris', 'iris'),
     package_dir={'': 'lib'},
     include_package_data=True,

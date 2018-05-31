@@ -7,6 +7,9 @@
 
     <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
     <script type="text/javascript" src="http://docs.python.org/2/_static/copybutton.js"></script>
+
+    <!-- Nice fonts... -->
+    <link href="https://fonts.googleapis.com/css?family=Alike" rel="stylesheet">
 {% endblock %}
 
 
@@ -19,13 +22,53 @@
 
 
 {% block relbar1 %}
-<div style="background-color: white; text-align: left; padding: 1px 10px 1px 15px">
-<p style="margin-left: 15px; font-weight:bolder; letter-spacing:0.1ex;">
-<a href="{{ pathto('index') }}"><img src="{{pathto("_static/Iris7_1_trim_100.png", 1) }}" width=101 height=100 border="0" style="vertical-align:middle" alt="Logo"/></a>
-<span style="font-size: 400%; vertical-align:middle"> Iris {{version}} </span>
-</p>
 
+
+
+
+<style>
+.github-img {
+  position: absolute;
+  top: 0;
+  right: 80px;
+  border: 0;
+}
+
+/* Take into account the resizing effect of the page (which has a minimum */
+/* width of 740px + 80px margins). */
+@media screen and (max-width: calc(740px + 80px + 80px)) {
+  .github-img {
+    right: calc(100% - 740px - 80px);
+  }
+}
+
+@media screen and (max-width: calc(740px + 80px)) {
+  .github-img {
+    left: calc(740px + 80px - 149px);
+    right: 0px;
+  }
+}
+</style>
+<a href="https://github.com/you">
+    <img class="github-img" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
+</a>
+
+
+<div style="background-color: white; text-align: left; padding: 0px; height: 149px;">
+    <a href="{{ pathto("index") }}">
+        <img src="{{ pathto("_static/Iris7_1_trim_100.png", 1) }}" border="0" style="height: 100px; vertical-align: middle; float: left; margin: 20px 2em 0.8em 4%; padding: 0px;" alt="Logo" />
+    </a>
+    <div style="display: inline-block; width: calc(100% - 110px - 2em - 4%);">
+      <h1 style="font-size: 3.5rem; font-family: 'Alike', serif; margin-top: 40px; padding: 0px; color: #323232; padding-bottom: 0.2em;">
+          Iris <span style="font-size: 1.5rem;">v2.1</span>
+      </h1>
+      <h4 style="padding: 0px; max-width: 60ch; margin-top: 0px; margin-bottom: 0px;">
+         a powerful, easy to use, community-driven Python library for analysing and
+         visualising Earth science data
+      </h4>
+    </div>
 </div>
+
 {{ super() }}
 {% endblock %}
 
