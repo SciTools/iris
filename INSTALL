@@ -34,10 +34,10 @@ https://github.com/SciTools/iris.
 
 Iris makes use of a range of other libraries and python modules. These 
 dependencies must be in place before you can successfully install 
-Iris. Once you have satisfied the requirements detailed below, 
-extract the iris source package, cd to the new directory, and enter::
+Iris. Once you have satisfied the requirements detailed in the
+``requirements`` directory, go to the root of Iris' and run::
 
-  python setup.py install
+  pip install .
 
 
 In-place build - an alternative for developers
@@ -46,118 +46,18 @@ We are very keen to encourage contributions to Iris. For this type of
 development activity an in-place build can be useful. Once you've cloned 
 the Iris git repository you can perform an in-place build with::
 
-  python setup.py develop
-
-
-Build and runtime requirements
-==============================
-These are external packages which you will need to have installed before
-installing and running Iris. 
-
-Many of these packages are available in Linux package managers
-such as aptitude and yum. For example, it may be possible to install 
-Numpy using::
-
-  apt-get install python-numpy
-
-If you are installing dependencies with a package manager on Linux, 
-you may need to install the development packages (look for a "-dev" 
-postfix) in addition to the core packages.  
-
-
-python 2.7 or 3.5+ (http://www.python.org/)
-    Iris requires Python 2.7 or Python 3.5+.
-
-numpy (http://numpy.scipy.org/)
-    Python package for scientific computing including a powerful N-dimensional
-    array object.
-
-scipy (http://www.scipy.org/)
-    Python package for scientific computing.
-
-cartopy v0.11.0 or later (http://github.com/SciTools/cartopy/)
-    Python package which provides cartographic tools for python.
-
-dask v0.15.0 or later (https://dask.pydata.org/)
-    Python package for parallel computing.
-
-PyKE v1.1.1 or later (http://pyke.sourceforge.net/)
-    Python knowledge-based inference engine.
-
-netcdf4-python (http://netcdf4-python.googlecode.com/)
-    Python interface to the netCDF version 4 C library.
-    (It is strongly recommended to ensure your installation uses a
-    thread-safe build of HDF5 to avoid segmentation faults when using
-    lazy evaluation.)
-
-cf_units v2.0 or later (https://github.com/SciTools/cf_units)
-    CF data units handling, using udunits.
-
-setuptools v36.0 or later (http://pypi.python.org/pypi/setuptools/)
-    Python package for installing/removing python packages.
-
-
-The full list of packages may be found in the repository at
-``requirements/core.txt``.
-
-
-Optional
-''''''''
-These are optional packages which you may want to install to enable
-additonal Iris functionality such as plotting and
-loading/saving GRIB. These packages are required for the full Iris test
-suite to run.
-
-gdal (https://pypi.python.org/pypi/GDAL/)
-    Python package for the Geospatial Data Abstraction Library (GDAL).
-
-graphviz (http://www.graphviz.org/)
-    Graph visualisation software.
-
-iris-grib (https://github.com/scitools/iris-grib)
-    Iris interface to ECMWF's GRIB API
-
-matplotlib (https://matplotlib.org)
-    Python package for 2D plotting.  
-
-mock (http://pypi.python.org/pypi/mock/)
-    Python mocking and patching package for testing. Note that this package
-    is only required to support the Iris unit tests.
-
-nose (https://nose.readthedocs.io/en/latest/)
-    Python package for software testing. Iris is not compatible with nose2.
-
-pep8 (https://pypi.python.org/pypi/pep8)
-    Python package for software testing.
-
-pandas (http://pandas.pydata.org)
-    Python package providing high-performance, easy-to-use data structures and
-    data analysis tools.
-
-PythonImagingLibrary (http://effbot.org/zone/pil-index.htm)
-    Python package for image processing.
-
-pyugrid (https://github.com/pyugrid/pyugrid)
-    A Python API to utilize data written using the unstructured grid
-    UGRID conventions.
-
-shapely (https://github.com/Toblerity/Shapely)
-    Python package for the manipulation and analysis of planar geometric
-    objects.
-
-mo_pack (https://github.com/SciTools/mo_pack)
-    A Python wrapper to libmo_unpack, giving WGDOS packing and unpacking.
+  pip install -e .
 
 
 Generating conda requirements
 '''''''''''''''''''''''''''''
 
 Requirements for Iris are stored in the ``requirements`` directory in the root of the source repository.
-It is possible to generate a requirements file suitable for conda use with::
+It is possible to generate a requirements file suitable for use with conda::
 
     python requirements/gen_conda_requirements.py > conda_requirements.txt
 
-This may be installed with::
+This may then be installed with::
 
     conda create -n my_iris_env --file conda_requirements.txt
 

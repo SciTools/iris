@@ -15,10 +15,12 @@ develop-eggs
 
 # Installer logs
 pip-log.txt
+pip-cache
 
 # Unit test / coverage reports
 .coverage
 .tox
+.pytest_cache
 
 #Translations
 *.mo
@@ -51,6 +53,7 @@ docs/iris/src/_static/random_image.js
 docs/iris/src/_templates/gallery.html
 docs/iris/src/examples/
 docs/iris/src/iris/
+docs/iris/src/matplotlibrc
 
 # Example test results
 docs/iris/iris_image_test_output/
