@@ -1169,20 +1169,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
-
-        .. note::
-            You cannot partially collapse a multi-dimensional coordinate. See
-            :ref:`cube.collapsed <partially_collapse_multi-dim_coord>` for more
-            information.
-
         """
+        import dask.array as da
+        # Ensure dims_to_collapse is a tuple to be able to pass
+        # through to numpy
         if isinstance(dims_to_collapse, (int, np.integer)):
-            dims_to_collapse = [dims_to_collapse]
-
-        if dims_to_collapse is not None and \
-                set(range(self.ndim)) != set(dims_to_collapse):
-            raise ValueError('Cannot partially collapse a coordinate (%s).'
-                             % self.name())
+            dims_to_collapse = (dims_to_collapse, )
+        if isinstance(dims_to_collapse, list):
+            dims_to_collapse = tuple(dims_to_collapse)
 
         if np.issubdtype(self.dtype, np.str_):
             # Collapse the coordinate by serializing the points and
@@ -1215,28 +1209,20 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     'Metadata may not be fully descriptive for {!r}.'
                 warnings.warn(msg.format(self.name()))
 
-            # Create bounds for the new collapsed coordinate.
-            item = self.core_bounds() if self.has_bounds() \
+            # Determine the array library for stacking
+            al = da if self.has_bounds() \
+                and _lazy.is_lazy_data(self.core_bounds()) else np
+
+            item = al.concatenate(self.core_bounds()) if self.has_bounds() \
                 else self.core_points()
-            lower, upper = item.min(), item.max()
-            bounds_dtype = item.dtype
-            # Ensure 2D shape of new bounds.
-            bounds = np.empty((1, 2), 'object')
-            bounds[0, 0] = lower
-            bounds[0, 1] = upper
-            # Create points for the new collapsed coordinate.
-            points_dtype = self.dtype
-            points = (float(lower) + float(upper)) * 0.5
+
+            # Calculate the bounds and points along the right dims
+            bounds = al.stack([item.min(axis=dims_to_collapse),
+                               item.max(axis=dims_to_collapse)]).T
+            points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
 
             # Create the new collapsed coordinate.
-            if _lazy.is_lazy_data(item):
-                bounds = _lazy.multidim_lazy_stack(bounds)
-                coord = self.copy(points=points, bounds=bounds)
-            else:
-                bounds = np.concatenate(bounds)
-                bounds = np.array(bounds, dtype=bounds_dtype)
-                coord = self.copy(points=np.array(points, dtype=points_dtype),
-                                  bounds=bounds)
+            coord = self.copy(points=points, bounds=bounds)
         return coord
 
     def _guess_bounds(self, bound_position=0.5):

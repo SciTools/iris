@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -308,6 +308,54 @@ class TestMissingData(tests.IrisTest):
 
         cube = self.cube_with_mask.collapsed('foo', iris.analysis.SUM)
         np.testing.assert_array_equal(cube.data, np.array([6, 18, 17]))
+
+
+class TestAuxCoordCollapse(tests.IrisTest):
+
+    def setUp(self):
+        self.cube_with_aux_coord = tests.stock.simple_4d_with_hybrid_height()
+
+        # Guess bounds to get the weights
+        self.cube_with_aux_coord.coord('grid_latitude').guess_bounds()
+        self.cube_with_aux_coord.coord('grid_longitude').guess_bounds()
+
+    def test_max(self):
+        cube = self.cube_with_aux_coord.collapsed('grid_latitude',
+                                                  iris.analysis.MAX)
+        np.testing.assert_array_equal(cube.coord('surface_altitude').points,
+                                      np.array([112, 113, 114,
+                                                115, 116, 117]))
+
+        np.testing.assert_array_equal(cube.coord('surface_altitude').bounds,
+                                      np.array([[100, 124],
+                                                [101, 125],
+                                                [102, 126],
+                                                [103, 127],
+                                                [104, 128],
+                                                [105, 129]]))
+
+        # Check collapsing over the whole coord still works
+        cube = self.cube_with_aux_coord.collapsed('altitude',
+                                                  iris.analysis.MAX)
+
+        np.testing.assert_array_equal(cube.coord('surface_altitude').points,
+                                      np.array([114]))
+
+        np.testing.assert_array_equal(cube.coord('surface_altitude').bounds,
+                                      np.array([[100, 129]]))
+
+        cube = self.cube_with_aux_coord.collapsed('grid_longitude',
+                                                  iris.analysis.MAX)
+
+        np.testing.assert_array_equal(cube.coord('surface_altitude').points,
+                                      np.array([102, 108, 114, 120, 126]))
+
+        np.testing.assert_array_equal(cube.coord('surface_altitude').bounds,
+                                      np.array([[100, 105],
+                                                [106, 111],
+                                                [112, 117],
+                                                [118, 123],
+                                                [124, 129]]))
 
 
 class TestAggregator_mdtol_keyword(tests.IrisTest):

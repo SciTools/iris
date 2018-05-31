@@ -31,6 +31,7 @@ import iris
 from iris.coords import DimCoord, AuxCoord, Coord
 from iris.tests import mock
 from iris.exceptions import UnitConversionError
+from iris.tests.unit.coords import CoordTestMixin
 
 
 Pair = collections.namedtuple('Pair', 'points bounds')
@@ -232,7 +233,7 @@ class Test_cell(tests.IrisTest):
                                      mock.sentinel.upper))])
 
 
-class Test_collapsed(tests.IrisTest):
+class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
     def test_serialize(self):
         # Collapse a string AuxCoord, causing it to be serialised.
@@ -277,19 +278,58 @@ class Test_collapsed(tests.IrisTest):
                                   [[coord.bounds.min(), coord.bounds.max()]])
 
     def test_numeric_nd(self):
-        # Contiguous only defined for 2d bounds.
-        coord = AuxCoord(points=np.array([3, 6, 9]),
-                         bounds=np.array([[1, 2, 4, 5],
+        coord = AuxCoord(points=np.array([[1, 2, 4, 5],
                                           [4, 5, 7, 8],
                                           [7, 8, 10, 11]]))
-        with self.assertRaises(ValueError):
-            coord.collapsed()
 
-    def test_collapsed_overflow(self):
-        coord = DimCoord(points=np.array([1493892000, 1493895600, 1493899200],
-                                         dtype=np.int32))
-        result = coord.collapsed()
-        self.assertEqual(result.points, 1493895600)
+        collapsed_coord = coord.collapsed()
+        self.assertArrayEqual(collapsed_coord.points, np.array([6]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[1, 11]]))
+
+        # Test partially collapsing one dimension...
+        collapsed_coord = coord.collapsed(1)
+        self.assertArrayEqual(collapsed_coord.points, np.array([3.,  6.,  9.]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[1,  5],
+                                                                [4,  8],
+                                                                [7, 11]]))
+
+        # ... and the other
+        collapsed_coord = coord.collapsed(0)
+        self.assertArrayEqual(collapsed_coord.points, np.array([4,  5,  7, 8]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[1,  7],
+                                                                [2,  8],
+                                                                [4, 10],
+                                                                [5, 11]]))
+
+    def test_lazy_nd_bounds(self):
+        import dask.array as da
+
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
+
+        collapsed_coord = coord.collapsed()
+
+        # Note that the new points get recalculated from the lazy bounds
+        #  and so end up as lazy
+        self.assertTrue(collapsed_coord.has_lazy_points())
+        self.assertTrue(collapsed_coord.has_lazy_bounds())
+
+        self.assertArrayEqual(collapsed_coord.points, np.array([55]))
+        self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
+
+    def test_lazy_nd_points_and_bounds(self):
+        import dask.array as da
+
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy)
+
+        collapsed_coord = coord.collapsed()
+
+        self.assertTrue(collapsed_coord.has_lazy_points())
+        self.assertTrue(collapsed_coord.has_lazy_bounds())
+
+        self.assertArrayEqual(collapsed_coord.points, da.array([55]))
+        self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
 
 
 class Test_is_compatible(tests.IrisTest):
