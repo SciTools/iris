@@ -1866,6 +1866,19 @@ class Saver(object):
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
 
+                # albers conical equal area
+                elif isinstance(cs,
+                                iris.coord_systems.AlbersEqualArea):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_central_meridian = (
+                        cs.longitude_of_central_meridian)
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin)
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.standard_parallel = (cs.standard_parallels)
+
                 # other
                 else:
                     warnings.warn('Unable to represent the horizontal '

@@ -34,7 +34,8 @@ import iris
 from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
                                 LambertConformal, Mercator, Stereographic,
-                                LambertAzimuthalEqualArea)
+                                LambertAzimuthalEqualArea,
+                                AlbersEqualArea)
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
@@ -779,6 +780,26 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                     'longitude_of_projection_origin': 10,
                     'false_easting': 100,
                     'false_northing': 200,
+                    'semi_major_axis': 6377563.396,
+                    'semi_minor_axis': 6356256.909,
+                    'longitude_of_prime_meridian': 0,
+                    }
+        self._test(coord_system, expected)
+
+    def test_aea_cs(self):
+        coord_system = AlbersEqualArea(
+            latitude_of_projection_origin=52,
+            longitude_of_central_meridian=10,
+            false_easting=100,
+            false_northing=200,
+            standard_parallels=(38, 50),
+            ellipsoid=GeogCS(6377563.396, 6356256.909))
+        expected = {'grid_mapping_name': b'albers_conical_equal_area',
+                    'latitude_of_projection_origin': 52,
+                    'longitude_of_central_meridian': 10,
+                    'false_easting': 100,
+                    'false_northing': 200,
+                    'standard_parallel': (38, 50),
                     'semi_major_axis': 6377563.396,
                     'semi_minor_axis': 6356256.909,
                     'longitude_of_prime_meridian': 0,
