@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://scitools.org.uk/iris/docs/latest/" style="display: block; margin: 0 auto;">
-   <img src="https://raw.githubusercontent.com/pelson/iris/markdown_readme/docs/iris/src/_static/logo_banner.png"
+   <img src="https://raw.githubusercontent.com/SciTools/iris/master/docs/iris/src/_static/logo_banner.png"
         style="max-width: 40%;" alt="Iris"></a><br>
 </h1>
 
@@ -58,7 +58,7 @@ representations become unwieldy and inefficient.
 [units](https://github.com/SciTools/cf_units), and coordinate metadata
 are built-in to Iris, giving you a rich and expressive interface for maintaining
 an accurate representation of your data. Its first-class treatment of data and
-associated metadata, includes:
+associated metadata includes:
 
   * aggregations and reductions (min, max, (area-)weighted mean, etc.)
   * interpolation and regridding (nearest-neighbor, linear, area-weighted, etc.)
