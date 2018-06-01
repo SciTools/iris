@@ -132,9 +132,9 @@ This cube has a "hybrid-height" vertical coordinate system, meaning that the ver
 coordinate is unevenly spaced in altitude:
 
    >>> print(column.coord('altitude').points)
-   [  418.69836426   434.57049561   456.79278564   485.3664856    520.29327393
-      561.57519531   609.21447754   663.21411133   723.57696533   790.30664062
-      863.40722656   942.88232422  1028.73706055  1120.97644043  1219.60510254]
+   [ 418.69836  434.5705   456.7928   485.3665   520.2933   561.5752
+     609.2145   663.2141   723.57697  790.30664  863.4072   942.8823
+    1028.737   1120.9764  1219.6051 ]
 
 We could regularise the vertical coordinate by defining 10 equally spaced altitude
 sample points between 400 and 1250 and interpolating our vertical coordinate onto
@@ -177,8 +177,8 @@ For example, to mask values that lie beyond the range of the original data:
    >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
    >>> new_column = column.interpolate(sample_points, scheme)
    >>> print(new_column.coord('altitude').points)
-   [           nan   494.44451904   588.88891602   683.33325195   777.77783203
-      872.222229     966.66674805  1061.11108398  1155.55541992            nan]
+   [       nan  494.44452  588.8889   683.33325  777.77783  872.2222
+     966.66675 1061.1111  1155.5554         nan]
 
 
 .. _caching_an_interpolator:

@@ -5,7 +5,7 @@
 #conda: esmpy>=7.0  (only python=2)
 #gdal : under review -- not tested at present
 mo_pack
-nc_time_axis
+nc-time-axis  # conda: nc_time_axis
 pandas
 stratify  #conda: python-stratify
 pyugrid

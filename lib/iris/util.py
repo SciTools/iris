@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -936,16 +936,26 @@ def format_array(arr):
     For customisations, use the :mod:`numpy.core.arrayprint` directly.
 
     """
-    if arr.size > 85:
-        summary_insert = "..., "
-    else:
-        summary_insert = ""
+
+    summary_insert = ""
+    summary_threshold = 85
+    edge_items = 3
     ffunc = str
-    return np.core.arrayprint._formatArray(arr, ffunc, len(arr.shape),
-                                           max_line_len=50,
-                                           next_line_prefix='\t\t',
-                                           separator=', ', edge_items=3,
-                                           summary_insert=summary_insert)[:-1]
+    formatArray = np.core.arrayprint._formatArray
+    max_line_len = 50
+    legacy = '1.13'
+    if arr.size > summary_threshold:
+        summary_insert = '...'
+    options = np.get_printoptions()
+    options['legacy'] = legacy
+    np.set_printoptions(**options)
+    result = formatArray(arr, ffunc, max_line_len,
+                         next_line_prefix='\t\t', separator=', ',
+                         edge_items=edge_items,
+                         summary_insert=summary_insert,
+                         legacy=legacy)
+
+    return result
 
 
 def new_axis(src_cube, scalar_coord=None):

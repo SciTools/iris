@@ -1,0 +1,2 @@
+* Added ``repr_html`` functionality to the :class:`~iris.cube.Cube` to provide
+  a rich html representation of cubes in Jupyter notebooks.

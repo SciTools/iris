@@ -35,23 +35,24 @@ import shutil
 import sys
 import warnings
 
-from PIL import Image
-import filelock
-import imagehash
-import matplotlib.pyplot as plt
-import matplotlib.image as mimg
-import matplotlib.testing.compare as mcompare
-from matplotlib.testing.exceptions import ImageComparisonFailure
-import matplotlib.widgets as mwidget
-import numpy as np
-import requests
-
 # Force iris.tests to use the ```tkagg``` backend by using the '-d'
 # command-line argument as idiff is an interactive tool that requires a
 # gui interface.
 sys.argv.append('-d')
-import iris.tests
-import iris.util as iutil
+import iris.tests  # noqa
+
+from PIL import Image  # noqa
+import filelock  # noqa
+import imagehash  # noqa
+import matplotlib.pyplot as plt  # noqa
+import matplotlib.image as mimg  # noqa
+import matplotlib.testing.compare as mcompare  # noqa
+from matplotlib.testing.exceptions import ImageComparisonFailure  # noqa
+import matplotlib.widgets as mwidget  # noqa
+import numpy as np  # noqa
+import requests  # noqa
+
+import iris.util as iutil  # noqa
 
 
 _POSTFIX_DIFF = '-failed-diff.png'
@@ -246,7 +247,7 @@ def step_over_diffs(result_dir, action, display=True):
                     if isinstance(e,  ValueError) or \
                             isinstance(e, ImageComparisonFailure):
                         print('Could not compare {}: {}'.format(result_fname,
-                                                                e.message))
+                                                                e))
                         continue
                     else:
                         # Propagate the exception, keeping the stack trace

@@ -150,14 +150,14 @@ For example:
     >>> # Show grid details and first 5 longitude values.
     >>> print(' '.join(str(_) for _ in (field.lbcode, field.lbnpt, field.bzx,
     ...                                 field.bdx)))
-    1 96 -3.75 3.75
+    1 96 -3.749999 3.749999
     >>> print(field.bzx + field.bdx * np.arange(1, 6))
-    [  0.     3.75   7.5   11.25  15.  ]
+    [ 0.    3.75  7.5  11.25 15.  ]
     >>> 
     >>> # Show Iris equivalent information.
     ... cube = iris.load_cube(fname)
     >>> print(cube.coord('longitude').points[:5])
-    [  0.     3.75   7.5   11.25  15.  ]
+    [ 0.    3.75  7.5  11.25 15.  ]
 
 .. note::
     Note that in Iris (as in CF) there is no special distinction between

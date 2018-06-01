@@ -104,8 +104,7 @@ def main():
         # Add the first subplot showing the E1 scenario
         plt.subplot(121)
         plt.title('HadGEM2 E1 Scenario',  fontsize=10)
-        iplt.contourf(delta_e1, levels, colors=colors, linewidth=0,
-                      extend='both')
+        iplt.contourf(delta_e1, levels, colors=colors, extend='both')
         plt.gca().coastlines()
         # get the current axes' subplot for use later on
         plt1_ax = plt.gca()
@@ -114,7 +113,7 @@ def main():
         plt.subplot(122)
         plt.title('HadGEM2 A1B-Image Scenario',  fontsize=10)
         contour_result = iplt.contourf(delta_a1b, levels, colors=colors,
-                                       linewidth=0, extend='both')
+                                       extend='both')
         plt.gca().coastlines()
         # get the current axes' subplot for use later on
         plt2_ax = plt.gca()

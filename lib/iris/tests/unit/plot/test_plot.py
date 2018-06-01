@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -47,11 +47,11 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 
     def test_yaxis_labels(self):
         iplt.plot(self.cube, self.cube.coord('str_coord'))
-        self.assertPointsTickLabels('yaxis')
+        self.assertBoundsTickLabels('yaxis')
 
     def test_xaxis_labels(self):
         iplt.plot(self.cube.coord('str_coord'), self.cube)
-        self.assertPointsTickLabels('xaxis')
+        self.assertBoundsTickLabels('xaxis')
 
     def test_yaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -59,7 +59,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax = fig.add_subplot(111)
         iplt.plot(self.cube, self.cube.coord('str_coord'), axes=ax)
         plt.close(fig)
-        self.assertPointsTickLabels('yaxis', ax)
+        self.assertBoundsTickLabels('yaxis', ax)
 
     def test_xaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -67,7 +67,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax = fig.add_subplot(111)
         iplt.plot(self.cube.coord('str_coord'), self.cube, axes=ax)
         plt.close(fig)
-        self.assertPointsTickLabels('xaxis', ax)
+        self.assertBoundsTickLabels('xaxis', ax)
 
     def test_plot_longitude(self):
         import matplotlib.pyplot as plt

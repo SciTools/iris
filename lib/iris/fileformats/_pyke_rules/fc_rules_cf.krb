@@ -176,6 +176,25 @@ fc_provides_grid_mapping_lambert_azimuthal_equal_area
         facts_cf.provides(coordinate_system, lambert_azimuthal_equal_area)
         python engine.rule_triggered.add(rule.name)
 
+#
+# Context:
+#   This rule will trigger iff a grid_mapping() case specific fact
+#   has been asserted that refers to a albers conical equal area.
+#
+# Purpose:
+#   Creates the albers conical equal area coordinate system.
+#
+fc_provides_grid_mapping_albers_equal_area
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_ALBERS)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = build_albers_equal_area_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, albers_equal_area)
+        python engine.rule_triggered.add(rule.name)
+
 
 #
 # Context:
@@ -767,6 +786,45 @@ fc_build_coordinate_projection_y_lambert_azimuthal_equal_area
     foreach
         facts_cf.provides(coordinate, projection_y_coordinate, $coordinate)
         facts_cf.provides(coordinate_system, lambert_azimuthal_equal_area)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_Y,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#   This rule will trigger iff a projection_x_coordinate coordinate exists and
+#   a albers conical equal area coordinate system exists.
+#
+# Purpose:
+#   Add the projection_x_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_x_albers_equal_area
+    foreach
+        facts_cf.provides(coordinate, projection_x_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, albers_equal_area)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_X,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a projection_y_coordinate coordinate exists and
+#   a albers conical equal area coordinate system exists.
+#
+# Purpose:
+#   Add the projection_y_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_y_albers_equal_area
+    foreach
+        facts_cf.provides(coordinate, projection_y_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, albers_equal_area)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
@@ -1387,6 +1445,37 @@ fc_extras
 
         return cs
 
+    ################################################################################
+    def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
+        """
+        Create a albers conical equal area coordinate system from the CF-netCDF
+        grid mapping variable.
+
+        """
+        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+
+        latitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
+        longitude_of_central_meridian = getattr(
+            cf_grid_var, CF_ATTR_GRID_LON_OF_CENT_MERIDIAN, None)
+        false_easting = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+        false_northing = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+        standard_parallels = getattr(
+            cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
+
+        ellipsoid = None
+        if major is not None or minor is not None or \
+                inverse_flattening is not None:
+            ellipsoid = iris.coord_systems.GeogCS(major, minor,
+                                                  inverse_flattening)
+
+        cs = iris.coord_systems.AlbersEqualArea(
+            latitude_of_projection_origin, longitude_of_central_meridian,
+            false_easting, false_northing, standard_parallels, ellipsoid)
+
+        return cs
 
     ################################################################################
     def get_attr_units(cf_var, attributes):

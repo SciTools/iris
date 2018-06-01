@@ -2103,6 +2103,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return "<iris 'Cube' of %s>" % self.summary(shorten=True,
                                                     name_padding=1)
 
+    def _repr_html_(self):
+        from iris.experimental.representation import CubeRepresentation
+        representer = CubeRepresentation(self)
+        return representer.repr_html()
+
     def __iter__(self):
         raise TypeError('Cube is not iterable')
 
@@ -3155,22 +3160,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
-
-        .. _partially_collapse_multi-dim_coord:
-
-        .. note::
-            You cannot partially collapse a multi-dimensional coordinate. Doing
-            so would result in a partial collapse of the multi-dimensional
-            coordinate. Instead you must either:
-                 * collapse in a single operation all cube axes that the
-                   multi-dimensional coordinate spans,
-                 * remove the multi-dimensional coordinate from the cube before
-                   performing the collapse operation, or
-                 * not collapse the coordinate at all.
-
-            Multi-dimensional derived coordinates will not prevent a successful
-            collapse operation.
-
         """
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
@@ -3684,7 +3673,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, \
 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
             >>> print(cube.coord('time').points)
-            [ 349618.  349619.  349620.]
+            [349618. 349619. 349620.]
             >>> samples = [('time', 349618.5)]
             >>> result = cube.interpolate(samples, iris.analysis.Linear())
             >>> print(result.summary(shorten=True))
@@ -3694,7 +3683,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
             >>> print(result.coord('time').points)
-            [ 349618.5]
+            [349618.5]
             >>> # For datetime-like coordinates, we can also use
             >>> # datetime-like objects.
             >>> samples = [('time', datetime.datetime(2009, 11, 19, 10, 30))]
@@ -3706,7 +3695,7 @@ calendar='gregorian')
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
             >>> print(result2.coord('time').points)
-            [ 349618.5]
+            [349618.5]
             >>> print(result == result2)
             True
 
