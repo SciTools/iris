@@ -16,7 +16,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xd4e7a32f" dtype="int32" shape="(3, 3, 3)"/>
+    <data checksum="0xd4e7a32f" dtype="int32" mask_checksum="no-masked-elements" shape="(3, 3, 3)"/>
   </cube>
   <cube dtype="int32" standard_name="eastward_wind" units="m s-1" var_name="wind2">
     <attributes>
@@ -34,7 +34,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xd4e7a32f" dtype="int32" shape="(3, 3, 3)"/>
+    <data checksum="0xd4e7a32f" dtype="int32" mask_checksum="no-masked-elements" shape="(3, 3, 3)"/>
   </cube>
   <cube dtype="int32" standard_name="eastward_wind" units="m s-1" var_name="wind3">
     <attributes>
