@@ -1,2 +1,6 @@
 linters:
     flake8:
+
+files:
+    ignore:
+        - 'lib/iris/fileformats/um_cf_map.py'
