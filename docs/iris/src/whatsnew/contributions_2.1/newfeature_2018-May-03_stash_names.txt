@@ -1,3 +1,0 @@
-* Updated :func:`iris.cube.Cube.name` to return a STASH code if the cube has
-  one and no other valid names are present. This is now consistent with the
-  summary information.

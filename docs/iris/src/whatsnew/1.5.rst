@@ -67,7 +67,7 @@ Iris 1.5 features
       plt.gca().gridlines()
       plt.show()
   
-  .. image:: pics/transverse_merc.png
+  .. image:: images/transverse_merc.png
 
 * Support for loading NAME files (gridded and trajectory data).
 * Multi-dimensional coordinate support added for
