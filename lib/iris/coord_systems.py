@@ -831,7 +831,9 @@ class Mercator(CoordSystem):
 
     grid_mapping_name = "mercator"
 
-    def __init__(self, longitude_of_projection_origin=0, ellipsoid=None):
+    def __init__(self, longitude_of_projection_origin=0.0, ellipsoid=None,
+                 min_latitude=-80.0, max_latitude=84.0,
+                 true_scale_lat=0.0):
         """
         Constructs a Mercator coord system.
 
@@ -840,17 +842,33 @@ class Mercator(CoordSystem):
                     True longitude of planar origin in degrees.
             * ellipsoid
                     :class:`GeogCS` defining the ellipsoid.
+            * min_latitude
+                    the maximum southerly extent of the projection.
+                    Defaults to -80 degrees.
+            * max_latitude
+                    the maximum northerly extent of the projection.
+                    Defaults to 84 degrees.
+            * true_scale_lat
+                    the latitude where the scale is 1. Defaults to 0 degrees.
 
         """
-
-        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = longitude_of_projection_origin
-        #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
+        self.min_latitude = min_latitude
+        self.max_latitude = max_latitude
+        self.true_scale_lat = true_scale_lat
 
     def __repr__(self):
-        res = "Mercator(longitude_of_projection_origin={!r}, ellipsoid={!r})"
-        return res.format(self.longitude_of_projection_origin, self.ellipsoid)
+        res = ("Mercator(longitude_of_projection_origin={!r}, "
+               "ellipsoid={!r}, "
+               "min_latitude={!r}, "
+               "max_latitude={!r}, "
+               "true_scale_lat={!r})")
+        return res.format(self.longitude_of_projection_origin,
+                          self.ellipsoid,
+                          self.min_latitude,
+                          self.max_latitude,
+                          self.true_scale_lat)
 
     def as_cartopy_crs(self):
         if self.ellipsoid is not None:
@@ -860,7 +878,10 @@ class Mercator(CoordSystem):
 
         return ccrs.Mercator(
             central_longitude=self.longitude_of_projection_origin,
-            globe=globe)
+            globe=globe,
+            min_latitude=self.min_latitude,
+            max_latitude=self.max_latitude,
+            latitude_true_scale=self.true_scale_lat)
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
