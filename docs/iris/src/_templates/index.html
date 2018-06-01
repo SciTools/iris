@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 {% set title = 'Iris documentation homepage' %}
 {% block extrahead %}
+{{ super() }}
 
-<script type="text/javascript" src="_static/jquery.cycle.all.latest.js"></script>
-<script type="text/javascript" src="_static/random_image.js"></script>
+<script type="text/javascript" src="{{ pathto("_static/jquery.cycle.all.latest.js", 1) }}"></script>
+<script type="text/javascript" src="{{ pathto("_static/random_image.js", 1) }}"></script>
 
 <style type="text/css">
 #slideshow { width: 400px; }
@@ -12,6 +13,15 @@
 #sliderNav div { display: inline-block; height: 8px; width: 8px; margin: 0 2px;
   border: #ccc medium solid; border-radius: 50%; box-shadow: 0 0 2px 0 #ccc;}
 #sliderNav div.activeSlide { border-color: #777; background-color: #ccc; }
+
+
+.bodywrapper {
+    width: 100%;
+}
+.sphinxsidebarwrapper {
+    display: none
+}
+
 </style>
 
 <script type="text/javascript">
