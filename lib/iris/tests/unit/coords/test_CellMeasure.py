@@ -120,14 +120,14 @@ class Tests(tests.IrisTest):
         self.assertEqual(self.measure._repr_other_metadata(), expected)
 
     def test__str__(self):
-        expected = ("CellMeasure(array([ 10.,  12.,  16.,   9.]), "
+        expected = ("CellMeasure(array([10., 12., 16.,  9.]), "
                     "measure=area, standard_name='cell_area', "
                     "units=Unit('m^2'), long_name='measured_area', "
                     "var_name='area', attributes={'notes': '1m accuracy'})")
         self.assertEqual(self.measure.__str__(), expected)
 
     def test__repr__(self):
-        expected = ("CellMeasure(array([ 10.,  12.,  16.,   9.]), "
+        expected = ("CellMeasure(array([10., 12., 16.,  9.]), "
                     "measure=area, standard_name='cell_area', "
                     "units=Unit('m^2'), long_name='measured_area', "
                     "var_name='area', attributes={'notes': '1m accuracy'})")

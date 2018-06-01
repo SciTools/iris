@@ -25,6 +25,7 @@ import six
 
 import abc
 import collections
+from contextlib import contextmanager
 import copy
 import functools
 import inspect
@@ -948,14 +949,32 @@ def format_array(arr):
         summary_insert = '...'
     options = np.get_printoptions()
     options['legacy'] = legacy
-    np.set_printoptions(**options)
-    result = formatArray(arr, ffunc, max_line_len,
-                         next_line_prefix='\t\t', separator=', ',
-                         edge_items=edge_items,
-                         summary_insert=summary_insert,
-                         legacy=legacy)
+    with _printopts_context(**options):
+        result = formatArray(
+            arr, ffunc, max_line_len,
+            next_line_prefix='\t\t', separator=', ',
+            edge_items=edge_items,
+            summary_insert=summary_insert,
+            legacy=legacy)
 
     return result
+
+
+@contextmanager
+def _printopts_context(**kwargs):
+    """
+    Update the numpy printoptions for the life of this context manager.
+
+    Note: this function can be removed with numpy>=1.15 thanks to
+          https://github.com/numpy/numpy/pull/10406
+
+    """
+    original_opts = np.get_printoptions()
+    np.set_printoptions(**kwargs)
+    try:
+        yield
+    finally:
+        np.set_printoptions(**original_opts)
 
 
 def new_axis(src_cube, scalar_coord=None):
