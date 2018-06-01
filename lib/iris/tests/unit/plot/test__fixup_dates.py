@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ import iris.tests as tests
 
 from cf_units import Unit
 import datetime
-import netcdftime
+import cftime
 
 from iris.coords import AuxCoord
 from iris.plot import _fixup_dates
@@ -59,9 +59,9 @@ class Test(tests.IrisTest):
         unit = Unit('days since 2000-02-25 00:00:00', calendar='360_day')
         coord = AuxCoord([3, 4, 5], 'time', units=unit)
         result = _fixup_dates(coord, coord.points)
-        expected_datetimes = [netcdftime.datetime(2000, 2, 28),
-                              netcdftime.datetime(2000, 2, 29),
-                              netcdftime.datetime(2000, 2, 30)]
+        expected_datetimes = [cftime.datetime(2000, 2, 28),
+                              cftime.datetime(2000, 2, 29),
+                              cftime.datetime(2000, 2, 30)]
         self.assertArrayEqual([cdt.datetime for cdt in result],
                               expected_datetimes)
 
@@ -70,9 +70,9 @@ class Test(tests.IrisTest):
         unit = Unit('minutes since 2000-02-25 00:00:00', calendar='365_day')
         coord = AuxCoord([30, 60, 150], 'time', units=unit)
         result = _fixup_dates(coord, coord.points)
-        expected_datetimes = [netcdftime.datetime(2000, 2, 25, 0, 30),
-                              netcdftime.datetime(2000, 2, 25, 1, 0),
-                              netcdftime.datetime(2000, 2, 25, 2, 30)]
+        expected_datetimes = [cftime.datetime(2000, 2, 25, 0, 30),
+                              cftime.datetime(2000, 2, 25, 1, 0),
+                              cftime.datetime(2000, 2, 25, 2, 30)]
         self.assertArrayEqual([cdt.datetime for cdt in result],
                               expected_datetimes)
 

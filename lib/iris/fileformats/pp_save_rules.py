@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,7 +32,7 @@ from iris.fileformats.rules import (aux_factory,
                                     scalar_coord,
                                     vector_coord)
 from iris.util import is_regular, regular_step
-import netcdftime
+import cftime
 
 
 def _basic_coord_system_rules(cube, pp):
@@ -129,7 +129,7 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ia = 0
         pp.lbtim.ib = 0
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
-        pp.t2 = netcdftime.datetime(0, 0, 0)
+        pp.t2 = cftime.datetime(0, 0, 0)
 
     # Forecast.
     if (time_coord is not None and
@@ -252,10 +252,10 @@ def _general_time_rules(cube, pp):
         pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
         pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
         if pp.t1.month == 12:
-            pp.t1 = netcdftime.datetime(pp.t1.year)
+            pp.t1 = cftime.datetime(pp.t1.year)
         else:
-            pp.t1 = netcdftime.datetime(pp.t1.year-1, 12, 1, 0, 0, 0)
-        pp.t2 = netcdftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)
+            pp.t1 = cftime.datetime(pp.t1.year-1, 12, 1, 0, 0, 0)
+        pp.t2 = cftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)
         _conditional_warning(
             time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
             "modified t1 for climatological seasonal mean")
@@ -278,8 +278,8 @@ def _general_time_rules(cube, pp):
         # TODO: wut?
         pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
         pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-        pp.t1 = netcdftime.datetime(pp.t1.year, 3, 1, 0, 0, 0)
-        pp.t2 = netcdftime.datetime(pp.t2.year, 6, 1, 0, 0, 0)
+        pp.t1 = cftime.datetime(pp.t1.year, 3, 1, 0, 0, 0)
+        pp.t2 = cftime.datetime(pp.t2.year, 6, 1, 0, 0, 0)
         _conditional_warning(
             time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
             "modified t1 for climatological seasonal mean")
@@ -302,8 +302,8 @@ def _general_time_rules(cube, pp):
         # TODO: wut?
         pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
         pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-        pp.t1 = netcdftime.datetime(pp.t1.year, 6, 1, 0, 0, 0)
-        pp.t2 = netcdftime.datetime(pp.t2.year, 9, 1, 0, 0, 0)
+        pp.t1 = cftime.datetime(pp.t1.year, 6, 1, 0, 0, 0)
+        pp.t2 = cftime.datetime(pp.t2.year, 9, 1, 0, 0, 0)
         _conditional_warning(
             time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
             "modified t1 for climatological seasonal mean")
@@ -326,8 +326,8 @@ def _general_time_rules(cube, pp):
         # TODO: wut?
         pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
         pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-        pp.t1 = netcdftime.datetime(pp.t1.year, 9, 1, 0, 0, 0)
-        pp.t2 = netcdftime.datetime(pp.t2.year, 12, 1, 0, 0, 0)
+        pp.t1 = cftime.datetime(pp.t1.year, 9, 1, 0, 0, 0)
+        pp.t2 = cftime.datetime(pp.t2.year, 12, 1, 0, 0, 0)
         _conditional_warning(
             time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
             "modified t1 for climatological seasonal mean")

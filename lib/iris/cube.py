@@ -3640,7 +3640,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             A sequence of (coordinate, points) pairs over which to
             interpolate. The values for coordinates that correspond to
             dates or times may optionally be supplied as datetime.datetime or
-            netcdftime.datetime instances.
+            cftime.datetime instances.
         * scheme:
             The type of interpolation to use to interpolate from this
             :class:`~iris.cube.Cube` to the given sample points. The

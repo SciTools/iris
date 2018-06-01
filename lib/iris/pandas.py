@@ -28,7 +28,7 @@ import datetime
 
 import cf_units
 from cf_units import Unit
-import netcdftime
+import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas
@@ -59,7 +59,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
 
     # Convert datetime objects to Iris' current datetime representation.
     if points.dtype == object:
-        dt_types = (datetime.datetime, netcdftime.datetime)
+        dt_types = (datetime.datetime, cftime.datetime)
         if all([isinstance(i, dt_types) for i in points]):
             units = Unit("hours since epoch", calendar=calendar)
             points = units.date2num(points)

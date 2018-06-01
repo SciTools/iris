@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,7 @@ from iris.time import PartialDateTime
 class Test(tests.IrisTest):
 
     @tests.skip_data
-    def test_netcdftime_interface(self):
+    def test_cftime_interface(self):
         # The `netcdf4` Python module introduced new calendar classes by v1.2.7
         # This test is primarily of this interface, so the
         # final test assertion is simple.

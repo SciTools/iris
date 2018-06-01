@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2017, Met Office
+# (C) British Crown Copyright 2016 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-import netcdftime
+import cftime
 import numpy as np
 
 from iris.coords import AuxCoord
@@ -51,8 +51,8 @@ class Test(tests.GraphicsTest):
         time_unit = Unit('days since 1970-01-01 00:00', calendar=calendar)
         time_coord = AuxCoord(np.arange(n), 'time', units=time_unit)
         times = [time_unit.num2date(point) for point in time_coord.points]
-        times = [netcdftime.datetime(atime.year, atime.month, atime.day,
-                                     atime.hour, atime.minute, atime.second)
+        times = [cftime.datetime(atime.year, atime.month, atime.day,
+                                 atime.hour, atime.minute, atime.second)
                  for atime in times]
         expected_ydata = np.array([CalendarDateTime(time, calendar)
                                    for time in times])

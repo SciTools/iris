@@ -47,7 +47,7 @@ The specified coordinate must exist on the cube being interpolated! For example:
 are all examples of valid sample points.
 
 The values for coordinates that correspond to date/times can be supplied as
-datetime.datetime or netcdftime.datetime instances,
+datetime.datetime or cftime.datetime instances,
 e.g. ``[('time', datetime.datetime(2009, 11, 19, 10, 30))]``).
 
 Let's take the air temperature cube we've seen previously:

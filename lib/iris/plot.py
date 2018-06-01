@@ -37,8 +37,8 @@ import matplotlib.dates as mpl_dates
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.ticker as mpl_ticker
+import cftime
 import matplotlib.transforms as mpl_transforms
-import netcdftime
 import numpy as np
 import numpy.ma as ma
 
@@ -434,7 +434,7 @@ def _fixup_dates(coord, values):
                 raise IrisError(msg)
 
             r = [nc_time_axis.CalendarDateTime(
-                 netcdftime.datetime(*date), coord.units.calendar)
+                 cftime.datetime(*date), coord.units.calendar)
                  for date in dates]
         values = np.empty(len(r), dtype=object)
         values[:] = r

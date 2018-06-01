@@ -32,7 +32,7 @@ import operator
 import warnings
 import zlib
 
-import netcdftime
+import cftime
 import numpy as np
 import numpy.ma as ma
 
@@ -267,13 +267,13 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                                    operator.ge, operator.le):
             raise ValueError("Unexpected operator_method")
 
-        # Prevent silent errors resulting from missing netcdftime
+        # Prevent silent errors resulting from missing cftime
         # behaviour.
-        if (isinstance(other, netcdftime.datetime) or
-                (isinstance(self.point, netcdftime.datetime) and
+        if (isinstance(other, cftime.datetime) or
+                (isinstance(self.point, cftime.datetime) and
                  not isinstance(other, iris.time.PartialDateTime))):
             raise TypeError('Cannot determine the order of '
-                            'netcdftime.datetime objects')
+                            'cftime.datetime objects')
 
         if isinstance(other, Cell):
             # Cell vs Cell comparison for providing a strict sort order
@@ -336,7 +336,7 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                 else:
                     me = max(self.bound)
 
-            # Work around to handle netcdftime.datetime comparison, which
+            # Work around to handle cftime.datetime comparison, which
             # doesn't return NotImplemented on failure in some versions of the
             # library
             try:
@@ -1127,7 +1127,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             If `iris.FUTURE.cell_datetime_objects` is True, then this
             method will return Cell objects whose `points` and `bounds`
             attributes contain either datetime.datetime instances or
-            netcdftime.datetime instances (depending on the calendar).
+            cftime.datetime instances (depending on the calendar).
 
         .. deprecated:: 2.0.0
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from iris._lazy_data import as_lazy_data
-from netcdftime import datetime
+from cftime import datetime
 import numpy as np
 
 from iris.fileformats.um._fast_load_structured_fields import FieldCollation

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import cf_units
-import netcdftime
+import cftime
 import numpy as np
 
 from iris.fileformats.um._fast_load \
@@ -78,8 +78,8 @@ class Test(tests.IrisTest):
     def test_all_scalar(self):
         field = self._field()
         field.lbtim = 11
-        field.t1 = netcdftime.datetime(1970, 1, 1, 18)
-        field.t2 = netcdftime.datetime(1970, 1, 1, 12)
+        field.t1 = cftime.datetime(1970, 1, 1, 18)
+        field.t2 = cftime.datetime(1970, 1, 1, 12)
         collation = mock.Mock(fields=[field], vector_dims_shape=(),
                               element_arrays_and_dims={})
         metadata = convert_collation(collation)
@@ -99,10 +99,10 @@ class Test(tests.IrisTest):
     def test_vector_t1(self):
         field = self._field()
         field.lbtim = 11
-        field.t2 = netcdftime.datetime(1970, 1, 1, 12)
-        t1 = ([netcdftime.datetime(1970, 1, 1, 18),
-               netcdftime.datetime(1970, 1, 2, 0),
-               netcdftime.datetime(1970, 1, 2, 6)], [0])
+        field.t2 = cftime.datetime(1970, 1, 1, 12)
+        t1 = ([cftime.datetime(1970, 1, 1, 18),
+               cftime.datetime(1970, 1, 2, 0),
+               cftime.datetime(1970, 1, 2, 6)], [0])
         collation = mock.Mock(fields=[field], vector_dims_shape=(3,),
                               element_arrays_and_dims={'t1': t1})
         metadata = convert_collation(collation)
@@ -125,10 +125,10 @@ class Test(tests.IrisTest):
     def test_vector_t2(self):
         field = self._field()
         field.lbtim = 11
-        field.t1 = netcdftime.datetime(1970, 1, 1, 18)
-        t2 = ([netcdftime.datetime(1970, 1, 1, 12),
-               netcdftime.datetime(1970, 1, 1, 15),
-               netcdftime.datetime(1970, 1, 1, 18)], [0])
+        field.t1 = cftime.datetime(1970, 1, 1, 18)
+        t2 = ([cftime.datetime(1970, 1, 1, 12),
+               cftime.datetime(1970, 1, 1, 15),
+               cftime.datetime(1970, 1, 1, 18)], [0])
         collation = mock.Mock(fields=[field], vector_dims_shape=(3,),
                               element_arrays_and_dims={'t2': t2})
         metadata = convert_collation(collation)
@@ -153,8 +153,8 @@ class Test(tests.IrisTest):
     def test_vector_lbft(self):
         field = self._field()
         field.lbtim = 21
-        field.t1 = netcdftime.datetime(1970, 1, 1, 12)
-        field.t2 = netcdftime.datetime(1970, 1, 1, 18)
+        field.t1 = cftime.datetime(1970, 1, 1, 12)
+        field.t2 = cftime.datetime(1970, 1, 1, 18)
         lbft = ([18, 15, 12], [0])
         collation = mock.Mock(fields=[field], vector_dims_shape=(3,),
                               element_arrays_and_dims={'lbft': lbft})
@@ -179,11 +179,11 @@ class Test(tests.IrisTest):
     def test_vector_t1_and_t2(self):
         field = self._field()
         field.lbtim = 11
-        t1 = ([netcdftime.datetime(1970, 1, 2, 6),
-               netcdftime.datetime(1970, 1, 2, 9),
-               netcdftime.datetime(1970, 1, 2, 12)], [1])
-        t2 = ([netcdftime.datetime(1970, 1, 1, 12),
-               netcdftime.datetime(1970, 1, 2, 0)], [0])
+        t1 = ([cftime.datetime(1970, 1, 2, 6),
+               cftime.datetime(1970, 1, 2, 9),
+               cftime.datetime(1970, 1, 2, 12)], [1])
+        t2 = ([cftime.datetime(1970, 1, 1, 12),
+               cftime.datetime(1970, 1, 2, 0)], [0])
         collation = mock.Mock(fields=[field], vector_dims_shape=(2, 3),
                               element_arrays_and_dims={'t1': t1, 't2': t2})
         metadata = convert_collation(collation)

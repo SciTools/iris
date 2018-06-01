@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import itertools
 
-from netCDF4 import netcdftime
+import cftime
 import numpy as np
 
 from iris._lazy_data import as_lazy_data, multidim_lazy_stack
@@ -217,8 +217,8 @@ class FieldCollation(object):
                 arr_shape = arr.shape[:-1]
                 extra_length = arr.shape[-1]
                 # Flatten out the array apart from the last dimension,
-                # convert to netcdftime objects, then reshape back.
-                arr = np.array([netcdftime.datetime(*args)
+                # convert to cftime objects, then reshape back.
+                arr = np.array([cftime.datetime(*args)
                                 for args in arr.reshape(-1, extra_length)]
                                ).reshape(arr_shape)
                 vector_element_arrays_and_dims[name] = (arr, dims)

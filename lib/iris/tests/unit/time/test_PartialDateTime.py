@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,7 +27,7 @@ import iris.tests as tests
 import datetime
 import operator
 
-import netcdftime
+import cftime
 
 from iris.tests import mock
 from iris.time import PartialDateTime
@@ -189,14 +189,14 @@ class Test___eq__(tests.IrisTest, _Test_operator):
         self.op = operator.eq
         self.expected_value = EQ_EXPECTATIONS
 
-    def test_netcdftime_equal(self):
+    def test_cftime_equal(self):
         pdt = PartialDateTime(month=3, microsecond=2)
-        other = netcdftime.datetime(year=2013, month=3, day=20, second=2)
+        other = cftime.datetime(year=2013, month=3, day=20, second=2)
         self.assertTrue(pdt == other)
 
-    def test_netcdftime_not_equal(self):
+    def test_cftime_not_equal(self):
         pdt = PartialDateTime(month=3, microsecond=2)
-        other = netcdftime.datetime(year=2013, month=4, day=20, second=2)
+        other = cftime.datetime(year=2013, month=4, day=20, second=2)
         self.assertFalse(pdt == other)
 
 
@@ -211,14 +211,14 @@ class Test___gt__(tests.IrisTest, _Test_operator):
         self.op = operator.gt
         self.expected_value = GT_EXPECTATIONS
 
-    def test_netcdftime_greater(self):
+    def test_cftime_greater(self):
         pdt = PartialDateTime(month=3, microsecond=2)
-        other = netcdftime.datetime(year=2013, month=2, day=20, second=3)
+        other = cftime.datetime(year=2013, month=2, day=20, second=3)
         self.assertTrue(pdt > other)
 
-    def test_netcdftime_not_greater(self):
+    def test_cftime_not_greater(self):
         pdt = PartialDateTime(month=3, microsecond=2)
-        other = netcdftime.datetime(year=2013, month=3, day=20, second=3)
+        other = cftime.datetime(year=2013, month=3, day=20, second=3)
         self.assertFalse(pdt > other)
 
 

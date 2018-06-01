@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -2181,7 +2181,7 @@ class Linear(object):
 
             The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
-            netcdftime.datetime instances.
+            cftime.datetime instances.
 
             For example, for the callable returned by:
             `Linear().interpolator(cube, ['latitude', 'longitude'])`,
@@ -2364,7 +2364,7 @@ class Nearest(object):
 
             The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
-            netcdftime.datetime instances.
+            cftime.datetime instances.
 
             For example, for the callable returned by:
             `Nearest().interpolator(cube, ['latitude', 'longitude'])`,

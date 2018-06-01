@@ -1,0 +1,2 @@
+Iris updated its time-handling functionality from the netcdf4-python builtin netcdftime to the standalone module cftime.
+cftime is entirely compatible with netcdftime.
