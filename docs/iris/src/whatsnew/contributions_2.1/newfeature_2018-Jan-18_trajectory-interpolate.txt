@@ -1,1 +1,0 @@
-* Added :meth:`iris.analysis.trajectory.interpolate` that allows you interpolate to find values along a trajectory.

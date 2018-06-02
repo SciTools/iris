@@ -1,3 +1,0 @@
-* Added new function :func:`iris.cube.CubeList.realise_data` to compute
-  multiple lazy values in a single operation, avoiding repeated re-loading of
-  data or re-calculation of expressions.
