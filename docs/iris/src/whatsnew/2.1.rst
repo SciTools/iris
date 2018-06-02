@@ -13,8 +13,8 @@ Iris 2.1 Dependency updates
 
 * The `cf_units <https://github.com/SciTools/cf_units>`_ dependency
   was updated to cf_units ``v2.0``.
-  cf_units v2 is almost entirely backwards compatible with v1, however the
-  ability to preserve some aliased calendars has been removed.
+  cf_units v2 is almost entirely backwards compatible with v1.
+  However the ability to preserve some aliased calendars has been removed.
   For this reason, it is possible that NetCDF load of a variable with a
   "standard" calendar will result in a saved NetCDF of a "gregorian"
   calendar.
@@ -26,7 +26,7 @@ Iris 2.1 Dependency updates
   occur where users are constructing their own datetime objects.
   In this situation, simply replacing ``netcdftime.datetime`` with
   ``cftime.datetime`` should be sufficient.
-* Iris now requires version 2 of matplotlib, and ``>=1.14`` of numpy.
+* Iris now requires version 2 of Matplotlib, and ``>=1.14`` of NumPy.
   Full requirements can be seen in the `requirements <https://github.com/SciTools/iris/>`_
   directory of the Iris' the source.
 
@@ -50,7 +50,7 @@ Iris 2.1 Features
   :meth:`iris.coords.Coord.convert_units` no longer forcibly realise the cube
   data or coordinate points/bounds. The converted values are now lazy arrays
   if the originals were.
-* Added :meth:`iris.analysis.trajectory.interpolate` that allows you
+* Added :meth:`iris.analysis.trajectory.interpolate` that allows you to
   interpolate to find values along a trajectory.
 * It is now possible to add an attribute of ``missing_value`` to a cube.
   https://github.com/SciTools/iris/issues/1588
