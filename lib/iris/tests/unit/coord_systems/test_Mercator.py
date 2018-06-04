@@ -39,8 +39,7 @@ class Test_Mercator__basics(tests.IrisTest):
         expected = ("Mercator(longitude_of_projection_origin=90.0, "
                     "ellipsoid=GeogCS(semi_major_axis=6377563.396, "
                     "semi_minor_axis=6356256.909), "
-                    "min_latitude=-80.0, max_latitude=84.0, "
-                    "true_scale_lat=0.0)")
+                    "scale_factor_at_projection_origin=0.0)")
         self.assertEqual(expected, repr(self.tm))
 
 
@@ -57,7 +56,6 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         # Check that a projection with non-default values is correctly
         # converted to a cartopy CRS.
         longitude_of_projection_origin = 90.0
-        min_lat = -75.0
         true_scale_lat = 14.0
         ellipsoid = GeogCS(semi_major_axis=6377563.396,
                            semi_minor_axis=6356256.909)
@@ -65,14 +63,12 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         merc_cs = Mercator(
             longitude_of_projection_origin,
             ellipsoid=ellipsoid,
-            min_latitude=min_lat,
-            true_scale_lat=true_scale_lat)
+            scale_factor_at_projection_origin=true_scale_lat)
 
         expected = ccrs.Mercator(
             central_longitude=longitude_of_projection_origin,
             globe=ccrs.Globe(semimajor_axis=6377563.396,
                              semiminor_axis=6356256.909, ellipse=None),
-            min_latitude=min_lat,
             latitude_true_scale=true_scale_lat)
 
         res = merc_cs.as_cartopy_crs()
@@ -90,7 +86,6 @@ class Test_as_cartopy_projection(tests.IrisTest):
 
     def test_extra_kwargs(self):
         longitude_of_projection_origin = 90.0
-        max_lat = 80.0
         true_scale_lat = 14.0
         ellipsoid = GeogCS(semi_major_axis=6377563.396,
                            semi_minor_axis=6356256.909)
@@ -98,14 +93,12 @@ class Test_as_cartopy_projection(tests.IrisTest):
         merc_cs = Mercator(
             longitude_of_projection_origin,
             ellipsoid=ellipsoid,
-            max_latitude=max_lat,
-            true_scale_lat=true_scale_lat)
+            scale_factor_at_projection_origin=true_scale_lat)
 
         expected = ccrs.Mercator(
             central_longitude=longitude_of_projection_origin,
             globe=ccrs.Globe(semimajor_axis=6377563.396,
                              semiminor_axis=6356256.909, ellipse=None),
-            max_latitude=max_lat,
             latitude_true_scale=true_scale_lat)
 
         res = merc_cs.as_cartopy_projection()
