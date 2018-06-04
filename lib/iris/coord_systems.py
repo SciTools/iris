@@ -845,8 +845,11 @@ class Mercator(CoordSystem):
                     the latitude where the scale is 1. Defaults to 0 degrees.
 
         """
+        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = longitude_of_projection_origin
+        #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
+        #: The latitude where the scale is 1 (defaults to 0 degrees).
         self.scale_factor_at_projection_origin = \
             scale_factor_at_projection_origin
 
