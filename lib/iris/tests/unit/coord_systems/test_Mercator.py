@@ -39,7 +39,7 @@ class Test_Mercator__basics(tests.IrisTest):
         expected = ("Mercator(longitude_of_projection_origin=90.0, "
                     "ellipsoid=GeogCS(semi_major_axis=6377563.396, "
                     "semi_minor_axis=6356256.909), "
-                    "scale_factor_at_projection_origin=0.0)")
+                    "standard_parallel=0.0)")
         self.assertEqual(expected, repr(self.tm))
 
 
@@ -63,7 +63,7 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         merc_cs = Mercator(
             longitude_of_projection_origin,
             ellipsoid=ellipsoid,
-            scale_factor_at_projection_origin=true_scale_lat)
+            standard_parallel=true_scale_lat)
 
         expected = ccrs.Mercator(
             central_longitude=longitude_of_projection_origin,
@@ -93,7 +93,7 @@ class Test_as_cartopy_projection(tests.IrisTest):
         merc_cs = Mercator(
             longitude_of_projection_origin,
             ellipsoid=ellipsoid,
-            scale_factor_at_projection_origin=true_scale_lat)
+            standard_parallel=true_scale_lat)
 
         expected = ccrs.Mercator(
             central_longitude=longitude_of_projection_origin,

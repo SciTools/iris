@@ -58,7 +58,7 @@ Iris 2.1 Features
   and the NetCDF loader and saver were updated to handle this.
   https://github.com/SciTools/iris/issues/2943
 * The :class:`~iris.coord_systems.Mercator` projection has been updated to accept
-  the ``scale_factor_at_projection_origin`` keyword argument.
+  the ``standard_parallel`` keyword argument.
 
 Bugs Fixed
 ==========
