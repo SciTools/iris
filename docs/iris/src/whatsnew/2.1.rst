@@ -57,6 +57,8 @@ Iris 2.1 Features
 * Iris can now represent data on the Albers Equal Area Projection,
   and the NetCDF loader and saver were updated to handle this.
   https://github.com/SciTools/iris/issues/2943
+* The :class:`~iris.coord_systems.Mercator` projection has been updated to accept
+  the ``standard_parallel`` keyword argument.
 
 Bugs Fixed
 ==========

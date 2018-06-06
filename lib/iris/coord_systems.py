@@ -831,7 +831,8 @@ class Mercator(CoordSystem):
 
     grid_mapping_name = "mercator"
 
-    def __init__(self, longitude_of_projection_origin=0, ellipsoid=None):
+    def __init__(self, longitude_of_projection_origin=0.0, ellipsoid=None,
+                 standard_parallel=0.0):
         """
         Constructs a Mercator coord system.
 
@@ -840,17 +841,23 @@ class Mercator(CoordSystem):
                     True longitude of planar origin in degrees.
             * ellipsoid
                     :class:`GeogCS` defining the ellipsoid.
+            * standard_parallel
+                    the latitude where the scale is 1. Defaults to 0 degrees.
 
         """
-
         #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = longitude_of_projection_origin
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
+        #: The latitude where the scale is 1 (defaults to 0 degrees).
+        self.standard_parallel = standard_parallel
 
     def __repr__(self):
-        res = "Mercator(longitude_of_projection_origin={!r}, ellipsoid={!r})"
-        return res.format(self.longitude_of_projection_origin, self.ellipsoid)
+        res = ("Mercator(longitude_of_projection_origin="
+               "{self.longitude_of_projection_origin!r}, "
+               "ellipsoid={self.ellipsoid!r}, "
+               "standard_parallel={self.standard_parallel!r})")
+        return res.format(self=self)
 
     def as_cartopy_crs(self):
         if self.ellipsoid is not None:
@@ -860,7 +867,8 @@ class Mercator(CoordSystem):
 
         return ccrs.Mercator(
             central_longitude=self.longitude_of_projection_origin,
-            globe=globe)
+            globe=globe,
+            latitude_true_scale=self.standard_parallel)
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
