@@ -52,24 +52,25 @@ Iris 2.1 Features
   if the originals were.
 * Added :meth:`iris.analysis.trajectory.interpolate` that allows you to
   interpolate to find values along a trajectory.
-* It is now possible to add an attribute of ``missing_value`` to a cube.
-  https://github.com/SciTools/iris/issues/1588
+* It is now possible to add an attribute of ``missing_value`` to a cube
+  (:issue:`1588`).
 * Iris can now represent data on the Albers Equal Area Projection,
-  and the NetCDF loader and saver were updated to handle this.
-  https://github.com/SciTools/iris/issues/2943
+  and the NetCDF loader and saver were updated to handle this. (:issue:`2943`)
 * The :class:`~iris.coord_systems.Mercator` projection has been updated to accept
-  the ``standard_parallel`` keyword argument.
+  the ``standard_parallel`` keyword argument (:pull:`3041`).
 
 Bugs Fixed
 ==========
 
 * All var names being written to NetCDF are now CF compliant.
   Non alpha-numeric characters are replaced with '_', and var names now always
-  have a leading letter. https://github.com/SciTools/iris/pull/2930
+  have a leading letter (:pull:`2930`).
 * A cube resulting from a regrid operation using the `iris.analysis.AreaWeighted`
   regridding scheme will now have the smallest floating point data type
   to which the source cube's data type can be safely converted using NumPy's
   type promotion rules.
+* :mod:`iris.quickplot` labels now honour the axes being drawn to when using the
+  ``axes`` keyword (:pull:`3010`).
 
 Incompatible Changes
 ====================

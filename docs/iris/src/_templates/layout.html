@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
     <script type="text/javascript" src="http://docs.python.org/2/_static/copybutton.js"></script>
 
-    <!-- Nice fonts... -->
-    <link href="https://fonts.googleapis.com/css?family=Alike" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ pathto('_static/favicon-32x32.png', 1) }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ pathto('_static/favicon-16x16.png', 1) }}">
+
+    <link href="https://fonts.googleapis.com/css?family=Alike|Noto+Sans" rel="stylesheet">
 {% endblock %}
 
 
@@ -23,49 +25,24 @@
 
 {% block relbar1 %}
 
-
-
-
-<style>
-.github-img {
-  position: absolute;
-  top: 0;
-  right: 80px;
-  border: 0;
-}
-
-/* Take into account the resizing effect of the page (which has a minimum */
-/* width of 740px + 80px margins). */
-@media screen and (max-width: calc(740px + 80px + 80px)) {
-  .github-img {
-    right: calc(100% - 740px - 80px);
-  }
-}
-
-@media screen and (max-width: calc(740px + 80px)) {
-  .github-img {
-    left: calc(740px + 80px - 149px);
-    right: 0px;
-  }
-}
-</style>
-<a href="https://github.com/you">
-    <img class="github-img" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
+<a href="https://github.com/SciTools/iris">
+    <img class="github-forkme" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+         alt="Fork Iris on GitHub" />
 </a>
 
 
-<div style="background-color: white; text-align: left; padding: 0px; height: 149px;">
+<div class="header-content">
     <a href="{{ pathto("index") }}">
-        <img src="{{ pathto("_static/Iris7_1_trim_100.png", 1) }}" border="0" style="height: 100px; vertical-align: middle; float: left; margin: 20px 2em 0.8em 4%; padding: 0px;" alt="Logo" />
+        <img src="{{ pathto("_static/Iris7_1_trim_100.png", 1) }}" alt="Iris logo" />
     </a>
-    <div style="display: inline-block; width: calc(100% - 110px - 2em - 4%);">
-      <h1 style="font-size: 3.5rem; font-family: 'Alike', serif; margin-top: 40px; padding: 0px; color: #323232; padding-bottom: 0.2em;">
-          Iris <span style="font-size: 1.5rem;">v2.1</span>
+    <div class="strapline">
+      <h1>
+          Iris <span class="version">v2.1</span>
       </h1>
-      <h4 style="padding: 0px; max-width: 60ch; margin-top: 0px; margin-bottom: 0px;">
-         a powerful, easy to use, community-driven Python library for analysing and
-         visualising Earth science data
-      </h4>
+      <p>
+         A powerful, format-agnostic, and community-driven Python library for analysing and
+         visualising Earth science data.
+      </p>
     </div>
 </div>
 
@@ -90,5 +67,5 @@
     </div>
 
     <!-- Include a version switcher to easily move between the documentation of different versions -->
-    <script type=text/javascript src=/iris/docs/version_switch.js></script>
+    <script type=text/javascript src="/iris/docs/version_switch.js" async></script>
 {% endblock %}

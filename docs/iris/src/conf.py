@@ -56,12 +56,13 @@ _authors = ('Iris developers')
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.coverage',
-              'sphinx.ext.imgmath',
               'sphinx.ext.autosummary',
-              'sphinx.ext.graphviz',
-              'sphinx.ext.intersphinx',
+              'sphinx.ext.coverage',
               'sphinx.ext.doctest',
+              'sphinx.ext.extlinks',
+              'sphinx.ext.graphviz',
+              'sphinx.ext.imgmath',
+              'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
@@ -163,6 +164,12 @@ intersphinx_mapping = {
     'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
 }
 
+# -- Extlinks extension -------------------------------------------------------
+
+extlinks = {'issue': ('https://github.com/SciTools/iris/issues/%s',
+                      'Issue #'),
+            'pull': ('https://github.com/SciTools/iris/pull/%s', 'PR #'),
+            }
 
 # -- Doctest ------------------------------------------------------------------
 
