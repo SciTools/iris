@@ -50,32 +50,32 @@
 # Overview
 
 Iris implements a data model based on the [CF conventions](http://cfconventions.org/)
-giving you a powerful, format-agnostic, interface for working with your data.
+giving you a powerful, format-agnostic interface for working with your data.
 It excels when working with multi-dimensional Earth Science data, where tabular
 representations become unwieldy and inefficient.
 
 [CF Standard names](http://cfconventions.org/standard-names.html),
 [units](https://github.com/SciTools/cf_units), and coordinate metadata
-are built-in to Iris, giving you a rich and expressive interface for maintaining
-an accurate representation of your data. Its first-class treatment of data and
-associated metadata includes:
+are built into Iris, giving you a rich and expressive interface for maintaining
+an accurate representation of your data. Its treatment of data and
+  associated metadata as first-class objects includes:
 
-  * aggregations and reductions (min, max, (area-)weighted mean, etc.)
-  * interpolation and regridding (nearest-neighbor, linear, area-weighted, etc.)
-  * operator overloads (``+``, ``-``, ``*``, ``/``, etc.)
-  * merge and concatenate
-  * subsetting and extraction
-  * unit conversion
   * a visualisation interface based on [matplotlib](https://matplotlib.org/) and
-    [cartopy](https://scitools.org.uk/cartopy/docs/latest/)
+    [cartopy](https://scitools.org.uk/cartopy/docs/latest/),
+  * unit conversion,
+  * subsetting and extraction,
+  * merge and concatenate,
+  * aggregations and reductions (including min, max, mean and weighted averages),
+  * interpolation and regridding (including nearest-neighbor, linear and area-weighted), and
+  * operator overloads (``+``, ``-``, ``*``, ``/``, etc.)
 
 A number of file formats are recognised by Iris, including CF-compliant NetCDF, GRIB,
 and PP, and it has a plugin architecture to allow other formats to be added seamlessly.
 
-Building upon [numpy](http://www.numpy.org/) and [dask](https://dask.pydata.org/en/latest/),
+Building upon [NumPy](http://www.numpy.org/) and [dask](https://dask.pydata.org/en/latest/),
 Iris scales from efficient single-machine workflows right through to multi-core clusters and HPC.
-Interoperability with packages from the wider scientific python ecosystem comes from Iris'
-use of standard numpy/dask arrays as its underlying data storage.
+Interoperability with packages from the wider scientific Python ecosystem comes from Iris'
+use of standard NumPy/dask arrays as its underlying data storage.
 
 
 # Documentation

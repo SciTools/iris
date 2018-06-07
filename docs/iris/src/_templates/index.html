@@ -68,38 +68,38 @@ $(document).bind('keypress', function(e) {
 
 <p>
   Iris implements a data model based on the <a href="http://cfconventions.org/">CF conventions</a>
-  giving you a powerful, format-agnostic, interface for working with your data.
+  giving you a powerful, format-agnostic interface for working with your data.
   It excels when working with multi-dimensional Earth Science data, where tabular
   representations become unwieldy and inefficient.
 </p>
 <p>
   <a href="http://cfconventions.org/standard-names.html">CF Standard names</a>,
   <a href="https://github.com/SciTools/cf_units">units</a>, and coordinate metadata
-  are built-in to Iris, giving you a rich and expressive interface for maintaining
-  an accurate representation of your data. Its first-class treatment of data and
-  associated metadata includes:
+  are built into Iris, giving you a rich and expressive interface for maintaining
+  an accurate representation of your data. Its treatment of data and
+  associated metadata as first-class objects includes:
 </p>
 <ul>
-  <li>aggregations and reductions (min, max, (area-)weighted mean, etc.)</li>
-  <li>interpolation and regridding (nearest-neighbor, linear, area-weighted, etc.)</li>
-  <li>operator overloads (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, etc.)</li>
-  <li>merge and concatenate</li>
-  <li>subsetting and extraction</li>
-  <li>unit conversion</li>
   <li>a visualisation interface based on <a href="https://matplotlib.org/">matplotlib</a> and
-    <a href="https://scitools.org.uk/cartopy/docs/latest/">cartopy</a></li>
+    <a href="https://scitools.org.uk/cartopy/docs/latest/">cartopy</a>,</li>
+  <li>unit conversion,</li>
+  <li>subsetting and extraction,</li>
+  <li>merge and concatenate,</li>
+  <li>aggregations and reductions (including min, max, mean and weighted averages),</li>
+  <li>interpolation and regridding (including nearest-neighbor, linear and area-weighted), and</li>
+  <li>operator overloads (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, etc.).</li>
 </ul>
 <p>
   A number of file formats are recognised by Iris, including CF-compliant NetCDF, GRIB,
   and PP, and it has a plugin architecture to allow other formats to be added seamlessly.
 </p>
 <p>
-  Building upon <a href="http://www.numpy.org/">numpy</a> and
+  Building upon <a href="http://www.numpy.org/">NumPy</a> and
   <a href="https://dask.pydata.org/en/latest/">dask</a>,
   Iris scales from efficient single-machine workflows right through to multi-core
   clusters and HPC.
-  Interoperability with packages from the wider scientific python ecosystem comes from Iris'
-  use of standard numpy/dask arrays as its underlying data storage.
+  Interoperability with packages from the wider scientific Python ecosystem comes from Iris'
+  use of standard NumPy/dask arrays as its underlying data storage.
 </p>
 
 <div style="float:right; padding-top: 50px; padding-right: 10px;">
