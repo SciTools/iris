@@ -166,9 +166,7 @@ intersphinx_mapping = {
 
 # -- Extlinks extension -------------------------------------------------------
 
-extlinks = {'issues': ('https://github.com/SciTools/iris/labels/%s',
-                       'issues labeled with '),
-            'issue': ('https://github.com/SciTools/iris/issues/%s',
+extlinks = {'issue': ('https://github.com/SciTools/iris/issues/%s',
                       'Issue #'),
             'pull': ('https://github.com/SciTools/iris/pull/%s', 'PR #'),
             }
