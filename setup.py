@@ -239,7 +239,7 @@ setup(
     url='http://scitools.org.uk/iris/',
     author='UK Met Office',
     author_email='scitools-iris-dev@googlegroups.com',
-    description="A powerful, format-agnostic, and community-driven Python "
+    description="A powerful, format-agnostic, community-driven Python "
                 "library for analysing and visualising Earth science data",
     long_description=description,
     long_description_content_type='text/markdown',
