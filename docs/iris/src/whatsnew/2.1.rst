@@ -34,7 +34,8 @@ Iris 2.1 Features
 =================
 
 * Added ``repr_html`` functionality to the :class:`~iris.cube.Cube` to provide
-  a rich html representation of cubes in Jupyter notebooks.
+  a rich html representation of cubes in Jupyter notebooks. Existing functionality
+  of ``print(cube)`` is maintained.
 
   .. image:: images/notebook_repr.png
 
