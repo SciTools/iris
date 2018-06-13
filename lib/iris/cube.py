@@ -1285,6 +1285,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
             :class:`iris.aux_factory.AuxCoordFactory`
             or :class:`iris.coords.CoordDefn`.
+
+            (c) a callable which takes a coordinate as its only argument,
+            and returns whether the coordinate should be returned (True for
+            returned or False for not returned).
         * standard_name
             The CF standard name of the desired coordinate. If None, does not
             check for standard name.
@@ -1322,9 +1326,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         name = None
         coord = None
+        callback = None
 
         if isinstance(name_or_coord, six.string_types):
             name = name_or_coord
+        elif callable(name_or_coord):
+            callback = name_or_coord
         else:
             coord = name_or_coord
 
@@ -1336,6 +1343,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if dim_coords in [False, None]:
             coords_and_factories += list(self.aux_coords)
             coords_and_factories += list(self.aux_factories)
+
+        if callback is not None:
+            coords_and_factories = [coord_ for coord_ in coords_and_factories
+                                    if callback(coord_)]
 
         if name is not None:
             coords_and_factories = [coord_ for coord_ in coords_and_factories

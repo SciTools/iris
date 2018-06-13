@@ -374,7 +374,12 @@ def _grid_and_pole_rules(cube, pp):
         The PP field with updated metadata.
 
     """
-    lon_coord = vector_coord(cube, 'longitude')
+    try:
+        lon_coord = cube.coord(
+            lambda coord: coord.name() == 'longitude' and coord.ndim == 1)
+    except iris.exceptions.CoordinateNotFoundError:
+        lon_coord = None
+
     grid_lon_coord = vector_coord(cube, 'grid_longitude')
     lat_coord = vector_coord(cube, 'latitude')
     grid_lat_coord = vector_coord(cube, 'grid_latitude')
