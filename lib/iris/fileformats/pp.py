@@ -245,6 +245,11 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         >>> print(iris.fileformats.pp.STASH(1, 16, 203))
         m01s16i203
 
+    A stash object can be compared directly
+    to its string representation:
+        >>> STASH(model=1, section=0, item=4) == 'm01s0i004'
+        True
+
     """
 
     __slots__ = ()
