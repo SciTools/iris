@@ -148,20 +148,20 @@ Deprecations
 * The :func:`iris.fileformats.pp.as_pairs` and :func:`iris.fileformats.grib.as_pairs` are deprecated.  These are replaced with :func:`iris.fileformats.pp.save_pairs_from_cube` and :func:`iris.fileformats.grib.save_pairs_from_cube`.
 * ``iris.fileformats.pp_packing`` has been deprecated. Please install the separate `mo_pack <https://github.com/SciTools/mo_pack>`_ package instead. This provides the same functionality.
 * Deprecated logging functions (currently used only for rules logging):  
- :data:`iris.config.iris.config.RULE_LOG_DIR`,
- :data:`iris.config.iris.config.RULE_LOG_IGNORE` and
- :data:`iris.fileformats.rules.log`.
+  :data:`iris.config.iris.config.RULE_LOG_DIR`,
+  :data:`iris.config.iris.config.RULE_LOG_IGNORE` and
+  :data:`iris.fileformats.rules.log`.
 
 * Deprecated all the remaining text rules mechanisms:  
- :class:`iris.fileformats.rules.DebugString`,
- :class:`iris.fileformats.rules.CMAttribute`,
- :class:`iris.fileformats.rules.CMCustomAttribute`,
- :class:`iris.fileformats.rules.CoordAndDims`,
- :class:`iris.fileformats.rules.Rule`,
- :class:`iris.fileformats.rules.FunctionRule`,
- :class:`iris.fileformats.rules.ProcedureRule`,
- :class:`iris.fileformats.rules.RulesContainer` and
- :func:`iris.fileformats.rules.calculate_forecast_period`.
+  :class:`iris.fileformats.rules.DebugString`,
+  :class:`iris.fileformats.rules.CMAttribute`,
+  :class:`iris.fileformats.rules.CMCustomAttribute`,
+  :class:`iris.fileformats.rules.CoordAndDims`,
+  :class:`iris.fileformats.rules.Rule`,
+  :class:`iris.fileformats.rules.FunctionRule`,
+  :class:`iris.fileformats.rules.ProcedureRule`,
+  :class:`iris.fileformats.rules.RulesContainer` and
+  :func:`iris.fileformats.rules.calculate_forecast_period`.
 
 * Deprecated the custom pp save rules mechanism implemented by the functions :func:`iris.fileformats.pp.add_save_rules` and :func:`iris.fileformats.pp.reset_save_rules`. The functions :func:`iris.fileformats.pp.as_fields`, :func:`iris.fileformats.pp.as_pairs` and :func:`iris.fileformats.pp.save_fields` provide alternative means of achieving the same ends.
 
