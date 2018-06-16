@@ -75,29 +75,29 @@ If you notice that a graphics test in the Iris testing suite has failed
 following changes in Iris or any of its dependencies, this is the process
 you now need to follow:
 
-1. Create a directory in iris/lib/iris/tests called 'result_image_comparison'.
-2. From your Iris root directory, run the tests by using the command: 
+#. Create a directory in iris/lib/iris/tests called 'result_image_comparison'.
+#. From your Iris root directory, run the tests by using the command: 
    ``python setup.py test``.
-3. Navigate to iris/lib/iris/tests and run the command: ``python idiff.py``.
+#. Navigate to iris/lib/iris/tests and run the command: ``python idiff.py``.
    This will open a window for you to visually inspect the changes to the
    graphic and then either accept or reject the new result.
-4. Upon acceptance of a change or a new image, a copy of the output PNG file
+#. Upon acceptance of a change or a new image, a copy of the output PNG file
    is added to the reference image repository in
    https://github.com/SciTools/test-images-scitools.  The file is named
    according to the image hash value, as ``<hash>.png``.
-5. The hash value of the new result is added into the relevant set of 'valid
+#. The hash value of the new result is added into the relevant set of 'valid
    result hashes' in the image result database file,
    ``tests/results/imagerepo.json``.
-6. The tests must now be re-run, and the 'new' result should be accepted.
+#. The tests must now be re-run, and the 'new' result should be accepted.
    Occasionally there are several graphics checks in a single test, only the
    first of which will be run should it fail.  If this is the case, then you
    may well encounter further graphical test failures in your next runs, and
    you must repeat the process until all the graphical tests pass.
-7. To add your changes to Iris, you need to make two pull requests.  The first
+#. To add your changes to Iris, you need to make two pull requests.  The first
    should be made to the test-images-scitools repository, and this should
    contain all the newly-generated png files copied into the folder named
    'image_files'.
-8. The second pull request should be created in the Iris repository, and should
+#. The second pull request should be created in the Iris repository, and should
    only include the change to the image results database
    (``tests/results/imagerepo.json``) :
    This pull request must contain a reference to the matching one in
