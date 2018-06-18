@@ -96,7 +96,7 @@ The Iris Check List
   * iris-sample-data_ is a github project containing all the data to support
     the gallery and examples.
   * test-images-scitools_ is a github project containing reference plot images
-    to support iris graphics tests : see :ref:`test graphics images`.
+    to support iris graphics tests : see :ref:`developer_graphics_tests`.
 
  * If new files are required by tests or code examples, they must be added to
    the appropriate supporting project via a suitable pull-request.
