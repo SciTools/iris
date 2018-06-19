@@ -864,11 +864,15 @@ def load_NAMEIII_version2(filename):
     """
     Load a NAME III version 2 file returning a
     generator of :class:`iris.cube.Cube` instances.
+
     Args:
+
     * filename (string):
         Name of file to load.
+
     Returns:
         A generator :class:`iris.cube.Cube` instances.
+
     """
 
     # loading a file gives a generator of lines which can be progressed
