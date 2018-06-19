@@ -3645,6 +3645,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The type of interpolation to use to interpolate from this
             :class:`~iris.cube.Cube` to the given sample points. The
             interpolation schemes currently available in Iris are:
+
                 * :class:`iris.analysis.Linear`, and
                 * :class:`iris.analysis.Nearest`.
 
@@ -3717,6 +3718,7 @@ calendar='gregorian')
             The type of regridding to use to regrid this cube onto the
             target grid. The regridding schemes currently available
             in Iris are:
+
                 * :class:`iris.analysis.Linear`,
                 * :class:`iris.analysis.Nearest`, and
                 * :class:`iris.analysis.AreaWeighted`.
