@@ -63,10 +63,12 @@ Iris 1.8 features
 * :func:`iris.cube.CubeList.concatenate` now works with `biggus <https://biggus.readthedocs.io/>`_ arrays and so
   now supports concatenation of cubes with deferred data.
 * Improvements to NetCDF saving through using biggus:
+
  * A cube's lazy data payload will still be lazy after saving; the data will not
    be loaded into memory by the save operation.
  * Cubes with data payloads larger than system memory can now be saved to NetCDF
    through biggus streaming the data to disk.
+
 * :func:`iris.util.demote_dim_coord_to_aux_coord` and :func:`iris.util.promote_aux_coord_to_dim_coord`
   allow a coordinate to be easily demoted or promoted within a cube.
 * :func:`iris.util.squeeze` removes all length 1 dimensions from a cube, and demotes
@@ -96,10 +98,12 @@ Iris 1.8 features
   :class:`~iris.aux_factory.AuxCoordFactory` fails.
 * Supported :class:`aux coordinate factories <iris.aux_factory.AuxCoordFactory>`
   have been extended to include:
+
  * ``ocean sigma coordinate``,
  * ``ocean s coordinate``,
  * ``ocean s coordinate, generic form 1``, and
  * ``ocean s coordinate, generic form 2``.
+
 * :meth:`iris.cube.Cube.intersection` now supports taking a points-only intersection.
   Any bounds on intersected coordinates are ignored but retained.
 * The FF loader's known handled grids now includes ``Grid 21``.

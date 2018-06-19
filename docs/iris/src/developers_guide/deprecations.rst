@@ -31,7 +31,7 @@ Under these circumstances the following points apply:
    :func:`iris._deprecation.warn_deprecated`, which is a
    simple wrapper to :func:`warnings.warn` with the signature
    `warn_deprecation(message, **kwargs)`.
-- Where possible, your deprecation warning should include advice on
+ - Where possible, your deprecation warning should include advice on
    how to avoid using the deprecated API. For example, you might
    reference a preferred API, or more detailed documentation elsewhere.
  - You must update the docstring for the deprecated API to include a
