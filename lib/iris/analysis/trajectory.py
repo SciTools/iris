@@ -70,7 +70,7 @@ class Trajectory(object):
             Trajectory(waypoints)
 
         .. note:: All the waypoint dictionaries must contain the same
-        coordinate names.
+            coordinate names.
 
         Args:
 
