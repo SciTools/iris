@@ -1886,7 +1886,7 @@ def load_pairs_from_fields(pp_fields):
         An iterable of :class:`iris.fileformats.pp.PPField`.
 
     Returns:
-        An iterable of :class:`iris.cube.Cube`s.
+        An iterable of :class:`iris.cube.Cube`\ s.
 
     This capability can be used to filter out fields before they are passed to
     the load pipeline, and amend the cubes once they are created, using
