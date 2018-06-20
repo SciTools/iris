@@ -305,6 +305,7 @@ For hybrid height levels (LBVC=65):
 
 See an example printout of a hybrid height cube,
 :ref:`here <hybrid_cube_printout>`:
+
     Notice that this contains all of the above coordinates --
     'model_level_number', 'sigma', 'level_height' and the derived 'altitude'.
 
@@ -383,6 +384,7 @@ the values actually present in the source fields for each of the elements.
 
 See an example printout of a forecast data cube,
 :ref:`here <cube-statistics_forecast_printout>` :
+
     Notice that this example contains all of the above coordinates -- 'time',
     'forecast_period' and 'forecast_reference_time'.  In this case the data are
     forecasts, so 'time' is a dimension, 'forecast_period' varies with time and

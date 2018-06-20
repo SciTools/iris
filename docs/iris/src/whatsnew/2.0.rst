@@ -74,8 +74,9 @@ all existing toggles in :attr:`iris.FUTURE` now default to :data:`True`.
  * :attr:`iris.Future.cell_datetime_objects`
 
    * Use of this FUTURE toggle is now deprecated.
-   *  :class:`iris.coords.Cell` objects in time coordinates now contain datetime objects by default and not numbers.
-      For example::
+   * :class:`iris.coords.Cell` objects in time coordinates now contain datetime objects by default and not numbers.
+     For example::
+
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         >>> print(cube.coord('time').cell(0).point)
             1998-12-01 00:00:00
@@ -102,6 +103,7 @@ all existing toggles in :attr:`iris.FUTURE` now default to :data:`True`.
      'UNLIMITED' length.
    * You can manually specify cube dimension coordinates to save with 'UNLIMITED'
      length. For example::
+
        >>> iris.save(my_cube, 'my_result_file.nc', unlimited_dimensions=['latitude'])
 
  * :attr:`iris.Future.clip_latitudes`
@@ -238,6 +240,7 @@ been removed. In particular:
 
 * The deprecated module ``iris.analysis.interpolate`` has been removed, along
   with the following deprecated classes and functions:
+
     * ``iris.analysis.interpolate.linear``
     * ``iris.analysis.interpolate.nearest_neighbour_data_value``
     * ``iris.analysis.interpolate.regrid``

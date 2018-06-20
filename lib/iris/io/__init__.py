@@ -346,11 +346,12 @@ def save(source, target, saver=None, **kwargs):
 
     Kwargs:
 
-        * saver     - Optional. Specifies the save function to use.
+        * saver     - Optional. Specifies the file format to save.
                       If omitted, Iris will attempt to determine the format.
 
-                      This keyword can be used to implement a custom save
-                      format. Function form must be:
+                      If a string, this is the recognised filename extension
+                      (where the actual filename may not have it).
+                      Otherwise the value is a saver function, of the form:
                       ``my_saver(cube, target)`` plus any custom keywords. It
                       is assumed that a saver will accept an ``append`` keyword
                       if it's file format can handle multiple cubes. See also
