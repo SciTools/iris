@@ -130,10 +130,7 @@ def _as_pandas_coord(coord):
 
 def _assert_shared(np_obj, pandas_obj):
     """Ensure the pandas object shares memory."""
-    if hasattr(pandas_obj, 'values'):
-        values = pandas_obj.values
-    else:
-        values = pandas_obj[0].values
+    values = pandas_obj.values
 
     def _get_base(array):
         # Chase the stack of NumPy `base` references back to the original array
