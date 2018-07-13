@@ -231,8 +231,9 @@ class RectilinearRegridder(object):
             data = np.empty(shape, dtype=dtype)
 
         # The interpolation class requires monotonically increasing
-        # coordinates, so flip the coordinate(s) and data if the aren't.
-        reverse_x = src_x_coord.points[0] > src_x_coord.points[1]
+        # coordinates, so flip the coordinate(s) and data if they aren't.
+        reverse_x = (src_x_coord.points[0] > src_x_coord.points[1] if
+                     src_x_coord.points.size > 1 else False)
         reverse_y = src_y_coord.points[0] > src_y_coord.points[1]
         flip_index = [slice(None)] * src_data.ndim
         if reverse_x:
