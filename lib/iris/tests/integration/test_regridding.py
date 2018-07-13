@@ -109,17 +109,7 @@ class TestUnstructured(tests.IrisTest):
         self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.890808, 11.000724)
 
 
-def plot_cube(source):
-    import iris.plot as iplt
-    iplt.plt.switch_backend('TkAgg')
-    iplt.pcolormesh(source)
-    iplt.plt.gca().coastlines()
-    iplt.plt.colorbar(orientation='horizontal')
-    iplt.show()
-
-
-@tests.skip_data
-class TestZonalMean(tests.IrisTest):
+class TestZonalMean_global(tests.IrisTest):
     def setUp(self):
         np.random.seed(0)
         self.src = iris.cube.Cube(np.random.random_integers(0, 10, (140, 1)))
@@ -156,7 +146,13 @@ class TestZonalMean(tests.IrisTest):
                       range(1, res.shape[1])]).max() < 1e-10)
         self.assertArrayAlmostEqual(res.data[:, 0], self.src.data.reshape(-1))
 
-    def test_linear_rotated_regional(self):
+
+class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
+    def setUp(self):
+        super(TestZonalMean_regional, self).setUp()
+
+        # Define a target grid and a target result (what we expect the
+        # regridder to return).
         sx_coord = self.src.coord(axis='x')
         sy_coord = self.src.coord(axis='y')
         grid_crs = iris.coord_systems.RotatedGeogCS(
@@ -171,39 +167,52 @@ class TestZonalMean(tests.IrisTest):
         grid.add_dim_coord(grid_y, 0)
         grid.add_dim_coord(grid_x, 1)
 
-        res = self.src.regrid(grid, iris.analysis.Linear())
+        self.tar = self.zonal_mean_as_multi_column(self.src).regrid(
+            grid, iris.analysis.Linear())
+        self.grid = grid
 
-        res_no_extrapolation = self.src.regrid(
-            grid, iris.analysis.Linear(extrapolation_mode='nan'))
+    def zonal_mean_as_multi_column(self, src_cube):
+        # Munge the source (duplicate source latitudes) so that we can
+        # utilise linear regridding as a conventional problem (that is, to
+        # duplicate columns so that it is no longer a zonal mean problem).
+        src_cube2 = src_cube.copy()
+        src_cube2.coord(axis='x').points = -90
+        src_cube2.coord(axis='x').bounds = [-180, 0]
+        src_cube.coord(axis='x').points = 90
+        src_cube.coord(axis='x').bounds = [0, 180]
+        src_cubes = iris.cube.CubeList([src_cube, src_cube2])
+        return src_cubes.concatenate_cube()
 
+    def test_linear_rotated_regional(self):
+        # Ensure that zonal mean source data is linearly interpolated onto a
+        # high resolution target.  We turn a zonal mean source into a multi
+        # column in order to derive the target values we expect the regridder
+        # to return (munge function below).
+        regridder = iris.analysis.Linear()
+        res = self.src.regrid(self.grid, regridder)
+        self.assertArrayAlmostEqual(res.data, self.tar.data)
+
+    def test_linear_rotated_regional_no_extrapolation(self):
+        regridder = iris.analysis.Linear(extrapolation_mode='nan')
+        res = self.src.regrid(self.grid, regridder)
+        self.assertArrayAlmostEqual(res.data, self.tar.data)
+
+    def test_linear_rotated_regional_not_circular(self):
+        regridder = iris.analysis.Linear()
         self.src.coord(axis='x').circular = False
-        res_non_circular = self.src.regrid(grid, iris.analysis.Linear())
+        res = self.src.regrid(self.grid, regridder)
+        self.assertArrayAlmostEqual(res.data, self.tar.data)
 
-        res_non_circular_no_extrapolation = self.src.regrid(
-            grid, iris.analysis.Linear(extrapolation_mode='nan'))
-
-        def munge(src_cube):
-            # Munge the source (duplicate source latitudes) so that we can
-            # utilise linear regridding in the ordinary case (that is, as
-            # though it was not a zonal mean).
-            src_cube2 = src_cube.copy()
-            src_cube2.coord(axis='x').points = -90
-            src_cube2.coord(axis='x').bounds = [-180, 0]
-            src_cube.coord(axis='x').points = 90
-            src_cube.coord(axis='x').bounds = [0, 180]
-            src_cubes = iris.cube.CubeList([src_cube, src_cube2])
-            return src_cubes.concatenate_cube()
-        tar = munge(self.src).regrid(grid, iris.analysis.Linear())
-
-        self.assertArrayAlmostEqual(res.data, tar.data)
-        self.assertArrayAlmostEqual(res_no_extrapolation.data, tar.data)
-        self.assertArrayAlmostEqual(res_non_circular.data, tar.data)
-
-        # Let's capture the fact that no extrapolation and a non circular
-        # source will not lead to the same results (given that Linear is a
-        # points based approach).
-        self.assertFalse(np.allclose(res_non_circular_no_extrapolation.data,
-                                     tar.data))
+    def test_linear_rotated_regional_no_extrapolation_not_circular(self):
+        # This technically is a test that confirm how zonal mean actually works
+        # in so far as, that extrapolation and circular source handling is the
+        # means by which these usecases are supported.
+        # In the case where the source is neither using extrapolation and is
+        # not circular, then 'nan' values will result.
+        regridder = iris.analysis.Linear(extrapolation_mode='nan')
+        self.src.coord(axis='x').circular = False
+        res = self.src.regrid(self.grid, regridder)
+        self.assertTrue(np.isnan(res.data).all())
 
 
 if __name__ == "__main__":
