@@ -130,18 +130,7 @@ def _as_pandas_coord(coord):
 
 def _assert_shared(np_obj, pandas_obj):
     """Ensure the pandas object shares memory."""
-    if hasattr(pandas_obj, 'base'):
-        base = pandas_obj.base
-    else:
-        base = pandas_obj[0].base
-
-    # Prior to Pandas 0.17, when pandas_obj is a Series, pandas_obj.values
-    # returns a view of the underlying array, and pandas_obj.base, which calls
-    # pandas_obj.values.base, returns the underlying array. In 0.17 and 0.18
-    # pandas_obj.values returns the underlying array, so base may be None even
-    # if the array is shared.
-    if base is None:
-        base = pandas_obj.values
+    values = pandas_obj.values
 
     def _get_base(array):
         # Chase the stack of NumPy `base` references back to the original array
@@ -149,7 +138,7 @@ def _assert_shared(np_obj, pandas_obj):
             array = array.base
         return array
 
-    base = _get_base(base)
+    base = _get_base(values)
     np_base = _get_base(np_obj)
     if base is not np_base:
         msg = ('Pandas {} does not share memory'
