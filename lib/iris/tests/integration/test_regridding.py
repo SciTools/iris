@@ -167,6 +167,9 @@ class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
         grid.add_dim_coord(grid_y, 0)
         grid.add_dim_coord(grid_x, 1)
 
+        # The target result is derived by regridding a multi-column version of
+        # the source to the target (i.e. turning a zonal mean regrid into a
+        # conventional regrid).
         self.tar = self.zonal_mean_as_multi_column(self.src).regrid(
             grid, iris.analysis.Linear())
         self.grid = grid
@@ -185,30 +188,32 @@ class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
 
     def test_linear_rotated_regional(self):
         # Ensure that zonal mean source data is linearly interpolated onto a
-        # high resolution target.  We turn a zonal mean source into a multi
-        # column in order to derive the target values we expect the regridder
-        # to return (munge function below).
+        # high resolution target.
         regridder = iris.analysis.Linear()
         res = self.src.regrid(self.grid, regridder)
         self.assertArrayAlmostEqual(res.data, self.tar.data)
 
     def test_linear_rotated_regional_no_extrapolation(self):
+        # Capture the case where our source remains circular but we don't use
+        # extrapolation.
         regridder = iris.analysis.Linear(extrapolation_mode='nan')
         res = self.src.regrid(self.grid, regridder)
         self.assertArrayAlmostEqual(res.data, self.tar.data)
 
     def test_linear_rotated_regional_not_circular(self):
+        # Capture the case where our source is not circular but we utilise
+        # extrapolation.
         regridder = iris.analysis.Linear()
         self.src.coord(axis='x').circular = False
         res = self.src.regrid(self.grid, regridder)
         self.assertArrayAlmostEqual(res.data, self.tar.data)
 
     def test_linear_rotated_regional_no_extrapolation_not_circular(self):
-        # This technically is a test that confirm how zonal mean actually works
-        # in so far as, that extrapolation and circular source handling is the
-        # means by which these usecases are supported.
+        # Confirm how zonal mean actually works in so far as, that
+        # extrapolation and circular source handling is the means by which
+        # these usecases are supported.
         # In the case where the source is neither using extrapolation and is
-        # not circular, then 'nan' values will result.
+        # not circular, then 'nan' values will result (as we would expect).
         regridder = iris.analysis.Linear(extrapolation_mode='nan')
         self.src.coord(axis='x').circular = False
         res = self.src.regrid(self.grid, regridder)
