@@ -1430,7 +1430,9 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
-        cube = Cube(as_lazy_data(np.array([1, 0])))
+        # Note: multiple chunks added as a workaround suggested to dask#3751,
+        # which is fixed in dask#3754.
+        cube = Cube(as_lazy_data(np.array([1, 0]), chunks=(1, 1)))
         self._check_copy(cube, cube.copy())
 
 
