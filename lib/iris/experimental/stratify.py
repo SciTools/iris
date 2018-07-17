@@ -82,12 +82,12 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     that are generally monotonic in the direction of interpolation, such as
     height/pressure or salinity/depth.
 
-    Parameters
-    ----------
-    cube : :class:`~iris.cube.Cube`
+    Args:
+
+    * cube (`iris.cube.Cube`):
         The phenomenon data to be re-levelled.
 
-    src_levels : :class:`~iris.cube.Cube`, :class:`~iris.coord.Coord` or string
+    * src_levels (`iris.cube.Cube`, `iris.coord.Coord` or string):
         Describes the source levels of the `cube` that will be interpolated
         over. The `src_levels` must be in the same system as the `tgt_levels`.
         The dimensions of `src_levels` must be broadcastable to the dimensions
@@ -95,18 +95,20 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
         Note that, the coordinate name containing the source levels in the
         `cube` may be provided.
 
-    tgt_levels : array-like
+    * tgt_levels (array-like):
         Describes the target levels of the `cube` to be interpolated to. The
         `tgt_levels` must be in the same system as the `src_levels`. The
         dimensions of the `tgt_levels` must be broadcastable to the dimensions
         of the `cube`, except in the nominated axis of interpolation.
 
-    axis : int, :class:`~iris.coords.Coord` or string
+    Kwargs:
+
+    * axis (int, `iris.coords.Coord` or string):
         The axis of interpolation. Defaults to the first dimension of the
         `cube`, which is typically the z-dimension. Note that, the coordinate
         name specifying the z-dimension of the `cube` may be provided.
 
-    interpolator : callable or None
+    * interpolator (callable or None):
         The interpolator to use when computing the interpolation. The function
         will be passed the following positional arguments::
 
@@ -121,6 +123,9 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
             interpolator = partial(stratify.interpolate,
                                    interpolation=stratify.INTERPOLATE_NEAREST,
                                    extrapolation=stratify.EXTRAPOLATE_LINEAR)
+
+    Returns:
+       New cube with data interpolated onto target levels.
 
     """
     # Identify the z-coordinate within the phenomenon cube.
