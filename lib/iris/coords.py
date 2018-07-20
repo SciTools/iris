@@ -951,15 +951,20 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return _CellIterator(self)
 
     def _sanity_check_contiguous(self):
-        if self.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(
-                'Invalid operation for {!r}. Contiguous bounds are not defined'
-                ' for multi-dimensional coordinates.'.format(self.name()))
-        if self.nbounds != 2:
-            raise ValueError(
-                'Invalid operation for {!r}, with {} bounds. Contiguous bounds'
-                ' are only defined for coordinates with 2 bounds.'.format(
+        if self.ndim == 1:
+            if self.nbounds != 2:
+                raise ValueError('Invalid operation for {!r}, with {} bounds. Contiguous bounds'
+                ' are only defined for 1D coordinates with 2 bounds.'.format(
                     self.name(), self.nbounds))
+        elif self.ndim == 2:
+            if self.nbounds != 4:
+                raise ValueError('Invalid operation for {!r}, with {} bounds. Contiguous bounds'
+                ' are only defined for 2D coordinates with 4 bounds.'.format(
+                    self.name(), self.nbounds))
+        else:
+            raise ValueError('Invalid operation for {!r}. Contiguous bounds are not defined'
+                ' for coordinates with more than 2 dimensions.'.format(self.name()))
+
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
         """
@@ -979,15 +984,23 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         if self.has_bounds():
             self._sanity_check_contiguous()
-            return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
+            if self.ndim == 1:
+                return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
                                rtol=rtol, atol=atol)
+            elif self.ndim == 2:
+                # TODO Add handling of 2d coordinates#
+                return None
         else:
             return False
 
     def contiguous_bounds(self):
         """
-        Returns the N+1 bound values for a contiguous bounded coordinate
+        Returns the N+1 bound values for a contiguous bounded 1D coordinate
         of length N.
+        Returns the (N+1, M+1) bound values for a contiguous bounded 2D coordinate
+        of shape (N, M).
+
+        Assumes input is contiguous.
 
         .. note::
 
@@ -1003,9 +1016,69 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             self._sanity_check_contiguous()
             bounds = self.bounds
 
-        c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
-        c_bounds[-1] = bounds[-1, 1]
+        if self.ndim == 1:
+            c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
+            c_bounds[-1] = bounds[-1, 1]
+        elif self.ndim ==2:
+            c_bounds =  self._get_2d_coord_bound_grid(bounds)
         return c_bounds
+
+    @staticmethod
+    def _get_2d_coord_bound_grid(bds):
+        """
+        Function used that takes a bounds array for a 2-D coordinate variable with
+        4 sides and returns the bounds grid.
+
+        Cf standards requires the four vertices of the cell to be traversed
+        anti-clockwise if the coordinates are defined in a right handed coordinate
+        system.
+        # 3-2
+        # | |
+        # 0-1
+
+        selects the zeroth vertex of each cell and then adds the column the first
+        vertex at the end. For the top row it uses the thirs vertex, with the
+        second added on to the end.
+        e.g.
+        # 3-3-3-3-2
+        # 0-0-0-0-1
+        # 0-0-0-0-1
+
+        Args:
+            bounds: array of shape (X,Y,4)
+
+        Returns:
+            array of shape (X+1, Y+1)
+
+        """
+        bds_shape = bds.shape
+        result = np.zeros((bds_shape[0] + 1, bds_shape[1] + 1))
+
+        # Fill with zeroth vertices
+        # ?-?-?-?-?
+        # 0-0-0-0-?
+        # 0-0-0-0-?
+        result[:-1, :-1] = bds[:, :, 0]
+
+        # Fill with first vertices
+        # ?-?-?-?-?
+        # 0-0-0-0-1
+        # 0-0-0-0-1
+        result[:-1, -1] = bds[:, -1, 1]
+
+        # Fill with third vertices
+        # 3-3-3-3-?
+        # 0-0-0-0-1
+        # 0-0-0-0-1
+        result[-1, :-1] = bds[-1, :, 3]
+
+        # Fill with second vertices
+        # 3-3-3-3-2
+        # 0-0-0-0-1
+        # 0-0-0-0-1
+        result[-1, -1] = bds[-1, -1, 2]
+
+        return result
 
     def is_monotonic(self):
         """Return True if, and only if, this Coord is monotonic."""
