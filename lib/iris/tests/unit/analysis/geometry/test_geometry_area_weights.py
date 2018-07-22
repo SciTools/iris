@@ -125,7 +125,8 @@ class Test(tests.IrisTest):
 
     @tests.skip_data
     def test_distinct_xy_bounds_pole(self):
-        # is IrisUserWarning issued for out-of-bounds? results will be unexpected!
+        # is IrisUserWarning issued for out-of-bounds? results will be
+        # unexpected!
         cube = stock.simple_pp()
         cube = cube[:4, :4]
         lon = cube.coord('longitude')

@@ -32,6 +32,7 @@ import os.path
 import shutil
 import stat
 import tempfile
+import warnings
 
 import netCDF4 as nc
 import numpy as np
@@ -47,6 +48,7 @@ import iris.coord_systems as icoord_systems
 from iris.tests import mock
 import iris.tests.stock as stock
 from iris._lazy_data import is_lazy_data
+from iris.exceptions import IrisUserWarning
 
 
 @tests.skip_data
@@ -763,11 +765,16 @@ class TestNetCDFSave(tests.IrisTest):
                        'attribute, but {attr_name!r} should only be a CF ' \
                        'global attribute.'.format(attr_name=attr_name)
         with self.temp_filename(suffix='.nc') as filename:
-            with mock.patch('warnings.warn') as warn:
+            with warnings.catch_warnings(record=True) as warn:
+                warnings.simplefilter('always')
                 iris.save([self.cube, self.cube2], filename)
-                warn.assert_called_with(expected_msg)
-                self.assertCDL(filename,
-                               ('netcdf', 'netcdf_save_confl_global_attr.cdl'))
+                assert len(warn) == 2
+                assert issubclass(warn[-1].category, IrisUserWarning)
+                assert issubclass(warn[-2].category, IrisUserWarning)
+                assert expected_msg == str(warn[-1].message)
+                assert expected_msg == str(warn[-2].message)
+            self.assertCDL(filename,
+                           ('netcdf', 'netcdf_save_confl_global_attr.cdl'))
 
     def test_no_global_attributes(self):
         # Should all be data variable attributes.

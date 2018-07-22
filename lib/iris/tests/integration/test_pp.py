@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,7 @@ import iris.tests as tests
 
 import numpy as np
 import os
+import warnings
 
 from cf_units import Unit
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -37,6 +38,7 @@ from iris.exceptions import IgnoreCubeException
 from iris.tests import mock
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.util
+from iris.exceptions import IrisUserWarning
 
 
 class TestVertical(tests.IrisTest):
@@ -271,10 +273,14 @@ class TestVertical(tests.IrisTest):
                                             pressure_field,
                                             pressure_field]))
         msg = 'Multiple reference cubes for surface_air_pressure'
-        with mock.patch('iris.fileformats.pp.load',
-                        new=load) as load, mock.patch('warnings.warn') as warn:
-            _, _, _ = iris.fileformats.pp.load_cubes('DUMMY')
-            warn.assert_called_with(msg)
+        with mock.patch('iris.fileformats.pp.load', new=load) as load:
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                _, _, _ = iris.fileformats.pp.load_cubes('DUMMY')
+
+                assert len(w) == 1
+                assert issubclass(w[-1].category, IrisUserWarning)
+                assert msg in str(w[-1].message)
 
     def test_hybrid_height_with_non_standard_coords(self):
         # Check the save rules are using the AuxFactory to find the
@@ -378,13 +384,16 @@ class TestVertical(tests.IrisTest):
 
         # Convert field to a cube.
         load = mock.Mock(return_value=iter([data_field]))
-        with mock.patch('iris.fileformats.pp.load', new=load) as load, \
-                mock.patch('warnings.warn') as warn:
-            data_cube, = iris.fileformats.pp.load_cubes('DUMMY')
+        with mock.patch('iris.fileformats.pp.load', new=load) as load:
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                data_cube, = iris.fileformats.pp.load_cubes('DUMMY')
 
-        msg = "Unable to create instance of HybridHeightFactory. " \
-              "The source data contains no field(s) for 'orography'."
-        warn.assert_called_once_with(msg)
+                assert len(w) == 1
+                assert issubclass(w[-1].category, IrisUserWarning)
+                msg = ("Unable to create instance of HybridHeightFactory. "
+                       "The source data contains no field(s) for 'orography'.")
+                assert msg in str(w[-1].message)
 
         # Check the data cube is set up to use hybrid height.
         self._test_coord(data_cube, model_level,

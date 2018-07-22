@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,10 +24,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import collections
+import warnings
 import numpy as np
 
 from iris.fileformats._ff import FFHeader
 from iris.tests import mock
+from iris.exceptions import IrisUserWarning
 
 
 MyGrid = collections.namedtuple('MyGrid', 'column row real horiz_grid_type')
@@ -66,10 +68,14 @@ class Test_grid(tests.IrisTest):
         header = self._header(0)
         with mock.patch('iris.fileformats._ff.NewDynamics',
                         mock.Mock(return_value=mock.sentinel.grid)):
-            with mock.patch('warnings.warn') as warn:
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
                 grid = header.grid()
-        warn.assert_called_with('Staggered grid type: 0 not currently'
-                                ' interpreted, assuming standard C-grid')
+                assert len(w) == 1
+                assert issubclass(w[-1].category, IrisUserWarning)
+                expected_msg = ('Staggered grid type: 0 not currently '
+                                'interpreted, assuming standard C-grid')
+                assert expected_msg in str(w[-1].message)
         self.assertIs(grid, mock.sentinel.grid)
 
 

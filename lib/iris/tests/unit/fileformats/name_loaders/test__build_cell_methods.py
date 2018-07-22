@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,6 +22,8 @@ Unit tests for :func:`iris.fileformats.name_loaders._build_cell_methods`.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+import warnings
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -30,6 +32,7 @@ import iris.tests as tests
 import iris.coords
 from iris.fileformats.name_loaders import _build_cell_methods
 from iris.tests import mock
+from iris.exceptions import IrisUserWarning
 
 
 class Tests(tests.IrisTest):
@@ -94,12 +97,15 @@ class Tests(tests.IrisTest):
                      unrecognised_heading,
                      'something integral']
         coord_name = 'foo'
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
             res = _build_cell_methods(av_or_int, coord_name)
-        expected_msg = 'Unknown {} statistic: {!r}. Unable to ' \
-                       'create cell method.'.format(coord_name,
-                                                    unrecognised_heading)
-        warn.assert_called_with(expected_msg)
+            expected_msg = 'Unknown {} statistic: {!r}. Unable to ' \
+                           'create cell method.'.format(coord_name,
+                                                        unrecognised_heading)
+            assert len(w) == 1
+            assert issubclass(w[-1].category, IrisUserWarning)
+            assert expected_msg in str(w[-1].message)
 
     def test_unrecognised_similar_to_no_averaging(self):
         unrecognised_headings = ['not averaging',
@@ -114,13 +120,15 @@ class Tests(tests.IrisTest):
                          unrecognised_heading,
                          'something integral']
             coord_name = 'foo'
-            with mock.patch('warnings.warn') as warn:
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
                 res = _build_cell_methods(av_or_int, coord_name)
-            expected_msg = 'Unknown {} statistic: {!r}. Unable to ' \
-                           'create cell method.'.format(coord_name,
-                                                        unrecognised_heading)
-            warn.assert_called_with(expected_msg)
-
+                expected_msg = ('Unknown {} statistic: {!r}. Unable to create '
+                                'cell method.').format(coord_name,
+                                                       unrecognised_heading)
+                assert len(w) == 1
+                assert issubclass(w[-1].category, IrisUserWarning)
+                assert expected_msg in str(w[-1].message)
 
 if __name__ == "__main__":
     tests.main()

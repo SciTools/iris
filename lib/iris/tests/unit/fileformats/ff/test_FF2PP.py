@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,7 @@ import contextlib
 import numpy as np
 import warnings
 
-from iris.exceptions import NotYetImplementedError
+from iris.exceptions import IrisUserWarning, NotYetImplementedError
 import iris.fileformats._ff as ff
 import iris.fileformats.pp as pp
 from iris.fileformats._ff import FF2PP
@@ -364,9 +364,12 @@ class Test__det_border(tests.IrisTest):
                'be incorrect, not having taken into account the boundary '
                'size.')
 
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
             result = ff2pp._det_border(field_x, None)
-        warn.assert_called_with(msg)
+            assert len(w) == 1
+            assert issubclass(w[-1].category, IrisUserWarning)
+            assert msg in str(w[-1].message)
         self.assertIs(result, field_x)
 
     def test_increasing_field_values(self):

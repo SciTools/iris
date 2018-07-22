@@ -709,8 +709,8 @@ class FF2PP(object):
                         if subgrid not in HANDLED_GRIDS:
                             msg = ('The stash code {} is on a grid {} which '
                                    'has not been explicitly handled by the '
-                                   'fieldsfile loader. Assuming the data is on '
-                                   'a P grid.').format(stash, subgrid)
+                                   'fieldsfile loader. Assuming the data is '
+                                   'on a P grid.').format(stash, subgrid)
                             warnings.warn(msg, IrisUserWarning)
 
                     field.x, field.y = grid.vectors(subgrid)

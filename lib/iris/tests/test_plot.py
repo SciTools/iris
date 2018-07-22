@@ -33,6 +33,7 @@ import numpy as np
 import iris
 import iris.coords as coords
 import iris.tests.stock
+from iris.exceptions import IrisUserWarning
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:

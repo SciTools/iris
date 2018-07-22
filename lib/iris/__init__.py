@@ -105,6 +105,7 @@ import glob
 import itertools
 import os.path
 import threading
+import warnings
 
 import iris.config
 import iris.cube
@@ -112,6 +113,7 @@ import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.fileformats
 import iris.io
+from iris.exceptions import IrisUserWarning
 
 
 try:
@@ -119,6 +121,7 @@ try:
 except ImportError:
     iris_sample_data = None
 
+warnings.filterwarnings('ignore', category=IrisUserWarning)
 
 # Iris revision.
 __version__ = '2.3.0dev0'

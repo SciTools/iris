@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import warnings
 from itertools import permutations
 
 import numpy as np
@@ -40,7 +41,7 @@ from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord, CellMeasure
 from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
-                             UnitConversionError)
+                             IrisUserWarning, UnitConversionError)
 from iris._lazy_data import as_lazy_data
 from iris.tests import mock
 import iris.tests.stock as stock
@@ -336,15 +337,22 @@ class Test_collapsed__warning(tests.IrisTest):
 
     def _assert_warn_collapse_without_weight(self, coords, warn):
         # Ensure that warning is raised.
-        msg = "Collapsing spatial coordinate {!r} without weighting"
+        _warnings = [(str(w.message), w.category) for w in warn]
+        messages, categories = zip(*_warnings)
+        msg_template = "Collapsing spatial coordinate {!r} without weighting"
         for coord in coords:
-            self.assertIn(mock.call(msg.format(coord)), warn.call_args_list)
+            msg = msg_template.format(coord)
+            self.assertIn(msg, messages)
+            assert issubclass(categories[messages.index(msg)], IrisUserWarning)
 
     def _assert_nowarn_collapse_without_weight(self, coords, warn):
-        # Ensure that warning is not rised.
-        msg = "Collapsing spatial coordinate {!r} without weighting"
+        # Ensure that warning is not raised.
+        _warnings = [(str(w.message), w.category) for w in warn]
+        messages, categories = zip(*_warnings)
+        msg_template = "Collapsing spatial coordinate {!r} without weighting"
         for coord in coords:
-            self.assertNotIn(mock.call(msg.format(coord)), warn.call_args_list)
+            msg = msg_template.format(coord)
+            self.assertNotIn(msg, messages)
 
     def test_lat_lon_noweighted_aggregator(self):
         # Collapse latitude coordinate with unweighted aggregator.
@@ -352,7 +360,8 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator.cell_method = None
         coords = ['latitude', 'longitude']
 
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter('always')
             self.cube.collapsed(coords, aggregator, somekeyword='bla')
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
@@ -363,7 +372,8 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(False)
         coords = ['latitude', 'longitude']
 
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter('always')
             self.cube.collapsed(coords, aggregator)
 
         coords = [coord for coord in coords if 'latitude' in coord]
@@ -376,7 +386,8 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(True)
         coords = ['latitude', 'longitude']
 
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter('always')
             self.cube.collapsed(coords, aggregator, weights=weights)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
@@ -387,7 +398,8 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(False)
         coords = ['grid_latitude', 'grid_longitude']
 
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter('always')
             self.cube.collapsed(coords, aggregator)
 
         coords = [coord for coord in coords if 'latitude' in coord]
@@ -400,7 +412,8 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(False)
         coords = ['wibble']
 
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter('always')
             self.cube.collapsed(coords, aggregator)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)

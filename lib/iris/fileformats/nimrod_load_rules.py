@@ -69,7 +69,7 @@ def units(cube, field):
         cube.units = units
     except ValueError:
         # Just add it as an attribute.
-        msg = "Unhandled units '{0}' recorded in cube attributes.".format(units)
+        msg = "Unhandled units '{}' recorded in cube attributes.".format(units)
         warnings.warn(msg, IrisUserWarning)
         cube.attributes["invalid_units"] = units
 

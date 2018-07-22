@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import _load_aux_factory
 from iris.tests import mock
+from iris.exceptions import IrisUserWarning
 
 
 class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
@@ -124,10 +125,13 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
 
     def test_formula_terms_ap_missing_coords(self):
         self.requires['formula_terms'] = dict(ap='ap', b='b', ps='ps')
-        with mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
             _load_aux_factory(self.engine, self.cube)
-        warn.assert_called_once_with("Unable to find coordinate for variable "
-                                     "'ap'")
+            assert len(w) == 1
+            assert issubclass(w[-1].category, IrisUserWarning)
+            msg = "Unable to find coordinate for variable 'ap'"
+            assert msg in str(w[-1].message)
         self._check_no_delta()
 
     def test_formula_terms_no_delta_terms(self):

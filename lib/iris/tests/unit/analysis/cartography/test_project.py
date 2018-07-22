@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import warnings
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -33,6 +34,7 @@ import iris.tests
 import iris.tests.stock
 
 from iris.analysis.cartography import project
+from iris.exceptions import IrisUserWarning
 
 
 ROBINSON = ccrs.Robinson()
@@ -149,12 +151,15 @@ class TestAll(tests.IrisTest):
         cube = low_res_4d()
         cube.coord('grid_longitude').coord_system = None
         cube.coord('grid_latitude').coord_system = None
-        with iris.tests.mock.patch('warnings.warn') as warn:
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter("always")
             _, _ = project(cube, ROBINSON)
-        warn.assert_called_once_with('Coordinate system of latitude and '
-                                     'longitude coordinates is not specified. '
-                                     'Assuming WGS84 Geodetic.')
-
+            expected_msg = ('Coordinate system of latitude and longitude '
+                            'coordinates is not specified. Assuming WGS84 '
+                            'Geodetic.')
+            assert len(warn) == 1
+            assert issubclass(warn[-1].category, IrisUserWarning)
+            assert expected_msg in str(warn[-1].message)
 
 if __name__ == '__main__':
     tests.main()

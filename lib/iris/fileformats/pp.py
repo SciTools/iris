@@ -1712,7 +1712,8 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 wmsg = ('LBLREC has a different value to the integer recorded '
                         'after the header in the file ({} and {}). '
                         'Skipping the remainder of the file.')
-                wmsg = wmsg.format(pp_field.lblrec * PP_WORD_DEPTH, len_of_data_plus_extra)
+                wmsg = wmsg.format(pp_field.lblrec * PP_WORD_DEPTH,
+                                   len_of_data_plus_extra)
                 warnings.warn(wmsg, IrisUserWarning)
                 break
 

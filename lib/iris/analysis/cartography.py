@@ -522,7 +522,8 @@ def cosine_latitude_weights(cube):
     threshold = np.deg2rad(0.001)  # small value for grid resolution
     if np.any(lat.points < -np.pi / 2. - threshold) or \
             np.any(lat.points > np.pi / 2. + threshold):
-        msg = 'Out of range latitude values will be clipped to the valid range.'
+        msg = ('Out of range latitude values will be clipped to the valid '
+               'range.')
         warnings.warn(msg, IrisUserWarning)
     points = lat.points
     l_weights = np.cos(points).clip(0., 1.)
@@ -614,8 +615,8 @@ def project(cube, target_proj, nx=None, ny=None):
     # Determine source coordinate system
     if lat_coord.coord_system is None:
         # Assume WGS84 latlon if unspecified
-        msg = ('Coordinate system of latitude and longitude coordinates is not '
-               'specified. Assuming WGS84 Geodetic.')
+        msg = ('Coordinate system of latitude and longitude coordinates is '
+               'not specified. Assuming WGS84 Geodetic.')
         warnings.warn(msg, IrisUserWarning)
         orig_cs = iris.coord_systems.GeogCS(semi_major_axis=6378137.0,
                                             inverse_flattening=298.257223563)
