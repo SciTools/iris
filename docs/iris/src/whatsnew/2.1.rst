@@ -78,3 +78,6 @@ Incompatible Changes
 * The deprecated :mod:`iris.experimental.um` was removed.
   Please use consider using `mule <https://github.com/SciTools/mule>`_
   as an alternative.
+* This release of Iris contains a number of updated metadata translations.
+  See [this changelist](https://github.com/SciTools/iris/commit/69597eb3d8501ff16ee3d56aef1f7b8f1c2bb316#diff-1680206bdc5cfaa83e14428f5ba0f848)
+  for further information.
