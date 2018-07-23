@@ -44,6 +44,7 @@
 + [Documentation](#documentation)
 + [Installation](#installation)
 + [Copyright and licence](#copyright-and-licence)
++ [Get in touch](#get-in-touch)
 
 [](TOC)
 
@@ -92,6 +93,13 @@ The easiest way to install Iris is with [conda](https://conda.io/miniconda.html)
 Detailed instructions, including information on installing from source,
 are available in [INSTALL](INSTALL).
 
+# Get in touch
+
+  * Report bugs, or suggest new features using an Issue or Pull Request on [Github](https://github.com/SciTools/iris). You can also comment on existing Issues and Pull Requests.
+  * For discussions from a user perspective you could join our [SciTools User's Google Group](https://groups.google.com/forum/#!forum/scitools-iris).
+  * For those involved in developing Iris we also have a [Google Group](https://groups.google.com/forum/#!forum/scitools-iris-dev).
+  * [Gitter](https://gitter.im/SciTools/iris) ???
+  * [StackOverflow](https://stackoverflow.com/questions/tagged/python-iris) For "How do I?".
 
 # Copyright and licence
 
