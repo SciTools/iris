@@ -113,7 +113,6 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
         raise ValueError('The given coordinates ({}) don\'t span the {} data'
                          ' dimensions.'.format(names(coords), ndims))
 
-    # TODO Check whether transpose is important
     # If we have 2-dimensional data, and one or more 1-dimensional
     # coordinates, check if we need to transpose.
     transpose = False
@@ -124,7 +123,6 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
                     transpose = True
                     break
 
-    # TODO but doesn't this assume they are being given as X-then-Y
     # Note the use of `reversed` to convert from the X-then-Y
     # convention of the end-user API to the V-then-U convention used by
     # the plotting routines.
@@ -188,7 +186,6 @@ def _get_plot_defn(cube, mode, ndims=2):
                 coords = two_dim_coords[:2]
 
     if mode == iris.coords.POINT_MODE:
-        # TODO Handle plotting 2d points from coordinates.
         # Allow multi-dimensional aux_coords to override the dim_coords
         # along the Z axis. This results in a preference for using the
         # derived altitude over model_level_number or level_height.
@@ -205,7 +202,6 @@ def _get_plot_defn(cube, mode, ndims=2):
     # horizontal/vertical associations. If we can't associate
     # an axis to order the coordinates, fall back to using the cube dimension
     # followed by the name of the coordinate.
-    # TODO edit to explain what happens with 2d coords
     def sort_key(coord):
         order = {'X': 2, 'T': 1, 'Y': -1, 'Z': -2}
         axis = guess_axis(coord)
@@ -214,7 +210,6 @@ def _get_plot_defn(cube, mode, ndims=2):
                 coord and coord.name())
     sorted_coords = sorted(coords, key=sort_key)
 
-    # TODO understand transpose
     transpose = (sorted_coords != coords)
     return PlotDefn(sorted_coords, transpose)
 
@@ -274,60 +269,6 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
-def _has_contiguous_2d_bounds(bds, x_wrapped=False, abs_tol=1e4):
-    """
-    Check bounds of a 2dimensional coordinate are contiguous
-    Args:
-        bds:
-        x_wrapped:
-        abs_tol:
-        error_any_mismatch:
-
-    Returns:
-        Diffs???
-
-    """
-    # Check form is (ny, nx, 4)
-    if not bds.ndim == 3 and bds.shape[2] == 4:
-        raise ValueError('Bounds array of 2D coordinate has incorrect shape')
-
-    if x_wrapped:
-        # If provided bounds are supposed to wrap in X, check that too
-        wrapped_bds_shape = np.array(bds.shape)
-        wrapped_bds_shape[1] += 1
-        wrapped_bds = np.zeros(wrapped_bds_shape)
-        # Copy main part
-        wrapped_bds[:, :-1, :] = bds
-        # Fill in extra RHS cell that matches the LHS cell
-        wrapped_bds[:, -1:, :] = bds[:, :1, :]
-        # Replace original with new wrapped bds
-        bds = wrapped_bds
-
-    # Check ordering:
-    #         i    i+1
-    #    j    @0    @1
-    #  j+1    @3    @2
-    def mod360_diff(x1, x2):
-        diff = x1 - x2
-        diff = (diff + 360.0 + 180.0) % 360.0 - 180.0
-        return diff
-
-    # Compare cell with the cell next to it (i+1)
-    diffs_along_x = mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0])
-    # Compare cell with the cell above it (j+1)
-    diffs_along_y = mod360_diff(bds[:-1, :, 3], bds[1:, :, 0])
-
-    def eq_diffs(x1):
-        return np.all(np.abs(x1) < abs_tol)
-
-    match_y0_x1 = eq_diffs(diffs_y0_x1)
-    match_y1_x0 = eq_diffs(diffs_y1_x0)
-
-    all_eq = match_y0_x1 and match_y1_x0
-
-    return all_eq, np.abs(diffs_along_x), np.abs(diffs_along_y)
-
-
 def _check_contiguity_and_bounds(bounds, data, abs_tol=1e4):
     """
     Check that the discontinuous bounds occur where the data is masked.
@@ -344,8 +285,8 @@ def _check_contiguity_and_bounds(bounds, data, abs_tol=1e4):
             tolerance when checking the contiguity
 
     """
-    both_dirs_contiguous, diffs_along_x, diffs_along_y = _has_contiguous_2d_bounds(
-        bounds, x_wrapped=True, abs_tol=abs_tol)
+    both_dirs_contiguous, diffs_along_x, diffs_along_y = iris.coords._discontinuity_in_2d_bounds(
+        bounds, abs_tol=abs_tol)
 
     if not both_dirs_contiguous:
 
@@ -365,7 +306,7 @@ def _check_contiguity_and_bounds(bounds, data, abs_tol=1e4):
 
         # If discontinuity occurs but not masked, any grid will be created
         #  incorrectly, so raise a warning
-        if not_masked_at_discontinuity_along_x and\
+        if not_masked_at_discontinuity_along_x or\
                 not_masked_at_discontinuity_along_y:
             raise ValueError('The bounds of the {} coordinate are not'
                              ' contiguous and data is not masked where the'
@@ -389,11 +330,14 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    # TODO if 2d coords, check contiguousness.
     two_dim_coord_contiguity_atol = kwargs.pop('two_dim_coord_contiguity_atol', 1e4)
     for coord in plot_defn.coords:
         if coord.ndim == 2:
-            _check_contiguity_and_bounds(coord.bounds, data=cube.data, abs_tol=two_dim_coord_contiguity_atol)
+            try:
+                _check_contiguity_and_bounds(coord.bounds, data=cube.data, abs_tol=two_dim_coord_contiguity_atol)
+            except ValueError:
+                if _check_contiguity_and_bounds(coord.bounds.T, data=cube.data, abs_tol=two_dim_coord_contiguity_atol) is True:
+                    plot_defn.transpose = True
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
@@ -401,11 +345,11 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     else:
         # Obtain data array.
         data = cube.data
-        if plot_defn.transpose: # TODO check how 2d coords deal with transpose
+        if plot_defn.transpose:
             data = data.T
 
         # Obtain U and V coordinates
-        v_coord, u_coord = plot_defn.coords # TODO check the order is correct (v and u)
+        v_coord, u_coord = plot_defn.coords
 
         # Track numpy arrays to use for the actual plotting.
         plot_arrays = []
@@ -414,7 +358,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         string_axes = {}
 
         for coord, axis_name, data_dim in zip([u_coord, v_coord],
-                                              ['xaxis', 'yaxis'],
+                                              ['plotxaxis', 'yaxis'],
                                               [1, 0]):
             if coord is None:
                 values = np.arange(data.shape[data_dim] + 1)
@@ -437,7 +381,14 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             plot_arrays.append(values)
 
         u, v = plot_arrays
-        # TODO do we need to check that they're the same dimensionality
+
+
+        # If the data is tranposed, 2D coordinates will also need to be
+        # tranposed.
+        if u.ndim == v.ndim == 2 and plot_defn.transpose is True:
+            u = u.T
+            v = v.T
+
         if u.ndim == v.ndim == 1:
             u, v = _broadcast_2d(u, v)
 

@@ -143,6 +143,84 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
+def _discontinuity_in_2d_bounds(bds, abs_tol=1e4):
+    """
+    Check bounds of a 2-dimensional coordinate are contiguous
+    Args:
+        bds: Array of bounds of shape (X,Y,4)
+        abs_tol: tolerance
+
+    Returns:
+        Bool, if there are no discontinuities
+        absolute difference along the x axis
+        absolute difference along the y axis
+
+    """
+    # Check form is (ny, nx, 4)
+    if not bds.ndim == 3 and bds.shape[2] == 4:
+        raise ValueError('Bounds array of 2D coordinate has incorrect shape')
+
+    # Check ordering:
+    #         i    i+1
+    #    j    @0    @1
+    #  j+1    @3    @2
+    def mod360_diff(x1, x2):
+        diff = x1 - x2
+        diff = (diff + 360.0 + 180.0) % 360.0 - 180.0
+        return diff
+
+    # Compare cell with the cell next to it (i+1)
+    diffs_along_x = mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0])
+    # Compare cell with the cell above it (j+1)
+    diffs_along_y = mod360_diff(bds[:-1, :, 3], bds[1:, :, 0])
+
+    def eq_diffs(x1):
+        return np.all(np.abs(x1) < abs_tol)
+
+    match_y0_x1 = eq_diffs(diffs_along_x)
+    match_y1_x0 = eq_diffs(diffs_along_y)
+
+    all_eq = match_y0_x1 and match_y1_x0
+
+    return all_eq, np.abs(diffs_along_x), np.abs(diffs_along_y)
+
+
+def _get_2d_coord_bound_grid(bds):
+    """
+    Function used that takes a bounds array for a 2-D coordinate variable with
+    4 sides and returns the bounds grid.
+
+    Cf standards requires the four vertices of the cell to be traversed
+    anti-clockwise if the coordinates are defined in a right handed coordinate
+    system.
+
+    selects the zeroth vertex of each cell and then adds the column the first
+    vertex at the end. For the top row it uses the thirs vertex, with the
+    second added on to the end.
+    e.g.
+    # 0-0-0-0-1
+    # 0-0-0-0-1
+    # 3-3-3-3-2
+
+
+    Args:
+        bounds: array of shape (X,Y,4)
+
+    Returns:
+        array of shape (X+1, Y+1)
+
+    """
+    bds_shape = bds.shape
+    result = np.zeros((bds_shape[0] + 1, bds_shape[1] + 1))
+
+    result[:-1, :-1] = bds[:, :, 0]
+    result[:-1, -1] = bds[:, -1, 1]
+    result[-1, :-1] = bds[-1, :, 3]
+    result[-1, -1] = bds[-1, -1, 2]
+
+    return result
+
+
 class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
     """
     An immutable representation of a single cell of a coordinate, including the
@@ -988,8 +1066,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
                                rtol=rtol, atol=atol)
             elif self.ndim == 2:
-                # TODO Add handling of 2d coordinates#
-                return None
+                allclose, _, _ = _discontinuity_in_2d_bounds(self.bounds, abs_tol=atol)
+                return allclose
         else:
             return False
 
@@ -1020,65 +1098,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
             c_bounds[-1] = bounds[-1, 1]
         elif self.ndim ==2:
-            c_bounds =  self._get_2d_coord_bound_grid(bounds)
+            c_bounds =  _get_2d_coord_bound_grid(bounds)
         return c_bounds
-
-    @staticmethod
-    def _get_2d_coord_bound_grid(bds):
-        """
-        Function used that takes a bounds array for a 2-D coordinate variable with
-        4 sides and returns the bounds grid.
-
-        Cf standards requires the four vertices of the cell to be traversed
-        anti-clockwise if the coordinates are defined in a right handed coordinate
-        system.
-        # 3-2
-        # | |
-        # 0-1
-
-        selects the zeroth vertex of each cell and then adds the column the first
-        vertex at the end. For the top row it uses the thirs vertex, with the
-        second added on to the end.
-        e.g.
-        # 3-3-3-3-2
-        # 0-0-0-0-1
-        # 0-0-0-0-1
-
-        Args:
-            bounds: array of shape (X,Y,4)
-
-        Returns:
-            array of shape (X+1, Y+1)
-
-        """
-        bds_shape = bds.shape
-        result = np.zeros((bds_shape[0] + 1, bds_shape[1] + 1))
-
-        # Fill with zeroth vertices
-        # ?-?-?-?-?
-        # 0-0-0-0-?
-        # 0-0-0-0-?
-        result[:-1, :-1] = bds[:, :, 0]
-
-        # Fill with first vertices
-        # ?-?-?-?-?
-        # 0-0-0-0-1
-        # 0-0-0-0-1
-        result[:-1, -1] = bds[:, -1, 1]
-
-        # Fill with third vertices
-        # 3-3-3-3-?
-        # 0-0-0-0-1
-        # 0-0-0-0-1
-        result[-1, :-1] = bds[-1, :, 3]
-
-        # Fill with second vertices
-        # 3-3-3-3-2
-        # 0-0-0-0-1
-        # 0-0-0-0-1
-        result[-1, -1] = bds[-1, -1, 2]
-
-        return result
 
     def is_monotonic(self):
         """Return True if, and only if, this Coord is monotonic."""
