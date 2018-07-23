@@ -187,9 +187,12 @@ def simple_3d_w_multidim_coords(with_bounds=True):
     y_points = np.array([[2.5, 7.5, 12.5, 17.5],
                          [10., 17.5, 27.5, 42.5],
                          [15., 22.5, 32.5, 50.]])
-    y_bounds = np.array([[[0, 5], [5, 10], [10, 15], [15, 20]],
-                         [[5, 15], [15, 20], [20, 35], [35, 50]],
-                         [[10, 20], [20, 25], [25, 40], [40, 60]]],
+    y_bounds = np.array([[[0, 0, 5, 5], [5, 5, 10, 10], [10, 10, 15, 15],
+                          [15, 15, 20, 20]],
+                         [[5, 5, 15, 15], [15, 15, 20, 20], [20, 20, 35, 35],
+                          [35, 35, 50, 50]],
+                         [[10, 10, 20, 20], [20, 20, 25, 25], [25, 25, 40, 40],
+                          [40, 40, 60, 60]]],
                         dtype=np.int32)
     y_coord = iris.coords.AuxCoord(points=y_points, long_name='bar',
                                    units='1',
@@ -197,9 +200,12 @@ def simple_3d_w_multidim_coords(with_bounds=True):
     x_points = np.array([[-7.5, 7.5, 22.5, 37.5],
                          [-12.5, 4., 26.5, 47.5],
                          [2.5, 14., 36.5, 44.]])
-    x_bounds = np.array([[[-15, 0], [0, 15], [15, 30], [30, 45]],
-                         [[-25, 0], [0, 8], [8, 45], [45, 50]],
-                         [[-5, 10], [10, 18],  [18, 55], [18, 70]]],
+    x_bounds = np.array([[[-15, 0, 0, -15], [0, 15, 15, 0], [15, 30, 30, 15],
+                          [30, 45, 45, 30]],
+                         [[-25, 0, 0, -25], [0, 8, 8, 0], [8, 45, 45, 8],
+                          [45, 50, 50, 45]],
+                         [[-5, 10, 10, -5], [10, 18, 18, 10],  [18, 55, 55, 18],
+                          [55, 70, 70, 55]]],
                         dtype=np.int32)
     x_coord = iris.coords.AuxCoord(points=x_points, long_name='foo',
                                    units='1',
@@ -333,6 +339,94 @@ def simple_2d_w_multidim_and_scalars():
     cube.add_aux_coord(an_other)
     cube.add_aux_coord(yet_an_other)
     cube.add_aux_coord(my_multi_dim_coord, [0, 1])
+
+    return cube
+
+def discontiguous_bounds_2dcoords():
+    """
+    Returns a cube with 2 anonymous coordinates, both spanning two dimensions,
+    and a discontinuity between bounds at a point in the array.
+
+    The cube has been adjusted so that the bounds are discontiguous at the
+    points array indices x_coord[2] and y_coord[2].  At this point, the cell
+    is contracted the x direction and the point is moved to the new centre of
+    the cell.
+
+    >>> print(discontiguous_bounds_2dcoords())
+    thingness / (1)                     (-- : 3; -- : 4)
+        Auxiliary coordinates:
+            bar                           x       x
+            foo                           x       x
+
+    >>> print(discontiguous_bounds_2dcoords().coord('foo').bounds)
+    [[[-15   0   0 -15]
+      [  0  15  15   0]
+      [ 15  30  30  15]
+      [ 30  45  45  30]]
+
+     [[-25   0   0 -25]
+      [  0   8   8   0]
+      [  8  45  45   8]
+      [ 45  50  50  45]]
+
+     [[ -5  10  10  -5]
+      [ 10  18  18  10]
+      [ 18  36  36  18]
+      [ 55  70  70  55]]]
+
+    >>> print(discontiguous_bounds_2dcoords().coord('bar').bounds)
+    [[[ 0  0  5  5]
+      [ 5  5 10 10]
+      [10 10 15 15]
+      [15 15 20 20]]
+
+     [[ 5  5 15 15]
+      [15 15 20 20]
+      [20 20 35 35]
+      [35 35 50 50]]
+
+     [[10 10 20 20]
+      [20 20 25 25]
+      [25 25 40 40]
+      [40 40 60 60]]]
+
+    """
+    cube = simple_2d_w_multidim_coords()
+    x_coord = cube.coord('foo')
+    y_coord = cube.coord('bar')
+    assert x_coord.shape == y_coord.shape
+
+    # Choose index at which to make arrays discontinuous
+    at_ix = 2
+    at_iy = 2
+
+    # For both X and Y coord, move points + bounds to create a discontinuity.
+    def adjust_coord(co):
+        pts, bds = co.points, co.bounds
+        # Fetch the 4 bounds (bottom-left, bottom-right, top-right, top-left)
+        bds_bl, bds_br, bds_tr, bds_tl = bds[at_iy, at_ix]
+        # Make a discontinuity "at" (iy, ix), by moving the right-hand edge of
+        # the cell to the midpoint of the existing left+right bounds.
+        new_bds_br = 0.5 * (bds_bl + bds_br)
+        new_bds_tr = 0.5 * (bds_tl + bds_tr)
+        bds_br, bds_tr = new_bds_br, new_bds_tr
+        bds[at_iy, at_ix] = [bds_bl, bds_br, bds_tr, bds_tl]
+        # Also reset the cell midpoint to the middle of the 4 new corners,
+        # in case having a midpoint outside the corners might cause a problem.
+        new_pt = 0.25 * sum([bds_bl, bds_br, bds_tr, bds_tl])
+        pts[at_iy, at_ix] = new_pt
+        # Write back the coord points+bounds (can only assign whole arrays).
+        co.points, co.bounds = pts, bds
+
+    adjust_coord(x_coord)
+    adjust_coord(y_coord)
+    # Also mask the relevant data point.
+    data = cube.data  # N.B. fetch all the data.
+    if not np.ma.isMaskedArray(data):
+        # Promote to masked array, to avoid converting mask to NaN.
+        data = np.ma.masked_array(data)
+    data[at_iy, at_ix] = ma.masked
+    cube.data = data
 
     return cube
 
