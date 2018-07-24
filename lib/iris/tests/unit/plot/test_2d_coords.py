@@ -24,20 +24,15 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 import iris.coords as coords
 
-import numpy as np
-
 from iris.tests.stock import simple_2d_w_multidim_coords as cube_2dcoords
 from iris.tests.stock import simple_3d_w_multidim_coords as cube3d_2dcoords
 from iris.tests.stock import discontiguous_bounds_2dcoords
 
-from orca_utils import load_standard_testdata
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 
-
 # TODO Integration graphics test
-
 # TODO Test _draw_2d_from_bounds
 # TODO Test _draw_2d_from_points (later)
 
@@ -101,7 +96,6 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
             
     def test_draw_2d_from_bounds(self):
         pass
-
 
 # class Test_2d_coords_plot_defn_point_mode(tests.IrisTest):
 #     def setUp(self):

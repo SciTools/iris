@@ -1031,17 +1031,20 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     def _sanity_check_contiguous(self):
         if self.ndim == 1:
             if self.nbounds != 2:
-                raise ValueError('Invalid operation for {!r}, with {} bounds. Contiguous bounds'
-                ' are only defined for 1D coordinates with 2 bounds.'.format(
-                    self.name(), self.nbounds))
+                raise ValueError('Invalid operation for {!r}, with {} bounds. '
+                                 'Contiguous bounds are only defined for 1D '
+                                 'coordinates with 2 bounds.'.format
+                                 (self.name(), self.nbounds))
         elif self.ndim == 2:
             if self.nbounds != 4:
-                raise ValueError('Invalid operation for {!r}, with {} bounds. Contiguous bounds'
-                ' are only defined for 2D coordinates with 4 bounds.'.format(
-                    self.name(), self.nbounds))
+                raise ValueError('Invalid operation for {!r}, with {} bounds. '
+                                 'Contiguous bounds are only defined for 2D '
+                                 'coordinates with 4 bounds.'.format
+                                 (self.name(), self.nbounds))
         else:
-            raise ValueError('Invalid operation for {!r}. Contiguous bounds are not defined'
-                ' for coordinates with more than 2 dimensions.'.format(self.name()))
+            raise ValueError('Invalid operation for {!r}. Contiguous bounds '
+                             'are not defined for coordinates with more than '
+                             '2 dimensions.'.format(self.name()))
 
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
@@ -1064,9 +1067,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             self._sanity_check_contiguous()
             if self.ndim == 1:
                 return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
-                               rtol=rtol, atol=atol)
+                                   rtol=rtol, atol=atol)
             elif self.ndim == 2:
-                allclose, _, _ = _discontinuity_in_2d_bounds(self.bounds, abs_tol=atol)
+                allclose, _, _ = _discontinuity_in_2d_bounds(self.bounds,
+                                                             abs_tol=atol)
                 return allclose
         else:
             return False

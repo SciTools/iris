@@ -31,16 +31,17 @@ import datetime
 import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes
 from cartopy.geodesic import Geodesic
+import cftime
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.ticker as mpl_ticker
-import cftime
 import matplotlib.transforms as mpl_transforms
 import numpy as np
 import numpy.ma as ma
+import warnings
 
 import iris.cube
 import iris.analysis.cartography as cartography
@@ -269,7 +270,7 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
-def _check_contiguity_and_bounds(bounds, data, abs_tol=1e4):
+def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4):
     """
     Check that the discontinuous bounds occur where the data is masked.
 
@@ -285,8 +286,8 @@ def _check_contiguity_and_bounds(bounds, data, abs_tol=1e4):
             tolerance when checking the contiguity
 
     """
-    both_dirs_contiguous, diffs_along_x, diffs_along_y = iris.coords._discontinuity_in_2d_bounds(
-        bounds, abs_tol=abs_tol)
+    both_dirs_contiguous, diffs_along_x, diffs_along_y = \
+        iris.coords._discontinuity_in_2d_bounds(coord.bounds, abs_tol=abs_tol)
 
     if not both_dirs_contiguous:
 
@@ -298,10 +299,10 @@ def _check_contiguity_and_bounds(bounds, data, abs_tol=1e4):
         # So for places where data exists (opposite of the mask) AND a
         # diff exists. If any exist, raise a warning
         not_masked_at_discontinuity_along_x = np.any(
-            np.logical_and(mask_invert[:, :-1], diff_along_x))
+            np.logical_and(mask_invert[:, :-1], diffs_along_x))
 
         not_masked_at_discontinuity_along_y = np.any(
-            np.logical_and(mask_invert[:-1,], diff_along_y))
+            np.logical_and(mask_invert[:-1, ], diffs_along_y))
 
 
         # If discontinuity occurs but not masked, any grid will be created
@@ -326,11 +327,13 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2)
+        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode,
+                                                        ndims=2)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    two_dim_coord_contiguity_atol = kwargs.pop('two_dim_coord_contiguity_atol', 1e4)
+    two_dim_coord_contiguity_atol = kwargs.pop('two_dim_coord_contiguity_atol',
+                                               1e4)
     for coord in plot_defn.coords:
         if coord.ndim == 2:
             try:
