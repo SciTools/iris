@@ -45,7 +45,7 @@ import iris.time
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
-from iris.util import points_step
+from iris.util import points_step, guess_coord_axis
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',
@@ -143,7 +143,7 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
-def _discontinuity_in_2d_bounds(bds, abs_tol=1e-4):
+def discontinuity_check_2d(coord, abs_tol=1e-4):
     """
     Check bounds of a 2-dimensional coordinate are contiguous
     Args:
@@ -156,10 +156,17 @@ def _discontinuity_in_2d_bounds(bds, abs_tol=1e-4):
         absolute difference along the y axis
 
     """
-    # Check form is (ny, nx, 4)
-    if not bds.ndim == 3 and bds.shape[2] == 4:
-        raise ValueError('2D coordinates must have 4 bounds per point '
-                         'for 2D coordinate plotting')
+
+    # TODO Work out how to tell which direction to check contiguity in:
+    # The bounds that are supplied are the bounds for one axis only, so a
+    # contiguity check will fail if checked along the other axis
+    # i.e.:
+    # latitude_bds = [0, 1, 1, 0]
+    # longitude_bds = [0, 0, 1, 1]
+    # You can see that it matters which axis we are checking as the indexes
+    # we are matching up differ.
+    bds = coord.bounds
+    axis = guess_coord_axis(coord)
 
     # Check ordering:
     #         i    i+1
@@ -170,20 +177,45 @@ def _discontinuity_in_2d_bounds(bds, abs_tol=1e-4):
         diff = (diff + 360.0 + 180.0) % 360.0 - 180.0
         return diff
 
-    # Compare cell with the cell next to it (i+1)
-    diffs_along_x = mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0])
-    # Compare cell with the cell above it (j+1)
-    diffs_along_y = mod360_diff(bds[:-1, :, 3], bds[1:, :, 0])
+    # Check contiguity for 2 bounds per point or 4 bounds per point only.
+    if bds.shape[2] not in [2, 4]:
+        raise ValueError('2D coordinates must have 2 or 4 bounds per point '
+                         'for 2D coordinate plotting')
+    elif bds.shape[2] == 2:
+        # TODO Make this work
+        # NOTE: the bounds supplied are only the ones relevent to the
+        # coordinate, i.e. bounds on longitude coord will need to be checked
+        # in the x-direction (see x_diffs), whereas bounds on latitude coord
+        # will need to be checked in y-direction (see y_diffs)
+        if axis == 'X':
+            # Compare cell with the cell next to it (i+1)
+            diffs = mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0])
+        elif axis == 'Y':
+            # Compare cell with the cell above it (j+1)
+            diffs = mod360_diff(bds[:-1, :, 1], bds[1:, :, 0])
+        else:
+            raise ValueError('Coordinate does not map to X or Y dimension; '
+                             'unable to check for contiguity.')
+    elif bds.shape[2] == 4:
+        if axis == 'X':
+            diffs = mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0])
+        elif axis == 'Y':
+            diffs = mod360_diff(bds[:-1, :, 3], bds[1:, :, 0])
+        else:
+            raise ValueError('Coordinate does not map to X or Y dimension; '
+                             'unable to check for contiguity.')
 
-    def eq_diffs(x1):
-        return np.all(np.abs(x1) < abs_tol)
+    # At this point, diffs is an array of differences between bounds in one
+    # direction only.  It is unnecessary and nonsensical to have both
+    # x-diffs and y-diffs for one coord (i.e. longitude)
 
-    match_y0_x1 = eq_diffs(diffs_along_x)
-    match_y1_x0 = eq_diffs(diffs_along_y)
+    # TODO Work out exactly what values need to be returned from here.
+        def eq_diffs(x1):
+            return np.all(np.abs(x1) < abs_tol)
 
-    all_eq = match_y0_x1 and match_y1_x0
+        all_eq = match_y0_x1 and match_y1_x0
 
-    return all_eq, np.abs(diffs_along_x), np.abs(diffs_along_y)
+        return all_eq, np.abs(x_diffs), np.abs(y_diffs)
 
 
 def _get_2d_coord_bound_grid(bds):
@@ -1070,8 +1102,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
                                    rtol=rtol, atol=atol)
             elif self.ndim == 2:
-                allclose, _, _ = _discontinuity_in_2d_bounds(self.bounds,
-                                                             abs_tol=atol)
+                allclose, _, _ = discontinuity_check_2d(self,
+                                                        abs_tol=atol)
                 return allclose
         else:
             return False

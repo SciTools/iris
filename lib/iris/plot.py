@@ -289,7 +289,7 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4):
 
     """
     both_dirs_contiguous, diffs_along_x, diffs_along_y = \
-        iris.coords._discontinuity_in_2d_bounds(coord.bounds, abs_tol=abs_tol)
+        iris.coords.discontinuity_check_2d(coord, abs_tol=abs_tol)
 
     if not both_dirs_contiguous:
 
