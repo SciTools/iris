@@ -158,7 +158,8 @@ def _discontinuity_in_2d_bounds(bds, abs_tol=1e4):
     """
     # Check form is (ny, nx, 4)
     if not bds.ndim == 3 and bds.shape[2] == 4:
-        raise ValueError('Bounds array of 2D coordinate has incorrect shape')
+        raise ValueError('2D coordinates must have 4 bounds per point '
+                         'for 2D plotting')
 
     # Check ordering:
     #         i    i+1

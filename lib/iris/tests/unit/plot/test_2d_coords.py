@@ -26,7 +26,6 @@ import iris.coords as coords
 
 from iris.tests.stock import simple_2d_w_multidim_coords as cube_2dcoords
 from iris.tests.stock import simple_3d_w_multidim_coords as cube3d_2dcoords
-from iris.tests.stock import discontiguous_bounds_2dcoords
 
 
 if tests.MPL_AVAILABLE:
@@ -40,8 +39,6 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
     def setUp(self):
         self.multidim_cube = cube_2dcoords()
         self.overspan_cube = cube3d_2dcoords()
-        self.discontiguous_cube = discontiguous_bounds_2dcoords()
-        # TODO add latlon cube (with coords lat and lon) to test_map_common
         self.mode = coords.BOUND_MODE
 
     def test_2d_coords_identified(self):
@@ -69,33 +66,50 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
                                                      ('wibble', 'foo'),
                                                      self.mode)
 
-    def test_map_common(self):
-        # Test with a lat-lon cube with 2d coords and 4 bounds per point.
+    def test_map_common_not_enough_bounds(self):
+        # Test that a lat-lon cube with 2d coords and 2 bounds per point
+        # throws an error
         cube = self.multidim_cube
         cube.coord('foo').rename('longitude')
         cube.coord('bar').rename('latitude')
+        with self.assertRaises(ValueError):
+            plot_defn = iplt._get_plot_defn(cube, self.mode)
+            iplt._map_common('pcolor', None, self.mode, cube, plot_defn)
 
+
+    def test_map_common(self):
+        # Test that a cube with 2d coords and 4 bounds per point, not to
+        # mention a not-meshgrid-style coordinate array, can be plotted as a
+        # map.
+        cube = self.placeholder # TODO put Patrick's cube here
+        cube.coord('foo').rename('longitude')
+        cube.coord('bar').rename('latitude')
+
+        # Get necessary variables from _get_plot_defn to check that the test
+        # case will be accepted by _map_common.
         plot_defn = iplt._get_plot_defn(cube, self.mode)
         result = iplt._map_common('pcolor', None, self.mode, cube, plot_defn)
-        # Complexity of 'result' made me think maybe we should just test that
-        # it doesn't fail with 2d coords
         self.assertTrue(result)
 
-    def test_discontiguous_masked(self):
-        cube = self.discontiguous_cube
-        coord = cube.coord('foo')
-        expected_msg = 'The bounds of the foo coordinate are not ' \
-                       'contiguous.  However, data is masked where the ' \
-                       'discontiguity occurs so plotting anyway.'
-        with self.assertWarnsRegexp(expected_msg):
-            iplt._check_contiguity_and_bounds(coord, cube.data)
 
-    def test_discontiguous_unmasked(self):
-        cube = self.discontiguous_cube
-        # This should raise an error
-            
-    def test_draw_2d_from_bounds(self):
-        pass
+    # TODO Use Patrick's cube in this test
+    # def test_discontiguous_masked(self):
+    #     cube = self.discontiguous_cube
+    #     coord = cube.coord('foo')
+    #     expected_msg = 'The bounds of the foo coordinate are not ' \
+    #                    'contiguous.  However, data is masked where the ' \
+    #                    'discontiguity occurs so plotting anyway.'
+    #     with self.assertWarnsRegexp(expected_msg):
+    #         iplt._check_contiguity_and_bounds(coord, cube.data)
+    #
+    # TODO Use Patrick's cube in this test
+    # def test_discontiguous_unmasked(self):
+    #     cube = self.discontiguous_cube
+    #     # This should raise an error
+    #
+    # TODO Complete this test
+    # def test_draw_2d_from_bounds(self):
+    #     pass
 
 # class Test_2d_coords_plot_defn_point_mode(tests.IrisTest):
 #     def setUp(self):

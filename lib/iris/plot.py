@@ -52,7 +52,6 @@ from iris.exceptions import IrisError
 import iris.palette
 from iris.util import _meshgrid
 
-
 # Cynthia Brewer citation text.
 BREWER_CITE = 'Colours based on ColorBrewer.org'
 
@@ -96,12 +95,13 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
         else:
             span = set(cube.coord_dims(coord))
         return span
+
     spans = list(map(get_span, coords))
     for span, coord in zip(spans, coords):
         if not span:
             msg = 'The coordinate {!r} doesn\'t span a data dimension.'
             raise ValueError(msg.format(coord.name()))
-        if mode == iris.coords.BOUND_MODE and len(span) not in [1,2]:
+        if mode == iris.coords.BOUND_MODE and len(span) not in [1, 2]:
             raise ValueError('The coordinate {!r} has {} dimensions.'
                              'Cell-based plotting is only supporting for'
                              'coordinates with one or two dimensions.'
@@ -176,12 +176,13 @@ def _get_plot_defn(cube, mode, ndims=2):
 
     # If plotting a 2 dimensional plot, check for 2d coordinates
     if ndims == 2:
-        missing_dims = [dim for dim, coord in enumerate(coords) if coord is None]
+        missing_dims = [dim for dim, coord in enumerate(coords) if
+                        coord is None]
         if missing_dims:
             # Note that this only picks up coordinates that span the dims
             two_dim_coords = cube.coords(dimensions=missing_dims)
             two_dim_coords = [coord for coord in two_dim_coords
-                             if coord.ndim==2]
+                              if coord.ndim == 2]
             if len(two_dim_coords) >= 2:
                 two_dim_coords.sort(key=lambda coord: coord._as_defn())
                 coords = two_dim_coords[:2]
@@ -209,6 +210,7 @@ def _get_plot_defn(cube, mode, ndims=2):
         return (order.get(axis, 0),
                 coords.index(coord),
                 coord and coord.name())
+
     sorted_coords = sorted(coords, key=sort_key)
 
     transpose = (sorted_coords != coords)
@@ -304,10 +306,9 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4):
         not_masked_at_discontinuity_along_y = np.any(
             np.logical_and(mask_invert[:-1, ], diffs_along_y))
 
-
         # If discontinuity occurs but not masked, any grid will be created
         #  incorrectly, so raise a warning
-        if not_masked_at_discontinuity_along_x or\
+        if not_masked_at_discontinuity_along_x or \
                 not_masked_at_discontinuity_along_y:
             raise ValueError('The bounds of the {} coordinate are not'
                              ' contiguous and data is not masked where the'
@@ -332,14 +333,17 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    two_dim_coord_contiguity_atol = kwargs.pop('two_dim_coord_contiguity_atol',
-                                               1e4)
+    two_dim_contig_atol = kwargs.pop('two_dim_coord_contiguity_atol',
+                                     1e-4)
     for coord in plot_defn.coords:
         if coord.ndim == 2:
             try:
-                _check_contiguity_and_bounds(coord.bounds, data=cube.data, abs_tol=two_dim_coord_contiguity_atol)
+                _check_contiguity_and_bounds(coord.bounds, data=cube.data,
+                                             abs_tol=two_dim_contig_atol)
             except ValueError:
-                if _check_contiguity_and_bounds(coord.bounds.T, data=cube.data, abs_tol=two_dim_coord_contiguity_atol) is True:
+                if _check_contiguity_and_bounds(coord.bounds.T, data=cube.data,
+                                                abs_tol=two_dim_contig_atol)\
+                        is True:
                     plot_defn.transpose = True
 
     if _can_draw_map(plot_defn.coords):
@@ -384,7 +388,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             plot_arrays.append(values)
 
         u, v = plot_arrays
-
 
         # If the data is tranposed, 2D coordinates will also need to be
         # tranposed.
@@ -519,8 +522,8 @@ def _fixup_dates(coord, values):
                 raise IrisError(msg)
 
             r = [nc_time_axis.CalendarDateTime(
-                 cftime.datetime(*date), coord.units.calendar)
-                 for date in dates]
+                cftime.datetime(*date), coord.units.calendar)
+                for date in dates]
         values = np.empty(len(r), dtype=object)
         values[:] = r
     return values
@@ -760,8 +763,8 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     axes = kwargs.get('axes')
     if axes is None:
         if (isinstance(cs, iris.coord_systems.RotatedGeogCS) and
-           x_coord.points.max() > 180 and x_coord.points.max() < 360 and
-           x_coord.points.min() > 0):
+                x_coord.points.max() > 180 and x_coord.points.max() < 360 and
+                x_coord.points.min() > 0):
             # The RotatedGeogCS has 0 - 360 extent, different from the
             # assumptions made by Cartopy: rebase longitudes for the map axes
             # to set the datum longitude to the International Date Line.
@@ -806,7 +809,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
         else:
             raise ValueError("Expected 1D or 2D XY coords")
     else:
-        if not x_coord.ndim== y_coord.ndim == 2:
+        if not x_coord.ndim == y_coord.ndim == 2:
             try:
                 x, y = _meshgrid(x_coord.contiguous_bounds(),
                                  y_coord.contiguous_bounds())
@@ -1166,6 +1169,7 @@ def points(cube, *args, **kwargs):
     keyword arguments.
 
     """
+
     def _scatter_args(u, v, data, *args, **kwargs):
         return ((u, v) + args, kwargs)
 
