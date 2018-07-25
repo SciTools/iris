@@ -13,26 +13,18 @@ def _3d_xyz_from_latlon(lon, lat):
 
     Returns:
 
-        x, y, z : (array, dtype=float64)
-            cartesian coordinates on a unit sphere.
+        xyz : (array, dtype=float64)
+            cartesian coordinates on a unit sphere.  Dimension 0 maps x,y,z.
 
     """
     lon1 = np.deg2rad(lon).astype(np.float64)
     lat1 = np.deg2rad(lat).astype(np.float64)
 
-    old_way = True
-    if old_way:
-        x3 = np.empty((3,) + lon.shape, dtype=float)
-        x3[0] = np.cos(lat1) * np.cos(lon1)
-        x3[1] = np.cos(lat1) * np.sin(lon1)
-        x3[2] = np.sin(lat1)
-        result = x3
-    else:
-        x = np.cos(lat1) * np.cos(lon1)
-        y = np.cos(lat1) * np.sin(lon1)
-        z = np.sin(lat1)
+    x = np.cos(lat1) * np.cos(lon1)
+    y = np.cos(lat1) * np.sin(lon1)
+    z = np.sin(lat1)
 
-        result = np.concatenate([array[np.newaxis] for array in (x, y, z)])
+    result = np.concatenate([array[np.newaxis] for array in (x, y, z)])
 
     return result
 
@@ -61,34 +53,81 @@ def _latlon_from_xyz(xyz):
 
 def _angle(p, q, r):
     """
-    Return angle (in _radians_) of grid wrt local east.  Anticlockwise +ve, as usual.
-    {P, Q, R} are consecutve points in the same row, eg {v(i,j),f(i,j),v(i+1,j)}, or {T(i-1,j),T(i,j),T(i+1,j)}
-    Calculate dot product of PR with lambda_hat at Q. This gives us cos(required angle). 
-    Disciminate between +/- angles by comparing latitudes of P and R. 
-    p, q, r, are all 2-element arrays [lon, lat] of angles in degrees.   
+    Return angle (in _radians_) of grid wrt local east.
+    Anticlockwise +ve, as usual.
+    {P, Q, R} are consecutive points in the same row,
+    eg {v(i,j),f(i,j),v(i+1,j)}, or {T(i-1,j),T(i,j),T(i+1,j)}
+    Calculate dot product of PR with lambda_hat at Q.
+    This gives us cos(required angle).
+    Disciminate between +/- angles by comparing latitudes of P and R.
+    p, q, r, are all 2-element arrays [lon, lat] of angles in degrees.
 
     """
-    q1 = np.deg2rad(q)
+#    old_style = True
+    old_style = False
+    if old_style:
+        mid_lons = np.deg2rad(q[0])
 
-    pr =  _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
-    pr_norm = np.sqrt(np.sum(pr**2, axis=0))
-    pr_top = pr[1] * np.cos(q1[0]) - pr[0] * np.sin(q1[0])
+        pr =  _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
+        pr_norm = np.sqrt(np.sum(pr**2, axis=0))
+        pr_top = pr[1] * np.cos(mid_lons) - pr[0] * np.sin(mid_lons)
 
-    index = np.where(pr_norm == 0)
-    pr_norm[index] = 1
+        index = pr_norm == 0
+        pr_norm[index] = 1
 
-    cosine = np.maximum(np.minimum(pr_top / pr_norm, 1), -1)
-    cosine[index] = 0
+        cosine = np.maximum(np.minimum(pr_top / pr_norm, 1), -1)
+        cosine[index] = 0
 
-    psi = np.arccos(cosine) * np.sign(r[1] - p[1])
-    psi[index] = np.nan
+        psi = np.arccos(cosine) * np.sign(r[1] - p[1])
+        psi[index] = np.nan
+    else:
+        # Calculate unit vectors.
+        midpt_lons, midpt_lats = q[0], q[1]
+        lmb_r, phi_r = (np.deg2rad(arr) for arr in (midpt_lons, midpt_lats))
+        phi_hatvec_x = -np.sin(phi_r) * np.cos(lmb_r)
+        phi_hatvec_y = -np.sin(phi_r) * np.sin(lmb_r)
+        phi_hatvec_z = np.cos(phi_r)
+        shape_xyz = (1,) + midpt_lons.shape
+        phi_hatvec = np.concatenate([arr.reshape(shape_xyz)
+                                     for arr in (phi_hatvec_x,
+                                                 phi_hatvec_y,
+                                                 phi_hatvec_z)])
+        lmb_hatvec_z = np.zeros(midpt_lons.shape)
+        lmb_hatvec_y = np.cos(lmb_r)
+        lmb_hatvec_x = -np.sin(lmb_r)
+        lmb_hatvec = np.concatenate([arr.reshape(shape_xyz)
+                                     for arr in (lmb_hatvec_x,
+                                                 lmb_hatvec_y,
+                                                 lmb_hatvec_z)])
+
+        pr =  _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
+
+        # Dot products to form true-northward / true-eastward projections.
+        pr_cmpt_e = np.sum(pr * lmb_hatvec, axis=0)
+        pr_cmpt_n = np.sum(pr * phi_hatvec, axis=0)
+        psi = np.arctan2(pr_cmpt_n, pr_cmpt_e)
+
+        # TEMPORARY CHECKS:
+        # ensure that the two unit vectors are perpendicular.
+        dotprod = np.sum(phi_hatvec * lmb_hatvec, axis=0)
+        assert np.allclose(dotprod, 0.0)
+        # ensure that the vector components carry the original magnitude.
+        mag_orig = np.sum(pr * pr)
+        mag_rot = np.sum(pr_cmpt_e * pr_cmpt_e) + np.sum(pr_cmpt_n * pr_cmpt_n)
+        rtol = 1.e-3
+        check = np.allclose(mag_rot, mag_orig, rtol=rtol)
+        if not check:
+            print (mag_rot, mag_orig)
+            assert np.allclose(mag_rot, mag_orig, rtol=rtol)
 
     return psi
 
 
-def gridcell_angles(x, y=None):
+def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
     """
     Calculate gridcell orientation angles.
+
+    Args:
 
     The inputs (x [,y]) can be any of the folliwing :
 
@@ -104,6 +143,16 @@ def gridcell_angles(x, y=None):
     * x, y (3-dimensional arrays of same shape (ny, nx, 4)):
         longitude and latitude cell bounds, in degrees.
         The last index maps cell corners anticlockwise from bottom-left.
+
+    Optional Args:
+
+    * cell_angle_boundpoints (string):
+        Controls which gridcell bounds locations are used to calculate angles,
+        if the inputs are bounds or bounded coordinates.
+        Valid values are 'lower-left, lower-right', which takes the angle from
+        the lower left to the lower right corner, and 'mid-lhs, mid-rhs' which
+        takes an angles between the average of the left-hand and right-hand
+        pairs of corners.  The default is 'mid-lhs, mid-rhs'.
 
     Returns:
 
@@ -184,8 +233,20 @@ def gridcell_angles(x, y=None):
         # Get lhs and rhs locations by averaging top+bottom each side.
         # NOTE: so with bounds, we *don't* need full circular longitudes.
         xyz = _3d_xyz_from_latlon(x, y)
-        lhs_xyz = 0.5 * (xyz[..., 0] + xyz[..., 3])
-        rhs_xyz = 0.5 * (xyz[..., 1] + xyz[..., 2])
+        angle_boundpoints_vals = {'mid-lhs, mid-rhs': '03_to_12',
+                                  'lower-left, lower-right': '0_to_1'}
+        bounds_pos = angle_boundpoints_vals.get(cell_angle_boundpoints)
+        if bounds_pos == '0_to_1':
+            lhs_xyz = xyz[..., 0]
+            rhs_xyz = xyz[..., 1]
+        elif bounds_pos == '03_to_12':
+            lhs_xyz = 0.5 * (xyz[..., 0] + xyz[..., 3])
+            rhs_xyz = 0.5 * (xyz[..., 1] + xyz[..., 2])
+        else:
+            msg = ('unrecognised cell_angle_boundpoints of "{}", '
+                   'must be one of {}')
+            raise ValueError(msg.format(cell_angle_boundpoints,
+                                        list(angle_boundpoints_vals.keys())))
         if not x_coord:
             # Create bounded coords for result cube.
             # Use average lhs+rhs points in 3d to get 'mid' points, as coords
@@ -215,7 +276,9 @@ def gridcell_angles(x, y=None):
     return result
 
 
-def true_vectors_from_grid_vectors(u_cube, v_cube, grid_angles_cube=None):
+def true_vectors_from_grid_vectors(u_cube, v_cube,
+                                   grid_angles_cube=None,
+                                   grid_angles_kwargs=None):
     """
     Rotate distance vectors from grid-oriented to true-latlon-oriented.
 
@@ -233,6 +296,10 @@ def true_vectors_from_grid_vectors(u_cube, v_cube, grid_angles_cube=None):
         If not provided, grid angles are estimated from 'u_cube' using the
         :func:`gridcell_angles` method.
 
+    * grid_angles_kwargs : (dict or None)
+        Additional keyword args to be passed to the :func:`gridcell_angles`
+        method, if it is used.
+
     Returns:
 
         true_u, true_v : (cube)
@@ -242,7 +309,8 @@ def true_vectors_from_grid_vectors(u_cube, v_cube, grid_angles_cube=None):
     """
     u_out, v_out = (cube.copy() for cube in (u_cube, v_cube))
     if not grid_angles_cube:
-        grid_angles_cube = gridcell_angles(u_cube)
+        grid_angles_kwargs = grid_angles_kwargs or {}
+        grid_angles_cube = gridcell_angles(u_cube, **grid_angles_kwargs)
     gridangles = grid_angles_cube.copy()
     gridangles.convert_units('radians')
     uu, vv, aa = (cube.data for cube in (u_out, v_out, gridangles))
