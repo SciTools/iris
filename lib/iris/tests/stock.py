@@ -294,15 +294,19 @@ def track_1d(duplicate_x=False):
     array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10])
 
     """
-    cube = Cube(np.arange(11, dtype=np.int32), standard_name='air_temperature', units='K')
-    bounds = np.column_stack([np.arange(11, dtype=np.int32), np.arange(11, dtype=np.int32) + 1])
+    cube = Cube(np.arange(11, dtype=np.int32), standard_name='air_temperature',
+                units='K')
+    bounds = np.column_stack([np.arange(11, dtype=np.int32),
+                              np.arange(11, dtype=np.int32) + 1])
     pts = bounds[:, 1]
     coord = AuxCoord(pts, 'projection_x_coordinate', units='1', bounds=bounds)
     cube.add_aux_coord(coord, [0])
     if duplicate_x:
-        coord = AuxCoord(pts, 'projection_x_coordinate', units='1', bounds=bounds)
+        coord = AuxCoord(pts, 'projection_x_coordinate', units='1',
+                         bounds=bounds)
         cube.add_aux_coord(coord, [0])
-    coord = AuxCoord(pts * 2, 'projection_y_coordinate', units='1', bounds=bounds * 2)
+    coord = AuxCoord(pts * 2, 'projection_y_coordinate', units='1',
+                     bounds=bounds * 2)
     cube.add_aux_coord(coord, 0)
     return cube
 
@@ -543,7 +547,8 @@ def realistic_4d():
     Returns a realistic 4d cube.
 
     >>> print(repr(realistic_4d()))
-    <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)>
+    <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;
+    grid_latitude: 100; grid_longitude: 100)>
 
     """
     # the stock arrays were created in Iris 0.8 with:
@@ -571,7 +576,8 @@ def realistic_4d():
     if not os.path.isfile(data_path):
         raise IOError('Test data is not available at {}.'.format(data_path))
     r = np.load(data_path)
-    # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
+    # sort the arrays based on the order they were originally given.
+    # The names given are of the form 'arr_1' or 'arr_10'
     _, arrays =  zip(*sorted(six.iteritems(r), key=lambda item: int(item[0][4:])))
 
     lat_pts, lat_bnds, lon_pts, lon_bnds, level_height_pts, \
