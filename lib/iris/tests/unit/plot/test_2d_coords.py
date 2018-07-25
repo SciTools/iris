@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,11 +27,11 @@ import iris.coords as coords
 from iris.tests.stock import simple_2d_w_multidim_coords as cube_2dcoords
 from iris.tests.stock import simple_3d_w_multidim_coords as cube3d_2dcoords
 
-
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 
-# TODO Integration graphics test
+
+# TODO Integration graphics test?
 # TODO Test _draw_2d_from_bounds
 # TODO Test _draw_2d_from_points (later)
 
@@ -68,7 +68,7 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
 
     def test_map_common_not_enough_bounds(self):
         # Test that a lat-lon cube with 2d coords and 2 bounds per point
-        # throws an error
+        # throws an error in contiguity checks.
         cube = self.multidim_cube
         cube.coord('foo').rename('longitude')
         cube.coord('bar').rename('latitude')
@@ -76,32 +76,31 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
             plot_defn = iplt._get_plot_defn(cube, self.mode)
             iplt._map_common('pcolor', None, self.mode, cube, plot_defn)
 
-
-    def test_map_common(self):
-        # Test that a cube with 2d coords and 4 bounds per point, not to
-        # mention a not-meshgrid-style coordinate array, can be plotted as a
-        # map.
-        cube = self.placeholder # TODO put Patrick's cube here
-        cube.coord('foo').rename('longitude')
-        cube.coord('bar').rename('latitude')
-
-        # Get necessary variables from _get_plot_defn to check that the test
-        # case will be accepted by _map_common.
-        plot_defn = iplt._get_plot_defn(cube, self.mode)
-        result = iplt._map_common('pcolor', None, self.mode, cube, plot_defn)
-        self.assertTrue(result)
-
-
-    # TODO Use Patrick's cube in this test
-    # def test_discontiguous_masked(self):
-    #     cube = self.discontiguous_cube
-    #     coord = cube.coord('foo')
-    #     expected_msg = 'The bounds of the foo coordinate are not ' \
-    #                    'contiguous.  However, data is masked where the ' \
-    #                    'discontiguity occurs so plotting anyway.'
-    #     with self.assertWarnsRegexp(expected_msg):
-    #         iplt._check_contiguity_and_bounds(coord, cube.data)
+    # def test_map_common(self):
+    #     # TODO Implement contiguity checking for 2d coords with 2 bounds per point
+    #     # Test that a cube with 2d coords can be plotted as a map.
+    #     cube = self.multidim_cube
+    #     cube.coord('foo').rename('longitude')
+    #     cube.coord('bar').rename('latitude')
     #
+    #     # Get necessary variables from _get_plot_defn to check that the test
+    #     # case will be accepted by _map_common.
+    #     plot_defn = iplt._get_plot_defn(cube, self.mode)
+    #     result = iplt._map_common('pcolor', None, self.mode, cube, plot_defn)
+    #     self.assertTrue(result)
+
+
+    def test_discontiguous_masked(self):
+        # XXX Temporary import and test with ORCA cube XXX #
+        from orca_utils.load_standard_testdata import orca2
+        cube = orca2()[0, 0]
+        coord = cube.coord('longitude')
+        expected_msg = 'The bounds of the longitude coordinate are not ' \
+                       'contiguous.  However, data is masked where the ' \
+                       'discontiguity occurs so plotting anyway.'
+        with self.assertWarnsRegexp(expected_msg):
+            iplt._check_contiguity_and_bounds(coord, cube.data)
+
     # TODO Use Patrick's cube in this test
     # def test_discontiguous_unmasked(self):
     #     cube = self.discontiguous_cube
@@ -119,5 +118,3 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
 # 
 #     # TODO Test custom coords for POINTS_MODE?
 #     # TODO Test total span check for POINTS_MODE
-
-

@@ -143,7 +143,7 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
-def _discontinuity_in_2d_bounds(bds, abs_tol=1e4):
+def _discontinuity_in_2d_bounds(bds, abs_tol=1e-4):
     """
     Check bounds of a 2-dimensional coordinate are contiguous
     Args:
@@ -159,7 +159,7 @@ def _discontinuity_in_2d_bounds(bds, abs_tol=1e4):
     # Check form is (ny, nx, 4)
     if not bds.ndim == 3 and bds.shape[2] == 4:
         raise ValueError('2D coordinates must have 4 bounds per point '
-                         'for 2D plotting')
+                         'for 2D coordinate plotting')
 
     # Check ordering:
     #         i    i+1
@@ -1080,14 +1080,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         Returns the N+1 bound values for a contiguous bounded 1D coordinate
         of length N.
-        Returns the (N+1, M+1) bound values for a contiguous bounded 2D coordinate
-        of shape (N, M).
+
+        Returns the (N+1, M+1) bound values for a contiguous bounded 2D
+        coordinate of shape (N, M).
 
         Assumes input is contiguous.
 
         .. note::
 
-            If the coordinate is does not have bounds, this method will
+            If the coordinate does not have bounds, this method will
             return bounds positioned halfway between the coordinate's points.
 
         """
@@ -1102,8 +1103,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self.ndim == 1:
             c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
             c_bounds[-1] = bounds[-1, 1]
-        elif self.ndim ==2:
-            c_bounds =  _get_2d_coord_bound_grid(bounds)
+        elif self.ndim == 2:
+            c_bounds = _get_2d_coord_bound_grid(bounds)
         return c_bounds
 
     def is_monotonic(self):

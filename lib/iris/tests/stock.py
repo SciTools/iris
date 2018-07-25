@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -191,9 +191,8 @@ def simple_3d_w_multidim_coords(with_bounds=True):
                          [[5, 15], [15, 20], [20, 35], [35, 50]],
                          [[10, 20], [20, 25], [25, 40], [40, 60]]],
                         dtype=np.int32)
-    y_coord = AuxCoord(points=y_points, long_name='bar',
-                                   units='1',
-                                   bounds=y_bounds if with_bounds else None)
+    y_coord = AuxCoord(points=y_points, long_name='bar', units='1',
+                       bounds=y_bounds if with_bounds else None)
     x_points = np.array([[-7.5, 7.5, 22.5, 37.5],
                          [-12.5, 4., 26.5, 47.5],
                          [2.5, 14., 36.5, 44.]])
@@ -201,12 +200,10 @@ def simple_3d_w_multidim_coords(with_bounds=True):
                          [[-25, 0], [0, 8], [8, 45], [45, 50]],
                          [[-5, 10], [10, 18],  [18, 55], [18, 70]]],
                         dtype=np.int32)
-    x_coord = AuxCoord(points=x_points, long_name='foo',
-                                   units='1',
-                                   bounds=x_bounds if with_bounds else None)
-    wibble_coord = DimCoord(np.array([10., 30.],
-                                                 dtype=np.float32),
-                                        long_name='wibble', units='1')
+    x_coord = AuxCoord(points=x_points, long_name='foo', units='1',
+                       bounds=x_bounds if with_bounds else None)
+    wibble_coord = DimCoord(np.array([10., 30.], dtype=np.float32),
+                            long_name='wibble', units='1')
 
     cube.add_dim_coord(wibble_coord, [0])
     cube.add_aux_coord(y_coord, [1, 2])
