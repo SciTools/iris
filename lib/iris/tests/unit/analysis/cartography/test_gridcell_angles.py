@@ -374,7 +374,7 @@ class TestGridcellAngles(tests.IrisTest):
 
 
         ax.set_global()
-#        plt.show()
+        plt.show()
 
         angles_cube.convert_units('degrees')
 
