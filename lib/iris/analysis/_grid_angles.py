@@ -1,3 +1,27 @@
+# (C) British Crown Copyright 2010 - 2018, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Code to implement vector rotation by angles, and inferring gridcell angles
+from coordinate points and bounds.
+
+"""
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
 import numpy as np
 
 import iris
@@ -125,23 +149,41 @@ def _angle(p, q, r):
 
 def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
     """
-    Calculate gridcell orientation angles.
+    Calculate gridcell orientations for an arbitrary 2-dimensional grid.
+
+    The input grid is defined by two 2-dimensional coordinate arrays with the
+    same dimensions (ny, nx), specifying the geolocations of a 2D mesh.
+
+    Input values may be coordinate points (ny, nx) or bounds (ny, nx, 4).
+    However, if points, the edges in the X direction are assumed to be
+    connected by wraparound.
+
+    Input can be either two arrays, two coordinates, or a single cube
+    containing two suitable coordinates identified with the 'x' and'y' axes.
 
     Args:
 
     The inputs (x [,y]) can be any of the folliwing :
 
     * x (:class:`~iris.cube.Cube`):
-        a grid cube with 2D longitude and latitude coordinates.
+        a grid cube with 2D X and Y coordinates, identified by 'axis'.
+        The coordinates must be 2-dimensional with the same shape.
+        The two dimensions represent grid dimensions in the order Y, then X.
 
     * x, y (:class:`~iris.coords.Coord`):
-        longitude and latitude coordinates.
+        X and Y coordinates, specifying grid locations on the globe.
+        The coordinates must be 2-dimensional with the same shape.
+        The two dimensions represent grid dimensions in the order Y, then X.
+        If there is no coordinate system, they are assumed to be true
+        longitudes and latitudes.  Units must convertible to 'degrees'.
 
     * x, y (2-dimensional arrays of same shape (ny, nx)):
         longitude and latitude cell center locations, in degrees.
+        The two dimensions represent grid dimensions in the order Y, then X.
 
     * x, y (3-dimensional arrays of same shape (ny, nx, 4)):
         longitude and latitude cell bounds, in degrees.
+        The first two dimensions are grid dimensions in the order Y, then X.
         The last index maps cell corners anticlockwise from bottom-left.
 
     Optional Args:
@@ -167,9 +209,11 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             the average of the 4 bounds.
 
     """
-    if hasattr(x, 'core_data'):
-        # N.B. only "true" lats + longs will do : Cannot handle rotated !
-        x, y = x.coord('longitude'), x.coord('latitude')
+    cube = None
+    if hasattr(x, 'add_aux_coord'):
+        # Passed a cube : extract 'x' and ;'y' axis coordinates.
+        cube = x  # Save for later checking.
+        x, y = cube.coord(axis='x'), cube.coord(axis='y')
 
     # Now should have either 2 coords or 2 arrays.
     if not hasattr(x, 'shape') and hasattr(y, 'shape'):
@@ -178,7 +222,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         raise ValueError(msg.format(type(x), type(y)))
 
     x_coord, y_coord = None, None
-    if isinstance(x, iris.coords.Coord) and isinstance(y, iris.coords.Coord):
+    if hasattr(x, 'bounds') and hasattr(y, 'bounds'):
         x_coord, y_coord = x.copy(), y.copy()
         x_coord.convert_units('degrees')
         y_coord.convert_units('degrees')
@@ -203,9 +247,10 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         else:
             x, y = x_coord.points, y_coord.points
 
-    elif isinstance(x, iris.coords.Coord) or isinstance(y, iris.coords.Coord):
+    elif hasattr(x, 'bounds') or hasattr(y, 'bounds'):
+        # One was a Coord, and the other not ?
         is_and_not = ('x', 'y')
-        if isinstance(y, iris.coords.Coord):
+        if hasattr(y, 'bounds'):
             is_and_not = reversed(is_and_not)
         msg = 'Input {!r} is a Coordinate, but {!r} is not.'
         raise ValueError(*is_and_not)
@@ -282,6 +327,18 @@ def true_vectors_from_grid_vectors(u_cube, v_cube,
     """
     Rotate distance vectors from grid-oriented to true-latlon-oriented.
 
+    .. Note::
+
+        This operation overlaps somewhat in function with
+        :func:`iris.analysis.cartography.rotate_winds`.
+        However, that routine only rotates vectors according to transformations
+        between coordinate systems.
+        This function, by contrast, can rotate vectors by arbitrary angles.
+        Most commonly, the angles are estimated solely from grid sampling
+        points, using :func:`gridcell_angles` :  This allows operation on
+        complex meshes defined by two-dimensional coordinates, such as most
+        ocean grids.
+
     Args:
 
     * u_cube, v_cube : (cube)
@@ -305,6 +362,10 @@ def true_vectors_from_grid_vectors(u_cube, v_cube,
         true_u, true_v : (cube)
             Cubes of true-north oriented vector components.
             Units are same as inputs.
+
+        .. Note::
+
+            Vector magnitudes will always be the same as the inputs.
 
     """
     u_out, v_out = (cube.copy() for cube in (u_cube, v_cube))
