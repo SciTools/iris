@@ -47,6 +47,7 @@ import iris.cube
 import iris.analysis.cartography as cartography
 import iris.coords
 import iris.coord_systems
+from iris.coords import discontiguity_check_2d
 from iris.exceptions import IrisError
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
@@ -289,7 +290,7 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4):
 
     """
     both_dirs_contiguous, diffs_along_x, diffs_along_y = \
-        iris.coords.discontinuity_check_2d(coord, abs_tol=abs_tol)
+        iris.coords.discontiguity_check_2d(coord, abs_tol=abs_tol)
 
     if not both_dirs_contiguous:
 
@@ -338,11 +339,12 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     for coord in plot_defn.coords:
         if coord.ndim == 2:
             try:
-                _check_contiguity_and_bounds(coord.bounds, data=cube.data,
-                                             abs_tol=two_dim_contig_atol)
+                discontiguity_check_2d(coord, data=cube.data,
+                                       abs_tol=two_dim_contig_atol)
             except ValueError:
-                if _check_contiguity_and_bounds(coord.bounds.T, data=cube.data,
-                                                abs_tol=two_dim_contig_atol)\
+                if discontiguity_check_2d(coord, data=cube.data,
+                                          abs_tol=two_dim_contig_atol,
+                                          transpose=True)\
                         is True:
                     plot_defn.transpose = True
 

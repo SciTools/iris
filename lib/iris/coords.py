@@ -143,20 +143,23 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
-def discontinuity_check_2d(coord, abs_tol=1e-4):
+def discontiguity_check_2d(coord, data, abs_tol=1e-4, transpose=False):
     """
-    Check bounds of a 2-dimensional coordinate are contiguous
+    Check bounds of a 2-dimensional coordinate are contiguous, and check that
+    any discontiguous bounds occur where the data is masked.
+
+    If discontiguity occurs but data is masked, raise warning
+    If discontiguity occurs and data is NOT masked, raise error
+
     Args:
-        bds: Array of bounds of shape (X,Y,4)
-        abs_tol: tolerance
-
-    Returns:
-        Bool, if there are no discontinuities
-        absolute difference along the x axis
-        absolute difference along the y axis
+        coord:
+            Array of the bounds of a 2D coord, of shape (X,Y,4)
+        data:
+            data of the the cube we are plotting
+        abs_tol:
+            tolerance when checking the contiguity
 
     """
-
     # TODO Work out how to tell which direction to check contiguity in:
     # The bounds that are supplied are the bounds for one axis only, so a
     # contiguity check will fail if checked along the other axis
@@ -165,9 +168,20 @@ def discontinuity_check_2d(coord, abs_tol=1e-4):
     # longitude_bds = [0, 0, 1, 1]
     # You can see that it matters which axis we are checking as the indexes
     # we are matching up differ.
-    bds = coord.bounds
+    #
+    # To explain that a bit better, if I pass in the longitude coordinate and
+    # therefore the bounds array is x-values only, then checking that the
+    # x-values match up in the y-direction seems a bit pointless.  It makes
+    # more sense to check that the x-values match up in the x-coord direction
+    # (e.g. longitude) and the y-values match up in the y-coord direction
+    # (e.g. latitude).
+    if transpose:
+        bds = coord.bounds.T
+    else:
+        bds = coord.bounds
     axis = guess_coord_axis(coord)
 
+    # TODO Rewrite this comment? The bounds indexes should be anticlockwise from bottom-left, not clockwise from top-right.
     # Check ordering:
     #         i    i+1
     #    j    @0    @1
@@ -182,7 +196,6 @@ def discontinuity_check_2d(coord, abs_tol=1e-4):
         raise ValueError('2D coordinates must have 2 or 4 bounds per point '
                          'for 2D coordinate plotting')
     elif bds.shape[2] == 2:
-        # TODO Make this work
         # NOTE: the bounds supplied are only the ones relevent to the
         # coordinate, i.e. bounds on longitude coord will need to be checked
         # in the x-direction (see x_diffs), whereas bounds on latitude coord
@@ -208,14 +221,31 @@ def discontinuity_check_2d(coord, abs_tol=1e-4):
     # At this point, diffs is an array of differences between bounds in one
     # direction only.  It is unnecessary and nonsensical to have both
     # x-diffs and y-diffs for one coord (i.e. longitude)
+    contiguous = np.all(diffs < abs_tol)
 
-    # TODO Work out exactly what values need to be returned from here.
-        def eq_diffs(x1):
-            return np.all(np.abs(x1) < abs_tol)
+    if not contiguous:
+        # True where data exists
+        mask_invert = np.logical_not(data.mask)
 
-        all_eq = match_y0_x1 and match_y1_x0
+        # Where a discontinuity occurs the grid will not be created correctly.
+        # This does not matter if the data is masked as this is not plotted.
+        # So for places where data exists (opposite of the mask) AND a
+        # diff exists. If any exist, raise a warning
+        not_masked_at_discontinuity = np.any(np.logical_and
+                                             (mask_invert[:, :-1], diffs))
 
-        return all_eq, np.abs(x_diffs), np.abs(y_diffs)
+        # If discontinuity occurs but not masked, any grid will be created
+        #  incorrectly, so raise a warning
+        if not_masked_at_discontinuity:
+            raise ValueError('The bounds of the {} coordinate are not'
+                             ' contiguous and data is not masked where the'
+                             ' discontiguity occurs. Not able to create a'
+                             ' suitable mesh to give to'
+                             ' Matplotlib'.format(coord.name()))
+        else:
+            warnings.warn('The bounds of the {} coordinate are not contiguous.'
+                          ' However, data is masked where the discontiguity'
+                          ' occurs so plotting anyway.'.format(coord.name()))
 
 
 def _get_2d_coord_bound_grid(bds):
@@ -1102,7 +1132,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
                                    rtol=rtol, atol=atol)
             elif self.ndim == 2:
-                allclose, _, _ = discontinuity_check_2d(self,
+                allclose, _, _ = discontiguity_check_2d(self,
                                                         abs_tol=atol)
                 return allclose
         else:
