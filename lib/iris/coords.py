@@ -45,7 +45,7 @@ import iris.time
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
-from iris.util import points_step
+from iris.util import points_step, guess_coord_axis
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',
@@ -141,6 +141,147 @@ BOUND_POSITION_END = 1
 # Private named tuple class for coordinate groups.
 _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
+
+
+def discontiguity_check_2d(coord, data, abs_tol=1e-4, transpose=False):
+    """
+    Check bounds of a 2-dimensional coordinate are contiguous, and check that
+    any discontiguous bounds occur where the data is masked.
+
+    If discontiguity occurs but data is masked, raise warning
+    If discontiguity occurs and data is NOT masked, raise error
+
+    Args:
+        coord:
+            Array of the bounds of a 2D coord, of shape (X,Y,4)
+        data:
+            data of the the cube we are plotting
+        abs_tol:
+            tolerance when checking the contiguity
+
+    """
+    # TODO Work out how to tell which direction to check contiguity in:
+    # The bounds that are supplied are the bounds for one axis only, so a
+    # contiguity check will fail if checked along the other axis
+    # i.e.:
+    # latitude_bds = [0, 1, 1, 0]
+    # longitude_bds = [0, 0, 1, 1]
+    # You can see that it matters which axis we are checking as the indexes
+    # we are matching up differ.
+    #
+    # To explain that a bit better, if I pass in the longitude coordinate and
+    # therefore the bounds array is x-values only, then checking that the
+    # x-values match up in the y-direction seems a bit pointless.  It makes
+    # more sense to check that the x-values match up in the x-coord direction
+    # (e.g. longitude) and the y-values match up in the y-coord direction
+    # (e.g. latitude).
+    if transpose:
+        bds = coord.bounds.T
+    else:
+        bds = coord.bounds
+    axis = guess_coord_axis(coord)
+
+    # TODO Rewrite this comment? The bounds indexes should be anticlockwise from bottom-left, not clockwise from top-right.
+    # Check ordering:
+    #         i    i+1
+    #    j    @0    @1
+    #  j+1    @3    @2
+    def mod360_diff(x1, x2):
+        diff = x1 - x2
+        diff = (diff + 360.0 + 180.0) % 360.0 - 180.0
+        return diff
+
+    # Check contiguity for 2 bounds per point or 4 bounds per point only.
+    if bds.shape[2] not in [2, 4]:
+        raise ValueError('2D coordinates must have 2 or 4 bounds per point '
+                         'for 2D coordinate plotting')
+    elif bds.shape[2] == 2:
+        # NOTE: the bounds supplied are only the ones relevent to the
+        # coordinate, i.e. bounds on longitude coord will need to be checked
+        # in the x-direction (see x_diffs), whereas bounds on latitude coord
+        # will need to be checked in y-direction (see y_diffs)
+        if axis == 'X':
+            # Compare cell with the cell next to it (i+1)
+            diffs = mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0])
+        elif axis == 'Y':
+            # Compare cell with the cell above it (j+1)
+            diffs = mod360_diff(bds[:-1, :, 1], bds[1:, :, 0])
+        else:
+            raise ValueError('Coordinate does not map to X or Y dimension; '
+                             'unable to check for contiguity.')
+    elif bds.shape[2] == 4:
+        if axis == 'X':
+            diffs = mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0])
+        elif axis == 'Y':
+            diffs = mod360_diff(bds[:-1, :, 3], bds[1:, :, 0])
+        else:
+            raise ValueError('Coordinate does not map to X or Y dimension; '
+                             'unable to check for contiguity.')
+
+    # At this point, diffs is an array of differences between bounds in one
+    # direction only.  It is unnecessary and nonsensical to have both
+    # x-diffs and y-diffs for one coord (i.e. longitude)
+    contiguous = np.all(diffs < abs_tol)
+
+    if not contiguous:
+        # True where data exists
+        mask_invert = np.logical_not(data.mask)
+
+        # Where a discontinuity occurs the grid will not be created correctly.
+        # This does not matter if the data is masked as this is not plotted.
+        # So for places where data exists (opposite of the mask) AND a
+        # diff exists. If any exist, raise a warning
+        not_masked_at_discontinuity = np.any(np.logical_and
+                                             (mask_invert[:, :-1], diffs))
+
+        # If discontinuity occurs but not masked, any grid will be created
+        #  incorrectly, so raise a warning
+        if not_masked_at_discontinuity:
+            raise ValueError('The bounds of the {} coordinate are not'
+                             ' contiguous and data is not masked where the'
+                             ' discontiguity occurs. Not able to create a'
+                             ' suitable mesh to give to'
+                             ' Matplotlib'.format(coord.name()))
+        else:
+            warnings.warn('The bounds of the {} coordinate are not contiguous.'
+                          ' However, data is masked where the discontiguity'
+                          ' occurs so plotting anyway.'.format(coord.name()))
+
+
+def _get_2d_coord_bound_grid(bds):
+    """
+    Function used that takes a bounds array for a 2-D coordinate variable with
+    4 sides and returns the bounds grid.
+
+    Cf standards requires the four vertices of the cell to be traversed
+    anti-clockwise if the coordinates are defined in a right handed coordinate
+    system.
+
+    selects the zeroth vertex of each cell and then adds the column the first
+    vertex at the end. For the top row it uses the thirs vertex, with the
+    second added on to the end.
+    e.g.
+    # 0-0-0-0-1
+    # 0-0-0-0-1
+    # 3-3-3-3-2
+
+
+    Args:
+        bounds: array of shape (X,Y,4)
+
+    Returns:
+        array of shape (X+1, Y+1)
+
+    """
+    bds_shape = bds.shape
+    result = np.zeros((bds_shape[0] + 1, bds_shape[1] + 1))
+
+    result[:-1, :-1] = bds[:, :, 0]
+    result[:-1, -1] = bds[:, -1, 1]
+    result[-1, :-1] = bds[-1, :, 3]
+    result[-1, -1] = bds[-1, -1, 2]
+
+    return result
 
 
 class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
@@ -951,15 +1092,23 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return _CellIterator(self)
 
     def _sanity_check_contiguous(self):
-        if self.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(
-                'Invalid operation for {!r}. Contiguous bounds are not defined'
-                ' for multi-dimensional coordinates.'.format(self.name()))
-        if self.nbounds != 2:
-            raise ValueError(
-                'Invalid operation for {!r}, with {} bounds. Contiguous bounds'
-                ' are only defined for coordinates with 2 bounds.'.format(
-                    self.name(), self.nbounds))
+        if self.ndim == 1:
+            if self.nbounds != 2:
+                raise ValueError('Invalid operation for {!r}, with {} bounds. '
+                                 'Contiguous bounds are only defined for 1D '
+                                 'coordinates with 2 bounds.'.format
+                                 (self.name(), self.nbounds))
+        elif self.ndim == 2:
+            if self.nbounds != 4:
+                raise ValueError('Invalid operation for {!r}, with {} bounds. '
+                                 'Contiguous bounds are only defined for 2D '
+                                 'coordinates with 4 bounds.'.format
+                                 (self.name(), self.nbounds))
+        else:
+            raise ValueError('Invalid operation for {!r}. Contiguous bounds '
+                             'are not defined for coordinates with more than '
+                             '2 dimensions.'.format(self.name()))
+
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
         """
@@ -979,19 +1128,29 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         if self.has_bounds():
             self._sanity_check_contiguous()
-            return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
-                               rtol=rtol, atol=atol)
+            if self.ndim == 1:
+                return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
+                                   rtol=rtol, atol=atol)
+            elif self.ndim == 2:
+                allclose, _, _ = discontiguity_check_2d(self,
+                                                        abs_tol=atol)
+                return allclose
         else:
             return False
 
     def contiguous_bounds(self):
         """
-        Returns the N+1 bound values for a contiguous bounded coordinate
+        Returns the N+1 bound values for a contiguous bounded 1D coordinate
         of length N.
+
+        Returns the (N+1, M+1) bound values for a contiguous bounded 2D
+        coordinate of shape (N, M).
+
+        Assumes input is contiguous.
 
         .. note::
 
-            If the coordinate is does not have bounds, this method will
+            If the coordinate does not have bounds, this method will
             return bounds positioned halfway between the coordinate's points.
 
         """
@@ -1003,8 +1162,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             self._sanity_check_contiguous()
             bounds = self.bounds
 
-        c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
-        c_bounds[-1] = bounds[-1, 1]
+        if self.ndim == 1:
+            c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
+            c_bounds[-1] = bounds[-1, 1]
+        elif self.ndim == 2:
+            c_bounds = _get_2d_coord_bound_grid(bounds)
         return c_bounds
 
     def is_monotonic(self):
