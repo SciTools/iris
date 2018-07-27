@@ -506,7 +506,7 @@ class TestPcolormesh(tests.GraphicsTest, SliceMixin):
 def check_warnings(method):
     """
     Decorator that adds a catch_warnings and filter to assert
-    the method being decorated issues a UserWarning.
+    the method being decorated issues a IrisUserWarning.
 
     """
     @wraps(method)
@@ -519,7 +519,7 @@ def check_warnings(method):
         # Check that method raises warning.
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 return method(self, *args, **kwargs)
     return decorated_method
 
@@ -541,7 +541,7 @@ def ignore_warnings(method):
 class CheckForWarningsMetaclass(type):
     """
     Metaclass that adds a further test for each base class test
-    that checks that each test raises a UserWarning. Each base
+    that checks that each test raises a IrisUserWarning. Each base
     class test is then overriden to ignore warnings in order to
     check the underlying functionality.
 

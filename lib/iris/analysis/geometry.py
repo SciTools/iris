@@ -86,7 +86,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_min_ix = x_min_ix[np.argmax(x_bounds_lower[x_min_ix])]
     except ValueError:
         warnings.warn("The geometry exceeds the cube's x dimension at the "
-                      "lower end.", UserWarning)
+                      "lower end.", IrisUserWarning)
         x_min_ix = 0 if x_ascending else x_coord.points.size - 1
 
     try:
@@ -94,7 +94,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_max_ix = x_max_ix[np.argmin(x_bounds_upper[x_max_ix])]
     except ValueError:
         warnings.warn("The geometry exceeds the cube's x dimension at the "
-                      "upper end.", UserWarning)
+                      "upper end.", IrisUserWarning)
         x_max_ix = x_coord.points.size - 1 if x_ascending else 0
 
     try:
@@ -102,7 +102,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         y_min_ix = y_min_ix[np.argmax(y_bounds_lower[y_min_ix])]
     except ValueError:
         warnings.warn("The geometry exceeds the cube's y dimension at the "
-                      "lower end.", UserWarning)
+                      "lower end.", IrisUserWarning)
         y_min_ix = 0 if y_ascending else y_coord.points.size - 1
 
     try:
@@ -110,7 +110,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         y_max_ix = y_max_ix[np.argmin(y_bounds_upper[y_max_ix])]
     except ValueError:
         warnings.warn("The geometry exceeds the cube's y dimension at the "
-                      "upper end.", UserWarning)
+                      "upper end.", IrisUserWarning)
         y_max_ix = y_coord.points.size - 1 if y_ascending else 0
 
     # extract coordinate values at these indices
@@ -160,7 +160,7 @@ def geometry_area_weights(cube, geometry, normalize=False):
         geometry's bounds lie outside the physically realistic range
         (i.e., abs(latitude) > 90., as it is commonly the case when
         bounds are constructed via guess_bounds()), the weights
-        calculation might be wrong. In this case, a UserWarning will
+        calculation might be wrong. In this case, a IrisUserWarning will
         be issued.
 
     Args:

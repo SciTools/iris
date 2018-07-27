@@ -124,7 +124,7 @@ class Test(tests.IrisTest):
 
     @tests.skip_data
     def test_distinct_xy_bounds_pole(self):
-        # is UserWarning issued for out-of-bounds? results will be unexpected!
+        # is IrisUserWarning issued for out-of-bounds? results will be unexpected!
         cube = stock.simple_pp()
         cube = cube[:4, :4]
         lon = cube.coord('longitude')
@@ -146,7 +146,7 @@ class Test(tests.IrisTest):
             weights = geometry_area_weights(cube, geometry)
             self.assertEqual(str(w[-1].message), "The geometry exceeds the "
                              "cube's y dimension at the upper end.")
-            self.assertTrue(issubclass(w[-1].category, UserWarning))
+            self.assertTrue(issubclass(w[-1].category, IrisUserWarning))
         target = np.array([
             [0, top_cell_half, top_cell_half, 0],
             [0, half, half, 0],

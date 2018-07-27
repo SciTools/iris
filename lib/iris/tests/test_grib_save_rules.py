@@ -96,7 +96,7 @@ class Test_phenomenon(tests.IrisTest):
         with warnings.catch_warnings():
             # This should issue a warning about unrecognised data
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 grib_save_rules.set_discipline_and_parameter(cube, grib)
         # do it all again, and this time check the results
         grib = None

@@ -349,11 +349,11 @@ class TestIterateFunctions(tests.IrisTest):
         # Same coord metadata and shape, but different values - check it produces a warning
         with warnings.catch_warnings():
             warnings.simplefilter("error")    # Cause all warnings to raise Exceptions
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 iris.iterate.izip(self.cube_a, self.cube_b,
                                   coords=self.coord_names)
             # Call with coordinates, rather than names
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 iris.iterate.izip(self.cube_a, self.cube_b, coords=[latitude,
                                                                     longitude])
         # Check it still iterates through as expected

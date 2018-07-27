@@ -140,7 +140,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 factory = HybridHeightFactory(orography=sigma)
 
     def test_bounded_orography(self):
@@ -158,7 +158,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegexp(UserWarning, msg):
+            with self.assertRaisesRegexp(IrisUserWarning, msg):
                 self.cube.coord('altitude')
 
 
@@ -219,7 +219,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 factory = HybridPressureFactory(
                     sigma=sigma, surface_air_pressure=sigma)
 
@@ -238,7 +238,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegexp(UserWarning, msg):
+            with self.assertRaisesRegexp(IrisUserWarning, msg):
                 self.cube.coord('air_pressure')
 
 if __name__ == "__main__":

@@ -520,7 +520,7 @@ def cosine_latitude_weights(cube):
             np.any(lat.points > np.pi / 2. + threshold):
         warnings.warn('Out of range latitude values will be '
                       'clipped to the valid range.',
-                      UserWarning)
+                      IrisUserWarning)
     points = lat.points
     l_weights = np.cos(points).clip(0., 1.)
 

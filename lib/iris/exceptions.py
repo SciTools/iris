@@ -24,7 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 
 class IrisUserWarning(UserWarning):
-    """An Iris UserWarning."""
+    """An Iris IrisUserWarning."""
     pass
 
 
