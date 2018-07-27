@@ -23,6 +23,11 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 
+class IrisUserWarning(UserWarning):
+    """An Iris UserWarning."""
+    pass
+
+
 class IrisError(Exception):
     """Base class for errors in the Iris package."""
     pass
