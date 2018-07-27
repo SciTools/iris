@@ -37,10 +37,11 @@ import iris.coords
 import iris.coord_systems
 import iris.exceptions
 from iris.util import _meshgrid
-from ._grid_angles import (
-    gridcell_angles,
-    true_vectors_from_grid_vectors as rotate_grid_vectors)
+from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
+# Avoid pycodestyle warnings for unused imports.
+gridcell_angles = gridcell_angles
+rotate_grid_vectors = rotate_grid_vectors
 
 # This value is used as a fall-back if the cube does not define the earth
 DEFAULT_SPHERICAL_EARTH_RADIUS = 6367470

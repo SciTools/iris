@@ -87,62 +87,20 @@ def _angle(p, q, r):
     p, q, r, are all 2-element arrays [lon, lat] of angles in degrees.
 
     """
-#    old_style = True
-    old_style = False
-    if old_style:
-        mid_lons = np.deg2rad(q[0])
+    mid_lons = np.deg2rad(q[0])
 
-        pr =  _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
-        pr_norm = np.sqrt(np.sum(pr**2, axis=0))
-        pr_top = pr[1] * np.cos(mid_lons) - pr[0] * np.sin(mid_lons)
+    pr = _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
+    pr_norm = np.sqrt(np.sum(pr**2, axis=0))
+    pr_top = pr[1] * np.cos(mid_lons) - pr[0] * np.sin(mid_lons)
 
-        index = pr_norm == 0
-        pr_norm[index] = 1
+    index = pr_norm == 0
+    pr_norm[index] = 1
 
-        cosine = np.maximum(np.minimum(pr_top / pr_norm, 1), -1)
-        cosine[index] = 0
+    cosine = np.maximum(np.minimum(pr_top / pr_norm, 1), -1)
+    cosine[index] = 0
 
-        psi = np.arccos(cosine) * np.sign(r[1] - p[1])
-        psi[index] = np.nan
-    else:
-        # Calculate unit vectors.
-        midpt_lons, midpt_lats = q[0], q[1]
-        lmb_r, phi_r = (np.deg2rad(arr) for arr in (midpt_lons, midpt_lats))
-        phi_hatvec_x = -np.sin(phi_r) * np.cos(lmb_r)
-        phi_hatvec_y = -np.sin(phi_r) * np.sin(lmb_r)
-        phi_hatvec_z = np.cos(phi_r)
-        shape_xyz = (1,) + midpt_lons.shape
-        phi_hatvec = np.concatenate([arr.reshape(shape_xyz)
-                                     for arr in (phi_hatvec_x,
-                                                 phi_hatvec_y,
-                                                 phi_hatvec_z)])
-        lmb_hatvec_z = np.zeros(midpt_lons.shape)
-        lmb_hatvec_y = np.cos(lmb_r)
-        lmb_hatvec_x = -np.sin(lmb_r)
-        lmb_hatvec = np.concatenate([arr.reshape(shape_xyz)
-                                     for arr in (lmb_hatvec_x,
-                                                 lmb_hatvec_y,
-                                                 lmb_hatvec_z)])
-
-        pr =  _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
-
-        # Dot products to form true-northward / true-eastward projections.
-        pr_cmpt_e = np.sum(pr * lmb_hatvec, axis=0)
-        pr_cmpt_n = np.sum(pr * phi_hatvec, axis=0)
-        psi = np.arctan2(pr_cmpt_n, pr_cmpt_e)
-
-        # TEMPORARY CHECKS:
-        # ensure that the two unit vectors are perpendicular.
-        dotprod = np.sum(phi_hatvec * lmb_hatvec, axis=0)
-        assert np.allclose(dotprod, 0.0)
-        # ensure that the vector components carry the original magnitude.
-        mag_orig = np.sum(pr * pr)
-        mag_rot = np.sum(pr_cmpt_e * pr_cmpt_e) + np.sum(pr_cmpt_n * pr_cmpt_n)
-        rtol = 1.e-3
-        check = np.allclose(mag_rot, mag_orig, rtol=rtol)
-        if not check:
-            print (mag_rot, mag_orig)
-            assert np.allclose(mag_rot, mag_orig, rtol=rtol)
+    psi = np.arccos(cosine) * np.sign(r[1] - p[1])
+    psi[index] = np.nan
 
     return psi
 
@@ -223,6 +181,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
 
     x_coord, y_coord = None, None
     if hasattr(x, 'bounds') and hasattr(y, 'bounds'):
+        # x and y are Coords.
         x_coord, y_coord = x.copy(), y.copy()
         x_coord.convert_units('degrees')
         y_coord.convert_units('degrees')
@@ -255,16 +214,22 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         msg = 'Input {!r} is a Coordinate, but {!r} is not.'
         raise ValueError(*is_and_not)
 
-    # Now have either 2 points arrays or 2 bounds arrays.
+    # Now have either 2 points arrays (ny, nx) or 2 bounds arrays (ny, nx, 4).
     # Construct (lhs, mid, rhs) where these represent 3 adjacent points with
     # increasing longitudes.
+    # Also make suitable X and Y coordinates for the result cube.
     if x.ndim == 2:
-        # PROBLEM: we can't use this if data is not full-longitudes,
-        # i.e. rhs of array must connect to lhs (aka 'circular' coordinate).
-        # But we have no means of checking that ?
-
+        # Data is points arrays.
         # Use previous + subsequent points along longitude-axis as references.
-        # NOTE: we also have no way to check that dim #2 really is the 'X' dim.
+
+        # PROBLEM: we assume that the rhs connects to the lhs, so we should
+        # really only use this if data is full-longitudes (as a 'circular'
+        # coordinate).
+        # This is mentioned in the docstring, but we have no general means of
+        # checking it.
+
+        # NOTE: we take the 2d grid as presented, so the second dimension is
+        # the 'X' dim.  Again, that is implicit + can't be checked.
         mid = np.array([x, y])
         lhs = np.roll(mid, 1, 2)
         rhs = np.roll(mid, -1, 2)
@@ -275,9 +240,11 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             x_coord = iris.coords.AuxCoord(y, standard_name='longitude',
                                            units='degrees')
     else:
-        # Get lhs and rhs locations by averaging top+bottom each side.
+        # Data is points arrays.
+        # Use different bounds points in the longitude-axis as references.
         # NOTE: so with bounds, we *don't* need full circular longitudes.
         xyz = _3d_xyz_from_latlon(x, y)
+        # Support two different choices of reference points locations.
         angle_boundpoints_vals = {'mid-lhs, mid-rhs': '03_to_12',
                                   'lower-left, lower-right': '0_to_1'}
         bounds_pos = angle_boundpoints_vals.get(cell_angle_boundpoints)
@@ -294,8 +261,8 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
                                         list(angle_boundpoints_vals.keys())))
         if not x_coord:
             # Create bounded coords for result cube.
-            # Use average lhs+rhs points in 3d to get 'mid' points, as coords
-            # with no points are not allowed.
+            # Use average of lhs+rhs points in 3d to get 'mid' points,
+            # as coords without points are not allowed.
             mid_xyz = 0.5 * (lhs_xyz + rhs_xyz)
             mid_latlons = _latlon_from_xyz(mid_xyz)
             # Create coords with given bounds, and averaged centrepoints.
@@ -305,10 +272,11 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             y_coord = iris.coords.AuxCoord(
                 points=mid_latlons[1], bounds=y,
                 standard_name='latitude', units='degrees')
+
         # Convert lhs and rhs points back to latlon form -- IN DEGREES !
         lhs = np.rad2deg(_latlon_from_xyz(lhs_xyz))
         rhs = np.rad2deg(_latlon_from_xyz(rhs_xyz))
-        # mid is coord.points, whether input or made up.
+        # 'mid' is coord.points, whether from input or just made up.
         mid = np.array([x_coord.points, y_coord.points])
 
     # Do the angle calcs, and return as a suitable cube.
@@ -321,11 +289,12 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
     return result
 
 
-def true_vectors_from_grid_vectors(u_cube, v_cube,
-                                   grid_angles_cube=None,
-                                   grid_angles_kwargs=None):
+def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None,
+                        grid_angles_kwargs=None):
     """
     Rotate distance vectors from grid-oriented to true-latlon-oriented.
+
+    Can also rotate by arbitrary angles, if they are passed in.
 
     .. Note::
 
