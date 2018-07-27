@@ -1030,7 +1030,7 @@ class CFReader(object):
                                                cf_variable.cf_name,
                                                cf_var.dimensions,
                                                cf_variable.dimensions)
-                        warnings.warn(msg)
+                        warnings.warn(msg, IrisUserWarning)
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
@@ -1066,7 +1066,7 @@ class CFReader(object):
                                                        cf_root,
                                                        cf_var.dimensions,
                                                        cf_variable.dimensions)
-                                warnings.warn(msg)
+                                warnings.warn(msg, IrisUserWarning)
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group

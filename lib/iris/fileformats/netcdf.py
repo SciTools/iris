@@ -624,7 +624,7 @@ def _load_aux_factory(engine, cube):
                         msg = 'Ignoring atmosphere hybrid sigma pressure ' \
                             'scalar coordinate {!r} bounds.'.format(
                                 coord_p0.name())
-                        warnings.warn(msg)
+                        warnings.warn(msg, IrisUserWarning)
                     coord_a = coord_from_term('a')
                     if coord_a is not None:
                         delta = coord_a * coord_p0.points[0]
@@ -1021,7 +1021,7 @@ class Saver(object):
             else:
                 msg = 'cf_profile is available but no {} defined.'.format(
                     'cf_patch')
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
 
     @staticmethod
     def check_attribute_compliance(container, data):
@@ -1227,7 +1227,7 @@ class Saver(object):
             if factory_defn is None:
                 msg = 'Unable to determine formula terms ' \
                       'for AuxFactory: {!r}'.format(factory)
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
                 # primary coord that signals the presense of a dimensionless
@@ -2080,7 +2080,7 @@ class Saver(object):
                 msg = '{attr_name!r} is being added as CF data variable ' \
                       'attribute, but {attr_name!r} should only be a CF ' \
                       'global attribute.'.format(attr_name=attr_name)
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
 
             _setncattr(cf_var, attr_name, value)
 
@@ -2369,7 +2369,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
             else:
                 msg = 'cf_profile is available but no {} defined.'.format(
                     'cf_patch_conventions')
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
 
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=conventions)

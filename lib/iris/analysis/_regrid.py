@@ -451,7 +451,7 @@ class RectilinearRegridder(object):
             except KeyError:
                 msg = 'Cannot update aux_factory {!r} because of dropped' \
                       ' coordinates.'.format(factory.name())
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
         return result
 
     def _check_units(self, coord):

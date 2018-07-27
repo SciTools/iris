@@ -867,7 +867,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     """
     if src_cube.aux_factories:
         msg = 'All source cube derived coordinates will be ignored.'
-        warnings.warn(msg)
+        warnings.warn(msg, IrisUserWarning)
 
     # Get the source cube x and y 2D auxiliary coordinates.
     sx, sy = src_cube.coord(axis='x'), src_cube.coord(axis='y')
@@ -1561,7 +1561,7 @@ class _ProjectedUnstructuredRegridder(object):
             except KeyError:
                 msg = 'Cannot update aux_factory {!r} because of dropped' \
                       ' coordinates.'.format(factory.name())
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
         return result
 
     def __call__(self, src_cube):

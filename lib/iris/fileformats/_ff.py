@@ -538,7 +538,7 @@ class FF2PP(object):
             msg = ('The x or y coordinates of your boundary condition field '
                    'may be incorrect, not having taken into account the '
                    'boundary size.')
-            warnings.warn(msg)
+            warnings.warn(msg, IrisUserWarning)
         else:
             range2 = field_dim[0] - res_low
             range1 = field_dim[0] - halo_dim * res_low
@@ -724,7 +724,7 @@ class FF2PP(object):
                             msg = ('The STASH code {0} was not found in the '
                                    'STASH to grid type mapping. Picking the P '
                                    'position as the cell type'.format(stash))
-                            warnings.warn(msg)
+                            warnings.warn(msg, IrisUserWarning)
                         field.bzx, field.bdx = grid.regular_x(subgrid)
                         field.bzy, field.bdy = grid.regular_y(subgrid)
                         field.bplat = grid.pole_lat

@@ -1225,7 +1225,7 @@ fc_extras
                     cube.attributes[str(attr_name)] = attr_value
             except ValueError as e:
                 msg = 'Skipping global attribute {!r}: {}'
-                warnings.warn(msg.format(attr_name, str(e)))
+                warnings.warn(msg.format(attr_name, str(e)), IrisUserWarning)
 
 
 
@@ -1263,7 +1263,8 @@ fc_extras
         north_pole_latitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LAT, 90.0)
         north_pole_longitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LON, 0.0)
         if north_pole_latitude is None or north_pole_longitude is None:
-            warnings.warn('Rotated pole position is not fully specified')
+            warnings.warn('Rotated pole position is not fully specified', 
+                          IrisUserWarning)
 
         north_pole_grid_lon = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0)
 
@@ -1495,9 +1496,10 @@ fc_extras
             msg = u'Ignoring netCDF variable {!r} invalid units {!r}'.format(
                 cf_var.cf_name, attr_units)
             if six.PY3:
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
             else:
-                warnings.warn(msg.encode('ascii', errors='backslashreplace'))
+                warnings.warn(msg.encode('ascii', errors='backslashreplace'),
+                              IrisUserWarning)
             attributes['invalid_units'] = attr_units
             attr_units = cf_units._UNKNOWN_UNIT_STRING
 
@@ -1576,7 +1578,7 @@ fc_extras
         if attr_bounds is not None and attr_climatology is not None:
             warnings.warn('Ignoring climatology in favour of bounds attribute '
                           'on NetCDF variable {!r}.'.format(
-                          cf_coord_var.cf_name))
+                          cf_coord_var.cf_name), IrisUserWarning)
 
         return cf_bounds_var
 
@@ -1624,7 +1626,8 @@ fc_extras
         if ma.is_masked(points_data):
             points_data = ma.filled(points_data)
             msg = 'Gracefully filling {!r} dimension coordinate masked points'
-            warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+            warnings.warn(msg.format(str(cf_coord_var.cf_name)),
+                          IrisUserWarning)
 
         # Get any coordinate bounds.
         cf_bounds_var = get_cf_bounds_var(cf_coord_var)
@@ -1634,7 +1637,8 @@ fc_extras
             if ma.is_masked(bounds_data):
                 bounds_data = ma.filled(bounds_data)
                 msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
-                warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+                warnings.warn(msg.format(str(cf_coord_var.cf_name)),
+                              IrisUserWarning)
             # Handle transposed bounds where the vertex dimension is not
             # the last one. Test based on shape to support different
             # dimension names.
@@ -1687,8 +1691,8 @@ fc_extras
             cube.add_aux_coord(coord, data_dims)
             msg = 'Failed to create {name!r} dimension coordinate: {error}\n' \
                   'Gracefully creating {name!r} auxiliary coordinate instead.'
-            warnings.warn(msg.format(name=str(cf_coord_var.cf_name),
-                                     error=e_msg))
+            msg = msg.format(name=str(cf_coord_var.cf_name), error=e_msg)
+            warnings.warn(msg, IrisUserWarning)
         else:
             # Add the dimension coordinate to the cube.
             if data_dims:
@@ -1991,25 +1995,23 @@ fc_extras
         standard_parallel = getattr(
             cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
 
-        if false_easting is not None and \
-                false_easting != 0:
+        if false_easting is not None and false_easting != 0:
             warnings.warn('False eastings other than 0.0 not yet supported '
-                          'for Mercator projections')
+                          'for Mercator projections', IrisUserWarning)
             is_valid = False
-        if false_northing is not None and \
-                false_northing != 0:
+        if false_northing is not None and false_northing != 0:
             warnings.warn('False northings other than 0.0 not yet supported '
-                          'for Mercator projections')
+                          'for Mercator projections', IrisUserWarning)
             is_valid = False
         if scale_factor_at_projection_origin is not None and \
                 scale_factor_at_projection_origin != 1:
             warnings.warn('Scale factors other than 1.0 not yet supported for '
-                          'Mercator projections')
+                          'Mercator projections', IrisUserWarning)
             is_valid = False
-        if standard_parallel is not None and \
-                standard_parallel != 0:
+        if standard_parallel is not None and standard_parallel != 0:
             warnings.warn('Standard parallels other than 0.0 not yet '
-                          'supported for Mercator projections')
+                          'supported for Mercator projections',
+                          IrisUserWarning)
             is_valid = False
 
         return is_valid
@@ -2029,7 +2031,7 @@ fc_extras
         if scale_factor_at_projection_origin is not None and \
                 scale_factor_at_projection_origin != 1:
             warnings.warn('Scale factors other than 1.0 not yet supported for '
-                          'stereographic projections')
+                          'stereographic projections', IrisUserWarning)
             is_valid = False
 
         return is_valid
@@ -2051,8 +2053,9 @@ fc_extras
                 if method_words[0].lower() not in CM_KNOWN_METHODS:
                     msg = 'NetCDF variable {!r} contains unknown cell ' \
                           'method {!r}'
-                    warnings.warn(msg.format('{}'.format(cf_var_name),
-                                             '{}'.format(method_words[0])))
+                    msg = msg.format('{}'.format(cf_var_name), 
+                                     '{}'.format(method_words[0]))
+                    warnings.warn(msg, IrisUserWarning)
                 d[CM_METHOD] = method
                 name = d[CM_NAME]
                 name = name.replace(' ', '')

@@ -1694,7 +1694,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 msg = 'Unable to interpret field {}. {}. Skipping ' \
                       'the remainder of the file.'.format(field_count,
                                                           str(e))
-                warnings.warn(msg)
+                warnings.warn(msg, IrisUserWarning)
                 break
 
             # Skip the trailing 4-byte word containing the header length

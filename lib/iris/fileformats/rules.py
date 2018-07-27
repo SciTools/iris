@@ -312,7 +312,7 @@ def _make_cube(field, converter):
             cube.units = metadata.units
         except ValueError:
             msg = 'Ignoring PP invalid units {!r}'.format(metadata.units)
-            warnings.warn(msg)
+            warnings.warn(msg, IrisUserWarning)
             cube.attributes['invalid_units'] = metadata.units
             cube.units = cf_units._UNKNOWN_UNIT_STRING
 
