@@ -115,10 +115,10 @@ class TestGridcellAngles(tests.IrisTest):
         cube.add_aux_coord(co_y, (0, 1))
         return cube
 
-    def _check_different_orientations_and_latitudes(
-            self,
-            method='mid-lhs, mid-rhs',
-            atol_degrees=0.005):
+    def _check_orientations_and_latitudes(self,
+                                          method='mid-lhs, mid-rhs',
+                                          atol_degrees=0.005,
+                                          cellsize_degrees=1.0):
         ny, nx = 7, 9
         x0, x1 = -164, 164
         y0, y1 = -75, 75
@@ -128,8 +128,9 @@ class TestGridcellAngles(tests.IrisTest):
 
         # Make gridcells rectangles surrounding these centrepoints, but also
         # tilted at various angles (= same as x-point lons, as that's easy).
-        dx = 1.0  # half-width of gridcells, in degrees
-        dy = dx   # half-height of gridcells, in degrees
+#        dx = cellsize_degrees  # half-width of gridcells, in degrees
+#        dy = dx   # half-height of gridcells, in degrees
+
         # Calculate centrepoint lons+lats : in radians, and shape (ny, nx, 1).
         xangs, yangs = np.deg2rad(x_pts_2d), np.deg2rad(y_pts_2d)
         xangs, yangs = [arr[..., None] for arr in (xangs, yangs)]
@@ -137,10 +138,10 @@ class TestGridcellAngles(tests.IrisTest):
         dx_corners = [[[-1, 1, 1, -1]]]
         dy_corners = [[[-1, -1, 1, 1]]]
         # Calculate the relative offsets in x+y at the 4 corners.
-        x_ofs_2d = dx * np.cos(xangs) * dx_corners
-        x_ofs_2d -= dy * np.sin(xangs) * dy_corners
-        y_ofs_2d = dy * np.cos(xangs) * dy_corners
-        y_ofs_2d += dx * np.sin(xangs) * dx_corners
+        x_ofs_2d = cellsize_degrees * np.cos(xangs) * dx_corners
+        x_ofs_2d -= cellsize_degrees * np.sin(xangs) * dy_corners
+        y_ofs_2d = cellsize_degrees * np.cos(xangs) * dy_corners
+        y_ofs_2d += cellsize_degrees * np.sin(xangs) * dx_corners
         # Apply a latitude stretch to make correct angles on the globe.
         y_ofs_2d *= np.cos(yangs)
         # Make bounds arrays by adding the corner offsets to the centrepoints.
@@ -171,21 +172,41 @@ class TestGridcellAngles(tests.IrisTest):
         angles_expected[:] = angles
         self.assertArrayAllClose(angles_calculated, angles_expected,
                                  atol=atol_degrees)
-        return angles_calculated
+        return angles_calculated, angles_expected
 
-    def test_different_orientations_and_latitudes(self):
-        self._check_different_orientations_and_latitudes()
+    def test_all_orientations_and_latitudes(self):
+        self._check_orientations_and_latitudes()
 
     def test_different_methods(self):
-        r1 = self._check_different_orientations_and_latitudes(
-            'mid-lhs, mid-rhs', atol_degrees=5.0)
-        r2 = self._check_different_orientations_and_latitudes(
-            'lower-left, lower-right', atol_degrees=5.0)
-#        print(np.round(r1 - r2, 3))
-#        for fn in (np.max, np.mean):
-#            print(fn.__name__, fn(np.abs(r1 - r2)))
-        atol = 1.0  # !!!!!!!
+        # Get results with both calculation methods.
+        # A smallish cellsize should yield similar results in both cases.
+        r1, _ = self._check_orientations_and_latitudes(
+            method='mid-lhs, mid-rhs',
+            cellsize_degrees=0.1, atol_degrees=0.1)
+        r2, _ = self._check_orientations_and_latitudes(
+            method='lower-left, lower-right',
+            cellsize_degrees=0.1, atol_degrees=0.1)
+
+        print(np.round(r1 - r2, 3))
+        for fn in (np.max, np.mean):
+            print(fn.__name__, fn(np.abs(r1 - r2)))
+
+        atol = 0.1  # A whole degree - significantly different at higher latitudes.
         self.assertArrayAllClose(r1, r2, atol=atol)
+
+    def test_methods_and_cellsizes(self):
+        for cellsize in (0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0):
+            r_mid, exp_mid = self._check_orientations_and_latitudes(
+                method='mid-lhs, mid-rhs',
+                cellsize_degrees=cellsize, atol_degrees=25)
+            r_btm, exp_btm = self._check_orientations_and_latitudes(
+                method='lower-left, lower-right',
+                cellsize_degrees=cellsize, atol_degrees=25)
+            wc_mid = np.max(np.abs(r_mid - exp_mid))
+            wc_btm = np.max(np.abs(r_btm - exp_btm))
+            msg = ('Cell size = {:5.2f} degrees, wc-abs-errors : '
+                   'mid-lr={:7.3f} lower-lr={:7.3f}')
+            print(msg.format(cellsize, wc_mid, wc_btm))
 
 
 #    def test_single_cell_equatorial(self):

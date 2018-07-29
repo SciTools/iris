@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import numpy as np
 
+import cartopy.crs as ccrs
 import iris
 
 
@@ -183,8 +184,6 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
     if hasattr(x, 'bounds') and hasattr(y, 'bounds'):
         # x and y are Coords.
         x_coord, y_coord = x.copy(), y.copy()
-        x_coord.convert_units('degrees')
-        y_coord.convert_units('degrees')
         if x_coord.ndim != 2 or y_coord.ndim != 2:
             msg = ('Coordinate inputs must have 2-dimensional shape. ',
                    'Got x-shape of {} and y-shape of {}.')
@@ -193,18 +192,41 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             msg = ('Coordinate inputs must have same shape. ',
                    'Got x-shape of {} and y-shape of {}.')
             raise ValueError(msg.format(x_coord.shape, y_coord.shape))
-# NOTE: would like to check that dims are in correct order, but can't do that
-# if there is no cube.
-# TODO: **document** -- another input format requirement
-#        x_dims, y_dims = (cube.coord_dims(co) for co in (x_coord, y_coord))
-#        if x_dims != (0, 1) or y_dims != (0, 1):
-#            msg = ('Coordinate inputs must map to cube dimensions (0, 1). ',
-#                   'Got x-dims of {} and y-dims of {}.')
-#            raise ValueError(msg.format(x_dims, y_dims))
+        if cube:
+            x_dims, y_dims = (cube.coord_dims(co) for co in (x, y))
+            if x_dims != y_dims:
+                msg = ('X and Y coordinates must have the same cube '
+                       'dimensions.  Got x-dims = {} and y-dims = {}.')
+                raise ValueError(msg.format(x_dims, y_dims))
+        cs = x_coord.coord_system
+        if y_coord.coord_system != cs:
+            msg = ('Coordinate inputs must have same coordinate system. ',
+                   'Got x of {} and y of {}.')
+            raise ValueError(msg.format(cs, y_coord.coord_system))
+
+        # Base calculation on bounds if we have them, or points as a fallback.
         if x_coord.has_bounds() and y_coord.has_bounds():
             x, y = x_coord.bounds, y_coord.bounds
         else:
             x, y = x_coord.points, y_coord.points
+
+        # Make sure these arrays are ordinary lats+lons, in degrees.
+        if cs is None:
+            # No coord system : assume x + y are lons + lats.
+            # Just make sure they are in degrees !
+            # NOTE: raises an error if units are not angles.
+            x = x_coord.units.convert(x, 'degrees')
+            y = y_coord.units.convert(y, 'degrees')
+        else:
+            # Transform points into true lats + lons.
+            crs_src = cs.as_cartopy_crs()
+            crs_pc = ccrs.PlateCarree()
+            # Note: flatten, as transform_points is limited to 2D arrays.
+            shape = x.shape
+            x, y = (arr.flatten() for arr in (x, y))
+            pts = crs_pc.transform_points(x, y, src_crs=crs_src)
+            x = pts[..., 0].reshape(shape)
+            y = pts[..., 1].reshape(shape)
 
     elif hasattr(x, 'bounds') or hasattr(y, 'bounds'):
         # One was a Coord, and the other not ?
@@ -215,8 +237,8 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         raise ValueError(*is_and_not)
 
     # Now have either 2 points arrays (ny, nx) or 2 bounds arrays (ny, nx, 4).
-    # Construct (lhs, mid, rhs) where these represent 3 adjacent points with
-    # increasing longitudes.
+    # Construct (lhs, mid, rhs) where these represent 3 points at increasing X
+    # indices.
     # Also make suitable X and Y coordinates for the result cube.
     if x.ndim == 2:
         # Data is points arrays.
