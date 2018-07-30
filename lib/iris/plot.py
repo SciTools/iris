@@ -1189,6 +1189,139 @@ def points(cube, *args, **kwargs):
                                 *args, **kwargs)
 
 
+def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
+    """
+    Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
+
+    Returns arguments (x, y, u, v), to be passed to the underlying matplotlib
+    call.
+
+    "u_data" will always be "u_cube.data".
+    The matching "v_cube.data" component is stored in kwargs['_v_data'].
+
+    """
+    v_data = kwargs.pop('_v_data')
+
+    # Rescale u+v values for plot distortion.
+    crs = kwargs.get('transform', None)
+    if crs:
+        if not isinstance(crs, (ccrs.PlateCarree, ccrs.RotatedPole)):
+            msg = ('Can only plot vectors provided in a lat-lon '
+                   'projection, i.e. "cartopy.crs.PlateCarree" or '
+                   '"cartopy.crs.RotatedPole". This '
+                   "cubes coordinate system is {}.")
+            raise ValueError(msg.format(crs))
+        # Given the above check, the Y points must be latitudes.
+        # We therefore **assume** they are in degrees : I'm not sure this
+        # is wise, but all the rest of this plot code does that, e.g. in
+        # _map_common.
+        # TODO: investigate degree units assumptions, here + elsewhere.
+
+        # Implement a latitude scaling, but preserve the given magnitudes.
+        v_data = v_data.copy()
+        mags = np.sqrt(u_data * u_data + v_data * v_data)
+        v_data *= np.cos(np.deg2rad(y_points))
+        scales = mags / np.sqrt(u_data * u_data + v_data * v_data)
+        u_data *= scales
+        v_data *= scales
+
+    return ((x_points, y_points, u_data, v_data), kwargs)
+
+
+def quiver(u_cube, v_cube, *args, **kwargs):
+    """
+    Draws an arrow plot from two vector component cubes.
+
+    Args:
+
+    * u_cube, v_cube : (:class:`~iris.cube.Cube`)
+        u and v vector components.  Must have same shape and units.
+        If the cubes have geographic coordinates, the values are treated as
+        true distance differentials, e.g. windspeeds, and *not* map coordinate
+        vectors.  The components are aligned with the North and East of the
+        cube coordinate system.
+
+    .. Note:
+
+        At present, if u_cube and v_cube have geographic coordinates, then they
+        must be in a lat-lon coordinate system, though it may be a rotated one.
+        To transform wind values between coordinate systems, use
+        :func:`iris.analysis.cartography.rotate_vectors`.
+        To transform coordinate grid points, you will need to create
+        2-dimensional arrays of x and y values.  These can be transformed with
+        :meth:`cartopy.crs.CRS.transform_points`.
+
+    Kwargs:
+
+    * coords: (list of :class:`~iris.coords.Coord` or string)
+        Coordinates or coordinate names. Use the given coordinates as the axes
+        for the plot. The order of the given coordinates indicates which axis
+        to use for each, where the first element is the horizontal
+        axis of the plot and the second element is the vertical axis
+        of the plot.
+
+    * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
+        Defaults to the current axes if none provided.
+
+    See :func:`matplotlib.pyplot.quiver` for details of other valid
+    keyword arguments.
+
+    """
+    #
+    # TODO: check u + v cubes for compatibility.
+    #
+    kwargs['_v_data'] = v_cube.data
+    return _draw_2d_from_points('quiver', _vector_component_args, u_cube,
+                                *args, **kwargs)
+
+
+def streamplot(u_cube, v_cube, *args, **kwargs):
+    """
+    Draws a streamline plot from two vector component cubes.
+
+    Args:
+
+    * u_cube, v_cube : (:class:`~iris.cube.Cube`)
+        u and v vector components.  Must have same shape and units.
+        If the cubes have geographic coordinates, the values are treated as
+        true distance differentials, e.g. windspeeds, and *not* map coordinate
+        vectors.  The components are aligned with the North and East of the
+        cube coordinate system.
+
+    .. Note:
+
+        At present, if u_cube and v_cube have geographic coordinates, then they
+        must be in a lat-lon coordinate system, though it may be a rotated one.
+        To transform wind values between coordinate systems, use
+        :func:`iris.analysis.cartography.rotate_vectors`.
+        To transform coordinate grid points, you will need to create
+        2-dimensional arrays of x and y values.  These can be transformed with
+        :meth:`cartopy.crs.CRS.transform_points`.
+
+    Kwargs:
+
+    * coords: (list of :class:`~iris.coords.Coord` or string)
+        Coordinates or coordinate names. Use the given coordinates as the axes
+        for the plot. The order of the given coordinates indicates which axis
+        to use for each, where the first element is the horizontal
+        axis of the plot and the second element is the vertical axis
+        of the plot.
+
+    * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
+        Defaults to the current axes if none provided.
+
+    See :func:`matplotlib.pyplot.quiver` for details of other valid
+    keyword arguments.
+
+    """
+    #
+    # TODO: check u + v cubes for compatibility.
+    #
+    kwargs['_v_data'] = v_cube.data
+    return _draw_2d_from_points('streamplot', _vector_component_args, u_cube,
+                                *args, **kwargs)
+
+
 def plot(*args, **kwargs):
     """
     Draws a line plot based on the given cube(s) or coordinate(s).
