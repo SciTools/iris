@@ -41,7 +41,6 @@ import matplotlib.ticker as mpl_ticker
 import matplotlib.transforms as mpl_transforms
 import numpy as np
 import numpy.ma as ma
-import warnings
 
 import iris.cube
 import iris.analysis.cartography as cartography
@@ -65,7 +64,7 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
             if isinstance(coord, int):
                 result.append('dim={}'.format(coord))
             else:
-                result.append(cube.coord.name())
+                result.append(coord.name())
         return ', '.join(result)
 
     def as_coord(coord):
@@ -127,8 +126,6 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     # Note the use of `reversed` to convert from the X-then-Y
     # convention of the end-user API to the V-then-U convention used by
     # the plotting routines.
-    coords = names(coords)
-
     plot_coords = list(reversed(coords))
     return PlotDefn(plot_coords, transpose)
 
@@ -296,7 +293,7 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4, transpose=False):
         bounds = coord.bounds
 
     both_dirs_contiguous, diffs_along_x, diffs_along_y = \
-        iris.coords._discontinuity_in_2d_bounds(bounds, abs_tol=abs_tol)
+        iris.coords._discontiguity_in_2d_bounds(bounds, abs_tol=abs_tol)
 
     if not both_dirs_contiguous:
 
@@ -322,11 +319,6 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4, transpose=False):
                              ' discontiguity occurs. Not able to create a'
                              ' suitable mesh to give to'
                              ' Matplotlib'.format(coord.name()))
-        else:
-            msg = 'The bounds of the {} coordinate are not contiguous.  ' \
-                  'However, data is masked where the discontiguity occurs ' \
-                  'so plotting anyway.'.format(coord.name())
-            warnings.warn(msg)
 
 
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
@@ -344,16 +336,17 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     two_dim_contig_atol = kwargs.pop('two_dim_coord_contiguity_atol',
                                      1e-4)
     for coord in plot_defn.coords:
-        if coord.ndim == 2 and coord.has_bounds():
-            try:
-                _check_contiguity_and_bounds(coord, data=cube.data,
-                                             abs_tol=two_dim_contig_atol)
-            except ValueError:
-                if _check_contiguity_and_bounds(coord, data=cube.data,
-                                                abs_tol=two_dim_contig_atol,
-                                                transpose=True)\
+        if hasattr(coord, 'has_bounds'):
+            if coord.ndim == 2 and coord.has_bounds():
+                try:
+                    _check_contiguity_and_bounds(coord, data=cube.data,
+                                                 abs_tol=two_dim_contig_atol)
+                except ValueError:
+                    if _check_contiguity_and_bounds(
+                            coord, data=cube.data,
+                            abs_tol=two_dim_contig_atol, transpose=True) \
                         is True:
-                    plot_defn.transpose = True
+                        plot_defn.transpose = True
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
@@ -374,7 +367,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         string_axes = {}
 
         for coord, axis_name, data_dim in zip([u_coord, v_coord],
-                                              ['plotxaxis', 'yaxis'],
+                                              ['xaxis', 'yaxis'],
                                               [1, 0]):
             if coord is None:
                 values = np.arange(data.shape[data_dim] + 1)
