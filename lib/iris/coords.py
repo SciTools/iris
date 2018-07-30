@@ -143,7 +143,7 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
-def _discontinuity_in_2d_bounds(bds, abs_tol=1e-4):
+def _discontiguity_in_2d_bounds(bds, abs_tol=1e-4):
     """
     Check bounds of a 2-dimensional coordinate are contiguous
     Args:
@@ -156,7 +156,7 @@ def _discontinuity_in_2d_bounds(bds, abs_tol=1e-4):
         absolute difference along the y axis
 
     """
-    # Check form is (ny, nx, 4)
+    # Check bds has the shape (ny, nx, 4)
     if not bds.ndim == 3 and bds.shape[2] == 4:
         raise ValueError('2D coordinates must have 4 bounds per point '
                          'for 2D coordinate plotting')
@@ -1066,14 +1066,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self.has_bounds():
             self._sanity_check_contiguous()
             if self.ndim == 1:
-                return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
-                                   rtol=rtol, atol=atol)
+                contiguous = np.allclose(self.bounds[1:, 0],
+                                         self.bounds[:-1, 1],
+                                         rtol=rtol, atol=atol)
             elif self.ndim == 2:
-                allclose, _, _ = _discontinuity_in_2d_bounds(self.bounds,
+                contiguous, _, _ = _discontiguity_in_2d_bounds(self.bounds,
                                                              abs_tol=atol)
-                return allclose
         else:
-            return False
+            contiguous = False
+        return contiguous
 
     def contiguous_bounds(self):
         """
