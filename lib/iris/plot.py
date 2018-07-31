@@ -1107,7 +1107,10 @@ def outline(cube, coords=None, color='k', linewidth=None, axes=None):
 
 def pcolor(cube, *args, **kwargs):
     """
-    Draws a pseudocolor plot based on the given Cube.
+    Draws a pseudocolor plot based on the given 2-dimensional Cube.
+
+    The cube must have either two 1-dimensional coordinates or two
+    2-dimensional coordinates with contiguous bounds to plot against each other.
 
     Kwargs:
 
@@ -1121,6 +1124,11 @@ def pcolor(cube, *args, **kwargs):
     * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
         Defaults to the current axes if none provided.
 
+    * two_dim_coord_contiguity_atol: absolute tolerance when checking for
+        contiguity between cells in a two dimensional coordinate.
+
+
+
     See :func:`matplotlib.pyplot.pcolor` for details of other valid
     keyword arguments.
 
@@ -1133,7 +1141,10 @@ def pcolor(cube, *args, **kwargs):
 
 def pcolormesh(cube, *args, **kwargs):
     """
-    Draws a pseudocolor plot based on the given Cube.
+    Draws a pseudocolor plot based on the given 2-dimensional Cube.
+
+    The cube must have either two 1-dimensional coordinates or two
+    2-dimensional coordinates with contiguous bounds to plot against each other.
 
     Kwargs:
 
