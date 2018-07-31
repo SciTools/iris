@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -37,6 +37,9 @@ import iris.coords
 import iris.coord_systems
 import iris.exceptions
 from iris.util import _meshgrid
+from ._grid_angles import (
+    gridcell_angles,
+    true_vectors_from_grid_vectors as rotate_grid_vectors)
 
 
 # This value is used as a fall-back if the cube does not define the earth
