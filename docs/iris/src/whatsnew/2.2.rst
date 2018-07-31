@@ -6,7 +6,7 @@ What's New in Iris 2.2.0
 
 
 This document explains the new/changed features of Iris in the alpha release
-    of version 2.2.0
+of version 2.2.0
 (:doc:`View all changes <index>`).
 
 
