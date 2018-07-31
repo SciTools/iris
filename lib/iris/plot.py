@@ -288,9 +288,7 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4, transpose=False):
 
     """
     if transpose:
-        bounds = coord.bounds.T
-    else:
-        bounds = coord.bounds
+        data = data.T
 
     both_dirs_contiguous, diffs_along_x, diffs_along_y = \
         iris.coords._discontiguity_in_2d_bounds(bounds, abs_tol=abs_tol)
@@ -333,19 +331,18 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    two_dim_contig_atol = kwargs.pop('two_dim_coord_contiguity_atol',
+    twodim_contig_atol = kwargs.pop('two_dim_coord_contiguity_atol',
                                      1e-4)
     for coord in plot_defn.coords:
         if hasattr(coord, 'has_bounds'):
             if coord.ndim == 2 and coord.has_bounds():
                 try:
                     _check_contiguity_and_bounds(coord, data=cube.data,
-                                                 abs_tol=two_dim_contig_atol)
+                                                 abs_tol=twodim_contig_atol)
                 except ValueError:
-                    if _check_contiguity_and_bounds(
-                            coord, data=cube.data,
-                            abs_tol=two_dim_contig_atol, transpose=True) \
-                        is True:
+                    if _check_contiguity_and_bounds(coord, data=cube.data,
+                                                    abs_tol=twodim_contig_atol,
+                                                    transpose=True) is True:
                         plot_defn.transpose = True
 
     if _can_draw_map(plot_defn.coords):
@@ -1103,7 +1100,8 @@ def pcolor(cube, *args, **kwargs):
     Draws a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
-    2-dimensional coordinates with contiguous bounds to plot against each other.
+    2-dimensional coordinates with contiguous bounds to plot against each
+    other.
 
     Kwargs:
 
@@ -1137,7 +1135,8 @@ def pcolormesh(cube, *args, **kwargs):
     Draws a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
-    2-dimensional coordinates with contiguous bounds to plot against each other.
+    2-dimensional coordinates with contiguous bounds to plot against each
+    other.
 
     Kwargs:
 

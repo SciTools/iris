@@ -30,7 +30,7 @@ from iris.tests.stock import simple_2d_w_multidim_coords as cube_2dcoords
 from iris.tests.stock import simple_3d_w_multidim_coords as cube3d_2dcoords
 from iris.tests.stock import lat_lon_cube
 
-from orca_utils.plot_testing import testdata_2d_coords
+from orca_utils.plot_testing import testdata_2d_coords as testdata
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
@@ -43,16 +43,15 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
 
         # latlon_2d is a cube with 2d coords, 4 bounds per point,
         # discontiguities in the bounds but masked data at the discontiguities.
-        self.latlon_2d = testdata_2d_coords.full2d_global()
-        testdata_2d_coords.make_bounds_discontiguous_at_point\
-            (self.latlon_2d, 2, 2)
+        self.latlon_2d = testdata.full2d_global()
+        testdata.make_bounds_discontiguous_at_point(self.latlon_2d, 2, 2)
 
         # Take a latlon cube with 1D coords, broadcast the coords into 2D
         # ones, then add ONE of them back into the cube in place of original:
         single_dims = lat_lon_cube()
         lon = single_dims.coord('longitude')
         lat = single_dims.coord('latitude')
-        big_lon, big_lat = testdata_2d_coords.grid_coords_2d_from_1d(lon, lat)
+        big_lon, big_lat = testdata.grid_coords_2d_from_1d(lon, lat)
         mixed_dims = single_dims.copy()
         mixed_dims.remove_coord(lon)
         # TODO Fix this coord addition:
