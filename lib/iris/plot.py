@@ -290,6 +290,8 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4, transpose=False):
     if transpose:
         data = data.T
 
+    bounds = coord.bounds
+
     both_dirs_contiguous, diffs_along_x, diffs_along_y = \
         iris.coords._discontiguity_in_2d_bounds(bounds, abs_tol=abs_tol)
 
