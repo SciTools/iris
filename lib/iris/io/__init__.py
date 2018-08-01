@@ -197,10 +197,12 @@ def load_files(filenames, callback, constraints=None):
     for fn in all_file_paths:
         try:
             with open(fn, 'rb') as fh:
-                handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
+                handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
+                    os.path.basename(fn), fh)
                 handler_map[handling_format_spec].append(fn)
         except IsADirectoryError:
-            handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(os.path.basename(fn), None)
+            handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
+                os.path.basename(fn), None)
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the approriate filenames
