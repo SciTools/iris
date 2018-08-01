@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from collections import OrderedDict
+from errno import EISDIR
 import glob
 import os.path
 import re
@@ -200,10 +201,13 @@ def load_files(filenames, callback, constraints=None):
                 handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
                     os.path.basename(fn), fh)
                 handler_map[handling_format_spec].append(fn)
-        except IsADirectoryError:
-            handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
-                os.path.basename(fn), None)
-            handler_map[handling_format_spec].append(fn)
+        except IOError as error:
+            if error.errorno == EISDIR:
+                handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
+                    os.path.basename(fn), None)
+                handler_map[handling_format_spec].append(fn)
+            else:
+                raise error
 
     # Call each iris format handler with the approriate filenames
     for handling_format_spec in sorted(handler_map):
