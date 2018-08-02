@@ -334,7 +334,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
     twodim_contig_atol = kwargs.pop('two_dim_coord_contiguity_atol',
-                                     1e-4)
+                                    1e-4)
     for coord in plot_defn.coords:
         if hasattr(coord, 'has_bounds'):
             if coord.ndim == 2 and coord.has_bounds():
