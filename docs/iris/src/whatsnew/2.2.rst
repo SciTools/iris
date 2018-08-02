@@ -24,3 +24,13 @@ Iris 2.2.0 Features
   automatically checked for contiguity.  Coordinate bounds must either be
   contiguous, or the cube's data must be masked at the discontiguities in
   order to avoid plotting errors.
+
+  The iris plot functions :func:`iris.plot.quiver` and
+  :func:`iris.plot.streamplot` have been added, and these also work with
+  2-dimensional plot coordinates.
+
+.. admonition:: 2-Dimensional Grid Vectors
+
+  The iris functions :func:`iris.analysis.cartography.gridcell_angles` and
+  :func:`iris.analysis.cartography.rotate_grid_vectors` have been added,
+  allowing you to convert gridcell-oriented vectors to true-North/East ones.
