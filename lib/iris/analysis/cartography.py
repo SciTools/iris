@@ -352,7 +352,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
 
 
 def area_weights(cube, normalize=False):
-    """
+    r"""
     Returns an array of area weights, with the same dimensions as the cube.
 
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
@@ -460,7 +460,7 @@ def area_weights(cube, normalize=False):
 
 
 def cosine_latitude_weights(cube):
-    """
+    r"""
     Returns an array of latitude weights, with the same dimensions as
     the cube. The weights are the cosine of latitude.
 
@@ -970,7 +970,7 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs,
 
 
 def rotate_winds(u_cube, v_cube, target_cs):
-    """
+    r"""
     Transform wind vectors to a different coordinate system.
 
     The input cubes contain U and V components parallel to the local X and Y
