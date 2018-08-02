@@ -1,0 +1,281 @@
+# (C) British Crown Copyright 2018, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Extra stock routines for making and manipulating cubes with 2d coordinates,
+to mimic ocean grid data.
+
+"""
+from __future__ import (absolute_import, division, print_function)
+from six.moves import (filter, input, map, range, zip)  # noqa
+
+import numpy as np
+import numpy.ma as ma
+
+from iris.analysis.cartography import unrotate_pole
+from iris.coords import AuxCoord
+from iris.coord_systems import RotatedGeogCS
+
+
+def expand_1d_x_and_y_bounds_to_2d_xy(x_bounds_1d, y_bounds_1d):
+    """
+    Convert bounds for separate 1-D X and Y coords into bounds for the
+    equivalent 2D coordinates.
+
+    The output arrays have 4 points per cell, for 4 'corners' of a gridcell,
+    in the usual anticlockwise order
+    (bottom-left, bottom-right, top-right, top-left).
+
+    If 1-dimensional X and Y coords have shapes nx and ny, then their bounds
+    have shapes  (nx, 2) and (ny, 2).
+    The equivalent 2d coordinates would have values which are a "meshgrid" of
+    the original 1-D points, both having the shape (ny, ny).
+    The outputs are 2d bounds arrays suitable for such 2d coordinates.
+
+    Args:
+
+    * x_bounds_1d, y_bounds_1d : (array)
+        Coordinate bounds arrays, with shapes (nx, 2) and (ny, 2).
+
+    Result:
+
+    * x_bounds_2d, y_bounds_2d : (array)
+        Expanded 2d bounds arrays, both of shape (ny, nx, 4).
+
+    """
+    shapes = [bds.shape for bds in (x_bounds_1d, y_bounds_1d)]
+    for shape in shapes:
+        if len(shape) != 2 or shape[1] != 2:
+            msg = ('One-dimensional bounds arrays must have shapes (ny, 2) '
+                   'and (nx, 2).  Got {} and {}.')
+            raise ValueError(msg.format(*shapes))
+
+    # Construct output arrays, which are both (ny, nx, 4).
+    nx, ny = [shape[0] for shape in shapes]
+    bds_2d_x = np.zeros((ny, nx, 4))
+    bds_2d_y = bds_2d_x.copy()
+
+    # Expand x bounds to 2D array (ny, nx, 4) : the same over all 'Y'.
+    # Bottom left+right corners are the original 1-D x bounds.
+    bds_2d_x[:, :, 0] = x_bounds_1d[:, 0].reshape((1, nx))
+    bds_2d_x[:, :, 1] = x_bounds_1d[:, 1].reshape((1, nx))
+    # Top left+right corners are the same as bottom left+right.
+    bds_2d_x[:, :, 2] = bds_2d_x[:, :, 1].copy()
+    bds_2d_x[:, :, 3] = bds_2d_x[:, :, 0].copy()
+
+    # Expand y bounds to 2D array (ny, nx, 4) : the same over all 'X'.
+    # Left-hand lower+upper corners are the original 1-D y bounds.
+    bds_2d_y[:, :, 0] = y_bounds_1d[:, 0].reshape((ny, 1))
+    bds_2d_y[:, :, 3] = y_bounds_1d[:, 1].reshape((ny, 1))
+    # Right-hand lower+upper corners are the same as the left-hand ones.
+    bds_2d_y[:, :, 1] = bds_2d_y[:, :, 0].copy()
+    bds_2d_y[:, :, 2] = bds_2d_y[:, :, 3].copy()
+
+    return bds_2d_x, bds_2d_y
+
+
+def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
+    """
+    Calculate a pair of 2d X+Y coordinates from 1d ones, in a "meshgrid" style.
+    If the inputs are bounded, the outputs have 4 points per bounds in the
+    usual way, i.e. points 0,1,2,3 are the gridcell corners anticlockwise from
+    the bottom left.
+
+    """
+    for co in (x_coord_1d, y_coord_1d):
+        if co.ndim != 1:
+            msg = ('Input coords must be one-dimensional. '
+                   'Coordinate "{}" has shape {}.')
+            raise ValueError(msg.format(co.name(), co.shape))
+
+    # Calculate centre-points as a mesh of the 2 inputs.
+    pts_2d_x, pts_2d_y = np.meshgrid(x_coord_1d.points, y_coord_1d.points)
+    if not x_coord_1d.has_bounds() or not y_coord_1d.has_bounds():
+        bds_2d_x = None
+        bds_2d_y = None
+    else:
+        bds_2d_x, bds_2d_y = expand_1d_x_and_y_bounds_to_2d_xy(
+            x_coord_1d.bounds, y_coord_1d.bounds)
+
+    # Make two new coords + return them.
+    result = []
+    for pts, bds, name in zip((pts_2d_x, pts_2d_y),
+                              (bds_2d_x, bds_2d_y),
+                              ('longitude', 'latitude')):
+        co = AuxCoord(pts, bounds=bds, standard_name=name, units='degrees')
+        result.append(co)
+
+    return result
+
+
+def sample_2d_latlons(regional=False, rotated=False, transform=False):
+    """
+    Construct small 2d cubes with 2d X and Y coordinates.
+
+    This makes cubes with 'expanded' coordinates (4 bounds per cell), analagous
+    to ORCA data.
+    The coordinates are always geographical, so either it has a coord system
+    or they are "true" lats + lons.
+    ( At present, they are always latitudes and longitudes, but maybe in a
+    rotated system. )
+    The results always have fully contiguous bounds.
+
+    Kwargs:
+    * regional (bool):
+        If False (default), results cover the whole globe, and there is
+        implicit connectivity between rhs + lhs of the array.
+        If True, coverage is regional and edges do not connect.
+    * rotated (bool):
+        If False, X and Y coordinates are true-latitudes and longitudes, with
+        an implicit coordinate system (i.e. None).
+        If True, the X and Y coordinates are lats+lons in a selected
+        rotated-latlon coordinate system.
+    * transform (bool):
+        Build coords from rotated coords as for 'rotated', but then replace
+        their values with the equivalent "true" lats + lons, and no
+        coord-system (defaults to true-latlon).
+        In this case, the X and Y coords are no longer 'meshgrid' style,
+        i.e. the points + bounds values vary in *both* dimensions.
+
+    .. note::
+
+        'transform' is an alternative to 'rotated' :  when 'transform' is set,
+        then 'rotated' has no effect.
+
+    """
+    # NOTE: deferred import to avoid circularity.
+    from iris.tests.stock import global_pp
+    cube = global_pp()
+    if regional:
+        # Extract small region.
+        cube = cube[20:45:5, 40:70:5]
+        # Make contiguous bounds.
+        for ax in ('x', 'y'):
+            cube.coord(axis=ax).guess_bounds()
+    else:
+        # Use global data, but drastically reduced resolution.
+
+        # Get initial bounds = contiguous and global.
+        for ax in ('x', 'y'):
+            cube.coord(axis=ax).guess_bounds()
+
+        # Subsample
+        reduced_cube = cube[10::15, 10::15]
+
+        # Patch bounds to ensure it is still contiguous + global.
+        for name in ('longitude', 'latitude'):
+            co = reduced_cube.coord(name)
+            bds = co.bounds.copy()
+            # Make bounds contiguous again, as this was broken by sub-sampling.
+            bds[:-1, 1] = bds[1:, 0]
+            # Likewise, make bounds global again, by reinstating the lowest and
+            # uppermost bounds values from the original cube.
+            bds[0, 0] = cube.coord(name).bounds[0, 0]
+            bds[-1, 1] = cube.coord(name).bounds[-1, 1]
+            co.bounds = bds
+
+        cube = reduced_cube
+
+    # Rescale data for clarity
+    data = cube.data
+    dmin = np.min(data)
+    dmax = np.max(data)
+    data = 250.0 + 200.0 * (data - dmin) / (dmax - dmin)
+    cube.data = data
+
+    # Get 1d coordinate points + bounds + calculate 2d equivalents.
+    co_1d_x, co_1d_y = [cube.coord(axis=ax).copy() for ax in ('x', 'y')]
+    co_2d_x, co_2d_y = grid_coords_2d_from_1d(co_1d_x, co_1d_y)
+
+    # Remove the old grid coords.
+    for co in (co_1d_x, co_1d_y):
+        cube.remove_coord(co)
+
+    # Add the new grid coords.
+    for co in (co_2d_x, co_2d_y):
+        cube.add_aux_coord(co, (0, 1))
+
+    if transform or rotated:
+        # Take the lats + lons as being in a rotated coord system.
+        pole_lat, pole_lon = 75.0, 120.0
+        if transform:
+            # Reproject coordinate values from rotated to true lat-lons.
+            co_x, co_y = [cube.coord(axis=ax) for ax in ('x', 'y')]
+            # Unrotate points.
+            lons, lats = co_x.points, co_y.points
+            lons, lats = unrotate_pole(lons, lats, pole_lon, pole_lat)
+            co_x.points, co_y.points = lons, lats
+            # Unrotate bounds.
+            lons, lats = co_x.bounds, co_y.bounds
+            shape = lons.shape  # unrotate pole is restricted to 1- or 2-d ??
+            lons, lats = unrotate_pole(lons.flatten(), lats.flatten(),
+                                       pole_lon, pole_lat)
+            co_x.bounds, co_y.bounds = lons.reshape(shape), lats.reshape(shape)
+        else:
+            # "Just" rotate operation : add a coord-system to each coord.
+            cs = RotatedGeogCS(pole_lat, pole_lon)
+            for co in cube.coords():
+                co.coord_system = cs
+
+    return cube
+
+
+def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
+    """
+    Meddle with the XY grid bounds of a cube to make the grid discontiguous.
+
+    Changes the points and bounds of a single gridcell, so that it becomes
+    discontinuous with the next gridcell to its right.
+    Also masks the cube data at the given point.
+
+    The cube must have bounded 2d 'x' and 'y' coordinates.
+
+    TODO: add a switch to make a discontiguity in the *y*-direction instead ?
+
+    """
+    x_coord = cube.coord(axis='x')
+    y_coord = cube.coord(axis='y')
+    assert x_coord.shape == y_coord.shape
+    assert (co.bounds.ndim == 3 and co.shape[-1] == 4
+            for co in (x_coord, y_coord))
+
+    # For both X and Y coord, move points + bounds to create a discontinuity.
+    def adjust_coord(co):
+        pts, bds = co.points, co.bounds
+        # Fetch the 4 bounds (bottom-left, bottom-right, top-right, top-left)
+        bds_bl, bds_br, bds_tr, bds_tl = bds[at_iy, at_ix]
+        # Make a discontinuity "at" (iy, ix), by moving the right-hand edge of
+        # the cell to the midpoint of the existing left+right bounds.
+        new_bds_br = 0.5 * (bds_bl + bds_br)
+        new_bds_tr = 0.5 * (bds_tl + bds_tr)
+        bds_br, bds_tr = new_bds_br, new_bds_tr
+        bds[at_iy, at_ix] = [bds_bl, bds_br, bds_tr, bds_tl]
+        # Also reset the cell midpoint to the middle of the 4 new corners,
+        # in case having a midpoint outside the corners might cause a problem.
+        new_pt = 0.25 * sum([bds_bl, bds_br, bds_tr, bds_tl])
+        pts[at_iy, at_ix] = new_pt
+        # Write back the coord points+bounds (can only assign whole arrays).
+        co.points, co.bounds = pts, bds
+
+    adjust_coord(x_coord)
+    adjust_coord(y_coord)
+    # Also mask the relevant data point.
+    data = cube.data  # N.B. fetch all the data.
+    if not ma.isMaskedArray(data):
+        # Promote to masked array, to avoid converting mask to NaN.
+        data = ma.masked_array(data)
+    data[at_iy, at_ix] = ma.masked
+    cube.data = data
