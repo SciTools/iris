@@ -114,9 +114,10 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
     #     # TODO Find out where I can put a catch for this (if necessary)
     #     cube = self.mixed_dims
     #     with self.assertRaises(ValueError):
-    #         iplt._get_plot_defn_custom_coords_picked(cube,
-    #                                                  ('latitude', 'longitude'),
-    #                                                  self.mode)
+    #         iplt._get_plot_defn_custom_coords_picked(
+    #            cube,
+    #            ('latitude', 'longitude'),
+    #            self.mode)
 
     def test_map_common_not_enough_bounds(self):
         # Test that a lat-lon cube with 2d coords and 2 bounds per point
@@ -137,16 +138,16 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
         result = iplt._map_common('pcolor', None, self.mode, cube, plot_defn)
         self.assertTrue(result)
 
-    # def test_discontiguous_masked(self):
-    #     # Test that a contiguity check will raise a warning (not an error) for
-    #     # discontiguous bounds but appropriately masked data.
-    #     cube = self.latlon_2d
-    #     coord = cube.coord('longitude')
-    #     msg = 'The bounds of the longitude coordinate are not contiguous.  ' \
-    #           'However, data is masked where the discontiguity occurs so ' \
-    #           'plotting anyway.'
-    #     with self.assertWarnsRegexp(msg):
-    #         iplt._check_contiguity_and_bounds(coord, cube.data)
+#    def test_discontiguous_masked(self):
+#        # Test that a contiguity check will raise a warning (not an error) for
+#        # discontiguous bounds but appropriately masked data.
+#        cube = self.latlon_2d
+#        coord = cube.coord('longitude')
+#        msg = 'The bounds of the longitude coordinate are not contiguous.  ' \
+#              'However, data is masked where the discontiguity occurs so ' \
+#              'plotting anyway.'
+#        with self.assertWarnsRegexp(msg):
+#            iplt._check_contiguity_and_bounds(coord, cube.data)
 
     def test_discontiguous_unmasked(self):
         # Check that an error occurs when the contiguity check finds
