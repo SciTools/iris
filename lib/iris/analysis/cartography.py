@@ -42,6 +42,23 @@ from ._grid_angles import (
     true_vectors_from_grid_vectors as rotate_grid_vectors)
 
 
+# List of contents to control Sphinx autodocs.
+# Unfortunately essential to get docs for the grid_angles functions.
+__all__ = [
+    'area_weights',
+    'cosine_latitude_weights',
+    'get_xy_contiguous_bounded_grids',
+    'get_xy_grids',
+    'gridcell_angles',
+    'project',
+    'rotate_grid_vectors',
+    'rotate_pole',
+    'rotate_winds',
+    'unrotate_pole',
+    'wrap_lons',
+    'DistanceDifferential',
+    'PartialDifferential']
+
 # This value is used as a fall-back if the cube does not define the earth
 DEFAULT_SPHERICAL_EARTH_RADIUS = 6367470
 # TODO: This should not be necessary, as CF is always in meters
