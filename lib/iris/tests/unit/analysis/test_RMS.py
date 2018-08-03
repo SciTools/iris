@@ -156,8 +156,8 @@ class Test_lazy_aggregate(tests.IrisTest):
     def test_masked(self):
         # Masked entries should be completely ignored.
         data = as_lazy_data(ma.array([5, 10, 2, 11, 6, 4],
-                        mask=[False, True, False, True, False, False],
-                        dtype=np.float64),
+                            mask=[False, True, False, True, False, False],
+                            dtype=np.float64),
                             chunks=-1)
         expected_rms = 4.5
         rms = RMS.lazy_aggregate(data, 0)
