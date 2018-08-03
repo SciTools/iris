@@ -1228,6 +1228,10 @@ def _rms(array, axis, **kwargs):
     return rval
 
 
+def _lazy_rms(array, axis, **kwargs):
+    return da.sqrt(da.average(array ** 2, axis=axis, **kwargs))
+
+
 def _sum(array, **kwargs):
     # weighted or scaled sum
     axis_in = kwargs.get('axis', None)
@@ -1644,7 +1648,8 @@ This aggregator handles masked data.
 """
 
 
-RMS = WeightedAggregator('root mean square', _rms)
+RMS = WeightedAggregator('root mean square', _rms,
+                         lazy_func=_build_dask_mdtol_function(_lazy_rms))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the root mean square over a :class:`~iris.cube.Cube`, as computed by
