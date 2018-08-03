@@ -23,15 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-import numpy as np
 import numpy.ma as ma
 
-from iris.analysis.cartography import unrotate_pole
 import iris.coords as coords
-from iris.coord_systems import RotatedGeogCS
 from iris.tests.stock import simple_2d_w_multidim_coords as cube_2dcoords
 from iris.tests.stock import simple_3d_w_multidim_coords as cube3d_2dcoords
-from iris.tests.stock import global_pp
 from iris.tests.stock import sample_2d_latlons
 from iris.tests.stock import make_bounds_discontiguous_at_point
 
