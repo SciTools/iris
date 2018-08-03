@@ -32,51 +32,71 @@ from iris.cube import Cube
 from iris.coords import AuxCoord
 
 from iris.analysis.cartography import gridcell_angles
+from iris.tests.stock import sample_2d_latlons
+
+
+def _2d_multicells_testcube(cellsize_degrees=1.0):
+    """
+    Create a test cube with a grid of X and Y points, where each gridcell
+    is independent (disjoint), arranged at an angle == the x-coord point.
+
+    """
+    # Setup np.linspace arguments to make the coordinate points.
+    x0, x1, nx = -164, 164, 9
+    y0, y1, ny = -75, 75, 7
+
+    lats = np.linspace(y0, y1, ny, endpoint=True)
+    lons_angles = np.linspace(x0, x1, nx, endpoint=True)
+    x_pts_2d, y_pts_2d = np.meshgrid(lons_angles, lats)
+
+    # Make gridcells rectangles surrounding these centrepoints, but also
+    # tilted at various angles (= same as x-point lons, as that's easy).
+
+    # Calculate centrepoint lons+lats : in radians, and shape (ny, nx, 1).
+    xangs, yangs = np.deg2rad(x_pts_2d), np.deg2rad(y_pts_2d)
+    xangs, yangs = [arr[..., None] for arr in (xangs, yangs)]
+    # Program which corners are up+down on each gridcell axis.
+    dx_corners = [[[-1, 1, 1, -1]]]
+    dy_corners = [[[-1, -1, 1, 1]]]
+    # Calculate the relative offsets in x+y at the 4 corners.
+    x_ofs_2d = cellsize_degrees * np.cos(xangs) * dx_corners
+    x_ofs_2d -= cellsize_degrees * np.sin(xangs) * dy_corners
+    y_ofs_2d = cellsize_degrees * np.cos(xangs) * dy_corners
+    y_ofs_2d += cellsize_degrees * np.sin(xangs) * dx_corners
+    # Apply a latitude stretch to make correct angles on the globe.
+    y_ofs_2d *= np.cos(yangs)
+    # Make bounds arrays by adding the corner offsets to the centrepoints.
+    x_bds_2d = x_pts_2d[..., None] + x_ofs_2d
+    y_bds_2d = y_pts_2d[..., None] + y_ofs_2d
+
+    # Create a cube with these points + bounds in its 'X' and 'Y' coords.
+    co_x = AuxCoord(points=x_pts_2d, bounds=x_bds_2d,
+                    standard_name='longitude', units='degrees')
+    co_y = AuxCoord(points=y_pts_2d, bounds=y_bds_2d,
+                    standard_name='latitude', units='degrees')
+    cube = Cube(np.zeros((ny, nx)))
+    cube.add_aux_coord(co_x, (0, 1))
+    cube.add_aux_coord(co_y, (0, 1))
+    return cube
 
 
 class TestGridcellAngles(tests.IrisTest):
-    def _check_multiple_orientations_and_latitudes(
-            self,
-            method='mid-lhs, mid-rhs',
-            atol_degrees=0.005,
-            cellsize_degrees=1.0):
-        ny, nx = 7, 9
-        x0, x1 = -164, 164
-        y0, y1 = -75, 75
-        lats = np.linspace(y0, y1, ny, endpoint=True)
-        angles = np.linspace(x0, x1, nx, endpoint=True)
-        x_pts_2d, y_pts_2d = np.meshgrid(angles, lats)
+    def setUp(self):
+        # Make a small "normal" contiguous-bounded cube to test on.
+        # This one is regional.
+        self.standard_regional_cube = sample_2d_latlons(
+            regional=True, transformed=True)
+        # Record the standard correct angle answers.
+        result_cube = gridcell_angles(self.standard_regional_cube)
+        result_cube.convert_units('degrees')
+        self.standard_small_cube_results = result_cube.data
 
-        # Make gridcells rectangles surrounding these centrepoints, but also
-        # tilted at various angles (= same as x-point lons, as that's easy).
-#        dx = cellsize_degrees  # half-width of gridcells, in degrees
-#        dy = dx   # half-height of gridcells, in degrees
+    def _check_multiple_orientations_and_latitudes(self,
+                                                   method='mid-lhs, mid-rhs',
+                                                   atol_degrees=0.005,
+                                                   cellsize_degrees=1.0):
 
-        # Calculate centrepoint lons+lats : in radians, and shape (ny, nx, 1).
-        xangs, yangs = np.deg2rad(x_pts_2d), np.deg2rad(y_pts_2d)
-        xangs, yangs = [arr[..., None] for arr in (xangs, yangs)]
-        # Program which corners are up+down on each gridcell axis.
-        dx_corners = [[[-1, 1, 1, -1]]]
-        dy_corners = [[[-1, -1, 1, 1]]]
-        # Calculate the relative offsets in x+y at the 4 corners.
-        x_ofs_2d = cellsize_degrees * np.cos(xangs) * dx_corners
-        x_ofs_2d -= cellsize_degrees * np.sin(xangs) * dy_corners
-        y_ofs_2d = cellsize_degrees * np.cos(xangs) * dy_corners
-        y_ofs_2d += cellsize_degrees * np.sin(xangs) * dx_corners
-        # Apply a latitude stretch to make correct angles on the globe.
-        y_ofs_2d *= np.cos(yangs)
-        # Make bounds arrays by adding the corner offsets to the centrepoints.
-        x_bds_2d = x_pts_2d[..., None] + x_ofs_2d
-        y_bds_2d = y_pts_2d[..., None] + y_ofs_2d
-
-        # Create a cube with these points + bounds in its 'X' and 'Y' coords.
-        co_x = AuxCoord(points=x_pts_2d, bounds=x_bds_2d,
-                        standard_name='longitude', units='degrees')
-        co_y = AuxCoord(points=y_pts_2d, bounds=y_bds_2d,
-                        standard_name='latitude', units='degrees')
-        cube = Cube(np.zeros((ny, nx)))
-        cube.add_aux_coord(co_x, (0, 1))
-        cube.add_aux_coord(co_y, (0, 1))
+        cube = _2d_multicells_testcube(cellsize_degrees=cellsize_degrees)
 
         # Calculate gridcell angles at each point.
         angles_cube = gridcell_angles(cube, cell_angle_boundpoints=method)
@@ -88,12 +108,25 @@ class TestGridcellAngles(tests.IrisTest):
         angles_cube.convert_units('degrees')
         angles_calculated = angles_cube.data
 
-        # Note: expand the original 1-d test angles into the full result shape,
-        # just to please 'np.testing.assert_allclose', which doesn't broadcast.
-        angles_expected = np.zeros(angles_cube.shape)
-        angles_expected[:] = angles
+        # Note: the gridcell angles **should** just match the longitudes at
+        # each point
+        angles_expected = cube.coord('longitude').points
+
+        # Wrap both into standard range for comparison.
+        angles_calculated = (angles_calculated + 360.) % 360.
+        angles_expected = (angles_expected + 360.) % 360.
 
         # Assert (toleranced) equality, and return results.
+        ok = np.allclose(angles_calculated, angles_expected,
+                         atol=atol_degrees)
+        if not ok:
+            print('FAIL')
+            diffs = angles_calculated - angles_expected
+            worst_inds = np.unravel_index(np.argmax(np.abs(diffs)),
+                                          angles_calculated.shape)
+            print('max abs-error : got({}) - expected({}) at {}'.format(
+                angles_calculated[worst_inds], angles_expected[worst_inds],
+                worst_inds))
         self.assertArrayAllClose(angles_calculated, angles_expected,
                                  atol=atol_degrees)
 
@@ -110,11 +143,96 @@ class TestGridcellAngles(tests.IrisTest):
             method='lower-left, lower-right',
             cellsize_degrees=0.1, atol_degrees=0.1)
 
-        # They are not the same : checks we selected the 'other' method !
+        # Not *exactly* the same : this checks we tested the 'other' method !
         self.assertFalse(np.allclose(r1, r2))
-        # Note: results are rather different at higher latitudes.
-        atol = 0.1
-        self.assertArrayAllClose(r1, r2, atol=atol)
+        # Note: results are a bit different in places.  This is acceptable.
+        self.assertArrayAllClose(r1, r2, atol=0.1)
+
+    def test_bounded_coord_args(self):
+        # Check that passing the coords gets the same result as the cube.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        result = gridcell_angles(co_x, co_y)
+        self.assertArrayAllClose(result.data,
+                                 self.standard_small_cube_results)
+
+    def test_coords_radians_args(self):
+        # Check it still works with coords converted to radians.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        for coord in (co_x, co_y):
+            coord.convert_units('radians')
+        result = gridcell_angles(co_x, co_y)
+        self.assertArrayAllClose(result.data,
+                                 self.standard_small_cube_results)
+
+    def test_fail_coords_bad_units(self):
+        # Check error with bad coords units.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        co_y.units = 'm'
+        with self.assertRaisesRegexp(ValueError, 'must have angular units'):
+            gridcell_angles(co_x, co_y)
+
+    def test_bounds_array_args(self):
+        # Check we can calculate from bounds values alone.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        # Results drawn from coord bounds should be nearly the same,
+        # but not exactly, because of the different 'midpoint' values.
+        result = gridcell_angles(co_x.bounds, co_y.bounds)
+        self.assertArrayAllClose(result.data,
+                                 self.standard_small_cube_results, atol=0.1)
+
+    def test_unbounded_regional_coord_args(self):
+        # Remove the coord bounds to check points-based calculation.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        for coord in (co_x, co_y):
+            coord.bounds = None
+        result = gridcell_angles(co_x, co_y)
+        # Note: in this case, we can expect the leftmost and rightmost columns
+        # to be rubbish, because the data is not global.
+        # But the rest should match okay.
+        self.assertArrayAllClose(result.data[:, 1:-1],
+                                 self.standard_small_cube_results[:, 1:-1])
+
+    def test_points_array_args(self):
+        # Check we can calculate from points values alone.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        # As previous, the leftmost and rightmost columns are not good.
+        result = gridcell_angles(co_x.points, co_y.points)
+        self.assertArrayAllClose(result.data[:, 1:-1],
+                                 self.standard_small_cube_results[:, 1:-1])
+
+    def test_unbounded_global(self):
+        # For a contiguous global grid, a result based on points, i.e. with the
+        # bounds removed, should be a reasonable match for the 'ideal' one
+        # based on the bounds.
+
+        # Make a global cube + calculate ideal bounds-based results.
+        global_cube = sample_2d_latlons(transformed=True)
+        result_cube = gridcell_angles(global_cube)
+        result_cube.convert_units('degrees')
+        global_cube_results = result_cube.data
+
+        # Check a points-based calculation on the same basic grid.
+        co_x, co_y = (global_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        for coord in (co_x, co_y):
+            coord.bounds = None
+        result = gridcell_angles(co_x, co_y)
+        # In this case, the match is actually rather poor (!).
+        self.assertArrayAllClose(result.data,
+                                 global_cube_results,
+                                 atol=7.5)
+        # Leaving off first + last columns again gives a decent result.
+        self.assertArrayAllClose(result.data[:, 1:-1],
+                                 global_cube_results[:, 1:-1])
+
+        # NOTE: although this looks just as bad as 'test_points_array_args',
+        # maximum errors there in the end columns are > 100 degrees !
 
 
 if __name__ == "__main__":
