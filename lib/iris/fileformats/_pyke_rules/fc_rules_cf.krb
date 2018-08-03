@@ -1070,7 +1070,7 @@ fc_extras
     import iris.coord_systems
     import iris.fileformats.cf as cf
     import iris.fileformats.netcdf
-    from iris.fileformats.netcdf import parse_cell_methods, UnknownCellMethodWarning
+    from iris.fileformats.netcdf import _get_cf_var_data, parse_cell_methods, UnknownCellMethodWarning
     import iris.fileformats.pp as pp
     import iris.exceptions
     import iris.std_names
@@ -1712,25 +1712,16 @@ fc_extras
         # Get units
         attr_units = get_attr_units(cf_coord_var, attributes)
 
-        def cf_var_as_array(cf_var):
-            dtype = iris.fileformats.netcdf._get_actual_dtype(cf_var)
-            fill_value = getattr(cf_var.cf_data, '_FillValue',
-                                 netCDF4.default_fillvals[dtype.str[1:]])
-            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
-                cf_var.shape, dtype, engine.filename,
-                cf_var.cf_name, fill_value)
-            return as_lazy_data(proxy)
-
         # Get any coordinate point data.
         if isinstance(cf_coord_var, cf.CFLabelVariable):
             points_data = cf_coord_var.cf_label_data(cf_var)
         else:
-            points_data = cf_var_as_array(cf_coord_var)
+            points_data = _get_cf_var_data(cf_coord_var, engine.filename)
 
         # Get any coordinate bounds.
         cf_bounds_var = get_cf_bounds_var(cf_coord_var)
         if cf_bounds_var is not None:
-            bounds_data = cf_var_as_array(cf_bounds_var)
+            bounds_data = _get_cf_var_data(cf_bounds_var, engine.filename)
 
             # Handle transposed bounds where the vertex dimension is not
             # the last one. Test based on shape to support different
@@ -1783,16 +1774,7 @@ fc_extras
         # Get units
         attr_units = get_attr_units(cf_cm_attr, attributes)
 
-        def cf_var_as_array(cf_var):
-            dtype = cf_var.dtype
-            fill_value = getattr(cf_var.cf_data, '_FillValue',
-                                 netCDF4.default_fillvals[dtype.str[1:]])
-            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
-                cf_var.shape, dtype, engine.filename,
-                cf_var.cf_name, fill_value)
-            return as_lazy_data(proxy)
-
-        data = cf_var_as_array(cf_cm_attr)
+        data = _get_cf_var_data(cf_cm_attr, engine.filename)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
