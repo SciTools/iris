@@ -1268,7 +1268,12 @@ def _rms(array, axis, **kwargs):
 
 @_build_dask_mdtol_function
 def _lazy_rms(array, axis, **kwargs):
-    return da.sqrt(da.average(array ** 2, axis=axis, **kwargs))
+    # XXX This should use `da.average` and not `da.mean`, as does the above.
+    # However `da.average` current doesn't handle masked weights correctly
+    # (see https://github.com/dask/dask/issues/3846).
+    # To work around this we use da.mean, which doesn't support weights at
+    # all, so we raise an error rather than silently giving the wrong answer.
+    return da.sqrt(da.mean(array ** 2, axis=axis, **kwargs))
 
 
 @_build_dask_mdtol_function
