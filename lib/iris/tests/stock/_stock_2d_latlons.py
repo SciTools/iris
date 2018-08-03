@@ -122,7 +122,7 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     return result
 
 
-def sample_2d_latlons(regional=False, rotated=False, transform=False):
+def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     """
     Construct small 2d cubes with 2d X and Y coordinates.
 
@@ -144,7 +144,7 @@ def sample_2d_latlons(regional=False, rotated=False, transform=False):
         an implicit coordinate system (i.e. None).
         If True, the X and Y coordinates are lats+lons in a selected
         rotated-latlon coordinate system.
-    * transform (bool):
+    * transformed (bool):
         Build coords from rotated coords as for 'rotated', but then replace
         their values with the equivalent "true" lats + lons, and no
         coord-system (defaults to true-latlon).
@@ -153,8 +153,65 @@ def sample_2d_latlons(regional=False, rotated=False, transform=False):
 
     .. note::
 
-        'transform' is an alternative to 'rotated' :  when 'transform' is set,
-        then 'rotated' has no effect.
+        'transformed' is an alternative to 'rotated' :  when 'transformed' is
+        set, then 'rotated' has no effect.
+
+    .. Some sample results printouts ::
+
+        >>> print(sample_2d_latlons())
+        test_data / (unknown)               (-- : 5; -- : 6)
+             Auxiliary coordinates:
+                  latitude                      x       x
+                  longitude                     x       x
+        >>>
+        >>> print(sample_2d_latlons().coord(axis='x')[0, :2])
+        AuxCoord(array([ 37.5 ,  93.75]),
+                 bounds=array([[   0.   ,   65.625,   65.625,    0.   ],
+                               [  65.625,  121.875,  121.875,   65.625]]),
+                 standard_name='longitude', units=Unit('degrees'))
+        >>> print(np.round(sample_2d_latlons().coord(axis='x').points, 3))
+        [[  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]]
+        >>> print(np.round(sample_2d_latlons().coord(axis='y').points, 3))
+        [[-85.  -85.  -85.  -85.  -85.  -85. ]
+         [-47.5 -47.5 -47.5 -47.5 -47.5 -47.5]
+         [-10.  -10.  -10.  -10.  -10.  -10. ]
+         [ 27.5  27.5  27.5  27.5  27.5  27.5]
+         [ 65.   65.   65.   65.   65.   65. ]]
+
+
+        >>> print(np.round(
+            sample_2d_latlons(rotated=True).coord(axis='x').points, 3))
+        [[  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]
+         [  37.5    93.75  150.    206.25  262.5   318.75]]
+        >>> print(sample_2d_latlons(rotated=True).coord(axis='y').coord_system)
+        RotatedGeogCS(75.0, 120.0)
+
+
+        >>> print(
+            sample_2d_latlons(transformed=True).coord(axis='y').coord_system)
+        None
+        >>> print(np.round(
+            sample_2d_latlons(transformed=True).coord(axis='x').points, 3))
+        [[ -50.718  -40.983  -46.74   -71.938  -79.293  -70.146]
+         [ -29.867   17.606   77.936  157.145 -141.037  -93.172]
+         [ -23.139   31.007   87.699  148.322 -154.639 -100.505]
+         [ -16.054   41.218   92.761  143.837 -164.738 -108.105]
+         [  10.86    61.78   100.236  137.285  175.511 -135.446]]
+        >>> print(np.round(
+            sample_2d_latlons(transformed=True).coord(axis='y').points, 3))
+        [[-70.796 -74.52  -79.048 -79.26  -74.839 -70.96 ]
+         [-34.99  -46.352 -59.721 -60.34  -47.305 -35.499]
+         [  1.976 -10.626 -22.859 -23.349 -11.595   1.37 ]
+         [ 38.914  25.531  14.312  13.893  24.585  38.215]
+         [ 74.197  60.258  51.325  51.016  59.446  73.268]]
+        >>>
 
     """
     def sample_cube(xargs, yargs):
@@ -210,10 +267,10 @@ def sample_2d_latlons(regional=False, rotated=False, transform=False):
     for co in (co_2d_x, co_2d_y):
         cube.add_aux_coord(co, (0, 1))
 
-    if transform or rotated:
+    if transformed or rotated:
         # Take the lats + lons as being in a rotated coord system.
         pole_lat, pole_lon = 75.0, 120.0
-        if transform:
+        if transformed:
             # Reproject coordinate values from rotated to true lat-lons.
             co_x, co_y = [cube.coord(axis=ax) for ax in ('x', 'y')]
             # Unrotate points.

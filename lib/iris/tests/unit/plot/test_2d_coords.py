@@ -37,7 +37,7 @@ if tests.MPL_AVAILABLE:
 
 
 def full2d_global():
-    return sample_2d_latlons(transform=True)
+    return sample_2d_latlons(transformed=True)
 
 
 @tests.skip_data
