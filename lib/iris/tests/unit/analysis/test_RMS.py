@@ -137,18 +137,20 @@ class Test_lazy_aggregate(tests.IrisTest):
 
     def test_masked(self):
         # masked entries should be completely ignored
-        data = ma.array([5, 10, 2, 11, 6, 4],
+        data = as_lazy_data(ma.array([5, 10, 2, 11, 6, 4],
                         mask=[False, True, False, True, False, False],
-                        dtype=np.float64)
+                        dtype=np.float64),
+                            chunks=-1)
         expected_rms = 4.5
         rms = RMS.aggregate(data, 0)
         self.assertAlmostEqual(rms, expected_rms)
 
     def test_masked_weighted(self):
         # weights should work properly with masked arrays
-        data = ma.array([4, 7, 18, 10, 11, 8],
+        data = as_lazy_data(ma.array([4, 7, 18, 10, 11, 8],
                         mask=[False, False, True, False, True, False],
-                        dtype=np.float64)
+                        dtype=np.float64),
+                            chunks=-1)
         weights = np.array([1, 4, 5, 3, 8, 2], dtype=np.float64)
         expected_rms = 8.0
         rms = RMS.aggregate(data, 0, weights=weights)
