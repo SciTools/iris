@@ -26,7 +26,8 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis.cartography import unrotate_pole
-from iris.coords import AuxCoord
+from iris.cube import Cube
+from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import RotatedGeogCS
 
 
@@ -156,45 +157,46 @@ def sample_2d_latlons(regional=False, rotated=False, transform=False):
         then 'rotated' has no effect.
 
     """
-    # NOTE: deferred import to avoid circularity.
-    from iris.tests.stock import global_pp
-    cube = global_pp()
+    def sample_cube(xargs, yargs):
+        # Arguments are to make coord points with np.linspace : start/stop/N.
+        x0, x1, nx = xargs
+        y0, y1, ny = yargs
+        data = np.zeros((ny, nx))
+        data.flat[:] = np.arange(ny * nx) % (nx + 2)  # seems to work ok
+        cube = Cube(data, long_name='test_data')
+        x_pts = np.linspace(x0, x1, nx, endpoint=True)
+        y_pts = np.linspace(y0, y1, ny, endpoint=True)
+        co_x = DimCoord(x_pts, standard_name='longitude', units='degrees')
+        co_y = DimCoord(y_pts, standard_name='latitude', units='degrees')
+        cube.add_dim_coord(co_y, 0)
+        cube.add_dim_coord(co_x, 1)
+        return cube
+
     if regional:
         # Extract small region.
-        cube = cube[20:45:5, 40:70:5]
+        cube = sample_cube(xargs=(150., 243.75, 6), yargs=(-10., 40., 5))
+
         # Make contiguous bounds.
         for ax in ('x', 'y'):
             cube.coord(axis=ax).guess_bounds()
     else:
-        # Use global data, but drastically reduced resolution.
+        # Global data, but drastically reduced resolution.
 
-        # Get initial bounds = contiguous and global.
-        for ax in ('x', 'y'):
-            cube.coord(axis=ax).guess_bounds()
-
-        # Subsample
-        reduced_cube = cube[10::15, 10::15]
+        cube = sample_cube(xargs=(37.5, 318.75, 6), yargs=(-85., 65., 5))
 
         # Patch bounds to ensure it is still contiguous + global.
         for name in ('longitude', 'latitude'):
-            co = reduced_cube.coord(name)
+            co = cube.coord(name)
+            co.guess_bounds()
             bds = co.bounds.copy()
-            # Make bounds contiguous again, as this was broken by sub-sampling.
-            bds[:-1, 1] = bds[1:, 0]
-            # Likewise, make bounds global again, by reinstating the lowest and
-            # uppermost bounds values from the original cube.
-            bds[0, 0] = cube.coord(name).bounds[0, 0]
-            bds[-1, 1] = cube.coord(name).bounds[-1, 1]
+            # Make bounds global, by fixing lowest and uppermost values.
+            if name == 'longitude':
+                bds[0, 0] = 0.0
+                bds[-1, 1] = 360.0
+            else:
+                bds[0, 0] = -90.0
+                bds[-1, 1] = 90.0
             co.bounds = bds
-
-        cube = reduced_cube
-
-    # Rescale data for clarity
-    data = cube.data
-    dmin = np.min(data)
-    dmax = np.max(data)
-    data = 250.0 + 200.0 * (data - dmin) / (dmax - dmin)
-    cube.data = data
 
     # Get 1d coordinate points + bounds + calculate 2d equivalents.
     co_1d_x, co_1d_y = [cube.coord(axis=ax).copy() for ax in ('x', 'y')]
