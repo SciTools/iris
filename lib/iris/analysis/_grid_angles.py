@@ -141,7 +141,7 @@ def _angle(p, q, r):
         rtol = 1.e-3
         check = np.allclose(mag_rot, mag_orig, rtol=rtol)
         if not check:
-            print (mag_rot, mag_orig)
+            print(mag_rot, mag_orig)
             assert np.allclose(mag_rot, mag_orig, rtol=rtol)
 
     return psi
