@@ -1237,13 +1237,20 @@ def _lazy_count(array, **kwargs):
 
 def _proportion(array, function, axis, **kwargs):
     count = iris._lazy_data.non_lazy(_lazy_count)
+
     # if the incoming array is masked use that to count the total number of
     # values
     if ma.isMaskedArray(array):
         # calculate the total number of non-masked values across the given axis
-        total_non_masked = count(
-            array.mask, axis=axis, function=np.logical_not, **kwargs)
-        total_non_masked = ma.masked_equal(total_non_masked, 0)
+        if array.mask is np.bool_(False):
+            # numpy will return a single boolean as a mask if the mask
+            # was not explicitly specified on array construction, so in this
+            # case pass the array shape instead of the mask:
+            total_non_masked = array.shape[axis]
+        else:
+            total_non_masked = count(
+                array.mask, axis=axis, function=np.logical_not, **kwargs)
+            total_non_masked = ma.masked_equal(total_non_masked, 0)
     else:
         total_non_masked = array.shape[axis]
 
@@ -1260,10 +1267,27 @@ def _proportion(array, function, axis, **kwargs):
 
 
 def _rms(array, axis, **kwargs):
+    # XXX due to the current limitations in `da.average` (see below), maintain
+    # an explicit non-lazy aggregation function for now.
+    # Note: retaining this function also means that if weights are passed to
+    # the lazy aggregator, the aggregation will fall back to using this
+    # non-lazy aggregator.
     rval = np.sqrt(ma.average(np.square(array), axis=axis, **kwargs))
     if not ma.isMaskedArray(array):
         rval = np.asarray(rval)
     return rval
+
+
+@_build_dask_mdtol_function
+def _lazy_rms(array, axis, **kwargs):
+    # XXX This should use `da.average` and not `da.mean`, as does the above.
+    # However `da.average` current doesn't handle masked weights correctly
+    # (see https://github.com/dask/dask/issues/3846).
+    # To work around this we use da.mean, which doesn't support weights at
+    # all. Thus trying to use this aggregator with weights will currently
+    # raise an error in dask due to the unexpected keyword `weights`,
+    # rather than silently returning the wrong answer.
+    return da.sqrt(da.mean(array ** 2, axis=axis, **kwargs))
 
 
 @_build_dask_mdtol_function
@@ -1654,7 +1678,8 @@ This aggregator handles masked data.
 """
 
 
-RMS = WeightedAggregator('root mean square', _rms)
+RMS = WeightedAggregator('root mean square', _rms,
+                         lazy_func=_build_dask_mdtol_function(_lazy_rms))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the root mean square over a :class:`~iris.cube.Cube`, as computed by
@@ -1841,9 +1866,10 @@ class _Groupby(object):
 
         Kwargs:
 
-        * shared_coords (list of :class:`iris.coords.Coord` instances):
-            One or more coordinates that share the same group-by
-            coordinate axis.
+        * shared_coords (list of (:class:`iris.coords.Coord`, `int`) pairs):
+            One or more coordinates (including multidimensional coordinates)
+            that share the same group-by coordinate axis.  The `int` identifies
+            which dimension of the coord is on the group-by coordinate axis.
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -1868,8 +1894,8 @@ class _Groupby(object):
                 raise TypeError('shared_coords must be a '
                                 '`collections.Iterable` type.')
             # Add valid shared coordinates.
-            for coord in shared_coords:
-                self._add_shared_coord(coord)
+            for coord, dim in shared_coords:
+                self._add_shared_coord(coord, dim)
 
     def _add_groupby_coord(self, coord):
         if coord.ndim != 1:
@@ -1880,12 +1906,10 @@ class _Groupby(object):
             raise ValueError('Group-by coordinates have different lengths.')
         self._groupby_coords.append(coord)
 
-    def _add_shared_coord(self, coord):
-        if coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(coord)
-        if coord.shape[0] != self._stop and self._stop is not None:
+    def _add_shared_coord(self, coord, dim):
+        if coord.shape[dim] != self._stop and self._stop is not None:
             raise ValueError('Shared coordinates have different lengths.')
-        self._shared_coords.append(coord)
+        self._shared_coords.append((coord, dim))
 
     def group(self):
         """
@@ -2012,18 +2036,36 @@ class _Groupby(object):
                 groupby_bounds.append((key_slice.start, key_slice.stop-1))
 
         # Create new shared bounded coordinates.
-        for coord in self._shared_coords:
+        for coord, dim in self._shared_coords:
             if coord.points.dtype.kind in 'SU':
                 if coord.bounds is None:
                     new_points = []
                     new_bounds = None
+                    # np.apply_along_axis does not work with str.join, so we
+                    # need to loop through the array directly. First move axis
+                    # of interest to trailing dim and flatten the others.
+                    work_arr = np.moveaxis(coord.points, dim, -1)
+                    shape = work_arr.shape
+                    work_shape = (-1, shape[-1])
+                    new_shape = (len(self),)
+                    if coord.ndim > 1:
+                        new_shape += shape[:-1]
+                    work_arr = work_arr.reshape(work_shape)
+
                     for key_slice in six.itervalues(self._slices_by_key):
                         if isinstance(key_slice, slice):
-                            indices = key_slice.indices(coord.points.shape[0])
+                            indices = key_slice.indices(
+                                coord.points.shape[dim])
                             key_slice = range(*indices)
-                        new_pt = '|'.join([coord.points[i]
-                                           for i in key_slice])
-                        new_points.append(new_pt)
+
+                        for arr in work_arr:
+                            new_points.append('|'.join(arr.take(key_slice)))
+
+                    # Reinstate flattened dimensions. Aggregated dim now leads.
+                    new_points = np.array(new_points).reshape(new_shape)
+
+                    # Move aggregated dimension back to position it started in.
+                    new_points = np.moveaxis(new_points, 0, dim)
                 else:
                     msg = ('collapsing the bounded string coordinate {0!r}'
                            ' is not supported'.format(coord.name()))
@@ -2036,27 +2078,35 @@ class _Groupby(object):
                     if coord.has_bounds():
                         # Collapse group bounds into bounds.
                         if (getattr(coord, 'circular', False) and
-                                (stop + 1) == len(coord.points)):
-                            new_bounds.append([coord.bounds[start, 0],
-                                              coord.bounds[0, 0] +
-                                              coord.units.modulus])
+                                (stop + 1) == coord.shape[dim]):
+                            new_bounds.append(
+                                [coord.bounds.take(start, dim).take(0, -1),
+                                 coord.bounds.take(0, dim).take(0, -1) +
+                                 coord.units.modulus])
                         else:
-                            new_bounds.append([coord.bounds[start, 0],
-                                              coord.bounds[stop, 1]])
+                            new_bounds.append(
+                                [coord.bounds.take(start, dim).take(0, -1),
+                                 coord.bounds.take(stop, dim).take(1, -1)])
                     else:
                         # Collapse group points into bounds.
                         if (getattr(coord, 'circular', False) and
                                 (stop + 1) == len(coord.points)):
-                            new_bounds.append([coord.points[start],
-                                              coord.points[0] +
-                                              coord.units.modulus])
+                            new_bounds.append([coord.points.take(start, dim),
+                                               coord.points.take(0, dim) +
+                                               coord.units.modulus])
                         else:
-                            new_bounds.append([coord.points[start],
-                                              coord.points[stop]])
+                            new_bounds.append([coord.points.take(start, dim),
+                                               coord.points.take(stop, dim)])
+
+                # Bounds needs to be an array with the length 2 start-stop
+                # dimension last, and the aggregated dimension back in its
+                # original position.
+                new_bounds = np.moveaxis(
+                    np.array(new_bounds), (0, 1), (dim, -1))
 
                 # Now create the new bounded group shared coordinate.
                 try:
-                    new_points = np.array(new_bounds).mean(-1)
+                    new_points = new_bounds.mean(-1)
                 except TypeError:
                     msg = 'The {0!r} coordinate on the collapsing dimension' \
                           ' cannot be collapsed.'.format(coord.name())

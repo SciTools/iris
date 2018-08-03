@@ -73,7 +73,7 @@ In order to run the tests, you will need to use the `test` and `docs` groups (we
 Hence the commands change to::
 
     python requirements/gen_conda_requirements.py --groups test docs > conda_requirements.txt
-    conda create -n my_iris_env --file conda_requirements.txt
+    conda create -n my_iris_env -c conda-forge --file conda_requirements.txt
     conda activate my_iris_env  # or whatever other name you gave it
     pip install -e .
 

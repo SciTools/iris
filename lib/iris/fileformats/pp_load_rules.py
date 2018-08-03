@@ -323,7 +323,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
         if array.shape[i_dim] > 1:
             slice_inds = [slice(None)] * points.ndim
             slice_inds[i_dim] = slice(0, 1)
-            slice_0 = array[slice_inds]
+            slice_0 = array[tuple(slice_inds)]
             if np.allclose(array, slice_0, rtol):
                 array = slice_0
 

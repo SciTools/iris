@@ -297,7 +297,7 @@ class RectilinearInterpolator(object):
                                         self._coord_decreasing):
                 if flip:
                     dim_slices[interp_dim] = slice(-1, None, -1)
-            data = data[dim_slices]
+            data = data[tuple(dim_slices)]
         return data
 
     def _interpolate(self, data, interp_points):
