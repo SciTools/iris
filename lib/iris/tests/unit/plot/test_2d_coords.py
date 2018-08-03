@@ -44,6 +44,7 @@ def full2d_global():
     return sample_2d_latlons(transform=True)
 
 
+@tests.skip_data
 class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
     def setUp(self):
         self.multidim_cube = cube_2dcoords()
