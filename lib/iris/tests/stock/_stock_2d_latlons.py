@@ -96,11 +96,11 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     the bottom left.
 
     """
-    for co in (x_coord_1d, y_coord_1d):
-        if co.ndim != 1:
+    for coord in (x_coord_1d, y_coord_1d):
+        if coord.ndim != 1:
             msg = ('Input coords must be one-dimensional. '
                    'Coordinate "{}" has shape {}.')
-            raise ValueError(msg.format(co.name(), co.shape))
+            raise ValueError(msg.format(coord.name(), coord.shape))
 
     # Calculate centre-points as a mesh of the 2 inputs.
     pts_2d_x, pts_2d_y = np.meshgrid(x_coord_1d.points, y_coord_1d.points)
@@ -116,8 +116,8 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     for pts, bds, name in zip((pts_2d_x, pts_2d_y),
                               (bds_2d_x, bds_2d_y),
                               ('longitude', 'latitude')):
-        co = AuxCoord(pts, bounds=bds, standard_name=name, units='degrees')
-        result.append(co)
+        coord = AuxCoord(pts, bounds=bds, standard_name=name, units='degrees')
+        result.append(coord)
 
     return result
 
@@ -243,9 +243,9 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
 
         # Patch bounds to ensure it is still contiguous + global.
         for name in ('longitude', 'latitude'):
-            co = cube.coord(name)
-            co.guess_bounds()
-            bds = co.bounds.copy()
+            coord = cube.coord(name)
+            coord.guess_bounds()
+            bds = coord.bounds.copy()
             # Make bounds global, by fixing lowest and uppermost values.
             if name == 'longitude':
                 bds[0, 0] = 0.0
@@ -253,19 +253,19 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
             else:
                 bds[0, 0] = -90.0
                 bds[-1, 1] = 90.0
-            co.bounds = bds
+            coord.bounds = bds
 
     # Get 1d coordinate points + bounds + calculate 2d equivalents.
     co_1d_x, co_1d_y = [cube.coord(axis=ax).copy() for ax in ('x', 'y')]
     co_2d_x, co_2d_y = grid_coords_2d_from_1d(co_1d_x, co_1d_y)
 
     # Remove the old grid coords.
-    for co in (co_1d_x, co_1d_y):
-        cube.remove_coord(co)
+    for coord in (co_1d_x, co_1d_y):
+        cube.remove_coord(coord)
 
     # Add the new grid coords.
-    for co in (co_2d_x, co_2d_y):
-        cube.add_aux_coord(co, (0, 1))
+    for coord in (co_2d_x, co_2d_y):
+        cube.add_aux_coord(coord, (0, 1))
 
     if transformed or rotated:
         # Take the lats + lons as being in a rotated coord system.
@@ -286,8 +286,8 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
         else:
             # "Just" rotate operation : add a coord-system to each coord.
             cs = RotatedGeogCS(pole_lat, pole_lon)
-            for co in cube.coords():
-                co.coord_system = cs
+            for coord in cube.coords():
+                coord.coord_system = cs
 
     return cube
 
@@ -308,12 +308,12 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
     x_coord = cube.coord(axis='x')
     y_coord = cube.coord(axis='y')
     assert x_coord.shape == y_coord.shape
-    assert (co.bounds.ndim == 3 and co.shape[-1] == 4
-            for co in (x_coord, y_coord))
+    assert (coord.bounds.ndim == 3 and coord.shape[-1] == 4
+            for coord in (x_coord, y_coord))
 
     # For both X and Y coord, move points + bounds to create a discontinuity.
-    def adjust_coord(co):
-        pts, bds = co.points, co.bounds
+    def adjust_coord(coord):
+        pts, bds = coord.points, coord.bounds
         # Fetch the 4 bounds (bottom-left, bottom-right, top-right, top-left)
         bds_bl, bds_br, bds_tr, bds_tl = bds[at_iy, at_ix]
         # Make a discontinuity "at" (iy, ix), by moving the right-hand edge of
@@ -327,7 +327,7 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
         new_pt = 0.25 * sum([bds_bl, bds_br, bds_tr, bds_tl])
         pts[at_iy, at_ix] = new_pt
         # Write back the coord points+bounds (can only assign whole arrays).
-        co.points, co.bounds = pts, bds
+        coord.points, coord.bounds = pts, bds
 
     adjust_coord(x_coord)
     adjust_coord(y_coord)
