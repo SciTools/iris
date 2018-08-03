@@ -66,13 +66,13 @@ def _latlon_from_xyz(xyz):
     Returns:
 
         lonlat : (array)
-            spherical angles, of dims (2, <others>), in radians.
+            spherical angles, of dims (2, <others>), in degrees.
             Dim 0 maps longitude, latitude.
 
     """
-    lons = np.arctan2(xyz[1], xyz[0])
+    lons = np.rad2deg(np.arctan2(xyz[1], xyz[0]))
     axial_radii = np.sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1])
-    lats = np.arctan2(xyz[2], axial_radii)
+    lats = np.rad2deg(np.arctan2(xyz[2], axial_radii))
     return np.array([lons, lats])
 
 
@@ -103,7 +103,7 @@ def _angle(p, q, r):
     psi = np.arccos(cosine) * np.sign(r[1] - p[1])
     psi[index] = np.nan
 
-    return psi
+    return np.rad2deg(psi)
 
 
 def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
@@ -160,7 +160,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         angles : (2-dimensional cube)
 
             Cube of angles of grid-x vector from true Eastward direction for
-            each gridcell, in radians.
+            each gridcell, in degrees.
             It also has longitude and latitude coordinates.  If coordinates
             were input the output has identical ones :  If the input was 2d
             arrays, the output coords have no bounds; or, if the input was 3d
@@ -184,6 +184,15 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
     if hasattr(x, 'bounds') and hasattr(y, 'bounds'):
         # x and y are Coords.
         x_coord, y_coord = x.copy(), y.copy()
+
+        # They must be angles : convert into degrees
+        for coord in (x_coord, y_coord):
+            if not coord.units.is_convertible('degrees'):
+                msg = ('Input X and Y coordinates must have angular '
+                       'units. Got units of "{!s}" and "{!s}".')
+                raise ValueError(msg.format(x_coord.units, y_coord.units))
+            coord.convert_units('degrees')
+
         if x_coord.ndim != 2 or y_coord.ndim != 2:
             msg = ('Coordinate inputs must have 2-dimensional shape. ',
                    'Got x-shape of {} and y-shape of {}.')
@@ -211,13 +220,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             x, y = x_coord.points, y_coord.points
 
         # Make sure these arrays are ordinary lats+lons, in degrees.
-        if cs is None:
-            # No coord system : assume x + y are lons + lats.
-            # Just make sure they are in degrees !
-            # NOTE: raises an error if units are not angles.
-            x = x_coord.units.convert(x, 'degrees')
-            y = y_coord.units.convert(y, 'degrees')
-        else:
+        if cs is not None:
             # Transform points into true lats + lons.
             crs_src = cs.as_cartopy_crs()
             crs_pc = ccrs.PlateCarree()
@@ -262,7 +265,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             x_coord = iris.coords.AuxCoord(y, standard_name='longitude',
                                            units='degrees')
     else:
-        # Data is points arrays.
+        # Data is bounds arrays.
         # Use different bounds points in the longitude-axis as references.
         # NOTE: so with bounds, we *don't* need full circular longitudes.
         xyz = _3d_xyz_from_latlon(x, y)
@@ -296,8 +299,8 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
                 standard_name='latitude', units='degrees')
 
         # Convert lhs and rhs points back to latlon form -- IN DEGREES !
-        lhs = np.rad2deg(_latlon_from_xyz(lhs_xyz))
-        rhs = np.rad2deg(_latlon_from_xyz(rhs_xyz))
+        lhs = _latlon_from_xyz(lhs_xyz)
+        rhs = _latlon_from_xyz(rhs_xyz)
         # 'mid' is coord.points, whether from input or just made up.
         mid = np.array([x_coord.points, y_coord.points])
 
@@ -305,7 +308,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
     angles = _angle(lhs, mid, rhs)
     result = iris.cube.Cube(angles,
                             long_name='gridcell_angle_from_true_east',
-                            units='radians')
+                            units='degrees')
     result.add_aux_coord(x_coord, (0, 1))
     result.add_aux_coord(y_coord, (0, 1))
     return result
