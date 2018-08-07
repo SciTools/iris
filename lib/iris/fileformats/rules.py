@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,6 +32,7 @@ from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+from iris.exceptions import IrisUserWarning
 
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
 ReferenceTarget = collections.namedtuple('ReferenceTarget',

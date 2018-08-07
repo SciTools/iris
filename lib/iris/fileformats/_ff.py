@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,7 +27,7 @@ import warnings
 
 import numpy as np
 
-from iris.exceptions import NotYetImplementedError
+from iris.exceptions import NotYetImplementedError, IrisUserWarning
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from . import pp
 

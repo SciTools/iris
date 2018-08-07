@@ -46,6 +46,7 @@ import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
 from iris.util import points_step
+from iris.exceptions import IrisUserWarning
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',

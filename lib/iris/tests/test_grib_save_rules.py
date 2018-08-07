@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,9 @@ import numpy as np
 
 import iris.cube
 import iris.coords
+from iris.exceptions import IrisUserWarning
 from iris.tests import mock
+
 
 if tests.GRIB_AVAILABLE:
     import gribapi

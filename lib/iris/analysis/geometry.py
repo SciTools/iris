@@ -32,6 +32,7 @@ from shapely.geometry import Polygon
 import numpy as np
 
 import iris.exceptions
+from iris.exceptions import IrisUserWarning
 
 
 def _extract_relevant_cube_slice(cube, geometry):

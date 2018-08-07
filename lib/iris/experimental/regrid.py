@@ -42,6 +42,7 @@ from iris.analysis._regrid import RectilinearRegridder
 import iris.coord_systems
 import iris.cube
 from iris.util import _meshgrid, promote_aux_coord_to_dim_coord
+from iris.exceptions import IrisUserWarning
 
 
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))

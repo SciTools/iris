@@ -53,6 +53,7 @@ import numpy as np  # noqa
 import requests  # noqa
 
 import iris.util as iutil  # noqa
+from iris.exceptions import IrisUserWarning  # noqa
 
 
 _POSTFIX_DIFF = '-failed-diff.png'

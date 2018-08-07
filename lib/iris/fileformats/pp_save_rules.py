@@ -32,6 +32,7 @@ from iris.fileformats.rules import (aux_factory,
                                     scalar_coord,
                                     vector_coord)
 from iris.util import is_regular, regular_step
+from iris.exceptions import IrisUserWarning
 import cftime
 
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,6 +36,7 @@ import shapely.geometry
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisUserWarning
 
 
 class Test(tests.IrisTest):

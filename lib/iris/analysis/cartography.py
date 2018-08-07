@@ -37,6 +37,7 @@ import iris.coords
 import iris.coord_systems
 import iris.exceptions
 from iris.util import _meshgrid
+from iris.exceptions import IrisUserWarning
 from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
 # List of contents to control Sphinx autodocs.

@@ -28,7 +28,7 @@ import numpy as np
 
 import iris
 from iris.coords import DimCoord
-from iris.exceptions import TranslationError
+from iris.exceptions import IrisUserWarning, TranslationError
 
 
 __all__ = ['run']

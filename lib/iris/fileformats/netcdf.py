@@ -58,6 +58,7 @@ import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
 from iris._lazy_data import as_lazy_data
+from iris.exceptions import IrisUserWarning
 
 # Show Pyke inference engine statistics.
 DEBUG = False

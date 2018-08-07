@@ -41,6 +41,7 @@ import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 import iris.util
+from iris.exceptions import IrisUserWarning
 
 
 #

@@ -49,6 +49,7 @@ from iris.fileformats._pp_lbproc_pairs import (LBPROC_PAIRS,
                                                LBPROC_MAP as lbproc_map)
 import iris.fileformats.rules
 import iris.coord_systems
+from iris.exceptions import IrisUserWarning
 
 
 try:
@@ -1606,9 +1607,9 @@ def _interpret_fields(fields):
 
     if landmask_compressed_fields:
         if land_mask is None:
-            msg = 'Landmask compressed fields existed without a landmask to '
-                  'decompress with. The data will have a shape of (0, 0) and '
-                  'will not read.'
+            msg = ('Landmask compressed fields existed without a landmask to '
+                   'decompress with. The data will have a shape of (0, 0) and '
+                   'will not read.')
             warnings.warn(msg, IrisUserWarning)
             mask_shape = (0, 0)
         else:

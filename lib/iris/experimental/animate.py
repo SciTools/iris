@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 import iris
+from iris.exceptions import IrisUserWarning
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):

@@ -29,6 +29,7 @@ import warnings
 import numpy as np
 import cartopy
 import cartopy.crs as ccrs
+from iris.exceptions import IrisUserWarning
 
 
 class CoordSystem(six.with_metaclass(ABCMeta, object)):

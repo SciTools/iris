@@ -31,6 +31,7 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           get_xy_dim_coords, snapshot_grid)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.cube
+from iris.exceptions import IrisUserWarning
 from iris.util import _meshgrid
 
 

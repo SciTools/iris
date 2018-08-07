@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,6 +29,7 @@ import warnings
 import numpy as np
 
 import iris.exceptions
+from iris.exceptions import IrisUserWarning
 
 __all__ = ['izip']
 

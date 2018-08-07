@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,7 +31,7 @@ import numpy as np
 from iris.coords import AuxCoord, DimCoord, CellMethod
 import iris.coord_systems
 import iris.cube
-from iris.exceptions import TranslationError
+from iris.exceptions import IrisUserWarning, TranslationError
 import iris.util
 
 from operator import itemgetter

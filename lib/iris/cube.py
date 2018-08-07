@@ -53,6 +53,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.util
+from iris.exceptions import IrisUserWarning
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']

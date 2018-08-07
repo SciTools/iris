@@ -31,6 +31,7 @@ import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin
 import iris.coords
+from iris.exceptions import IrisUserWarning
 
 
 class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -37,6 +37,7 @@ import iris
 import iris.analysis
 import iris.iterate
 import iris.tests.stock
+from iris.exceptions import IrisUserWarning
 from functools import reduce
 
 

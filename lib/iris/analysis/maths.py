@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,6 +36,7 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.util
+from iris.exceptions import IrisUserWarning
 
 import dask.array as da
 from dask.array.core import broadcast_shapes
