@@ -1134,13 +1134,16 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         if not self.has_bounds():
             if self.ndim == 1:
-                warnings.warn('Coordinate {!r} is not bounded, guessing '
-                              'contiguous bounds.'.format(self.name()))
+                msg = ('Coordinate {!r} is not bounded, guessing contiguous '
+                       'bounds.').format(self.name())
+                warnings.warn(msg, IrisUserWarning)
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
-                raise ValueError('2D coordinate {!r} is not bounded. Guessing '
-                                 'bounds of 2D coords is not currently '
-                                 'supported.'.format(self.name()))
+                msg = (
+                    '2D coordinate {!r} is not bounded. Guessing bounds of '
+                    '2D coords is not currently supported.'
+                    ).format(self.name())
+                raise ValueError(msg, IrisUserWarning)
         else:
             self._sanity_check_bounds()
             bounds = self.bounds
@@ -1346,13 +1349,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         else:
             # Collapse the coordinate by calculating the bounded extremes.
             if self.ndim > 1:
-                msg = 'Collapsing a multi-dimensional coordinate. ' \
-                    'Metadata may not be fully descriptive for {!r}.'
-                warnings.warn(msg.format(self.name()))
+                msg = ('Collapsing a multi-dimensional coordinate. '
+                       'Metadata may not be fully descriptive for {!r}.')
+                warnings.warn(msg.format(self.name()), IrisUserWarning)
             elif not self.is_contiguous():
-                msg = 'Collapsing a non-contiguous coordinate. ' \
-                    'Metadata may not be fully descriptive for {!r}.'
-                warnings.warn(msg.format(self.name()))
+                msg = ('Collapsing a non-contiguous coordinate. '
+                       'Metadata may not be fully descriptive for {!r}.')
+                warnings.warn(msg.format(self.name()), IrisUserWarning)
 
             # Determine the array library for stacking
             al = da if self.has_bounds() \

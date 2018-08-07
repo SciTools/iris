@@ -347,10 +347,10 @@ class RotatedGeogCS(CoordSystem):
                           'globe': globe}
 
         if cartopy.__version__ < '0.12':
-            warnings.warn('"central_rotated_longitude" is not supported by '
-                          'cartopy{} and has been ignored in the '
-                          'creation of the cartopy '
-                          'projection/crs.'.format(cartopy.__version__))
+            msg = ('"central_rotated_longitude" is not supported by cartopy{} '
+                   'and has been ignored in the creation of the cartopy '
+                   'projection/crs.').format(cartopy.__version__)
+            warnings.warn(msg, IrisUserWarning)
         else:
             crl = 'central_rotated_longitude'
             cartopy_kwargs[crl] = self.north_pole_grid_longitude
@@ -539,8 +539,9 @@ class Orthographic(CoordSystem):
         else:
             globe = ccrs.Globe()
 
-        warnings.warn('Discarding false_easting and false_northing that are '
-                      'not used by Cartopy.')
+        msg = ('Discarding false_easting and false_northing that are not used '
+               'by Cartopy.')
+        warnings.warn(msg, IrisUserWarning)
 
         return ccrs.Orthographic(
             central_longitude=self.longitude_of_projection_origin,

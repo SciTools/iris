@@ -596,7 +596,7 @@ def _load_aux_factory(engine, cube):
                     if cf_var_name == name:
                         return coord
                 warnings.warn('Unable to find coordinate for variable '
-                              '{!r}'.format(name))
+                              '{!r}'.format(name), IrisUserWarning)
 
         if formula_type == 'atmosphere_hybrid_height_coordinate':
             delta = coord_from_term('a')
@@ -716,7 +716,7 @@ def load_cubes(filenames, callback=None):
             try:
                 _load_aux_factory(engine, cube)
             except ValueError as e:
-                warnings.warn('{}'.format(e))
+                warnings.warn('{}'.format(e), IrisUserWarning)
 
             # Perform any user registered callback function.
             cube = iris.io.run_callback(callback, cube, cf_var, filename)
@@ -1843,9 +1843,9 @@ class Saver(object):
                 # stereo
                 elif isinstance(cs, iris.coord_systems.Stereographic):
                     if cs.true_scale_lat is not None:
-                        warnings.warn('Stereographic coordinate systems with '
-                                      'true scale latitude specified are not '
-                                      'yet handled')
+                        msg = ('Stereographic coordinate systems with true '
+                               'scale latitude specified are not yet handled')
+                        warnings.warn(msg, IrisUserWarning)
                     else:
                         if cs.ellipsoid:
                             add_ellipsoid(cs.ellipsoid)
@@ -1861,7 +1861,8 @@ class Saver(object):
 
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
-                    warnings.warn('OSGB coordinate system not yet handled')
+                    warnings.warn('OSGB coordinate system not yet handled',
+                                  IrisUserWarning)
 
                 # lambert azimuthal equal area
                 elif isinstance(cs,
@@ -1890,9 +1891,10 @@ class Saver(object):
 
                 # other
                 else:
-                    warnings.warn('Unable to represent the horizontal '
-                                  'coordinate system. The coordinate system '
-                                  'type %r is not yet implemented.' % type(cs))
+                    msg = ('Unable to represent the horizontal coordinate '
+                           'system. The coordinate system type %r is not yet '
+                           'implemented.' % type(cs))
+                    warnings.warn(msg, IrisUserWarning)
 
                 self._coord_systems.append(cs)
 
@@ -2028,14 +2030,14 @@ class Saver(object):
                        "points will read back as valid values. To save as "
                        "masked byte data, please explicitly specify the "
                        "'fill_value' keyword.")
-                warnings.warn(msg.format(cube.name()))
+                warnings.warn(msg.format(cube.name()), IrisUserWarning)
         elif contains_fill_value:
             msg = ("Cube '{}' contains unmasked data points equal to the "
                    "fill-value, {}. As saved, these points will read back "
                    "as missing data. To save these as normal values, please "
                    "specify a 'fill_value' keyword not equal to any valid "
                    "data points.")
-            warnings.warn(msg.format(cube.name(), fill_value))
+            warnings.warn(msg.format(cube.name(), fill_value), IrisUserWarning)
 
         if cube.standard_name:
             _setncattr(cf_var, 'standard_name', cube.standard_name)

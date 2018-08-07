@@ -69,8 +69,8 @@ def units(cube, field):
         cube.units = units
     except ValueError:
         # Just add it as an attribute.
-        warnings.warn("Unhandled units '{0}' recorded in cube attributes.".
-                      format(units))
+        msg = "Unhandled units '{0}' recorded in cube attributes.".format(units)
+        warnings.warn(msg, IrisUserWarning)
         cube.attributes["invalid_units"] = units
 
 
@@ -135,9 +135,9 @@ def tm_meridian_scaling(cube, field):
         if abs(field.tm_meridian_scaling - MERIDIAN_SCALING_BNG) < 1e-6:
             pass  # This is the expected value for British National Grid
         else:
-            warnings.warn("tm_meridian_scaling not yet handled: {}"
-                          "".format(field.tm_meridian_scaling),
-                          TranslationWarning)
+            msg = "tm_meridian_scaling not yet handled: {}"
+            msg = msg.format(field.tm_meridian_scaling)
+            warnings.warn(msg, TranslationWarning)
 
 
 def british_national_grid_x(cube, field):
@@ -242,8 +242,8 @@ def vertical_coord(cube, field):
             elif vertical_code_name == "levels_below_ground":
                 levels_below_ground_vertical_coord(cube, field)
             else:
-                warnings.warn("Vertical coord {!r} not yet handled"
-                              "".format(v_type), TranslationWarning)
+                msg = "Vertical coord {!r} not yet handled".format(v_type)
+                warnings.warn(msg, TranslationWarning)
 
 
 def ensemble_member(cube, field):

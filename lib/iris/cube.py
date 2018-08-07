@@ -3177,7 +3177,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                          if 'latitude' in coord.name()]
             if lat_match:
                 for coord in lat_match:
-                    warnings.warn(msg.format(coord.name()))
+                    warnings.warn(msg.format(coord.name()), IrisUserWarning)
 
         # Determine the dimensions we need to collapse (and those we don't)
         if aggregator.cell_method == 'peak':
@@ -3588,8 +3588,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # now update all of the coordinates to reflect the aggregation
         for coord_ in self.coords(dimensions=dimension):
             if coord_.has_bounds():
-                warnings.warn('The bounds of coordinate %r were ignored in '
-                              'the rolling window operation.' % coord_.name())
+                msg = ('The bounds of coordinate %r were ignored in the '
+                       'rolling window operation.' % coord_.name())
+                warnings.warn(msg, IrisUserWarning)
 
             if coord_.ndim != 1:
                 raise ValueError('Cannot calculate the rolling '

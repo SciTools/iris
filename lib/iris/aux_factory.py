@@ -453,9 +453,9 @@ class HybridHeightFactory(AuxCoordFactory):
             if sigma.shape[-1:] not in ok_bound_shapes:
                 raise ValueError('Invalid sigma coordinate bounds.')
             if orography.shape[-1:] not in [(), (1,)]:
-                warnings.warn('Orography coordinate has bounds. '
-                              'These are being disregarded.',
-                              IrisUserWarning, stacklevel=2)
+                msg = ('Orography coordinate has bounds. '
+                       'These are being disregarded.')
+                warnings.warn(msg, IrisUserWarning, stacklevel=2)
                 orography_pts = nd_points_by_key['orography']
                 bds_shape = list(orography_pts.shape) + [1]
                 orography = orography_pts.reshape(bds_shape)
@@ -639,8 +639,9 @@ class HybridPressureFactory(AuxCoordFactory):
             if sigma.shape[-1:] not in ok_bound_shapes:
                 raise ValueError('Invalid sigma coordinate bounds.')
             if surface_air_pressure.shape[-1:] not in [(), (1,)]:
-                warnings.warn('Surface pressure coordinate has bounds. '
-                              'These are being disregarded.')
+                msg = ('Surface pressure coordinate has bounds. '
+                       'These are being disregarded.')
+                warnings.warn(msg, IrisUserWarning)
                 surface_air_pressure_pts = nd_points_by_key[
                     'surface_air_pressure']
                 bds_shape = list(surface_air_pressure_pts.shape) + [1]

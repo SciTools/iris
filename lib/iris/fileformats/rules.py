@@ -60,8 +60,8 @@ class ConcreteReferenceTarget(object):
                 # time-varying surface pressure in hybrid-presure.
                 src_cubes = src_cubes.merge(unique=False)
                 if len(src_cubes) > 1:
-                    warnings.warn('Multiple reference cubes for {}'
-                                  .format(self.name))
+                    msg = 'Multiple reference cubes for {}'.format(self.name)
+                    warnings.warn(msg, IrisUserWarning)
             src_cube = src_cubes[-1]
 
             if self.transform is None:
@@ -331,7 +331,7 @@ def _resolve_factory_references(cube, factories, concrete_reference_targets,
         except _ReferenceError as e:
             msg = 'Unable to create instance of {factory}. ' + str(e)
             factory_name = factory.factory_class.__name__
-            warnings.warn(msg.format(factory=factory_name))
+            warnings.warn(msg.format(factory=factory_name), IrisUserWarning)
         else:
             aux_factory = factory.factory_class(*args)
             cube.add_aux_factory(aux_factory)

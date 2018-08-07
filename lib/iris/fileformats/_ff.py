@@ -422,9 +422,9 @@ class FFHeader(object):
         grid_class = self.GRID_STAGGERING_CLASS.get(self.grid_staggering)
         if grid_class is None:
             grid_class = NewDynamics
-            warnings.warn(
-                'Staggered grid type: {} not currently interpreted, assuming '
-                'standard C-grid'.format(self.grid_staggering))
+            msg = ('Staggered grid type: {} not currently interpreted, '
+                   'assuming standard C-grid').format(self.grid_staggering)
+            warnings.warn(msg, IrisUserWarning)
         grid = grid_class(self.column_dependent_constants,
                           self.row_dependent_constants,
                           self.real_constants, self.horiz_grid_type)
@@ -604,10 +604,10 @@ class FF2PP(object):
             field.y = self._det_border(field.y, boundary_packing.y_halo)
         else:
             if field.bdy < 0:
-                warnings.warn('The LBC has a bdy less than 0. No '
-                              'case has previously been seen of '
-                              'this, and the decompression may be '
-                              'erroneous.')
+                msg = ('The LBC has a bdy less than 0. No case has previously '
+                       'been seen of this, and the decompression may be '
+                       'erroneous.')
+                warnings.warn(msg, IrisUserWarning)
             field.bzx -= field.bdx * boundary_packing.x_halo
             field.bzy -= field.bdy * boundary_packing.y_halo
 
@@ -707,11 +707,11 @@ class FF2PP(object):
                     else:
                         subgrid = stash_entry.grid_code
                         if subgrid not in HANDLED_GRIDS:
-                            warnings.warn('The stash code {} is on a grid {} '
-                                          'which has not been explicitly '
-                                          'handled by the fieldsfile loader.'
-                                          ' Assuming the data is on a P grid'
-                                          '.'.format(stash, subgrid))
+                            msg = ('The stash code {} is on a grid {} which '
+                                   'has not been explicitly handled by the '
+                                   'fieldsfile loader. Assuming the data is on '
+                                   'a P grid.').format(stash, subgrid)
+                            warnings.warn(msg, IrisUserWarning)
 
                     field.x, field.y = grid.vectors(subgrid)
 
@@ -730,8 +730,8 @@ class FF2PP(object):
                         field.bplat = grid.pole_lat
                         field.bplon = grid.pole_lon
                     elif no_x or no_y:
-                        warnings.warn(
-                            'Partially missing X or Y coordinate values.')
+                        msg = 'Partially missing X or Y coordinate values.'
+                        warnings.warn(msg, IrisUserWarning)
 
                     # Check for LBC fields.
                     is_boundary_packed = self._ff_header.dataset_type == 5
@@ -769,7 +769,7 @@ class FF2PP(object):
                 except ValueError as valerr:
                     msg = ('Input field skipped as PPField creation failed :'
                            ' error = {!r}')
-                    warnings.warn(msg.format(str(valerr)))
+                    warnings.warn(msg.format(str(valerr)), IrisUserWarning)
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())

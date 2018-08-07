@@ -383,15 +383,18 @@ def area_weights(cube, normalize=False):
     cs = cube.coord_system("CoordSystem")
     if isinstance(cs, iris.coord_systems.GeogCS):
         if cs.inverse_flattening != 0.0:
-            warnings.warn("Assuming spherical earth from ellipsoid.")
+            msg = "Assuming spherical earth from ellipsoid."
+            warnings.warn(msg, IrisUserWarning)
         radius_of_earth = cs.semi_major_axis
     elif (isinstance(cs, iris.coord_systems.RotatedGeogCS) and
             (cs.ellipsoid is not None)):
         if cs.ellipsoid.inverse_flattening != 0.0:
-            warnings.warn("Assuming spherical earth from ellipsoid.")
+            msg = "Assuming spherical earth from ellipsoid."
+            warnings.warn(msg, IrisUserWarning)
         radius_of_earth = cs.ellipsoid.semi_major_axis
     else:
-        warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+        msg = "Using DEFAULT_SPHERICAL_EARTH_RADIUS."
+        warnings.warn(msg, IrisUserWarning)
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS
 
     # Get the lon and lat coords and axes
@@ -518,9 +521,8 @@ def cosine_latitude_weights(cube):
     threshold = np.deg2rad(0.001)  # small value for grid resolution
     if np.any(lat.points < -np.pi / 2. - threshold) or \
             np.any(lat.points > np.pi / 2. + threshold):
-        warnings.warn('Out of range latitude values will be '
-                      'clipped to the valid range.',
-                      IrisUserWarning)
+        msg = 'Out of range latitude values will be clipped to the valid range.'
+        warnings.warn(msg, IrisUserWarning)
     points = lat.points
     l_weights = np.cos(points).clip(0., 1.)
 
@@ -611,8 +613,9 @@ def project(cube, target_proj, nx=None, ny=None):
     # Determine source coordinate system
     if lat_coord.coord_system is None:
         # Assume WGS84 latlon if unspecified
-        warnings.warn('Coordinate system of latitude and longitude '
-                      'coordinates is not specified. Assuming WGS84 Geodetic.')
+        msg = ('Coordinate system of latitude and longitude coordinates is not '
+               'specified. Assuming WGS84 Geodetic.')
+        warnings.warn(msg, IrisUserWarning)
         orig_cs = iris.coord_systems.GeogCS(semi_major_axis=6378137.0,
                                             inverse_flattening=298.257223563)
     else:
@@ -772,11 +775,10 @@ def project(cube, target_proj, nx=None, ny=None):
             new_cube.add_aux_coord(coord.copy(), cube.coord_dims(coord))
     discarded_coords = coords_to_ignore.difference([lat_coord, lon_coord])
     if discarded_coords:
-        warnings.warn('Discarding coordinates that share dimensions with '
-                      '{} and {}: {}'.format(lat_coord.name(),
-                                             lon_coord.name(),
-                                             [coord.name() for
-                                              coord in discarded_coords]))
+        msg = 'Discarding coordinates that share dimensions with {} and {}: {}'
+        msg = msg.format(lat_coord.name(), lon_coord.name(),
+                         [coord.name() for coord in discarded_coords])
+        warnings.warn(msg, IrisUserWarning)
 
     # TODO handle derived coords/aux_factories
 

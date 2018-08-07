@@ -217,8 +217,8 @@ def step_over_diffs(result_dir, action, display=True):
                 hash_index, distance = _calculate_hit(uris, phash, action)
                 uri = uris[hash_index]
             except KeyError:
-                wmsg = 'Ignoring unregistered test result {!r}.'
-                warnings.warn(wmsg.format(key))
+                msg = 'Ignoring unregistered test result {!r}.'.format(key)
+                warnings.warn(msg, IrisUserWarning)
                 continue
             with temp_png(key) as expected_fname:
                 processed = True

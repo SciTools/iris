@@ -85,32 +85,32 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_min_ix = np.where(x_bounds_lower <= x_min_geom)[0]
         x_min_ix = x_min_ix[np.argmax(x_bounds_lower[x_min_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's x dimension at the "
-                      "lower end.", IrisUserWarning)
+        msg = "The geometry exceeds the cube's x dimension at the lower end."
+        warnings.warn(msg, IrisUserWarning)
         x_min_ix = 0 if x_ascending else x_coord.points.size - 1
 
     try:
         x_max_ix = np.where(x_bounds_upper >= x_max_geom)[0]
         x_max_ix = x_max_ix[np.argmin(x_bounds_upper[x_max_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's x dimension at the "
-                      "upper end.", IrisUserWarning)
+        msg = "The geometry exceeds the cube's x dimension at the upper end."
+        warnings.warn(msg, IrisUserWarning)
         x_max_ix = x_coord.points.size - 1 if x_ascending else 0
 
     try:
         y_min_ix = np.where(y_bounds_lower <= y_min_geom)[0]
         y_min_ix = y_min_ix[np.argmax(y_bounds_lower[y_min_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's y dimension at the "
-                      "lower end.", IrisUserWarning)
+        msg = "The geometry exceeds the cube's y dimension at the lower end."
+        warnings.warn(msg, IrisUserWarning)
         y_min_ix = 0 if y_ascending else y_coord.points.size - 1
 
     try:
         y_max_ix = np.where(y_bounds_upper >= y_max_geom)[0]
         y_max_ix = y_max_ix[np.argmin(y_bounds_upper[y_max_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's y dimension at the "
-                      "upper end.", IrisUserWarning)
+        msg = "The geometry exceeds the cube's y dimension at the upper end."
+        warnings.warn(msg, IrisUserWarning)
         y_max_ix = y_coord.points.size - 1 if y_ascending else 0
 
     # extract coordinate values at these indices

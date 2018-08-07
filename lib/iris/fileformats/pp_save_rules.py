@@ -811,4 +811,4 @@ def verify(cube, field):
 
 def _conditional_warning(condition, warning):
     if condition:
-        warnings.warn(warning)
+        warnings.warn(warning, IrisUserWarning)

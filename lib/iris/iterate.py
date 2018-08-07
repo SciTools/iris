@@ -159,9 +159,10 @@ def izip(*cubes, **kwargs):
                                  "to iterate over this coordinate in "
                                  "step." % coord_a.name())
             if coord_a != coord_b:
-                warnings.warn("Iterating over coordinate '%s' in step whose "
-                              "definitions match but whose values "
-                              "differ." % coord_a.name())
+                msg = ("Iterating over coordinate '%s' in step whose "
+                       "definitions match but whose values differ.")
+                msg = msg % coord_a.name()
+                warnings.warn(msg, IrisUserWarning)
 
     return _ZipSlicesIterator(cubes, requested_dims_by_cube, ordered,
                               coords_by_cube)

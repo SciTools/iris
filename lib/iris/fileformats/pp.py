@@ -1139,7 +1139,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                    "value, {}. As saved, these points will read back as "
                    "missing data. To save these as normal values, please "
                    "set the field BMDI not equal to any valid data points.")
-            warnings.warn(msg.format(mdi))
+            warnings.warn(msg.format(mdi), IrisUserWarning)
         if isinstance(data, ma.MaskedArray):
             if ma.is_masked(data):
                 data = data.filled(fill_value=mdi)
@@ -1253,9 +1253,10 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         if data.dtype == np.dtype('>f4'):
             lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>f8'):
-            warnings.warn("Downcasting array precision from float64 to float32"
-                          " for save.If float64 precision is required then"
-                          " please save in a different format")
+            msg = ("Downcasting array precision from float64 to float32 for "
+                   "save.If float64 precision is required then please save in "
+                   "a different format")
+            warnings.warn(msg, IrisUserWarning)
             data = data.astype('>f4')
             lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>i4'):
@@ -1605,9 +1606,10 @@ def _interpret_fields(fields):
 
     if landmask_compressed_fields:
         if land_mask is None:
-            warnings.warn('Landmask compressed fields existed without a '
-                          'landmask to decompress with. The data will have '
-                          'a shape of (0, 0) and will not read.')
+            msg = 'Landmask compressed fields existed without a landmask to '
+                  'decompress with. The data will have a shape of (0, 0) and '
+                  'will not read.'
+            warnings.warn(msg, IrisUserWarning)
             mask_shape = (0, 0)
         else:
             mask_shape = (land_mask.lbrow, land_mask.lbnpt)
@@ -1709,8 +1711,8 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 wmsg = ('LBLREC has a different value to the integer recorded '
                         'after the header in the file ({} and {}). '
                         'Skipping the remainder of the file.')
-                warnings.warn(wmsg.format(pp_field.lblrec * PP_WORD_DEPTH,
-                                          len_of_data_plus_extra))
+                wmsg = wmsg.format(pp_field.lblrec * PP_WORD_DEPTH, len_of_data_plus_extra)
+                warnings.warn(wmsg, IrisUserWarning)
                 break
 
             # calculate the extra length in bytes
