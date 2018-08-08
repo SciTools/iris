@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,7 @@ import tempfile
 
 import cf_units
 import cftime
+import netcdftime
 import numpy as np
 
 import iris.coords
@@ -331,7 +332,7 @@ class TestTimeMean(tests.IrisTest):
 
     def test_t2_time_mean(self):
         cube = _get_single_time_cube(set_time_mean=True)
-        expected = cftime.datetime(1970, 1, 30)
+        expected = netcdftime._netcdftime.Datetime360Day(1970, 2, 1)
 
         with mock.patch('iris.fileformats.pp.PPField3',
                         autospec=True) as pp_field:
@@ -379,7 +380,7 @@ class TestTimeMean(tests.IrisTest):
         self.assertEqual(expected_ic, actual_ic)
 
     def test_lbtim_time_mean(self):
-        cube = _get_single_time_cube()
+        cube = _get_single_time_cube(set_time_mean=True)
         expected_ib = 2  # Time mean
         expected_ic = 2  # 360 day calendar
 
