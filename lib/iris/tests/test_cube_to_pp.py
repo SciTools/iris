@@ -27,7 +27,6 @@ import tempfile
 
 import cf_units
 import cftime
-import netcdftime
 import numpy as np
 
 import iris.coords
@@ -332,7 +331,8 @@ class TestTimeMean(tests.IrisTest):
 
     def test_t2_time_mean(self):
         cube = _get_single_time_cube(set_time_mean=True)
-        expected = netcdftime._netcdftime.Datetime360Day(1970, 2, 1)
+        tc = cube.coord(axis='t')
+        expected = tc.units.num2date(30)
 
         with mock.patch('iris.fileformats.pp.PPField3',
                         autospec=True) as pp_field:
