@@ -151,6 +151,9 @@ def _general_time_rules(cube, pp):
             fp_coord.has_bounds()):
         # XXX How do we know *which* time to use if there are more than
         # one? *Can* there be more than one?
+        pp.lbtim.ib = 2
+        pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+        pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
         pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1], 'hours')
 
     if (time_coord is not None and
@@ -159,6 +162,9 @@ def _general_time_rules(cube, pp):
             fp_coord is None and
             frt_coord is not None):
         # Handle missing forecast period using time and forecast ref time.
+        pp.lbtim.ib = 2
+        pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+        pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
         stop = time_coord.units.convert(time_coord.bounds[0, 1],
                                         'hours since epoch')
         start = frt_coord.units.convert(frt_coord.points[0],
