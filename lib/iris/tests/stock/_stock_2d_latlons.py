@@ -215,11 +215,15 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
 
     """
     def sample_cube(xargs, yargs):
-        # Arguments are to make coord points with np.linspace : start/stop/N.
+        # Make a test cube with given latitude + longitude coordinates.
+        # xargs/yargs are args for np.linspace (start, stop, N), to make the X
+        # and Y coordinate points.
         x0, x1, nx = xargs
         y0, y1, ny = yargs
+        # Data has cycling values, staggered a bit in successive rows.
         data = np.zeros((ny, nx))
-        data.flat[:] = np.arange(ny * nx) % (nx + 2)  # seems to work ok
+        data.flat[:] = np.arange(ny * nx) % (nx + 2)
+        # Build a 2d cube with longitude + latitude coordinates.
         cube = Cube(data, long_name='test_data')
         x_pts = np.linspace(x0, x1, nx, endpoint=True)
         y_pts = np.linspace(y0, y1, ny, endpoint=True)
@@ -238,7 +242,6 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
             cube.coord(axis=ax).guess_bounds()
     else:
         # Global data, but drastically reduced resolution.
-
         cube = sample_cube(xargs=(37.5, 318.75, 6), yargs=(-85., 65., 5))
 
         # Patch bounds to ensure it is still contiguous + global.
@@ -279,7 +282,10 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
             co_x.points, co_y.points = lons, lats
             # Unrotate bounds.
             lons, lats = co_x.bounds, co_y.bounds
-            shape = lons.shape  # unrotate pole is restricted to 1- or 2-d ??
+            # Note: save the shape, flatten + then re-apply the shape, because
+            # "unrotate_pole" uses "cartopy.crs.CRS.transform_points", which
+            # only works on arrays of 1 or 2 dimensions.
+            shape = lons.shape
             lons, lats = unrotate_pole(lons.flatten(), lats.flatten(),
                                        pole_lon, pole_lat)
             co_x.bounds, co_y.bounds = lons.reshape(shape), lats.reshape(shape)
