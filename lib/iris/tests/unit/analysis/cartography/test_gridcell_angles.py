@@ -119,14 +119,6 @@ class TestGridcellAngles(tests.IrisTest):
         # Assert (toleranced) equality, and return results.
         ok = np.allclose(angles_calculated, angles_expected,
                          atol=atol_degrees)
-        if not ok:
-            print('FAIL')
-            diffs = angles_calculated - angles_expected
-            worst_inds = np.unravel_index(np.argmax(np.abs(diffs)),
-                                          angles_calculated.shape)
-            print('max abs-error : got({}) - expected({}) at {}'.format(
-                angles_calculated[worst_inds], angles_expected[worst_inds],
-                worst_inds))
         self.assertArrayAllClose(angles_calculated, angles_expected,
                                  atol=atol_degrees)
 
