@@ -128,7 +128,7 @@ script:
   - INSTALL_DIR=$(pwd)
 
   - >
-    if [[ $TEST_TARGET == 'doctest' ]]; then
+    if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_PYTHON_VERSION} == 3* ]]; then
       MPL_RC_DIR=$HOME/.config/matplotlib;
       mkdir -p $MPL_RC_DIR;
       echo 'backend : agg' > $MPL_RC_DIR/matplotlibrc;
