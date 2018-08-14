@@ -5,8 +5,23 @@
 
   import numpy as np
   import iris
+  # Mask out all warnings
   import warnings
   warnings.simplefilter('ignore')
+  # Patch print function for same numpy formatting in Python 2 and 3
+  from iris.util import _printopts_context
+  _old_print_func = print
+  def _new_print_func(x):
+      with _printopts_context(legacy='1.13'):
+          _old_print_func(x)
+  print = _new_print_func
+
+
+.. testcleanup:: *
+
+  # Remove print function patch
+  print = _old_print_func
+
 
 =================================
 Cube interpolation and regridding
@@ -139,9 +154,9 @@ This cube has a "hybrid-height" vertical coordinate system, meaning that the ver
 coordinate is unevenly spaced in altitude:
 
    >>> print(column.coord('altitude').points)
-   [ 418.69836  434.5705   456.7928   485.3665   520.2933   561.5752
-     609.2145   663.2141   723.57697  790.30664  863.4072   942.8823
-    1028.737   1120.9764  1219.6051 ]
+   [  418.69836   434.5705    456.7928    485.3665    520.2933    561.5752
+      609.2145    663.2141    723.57697   790.30664   863.4072    942.8823
+     1028.737    1120.9764   1219.6051 ]
 
 We could regularise the vertical coordinate by defining 10 equally spaced altitude
 sample points between 400 and 1250 and interpolating our vertical coordinate onto
@@ -185,8 +200,8 @@ For example, to mask values that lie beyond the range of the original data:
    >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
    >>> new_column = column.interpolate(sample_points, scheme)
    >>> print(new_column.coord('altitude').points)
-   [       nan  494.44452  588.8889   683.33325  777.77783  872.2222
-     966.66675 1061.1111  1155.5554         nan]
+   [        nan   494.44452   588.8889    683.33325   777.77783   872.2222
+      966.66675  1061.1111   1155.5554          nan]
 
 
 .. _caching_an_interpolator:
