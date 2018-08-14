@@ -117,6 +117,8 @@ def _general_time_rules(cube, pp):
 
     """
     time_coord = scalar_coord(cube, 'time')
+    if time_coord is not None:
+        time_unit = time_coord.units
     fp_coord = scalar_coord(cube, 'forecast_period')
     frt_coord = scalar_coord(cube, 'forecast_reference_time')
     clim_season_coord = scalar_coord(cube, 'clim_season')
@@ -129,23 +131,23 @@ def _general_time_rules(cube, pp):
     if time_coord is not None:
         if time_coord.has_bounds():
             lower_bound_yr =\
-                time_coord.units.num2date(time_coord.bounds[0, 0]).year
+                time_unit.num2date(time_coord.bounds[0, 0]).year
             upper_bound_yr =\
-                time_coord.units.num2date(time_coord.bounds[0, 1]).year
+                time_unit.num2date(time_coord.bounds[0, 1]).year
         else:
             lower_bound_yr = None
             upper_bound_yr = None
 
         if fp_coord is None and frt_coord is None:
-            pp.t1 = time_coord.units.num2date(time_coord.points[0])
+            pp.t1 = time_unit.num2date(time_coord.points[0])
             pp.t2 = cftime.datetime(0, 0, 0)
 
         # Forecast.
         if not time_coord.has_bounds():
             if fp_coord is not None:
                 pp.lbtim.ib = 1
-                pp.t1 = time_coord.units.num2date(time_coord.points[0])
-                pp.t2 = time_coord.units.num2date(time_coord.points[0] -
+                pp.t1 = time_unit.num2date(time_coord.points[0])
+                pp.t2 = time_unit.num2date(time_coord.points[0] -
                                                   fp_coord.points[0])
                 pp.lbft = fp_coord.points[0]
         else:
@@ -156,8 +158,8 @@ def _general_time_rules(cube, pp):
                     # XXX How do we know *which* time to use if there are more
                     # than one? *Can* there be more than one?
                     pp.lbtim.ib = 2
-                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                     pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
                                                      'hours')
 
@@ -165,9 +167,9 @@ def _general_time_rules(cube, pp):
                     # Handle missing forecast period, using time and forecast
                     # ref time.
                     pp.lbtim.ib = 2
-                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                    stop = time_coord.units.convert(time_coord.bounds[0, 1],
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
+                    stop = time_unit.convert(time_coord.bounds[0, 1],
                                                     'hours since epoch')
                     start = frt_coord.units.convert(frt_coord.points[0],
                                                     'hours since epoch')
@@ -186,8 +188,8 @@ def _general_time_rules(cube, pp):
                 if lower_bound_yr == upper_bound_yr:
                     # Climatological time mean - single year.
                     pp.lbtim.ib = 2
-                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                     pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
                                                      'hours')
 
@@ -195,8 +197,8 @@ def _general_time_rules(cube, pp):
                         clim_season_coord.points[0] == 'djf'):
                     # Climatological time mean - spanning years - djf.
                     pp.lbtim.ib = 3
-                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                     if pp.t1.month == 12:
                         pp.t1 = cftime.datetime(pp.t1.year)
                     else:
@@ -204,11 +206,11 @@ def _general_time_rules(cube, pp):
                     pp.t2 = cftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)
                     _conditional_warning(
                         (time_coord.bounds[0, 0] !=
-                            time_coord.units.date2num(pp.t1)),
+                            time_unit.date2num(pp.t1)),
                         "modified t1 for climatological seasonal mean")
                     _conditional_warning(
                         (time_coord.bounds[0, 1] !=
-                            time_coord.units.date2num(pp.t2)),
+                            time_unit.date2num(pp.t2)),
                         "modified t2 for climatological seasonal mean")
                     pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
                                                      'hours')
@@ -218,17 +220,17 @@ def _general_time_rules(cube, pp):
                     # Climatological time mean - spanning years - mam.
                     pp.lbtim.ib = 3
                     # TODO: wut?
-                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                     pp.t1 = cftime.datetime(pp.t1.year, 3, 1, 0, 0, 0)
                     pp.t2 = cftime.datetime(pp.t2.year, 6, 1, 0, 0, 0)
                     _conditional_warning(
                         (time_coord.bounds[0, 0] !=
-                            time_coord.units.date2num(pp.t1)),
+                            time_unit.date2num(pp.t1)),
                         "modified t1 for climatological seasonal mean")
                     _conditional_warning(
                         (time_coord.bounds[0, 1] !=
-                            time_coord.units.date2num(pp.t2)),
+                            time_unit.date2num(pp.t2)),
                         "modified t2 for climatological seasonal mean")
                     pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
                                                      'hours')
@@ -238,17 +240,17 @@ def _general_time_rules(cube, pp):
                     # Climatological time mean - spanning years - jja.
                     pp.lbtim.ib = 3
                     # TODO: wut?
-                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                     pp.t1 = cftime.datetime(pp.t1.year, 6, 1, 0, 0, 0)
                     pp.t2 = cftime.datetime(pp.t2.year, 9, 1, 0, 0, 0)
                     _conditional_warning(
                         (time_coord.bounds[0, 0] !=
-                            time_coord.units.date2num(pp.t1)),
+                            time_unit.date2num(pp.t1)),
                         "modified t1 for climatological seasonal mean")
                     _conditional_warning(
                         (time_coord.bounds[0, 1] !=
-                            time_coord.units.date2num(pp.t2)),
+                            time_unit.date2num(pp.t2)),
                         "modified t2 for climatological seasonal mean")
                     pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
                                                      'hours')
@@ -258,17 +260,17 @@ def _general_time_rules(cube, pp):
                     # Climatological time mean - spanning years - son.
                     pp.lbtim.ib = 3
                     # TODO: wut?
-                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                     pp.t1 = cftime.datetime(pp.t1.year, 9, 1, 0, 0, 0)
                     pp.t2 = cftime.datetime(pp.t2.year, 12, 1, 0, 0, 0)
                     _conditional_warning(
                         (time_coord.bounds[0, 0] !=
-                            time_coord.units.date2num(pp.t1)),
+                            time_unit.date2num(pp.t1)),
                         "modified t1 for climatological seasonal mean")
                     _conditional_warning(
                         (time_coord.bounds[0, 1] !=
-                            time_coord.units.date2num(pp.t2)),
+                            time_unit.date2num(pp.t2)),
                         "modified t2 for climatological seasonal mean")
                     pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
                                                      'hours')
