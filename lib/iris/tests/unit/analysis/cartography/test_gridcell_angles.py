@@ -117,8 +117,6 @@ class TestGridcellAngles(tests.IrisTest):
         angles_expected = (angles_expected + 360.) % 360.
 
         # Assert (toleranced) equality, and return results.
-        ok = np.allclose(angles_calculated, angles_expected,
-                         atol=atol_degrees)
         self.assertArrayAllClose(angles_calculated, angles_expected,
                                  atol=atol_degrees)
 
