@@ -1272,7 +1272,9 @@ def _lazy_rms(array, axis, **kwargs):
     # However `da.average` current doesn't handle masked weights correctly
     # (see https://github.com/dask/dask/issues/3846).
     # To work around this we use da.mean, which doesn't support weights at
-    # all, so we raise an error rather than silently giving the wrong answer.
+    # all. Thus trying to use this aggregator with weights will currently
+    # raise an error in dask due to the unexpected keyword `weights`,
+    # rather than silently returning the wrong answer.
     return da.sqrt(da.mean(array ** 2, axis=axis, **kwargs))
 
 
