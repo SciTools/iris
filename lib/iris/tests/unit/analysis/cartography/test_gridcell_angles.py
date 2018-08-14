@@ -139,7 +139,7 @@ class TestGridcellAngles(tests.IrisTest):
         self.assertArrayAllClose(r1, r2, atol=0.1)
 
     def test_bounded_coord_args(self):
-        # Check that passing the coords gets the same result as the cube.
+        # Check that passing the coords gives the same result as the cube.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
                       for ax in ('x', 'y'))
         result = gridcell_angles(co_x, co_y)
@@ -188,7 +188,7 @@ class TestGridcellAngles(tests.IrisTest):
                                  self.standard_small_cube_results[:, 1:-1])
 
     def test_points_array_args(self):
-        # Check we can calculate from points values alone.
+        # Check we can calculate from points arrays alone (no coords).
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
                       for ax in ('x', 'y'))
         # As previous, the leftmost and rightmost columns are not good.
@@ -222,7 +222,7 @@ class TestGridcellAngles(tests.IrisTest):
                                  global_cube_results[:, 1:-1])
 
         # NOTE: although this looks just as bad as 'test_points_array_args',
-        # maximum errors there in the end columns are > 100 degrees !
+        # maximum errors there in the end columns are actually > 100 degrees !
 
 
 if __name__ == "__main__":

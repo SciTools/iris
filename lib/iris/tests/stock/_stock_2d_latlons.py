@@ -233,18 +233,19 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
         cube.add_dim_coord(co_x, 1)
         return cube
 
+    # Start by making a "normal" cube with separate 1-D X and Y coords.
     if regional:
-        # Extract small region.
+        # Make a small regional cube.
         cube = sample_cube(xargs=(150., 243.75, 6), yargs=(-10., 40., 5))
 
-        # Make contiguous bounds.
+        # Add contiguous bounds.
         for ax in ('x', 'y'):
             cube.coord(axis=ax).guess_bounds()
     else:
-        # Global data, but drastically reduced resolution.
+        # Global data, but at a drastically reduced resolution.
         cube = sample_cube(xargs=(37.5, 318.75, 6), yargs=(-85., 65., 5))
 
-        # Patch bounds to ensure it is still contiguous + global.
+        # Make contiguous bounds and adjust outer edges to ensure it is global.
         for name in ('longitude', 'latitude'):
             coord = cube.coord(name)
             coord.guess_bounds()
@@ -258,8 +259,11 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
                 bds[-1, 1] = 90.0
             coord.bounds = bds
 
-    # Get 1d coordinate points + bounds + calculate 2d equivalents.
+    # Now convert the 1-d coords to 2-d equivalents.
+    # Get original 1-d coords.
     co_1d_x, co_1d_y = [cube.coord(axis=ax).copy() for ax in ('x', 'y')]
+
+    # Calculate 2-d equivalents.
     co_2d_x, co_2d_y = grid_coords_2d_from_1d(co_1d_x, co_1d_y)
 
     # Remove the old grid coords.
@@ -271,7 +275,7 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
         cube.add_aux_coord(coord, (0, 1))
 
     if transformed or rotated:
-        # Take the lats + lons as being in a rotated coord system.
+        # Put the cube locations into a rotated coord system.
         pole_lat, pole_lon = 75.0, 120.0
         if transformed:
             # Reproject coordinate values from rotated to true lat-lons.
