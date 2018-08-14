@@ -39,10 +39,6 @@ import iris.exceptions
 from iris.util import _meshgrid
 from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
-# Avoid pycodestyle warnings for unused imports.
-gridcell_angles = gridcell_angles
-rotate_grid_vectors = rotate_grid_vectors
-
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
 __all__ = [
