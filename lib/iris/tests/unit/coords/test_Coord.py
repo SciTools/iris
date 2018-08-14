@@ -374,10 +374,30 @@ class Test___str__(tests.IrisTest):
         result = coord.__str__()
         self.assertEqual(expected, result)
 
+    def test_short_time_interval__bounded(self):
+        coord = DimCoord([5, 6], standard_name='time',
+                         units='days since 1970-01-01')
+        coord.guess_bounds()
+        expected = ("DimCoord([1970-01-06 00:00:00, 1970-01-07 00:00:00], "
+                    "bounds=[[1970-01-05 12:00:00, 1970-01-06 12:00:00],\n"
+                    "       [1970-01-06 12:00:00, 1970-01-07 12:00:00]], "
+                    "standard_name='time', calendar='gregorian')")
+        result = coord.__str__()
+        self.assertEqual(expected, result)
+
     def test_long_time_interval(self):
         coord = DimCoord([5], standard_name='time',
                          units='years since 1970-01-01')
         expected = "DimCoord([5], standard_name='time', calendar='gregorian')"
+        result = coord.__str__()
+        self.assertEqual(expected, result)
+
+    def test_long_time_interval__bounded(self):
+        coord = DimCoord([5, 6], standard_name='time',
+                         units='years since 1970-01-01')
+        coord.guess_bounds()
+        expected = ("DimCoord([5 6], bounds=[[ 4.5  5.5]\n [ 5.5  6.5]], "
+                    "standard_name='time', calendar='gregorian')")
         result = coord.__str__()
         self.assertEqual(expected, result)
 
