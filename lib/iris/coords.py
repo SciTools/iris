@@ -1071,7 +1071,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                                          rtol=rtol, atol=atol)
             elif self.ndim == 2:
                 contiguous, _, _ = _discontiguity_in_2d_bounds(self.bounds,
-                                                             abs_tol=atol)
+                                                               abs_tol=atol)
         else:
             contiguous = False
         return contiguous

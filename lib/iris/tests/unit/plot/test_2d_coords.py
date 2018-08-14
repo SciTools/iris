@@ -22,20 +22,25 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-import iris.coords as coords
 
 import numpy.ma as ma
 
+import iris.coords as coords
 from iris.tests.stock import simple_2d_w_multidim_coords as cube_2dcoords
 from iris.tests.stock import simple_3d_w_multidim_coords as cube3d_2dcoords
-from iris.tests.stock import lat_lon_cube
+from iris.tests.stock import sample_2d_latlons
+from iris.tests.stock import make_bounds_discontiguous_at_point
 
-from orca_utils.plot_testing import testdata_2d_coords as testdata
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
+def full2d_global():
+    return sample_2d_latlons(transformed=True)
+
+
+@tests.skip_data
 class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
     def setUp(self):
         self.multidim_cube = cube_2dcoords()
@@ -43,8 +48,8 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
 
         # latlon_2d is a cube with 2d coords, 4 bounds per point,
         # discontiguities in the bounds but masked data at the discontiguities.
-        self.latlon_2d = testdata.full2d_global()
-        testdata.make_bounds_discontiguous_at_point(self.latlon_2d, 2, 2)
+        self.latlon_2d = full2d_global()
+        make_bounds_discontiguous_at_point(self.latlon_2d, 2, 2)
 
         # # Take a latlon cube with 1D coords, broadcast the coords into 2D
         # # ones, then add ONE of them back into the cube in place of original:
@@ -106,9 +111,10 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
     #     # TODO Find out where I can put a catch for this (if necessary)
     #     cube = self.mixed_dims
     #     with self.assertRaises(ValueError):
-    #         iplt._get_plot_defn_custom_coords_picked(cube,
-    #                                                  ('latitude', 'longitude'),
-    #                                                  self.mode)
+    #         iplt._get_plot_defn_custom_coords_picked(
+    #            cube,
+    #            ('latitude', 'longitude'),
+    #            self.mode)
 
     def test_map_common_not_enough_bounds(self):
         # Test that a lat-lon cube with 2d coords and 2 bounds per point
@@ -129,16 +135,16 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
         result = iplt._map_common('pcolor', None, self.mode, cube, plot_defn)
         self.assertTrue(result)
 
-    # def test_discontiguous_masked(self):
-    #     # Test that a contiguity check will raise a warning (not an error) for
-    #     # discontiguous bounds but appropriately masked data.
-    #     cube = self.latlon_2d
-    #     coord = cube.coord('longitude')
-    #     msg = 'The bounds of the longitude coordinate are not contiguous.  ' \
-    #           'However, data is masked where the discontiguity occurs so ' \
-    #           'plotting anyway.'
-    #     with self.assertWarnsRegexp(msg):
-    #         iplt._check_contiguity_and_bounds(coord, cube.data)
+#    def test_discontiguous_masked(self):
+#        # Test that a contiguity check will raise a warning (not an error) for
+#        # discontiguous bounds but appropriately masked data.
+#        cube = self.latlon_2d
+#        coord = cube.coord('longitude')
+#        msg = 'The bounds of the longitude coordinate are not contiguous.  ' \
+#              'However, data is masked where the discontiguity occurs so ' \
+#              'plotting anyway.'
+#        with self.assertWarnsRegexp(msg):
+#            iplt._check_contiguity_and_bounds(coord, cube.data)
 
     def test_discontiguous_unmasked(self):
         # Check that an error occurs when the contiguity check finds
@@ -155,3 +161,7 @@ class Test_2d_coords_plot_defn_bound_mode(tests.IrisTest):
         cube = self.latlon_2d
         result = iplt._draw_2d_from_bounds('pcolormesh', cube)
         self.assertTrue(result)
+
+
+if __name__ == '__main__':
+    tests.main()

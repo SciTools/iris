@@ -92,7 +92,7 @@ def _angle(p, q, r):
     if old_style:
         mid_lons = np.deg2rad(q[0])
 
-        pr =  _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
+        pr = _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
         pr_norm = np.sqrt(np.sum(pr**2, axis=0))
         pr_top = pr[1] * np.cos(mid_lons) - pr[0] * np.sin(mid_lons)
 
@@ -124,7 +124,7 @@ def _angle(p, q, r):
                                                  lmb_hatvec_y,
                                                  lmb_hatvec_z)])
 
-        pr =  _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
+        pr = _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
 
         # Dot products to form true-northward / true-eastward projections.
         pr_cmpt_e = np.sum(pr * lmb_hatvec, axis=0)
@@ -141,7 +141,7 @@ def _angle(p, q, r):
         rtol = 1.e-3
         check = np.allclose(mag_rot, mag_orig, rtol=rtol)
         if not check:
-            print (mag_rot, mag_orig)
+            print(mag_rot, mag_orig)
             assert np.allclose(mag_rot, mag_orig, rtol=rtol)
 
     return psi

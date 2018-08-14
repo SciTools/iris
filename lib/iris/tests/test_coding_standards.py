@@ -93,7 +93,7 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/io/format_picker.py',
         '*/iris/tests/__init__.py',
         '*/iris/tests/pp.py',
-        '*/iris/tests/stock.py',
+        '*/iris/tests/stock/__init__.py',
         '*/iris/tests/system_test.py',
         '*/iris/tests/test_analysis.py',
         '*/iris/tests/test_analysis_calculus.py',
