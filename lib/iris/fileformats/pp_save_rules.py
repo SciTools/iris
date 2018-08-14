@@ -173,33 +173,12 @@ def _general_time_rules(cube, pp):
                                                     'hours since epoch')
                     pp.lbft = stop - start
 
-                if ((fp_coord is not None or frt_coord is not None) and
-                        cm_time_mean is not None and
-                        cm_time_mean.intervals != () and
-                        cm_time_mean.intervals[0].endswith('hour')):
-                    pp.lbtim.ia = int(cm_time_mean.intervals[0][:-5])
-
-                # If the cell methods contain a minimum then overwrite lbtim.ia
-                # with this interval.
-                if ((fp_coord is not None or frt_coord is not None) and
-                        cm_time_min is not None and
-                        cm_time_min.intervals != () and
-                        cm_time_min.intervals[0].endswith('hour')):
-                    # Set lbtim.ia with integer part of the cell method's
-                    # interval, e.g. if interval is '24 hour' then lbtim.ia
-                    # becomes 24.
-                    pp.lbtim.ia = int(cm_time_min.intervals[0][:-5])
-
-                # If the cell methods contain a maximum then overwrite lbtim.ia
-                # with this interval.
-                if ((fp_coord is not None or frt_coord is not None) and
-                        cm_time_max is not None and
-                        cm_time_max.intervals != () and
-                        cm_time_max.intervals[0].endswith('hour')):
-                    # Set lbtim.ia with the integer part of cell method's
-                    # interval, e.g. if interval is '1 hour' then lbtim.ia
-                    # becomes 1.
-                    pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
+                if fp_coord is not None or frt_coord is not None:
+                    for cm in (cm_time_mean, cm_time_min, cm_time_max):
+                        if (cm is not None and
+                                cm.intervals != () and
+                                cm.intervals[0].endswith('hour')):
+                            pp.lbtim.ia = int(cm.intervals[0][:-5])
 
             elif ('clim_season' in cube.cell_methods[-1].coord_names
                   and fp_coord is not None and fp_coord.has_bounds()):
