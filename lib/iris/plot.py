@@ -23,7 +23,9 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+
+import warnings
+from six.moves import (map, zip)  # noqa
 
 import collections
 import datetime
@@ -104,7 +106,7 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
             raise ValueError('The coordinate {!r} has {} dimensions.'
                              'Cell-based plotting is only supported for'
                              'coordinates with one or two dimensions.'
-                             .format(coord.name()), len(span))
+                             .format(coord.name(), len(span)))
 
     # Check the combination of coordinates spans enough (ndims) data
     # dimensions.

@@ -33,13 +33,13 @@ import os
 import os.path
 import sys
 import tempfile
-import time
 
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.coords
 import iris.exceptions
 
 
@@ -1554,3 +1554,111 @@ def _meshgrid(*xi, **kwargs):
         if mxii.dtype != xii.dtype:
             mxi[i] = mxii.astype(xii.dtype)
     return mxi
+
+
+def find_discontiguities_in_bounds(coord, abs_tol=1e-4):
+    """
+    Searches coord for discontiguities in the bounds array, returned as
+    booleans.
+
+    Args:
+        coord:
+        An instance of :class:`iris.coords.Coord`
+
+    Kwargs:
+        abs_tol:
+        absolute tolerance in coordinate units
+
+    Returns:
+        Boolean array representing the truth value for
+        discontiguous cells in the coordinate points array.
+    """
+    if coord.ndim != 2:
+        msg = 'Discontiguity searches are currently only supported for ' \
+              '2-dimensional coordinates.'
+        raise NotImplementedError(msg)
+
+    _, diffs_x, diffs_y = iris.coords._discontiguity_in_2d_bounds(coord.bounds,
+                                                                  abs_tol)
+
+    gaps_x = diffs_x > abs_tol
+    gaps_y = diffs_y > abs_tol
+
+    # Set up unmasked boolean array the same size as the coord points array:
+    bad_points_boolean = np.zeros(coord.points.shape, dtype=bool)
+
+    # Apply mask for x-direction discontiguities:
+    bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1],
+                                               gaps_x)
+
+    # apply mask for y-direction discontiguities:
+    bad_points_boolean[:-1, :] = np.logical_or(bad_points_boolean[:-1, :],
+                                               gaps_y)
+
+    return bad_points_boolean
+
+
+def mask_data_at_discontiguities(cube, coord, abs_tol=1e-4):
+    """
+    Masks any cells in the data array which correspond to discontiguous
+    cells in the coordinate points array.
+
+    Args:
+        Either
+
+        (a) An instance of :class:`iris.coords.DimCoord`
+
+        or
+
+        (b) the :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name` of an instance of an instance of
+        :class:`iris.coords.DimCoord`.
+
+        data:
+        the :attr:`data` of the cube from which the coord is taken.
+
+    Kwargs:
+        abs_tol:
+        absolute tolerance in degrees
+
+    Returns:
+        A cube whose data array is masked at points where the chosen
+        coordinate bounds array is discontiguous.
+    """
+    if isinstance(coord, six.string_types):
+        coord = cube.coord(coord)
+    elif isinstance(coord, iris.coords.Coord):
+        coord = coord
+    else:
+        # Don't know how to handle this type
+        msg = ("Don't know how to handle coordinate of type {}. "
+               "Please use either the standard_name, long_name or var_name "
+               "of the coordinate, or alternatively a coordinate object.")
+        msg = msg.format(type(coord))
+        raise TypeError(msg)
+
+    discontiguous_points = find_discontiguities_in_bounds(coord,
+                                                          abs_tol=abs_tol)
+
+    # Check which dimensions are spanned by each coordinate.
+    if isinstance(coord, int):
+        span = set([coord])
+    else:
+        span = set(cube.coord_dims(coord))
+    if not span:
+        msg = 'The coordinate {!r} doesn\'t span a data dimension.'
+        raise ValueError(msg.format(coord.name()))
+
+    # masked_data = ma.masked_array(cube.data)
+    # Slice data so that we can apply the mask to the correct points and
+    # then broadcast it
+    sliced_cube = cube.slices(span)
+    cube_slice_list = iris.cube.CubeList()
+    for cube_slice in sliced_cube:
+        # For each cube slice, mask the data array at discontiguous points
+        cube_slice.data = ma.masked_array(cube_slice.data)
+        cube_slice.data[discontiguous_points] = ma.masked
+        cube_slice_list.append(cube_slice)
+    masked_cube, = cube_slice_list.merge()
+
+    return masked_cube

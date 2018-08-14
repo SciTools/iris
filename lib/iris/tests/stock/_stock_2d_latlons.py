@@ -26,7 +26,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis.cartography import unrotate_pole
-from iris.cube import Cube
+from iris.cube import Cube, CubeList
 from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import RotatedGeogCS
 
@@ -313,7 +313,6 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
     The cube must have bounded 2d 'x' and 'y' coordinates.
 
     TODO: add a switch to make a discontiguity in the *y*-direction instead ?
-
     """
     x_coord = cube.coord(axis='x')
     y_coord = cube.coord(axis='y')
@@ -341,10 +340,28 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
 
     adjust_coord(x_coord)
     adjust_coord(y_coord)
-    # Also mask the relevant data point.
-    data = cube.data  # N.B. fetch all the data.
-    if not ma.isMaskedArray(data):
-        # Promote to masked array, to avoid converting mask to NaN.
-        data = ma.masked_array(data)
-    data[at_iy, at_ix] = ma.masked
-    cube.data = data
+
+    # Check which dimensions are spanned by each coordinate.
+    for coord in (x_coord, y_coord):
+        if isinstance(coord, int):
+            span = set([coord])
+        else:
+            span = set(cube.coord_dims(coord))
+        if not span:
+            msg = 'The coordinate {!r} doesn\'t span a data dimension.'
+            raise ValueError(msg.format(coord.name()))
+
+        # masked_data = ma.masked_array(cube.data)
+        # Slice data so that we can apply the mask to the correct points and
+        # then broadcast it
+        sliced_cube = cube.slices(span)
+        cube_slice_list = CubeList()
+        for cube_slice in sliced_cube:
+            # For each cube slice, mask the data array at discontiguous points
+            cube_slice.data = ma.masked_array(cube_slice.data)
+            cube_slice.data[at_ix, at_iy] = ma.masked
+            cube_slice_list.append(cube_slice)
+        masked_cube, = cube_slice_list.merge()
+
+    # # Also mask the relevant data point.
+    cube.data = masked_cube.data
