@@ -201,12 +201,10 @@ def _general_time_rules(cube, pp):
                     # becomes 1.
                     pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
 
-            elif 'clim_season' in cube.cell_methods[-1].coord_names:
-                # 'clim_season_coord' and 'clim_season' in cell methods
+            elif ('clim_season' in cube.cell_methods[-1].coord_names
+                  and fp_coord is not None and fp_coord.has_bounds()):
                 # Climatological time means.
-                if (lower_bound_yr == upper_bound_yr and
-                        fp_coord is not None and
-                        fp_coord.has_bounds()):
+                if lower_bound_yr == upper_bound_yr:
                     # Climatological time mean - single year.
                     pp.lbtim.ib = 2
                     pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
@@ -215,8 +213,6 @@ def _general_time_rules(cube, pp):
                                                      'hours')
 
                 elif (lower_bound_yr != upper_bound_yr and
-                        fp_coord is not None and
-                        fp_coord.has_bounds() and
                         clim_season_coord.points[0] == 'djf'):
                     # Climatological time mean - spanning years - djf.
                     pp.lbtim.ib = 3
@@ -239,8 +235,6 @@ def _general_time_rules(cube, pp):
                                                      'hours')
 
                 elif (lower_bound_yr != upper_bound_yr and
-                        fp_coord is not None and
-                        fp_coord.has_bounds() and
                         clim_season_coord.points[0] == 'mam'):
                     # Climatological time mean - spanning years - mam.
                     pp.lbtim.ib = 3
@@ -261,8 +255,6 @@ def _general_time_rules(cube, pp):
                                                      'hours')
 
                 elif (lower_bound_yr != upper_bound_yr and
-                        fp_coord is not None and
-                        fp_coord.has_bounds() and
                         clim_season_coord.points[0] == 'jja'):
                     # Climatological time mean - spanning years - jja.
                     pp.lbtim.ib = 3
@@ -283,8 +275,6 @@ def _general_time_rules(cube, pp):
                                                      'hours')
 
                 elif (lower_bound_yr != upper_bound_yr and
-                        fp_coord is not None and
-                        fp_coord.has_bounds() and
                         clim_season_coord.points[0] == 'son'):
                     # Climatological time mean - spanning years - son.
                     pp.lbtim.ib = 3
