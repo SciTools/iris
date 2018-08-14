@@ -162,12 +162,14 @@ def _general_time_rules(cube, pp):
                 pp.lbtim.ib = 2
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
                 pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1], 'hours')
+                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                 'hours')
 
             if (clim_season_coord is None and
                     fp_coord is None and
                     frt_coord is not None):
-                # Handle missing forecast period using time and forecast ref time.
+                # Handle missing forecast period, using time and forecast ref
+                # time.
                 pp.lbtim.ib = 2
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
                 pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
@@ -190,25 +192,25 @@ def _general_time_rules(cube, pp):
                      not cm_time_mean.intervals[0].endswith('hour'))):
                 pp.lbtim.ia = 0
 
-            # If the cell methods contain a minimum then overwrite lbtim.ia with this
-            # interval.
+            # If the cell methods contain a minimum then overwrite lbtim.ia
+            # with this interval.
             if (clim_season_coord is None and
                     (fp_coord is not None or frt_coord is not None) and
                     cm_time_min is not None and
                     cm_time_min.intervals != () and
                     cm_time_min.intervals[0].endswith('hour')):
-                # Set lbtim.ia with the integer part of the cell method's interval
+                # Set lbtim.ia with integer part of the cell method's interval
                 # e.g. if interval is '24 hour' then lbtim.ia becomes 24.
                 pp.lbtim.ia = int(cm_time_min.intervals[0][:-5])
 
-            # If the cell methods contain a maximum then overwrite lbtim.ia with this
-            # interval.
+            # If the cell methods contain a maximum then overwrite lbtim.ia
+            # with this interval.
             if (clim_season_coord is None and
                     (fp_coord is not None or frt_coord is not None) and
                     cm_time_max is not None and
                     cm_time_max.intervals != () and
                     cm_time_max.intervals[0].endswith('hour')):
-                # Set lbtim.ia with the integer part of the cell method's interval
+                # Set lbtim.ia with the integer part of cell method's interval
                 # e.g. if interval is '1 hour' then lbtim.ia becomes 1.
                 pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
 
@@ -223,7 +225,8 @@ def _general_time_rules(cube, pp):
                 pp.lbtim.ib = 2
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
                 pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1], 'hours')
+                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                 'hours')
 
             elif (lower_bound_yr != upper_bound_yr and
                     fp_coord is not None and
@@ -242,12 +245,15 @@ def _general_time_rules(cube, pp):
                     pp.t1 = cftime.datetime(pp.t1.year-1, 12, 1, 0, 0, 0)
                 pp.t2 = cftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)
                 _conditional_warning(
-                    time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
+                    (time_coord.bounds[0, 0] !=
+                        time_coord.units.date2num(pp.t1)),
                     "modified t1 for climatological seasonal mean")
                 _conditional_warning(
-                    time_coord.bounds[0, 1] != time_coord.units.date2num(pp.t2),
+                    (time_coord.bounds[0, 1] !=
+                        time_coord.units.date2num(pp.t2)),
                     "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1], 'hours')
+                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                 'hours')
 
             elif (lower_bound_yr != upper_bound_yr and
                     fp_coord is not None and
@@ -264,12 +270,15 @@ def _general_time_rules(cube, pp):
                 pp.t1 = cftime.datetime(pp.t1.year, 3, 1, 0, 0, 0)
                 pp.t2 = cftime.datetime(pp.t2.year, 6, 1, 0, 0, 0)
                 _conditional_warning(
-                    time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
+                    (time_coord.bounds[0, 0] !=
+                        time_coord.units.date2num(pp.t1)),
                     "modified t1 for climatological seasonal mean")
                 _conditional_warning(
-                    time_coord.bounds[0, 1] != time_coord.units.date2num(pp.t2),
+                    (time_coord.bounds[0, 1] !=
+                        time_coord.units.date2num(pp.t2)),
                     "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1], 'hours')
+                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                 'hours')
 
             elif (lower_bound_yr != upper_bound_yr and
                     fp_coord is not None and
@@ -286,12 +295,15 @@ def _general_time_rules(cube, pp):
                 pp.t1 = cftime.datetime(pp.t1.year, 6, 1, 0, 0, 0)
                 pp.t2 = cftime.datetime(pp.t2.year, 9, 1, 0, 0, 0)
                 _conditional_warning(
-                    time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
+                    (time_coord.bounds[0, 0] !=
+                        time_coord.units.date2num(pp.t1)),
                     "modified t1 for climatological seasonal mean")
                 _conditional_warning(
-                    time_coord.bounds[0, 1] != time_coord.units.date2num(pp.t2),
+                    (time_coord.bounds[0, 1] !=
+                        time_coord.units.date2num(pp.t2)),
                     "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1], 'hours')
+                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                 'hours')
 
             elif (lower_bound_yr != upper_bound_yr and
                     fp_coord is not None and
@@ -308,12 +320,15 @@ def _general_time_rules(cube, pp):
                 pp.t1 = cftime.datetime(pp.t1.year, 9, 1, 0, 0, 0)
                 pp.t2 = cftime.datetime(pp.t2.year, 12, 1, 0, 0, 0)
                 _conditional_warning(
-                    time_coord.bounds[0, 0] != time_coord.units.date2num(pp.t1),
+                    (time_coord.bounds[0, 0] !=
+                        time_coord.units.date2num(pp.t1)),
                     "modified t1 for climatological seasonal mean")
                 _conditional_warning(
-                    time_coord.bounds[0, 1] != time_coord.units.date2num(pp.t2),
+                    (time_coord.bounds[0, 1] !=
+                        time_coord.units.date2num(pp.t2)),
                     "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1], 'hours')
+                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                 'hours')
 
     return pp
 
