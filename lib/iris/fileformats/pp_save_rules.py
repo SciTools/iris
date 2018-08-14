@@ -137,15 +137,12 @@ def _general_time_rules(cube, pp):
             upper_bound_yr = None
 
         if fp_coord is None and frt_coord is None:
-            pp.lbtim.ia = 0
-            pp.lbtim.ib = 0
             pp.t1 = time_coord.units.num2date(time_coord.points[0])
             pp.t2 = cftime.datetime(0, 0, 0)
 
         # Forecast.
         if not time_coord.has_bounds():
             if fp_coord is not None:
-                pp.lbtim.ia = 0
                 pp.lbtim.ib = 1
                 pp.t1 = time_coord.units.num2date(time_coord.points[0])
                 pp.t2 = time_coord.units.num2date(time_coord.points[0] -
@@ -186,12 +183,6 @@ def _general_time_rules(cube, pp):
                     cm_time_mean.intervals[0].endswith('hour')):
                 pp.lbtim.ia = int(cm_time_mean.intervals[0][:-5])
 
-            if (clim_season_coord is None and
-                    (fp_coord is not None or frt_coord is not None) and
-                    (cm_time_mean is None or cm_time_mean.intervals == () or
-                     not cm_time_mean.intervals[0].endswith('hour'))):
-                pp.lbtim.ia = 0
-
             # If the cell methods contain a minimum then overwrite lbtim.ia
             # with this interval.
             if (clim_season_coord is None and
@@ -221,7 +212,6 @@ def _general_time_rules(cube, pp):
                     clim_season_coord is not None and
                     'clim_season' in cube.cell_methods[-1].coord_names):
                 # Climatological time mean - single year.
-                pp.lbtim.ia = 0
                 pp.lbtim.ib = 2
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
                 pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
@@ -235,7 +225,6 @@ def _general_time_rules(cube, pp):
                     'clim_season' in cube.cell_methods[-1].coord_names and
                     clim_season_coord.points[0] == 'djf'):
                 # Climatological time mean - spanning years - djf.
-                pp.lbtim.ia = 0
                 pp.lbtim.ib = 3
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
                 pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
@@ -262,7 +251,6 @@ def _general_time_rules(cube, pp):
                     'clim_season' in cube.cell_methods[-1].coord_names and
                     clim_season_coord.points[0] == 'mam'):
                 # Climatological time mean - spanning years - mam.
-                pp.lbtim.ia = 0
                 pp.lbtim.ib = 3
                 # TODO: wut?
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
@@ -287,7 +275,6 @@ def _general_time_rules(cube, pp):
                     'clim_season' in cube.cell_methods[-1].coord_names and
                     clim_season_coord.points[0] == 'jja'):
                 # Climatological time mean - spanning years - jja.
-                pp.lbtim.ia = 0
                 pp.lbtim.ib = 3
                 # TODO: wut?
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
@@ -312,7 +299,6 @@ def _general_time_rules(cube, pp):
                     'clim_season' in cube.cell_methods[-1].coord_names and
                     clim_season_coord.points[0] == 'son'):
                 # Climatological time mean - spanning years - son.
-                pp.lbtim.ia = 0
                 pp.lbtim.ib = 3
                 # TODO: wut?
                 pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
