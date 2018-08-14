@@ -31,15 +31,6 @@ install:
     export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96";
     export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//");
 
-  # Cut short doctest phase under Python 2 : now only supports Python 3
-  # SEE : https://github.com/SciTools/iris/pull/3134
-  # ------------
-  - >
-    if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_PYTHON_VERSION} != 3* ]]; then
-        echo "DOCTEST phase only valid in Python 3 : ABORTING during 'install'."
-        exit 0
-    fi
-
   # Install miniconda
   # -----------------
   - >
