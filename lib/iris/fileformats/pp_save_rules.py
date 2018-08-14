@@ -151,170 +151,161 @@ def _general_time_rules(cube, pp):
         else:
             # Time mean (non-climatological).
             # XXX This only works when we have a single timestep.
-            if (clim_season_coord is None and
-                    fp_coord is not None and
-                    fp_coord.has_bounds()):
-                # XXX How do we know *which* time to use if there are more than
-                # one? *Can* there be more than one?
-                pp.lbtim.ib = 2
-                pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                 'hours')
+            if clim_season_coord is None:
+                if fp_coord is not None and fp_coord.has_bounds():
+                    # XXX How do we know *which* time to use if there are more
+                    # than one? *Can* there be more than one?
+                    pp.lbtim.ib = 2
+                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                     'hours')
 
-            if (clim_season_coord is None and
-                    fp_coord is None and
-                    frt_coord is not None):
-                # Handle missing forecast period, using time and forecast ref
-                # time.
-                pp.lbtim.ib = 2
-                pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                stop = time_coord.units.convert(time_coord.bounds[0, 1],
-                                                'hours since epoch')
-                start = frt_coord.units.convert(frt_coord.points[0],
-                                                'hours since epoch')
-                pp.lbft = stop - start
+                if fp_coord is None and frt_coord is not None:
+                    # Handle missing forecast period, using time and forecast
+                    # ref time.
+                    pp.lbtim.ib = 2
+                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    stop = time_coord.units.convert(time_coord.bounds[0, 1],
+                                                    'hours since epoch')
+                    start = frt_coord.units.convert(frt_coord.points[0],
+                                                    'hours since epoch')
+                    pp.lbft = stop - start
 
-            if (clim_season_coord is None and
-                    (fp_coord is not None or frt_coord is not None) and
-                    cm_time_mean is not None and
-                    cm_time_mean.intervals != () and
-                    cm_time_mean.intervals[0].endswith('hour')):
-                pp.lbtim.ia = int(cm_time_mean.intervals[0][:-5])
+                if ((fp_coord is not None or frt_coord is not None) and
+                        cm_time_mean is not None and
+                        cm_time_mean.intervals != () and
+                        cm_time_mean.intervals[0].endswith('hour')):
+                    pp.lbtim.ia = int(cm_time_mean.intervals[0][:-5])
 
-            # If the cell methods contain a minimum then overwrite lbtim.ia
-            # with this interval.
-            if (clim_season_coord is None and
-                    (fp_coord is not None or frt_coord is not None) and
-                    cm_time_min is not None and
-                    cm_time_min.intervals != () and
-                    cm_time_min.intervals[0].endswith('hour')):
-                # Set lbtim.ia with integer part of the cell method's interval
-                # e.g. if interval is '24 hour' then lbtim.ia becomes 24.
-                pp.lbtim.ia = int(cm_time_min.intervals[0][:-5])
+                # If the cell methods contain a minimum then overwrite lbtim.ia
+                # with this interval.
+                if ((fp_coord is not None or frt_coord is not None) and
+                        cm_time_min is not None and
+                        cm_time_min.intervals != () and
+                        cm_time_min.intervals[0].endswith('hour')):
+                    # Set lbtim.ia with integer part of the cell method's
+                    # interval, e.g. if interval is '24 hour' then lbtim.ia
+                    # becomes 24.
+                    pp.lbtim.ia = int(cm_time_min.intervals[0][:-5])
 
-            # If the cell methods contain a maximum then overwrite lbtim.ia
-            # with this interval.
-            if (clim_season_coord is None and
-                    (fp_coord is not None or frt_coord is not None) and
-                    cm_time_max is not None and
-                    cm_time_max.intervals != () and
-                    cm_time_max.intervals[0].endswith('hour')):
-                # Set lbtim.ia with the integer part of cell method's interval
-                # e.g. if interval is '1 hour' then lbtim.ia becomes 1.
-                pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
+                # If the cell methods contain a maximum then overwrite lbtim.ia
+                # with this interval.
+                if ((fp_coord is not None or frt_coord is not None) and
+                        cm_time_max is not None and
+                        cm_time_max.intervals != () and
+                        cm_time_max.intervals[0].endswith('hour')):
+                    # Set lbtim.ia with the integer part of cell method's
+                    # interval, e.g. if interval is '1 hour' then lbtim.ia
+                    # becomes 1.
+                    pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
+            else:
+                # 'clim_season_coord' is not None: Climatological time means.
+                if (lower_bound_yr == upper_bound_yr and
+                        fp_coord is not None and
+                        fp_coord.has_bounds() and
+                        'clim_season' in cube.cell_methods[-1].coord_names):
+                    # Climatological time mean - single year.
+                    pp.lbtim.ib = 2
+                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                     'hours')
 
-            # Climatological time means.
-            if (lower_bound_yr == upper_bound_yr and
-                    fp_coord is not None and
-                    fp_coord.has_bounds() and
-                    clim_season_coord is not None and
-                    'clim_season' in cube.cell_methods[-1].coord_names):
-                # Climatological time mean - single year.
-                pp.lbtim.ib = 2
-                pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                 'hours')
+                elif (lower_bound_yr != upper_bound_yr and
+                        fp_coord is not None and
+                        fp_coord.has_bounds() and
+                        'clim_season' in cube.cell_methods[-1].coord_names and
+                        clim_season_coord.points[0] == 'djf'):
+                    # Climatological time mean - spanning years - djf.
+                    pp.lbtim.ib = 3
+                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    if pp.t1.month == 12:
+                        pp.t1 = cftime.datetime(pp.t1.year)
+                    else:
+                        pp.t1 = cftime.datetime(pp.t1.year-1, 12, 1, 0, 0, 0)
+                    pp.t2 = cftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)
+                    _conditional_warning(
+                        (time_coord.bounds[0, 0] !=
+                            time_coord.units.date2num(pp.t1)),
+                        "modified t1 for climatological seasonal mean")
+                    _conditional_warning(
+                        (time_coord.bounds[0, 1] !=
+                            time_coord.units.date2num(pp.t2)),
+                        "modified t2 for climatological seasonal mean")
+                    pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                     'hours')
 
-            elif (lower_bound_yr != upper_bound_yr and
-                    fp_coord is not None and
-                    fp_coord.has_bounds() and
-                    clim_season_coord is not None and
-                    'clim_season' in cube.cell_methods[-1].coord_names and
-                    clim_season_coord.points[0] == 'djf'):
-                # Climatological time mean - spanning years - djf.
-                pp.lbtim.ib = 3
-                pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                if pp.t1.month == 12:
-                    pp.t1 = cftime.datetime(pp.t1.year)
-                else:
-                    pp.t1 = cftime.datetime(pp.t1.year-1, 12, 1, 0, 0, 0)
-                pp.t2 = cftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)
-                _conditional_warning(
-                    (time_coord.bounds[0, 0] !=
-                        time_coord.units.date2num(pp.t1)),
-                    "modified t1 for climatological seasonal mean")
-                _conditional_warning(
-                    (time_coord.bounds[0, 1] !=
-                        time_coord.units.date2num(pp.t2)),
-                    "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                 'hours')
+                elif (lower_bound_yr != upper_bound_yr and
+                        fp_coord is not None and
+                        fp_coord.has_bounds() and
+                        'clim_season' in cube.cell_methods[-1].coord_names and
+                        clim_season_coord.points[0] == 'mam'):
+                    # Climatological time mean - spanning years - mam.
+                    pp.lbtim.ib = 3
+                    # TODO: wut?
+                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = cftime.datetime(pp.t1.year, 3, 1, 0, 0, 0)
+                    pp.t2 = cftime.datetime(pp.t2.year, 6, 1, 0, 0, 0)
+                    _conditional_warning(
+                        (time_coord.bounds[0, 0] !=
+                            time_coord.units.date2num(pp.t1)),
+                        "modified t1 for climatological seasonal mean")
+                    _conditional_warning(
+                        (time_coord.bounds[0, 1] !=
+                            time_coord.units.date2num(pp.t2)),
+                        "modified t2 for climatological seasonal mean")
+                    pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                     'hours')
 
-            elif (lower_bound_yr != upper_bound_yr and
-                    fp_coord is not None and
-                    fp_coord.has_bounds() and
-                    clim_season_coord is not None and
-                    'clim_season' in cube.cell_methods[-1].coord_names and
-                    clim_season_coord.points[0] == 'mam'):
-                # Climatological time mean - spanning years - mam.
-                pp.lbtim.ib = 3
-                # TODO: wut?
-                pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                pp.t1 = cftime.datetime(pp.t1.year, 3, 1, 0, 0, 0)
-                pp.t2 = cftime.datetime(pp.t2.year, 6, 1, 0, 0, 0)
-                _conditional_warning(
-                    (time_coord.bounds[0, 0] !=
-                        time_coord.units.date2num(pp.t1)),
-                    "modified t1 for climatological seasonal mean")
-                _conditional_warning(
-                    (time_coord.bounds[0, 1] !=
-                        time_coord.units.date2num(pp.t2)),
-                    "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                 'hours')
+                elif (lower_bound_yr != upper_bound_yr and
+                        fp_coord is not None and
+                        fp_coord.has_bounds() and
+                        'clim_season' in cube.cell_methods[-1].coord_names and
+                        clim_season_coord.points[0] == 'jja'):
+                    # Climatological time mean - spanning years - jja.
+                    pp.lbtim.ib = 3
+                    # TODO: wut?
+                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = cftime.datetime(pp.t1.year, 6, 1, 0, 0, 0)
+                    pp.t2 = cftime.datetime(pp.t2.year, 9, 1, 0, 0, 0)
+                    _conditional_warning(
+                        (time_coord.bounds[0, 0] !=
+                            time_coord.units.date2num(pp.t1)),
+                        "modified t1 for climatological seasonal mean")
+                    _conditional_warning(
+                        (time_coord.bounds[0, 1] !=
+                            time_coord.units.date2num(pp.t2)),
+                        "modified t2 for climatological seasonal mean")
+                    pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                     'hours')
 
-            elif (lower_bound_yr != upper_bound_yr and
-                    fp_coord is not None and
-                    fp_coord.has_bounds() and
-                    clim_season_coord is not None and
-                    'clim_season' in cube.cell_methods[-1].coord_names and
-                    clim_season_coord.points[0] == 'jja'):
-                # Climatological time mean - spanning years - jja.
-                pp.lbtim.ib = 3
-                # TODO: wut?
-                pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                pp.t1 = cftime.datetime(pp.t1.year, 6, 1, 0, 0, 0)
-                pp.t2 = cftime.datetime(pp.t2.year, 9, 1, 0, 0, 0)
-                _conditional_warning(
-                    (time_coord.bounds[0, 0] !=
-                        time_coord.units.date2num(pp.t1)),
-                    "modified t1 for climatological seasonal mean")
-                _conditional_warning(
-                    (time_coord.bounds[0, 1] !=
-                        time_coord.units.date2num(pp.t2)),
-                    "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                 'hours')
-
-            elif (lower_bound_yr != upper_bound_yr and
-                    fp_coord is not None and
-                    fp_coord.has_bounds() and
-                    clim_season_coord is not None and
-                    'clim_season' in cube.cell_methods[-1].coord_names and
-                    clim_season_coord.points[0] == 'son'):
-                # Climatological time mean - spanning years - son.
-                pp.lbtim.ib = 3
-                # TODO: wut?
-                pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
-                pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-                pp.t1 = cftime.datetime(pp.t1.year, 9, 1, 0, 0, 0)
-                pp.t2 = cftime.datetime(pp.t2.year, 12, 1, 0, 0, 0)
-                _conditional_warning(
-                    (time_coord.bounds[0, 0] !=
-                        time_coord.units.date2num(pp.t1)),
-                    "modified t1 for climatological seasonal mean")
-                _conditional_warning(
-                    (time_coord.bounds[0, 1] !=
-                        time_coord.units.date2num(pp.t2)),
-                    "modified t2 for climatological seasonal mean")
-                pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                 'hours')
+                elif (lower_bound_yr != upper_bound_yr and
+                        fp_coord is not None and
+                        fp_coord.has_bounds() and
+                        'clim_season' in cube.cell_methods[-1].coord_names and
+                        clim_season_coord.points[0] == 'son'):
+                    # Climatological time mean - spanning years - son.
+                    pp.lbtim.ib = 3
+                    # TODO: wut?
+                    pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+                    pp.t1 = cftime.datetime(pp.t1.year, 9, 1, 0, 0, 0)
+                    pp.t2 = cftime.datetime(pp.t2.year, 12, 1, 0, 0, 0)
+                    _conditional_warning(
+                        (time_coord.bounds[0, 0] !=
+                            time_coord.units.date2num(pp.t1)),
+                        "modified t1 for climatological seasonal mean")
+                    _conditional_warning(
+                        (time_coord.bounds[0, 1] !=
+                            time_coord.units.date2num(pp.t2)),
+                        "modified t2 for climatological seasonal mean")
+                    pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                     'hours')
 
     return pp
 
