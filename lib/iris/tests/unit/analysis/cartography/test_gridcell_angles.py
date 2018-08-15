@@ -32,7 +32,7 @@ from iris.cube import Cube
 from iris.coords import AuxCoord
 
 from iris.analysis.cartography import gridcell_angles
-from iris.tests.stock import sample_2d_latlons
+from iris.tests.stock import sample_2d_latlons, global_pp
 
 
 def _2d_multicells_testcube(cellsize_degrees=1.0):
@@ -156,14 +156,6 @@ class TestGridcellAngles(tests.IrisTest):
         self.assertArrayAllClose(result.data,
                                  self.standard_small_cube_results)
 
-    def test_fail_coords_bad_units(self):
-        # Check error with bad coords units.
-        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
-                      for ax in ('x', 'y'))
-        co_y.units = 'm'
-        with self.assertRaisesRegexp(ValueError, 'must have angular units'):
-            gridcell_angles(co_x, co_y)
-
     def test_bounds_array_args(self):
         # Check we can calculate from bounds values alone.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
@@ -223,6 +215,89 @@ class TestGridcellAngles(tests.IrisTest):
 
         # NOTE: although this looks just as bad as 'test_points_array_args',
         # maximum errors there in the end columns are actually > 100 degrees !
+
+    def test_nonlatlon_coord_system(self):
+        # Check with points specified in an unexpected coord system.
+        cube = sample_2d_latlons(regional=True, rotated=True)
+        result = gridcell_angles(cube)
+        self.assertArrayAllClose(result.data,
+                                 self.standard_small_cube_results)
+
+    def test_fail_coords_bad_units(self):
+        # Check error with bad coords units.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        co_y.units = 'm'
+        with self.assertRaisesRegexp(ValueError, 'must have angular units'):
+            gridcell_angles(co_x, co_y)
+
+    def test_fail_nonarraylike(self):
+        # Check error with bad args.
+        co_x, co_y = 1, 2
+        with self.assertRaisesRegexp(ValueError,
+                                     'must have array shape property'):
+            gridcell_angles(co_x, co_y)
+
+    def test_fail_non2d_coords(self):
+        # Check error with bad args.
+        cube = global_pp()
+        with self.assertRaisesRegexp(ValueError,
+                                     'inputs must have 2-dimensional shape'):
+            gridcell_angles(cube)
+
+    def test_fail_different_shapes(self):
+        # Check error with mismatched shapes.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        co_y = co_y[1:]
+        with self.assertRaisesRegexp(ValueError, 'must have same shape'):
+            gridcell_angles(co_x, co_y)
+
+    def test_fail_different_coord_system(self):
+        # Check error with mismatched coord systems.
+        cube = sample_2d_latlons(regional=True, rotated=True)
+        cube.coord(axis='x').coord_system = None
+        with self.assertRaisesRegexp(ValueError,
+                                     'must have same coordinate system'):
+            gridcell_angles(cube)
+
+    def test_fail_cube_dims(self):
+        # Check error with mismatched cube dims.
+        cube = self.standard_regional_cube
+        # Make 5x6 into 5x5.
+        cube = cube[:, :-1]
+        co_x = cube.coord(axis='x')
+        pts, bds = co_x.points, co_x.bounds
+        co_new_x = co_x.copy(points=pts.transpose((1, 0)),
+                             bounds=bds.transpose((1, 0, 2)))
+        cube.remove_coord(co_x)
+        cube.add_aux_coord(co_new_x, (1, 0))
+        with self.assertRaisesRegexp(ValueError,
+                                     'must have the same cube dimensions'):
+            gridcell_angles(cube)
+
+    def test_fail_coord_noncoord(self):
+        # Check that passing a coord + an array gives an error.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        with self.assertRaisesRegexp(ValueError,
+                                     'is a Coordinate, but .* is not'):
+            gridcell_angles(co_x, co_y.bounds)
+
+    def test_fail_noncoord_coord(self):
+        # Check that passing an array + a coord gives an error.
+        co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
+                      for ax in ('x', 'y'))
+        with self.assertRaisesRegexp(ValueError,
+                                     'is a Coordinate, but .* is not'):
+            gridcell_angles(co_x.points, co_y)
+
+    def test_fail_bad_method(self):
+        with self.assertRaisesRegexp(ValueError,
+                                     'unrecognised cell_angle_boundpoints'):
+            self._check_multiple_orientations_and_latitudes(
+                method='something_unknown')
+
 
 
 if __name__ == "__main__":

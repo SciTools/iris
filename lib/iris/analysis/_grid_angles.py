@@ -205,7 +205,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         x, y = cube.coord(axis='x'), cube.coord(axis='y')
 
     # Now should have either 2 coords or 2 arrays.
-    if not hasattr(x, 'shape') and hasattr(y, 'shape'):
+    if not hasattr(x, 'shape') or not hasattr(y, 'shape'):
         msg = ('Inputs (x,y) must have array shape property.'
                'Got type(x)={} and type(y)={}.')
         raise ValueError(msg.format(type(x), type(y)))
@@ -224,11 +224,11 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             coord.convert_units('degrees')
 
         if x_coord.ndim != 2 or y_coord.ndim != 2:
-            msg = ('Coordinate inputs must have 2-dimensional shape. ',
+            msg = ('Coordinate inputs must have 2-dimensional shape. '
                    'Got x-shape of {} and y-shape of {}.')
             raise ValueError(msg.format(x_coord.shape, y_coord.shape))
         if x_coord.shape != y_coord.shape:
-            msg = ('Coordinate inputs must have same shape. ',
+            msg = ('Coordinate inputs must have same shape. '
                    'Got x-shape of {} and y-shape of {}.')
             raise ValueError(msg.format(x_coord.shape, y_coord.shape))
         if cube:
@@ -239,7 +239,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
                 raise ValueError(msg.format(x_dims, y_dims))
         cs = x_coord.coord_system
         if y_coord.coord_system != cs:
-            msg = ('Coordinate inputs must have same coordinate system. ',
+            msg = ('Coordinate inputs must have same coordinate system. '
                    'Got x of {} and y of {}.')
             raise ValueError(msg.format(cs, y_coord.coord_system))
 
@@ -254,12 +254,30 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             # Transform points into true lats + lons.
             crs_src = cs.as_cartopy_crs()
             crs_pc = ccrs.PlateCarree()
-            # Note: flatten, as transform_points is limited to 2D arrays.
-            shape = x.shape
-            x, y = (arr.flatten() for arr in (x, y))
-            pts = crs_pc.transform_points(x, y, src_crs=crs_src)
-            x = pts[..., 0].reshape(shape)
-            y = pts[..., 1].reshape(shape)
+            def transform_xy_arrays(x, y):
+                # Note: flatten, as transform_points is limited to 2D arrays.
+                shape = x.shape
+                x, y = (arr.flatten() for arr in (x, y))
+                pts = crs_pc.transform_points(crs_src, x, y)
+                x = pts[..., 0].reshape(shape)
+                y = pts[..., 1].reshape(shape)
+                return x, y
+
+            # Transform the main reference points into standard lats+lons.
+            x, y = transform_xy_arrays(x, y)
+
+            # Likewise replace the original coordinates with transformed ones,
+            # because the calculation also needs the centrepoint values.
+            xpts, ypts = (coord.points for coord in (x_coord, y_coord))
+            xbds, ybds = (coord.bounds for coord in (x_coord, y_coord))
+            xpts, ypts = transform_xy_arrays(xpts, ypts)
+            xbds, ybds = transform_xy_arrays(xbds, ybds)
+            x_coord = iris.coords.AuxCoord(
+                points=xpts, bounds=xbds,
+                standard_name='longitude', units='degrees')
+            x_coord = iris.coords.AuxCoord(
+                points=xpts, bounds=xbds,
+                standard_name='longitude', units='degrees')
 
     elif hasattr(x, 'bounds') or hasattr(y, 'bounds'):
         # One was a Coord, and the other not ?
@@ -267,15 +285,15 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         if hasattr(y, 'bounds'):
             is_and_not = reversed(is_and_not)
         msg = 'Input {!r} is a Coordinate, but {!r} is not.'
-        raise ValueError(*is_and_not)
+        raise ValueError(msg.format(*is_and_not))
 
     # Now have either 2 points arrays (ny, nx) or 2 bounds arrays (ny, nx, 4).
-    # Construct (lhs, mid, rhs) where these represent 3 points at increasing X
-    # indices.
+    # Construct (lhs, mid, rhs) where these represent 3 points at increasing
+    # grid-x indices (columns).
     # Also make suitable X and Y coordinates for the result cube.
     if x.ndim == 2:
         # Data is points arrays.
-        # Use previous + subsequent points along longitude-axis as references.
+        # Use previous + subsequent points along grid-x-axis as references.
 
         # PROBLEM: we assume that the rhs connects to the lhs, so we should
         # really only use this if data is full-longitudes (as a 'circular'
@@ -296,7 +314,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
                                            units='degrees')
     else:
         # Data is bounds arrays.
-        # Use different bounds points in the longitude-axis as references.
+        # Use gridcell corners at different grid-x positions as references.
         # NOTE: so with bounds, we *don't* need full circular longitudes.
         xyz = _3d_xyz_from_latlon(x, y)
         # Support two different choices of reference points locations.
