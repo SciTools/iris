@@ -183,8 +183,9 @@ def _general_time_rules(cube, pp):
                                 cm.intervals[0].endswith('hour')):
                             pp.lbtim.ia = int(cm.intervals[0][:-5])
 
-            elif ('clim_season' in cube.cell_methods[-1].coord_names
-                  and fp_coord is not None and fp_coord.has_bounds()):
+            elif ('clim_season' in cube.cell_methods[-1].coord_names and
+                  fp_coord is not None and fp_coord.has_bounds()):
+
                 # Climatological time means.
                 if lower_bound_yr == upper_bound_yr:
                     # Climatological time mean - single year.
