@@ -34,12 +34,16 @@ def _3d_xyz_from_latlon(lon, lat):
 
     Args:
 
-    * lon, lat: (arrays in degrees)
+    * lon, lat: (float array)
+        Arrays of longitudes and latitudes, in degrees.
+        Both the same shape.
 
     Returns:
 
-        xyz : (array, dtype=float64)
-            cartesian coordinates on a unit sphere.  Dimension 0 maps x,y,z.
+    * xyz : (array, dtype=float64)
+        Cartesian coordinates on a unit sphere.
+        Shape is (3, <input-shape>).
+        The x / y / z coordinates are in xyz[0 / 1 / 2].
 
     """
     lon1 = np.deg2rad(lon).astype(np.float64)
@@ -61,13 +65,16 @@ def _latlon_from_xyz(xyz):
     Args:
 
     * xyz: (array)
-        positions array, of dims (3, <others>), where index 0 maps x/y/z.
+        Array of 3-D cartesian coordinates.
+        Shape (3, <input_points_dimensions>).
+        x / y / z values are in xyz[0 / 1 / 2],
 
     Returns:
 
-        lonlat : (array)
-            spherical angles, of dims (2, <others>), in degrees.
-            Dim 0 maps longitude, latitude.
+    * lonlat : (array)
+        longitude and latitude position angles, in degrees.
+        Shape (2, <input_points_dimensions>).
+        The longitudes / latitudes are in lonlat[0 / 1].
 
     """
     lons = np.rad2deg(np.arctan2(xyz[1], xyz[0]))
@@ -78,14 +85,37 @@ def _latlon_from_xyz(xyz):
 
 def _angle(p, q, r):
     """
-    Return angle (in _radians_) of grid wrt local east.
-    Anticlockwise +ve, as usual.
-    {P, Q, R} are consecutive points in the same row,
-    eg {v(i,j),f(i,j),v(i+1,j)}, or {T(i-1,j),T(i,j),T(i+1,j)}
-    Calculate dot product of PR with lambda_hat at Q.
-    This gives us cos(required angle).
-    Disciminate between +/- angles by comparing latitudes of P and R.
-    p, q, r, are all 2-element arrays [lon, lat] of angles in degrees.
+    Estimate grid-angles to true-Eastward direction from positions in the same
+    grid row, but at increasing column (grid-Eastward) positions.
+
+    {P, Q, R} are locations of consecutive points in the same grid row.
+    These could be successive points in a single grid,
+        e.g. {T(i-1,j), T(i,j), T(i+1,j)}
+    or a mixture of U/V and T gridpoints if row positions are aligned,
+        e.g. {v(i,j), f(i,j), v(i+1,j)}.
+
+    Method:
+
+        Calculate dot product of a unit-vector parallel to P-->R, unit-scaled,
+        with the unit eastward (true longitude) vector at Q.
+        This value is cos(required angle).
+        Discriminate between +/- angles by comparing latitudes of P and R.
+        Return NaN where any P-->R are zero.
+
+    Args:
+
+    * p, q, r : (float array)
+        Arrays of angles, in degrees.
+        All the same shape.
+        Shape is (2, <input_points_dimensions>).
+        Longitudes / latitudes are in array[0 / 1].
+
+    Returns:
+
+    * angle : (float array)
+        Grid angles relative to true-East, in degrees.
+        Positive when grid-East is anticlockwise from true-East.
+        Shape is same as <input_points_dimensions>.
 
     """
     mid_lons = np.deg2rad(q[0])
