@@ -25,7 +25,6 @@ import iris
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.fileformats.um_cf_map import CF_TO_LBFC
-from iris.fileformats.pp import STASH
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (aux_factory,
                                     has_aux_factory,
@@ -97,6 +96,8 @@ def _stash_rules(cube, pp):
 
     """
     if 'STASH' in cube.attributes:
+        # Deferred import to avoid circularity problem.
+        from iris.fileformats.pp import STASH
         stash = cube.attributes['STASH']
         if isinstance(stash, STASH):
             pp.lbuser[3] = 1000 * (stash.section or 0) + (stash.item or 0)
