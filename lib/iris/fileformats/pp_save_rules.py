@@ -155,33 +155,39 @@ def _general_time_rules(cube, pp):
             # Time mean (non-climatological).
             # XXX This only works when we have a single timestep.
             if clim_season_coord is None:
+                time_period = False
+                time_interval_cm = None
+
                 if fp_coord is not None and fp_coord.has_bounds():
                     # XXX How do we know *which* time to use if there are more
                     # than one? *Can* there be more than one?
-                    pp.lbtim.ib = 2
-                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
+                    time_period = True
                     pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
                                                      'hours')
 
                 if fp_coord is None and frt_coord is not None:
                     # Handle missing forecast period, using time and forecast
                     # ref time.
-                    pp.lbtim.ib = 2
-                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
-                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
+                    time_period = True
                     stop = time_unit.convert(time_coord.bounds[0, 1],
                                              'hours since epoch')
                     start = frt_coord.units.convert(frt_coord.points[0],
                                                     'hours since epoch')
                     pp.lbft = stop - start
 
-                if fp_coord is not None or frt_coord is not None:
-                    for cm in (cm_time_mean, cm_time_min, cm_time_max):
-                        if (cm is not None and
-                                cm.intervals != () and
+                for cm in (cm_time_mean, cm_time_min, cm_time_max):
+                    if cm is not None:
+                        time_period = True
+                        if (cm.intervals != () and
                                 cm.intervals[0].endswith('hour')):
-                            pp.lbtim.ia = int(cm.intervals[0][:-5])
+                            time_interval_cm = cm
+
+                if time_period:
+                    pp.lbtim.ib = 2
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
+                    if time_interval_cm is not None:
+                        pp.lbtim.ia = int(time_interval_cm.intervals[0][:-5])
 
             elif ('clim_season' in cube.cell_methods[-1].coord_names and
                   fp_coord is not None and fp_coord.has_bounds()):

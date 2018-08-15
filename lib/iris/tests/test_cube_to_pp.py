@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,7 @@ import os
 import tempfile
 
 import cf_units
+import cftime
 import numpy as np
 
 import iris.coords
@@ -294,8 +295,144 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             self.assertEqual(field.lbvc, lbvc)
             self.assertEqual(field.lblev, lblev)
             self.assertEqual(field.blev, blev)
-        
-        
+
+
+class TestTimeMean(tests.IrisTest):
+    '''
+    Tests that time mean cell method is converted to pp appropriately.
+
+    Pattern is pairs of tests - one with time mean method, and one without, to
+    show divergent behaviour.
+
+    '''
+    def test_t1_time_mean(self):
+        cube = _get_single_time_cube(set_time_mean=True)
+        tc = cube.coord(axis='t')
+        expected = tc.units.num2date(0)
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual = pp_field.t1
+
+        self.assertEqual(expected, actual)
+
+    def test_t1_no_time_mean(self):
+        cube = _get_single_time_cube()
+        tc = cube.coord(axis='t')
+        expected = tc.units.num2date(15)
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual = pp_field.t1
+
+        self.assertEqual(expected, actual)
+
+    def test_t2_time_mean(self):
+        cube = _get_single_time_cube(set_time_mean=True)
+        tc = cube.coord(axis='t')
+        expected = tc.units.num2date(30)
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual = pp_field.t2
+
+        self.assertEqual(expected, actual)
+
+    def test_t2_no_time_mean(self):
+        cube = _get_single_time_cube(set_time_mean=False)
+        expected = cftime.datetime(0, 0, 0)
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual = pp_field.t2
+        self.assertEqual(expected, actual)
+
+    def test_lbft_no_forecast_time(self):
+        # Different pattern here: checking that lbft hasn't been changed from
+        # the default value.
+        cube = _get_single_time_cube()
+        mock_lbft = mock.sentinel.lbft
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            pp_field.lbft = mock_lbft
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual = pp_field.lbft
+
+        assert(mock_lbft is actual)
+
+    def test_lbtim_no_time_mean(self):
+        cube = _get_single_time_cube()
+        expected_ic = 2  # 360 day calendar
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            # Check that lbtim.ib is not set : in reality, this defaults to 0.
+            expected_ib = pp_field.lbtim.ib
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual_ib = pp_field.lbtim.ib
+        actual_ic = pp_field.lbtim.ic
+
+        self.assertEqual(expected_ib, actual_ib)
+        self.assertEqual(expected_ic, actual_ic)
+
+    def test_lbtim_time_mean(self):
+        cube = _get_single_time_cube(set_time_mean=True)
+        expected_ib = 2  # Time mean
+        expected_ic = 2  # 360 day calendar
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual_ib = pp_field.lbtim.ib
+        actual_ic = pp_field.lbtim.ic
+
+        self.assertEqual(expected_ib, actual_ib)
+        self.assertEqual(expected_ic, actual_ic)
+
+    def test_lbproc_no_time_mean(self):
+        cube = _get_single_time_cube()
+        expected = 0
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual = pp_field.lbproc
+
+        self.assertEqual(expected, actual)
+
+    def test_lbproc_time_mean(self):
+        cube = _get_single_time_cube(set_time_mean=True)
+        expected = 128
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            iris.fileformats.pp_save_rules.verify(cube, pp_field)
+        actual = pp_field.lbproc
+
+        self.assertEqual(expected, actual)
+
+
+def _get_single_time_cube(set_time_mean=False):
+    cube = stock.realistic_3d()[0:1, :, :]
+    cube.remove_coord('time')
+    cube.remove_coord('forecast_period')
+    tc = iris.coords.DimCoord(
+        points=[15, ],
+        standard_name='time',
+        units=cf_units.Unit('days since epoch', calendar='360_day'),
+        bounds=[[0, 30], ],
+    )
+    cube.add_dim_coord(tc, 0)
+    if set_time_mean:
+        cube.cell_methods = (iris.coords.CellMethod("mean", coords='time'), )
+    return cube
+
+
 def fields_from_cube(cubes):
     """
     Return an iterator of PP fields generated from saving the given cube(s)
