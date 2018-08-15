@@ -57,6 +57,7 @@ class TestCoordAttributes(tests.IrisTest):
 
     def _make(self, names, attrs):
         coords = [DimCoord(i, long_name=name) for i, name in enumerate(names)]
+        shape = (1,)
 
         cf_group = {}
         for name, cf_attrs in zip(names, attrs):
@@ -64,12 +65,14 @@ class TestCoordAttributes(tests.IrisTest):
             cf_group[name] = mock.Mock(cf_attrs_unused=cf_attrs_unused)
         cf = mock.Mock(cf_group=cf_group)
 
+        cf_data = mock.Mock(_FillValue=None)
+        cf_data.chunking = mock.MagicMock(return_value=shape)
         cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
                                 dtype=np.dtype('i4'),
-                                cf_data=mock.Mock(_FillValue=None),
+                                cf_data=cf_data,
                                 cf_name='DUMMY_VAR',
                                 cf_group=coords,
-                                shape=(1,))
+                                shape=shape)
         return cf, cf_var
 
     def test_flag_pass_thru(self):
@@ -129,14 +132,17 @@ class TestCubeAttributes(tests.IrisTest):
         self.valid_max = mock.sentinel.valid_max
 
     def _make(self, attrs):
+        shape = (1,)
         cf_attrs_unused = mock.Mock(return_value=attrs)
+        cf_data = mock.Mock(_FillValue=None)
+        cf_data.chunking = mock.MagicMock(return_value=shape)
         cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
                                 dtype=np.dtype('i4'),
-                                cf_data=mock.Mock(_FillValue=None),
+                                cf_data=cf_data,
                                 cf_name='DUMMY_VAR',
                                 cf_group=mock.Mock(),
                                 cf_attrs_unused=cf_attrs_unused,
-                                shape=(1,))
+                                shape=shape)
         return cf_var
 
     def test_flag_pass_thru(self):
