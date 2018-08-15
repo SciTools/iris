@@ -102,9 +102,19 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
             raise ValueError(msg.format(coord.name()))
         if mode == iris.coords.BOUND_MODE and len(span) not in [1, 2]:
             raise ValueError('The coordinate {!r} has {} dimensions.'
-                             'Cell-based plotting is only supporting for'
+                             'Cell-based plotting is only supported for'
                              'coordinates with one or two dimensions.'
                              .format(coord.name()), len(span))
+
+    # Check the coords have the same number of dimensions.
+    if ndims == 2:
+        if not (len(spans[0]) == len(spans[1])):
+            raise ValueError('The coordinate {!r} has {} dimensions and the '
+                             'coordinate {!r} has {} dimensions. Cell-based '
+                             'plotting is only supported for coordinates with '
+                             'the same number of dimensions.'
+                             .format(coords[0].name(), spans[0],
+                                     coords[1].name(), spans[1]))
 
     # Check the combination of coordinates spans enough (ndims) data
     # dimensions.
@@ -273,10 +283,11 @@ def _invert_yaxis(v_coord, axes=None):
 
 def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4, transpose=False):
     """
-    Check that the discontinuous bounds occur where the data is masked.
+    Checks that any discontiguity in the bounds of the coordinate only occur
+    where the data is masked.
 
-    If discontinuity occurs but data is masked, raise warning
-    If discontinuity occurs and data is NOT masked, raise error
+    If discontiguity occurs but data is masked, raise warning
+    If discontiguity occurs and data is NOT masked, raise error
 
     Args:
         coords:
@@ -293,7 +304,7 @@ def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4, transpose=False):
     bounds = coord.bounds
 
     both_dirs_contiguous, diffs_along_x, diffs_along_y = \
-        iris.coords._discontiguity_in_2d_bounds(bounds, abs_tol=abs_tol)
+        iris.coords._discontiguity_in_2d_bounds(bounds, atol=abs_tol)
 
     if not both_dirs_contiguous:
 
@@ -333,17 +344,13 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    twodim_contig_atol = kwargs.pop('two_dim_coord_contiguity_atol',
-                                    1e-4)
     for coord in plot_defn.coords:
         if hasattr(coord, 'has_bounds'):
             if coord.ndim == 2 and coord.has_bounds():
                 try:
-                    _check_contiguity_and_bounds(coord, data=cube.data,
-                                                 abs_tol=twodim_contig_atol)
+                    _check_contiguity_and_bounds(coord, data=cube.data)
                 except ValueError:
                     if _check_contiguity_and_bounds(coord, data=cube.data,
-                                                    abs_tol=twodim_contig_atol,
                                                     transpose=True) is True:
                         plot_defn.transpose = True
 
@@ -1117,10 +1124,6 @@ def pcolor(cube, *args, **kwargs):
     * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
         Defaults to the current axes if none provided.
 
-    * two_dim_coord_contiguity_atol: absolute tolerance when checking for
-        contiguity between cells in a two dimensional coordinate.
-
-
 
     See :func:`matplotlib.pyplot.pcolor` for details of other valid
     keyword arguments.
@@ -1151,9 +1154,6 @@ def pcolormesh(cube, *args, **kwargs):
 
     * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
         Defaults to the current axes if none provided.
-
-    * two_dim_coord_contiguity_atol: absolute tolerance when checking for
-        contiguity between cells in a two dimensional coordinate.
 
     See :func:`matplotlib.pyplot.pcolormesh` for details of other
     valid keyword arguments.
