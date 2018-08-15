@@ -195,84 +195,44 @@ def _general_time_rules(cube, pp):
                                                      'hours')
 
                 else:
+                    pp.lbtim.ib = 3
+                    pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
+                    pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
+
                     if clim_season_coord.points[0] == 'djf':
                         # Climatological time mean - spanning years - djf.
-                        pp.lbtim.ib = 3
-                        pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
-                        pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                         if pp.t1.month == 12:
                             pp.t1 = cftime.datetime(pp.t1.year)
                         else:
                             pp.t1 = cftime.datetime(pp.t1.year-1,
                                                     12, 1, 0, 0, 0)
                         pp.t2 = cftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)
-                        _conditional_warning(
-                            (time_coord.bounds[0, 0] !=
-                                time_unit.date2num(pp.t1)),
-                            "modified t1 for climatological seasonal mean")
-                        _conditional_warning(
-                            (time_coord.bounds[0, 1] !=
-                                time_unit.date2num(pp.t2)),
-                            "modified t2 for climatological seasonal mean")
-                        pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                         'hours')
 
                     elif clim_season_coord.points[0] == 'mam':
                         # Climatological time mean - spanning years - mam.
-                        pp.lbtim.ib = 3
-                        # TODO: wut?
-                        pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
-                        pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                         pp.t1 = cftime.datetime(pp.t1.year, 3, 1, 0, 0, 0)
                         pp.t2 = cftime.datetime(pp.t2.year, 6, 1, 0, 0, 0)
-                        _conditional_warning(
-                            (time_coord.bounds[0, 0] !=
-                                time_unit.date2num(pp.t1)),
-                            "modified t1 for climatological seasonal mean")
-                        _conditional_warning(
-                            (time_coord.bounds[0, 1] !=
-                                time_unit.date2num(pp.t2)),
-                            "modified t2 for climatological seasonal mean")
-                        pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                         'hours')
 
                     elif clim_season_coord.points[0] == 'jja':
                         # Climatological time mean - spanning years - jja.
-                        pp.lbtim.ib = 3
-                        # TODO: wut?
-                        pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
-                        pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                         pp.t1 = cftime.datetime(pp.t1.year, 6, 1, 0, 0, 0)
                         pp.t2 = cftime.datetime(pp.t2.year, 9, 1, 0, 0, 0)
-                        _conditional_warning(
-                            (time_coord.bounds[0, 0] !=
-                                time_unit.date2num(pp.t1)),
-                            "modified t1 for climatological seasonal mean")
-                        _conditional_warning(
-                            (time_coord.bounds[0, 1] !=
-                                time_unit.date2num(pp.t2)),
-                            "modified t2 for climatological seasonal mean")
-                        pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                         'hours')
 
                     elif clim_season_coord.points[0] == 'son':
                         # Climatological time mean - spanning years - son.
-                        pp.lbtim.ib = 3
-                        # TODO: wut?
-                        pp.t1 = time_unit.num2date(time_coord.bounds[0, 0])
-                        pp.t2 = time_unit.num2date(time_coord.bounds[0, 1])
                         pp.t1 = cftime.datetime(pp.t1.year, 9, 1, 0, 0, 0)
                         pp.t2 = cftime.datetime(pp.t2.year, 12, 1, 0, 0, 0)
-                        _conditional_warning(
-                            (time_coord.bounds[0, 0] !=
-                                time_unit.date2num(pp.t1)),
-                            "modified t1 for climatological seasonal mean")
-                        _conditional_warning(
-                            (time_coord.bounds[0, 1] !=
-                                time_unit.date2num(pp.t2)),
-                            "modified t2 for climatological seasonal mean")
-                        pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
-                                                         'hours')
+
+                    _conditional_warning(
+                        (time_coord.bounds[0, 0] !=
+                            time_unit.date2num(pp.t1)),
+                        "modified t1 for climatological seasonal mean")
+                    _conditional_warning(
+                        (time_coord.bounds[0, 1] !=
+                            time_unit.date2num(pp.t2)),
+                        "modified t2 for climatological seasonal mean")
+                    pp.lbft = fp_coord.units.convert(fp_coord.bounds[0, 1],
+                                                     'hours')
 
     return pp
 
