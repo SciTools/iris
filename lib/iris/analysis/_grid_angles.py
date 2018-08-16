@@ -254,6 +254,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             # Transform points into true lats + lons.
             crs_src = cs.as_cartopy_crs()
             crs_pc = ccrs.PlateCarree()
+
             def transform_xy_arrays(x, y):
                 # Note: flatten, as transform_points is limited to 2D arrays.
                 shape = x.shape

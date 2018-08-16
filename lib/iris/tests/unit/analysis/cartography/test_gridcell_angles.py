@@ -299,6 +299,5 @@ class TestGridcellAngles(tests.IrisTest):
                 method='something_unknown')
 
 
-
 if __name__ == "__main__":
     tests.main()
