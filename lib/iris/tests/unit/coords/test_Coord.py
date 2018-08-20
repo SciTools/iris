@@ -396,7 +396,7 @@ class Test___str__(tests.IrisTest):
         coord = DimCoord([5, 6], standard_name='time',
                          units='years since 1970-01-01')
         coord.guess_bounds()
-        expected = ("DimCoord([5 6], bounds=[[ 4.5  5.5]\n [ 5.5  6.5]], "
+        expected = ("DimCoord([5 6], bounds=[[4.5 5.5]\n [5.5 6.5]], "
                     "standard_name='time', calendar='gregorian')")
         result = coord.__str__()
         self.assertEqual(expected, result)
