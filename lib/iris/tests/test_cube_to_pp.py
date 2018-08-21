@@ -26,7 +26,6 @@ import os
 import tempfile
 
 import cf_units
-import cftime
 import numpy as np
 
 import iris.coords
