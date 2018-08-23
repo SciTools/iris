@@ -377,16 +377,16 @@ class Test_contiguous_bounds(tests.IrisTest):
     def test_1d_coord_discontiguous(self):
         coord = iris.coords.DimCoord([2, 4, 6], standard_name='latitude',
                                      bounds=[[1, 3], [4, 5], [5, 7]])
-        msg = "Invalid operation. Bounds of coord 'latitude' are not " \
-              "contiguous."
-        with self.assertRaisesRegex(ValueError, msg):
-            coord.contiguous_bounds()
+        expected = np.array([1, 4, 5, 7])
+        result = coord.contiguous_bounds()
+        self.assertArrayEqual(result, expected)
 
 
 class Test_is_contiguous(tests.IrisTest):
     def setUp(self):
         self.points = np.array([1, 3])
         self.bounds = np.array([[0, 2], [2, 4]])
+        self.discontiguous_bounds = np.array([[0, 2], [2.01, 4]])
 
     def test_no_bounds(self):
         coord = iris.coords.DimCoord(self.points)
@@ -399,34 +399,38 @@ class Test_is_contiguous(tests.IrisTest):
         self.assertTrue(result)
 
     def test_1d_coord_discontiguous(self):
-        coord = iris.coords.DimCoord(self.points, bounds=[[0, 2], [3, 4]])
+        coord = iris.coords.DimCoord(self.points,
+                                     bounds=self.discontiguous_bounds)
         result = coord.is_contiguous()
         self.assertFalse(result)
 
     def test_1d_coord_contiguous_atol(self):
-        coord = iris.coords.DimCoord(self.points/1000, bounds=self.bounds/1000)
-        result = coord.is_contiguous(atol=1e-2)
+        # Test setting a very large tolerance
+        coord = iris.coords.DimCoord(self.points,
+                                     bounds=self.discontiguous_bounds)
+        result = coord.is_contiguous(atol=1e1)
         self.assertTrue(result)
 
 
 class Test__sanity_check_bounds(tests.IrisTest):
     def test_coord_1d_2_bounds(self):
+        # Check that a 1d coord with 2 bounds does not raise an error.
         coord = iris.coords.DimCoord([0, 1], standard_name='latitude',
-                                     bounds=np.array([[0, 1], [1, 2]]))
+                                     bounds=[[0, 1], [1, 2]])
         coord._sanity_check_bounds()
 
     def test_coord_1d_no_bounds(self):
         coord = iris.coords.DimCoord([0, 1], standard_name='latitude')
-        emsg = "Invalid operation for 'latitude', with 0 bounds. Contiguous " \
-               "bounds are only defined for 1D coordinates with 2 bounds."
+        emsg = "Contiguous bounds are only defined for 1D coordinates with " \
+               "2 bounds."
         with self.assertRaisesRegexp(ValueError, emsg):
             coord._sanity_check_bounds()
 
     def test_coord_1d_1_bounds(self):
         coord = iris.coords.DimCoord([0, 1], standard_name='latitude',
                                      bounds=np.array([[0], [1]]))
-        emsg = "Invalid operation for 'latitude', with 1 bounds. Contiguous " \
-               "bounds are only defined for 1D coordinates with 2 bounds."
+        emsg = "Contiguous bounds are only defined for 1D coordinates with " \
+               "2 bounds."
         with self.assertRaisesRegexp(ValueError, emsg):
             coord._sanity_check_bounds()
 
@@ -440,24 +444,25 @@ class Test__sanity_check_bounds(tests.IrisTest):
     def test_coord_2d_no_bounds(self):
         coord = iris.coords.AuxCoord([[0, 0], [1, 1]],
                                      standard_name='latitude')
-        emsg = "Invalid operation for 'latitude', with 0 bounds. Contiguous " \
-               "bounds are only defined for 2D coordinates with 4 bounds."
+        emsg = "Contiguous bounds are only defined for 2D coordinates with " \
+               "4 bounds."
         with self.assertRaisesRegexp(ValueError, emsg):
             coord._sanity_check_bounds()
 
     def test_coord_2d_2_bounds(self):
-        coord = iris.coords.AuxCoord([0, 1], standard_name='latitude',
-                                     bounds=np.array([[0], [1]]))
-        emsg = "Invalid operation for 'latitude', with 1 bounds. Contiguous " \
-               "bounds are only defined for 1D coordinates with 2 bounds."
+        coord = iris.coords.AuxCoord(
+            [[0, 0], [1, 1]], standard_name='latitude',
+            bounds=np.array([[[0, 1], [0, 1]], [[1, 2], [1, 2]]]))
+        emsg = "Contiguous bounds are only defined for 2D coordinates with " \
+               "4 bounds."
         with self.assertRaisesRegexp(ValueError, emsg):
             coord._sanity_check_bounds()
 
     def test_coord_3d(self):
         coord = iris.coords.AuxCoord(np.zeros((2, 2, 2)),
                                      standard_name='height')
-        emsg = "Invalid operation for 'height'. Not supported for bounds " \
-               "with more than 2 dimensions."
+        emsg = "Contiguous bounds are not defined for coordinates with more " \
+               "than 2 dimensions."
         with self.assertRaisesRegexp(ValueError, emsg):
             coord._sanity_check_bounds()
 

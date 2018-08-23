@@ -143,66 +143,6 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
-def _discontiguity_in_2d_bounds(bds, atol=1e-4):
-    """
-    Checks that the bounds of a 2-dimensional coordinate are contiguous.
-
-    Args:
-    * bds: (array)
-        Bounds array of shape (X,Y,4).
-    * atol: (float)
-        Absolute tolerance that is used when checking contiguity. Defaults to
-        1e-4.
-
-    Returns:
-    * all_equal: (boolean)
-        True if there are no discontiguities.
-    * diffs_along_x: (array or None)
-        Either an array of the absolute differences along the x-axis, of the
-        shape (X,Y-1) or None if the input bounds has the shape (1,Y,4).
-    * diffs_along_y: (array or None)
-        Either an array of the absolute differences along the y-axis, of the
-        shape (X-1,Y) or None if the input bounds has the shape (X,1,4).
-
-    """
-    # Check bds has the shape (ny, nx, 4)
-    if not (bds.ndim == 3 and bds.shape[-1] == 4):
-        raise ValueError('Bounds for 2D coordinates must be 3-dimensional and '
-                         'have 4 bounds per point.')
-
-    # Check ordering:
-    #         i    i+1
-    #    j    @0    @1
-    #  j+1    @3    @2
-    def mod360_diff(upper_bounds, lower_bounds):
-        diff = upper_bounds - lower_bounds
-        diff = (diff + 360.0 + 180.0) % 360.0 - 180.0
-        return diff
-
-    def diffs_below_tolerance(diffs_along_axis):
-        return np.all(np.abs(diffs_along_axis) < atol)
-
-    # Compare cell with the cell next to it (i+1)
-    if bds.shape[0] > 1:
-        diffs_along_x = np.abs(mod360_diff(bds[:, :-1, 1], bds[:, 1:, 0]))
-        match_y0_x1 = diffs_below_tolerance(diffs_along_x)
-    else:
-        diffs_along_x = None
-        match_y0_x1 = True
-
-    # Compare cell with the cell above it (j+1)
-    if bds.shape[1] > 1:
-        diffs_along_y = np.abs(mod360_diff(bds[:-1, :, 3], bds[1:, :, 0]))
-        match_y1_x0 = diffs_below_tolerance(diffs_along_y)
-    else:
-        diffs_along_y = None
-        match_y1_x0 = True
-
-    all_eq = match_y0_x1 and match_y1_x0
-
-    return all_eq, diffs_along_x, diffs_along_y
-
-
 def _get_2d_coord_bound_grid(bds):
     """
     Creates a grid using the bounds of a 2D coordinate with 4 sided cells.
@@ -218,7 +158,6 @@ def _get_2d_coord_bound_grid(bds):
     # 0-0-0-0-1
     # 0-0-0-0-1
     # 3-3-3-3-2
-
 
     Args:
     * bounds: (array)
@@ -1055,20 +994,97 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     def _sanity_check_bounds(self):
         if self.ndim == 1:
             if self.nbounds != 2:
-                raise ValueError('Invalid operation for {!r}, with {} bounds. '
-                                 'Contiguous bounds are only defined for 1D '
-                                 'coordinates with 2 bounds.'.format
-                                 (self.name(), self.nbounds))
+                raise ValueError('Invalid operation for {!r}, with {} '
+                                 'bound(s). Contiguous bounds are only '
+                                 'defined for 1D coordinates with 2 '
+                                 'bounds.'.format(self.name(), self.nbounds))
         elif self.ndim == 2:
             if self.nbounds != 4:
-                raise ValueError('Invalid operation for {!r}, with {} bounds. '
-                                 'Contiguous bounds are only defined for 2D '
-                                 'coordinates with 4 bounds.'.format
-                                 (self.name(), self.nbounds))
+                raise ValueError('Invalid operation for {!r}, with {} '
+                                 'bound(s). Contiguous bounds are only '
+                                 'defined for 2D coordinates with 4 '
+                                 'bounds.'.format(self.name(), self.nbounds))
         else:
-            raise ValueError('Invalid operation for {!r}. Not supported for '
-                             'bounds with more than 2 dimensions.'.format
-                             (self.name()))
+            raise ValueError('Invalid operation for {!r}. Contiguous bounds '
+                             'are not defined for coordinates with more than '
+                             '2 dimensions.'.format(self.name()))
+
+    def _discontiguity_in_bounds(self, rtol=1e-05, atol=1e-08):
+        """
+        Checks that the bounds of the coordinate are contiguous.
+
+        Kwargs:
+        * rtol: (float)
+            Relative tolerance that is used when checking contiguity. Defaults
+            to 1e-5.
+        * atol: (float)
+            Absolute tolerance that is used when checking contiguity. Defaults
+            to 1e-8.
+
+        Returns:
+        * contiguous: (boolean)
+            True if there are no discontiguities.
+        * diffs: (array or tuple of arrays)
+            The diffs along the bounds of the coordinate. If self is a 2D
+            coord of shape (X,Y), a tuple of arrays is returned, where the
+            first is an array of differences along the x-axis, of the shape
+            (X,Y-1) and the second is an array of differences along the y-axis,
+            of the shape (X-1,Y).
+
+        """
+        self._sanity_check_bounds()
+
+        if self.ndim == 1:
+            contiguous = np.allclose(self.bounds[1:, 0],
+                                     self.bounds[:-1, 1],
+                                     rtol=rtol, atol=atol)
+            diffs = np.abs(self.bounds[:-1, 1] - self.bounds[1:, 0])
+
+        elif self.ndim == 2:
+            # Check ordering:
+            #         i    i+1
+            #    j    @0    @1
+            #  j+1    @3    @2
+            def mod360_diff(upper_bounds, lower_bounds):
+                diff = upper_bounds - lower_bounds
+                diff = (diff + 360.0 + 180.0) % 360.0 - 180.0
+                return diff
+
+            def diffs_below_tolerance(diffs_along_axis, atol=atol):
+                return np.all(np.abs(diffs_along_axis) < atol)
+
+            # Calculate the relative tolerance if an absolute tolerance is not
+            # given.
+            if not atol:
+                dmax = np.max(np.abs(self.bounds))
+                dtype = self.bounds.dtype
+                rtol = 10.0 ** (np.ceil(1 + np.log10(2.0 ** (
+                    -8 * dtype.itemsize))))
+                atol = rtol * dmax
+
+            # Compare cell with the cell next to it (i+1)
+            if self.bounds.shape[0] > 1:
+                diffs_along_x = np.abs(mod360_diff(self.bounds[:, :-1, 1],
+                                                   self.bounds[:, 1:, 0]))
+                match_y0_x1 = diffs_below_tolerance(diffs_along_x, atol=atol)
+            else:
+                diffs_along_x = None
+                match_y0_x1 = True
+
+            # Compare cell with the cell above it (j+1)
+            if self.bounds.shape[1] > 1:
+                diffs_along_y = np.abs(mod360_diff(self.bounds[:-1, :, 3],
+                                                   self.bounds[1:, :, 0]))
+                match_y1_x0 = diffs_below_tolerance(diffs_along_y, atol=atol)
+            else:
+                diffs_along_y = None
+                match_y1_x0 = True
+
+            contiguous = match_y0_x1 and match_y1_x0
+
+            diffs = (diffs_along_x, diffs_along_y)
+
+        return contiguous, diffs
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
         """
@@ -1086,16 +1102,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             Boolean.
 
         """
+        print(rtol)
         if self.has_bounds():
-            self._sanity_check_bounds()
-            if self.ndim == 1:
-                contiguous = np.allclose(self.bounds[1:, 0],
-                                         self.bounds[:-1, 1],
-                                         rtol=rtol, atol=atol)
-            elif self.ndim == 2:
-
-                contiguous, _, _ = _discontiguity_in_2d_bounds(
-                    self.bounds, atol=atol)
+            contiguous, _ = self._discontiguity_in_bounds(rtol=rtol, atol=atol)
         else:
             contiguous = False
         return contiguous
@@ -1111,16 +1120,17 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             If the coordinate does not have bounds, this method will
             return bounds positioned halfway between the coordinate's points.
 
+        .. note::
+
+            Assumes bounds are contiguous
+
         """
         if not self.has_bounds():
             warnings.warn('Coordinate {!r} is not bounded, guessing '
                           'contiguous bounds.'.format(self.name()))
             bounds = self._guess_bounds()
         else:
-            if not self.is_contiguous():
-                raise ValueError('Invalid operation. Bounds of coord {!r} '
-                                 'are not contiguous.'.format(self.name()))
-
+            self._sanity_check_bounds()
             bounds = self.bounds
 
         if self.ndim == 1:

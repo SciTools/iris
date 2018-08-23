@@ -281,55 +281,69 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
-def _check_contiguity_and_bounds(coord, data, abs_tol=1e-4, transpose=False):
+def _check_bounds_contiguity_and_mask(coord, data, atol):
     """
-    Checks that any discontiguity in the bounds of the coordinate only occur
-    where the data is masked.
+    Checks that any discontiguities in the bounds of the given coordinate only
+    occur where the data is masked.
 
-    If discontiguity occurs but data is masked, raise warning
-    If discontiguity occurs and data is NOT masked, raise error
+    Where a discontinuity occurs the grid matplotlib creates will not be
+    created correctly. This does not matter if the data is masked in that
+    location as this is not plotted.
+
+    If a discontiguity occurs where the data is *not* masked, an error is
+    raised.
 
     Args:
-        coords:
-            Array of the bounds of a 2D coord, of shape (X,Y,4)
-        data:
-            data of the the cube we are plotting
-        abs_tol:
-            tolerance when checking the contiguity
+        coord: (iris.coord.Coord)
+            Coordinate the bounds of which will be checked for contiguity
+        data: (array)
+            Data of the the cube we are plotting
+        atol:
+            Absolute tolerance when checking the contiguity. Defaults to None.
+            If an absolute tolerance is not set, 1D coords are not checks (so
+            as to not introduce a breaking change without a major release) but
+            2D coords are checked with a relative tolerance.
 
     """
-    if transpose:
-        data = data.T
+    # When checking the location of the discontiguities, we check against the
+    # opposite of the mask, which is True where data exists.
+    mask_invert = np.logical_not(data.mask)
 
-    bounds = coord.bounds
+    if coord.ndim == 1:
+        # 1D coords are only checked if an absolute tolerance is set.
+        if atol:
+            contiguous, diffs = coord._discontiguity_in_bounds(atol=atol)
 
-    both_dirs_contiguous, diffs_along_x, diffs_along_y = \
-        iris.coords._discontiguity_in_2d_bounds(bounds, atol=abs_tol)
+            if not contiguous:
+                not_masked_at_discontiguity = np.any(
+                    np.logical_and(mask_invert[:-1], diffs))
+        else:
+            return
 
-    if not both_dirs_contiguous:
+    elif coord.ndim == 2:
+        contiguous, diffs = coord._discontiguity_in_bounds(atol=atol)
+        diffs_along_x, diffs_along_y = diffs
 
-        # True where data exists
-        mask_invert = np.logical_not(data.mask)
+        if not contiguous:
+            # Check along both dimensions.
+            not_masked_at_discontiguity_along_x = np.any(
+                np.logical_and(mask_invert[:, :-1], diffs_along_x))
 
-        # Where a discontinuity occurs the grid will not be created correctly.
-        # This does not matter if the data is masked as this is not plotted.
-        # So for places where data exists (opposite of the mask) AND a
-        # diff exists. If any exist, raise a warning
-        not_masked_at_discontinuity_along_x = np.any(
-            np.logical_and(mask_invert[:, :-1], diffs_along_x))
+            not_masked_at_discontiguity_along_y = np.any(
+                np.logical_and(mask_invert[:-1, ], diffs_along_y))
 
-        not_masked_at_discontinuity_along_y = np.any(
-            np.logical_and(mask_invert[:-1, ], diffs_along_y))
+            not_masked_at_discontiguity = not_masked_at_discontiguity_along_x \
+                or not_masked_at_discontiguity_along_y
 
-        # If discontinuity occurs but not masked, any grid will be created
-        #  incorrectly, so raise a warning
-        if not_masked_at_discontinuity_along_x or \
-                not_masked_at_discontinuity_along_y:
-            raise ValueError('The bounds of the {} coordinate are not'
-                             ' contiguous and data is not masked where the'
-                             ' discontiguity occurs. Not able to create a'
-                             ' suitable mesh to give to'
-                             ' Matplotlib'.format(coord.name()))
+    # If any discontiguity occurs where the data is not masked the grid will be
+    # created incorrectly, so raise an error.
+    if not contiguous:
+        if not_masked_at_discontiguity:
+            raise ValueError('The bounds of the {} coordinate are not '
+                             'contiguous and data is not masked where the '
+                             'discontiguity occurs. Not able to create a '
+                             'suitable mesh to give to Matplotlib'.format(
+                              coord.name()))
 
 
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
@@ -344,15 +358,13 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
+    contig_tol = kwargs.pop('contiguity_tolerance', None)
+
     for coord in plot_defn.coords:
         if hasattr(coord, 'has_bounds'):
-            if coord.ndim == 2 and coord.has_bounds():
-                try:
-                    _check_contiguity_and_bounds(coord, data=cube.data)
-                except ValueError:
-                    if _check_contiguity_and_bounds(coord, data=cube.data,
-                                                    transpose=True) is True:
-                        plot_defn.transpose = True
+            if coord.has_bounds():
+                _check_bounds_contiguity_and_mask(coord, data=cube.data,
+                                                  atol=contig_tol)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
@@ -1124,6 +1136,8 @@ def pcolor(cube, *args, **kwargs):
     * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
         Defaults to the current axes if none provided.
 
+    * contiguity_tolerance: The absolute tolerance used when checking for
+        contiguity between cells. Defaults to None.
 
     See :func:`matplotlib.pyplot.pcolor` for details of other valid
     keyword arguments.
@@ -1154,6 +1168,9 @@ def pcolormesh(cube, *args, **kwargs):
 
     * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
         Defaults to the current axes if none provided.
+
+    * contiguity_tolerance: The absolute tolerance used when checking for
+        contiguity between cells. Defaults to None.
 
     See :func:`matplotlib.pyplot.pcolormesh` for details of other
     valid keyword arguments.
