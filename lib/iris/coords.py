@@ -1041,47 +1041,34 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             diffs = np.abs(self.bounds[:-1, 1] - self.bounds[1:, 0])
 
         elif self.ndim == 2:
-            # Check ordering:
-            #         i    i+1
-            #    j    @0    @1
-            #  j+1    @3    @2
-            def mod360_diff(upper_bounds, lower_bounds):
-                diff = upper_bounds - lower_bounds
-                diff = (diff + 360.0 + 180.0) % 360.0 - 180.0
-                return diff
+            def mod360_adjust(compare_axis):
+                bounds = self.bounds.copy()
 
-            def diffs_below_tolerance(diffs_along_axis, atol=atol):
-                return np.all(np.abs(diffs_along_axis) < atol)
+                if compare_axis == 'x':
+                    upper_bounds = bounds[:, :-1, 1]
+                    lower_bounds = bounds[:, 1:, 0]
+                elif compare_axis == 'y':
+                    upper_bounds = bounds[:-1, :, 3]
+                    lower_bounds = bounds[1:, :, 0]
 
-            # Calculate the relative tolerance if an absolute tolerance is not
-            # given.
-            if not atol:
-                dmax = np.max(np.abs(self.bounds))
-                dtype = self.bounds.dtype
-                rtol = 10.0 ** (np.ceil(1 + np.log10(2.0 ** (
-                    -8 * dtype.itemsize))))
-                atol = rtol * dmax
+                if self.name() in ['longitude', 'grid_longitude']:
+                    # If longitude, adjust for longitude wrapping
+                    diffs = upper_bounds - lower_bounds
+                    index = diffs > 180
+                    if index.any():
+                        sign = np.sign(diffs)
+                        modification = (index.astype(int) * 360) * sign
+                        upper_bounds -= modification
 
-            # Compare cell with the cell next to it (i+1)
-            if self.bounds.shape[0] > 1:
-                diffs_along_x = np.abs(mod360_diff(self.bounds[:, :-1, 1],
-                                                   self.bounds[:, 1:, 0]))
-                match_y0_x1 = diffs_below_tolerance(diffs_along_x, atol=atol)
-            else:
-                diffs_along_x = None
-                match_y0_x1 = True
+                diffs_along_axis = np.abs(upper_bounds - lower_bounds)
+                contiguous_along_axis = np.allclose(upper_bounds, lower_bounds,
+                                                    rtol=rtol, atol=atol)
+                return diffs_along_axis, contiguous_along_axis
 
-            # Compare cell with the cell above it (j+1)
-            if self.bounds.shape[1] > 1:
-                diffs_along_y = np.abs(mod360_diff(self.bounds[:-1, :, 3],
-                                                   self.bounds[1:, :, 0]))
-                match_y1_x0 = diffs_below_tolerance(diffs_along_y, atol=atol)
-            else:
-                diffs_along_y = None
-                match_y1_x0 = True
+            diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis='x')
+            diffs_along_y, match_cell_y1 = mod360_adjust(compare_axis='y')
 
-            contiguous = match_y0_x1 and match_y1_x0
-
+            contiguous = match_cell_x1 and match_cell_y1
             diffs = (diffs_along_x, diffs_along_y)
 
         return contiguous, diffs

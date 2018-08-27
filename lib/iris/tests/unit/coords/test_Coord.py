@@ -412,6 +412,168 @@ class Test_is_contiguous(tests.IrisTest):
         self.assertTrue(result)
 
 
+class Test__discontiguity_in_bounds(tests.IrisTest):
+    def setUp(self):
+        self.points_3by3 = np.array([[1, 2, 3],
+                                     [1, 2, 3],
+                                     [1, 2, 3]])
+        self.lon_bounds_3by3 = np.array(
+            [[[0, 2, 2, 0], [2, 4, 4, 2], [4, 6, 6, 4]],
+             [[0, 2, 2, 0], [2, 4, 4, 2], [4, 6, 6, 4]],
+             [[0, 2, 2, 0], [2, 4, 4, 2], [4, 6, 6, 4]]])
+        self.lat_bounds_3by3 = np.array(
+            [[[0, 0, 2, 2], [0, 0, 2, 2], [0, 0, 2, 2]],
+             [[2, 2, 4, 4], [2, 2, 4, 4], [2, 2, 4, 4]],
+             [[4, 4, 6, 6], [4, 4, 6, 6], [4, 4, 6, 6]]])
+
+    def test_1d_contiguous(self):
+        coord = DimCoord([-20, 0, 20],
+                         bounds=[[-30, -10], [-10, 10], [10, 30]])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        self.assertTrue(contiguous)
+        self.assertArrayEqual(diffs, np.zeros(2))
+
+    def test_1d_discontiguous(self):
+        coord = DimCoord([10, 20, 40],
+                         bounds=[[5, 15], [15, 25], [35, 45]])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs, np.array([0, 10]))
+
+    def test_1d_one_cell(self):
+        # Test a 1D coord with a single cell.
+        coord = DimCoord(20, bounds=[[10, 30]])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        self.assertTrue(contiguous)
+        self.assertArrayEqual(diffs, np.array([]))
+
+    def test_2d_contiguous_both_dirs(self):
+        coord = AuxCoord(self.points_3by3, bounds=self.lon_bounds_3by3)
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_along_x(self):
+        coord = AuxCoord(self.points_3by3[:, ::2],
+                         bounds=self.lon_bounds_3by3[:, ::2, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, np.array([2, 2, 2]).reshape(3, 1))
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_along_y(self):
+        coord = AuxCoord(self.points_3by3[::2, :],
+                         bounds=self.lat_bounds_3by3[::2, :, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertArrayEqual(diffs_along_y, np.array([[2, 2, 2]]))
+
+    def test_2d_discontiguous_along_x_and_y(self):
+        coord = AuxCoord(np.array([[1, 5], [3, 5]]),
+                         bounds=np.array([[[0, 2, 2, 0], [4, 6, 6, 4]],
+                                          [[2, 4, 4, 2], [4, 6, 6, 4]]]))
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        exp_x_diffs = np.array([2, 0]).reshape(2, 1)
+        exp_y_diffs = np.array([2, 0]).reshape(1, 2)
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, exp_x_diffs)
+        self.assertArrayEqual(diffs_along_y, exp_y_diffs)
+
+    def test_2d_one_cell(self):
+        # Test a 2D coord with a single cell, where the coord has shape (1, 1).
+        coord = AuxCoord(self.points_3by3[:1, :1],
+                         bounds=self.lon_bounds_3by3[:1, :1, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        expected_diffs = np.array([], dtype=np.int64)
+        self.assertTrue(contiguous)
+        self.assertArrayEqual(diffs_along_x, expected_diffs.reshape(1, 0))
+        self.assertArrayEqual(diffs_along_y, expected_diffs.reshape(0, 1))
+
+    def test_2d_one_cell_along_x(self):
+        # Test a 2D coord with a single cell along the x axis, where the coord
+        # has shape (1, 2).
+        coord = AuxCoord(self.points_3by3[:1, :],
+                         bounds=self.lon_bounds_3by3[:1, :, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertArrayEqual(diffs_along_x, np.array([[0, 0]]))
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_one_cell_along_y(self):
+        # Test a 2D coord with a single cell along the x axis, where the coord
+        # has shape (2, 1).
+        coord = AuxCoord(self.points_3by3[:, :1],
+                         bounds=self.lat_bounds_3by3[:, :1, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertArrayEqual(diffs_along_y, np.array([0, 0]).reshape(2, 1))
+
+    def test_2d_contiguous_mod_360(self):
+        # Test that longitude coordinates are adjusted by the 360 modulus when
+        # calculating the discontiguities in contiguous bounds.
+        coord = AuxCoord(
+            [[175, -175], [175, -175]], standard_name='longitude',
+            bounds=np.array([[[170, 180, 180, 170], [-180, -170, -170, -180]],
+                             [[170, 180, 180, 170], [-180, -170, -170, -180]]])
+            )
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_mod_360(self):
+        # Test that longitude coordinates are adjusted by the 360 modulus when
+        # calculating the discontiguities in contiguous bounds.
+        coord = AuxCoord(
+            [[175, -175], [175, -175]], standard_name='longitude',
+            bounds=np.array([[[170, 180, 180, 170], [10, 20, 20, 10]],
+                             [[170, 180, 180, 170], [10, 20, 20, 10]]]))
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, np.array([[170], [170]]))
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_contiguous_mod_360_not_longitude(self):
+        # Test that non-longitude coordinates are not adjusted by the 360
+        # modulus when calculating the discontiguities in contiguous bounds.
+        coord = AuxCoord(
+            [[-150, 350], [-150, 350]], standard_name='height',
+            bounds=np.array([[[-400, 100, 100, -400], [100, 600, 600, 100]],
+                             [[-400, 100, 100, -400], [100, 600, 600, 100]]])
+            )
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_mod_360_not_longitude(self):
+        # Test that non-longitude coordinates are not adjusted by the 360
+        # modulus when calculating the discontiguities in discontiguous bounds.
+        coord = AuxCoord(
+            [[-150, 350], [-150, 350]], standard_name='height',
+            bounds=np.array([[[-400, 100, 100, -400], [200, 600, 600, 200]],
+                             [[-400, 100, 100, -400], [200, 600, 600, 200]]])
+            )
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, np.array([[100], [100]]))
+        self.assertTrue(not diffs_along_y.any())
+
+
 class Test__sanity_check_bounds(tests.IrisTest):
     def test_coord_1d_2_bounds(self):
         # Check that a 1d coord with 2 bounds does not raise an error.

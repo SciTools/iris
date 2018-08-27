@@ -300,7 +300,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol):
             Data of the the cube we are plotting
         atol:
             Absolute tolerance when checking the contiguity. Defaults to None.
-            If an absolute tolerance is not set, 1D coords are not checks (so
+            If an absolute tolerance is not set, 1D coords are not checked (so
             as to not introduce a breaking change without a major release) but
             2D coords are checked with a relative tolerance.
 
@@ -1137,7 +1137,7 @@ def pcolor(cube, *args, **kwargs):
         Defaults to the current axes if none provided.
 
     * contiguity_tolerance: The absolute tolerance used when checking for
-        contiguity between cells. Defaults to None.
+        contiguity between the bounds of the cells. Defaults to None.
 
     See :func:`matplotlib.pyplot.pcolor` for details of other valid
     keyword arguments.
@@ -1170,7 +1170,7 @@ def pcolormesh(cube, *args, **kwargs):
         Defaults to the current axes if none provided.
 
     * contiguity_tolerance: The absolute tolerance used when checking for
-        contiguity between cells. Defaults to None.
+        contiguity between the bounds of the cells. Defaults to None.
 
     See :func:`matplotlib.pyplot.pcolormesh` for details of other
     valid keyword arguments.
