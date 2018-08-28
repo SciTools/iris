@@ -33,7 +33,7 @@ from iris.cube import Cube
 from iris.coords import AuxCoord
 
 from iris.analysis.cartography import gridcell_angles
-from iris.tests.stock import sample_2d_latlons, global_pp
+from iris.tests.stock import sample_2d_latlons, lat_lon_cube
 
 
 def _2d_multicells_testcube(cellsize_degrees=1.0):
@@ -264,7 +264,7 @@ class TestGridcellAngles(tests.IrisTest):
 
     def test_fail_non2d_coords(self):
         # Check error with bad args.
-        cube = global_pp()
+        cube = lat_lon_cube()
         with self.assertRaisesRegexp(ValueError,
                                      'inputs must have 2-dimensional shape'):
             gridcell_angles(cube)
