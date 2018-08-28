@@ -106,16 +106,6 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
                              'coordinates with one or two dimensions.'
                              .format(coord.name()), len(span))
 
-    # Check the coords have the same number of dimensions.
-    if ndims == 2:
-        if not (len(spans[0]) == len(spans[1])):
-            raise ValueError('The coordinate {!r} has {} dimensions and the '
-                             'coordinate {!r} has {} dimensions. Cell-based '
-                             'plotting is only supported for coordinates with '
-                             'the same number of dimensions.'
-                             .format(coords[0].name(), spans[0],
-                                     coords[1].name(), spans[1]))
-
     # Check the combination of coordinates spans enough (ndims) data
     # dimensions.
     total_span = set().union(*spans)
@@ -281,7 +271,7 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
-def _check_bounds_contiguity_and_mask(coord, data, atol):
+def _check_bounds_contiguity_and_mask(coord, data, atol=None):
     """
     Checks that any discontiguities in the bounds of the given coordinate only
     occur where the data is masked.
@@ -305,26 +295,31 @@ def _check_bounds_contiguity_and_mask(coord, data, atol):
             2D coords are checked with a relative tolerance.
 
     """
-    # When checking the location of the discontiguities, we check against the
-    # opposite of the mask, which is True where data exists.
-    mask_invert = np.logical_not(data.mask)
+    if hasattr(data, 'mask'):
+        # When checking the location of the discontiguities, we check against
+        # the opposite of the mask, which is True where data exists.
+        mask_invert = np.logical_not(data.mask)
 
     if coord.ndim == 1:
         # 1D coords are only checked if an absolute tolerance is set.
         if atol:
             contiguous, diffs = coord._discontiguity_in_bounds(atol=atol)
 
-            if not contiguous:
-                not_masked_at_discontiguity = np.any(
-                    np.logical_and(mask_invert[:-1], diffs))
+            if not contiguous and hasattr(data, 'mask'):
+                    not_masked_at_discontiguity = np.any(
+                        np.logical_and(mask_invert[:-1], diffs))
         else:
             return
 
     elif coord.ndim == 2:
-        contiguous, diffs = coord._discontiguity_in_bounds(atol=atol)
+        if atol:
+            args = {'atol': atol}
+        else:
+            args = {}
+        contiguous, diffs = coord._discontiguity_in_bounds(*args)
         diffs_along_x, diffs_along_y = diffs
 
-        if not contiguous:
+        if not contiguous and hasattr(data, 'mask'):
             # Check along both dimensions.
             not_masked_at_discontiguity_along_x = np.any(
                 np.logical_and(mask_invert[:, :-1], diffs_along_x))
@@ -338,11 +333,15 @@ def _check_bounds_contiguity_and_mask(coord, data, atol):
     # If any discontiguity occurs where the data is not masked the grid will be
     # created incorrectly, so raise an error.
     if not contiguous:
+        if not hasattr(data, 'mask'):
+            raise ValueError('The bounds of the {} coordinate are not '
+                             'contiguous. Not able to create a suitable grid'
+                             'to plot.'.format(coord.name()))
         if not_masked_at_discontiguity:
             raise ValueError('The bounds of the {} coordinate are not '
                              'contiguous and data is not masked where the '
                              'discontiguity occurs. Not able to create a '
-                             'suitable mesh to give to Matplotlib'.format(
+                             'suitable grid to plot.'.format(
                               coord.name()))
 
 
@@ -409,8 +408,8 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
 
         u, v = plot_arrays
 
-        # If the data is tranposed, 2D coordinates will also need to be
-        # tranposed.
+        # If the data is transposed, 2D coordinates will also need to be
+        # transposed.
         if u.ndim == v.ndim == 2 and plot_defn.transpose is True:
             u = u.T
             v = v.T

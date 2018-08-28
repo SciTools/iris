@@ -79,7 +79,7 @@ class Test_get_plot_defn_custom_coords_picked(tests.IrisTest):
         defn = iplt._get_plot_defn_custom_coords_picked(cube, (0, 1),
                                                         BOUND_MODE)
         self.assertEqual([coord for coord in defn.coords], [1, 0])
-        self.assertFalse(defn.transpose)
+        self.assertTrue(defn.transpose)
 
     def test_span_check(self):
         cube = hybrid_height()
@@ -87,14 +87,6 @@ class Test_get_plot_defn_custom_coords_picked(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, emsg):
             iplt._get_plot_defn_custom_coords_picked(
                 cube, ('sigma', 'level_height'), POINT_MODE)
-
-    def test_2dcoord_with_1dcoord(self):
-        cube = hybrid_height()
-        emsg = 'Cell-based plotting is only supported for ' \
-               'coordinates with the same number of dimensions'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            iplt._get_plot_defn_custom_coords_picked(
-                cube, ('level_height', 'altitude'), BOUND_MODE)
 
 
 if __name__ == "__main__":

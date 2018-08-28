@@ -143,7 +143,7 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
-def _get_2d_coord_bound_grid(bds):
+def _get_2d_coord_bound_grid(bounds):
     """
     Creates a grid using the bounds of a 2D coordinate with 4 sided cells.
 
@@ -169,17 +169,17 @@ def _get_2d_coord_bound_grid(bds):
 
     """
     # Check bds has the shape (ny, nx, 4)
-    if not (bds.ndim == 3 and bds.shape[-1] == 4):
+    if not (bounds.ndim == 3 and bounds.shape[-1] == 4):
         raise ValueError('Bounds for 2D coordinates must be 3-dimensional and '
                          'have 4 bounds per point.')
 
-    bds_shape = bds.shape
-    result = np.zeros((bds_shape[0] + 1, bds_shape[1] + 1))
+    bounds_shape = bounds.shape
+    result = np.zeros((bounds_shape[0] + 1, bounds_shape[1] + 1))
 
-    result[:-1, :-1] = bds[:, :, 0]
-    result[:-1, -1] = bds[:, -1, 1]
-    result[-1, :-1] = bds[-1, :, 3]
-    result[-1, -1] = bds[-1, -1, 2]
+    result[:-1, :-1] = bounds[:, :, 0]
+    result[:-1, -1] = bounds[:, -1, 1]
+    result[-1, :-1] = bounds[-1, :, 3]
+    result[-1, -1] = bounds[-1, -1, 2]
 
     return result
 
@@ -1089,7 +1089,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             Boolean.
 
         """
-        print(rtol)
         if self.has_bounds():
             contiguous, _ = self._discontiguity_in_bounds(rtol=rtol, atol=atol)
         else:
