@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -294,8 +294,8 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             self.assertEqual(field.lbvc, lbvc)
             self.assertEqual(field.lblev, lblev)
             self.assertEqual(field.blev, blev)
-        
-        
+
+
 def fields_from_cube(cubes):
     """
     Return an iterator of PP fields generated from saving the given cube(s)
