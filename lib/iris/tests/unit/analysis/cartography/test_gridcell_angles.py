@@ -28,6 +28,7 @@ import iris.tests as tests
 
 import numpy as np
 
+from cf_units import Unit
 from iris.cube import Cube
 from iris.coords import AuxCoord
 
@@ -89,6 +90,7 @@ class TestGridcellAngles(tests.IrisTest):
         # Record the standard correct angle answers.
         result_cube = gridcell_angles(self.standard_regional_cube)
         result_cube.convert_units('degrees')
+        self.standard_result_cube = result_cube
         self.standard_small_cube_results = result_cube.data
 
     def _check_multiple_orientations_and_latitudes(self,
@@ -124,6 +126,19 @@ class TestGridcellAngles(tests.IrisTest):
 
     def test_various_orientations_and_locations(self):
         self._check_multiple_orientations_and_latitudes()
+
+    def test_result_form(self):
+        # Check properties of the result cube *other than* the data values.
+        test_cube = self.standard_regional_cube
+        result_cube = self.standard_result_cube
+        self.assertEqual(result_cube.long_name,
+                         'gridcell_angle_from_true_east')
+        self.assertEqual(result_cube.units, Unit('degrees'))
+        self.assertEqual(len(result_cube.coords()), 2)
+        self.assertEqual(result_cube.coord(axis='x'),
+                         test_cube.coord(axis='x'))
+        self.assertEqual(result_cube.coord(axis='y'),
+                         test_cube.coord(axis='y'))
 
     def test_bottom_edge_method(self):
         # Get results with the "other" calculation method + check to tolerance.
@@ -222,6 +237,15 @@ class TestGridcellAngles(tests.IrisTest):
         result = gridcell_angles(cube)
         self.assertArrayAllClose(result.data,
                                  self.standard_small_cube_results)
+        # Check that the result has transformed (true-latlon) coordinates.
+        self.assertEqual(len(result.coords()), 2)
+        x_coord = result.coord(axis='x')
+        y_coord = result.coord(axis='y')
+        self.assertEqual(x_coord.shape, cube.shape)
+        self.assertEqual(y_coord.shape, cube.shape)
+        self.assertIsNotNone(cube.coord_system)
+        self.assertIsNone(x_coord.coord_system)
+        self.assertIsNone(y_coord.coord_system)
 
     def test_fail_coords_bad_units(self):
         # Check error with bad coords units.

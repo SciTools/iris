@@ -78,8 +78,8 @@ def _latlon_from_xyz(xyz):
 
     """
     lons = np.rad2deg(np.arctan2(xyz[1], xyz[0]))
-    axial_radii = np.sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1])
-    lats = np.rad2deg(np.arctan2(xyz[2], axial_radii))
+    radii = np.sqrt(np.sum(xyz * xyz, axis=0))
+    lats = np.rad2deg(np.arcsin(xyz[2] / radii))
     return np.array([lons, lats])
 
 
@@ -101,6 +101,18 @@ def _angle(p, q, r):
         This value is cos(required angle).
         Discriminate between +/- angles by comparing latitudes of P and R.
         Return NaN where any P-->R are zero.
+
+        .. NOTE::
+
+            This method assumes that the vector PR is parallel to the surface
+            at the longitude of Q, as it uses the length of PR as the basis for
+            the cosine ratio.
+            That is only exact when Q is at the same longitude as the midpoint
+            of PR, and this typically causes errors which grow with increasing
+            gridcell angle.
+            However, we retain this method because it reproduces the "standard"
+            gridcell-orientation-angle arrays found in files output by the CICE
+            model, which presumably uses an equivalent calculation.
 
     Args:
 
@@ -191,11 +203,17 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
 
             Cube of angles of grid-x vector from true Eastward direction for
             each gridcell, in degrees.
-            It also has longitude and latitude coordinates.  If coordinates
-            were input the output has identical ones :  If the input was 2d
-            arrays, the output coords have no bounds; or, if the input was 3d
-            arrays, the output coords have bounds and centrepoints which are
-            the average of the 4 bounds.
+            It also has "true" longitude and latitude coordinates, with no
+            coordinate system.
+            When the input has coords, then the output ones are identical if
+            the inputs are true-latlons, otherwise they are transformed
+            true-latlon versions.
+            When the input has bounded coords, then the output coords have
+            matching bounds and centrepoints (possibly transformed).
+            When the input is 2d arrays, or has unbounded coords, then the
+            output coords have matching points and no bounds.
+            When the input is 3d arrays, then the output coords have matching
+            bounds, and the centrepoints are an average of the 4 boundpoints.
 
     """
     cube = None
@@ -276,9 +294,9 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             x_coord = iris.coords.AuxCoord(
                 points=xpts, bounds=xbds,
                 standard_name='longitude', units='degrees')
-            x_coord = iris.coords.AuxCoord(
-                points=xpts, bounds=xbds,
-                standard_name='longitude', units='degrees')
+            y_coord = iris.coords.AuxCoord(
+                points=ypts, bounds=ybds,
+                standard_name='latitude', units='degrees')
 
     elif hasattr(x, 'bounds') or hasattr(y, 'bounds'):
         # One was a Coord, and the other not ?
