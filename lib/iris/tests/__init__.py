@@ -663,7 +663,23 @@ class IrisTest_nometa(unittest.TestCase):
         For full details see underlying routine numpy.testing.assert_allclose.
 
         """
-        np.testing.assert_allclose(a, b, rtol=rtol, atol=atol, **kwargs)
+        ok = np.allclose(a, b, atol=atol, rtol=rtol, equal_nan=True)
+        if not ok:
+            # Calculate errors above a pointwise tolerance : The method is
+            # taken from "numpy.core.numeric.isclose".
+            errors = (np.abs(a-b) - atol + rtol * np.abs(b))
+            worst_inds = np.unravel_index(np.argmax(errors.flat), errors.shape)
+            # Build a more useful message than from np.testing.assert_allclose.
+            msg = ('\nARRAY CHECK FAILED "assertArrayAllClose" :'
+                   '\n  with shapes={} {}, atol={}, rtol={}'
+                   '\n  worst at element {} :  a={}  b={}'
+                   '\n  absolute error ~{:.3g}, equivalent to rtol ~{:.3e}')
+            aval, bval = a[worst_inds], b[worst_inds]
+            absdiff = np.abs(aval - bval)
+            equiv_rtol = absdiff / bval
+            raise AssertionError(msg.format(
+               a.shape, b.shape, atol, rtol, worst_inds, aval, bval, absdiff,
+               equiv_rtol))
 
     @contextlib.contextmanager
     def temp_filename(self, suffix=''):
