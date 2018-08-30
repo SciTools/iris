@@ -642,7 +642,7 @@ class IrisTest_nometa(unittest.TestCase):
         self._assertMaskedArray(np.testing.assert_array_almost_equal, a, b,
                                 strict, decimal=decimal)
 
-    def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
+    def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
         """
         Check arrays are equal, within given relative + absolute tolerances.
 
@@ -656,20 +656,22 @@ class IrisTest_nometa(unittest.TestCase):
         * rtol, atol (float):
             Relative and absolute tolerances to apply.
 
-        Any additional kwargs are passed to numpy.testing.assert_allclose.
+        Any additional kwargs are passed to numpy.allclose.
 
         Performs pointwise toleranced comparison, and raises an assertion if
         the two are not equal 'near enough'.
-        For full details see underlying routine numpy.testing.assert_allclose.
+        For full details see underlying routine numpy.allclose.
 
         """
-        ok = np.allclose(a, b, atol=atol, rtol=rtol, equal_nan=True)
+        ok = np.allclose(a, b, rtol=rtol, atol=atol, **kwargs)
         if not ok:
             # Calculate errors above a pointwise tolerance : The method is
             # taken from "numpy.core.numeric.isclose".
+            a, b = np.broadcast_arrays(a, b)
             errors = (np.abs(a-b) - atol + rtol * np.abs(b))
             worst_inds = np.unravel_index(np.argmax(errors.flat), errors.shape)
-            # Build a more useful message than from np.testing.assert_allclose.
+
+            # Also raise a more useful message than np.testing.assert_allclose.
             msg = ('\nARRAY CHECK FAILED "assertArrayAllClose" :'
                    '\n  with shapes={} {}, atol={}, rtol={}'
                    '\n  worst at element {} :  a={}  b={}'
