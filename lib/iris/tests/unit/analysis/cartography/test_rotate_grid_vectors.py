@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for the function
-:func:`iris.analysis.cartography.gridcell_angles`.
+:func:`iris.analysis.cartography.rotate_grid_vectors`.
 
 """
 from __future__ import (absolute_import, division, print_function)
@@ -26,12 +26,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from mock import Mock
-from mock import call as mock_call
+from mock import Mock, call as mock_call
 import numpy as np
 
 from iris.cube import Cube
-from iris.coords import AuxCoord
 
 from iris.analysis.cartography import rotate_grid_vectors
 from iris.tests.stock import sample_2d_latlons
@@ -142,7 +140,7 @@ class TestRotateGridVectors(tests.IrisTest):
 
     def test_nan_vectors(self):
         bad_angle_points = np.zeros((5, 6), dtype=bool)
-        bad_angle_points[2,3] = True
+        bad_angle_points[2, 3] = True
         self._check_angles_calculation(nan_angles_mask=bad_angle_points)
 
 
