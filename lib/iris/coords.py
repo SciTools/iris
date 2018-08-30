@@ -161,11 +161,11 @@ def _get_2d_coord_bound_grid(bounds):
 
     Args:
     * bounds: (array)
-        Coordinate bounds array of shape (X,Y,4)
+        Coordinate bounds array of shape (Y, X, 4)
 
     Returns:
     * grid: (array)
-        Grid of shape (X+1, Y+1)
+        Grid of shape (Y+1, X+1)
 
     """
     # Check bds has the shape (ny, nx, 4)
@@ -1026,10 +1026,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             True if there are no discontiguities.
         * diffs: (array or tuple of arrays)
             The diffs along the bounds of the coordinate. If self is a 2D
-            coord of shape (X,Y), a tuple of arrays is returned, where the
+            coord of shape (Y, X), a tuple of arrays is returned, where the
             first is an array of differences along the x-axis, of the shape
-            (X,Y-1) and the second is an array of differences along the y-axis,
-            of the shape (X-1,Y).
+            (Y, X-1) and the second is an array of differences along the
+            y-axis, of the shape (Y-1, X).
 
         """
         self._sanity_check_bounds()
@@ -1078,6 +1078,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Return True if, and only if, this Coord is bounded with contiguous
         bounds to within the specified relative and absolute tolerances.
 
+        1D coords are contiguous if the upper bound of a cell aligns,
+        within a tolerance, to the lower bound of the next cell along.
+
+        2D coords, with 4 bounds, are contiguous if the lower right corner of
+        each cell aligns with the lower left corner of the cell to the right of
+        it, and the upper left corner of each cell aligns with the lower left
+        corner of the cell above it.
+
         Args:
 
         * rtol:
@@ -1101,20 +1109,29 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         of length N, or the (N+1, M+1) bound values for a contiguous bounded 2D
         coordinate of shape (N, M).
 
+        Only 1D or 2D coordinates are supported.
+
         .. note::
 
-            If the coordinate does not have bounds, this method will
+            If the coordinate has bounds, this method assumes they are
+            contiguous.
+
+            If the coordinate is 1D and does not have bounds, this method will
             return bounds positioned halfway between the coordinate's points.
 
-        .. note::
-
-            Assumes bounds are contiguous
+            If the coordinate is 2D and does not have bounds, an error will be
+            raised.
 
         """
         if not self.has_bounds():
-            warnings.warn('Coordinate {!r} is not bounded, guessing '
-                          'contiguous bounds.'.format(self.name()))
-            bounds = self._guess_bounds()
+            if self.ndim == 1:
+                warnings.warn('Coordinate {!r} is not bounded, guessing '
+                              'contiguous bounds.'.format(self.name()))
+                bounds = self._guess_bounds()
+            elif self.ndim == 2:
+                raise ValueError('2D coordinate {!r} is not bounded. Guessing '
+                                 'bounds of 2D coords is not currently '
+                                 'supported.'.format(self.name()))
         else:
             self._sanity_check_bounds()
             bounds = self.bounds

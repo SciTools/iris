@@ -276,9 +276,9 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
     Checks that any discontiguities in the bounds of the given coordinate only
     occur where the data is masked.
 
-    Where a discontinuity occurs the grid matplotlib creates will not be
-    created correctly. This does not matter if the data is masked in that
-    location as this is not plotted.
+    Where a discontinuity occurs the grid created for plotting will not be
+    correct. This does not matter if the data is masked in that location as
+    this is not plotted.
 
     If a discontiguity occurs where the data is *not* masked, an error is
     raised.
@@ -292,20 +292,24 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
             Absolute tolerance when checking the contiguity. Defaults to None.
             If an absolute tolerance is not set, 1D coords are not checked (so
             as to not introduce a breaking change without a major release) but
-            2D coords are checked with a relative tolerance.
+            2D coords are always checked, by calling
+            :meth:`iris.coords.Coord._discontiguity_in_bounds` with its default
+            tolerance.
 
     """
-    if hasattr(data, 'mask'):
+    data_is_masked = hasattr(data, 'mask')
+    if data_is_masked:
         # When checking the location of the discontiguities, we check against
         # the opposite of the mask, which is True where data exists.
         mask_invert = np.logical_not(data.mask)
 
     if coord.ndim == 1:
-        # 1D coords are only checked if an absolute tolerance is set.
+        # 1D coords are only checked if an absolute tolerance is set, to avoid
+        # introducing a breaking change.
         if atol:
             contiguous, diffs = coord._discontiguity_in_bounds(atol=atol)
 
-            if not contiguous and hasattr(data, 'mask'):
+            if not contiguous and data_is_masked:
                     not_masked_at_discontiguity = np.any(
                         np.logical_and(mask_invert[:-1], diffs))
         else:
@@ -319,7 +323,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
         contiguous, diffs = coord._discontiguity_in_bounds(*args)
         diffs_along_x, diffs_along_y = diffs
 
-        if not contiguous and hasattr(data, 'mask'):
+        if not contiguous and data_is_masked:
             # Check along both dimensions.
             not_masked_at_discontiguity_along_x = np.any(
                 np.logical_and(mask_invert[:, :-1], diffs_along_x))
@@ -333,7 +337,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
     # If any discontiguity occurs where the data is not masked the grid will be
     # created incorrectly, so raise an error.
     if not contiguous:
-        if not hasattr(data, 'mask'):
+        if not data_is_masked:
             raise ValueError('The bounds of the {} coordinate are not '
                              'contiguous. Not able to create a suitable grid'
                              'to plot.'.format(coord.name()))
@@ -360,8 +364,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     contig_tol = kwargs.pop('contiguity_tolerance', None)
 
     for coord in plot_defn.coords:
-        if hasattr(coord, 'has_bounds'):
-            if coord.has_bounds():
+        if hasattr(coord, 'has_bounds') and coord.has_bounds():
                 _check_bounds_contiguity_and_mask(coord, data=cube.data,
                                                   atol=contig_tol)
 
@@ -410,9 +413,8 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
 
         # If the data is transposed, 2D coordinates will also need to be
         # transposed.
-        if u.ndim == v.ndim == 2 and plot_defn.transpose is True:
-            u = u.T
-            v = v.T
+        if plot_defn.transpose is True:
+            u, v = [coord.T if coord.ndim == 2 else coord for coord in [u, v]]
 
         if u.ndim == v.ndim == 1:
             u, v = _broadcast_2d(u, v)
@@ -1120,8 +1122,7 @@ def pcolor(cube, *args, **kwargs):
     Draws a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
-    2-dimensional coordinates with contiguous bounds to plot against each
-    other.
+    2-dimensional coordinates with contiguous bounds to plot the cube against.
 
     Kwargs:
 
