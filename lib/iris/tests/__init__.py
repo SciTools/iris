@@ -656,13 +656,16 @@ class IrisTest_nometa(unittest.TestCase):
         * rtol, atol (float):
             Relative and absolute tolerances to apply.
 
-        Any additional kwargs are passed to numpy.allclose.
+        Any additional kwargs are passed to numpy.testing.assert_allclose.
 
         Performs pointwise toleranced comparison, and raises an assertion if
         the two are not equal 'near enough'.
         For full details see underlying routine numpy.allclose.
 
         """
+        # Handle the 'err_msg' kwarg, which is the only API difference
+        # between np.allclose and np.testing_assert_allclose.
+        msg = kwargs.pop('err_msg', None)
         ok = np.allclose(a, b, rtol=rtol, atol=atol, **kwargs)
         if not ok:
             # Calculate errors above a pointwise tolerance : The method is
@@ -671,17 +674,21 @@ class IrisTest_nometa(unittest.TestCase):
             errors = (np.abs(a-b) - atol + rtol * np.abs(b))
             worst_inds = np.unravel_index(np.argmax(errors.flat), errors.shape)
 
-            # Also raise a more useful message than np.testing.assert_allclose.
-            msg = ('\nARRAY CHECK FAILED "assertArrayAllClose" :'
-                   '\n  with shapes={} {}, atol={}, rtol={}'
-                   '\n  worst at element {} :  a={}  b={}'
-                   '\n  absolute error ~{:.3g}, equivalent to rtol ~{:.3e}')
-            aval, bval = a[worst_inds], b[worst_inds]
-            absdiff = np.abs(aval - bval)
-            equiv_rtol = absdiff / bval
-            raise AssertionError(msg.format(
-               a.shape, b.shape, atol, rtol, worst_inds, aval, bval, absdiff,
-               equiv_rtol))
+            if msg is None:
+                # Build a more useful message than np.testing.assert_allclose.
+                msg = (
+                    '\nARRAY CHECK FAILED "assertArrayAllClose" :'
+                    '\n  with shapes={} {}, atol={}, rtol={}'
+                    '\n  worst at element {} :  a={}  b={}'
+                    '\n  absolute error ~{:.3g}, equivalent to rtol ~{:.3e}')
+                aval, bval = a[worst_inds], b[worst_inds]
+                absdiff = np.abs(aval - bval)
+                equiv_rtol = absdiff / bval
+                msg = msg.format(
+                   a.shape, b.shape, atol, rtol, worst_inds, aval, bval,
+                   absdiff, equiv_rtol)
+
+            raise AssertionError(msg)
 
     @contextlib.contextmanager
     def temp_filename(self, suffix=''):
