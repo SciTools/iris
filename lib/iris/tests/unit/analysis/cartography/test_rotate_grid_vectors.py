@@ -30,9 +30,9 @@ from mock import Mock, call as mock_call
 import numpy as np
 
 from iris.cube import Cube
+from iris.tests.stock import sample_2d_latlons
 
 from iris.analysis.cartography import rotate_grid_vectors
-from iris.tests.stock import sample_2d_latlons
 
 
 class TestRotateGridVectors(tests.IrisTest):
@@ -98,7 +98,7 @@ class TestRotateGridVectors(tests.IrisTest):
         self._check_angles_calculation()
 
     def test_angles_in_radians(self):
-        self._check_angles_calculation(angles_in_degrees=True)
+        self._check_angles_calculation(angles_in_degrees=False)
 
     def test_angles_from_grid(self):
         # Check it will gets angles from 'u_cube', and pass any kwargs on to
