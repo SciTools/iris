@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import iris.coords
-from iris.tests.stock import simple_2d
+from iris.tests.stock import simple_2d, simple_2d_w_multidim_coords
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
@@ -44,6 +44,12 @@ class Test_get_plot_defn(tests.IrisTest):
         defn = iplt._get_plot_defn(cube_yx, iris.coords.POINT_MODE)
         self.assertEqual([coord.name() for coord in defn.coords],
                          ['foo', 'bar'])
+
+    def test_2d_coords(self):
+        cube = simple_2d_w_multidim_coords()
+        defn = iplt._get_plot_defn(cube, iris.coords.BOUND_MODE)
+        self.assertEqual([coord.name() for coord in defn.coords],
+                         ['bar', 'foo'])
 
 
 if __name__ == "__main__":

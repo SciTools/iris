@@ -24,6 +24,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import collections
+import mock
+import warnings
 
 import numpy as np
 
@@ -353,6 +355,297 @@ class Test_is_compatible(tests.IrisTest):
         self.test_coord.attributes['array_test'] = np.array([1.0, 2, 3])
         self.other_coord.attributes['array_test'] = np.array([1.0, 2, 777.7])
         self.assertFalse(self.test_coord.is_compatible(self.other_coord))
+
+
+class Test_contiguous_bounds(tests.IrisTest):
+    def test_1d_coord_no_bounds_warning(self):
+        coord = DimCoord([0, 1, 2], standard_name='latitude')
+        msg = "Coordinate 'latitude' is not bounded, guessing contiguous " \
+              "bounds."
+        with warnings.catch_warnings():
+            # Cause all warnings to raise Exceptions
+            warnings.simplefilter("error")
+            with self.assertRaisesRegexp(Warning, msg):
+                coord.contiguous_bounds()
+
+    def test_2d_coord_no_bounds_error(self):
+        coord = AuxCoord(np.array([[0, 0], [5, 5]]), standard_name='latitude')
+        emsg = 'Guessing bounds of 2D coords is not currently supported'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            coord.contiguous_bounds()
+
+    def test__sanity_check_bounds_call(self):
+        coord = DimCoord([5, 15, 25], bounds=[[0, 10], [10, 20], [20, 30]])
+        with mock.patch('iris.coords.Coord._sanity_check_bounds'
+                        ) as bounds_check:
+            coord.contiguous_bounds()
+        bounds_check.assert_called_once()
+
+    def test_1d_coord(self):
+        coord = DimCoord([2, 4, 6], standard_name='latitude',
+                         bounds=[[1, 3], [3, 5], [5, 7]])
+        expected = np.array([1, 3, 5, 7])
+        result = coord.contiguous_bounds()
+        self.assertArrayEqual(result, expected)
+
+    def test_1d_coord_discontiguous(self):
+        coord = DimCoord([2, 4, 6], standard_name='latitude',
+                         bounds=[[1, 3], [4, 5], [5, 7]])
+        expected = np.array([1, 4, 5, 7])
+        result = coord.contiguous_bounds()
+        self.assertArrayEqual(result, expected)
+
+    def test_2d_lon_bounds(self):
+        coord = AuxCoord(np.array([[1, 3], [1, 3]]),
+                         bounds=np.array([[[0, 2, 2, 0], [2, 4, 4, 2]],
+                                          [[0, 2, 2, 0], [2, 4, 4, 2]]]))
+        expected = np.array([[0, 2, 4], [0, 2, 4], [0, 2, 4]])
+        result = coord.contiguous_bounds()
+        self.assertArrayEqual(result, expected)
+
+    def test_2d_lat_bounds(self):
+        coord = AuxCoord(np.array([[1, 1], [3, 3]]),
+                         bounds=np.array([[[0, 0, 2, 2], [0, 0, 2, 2]],
+                                          [[2, 2, 4, 4], [2, 2, 4, 4]]]))
+        expected = np.array([[0, 0, 0], [2, 2, 2], [4, 4, 4]])
+        result = coord.contiguous_bounds()
+        self.assertArrayEqual(result, expected)
+
+
+class Test_is_contiguous(tests.IrisTest):
+    def test_no_bounds(self):
+        coord = DimCoord([1, 3])
+        result = coord.is_contiguous()
+        self.assertFalse(result)
+
+    def test__discontiguity_in_bounds_call(self):
+        # Check that :meth:`iris.coords.Coord._discontiguity_in_bounds` is
+        # called.
+        coord = DimCoord([1, 3], bounds=[[0, 2], [2, 4]])
+        with mock.patch('iris.coords.Coord._discontiguity_in_bounds'
+                        ) as discontiguity_check:
+            # Discontiguity returns two objects that are unpacked in
+            # `coord.is_contiguous`.
+            discontiguity_check.return_value = [None, None]
+            coord.is_contiguous(rtol=1e-1, atol=1e-3)
+        discontiguity_check.assert_called_with(rtol=1e-1, atol=1e-3)
+
+
+class Test__discontiguity_in_bounds(tests.IrisTest):
+    def setUp(self):
+        self.points_3by3 = np.array([[1, 2, 3],
+                                     [1, 2, 3],
+                                     [1, 2, 3]])
+        self.lon_bounds_3by3 = np.array(
+            [[[0, 2, 2, 0], [2, 4, 4, 2], [4, 6, 6, 4]],
+             [[0, 2, 2, 0], [2, 4, 4, 2], [4, 6, 6, 4]],
+             [[0, 2, 2, 0], [2, 4, 4, 2], [4, 6, 6, 4]]])
+        self.lat_bounds_3by3 = np.array(
+            [[[0, 0, 2, 2], [0, 0, 2, 2], [0, 0, 2, 2]],
+             [[2, 2, 4, 4], [2, 2, 4, 4], [2, 2, 4, 4]],
+             [[4, 4, 6, 6], [4, 4, 6, 6], [4, 4, 6, 6]]])
+
+    def test_1d_contiguous(self):
+        coord = DimCoord([-20, 0, 20],
+                         bounds=[[-30, -10], [-10, 10], [10, 30]])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        self.assertTrue(contiguous)
+        self.assertArrayEqual(diffs, np.zeros(2))
+
+    def test_1d_discontiguous(self):
+        coord = DimCoord([10, 20, 40],
+                         bounds=[[5, 15], [15, 25], [35, 45]])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs, np.array([0, 10]))
+
+    def test_1d_one_cell(self):
+        # Test a 1D coord with a single cell.
+        coord = DimCoord(20, bounds=[[10, 30]])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        self.assertTrue(contiguous)
+        self.assertArrayEqual(diffs, np.array([]))
+
+    def test_2d_contiguous_both_dirs(self):
+        coord = AuxCoord(self.points_3by3, bounds=self.lon_bounds_3by3)
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_along_x(self):
+        coord = AuxCoord(self.points_3by3[:, ::2],
+                         bounds=self.lon_bounds_3by3[:, ::2, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, np.array([2, 2, 2]).reshape(3, 1))
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_along_y(self):
+        coord = AuxCoord(self.points_3by3[::2, :],
+                         bounds=self.lat_bounds_3by3[::2, :, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertArrayEqual(diffs_along_y, np.array([[2, 2, 2]]))
+
+    def test_2d_discontiguous_along_x_and_y(self):
+        coord = AuxCoord(np.array([[1, 5], [3, 5]]),
+                         bounds=np.array([[[0, 2, 2, 0], [4, 6, 6, 4]],
+                                          [[2, 4, 4, 2], [4, 6, 6, 4]]]))
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        exp_x_diffs = np.array([2, 0]).reshape(2, 1)
+        exp_y_diffs = np.array([2, 0]).reshape(1, 2)
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, exp_x_diffs)
+        self.assertArrayEqual(diffs_along_y, exp_y_diffs)
+
+    def test_2d_one_cell(self):
+        # Test a 2D coord with a single cell, where the coord has shape (1, 1).
+        coord = AuxCoord(self.points_3by3[:1, :1],
+                         bounds=self.lon_bounds_3by3[:1, :1, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        expected_diffs = np.array([], dtype=np.int64)
+        self.assertTrue(contiguous)
+        self.assertArrayEqual(diffs_along_x, expected_diffs.reshape(1, 0))
+        self.assertArrayEqual(diffs_along_y, expected_diffs.reshape(0, 1))
+
+    def test_2d_one_cell_along_x(self):
+        # Test a 2D coord with a single cell along the x axis, where the coord
+        # has shape (2, 1).
+        coord = AuxCoord(self.points_3by3[:, :1],
+                         bounds=self.lat_bounds_3by3[:, :1, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertArrayEqual(diffs_along_y, np.array([0, 0]).reshape(2, 1))
+
+    def test_2d_one_cell_along_y(self):
+        # Test a 2D coord with a single cell along the y axis, where the coord
+        # has shape (1, 2).
+        coord = AuxCoord(self.points_3by3[:1, :],
+                         bounds=self.lon_bounds_3by3[:1, :, :])
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_contiguous_mod_360(self):
+        # Test that longitude coordinates are adjusted by the 360 modulus when
+        # calculating the discontiguities in contiguous bounds.
+        coord = AuxCoord(
+            [[175, -175], [175, -175]], standard_name='longitude',
+            bounds=np.array([[[170, 180, 180, 170], [-180, -170, -170, -180]],
+                             [[170, 180, 180, 170], [-180, -170, -170, -180]]])
+            )
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_mod_360(self):
+        # Test that longitude coordinates are adjusted by the 360 modulus when
+        # calculating the discontiguities in contiguous bounds.
+        coord = AuxCoord(
+            [[175, -175], [175, -175]], standard_name='longitude',
+            bounds=np.array([[[170, 180, 180, 170], [10, 20, 20, 10]],
+                             [[170, 180, 180, 170], [10, 20, 20, 10]]]))
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, np.array([[170], [170]]))
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_contiguous_mod_360_not_longitude(self):
+        # Test that non-longitude coordinates are not adjusted by the 360
+        # modulus when calculating the discontiguities in contiguous bounds.
+        coord = AuxCoord(
+            [[-150, 350], [-150, 350]], standard_name='height',
+            bounds=np.array([[[-400, 100, 100, -400], [100, 600, 600, 100]],
+                             [[-400, 100, 100, -400], [100, 600, 600, 100]]])
+            )
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertTrue(contiguous)
+        self.assertTrue(not diffs_along_x.any())
+        self.assertTrue(not diffs_along_y.any())
+
+    def test_2d_discontiguous_mod_360_not_longitude(self):
+        # Test that non-longitude coordinates are not adjusted by the 360
+        # modulus when calculating the discontiguities in discontiguous bounds.
+        coord = AuxCoord(
+            [[-150, 350], [-150, 350]], standard_name='height',
+            bounds=np.array([[[-400, 100, 100, -400], [200, 600, 600, 200]],
+                             [[-400, 100, 100, -400], [200, 600, 600, 200]]])
+            )
+        contiguous, diffs = coord._discontiguity_in_bounds()
+        diffs_along_x, diffs_along_y = diffs
+        self.assertFalse(contiguous)
+        self.assertArrayEqual(diffs_along_x, np.array([[100], [100]]))
+        self.assertTrue(not diffs_along_y.any())
+
+
+class Test__sanity_check_bounds(tests.IrisTest):
+    def test_coord_1d_2_bounds(self):
+        # Check that a 1d coord with 2 bounds does not raise an error.
+        coord = iris.coords.DimCoord([0, 1], standard_name='latitude',
+                                     bounds=[[0, 1], [1, 2]])
+        coord._sanity_check_bounds()
+
+    def test_coord_1d_no_bounds(self):
+        coord = iris.coords.DimCoord([0, 1], standard_name='latitude')
+        emsg = "Contiguous bounds are only defined for 1D coordinates with " \
+               "2 bounds."
+        with self.assertRaisesRegexp(ValueError, emsg):
+            coord._sanity_check_bounds()
+
+    def test_coord_1d_1_bounds(self):
+        coord = iris.coords.DimCoord([0, 1], standard_name='latitude',
+                                     bounds=np.array([[0], [1]]))
+        emsg = "Contiguous bounds are only defined for 1D coordinates with " \
+               "2 bounds."
+        with self.assertRaisesRegexp(ValueError, emsg):
+            coord._sanity_check_bounds()
+
+    def test_coord_2d_4_bounds(self):
+        coord = iris.coords.AuxCoord(
+            [[0, 0], [1, 1]], standard_name='latitude',
+            bounds=np.array([[[0, 0, 1, 1], [0, 0, 1, 1]],
+                             [[1, 1, 2, 2], [1, 1, 2, 2]]]))
+        coord._sanity_check_bounds()
+
+    def test_coord_2d_no_bounds(self):
+        coord = iris.coords.AuxCoord([[0, 0], [1, 1]],
+                                     standard_name='latitude')
+        emsg = "Contiguous bounds are only defined for 2D coordinates with " \
+               "4 bounds."
+        with self.assertRaisesRegexp(ValueError, emsg):
+            coord._sanity_check_bounds()
+
+    def test_coord_2d_2_bounds(self):
+        coord = iris.coords.AuxCoord(
+            [[0, 0], [1, 1]], standard_name='latitude',
+            bounds=np.array([[[0, 1], [0, 1]], [[1, 2], [1, 2]]]))
+        emsg = "Contiguous bounds are only defined for 2D coordinates with " \
+               "4 bounds."
+        with self.assertRaisesRegexp(ValueError, emsg):
+            coord._sanity_check_bounds()
+
+    def test_coord_3d(self):
+        coord = iris.coords.AuxCoord(np.zeros((2, 2, 2)),
+                                     standard_name='height')
+        emsg = "Contiguous bounds are not defined for coordinates with more " \
+               "than 2 dimensions."
+        with self.assertRaisesRegexp(ValueError, emsg):
+            coord._sanity_check_bounds()
 
 
 class Test_convert_units(tests.IrisTest):
