@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -117,7 +117,10 @@ class TestMappingSubRegion(tests.GraphicsTest):
         # make the data smaller to speed things up.
         self.cube = cube[::10, ::10]
 
-    def test_simple(self):
+    def test_simple__modified(self):
+        # NOTE: temporarily renamed from 'test_simple', and changed,
+        # to avoid a problem with Mollweide in cartopy 0.16 when Proj4 > 4.9
+
         # First sub-plot
         plt.subplot(221)
         plt.title('Default')
@@ -125,8 +128,12 @@ class TestMappingSubRegion(tests.GraphicsTest):
         plt.gca().coastlines()
 
         # Second sub-plot
-        plt.subplot(222, projection=ccrs.Mollweide(central_longitude=120))
-        plt.title('Molleweide')
+#        plt.subplot(222, projection=ccrs.Mollweide(central_longitude=120))
+#        plt.title('Molleweide')
+        # NOTE: temporarily changed, to avoid a problem with Mollweide in
+        # cartopy 0.16 when Proj4 > 4.9
+        plt.subplot(222, projection=ccrs.NorthPolarStereo())
+        plt.title('Polar Stereographic')
         iplt.contourf(self.cube)
         plt.gca().coastlines()
 
