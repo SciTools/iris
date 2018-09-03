@@ -406,16 +406,16 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         return lambda c: lh < c < rh
 
 
-def reverse(array, axes):
+def reverse(cube_or_array, axes):
     """
-    Reverse the array along the given axes.
+    Reverse the cube or array along the given axes.
 
     Args:
 
-    * array
-        The array to reverse
-    * axes
-        A single value or array of values of axes to reverse
+    * cube_or_array: :class:`iris.cube.Cube` or :class:`numpy.ndarray`
+        The cube or array to reverse
+    * axes: int or sequence of ints
+        One or more axes to reverse.
 
     ::
 
@@ -447,20 +447,20 @@ def reverse(array, axes):
           [15 14 13 12]]]
 
     """
-    index = [slice(None, None)] * array.ndim
+    index = [slice(None, None)] * cube_or_array.ndim
     axes = np.array(axes, ndmin=1)
     if axes.ndim != 1:
         raise ValueError('Reverse was expecting a single axis or a 1d array '
                          'of axes, got %r' % axes)
-    if np.min(axes) < 0 or np.max(axes) > array.ndim-1:
+    if np.min(axes) < 0 or np.max(axes) > cube_or_array.ndim-1:
         raise ValueError('An axis value out of range for the number of '
                          'dimensions from the given array (%s) was received. '
-                         'Got: %r' % (array.ndim, axes))
+                         'Got: %r' % (cube_or_array.ndim, axes))
 
     for axis in axes:
         index[axis] = slice(None, None, -1)
 
-    return array[tuple(index)]
+    return cube_or_array[tuple(index)]
 
 
 def monotonic(array, strict=False, return_direction=False):
