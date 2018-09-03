@@ -1226,9 +1226,9 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     if crs:
         if not isinstance(crs, (ccrs.PlateCarree, ccrs.RotatedPole)):
             msg = ('Can only plot vectors provided in a lat-lon '
-                   'projection, i.e. "cartopy.crs.PlateCarree" or '
-                   '"cartopy.crs.RotatedPole". This '
-                   "cubes coordinate system is {}.")
+                   'projection, i.e. equivalent to "cartopy.crs.PlateCarree" '
+                   'or "cartopy.crs.RotatedPole". This '
+                   "cube coordinate system translates as Cartopy {}.")
             raise ValueError(msg.format(crs))
         # Given the above check, the Y points must be latitudes.
         # We therefore **assume** they are in degrees : I'm not sure this

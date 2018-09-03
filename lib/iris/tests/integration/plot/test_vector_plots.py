@@ -31,6 +31,7 @@ import numpy as np
 
 import cartopy.crs as ccrs
 from iris.coords import AuxCoord, DimCoord
+from iris.coord_systems import Mercator
 from iris.cube import Cube
 from iris.tests.stock import sample_2d_latlons
 
@@ -47,67 +48,66 @@ if tests.MPL_AVAILABLE:
 class MixinVectorPlotCases(object):
     """Test examples mixin, used by separate quiver + streamplot classes."""
 
-#    def test_plain(self):
-#        """Basic non-latlon, 1d coords testcase."""
-#        x = np.array([0., 2, 3, 5])
-#        y = np.array([0., 2.5, 4])
-#        uv = np.array([[(0., 0), (0, 1), (0, -1), (2, 1)],
-#                       [(-1, 0), (-1, -1), (-1, 1), (-2, 1)],
-#                       [(1., 0), (1, -1), (1, 1), (-2, 2)]])
-#        uv = np.array(uv)
-#        u, v = uv[..., 0], uv[..., 1]
-#        x_coord = DimCoord(x, long_name='x')
-#        y_coord = DimCoord(y, long_name='y')
-#        u_cube = Cube(u, long_name='u', units='ms-1')
-#        u_cube.add_dim_coord(y_coord, 0)
-#        u_cube.add_dim_coord(x_coord, 1)
-#        v_cube = u_cube.copy()
-#        v_cube.rename('v')
-#        v_cube.data = v
-#        self.plot('plain', u_cube, v_cube)
-#        plt.xlim(x.min() - 1, x.max() + 2)
-#        plt.ylim(y.min() - 1, y.max() + 2)
-#
-#        # TEMP-TEST
-#        plt.show()
-
     def plot(self, plotname, *args, **kwargs):
         plot_function = self.plot_function_to_test()
         plot_function(*args, **kwargs)
-        # TEMP-TEST
         plt.suptitle('{}.{}'.format(str(self.__class__), plotname))
-#        plt.show()
-#        self.test_graphic()
 
-#    def test_2d_nonlatlon(self):
-#        """Basic non-latlon, 1d coords testcase."""
-#        x = np.array([0., 2, 3, 5])
-#        y = np.array([0., 2.5, 4])
-#        x, y = np.meshgrid(x, y)
-#        uv = np.array([[(0., 0), (0, 1), (0, -1), (2, 1)],
-#                       [(-1, 0), (-1, -1), (-1, 1), (-2, 1)],
-#                       [(1., 0), (1, -1), (1, 1), (-2, 2)]])
-#        uv = np.array(uv)
-#        u, v = uv[..., 0], uv[..., 1]
-#        x_coord = AuxCoord(x, long_name='x')
-#        y_coord = AuxCoord(y, long_name='y')
-#        u_cube = Cube(u, long_name='u', units='ms-1')
-#        u_cube.add_aux_coord(y_coord, (0, 1))
-#        u_cube.add_aux_coord(x_coord, (0, 1))
-#        v_cube = u_cube.copy()
-#        v_cube.rename('v')
-#        v_cube.data = v
-#        # Call plot : N.B. default gives wrong coords order.
-#        self.plot('2d_nonlatlon', u_cube, v_cube, coords=('x', 'y'))
-#        plt.xlim(x.min() - 1, x.max() + 2)
-#        plt.ylim(y.min() - 1, y.max() + 2)
-#
-#        # TEMP-TEST
-#        plt.show()
-##        self.test_graphic()
+    @staticmethod
+    def _nonlatlon_xyuv():
+        # Create common x, y, u, v arrays for quiver/streamplot testing.
+        x = np.array([0., 2, 3, 5])
+        y = np.array([0., 2.5, 4])
+        uv = np.array([[(0., 0), (0, 1), (0, -1), (2, 1)],
+                       [(-1, 0), (-1, -1), (-1, 1), (-2, 1)],
+                       [(1., 0), (1, -1), (1, 1), (-2, 2)]])
+        uv = np.array(uv)
+        u, v = uv[..., 0], uv[..., 1]
+        return x, y, u, v
 
-    def test_2d_plain_latlon(self):
-        u_cube = sample_2d_latlons(regional=True)
+    @staticmethod
+    def _nonlatlon_uv_cubes(x, y, u, v):
+        # Create u and v test cubes from x, y, u, v arrays.
+        coord_cls = DimCoord if x.ndim == 1 else AuxCoord
+        x_coord = coord_cls(x, long_name='x')
+        y_coord = coord_cls(y, long_name='y')
+        u_cube = Cube(u, long_name='u', units='ms-1')
+        if x.ndim == 1:
+            u_cube.add_dim_coord(y_coord, 0)
+            u_cube.add_dim_coord(x_coord, 1)
+        else:
+            u_cube.add_aux_coord(y_coord, (0, 1))
+            u_cube.add_aux_coord(x_coord, (0, 1))
+        v_cube = u_cube.copy()
+        v_cube.rename('v')
+        v_cube.data = v
+        return u_cube, v_cube
+
+    def test_non_latlon_1d_coords(self):
+        # Plot against simple 1D x and y coords.
+        x, y, u, v = self._nonlatlon_xyuv()
+        u_cube, v_cube = self._nonlatlon_uv_cubes(x, y, u, v)
+        """Basic non-latlon, 1d coords testcase."""
+        self.plot('nonlatlon_1d', u_cube, v_cube)
+        plt.xlim(x.min() - 1, x.max() + 2)
+        plt.ylim(y.min() - 1, y.max() + 2)
+        self.check_graphic()
+
+    def test_nonlatlon_2d_coords(self):
+        # Plot against expanded 2D x and y coords.
+        x, y, u, v = self._nonlatlon_xyuv()
+        x, y = np.meshgrid(x, y)
+        u_cube, v_cube = self._nonlatlon_uv_cubes(x, y, u, v)
+        # Call plot : N.B. default gives wrong coords order.
+        self.plot('nonlatlon_2d', u_cube, v_cube, coords=('x', 'y'))
+        plt.xlim(x.min() - 1, x.max() + 2)
+        plt.ylim(y.min() - 1, y.max() + 2)
+        self.check_graphic()
+
+    @staticmethod
+    def _latlon_uv_cubes(grid_cube):
+        # Make a sample grid into u and v data for quiver/streamplot testing.
+        u_cube = grid_cube.copy()
         u_cube.rename('dx')
         u_cube.units = 'ms-1'
         v_cube = u_cube.copy()
@@ -118,23 +118,64 @@ class MixinVectorPlotCases(object):
         angles = (angles * 360.0 / 5.5) % 360.
         u_cube.data = np.cos(np.deg2rad(angles))
         v_cube.data = np.sin(np.deg2rad(angles))
+        return u_cube, v_cube
+
+    def test_2d_plain_latlon(self):
+        # Test 2d vector plotting with implicit (PlateCarree) coord system.
+        u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons())
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
-#        ax = plt.axes(projection=ccrs.NorthPolarStereo())
-        self.plot('2d_plain_latlon', u_cube, v_cube,
+        self.plot('latlon_2d', u_cube, v_cube,
                   coords=('longitude', 'latitude'))
-        ax = plt.gca()
         ax.coastlines(color='red')
         ax.set_global()
-        plt.show()
-#        self.test_graphic()
+        self.check_graphic()
+
+    def test_2d_plain_latlon_on_polar_map(self):
+        # Test 2d vector plotting onto a different projection.
+        u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons())
+        ax = plt.axes(projection=ccrs.NorthPolarStereo())
+        self.plot('latlon_2d_polar', u_cube, v_cube,
+                  coords=('longitude', 'latitude'))
+        ax.coastlines(color='red')
+        self.check_graphic()
+
+    def test_2d_rotated_latlon(self):
+        # Test plotting vectors in a rotated latlon coord system.
+        u_cube, v_cube = self._latlon_uv_cubes(
+            sample_2d_latlons(rotated=True))
+        ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
+        self.plot('2d_rotated', u_cube, v_cube,
+                  coords=('longitude', 'latitude'))
+        ax.coastlines(color='red')
+        ax.set_global()
+        self.check_graphic()
+
+    def test_fail_unsupported_coord_system(self):
+        # Test plotting vectors in a rotated latlon coord system.
+        u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons())
+        patch_coord_system = Mercator()
+        for cube in u_cube, v_cube:
+            for coord in cube.coords():
+                coord.coord_system = patch_coord_system
+        re_msg = ('Can only plot .* lat-lon projection, .* '
+                  'This .* translates as Cartopy.*Mercator')
+        with self.assertRaisesRegexp(ValueError, re_msg):
+            self.plot('2d_rotated', u_cube, v_cube,
+                      coords=('longitude', 'latitude'))
 
 
 class TestQuiver(MixinVectorPlotCases, tests.GraphicsTest):
+    def setUp(self):
+        super(TestQuiver, self).setUp()
+
     def plot_function_to_test(self):
         return quiver
 
 
 class TestStreamplot(MixinVectorPlotCases, tests.GraphicsTest):
+    def setUp(self):
+        super(TestStreamplot, self).setUp()
+
     def plot_function_to_test(self):
         return streamplot
 
