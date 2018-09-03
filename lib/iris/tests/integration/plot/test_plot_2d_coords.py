@@ -59,6 +59,7 @@ class Test(tests.GraphicsTest):
         cube = simple_cube_w_2d_coords()[0, 0]
         ax = plt.axes(projection=ccrs.NorthPolarStereo())
         qplt.pcolormesh(cube)
+        ax.coastlines(color='red')
         self.check_graphic()
 
 
