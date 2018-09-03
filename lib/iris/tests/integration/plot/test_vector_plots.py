@@ -88,7 +88,7 @@ class MixinVectorPlotCases(object):
         x, y, u, v = self._nonlatlon_xyuv()
         u_cube, v_cube = self._nonlatlon_uv_cubes(x, y, u, v)
         """Basic non-latlon, 1d coords testcase."""
-        self.plot('nonlatlon_1d', u_cube, v_cube)
+        self.plot('nonlatlon, 1-d coords', u_cube, v_cube)
         plt.xlim(x.min() - 1, x.max() + 2)
         plt.ylim(y.min() - 1, y.max() + 2)
         self.check_graphic()
