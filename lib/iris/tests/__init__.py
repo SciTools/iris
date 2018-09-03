@@ -1221,12 +1221,6 @@ skip_stratify = unittest.skipIf(
     'Test(s) require "python-stratify", which is not available.')
 
 
-SKIP_2D_TESTS = True
-skip_2d = unittest.skipIf(
-    SKIP_2D_TESTS,
-    'Test(s) broken by WIP on 2d coords support -- temporarily disabled.')
-
-
 def no_warnings(func):
     """
     Provides a decorator to ensure that there are no warnings raised
