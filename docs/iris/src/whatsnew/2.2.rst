@@ -25,9 +25,8 @@ Iris 2.2.0 Features
   contiguous, or the cube's data must be masked at the discontiguities in
   order to avoid plotting errors.
 
-  The iris plot functions :func:`iris.plot.quiver` and
-  :func:`iris.plot.streamplot` have been added, and these also work with
-  2-dimensional plot coordinates.
+  The iris plot functions :func:`iris.plot.quiver` has been added, and this
+  also works with 2-dimensional plot coordinates.
 
 .. admonition:: 2-Dimensional Grid Vectors
 

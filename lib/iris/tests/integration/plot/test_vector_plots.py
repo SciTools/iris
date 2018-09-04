@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test some key usages of :func:`iris.plot.quiver` and
-:func:`iris.plot.streamplot`.
+Test some key usages of :func:`iris.plot.quiver`.
 
 """
 
@@ -38,12 +37,18 @@ from iris.tests.stock import sample_2d_latlons
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
-    from iris.plot import quiver, streamplot
+    from iris.plot import quiver
 
 
 @tests.skip_plot
 class MixinVectorPlotCases(object):
-    """Test examples mixin, used by separate quiver + streamplot classes."""
+    """
+    Test examples mixin, used by separate quiver + streamplot classes.
+
+    NOTE: at present for quiver only, as streamplot does not support arbitrary
+    coordinates.
+
+    """
 
     def plot(self, plotname, *args, **kwargs):
         plot_function = self.plot_function_to_test()
@@ -169,18 +174,6 @@ class TestQuiver(MixinVectorPlotCases, tests.GraphicsTest):
 
     def plot_function_to_test(self):
         return quiver
-
-
-class TestStreamplot(MixinVectorPlotCases, tests.GraphicsTest):
-    def setUp(self):
-        super(TestStreamplot, self).setUp()
-
-    def plot_function_to_test(self):
-        def overlay_streams_and_arrows(*args, **kwargs):
-            streamplot(*args, **kwargs)
-            quiver(*args, **kwargs)
-
-        return overlay_streams_and_arrows
 
 
 if __name__ == "__main__":
