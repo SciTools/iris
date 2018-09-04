@@ -53,7 +53,7 @@ class MixinVectorPlotCases(object):
     def plot(self, plotname, *args, **kwargs):
         plot_function = self.plot_function_to_test()
         plot_function(*args, **kwargs)
-        plt.suptitle('{}.{}'.format(str(self.__class__), plotname))
+        plt.suptitle(plotname)
 
     @staticmethod
     def _nonlatlon_xyuv():
