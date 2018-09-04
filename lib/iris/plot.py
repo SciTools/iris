@@ -1226,9 +1226,9 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     if crs:
         if not isinstance(crs, (ccrs.PlateCarree, ccrs.RotatedPole)):
             msg = ('Can only plot vectors provided in a lat-lon '
-                   'projection, i.e. "cartopy.crs.PlateCarree" or '
-                   '"cartopy.crs.RotatedPole". This '
-                   "cubes coordinate system is {}.")
+                   'projection, i.e. equivalent to "cartopy.crs.PlateCarree" '
+                   'or "cartopy.crs.RotatedPole". This '
+                   "cube coordinate system translates as Cartopy {}.")
             raise ValueError(msg.format(crs))
         # Given the above check, the Y points must be latitudes.
         # We therefore **assume** they are in degrees : I'm not sure this
@@ -1237,7 +1237,7 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
         # TODO: investigate degree units assumptions, here + elsewhere.
 
         # Implement a latitude scaling, but preserve the given magnitudes.
-        v_data = v_data.copy()
+        u_data, v_data = [arr.copy() for arr in (u_data, v_data)]
         mags = np.sqrt(u_data * u_data + v_data * v_data)
         v_data *= np.cos(np.deg2rad(y_points))
         scales = mags / np.sqrt(u_data * u_data + v_data * v_data)
@@ -1291,53 +1291,6 @@ def quiver(u_cube, v_cube, *args, **kwargs):
     #
     kwargs['_v_data'] = v_cube.data
     return _draw_2d_from_points('quiver', _vector_component_args, u_cube,
-                                *args, **kwargs)
-
-
-def streamplot(u_cube, v_cube, *args, **kwargs):
-    """
-    Draws a streamline plot from two vector component cubes.
-
-    Args:
-
-    * u_cube, v_cube : (:class:`~iris.cube.Cube`)
-        u and v vector components.  Must have same shape and units.
-        If the cubes have geographic coordinates, the values are treated as
-        true distance differentials, e.g. windspeeds, and *not* map coordinate
-        vectors.  The components are aligned with the North and East of the
-        cube coordinate system.
-
-    .. Note:
-
-        At present, if u_cube and v_cube have geographic coordinates, then they
-        must be in a lat-lon coordinate system, though it may be a rotated one.
-        To transform wind values between coordinate systems, use
-        :func:`iris.analysis.cartography.rotate_vectors`.
-        To transform coordinate grid points, you will need to create
-        2-dimensional arrays of x and y values.  These can be transformed with
-        :meth:`cartopy.crs.CRS.transform_points`.
-
-    Kwargs:
-
-    * coords: (list of :class:`~iris.coords.Coord` or string)
-        Coordinates or coordinate names. Use the given coordinates as the axes
-        for the plot. The order of the given coordinates indicates which axis
-        to use for each, where the first element is the horizontal
-        axis of the plot and the second element is the vertical axis
-        of the plot.
-
-    * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
-        Defaults to the current axes if none provided.
-
-    See :func:`matplotlib.pyplot.quiver` for details of other valid
-    keyword arguments.
-
-    """
-    #
-    # TODO: check u + v cubes for compatibility.
-    #
-    kwargs['_v_data'] = v_cube.data
-    return _draw_2d_from_points('streamplot', _vector_component_args, u_cube,
                                 *args, **kwargs)
 
 
