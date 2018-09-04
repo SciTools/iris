@@ -1237,7 +1237,7 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
         # TODO: investigate degree units assumptions, here + elsewhere.
 
         # Implement a latitude scaling, but preserve the given magnitudes.
-        v_data = v_data.copy()
+        u_data, v_data = [arr.copy() for arr in (u_data, v_data)]
         mags = np.sqrt(u_data * u_data + v_data * v_data)
         v_data *= np.cos(np.deg2rad(y_points))
         scales = mags / np.sqrt(u_data * u_data + v_data * v_data)

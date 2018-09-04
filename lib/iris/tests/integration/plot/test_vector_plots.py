@@ -40,9 +40,6 @@ if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
     from iris.plot import quiver, streamplot
 
-    # TEMP-TEST
-    plt.switch_backend('tkagg')
-
 
 @tests.skip_plot
 class MixinVectorPlotCases(object):
@@ -87,13 +84,12 @@ class MixinVectorPlotCases(object):
         # Plot against simple 1D x and y coords.
         x, y, u, v = self._nonlatlon_xyuv()
         u_cube, v_cube = self._nonlatlon_uv_cubes(x, y, u, v)
-        """Basic non-latlon, 1d coords testcase."""
         self.plot('nonlatlon, 1-d coords', u_cube, v_cube)
         plt.xlim(x.min() - 1, x.max() + 2)
         plt.ylim(y.min() - 1, y.max() + 2)
         self.check_graphic()
 
-    def test_nonlatlon_2d_coords(self):
+    def test_non_latlon_2d_coords(self):
         # Plot against expanded 2D x and y coords.
         x, y, u, v = self._nonlatlon_xyuv()
         x, y = np.meshgrid(x, y)
@@ -116,8 +112,11 @@ class MixinVectorPlotCases(object):
         nn = nx * ny
         angles = np.arange(nn).reshape((ny, nx))
         angles = (angles * 360.0 / 5.5) % 360.
-        u_cube.data = np.cos(np.deg2rad(angles))
-        v_cube.data = np.sin(np.deg2rad(angles))
+        scale = np.arange(nn) % 5
+        scale = (scale + 4) / 4
+        scale = scale.reshape((ny, nx))
+        u_cube.data = scale * np.cos(np.deg2rad(angles))
+        v_cube.data = scale * np.sin(np.deg2rad(angles))
         return u_cube, v_cube
 
     def test_2d_plain_latlon(self):
@@ -177,7 +176,11 @@ class TestStreamplot(MixinVectorPlotCases, tests.GraphicsTest):
         super(TestStreamplot, self).setUp()
 
     def plot_function_to_test(self):
-        return streamplot
+        def overlay_streams_and_arrows(*args, **kwargs):
+            streamplot(*args, **kwargs)
+            quiver(*args, **kwargs)
+
+        return overlay_streams_and_arrows
 
 
 if __name__ == "__main__":
