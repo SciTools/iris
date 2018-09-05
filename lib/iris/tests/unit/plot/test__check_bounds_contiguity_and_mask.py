@@ -24,6 +24,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import mock
+
 import numpy as np
 import numpy.ma as ma
 
@@ -71,6 +73,19 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         cube = sample_2d_latlons()
         iplt._check_bounds_contiguity_and_mask(cube.coord('longitude'),
                                                cube.data)
+
+    def test_2d_contiguous_atol(self):
+        # Check the atol is passed correctly.
+        cube = sample_2d_latlons()
+        with mock.patch('iris.coords.Coord._discontiguity_in_bounds'
+                        ) as discontiguity_check:
+            # Discontiguity returns two objects that are unpacked in
+            # `_check_bounds_contiguity_and_mask`.
+            discontiguity_check.return_value = [True, None]
+            iplt._check_bounds_contiguity_and_mask(cube.coord('longitude'),
+                                                   cube.data,
+                                                   atol=1e-3)
+        discontiguity_check.assert_called_with(atol=1e-3)
 
     def test_2d_discontigous_masked(self):
         # Test a 2D coordinate which is discontiguous but masked at
