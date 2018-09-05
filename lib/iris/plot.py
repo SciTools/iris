@@ -317,13 +317,14 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
 
     elif coord.ndim == 2:
         if atol:
-            args = {'atol': atol}
+            kwargs = {'atol': atol}
         else:
-            args = {}
-        contiguous, diffs = coord._discontiguity_in_bounds(*args)
-        diffs_along_x, diffs_along_y = diffs
+            kwargs = {}
+        contiguous, diffs = coord._discontiguity_in_bounds(**kwargs)
 
         if not contiguous and data_is_masked:
+            diffs_along_x, diffs_along_y = diffs
+
             # Check along both dimensions.
             not_masked_at_discontiguity_along_x = np.any(
                 np.logical_and(mask_invert[:, :-1], diffs_along_x))
