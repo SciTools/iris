@@ -1419,23 +1419,6 @@ This aggregator handles masked data.
 """
 
 
-MAX = Aggregator('maximum', ma.max)
-"""
-An :class:`~iris.analysis.Aggregator` instance that calculates
-the maximum over a :class:`~iris.cube.Cube`, as computed by
-:func:`numpy.ma.max`.
-
-**For example**:
-
-To compute zonal maximums over the *longitude* axis of a cube::
-
-    result = cube.collapsed('longitude', iris.analysis.MAX)
-
-This aggregator handles masked data.
-
-"""
-
-
 def _build_dask_mdtol_function(dask_stats_function):
     """
     Make a wrapped dask statistic function that supports the 'mdtol' keyword.
@@ -1534,7 +1517,8 @@ This aggregator handles masked data.
 """
 
 
-MIN = Aggregator('minimum', ma.min)
+MIN = Aggregator('minimum', ma.min,
+                 lazy_func=_build_dask_mdtol_function(da.min))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the minimum over a :class:`~iris.cube.Cube`, as computed by
@@ -1545,6 +1529,24 @@ the minimum over a :class:`~iris.cube.Cube`, as computed by
 To compute zonal minimums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MIN)
+
+This aggregator handles masked data.
+
+"""
+
+
+MAX = Aggregator('maximum', ma.max,
+                 lazy_func=_build_dask_mdtol_function(da.max))
+"""
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the maximum over a :class:`~iris.cube.Cube`, as computed by
+:func:`numpy.ma.max`.
+
+**For example**:
+
+To compute zonal maximums over the *longitude* axis of a cube::
+
+    result = cube.collapsed('longitude', iris.analysis.MAX)
 
 This aggregator handles masked data.
 
