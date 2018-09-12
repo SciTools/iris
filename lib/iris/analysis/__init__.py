@@ -1193,9 +1193,20 @@ def _weighted_percentile(data, axis, weights, percent, returned=False,
 
 def _count(array, function, axis, **kwargs):
     if not callable(function):
-        raise ValueError('function must be a callable. Got %s.'
-                         % type(function))
+        emsg = 'function must be a callable. Got {}.'
+        raise TypeError(emsg.format(type(function)))
     return ma.sum(function(array), axis=axis, **kwargs)
+
+
+def _lazy_count(array, axis, **kwargs):
+    try:
+        func = kwargs.pop('function')
+    except KeyError:
+        raise KeyError('no selection function supplied.')
+    if not callable(func):
+        emsg = 'function must be a callable. Got {}.'
+        raise TypeError(emsg.format(type(func)))
+    return da.sum(func(array), axis=axis, **kwargs)
 
 
 def _proportion(array, function, axis, **kwargs):
@@ -1243,6 +1254,25 @@ def _sum(array, **kwargs):
         else:
             weights = weights_in
         rvalue = (wsum, ma.sum(weights, axis=axis_in))
+    else:
+        rvalue = wsum
+    return rvalue
+
+
+def _lazy_sum(array, axis, **kwargs):
+    # weighted or scaled sum
+    weights_in = kwargs.pop('weights', None)
+    returned_in = kwargs.pop('returned', False)
+    if weights_in is not None:
+        wsum = da.sum(weights_in * array, axis=axis, **kwargs)
+    else:
+        wsum = da.sum(array, axis=axis, **kwargs)
+    if returned_in:
+        if weights_in is None:
+            weights = iris_lazy_data.as_lazy_data(np.ones_like(array))
+        else:
+            weights = weights_in
+        rvalue = (wsum, da.sum(weights, axis=axis))
     else:
         rvalue = wsum
     return rvalue
@@ -1353,7 +1383,8 @@ def _peak(array, **kwargs):
 # Common partial Aggregation class constructors.
 #
 COUNT = Aggregator('count', _count,
-                   units_func=lambda units: 1)
+                   units_func=lambda units: 1,
+                   lazy_func=_lazy_count)
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
 of :class:`~iris.cube.Cube` data occurrences that satisfy a particular
@@ -1451,6 +1482,7 @@ def _build_dask_mdtol_function(dask_stats_function):
                                         boolean_mask)
         return result
     return inner_stat
+
 
 MEAN = WeightedAggregator('mean', ma.average,
                           lazy_func=_build_dask_mdtol_function(da.mean))
@@ -1702,7 +1734,7 @@ This aggregator handles masked data.
 """
 
 
-SUM = WeightedAggregator('sum', _sum)
+SUM = WeightedAggregator('sum', _sum, lazy_func=_lazy_sum)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the sum over a :class:`~iris.cube.Cube`, as computed by :func:`numpy.ma.sum`.
