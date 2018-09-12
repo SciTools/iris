@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,33 @@ import numpy as np
 
 from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.analysis import STD_DEV
+from iris.cube import Cube
+from iris.coords import DimCoord
+
+
+class Test_basics(tests.IrisTest):
+    def setUp(self):
+        data = np.array([1, 2, 3, 4, 5])
+        coord = DimCoord([6, 7, 8, 9, 10], long_name='foo')
+        self.cube = Cube(data)
+        self.cube.add_dim_coord(coord, 0)
+        self.lazy_cube = Cube(as_lazy_data(data))
+        self.lazy_cube.add_dim_coord(coord, 0)
+
+    def test_name(self):
+        self.assertEqual(STD_DEV.name(), 'standard_deviation')
+
+    def test_collapse(self):
+        cube = self.cube.collapsed("foo", STD_DEV)
+        self.assertArrayAlmostEqual(cube.data, [1.58113883])
+
+    def test_lazy(self):
+        cube = self.lazy_cube.collapsed("foo", STD_DEV)
+        self.assertTrue(cube.has_lazy_data())
+
+    def test_lazy_collapse(self):
+        cube = self.lazy_cube.collapsed("foo", STD_DEV)
+        self.assertArrayAlmostEqual(cube.data, [1.58113883])
 
 
 class Test_lazy_aggregate(tests.IrisTest):
@@ -54,11 +81,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         var = STD_DEV.lazy_aggregate(array, axis=0, ddof=0)
         result = as_concrete_data(var)
         self.assertArrayAlmostEqual(result, np.array(2.291287))
-
-
-class Test_name(tests.IrisTest):
-    def test(self):
-        self.assertEqual(STD_DEV.name(), 'standard_deviation')
 
 
 class Test_aggregate_shape(tests.IrisTest):
