@@ -25,6 +25,7 @@ import iris.tests as tests
 
 from itertools import permutations
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -75,6 +76,10 @@ class Test___init___data(tests.IrisTest):
         cube = Cube(data)
         self.assertEqual(type(cube.data), np.ndarray)
         self.assertArrayEqual(cube.data, data)
+
+    def test_default_share_data(self):
+        cube = Cube(np.arange(1))
+        self.assertFalse(cube.share_data)
 
 
 class Test_data_dtype_fillvalue(tests.IrisTest):
@@ -1577,6 +1582,50 @@ class Test_remove_metadata(tests.IrisTest):
         self.cube.remove_cell_measure(self.cube.cell_measure('area'))
         self.assertEqual(self.cube._cell_measures_and_dims,
                          [[self.b_cell_measure, (0, 1)]])
+
+
+class Test_share_data(tests.IrisTest):
+    def test_setter_lazy_data(self):
+        cube = Cube(da.from_array(np.arange(6).reshape(2, 3), chunks=6))
+        cube.share_data = True
+        self.assertFalse(cube.has_lazy_data())
+        self.assertTrue(cube._share_data)
+
+    def test_setter_realised_data(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        cube.share_data = True
+        self.assertFalse(cube.has_lazy_data())
+        self.assertTrue(cube._share_data)
+
+
+class Test___getitem__no_share_data(tests.IrisTest):
+    def test_lazy_array(self):
+        cube = Cube(da.from_array(np.arange(6).reshape(2, 3), chunks=6))
+        cube2 = cube[1:]
+        self.assertTrue(cube2.has_lazy_data())
+        cube.data
+        self.assertTrue(cube2.has_lazy_data())
+
+    def test_ndarray(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        cube2 = cube[1:]
+        self.assertIsNot(cube.data.base, cube2.data.base)
+
+
+class Test___getitem__share_data(tests.IrisTest):
+    def test_lazy_array(self):
+        cube = Cube(da.from_array(np.arange(6).reshape(2, 3), chunks=6))
+        cube.share_data = True
+        cube2 = cube[1:]
+        self.assertFalse(cube.has_lazy_data())
+        self.assertFalse(cube2.has_lazy_data())
+        self.assertIs(cube.data.base, cube2.data.base)
+
+    def test_ndarray(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        cube.share_data = True
+        cube2 = cube[1:]
+        self.assertIs(cube.data.base, cube2.data.base)
 
 
 class Test__getitem_CellMeasure(tests.IrisTest):

@@ -525,14 +525,24 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        new_coord = copy.deepcopy(self)
         if points is not None:
+            # We do not perform a deepcopy when we supply new points so as to
+            # not unncessarily copy the old points.
+
+            # Create a temp-coord to manage deep copying of a small array.
+            temp_coord = copy.copy(self)
+            temp_coord.bounds = None
+            # note: DataManager cannot be None or DataManager(None) for
+            # a deepcopy operation.
+            temp_coord._points_dm = DataManager(np.array((1,)))
+            new_coord = copy.deepcopy(temp_coord)
+            del(temp_coord)
             new_coord._points_dm = None
             new_coord.points = points
-            # Regardless of whether bounds are provided as an argument, new
-            # points will result in new bounds, discarding those copied from
-            # self.
+            # new points will result in new bounds.
             new_coord.bounds = bounds
+        else:
+            new_coord = copy.deepcopy(self)
 
         return new_coord
 
