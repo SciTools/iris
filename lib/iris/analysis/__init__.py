@@ -2072,7 +2072,7 @@ class _Groupby(object):
                             new_bounds.append(
                                 [coord.bounds.take(start, dim).take(0, -1),
                                  coord.bounds.take(0, dim).take(0, -1) +
-                                 coord.units.modulus)
+                                 coord.units.modulus])
                         else:
                             new_bounds.append(
                                 [coord.bounds.take(start, dim).take(0, -1),
