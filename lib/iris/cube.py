@@ -3387,8 +3387,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             lambda coord_: coord_ not in groupby_coords,
             self.coords(dimensions=dimension_to_groupby)))
 
+        mdim_shared_coords = list(filter(
+            lambda coord_: coord_ not in groupby_coords + shared_coords,
+            self.coords(contains_dimension=dimension_to_groupby)))
+
+        match_dims = [
+            index for coord_ in mdim_shared_coords for (index, dim) in
+            enumerate(self.coord_dims(coord_)) if dim == dimension_to_groupby]
+
         # Create the aggregation group-by instance.
-        groupby = iris.analysis._Groupby(groupby_coords, shared_coords)
+        groupby = iris.analysis._Groupby(groupby_coords, shared_coords,
+                                         zip(mdim_shared_coords, match_dims))
 
         # Create the resulting aggregate-by cube and remove the original
         # coordinates that are going to be groupedby.
@@ -3397,7 +3406,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         key[dimension_to_groupby] = tuple(range(len(groupby)))
         key = tuple(key)
         aggregateby_cube = self[key]
-        for coord in groupby_coords + shared_coords:
+        for coord in groupby_coords + shared_coords + mdim_shared_coords:
             aggregateby_cube.remove_coord(coord)
 
         # Determine the group-by cube data shape.
@@ -3444,7 +3453,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                dimension_to_groupby)
             else:
                 aggregateby_cube.add_aux_coord(coord.copy(),
-                                               dimension_to_groupby)
+                                               self.coord_dims(coord))
 
         # Attach the aggregate-by data into the aggregate-by cube.
         aggregateby_cube = aggregator.post_process(aggregateby_cube,
