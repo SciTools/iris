@@ -104,12 +104,15 @@ class CubeRepresentation(object):
             'Auxiliary coordinates:': None,
             'Derived coordinates:': None,
             'Scalar coordinates:': None,
+            'Scalar cell measures:': None,
+            'Cell Measures:': None,
             'Attributes:': None,
             'Cell methods:': None,
         }
         self.dim_desc_coords = ['Dimension coordinates:',
                                 'Auxiliary coordinates:',
-                                'Derived coordinates:']
+                                'Derived coordinates:',
+                                'Cell Measures:', ]
 
         # Important content that summarises a cube is defined here.
         self.shapes = self.cube.shape
@@ -171,6 +174,7 @@ class CubeRepresentation(object):
             else:
                 start_inds.append(start_ind)
         # Mark the end of the file.
+        start_inds.sort()
         start_inds.append(0)
 
         # Retrieve info for each heading from the printout.

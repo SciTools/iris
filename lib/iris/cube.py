@@ -3210,12 +3210,57 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
                 not aggregator.uses_weighting(**kwargs)):
-            msg = "Collapsing spatial coordinate {!r} without weighting"
-            lat_match = [coord for coord in coords
-                         if 'latitude' in coord.name()]
-            if lat_match:
-                for coord in lat_match:
-                    warnings.warn(msg.format(coord.name()))
+
+            if "cell_area" in [c.standard_name for c in self.cell_measures()]:
+                lon, lat = iris.analysis.cartography._get_lon_lat_coords(self)
+
+                # would be ideal to resuse the below from
+                # iris.analysis.cartography.area_weights rather than copying...
+                if lat.ndim > 1:
+                    raise iris.exceptions.CoordinateMultiDimError(lat)
+                if lon.ndim > 1:
+                    raise iris.exceptions.CoordinateMultiDimError(lon)
+
+                lat_dim = self.coord_dims(lat)
+                lat_dim = lat_dim[0] if lat_dim else None
+
+                lon_dim = self.coord_dims(lon)
+                lon_dim = lon_dim[0] if lon_dim else None
+
+                ll_weights = self.cell_measure('cell_area').data
+
+                # Now we create an array of weights for each cell. This
+                # process will handle adding the required extra dimensions and
+                # also take care of the order of dimensions.
+                broadcast_dims = [
+                    x for x in (lat_dim, lon_dim)
+                    if x is not None
+                ]
+                wshape = []
+                for idim, dim in zip((0, 1), (lat_dim, lon_dim)):
+                    if dim is not None:
+                        wshape.append(ll_weights.shape[idim])
+                ll_weights = ll_weights.reshape(wshape)
+                broad_weights = iris.util.broadcast_to_shape(
+                    ll_weights,
+                    self.shape,
+                    broadcast_dims
+                )
+
+                kwargs["weights"] = broad_weights
+                error_msg = (
+                    "still not using the weighting, even after trying with "
+                    "cell_area..."
+                )
+                assert aggregator.uses_weighting(**kwargs), error_msg
+
+            else:
+                msg = "Collapsing spatial coordinate {!r} without weighting"
+                lat_match = [coord for coord in coords
+                             if 'latitude' in coord.name()]
+                if lat_match:
+                    for coord in lat_match:
+                        warnings.warn(msg.format(coord.name()))
 
         # Determine the dimensions we need to collapse (and those we don't)
         if aggregator.cell_method == 'peak':
