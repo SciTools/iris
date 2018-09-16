@@ -32,8 +32,8 @@ Installing from source
 The latest Iris source release is available from
 https://github.com/SciTools/iris.
 
-Iris makes use of a range of other libraries and python modules. These 
-dependencies must be in place before you can successfully install 
+Iris makes use of a range of other libraries and python modules. These
+dependencies must be in place before you can successfully install
 Iris. Once you have satisfied the requirements detailed in the
 ``requirements`` directory, go to the root of Iris' and run::
 
@@ -42,8 +42,8 @@ Iris. Once you have satisfied the requirements detailed in the
 
 In-place build - an alternative for developers
 ==============================================
-We are very keen to encourage contributions to Iris. For this type of 
-development activity an in-place build can be useful. Once you've cloned 
+We are very keen to encourage contributions to Iris. For this type of
+development activity an in-place build can be useful. Once you've cloned
 the Iris git repository you can perform an in-place build with::
 
   pip install -e .
@@ -65,6 +65,17 @@ Alternatively, a full requirements file that includes all optional dependencies 
 
     python requirements/gen_conda_requirements.py --groups all > conda_requirements.txt
 
+Running the tests
+'''''''''''''''''
+
+In order to run the tests, you will need to install a few more modules. These should be installed in your development environment with::
+
+    conda activate my_iris_env  # or whatever other name you gave it
+    conda install -y nose filelock imagehash mock pep8
+
+The tests can then be run with
+
+    python -m iris.tests.runner --default-tests
 
 Custom site configuration
 =========================
