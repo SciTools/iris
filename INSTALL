@@ -68,14 +68,17 @@ Alternatively, a full requirements file that includes all optional dependencies 
 Running the tests
 '''''''''''''''''
 
-In order to run the tests, you will need to install a few more modules. These should be installed in your development environment with::
+In order to run the tests, you will need to use the `test` and `docs` groups (we include the `docs` group so that you can run the pull request tests locally).
+Hence the commands change to::
 
+    python requirements/gen_conda_requirements.py --groups test docs > conda_requirements.txt
+    conda create -n my_iris_env --file conda_requirements.txt
     conda activate my_iris_env  # or whatever other name you gave it
-    conda install -y nose filelock imagehash mock pep8
+    python setup.py develop
 
 The tests can then be run with
 
-    python -m iris.tests.runner --default-tests
+    python setup.py test
 
 Custom site configuration
 =========================
