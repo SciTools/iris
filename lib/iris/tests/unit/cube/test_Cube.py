@@ -491,7 +491,6 @@ class Test_aggregated_by(tests.IrisTest):
             self.assertEqual(res_slice.coord('span_label'),
                              cube_slice_agg.coord('span_label'))
 
-
     def test_agg_by_label(self):
         # Aggregate a cube on a string coordinate label where label
         # and val entries are not in step; the resulting cube has a val
