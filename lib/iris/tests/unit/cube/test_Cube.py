@@ -393,6 +393,25 @@ class Test_collapsed__warning(tests.IrisTest):
         coords = [coord for coord in coords if 'latitude' in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
 
+    def test_lat_lon_cell_area_no_weights(self):
+        # Collapse grid_latitude coordinate with weighted aggregator without
+        # providing weights.  Tests coordinate matching logic.
+        cell_areas = CellMeasure(data=np.arange(4).reshape(2, 2),
+                                 long_name='area',
+                                 measure='area')
+
+        self.cube.add_cell_measure(cell_areas, [0, 1],)
+        self.cube.remove_coord('grid_latitude')
+        self.cube.remove_coord('grid_longitude')
+
+        coords = ['latitude', 'longitude']
+
+        with mock.patch('warnings.warn') as warn:
+            self.cube.collapsed(coords, iris.analysis.MEAN)
+
+        coords = [coord for coord in coords if 'latitude' in coord]
+        self._assert_nowarn_collapse_without_weight(coords, warn)
+
     def test_no_lat_weighted_aggregator_mixed(self):
         # Collapse grid_latitude and an unmatched coordinate (not lat/lon)
         # with weighted aggregator without providing weights.

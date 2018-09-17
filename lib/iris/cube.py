@@ -3210,8 +3210,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
                 not aggregator.uses_weighting(**kwargs)):
-
-            if "cell_area" in [c.standard_name for c in self.cell_measures()]:
+            cell_area = [
+                c for c in self.cell_measures()
+                if c.measure == 'area'
+            ]
+            assert len(cell_area) < 2, "more than one cell area measure"
+            cell_area = cell_area[0] if cell_area else None
+            if cell_area is not None:
                 lon, lat = iris.analysis.cartography._get_lon_lat_coords(self)
 
                 # would be ideal to resuse the below from
@@ -3227,7 +3232,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 lon_dim = self.coord_dims(lon)
                 lon_dim = lon_dim[0] if lon_dim else None
 
-                ll_weights = self.cell_measure('cell_area').data
+                ll_weights = cell_area.data
 
                 # Now we create an array of weights for each cell. This
                 # process will handle adding the required extra dimensions and
