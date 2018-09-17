@@ -1848,8 +1848,7 @@ class _Groupby(object):
     group-by analysis.
 
     """
-    def __init__(self, groupby_coords, shared_coords=None,
-                 multidim_coords=None):
+    def __init__(self, groupby_coords, shared_coords=None):
         """
         Determine the group slices over the group-by coordinates.
 
@@ -1860,15 +1859,11 @@ class _Groupby(object):
 
         Kwargs:
 
-        * shared_coords (list of :class:`iris.coords.Coord` instances):
-            One or more coordinates that share the same group-by
-            coordinate axis.
-
-        * multidim_coords (list of tuples containing
-            :class:`iris.coords.AuxCoord` instances with int)
-            One or more multidimensional coordinates that span the group-by
-            coordinate axis.  The int identifies which dimension of the
-            multidim_coord is on the group-by coordinate axis.
+        * shared_coords (list of list of tuples containing
+            :class:`iris.coords.Coord` instances with int):
+            One or more coordinates (including multidimensional coordinates)
+            that share the same group-by coordinate axis.  The int identifies
+            which dimension of the coord is on the group-by coordinate axis.
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -1893,15 +1888,7 @@ class _Groupby(object):
                 raise TypeError('shared_coords must be a '
                                 '`collections.Iterable` type.')
             # Add valid shared coordinates.
-            for coord in shared_coords:
-                self._add_shared_coord(coord, 0)
-        if multidim_coords is not None:
-            # Ensure multidim coordinates are iterable.
-            if not isinstance(multidim_coords, collections.Iterable):
-                raise TypeError('multidim_coords must be a '
-                                '`collections.Iterable` type.')
-            # Add valid multidim coordinates.
-            for coord, dim in multidim_coords:
+            for coord, dim in shared_coords:
                 self._add_shared_coord(coord, dim)
 
     def _add_groupby_coord(self, coord):
