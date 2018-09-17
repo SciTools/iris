@@ -2043,6 +2043,8 @@ class _Groupby(object):
                         new_pts = np.apply_along_axis(
                             '|'.join, dim, coord.points.take(key_slice, dim))
                         new_points.append(new_pts)
+                    # Move aggregated dimension back to position it started in.
+                    new_points = np.moveaxis(new_points, 0, dim)
                 else:
                     msg = ('collapsing the bounded string coordinate {0!r}'
                            ' is not supported'.format(coord.name()))

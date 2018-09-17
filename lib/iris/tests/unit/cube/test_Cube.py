@@ -449,7 +449,8 @@ class Test_is_compatible(tests.IrisTest):
 
 class Test_aggregated_by(tests.IrisTest):
     def setUp(self):
-        self.cube = Cube(np.arange(11))
+        self.cube = Cube(np.arange(44).reshape(4, 11))
+
         val_coord = AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1],
                              long_name="val")
         label_coord = AuxCoord(['alpha', 'alpha', 'beta',
@@ -457,8 +458,19 @@ class Test_aggregated_by(tests.IrisTest):
                                 'alpha', 'alpha', 'alpha',
                                 'gamma', 'beta'],
                                long_name='label', units='no_unit')
-        self.cube.add_aux_coord(val_coord, 0)
-        self.cube.add_aux_coord(label_coord, 0)
+        simple_agg_coord = AuxCoord([1, 1, 2, 2], long_name='simple_agg')
+        spanning_coord = AuxCoord(np.arange(44).reshape(4, 11),
+                                  long_name='spanning')
+        spanning_label_coord = AuxCoord(
+            np.arange(1, 441, 10).reshape(4, 11).astype(str),
+            long_name='span_label', units='no_unit')
+
+        self.cube.add_aux_coord(simple_agg_coord, 0)
+        self.cube.add_aux_coord(val_coord, 1)
+        self.cube.add_aux_coord(label_coord, 1)
+        self.cube.add_aux_coord(spanning_coord, (0, 1))
+        self.cube.add_aux_coord(spanning_label_coord, (0, 1))
+
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.cell_method = []
         self.mock_agg.aggregate = mock.Mock(
@@ -466,7 +478,21 @@ class Test_aggregated_by(tests.IrisTest):
         self.mock_agg.aggregate_shape = mock.Mock(return_value=())
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
-    def test_string_coord_agg_by_label(self):
+    def test_2d_coord_simple_agg(self):
+        # For 2d coords, slices of aggregated coord should be the same as
+        # aggregated slices.
+        res_cube = self.cube.aggregated_by('simple_agg', self.mock_agg)
+        for res_slice, cube_slice in zip(res_cube.slices('simple_agg'),
+                                         self.cube.slices('simple_agg')):
+            cube_slice_agg = cube_slice.aggregated_by('simple_agg',
+                                                      self.mock_agg)
+            self.assertEqual(res_slice.coord('spanning'),
+                             cube_slice_agg.coord('spanning'))
+            self.assertEqual(res_slice.coord('span_label'),
+                             cube_slice_agg.coord('span_label'))
+
+
+    def test_agg_by_label(self):
         # Aggregate a cube on a string coordinate label where label
         # and val entries are not in step; the resulting cube has a val
         # coord of bounded cells and a label coord of single string entries.
@@ -478,8 +504,15 @@ class Test_aggregated_by(tests.IrisTest):
                                long_name='label', units='no_unit')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('label'), label_coord)
+        # For 2d coord, slices of aggregated coord should be the same as
+        # aggregated slices.
+        for res_slice, cube_slice in zip(res_cube.slices('val'),
+                                         self.cube.slices('val')):
+            cube_slice_agg = cube_slice.aggregated_by('label', self.mock_agg)
+            self.assertEqual(res_slice.coord('spanning'),
+                             cube_slice_agg.coord('spanning'))
 
-    def test_string_coord_agg_by_val(self):
+    def test_agg_by_val(self):
         # Aggregate a cube on a numeric coordinate val where label
         # and val entries are not in step; the resulting cube has a label
         # coord with serialised labels from the aggregated cells.
@@ -492,6 +525,13 @@ class Test_aggregated_by(tests.IrisTest):
                                long_name='label', units='no_unit')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('label'), label_coord)
+        # For 2d coord, slices of aggregated coord should be the same as
+        # aggregated slices.
+        for res_slice, cube_slice in zip(res_cube.slices('val'),
+                                         self.cube.slices('val')):
+            cube_slice_agg = cube_slice.aggregated_by('val', self.mock_agg)
+            self.assertEqual(res_slice.coord('spanning'),
+                             cube_slice_agg.coord('spanning'))
 
     def test_single_string_aggregation(self):
         aux_coords = [(AuxCoord(['a', 'b', 'a'], long_name='foo'), 0),
