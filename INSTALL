@@ -65,6 +65,7 @@ Alternatively, a full requirements file that includes all optional dependencies 
 
     python requirements/gen_conda_requirements.py --groups all > conda_requirements.txt
 
+
 Running the tests
 '''''''''''''''''
 
@@ -79,6 +80,7 @@ Hence the commands change to::
 The tests can then be run with
 
     python setup.py test
+
 
 Custom site configuration
 =========================
