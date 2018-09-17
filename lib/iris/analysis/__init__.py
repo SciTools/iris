@@ -1859,10 +1859,10 @@ class _Groupby(object):
 
         Kwargs:
 
-        * shared_coords (list of list of tuples containing
-            :class:`iris.coords.Coord` instances with int):
+        * shared_coords (list of tuples containing :class:`iris.coords.Coord`
+            instances with `int`):
             One or more coordinates (including multidimensional coordinates)
-            that share the same group-by coordinate axis.  The int identifies
+            that share the same group-by coordinate axis.  The `int` identifies
             which dimension of the coord is on the group-by coordinate axis.
 
         """
