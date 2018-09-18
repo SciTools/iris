@@ -1621,7 +1621,7 @@ fc_extras
         attr_units = get_attr_units(cf_coord_var, attributes)
         points_data = cf_coord_var[:]
         # Gracefully fill points masked array.
-        if (ma.isMaskedArray(points_data)) and (not (points_data.mask == False).all()):
+        if ma.is_masked(points_data):
             points_data = ma.filled(points_data)
             msg = 'Gracefully filling {!r} dimension coordinate masked points'
             warnings.warn(msg.format(str(cf_coord_var.cf_name)))
@@ -1631,7 +1631,7 @@ fc_extras
         if cf_bounds_var is not None:
             bounds_data = cf_bounds_var[:]
             # Gracefully fill bounds masked array.
-            if (ma.isMaskedArray(bounds_data)) and (not (bounds_data.mask == False).all()):
+            if ma.is_masked(bounds_data):
                 bounds_data = ma.filled(bounds_data)
                 msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
                 warnings.warn(msg.format(str(cf_coord_var.cf_name)))

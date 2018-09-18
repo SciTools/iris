@@ -166,6 +166,30 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             # Assert no warning is raised
             assert len(w) == 0
 
+    def test_dim_coord_construction_masked_bounds_mask_does_nothing(self):
+        self.bounds = np.ma.array(np.arange(12).reshape(6, 2), mask=False)
+        self._set_cf_coord_var(np.arange(6))
+
+        expected_coord = DimCoord(
+            self.cf_coord_var[:],
+            long_name=self.cf_coord_var.long_name,
+            var_name=self.cf_coord_var.cf_name,
+            units=self.cf_coord_var.units,
+            bounds=self.bounds)
+
+        with warnings.catch_warnings(record=True) as w:
+            # Asserts must lie within context manager because of deferred
+            # loading.
+            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+                build_dimension_coordinate(self.engine, self.cf_coord_var)
+
+                # Test that expected coord is built and added to cube.
+                self.engine.cube.add_dim_coord.assert_called_with(
+                    expected_coord, [0])
+
+            # Assert no warning is raised
+            assert len(w) == 0
+
     def test_aux_coord_construction(self):
         # Use non monotonically increasing coordinates to force aux coord
         # construction.
