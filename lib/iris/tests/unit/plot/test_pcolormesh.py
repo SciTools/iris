@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,64 +26,29 @@ import iris.tests as tests
 import numpy as np
 
 from iris.tests.stock import simple_2d
-from iris.tests.unit.plot import TestGraphicStringCoord, MixinCoords
+import iris.plot
+from iris.tests.unit.plot import TestGraphicStringCoord
+from iris.tests.unit.plot._blockplot_common import \
+    MixinStringCoordPlot, Mixin2dCoordsPlot
+
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
 @tests.skip_plot
-class TestStringCoordPlot(TestGraphicStringCoord):
-    def test_yaxis_labels(self):
-        iplt.pcolormesh(self.cube, coords=('bar', 'str_coord'))
-        self.assertBoundsTickLabels('yaxis')
-
-    def test_xaxis_labels(self):
-        iplt.pcolormesh(self.cube, coords=('str_coord', 'bar'))
-        self.assertBoundsTickLabels('xaxis')
-
-    def test_xaxis_labels_with_axes(self):
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_xlim(0, 3)
-        iplt.pcolormesh(self.cube, axes=ax, coords=('str_coord', 'bar'),)
-        plt.close(fig)
-        self.assertPointsTickLabels('xaxis', ax)
-
-    def test_yaxis_labels_with_axes(self):
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_ylim(0, 3)
-        iplt.pcolormesh(self.cube, axes=ax, coords=('bar', 'str_coord'))
-        plt.close(fig)
-        self.assertPointsTickLabels('yaxis', ax)
-
-    def test_geoaxes_exception(self):
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        self.assertRaises(TypeError, iplt.pcolormesh,
-                          self.lat_lon_cube, axes=ax)
-        plt.close(fig)
+class TestStringCoordPlot(MixinStringCoordPlot, TestGraphicStringCoord):
+    def blockplot_func(self):
+        return iris.plot.pcolormesh
 
 
 @tests.skip_plot
-class TestCoords(tests.IrisTest, MixinCoords):
+class Test2dCoords(tests.IrisTest, Mixin2dCoordsPlot):
     def setUp(self):
-        # We have a 2d cube with dimensionality (bar: 3; foo: 4)
-        self.cube = simple_2d(with_bounds=True)
-        coord = self.cube.coord('foo')
-        self.foo = coord.contiguous_bounds()
-        self.foo_index = np.arange(coord.points.size + 1)
-        coord = self.cube.coord('bar')
-        self.bar = coord.contiguous_bounds()
-        self.bar_index = np.arange(coord.points.size + 1)
-        self.data = self.cube.data
-        self.dataT = self.data.T
-        self.mpl_patch = self.patch('matplotlib.pyplot.pcolormesh')
-        self.draw_func = iplt.pcolormesh
+        self.blockplot_setup()
+
+    def blockplot_func(self):
+        return iris.plot.pcolormesh
 
 
 if __name__ == "__main__":
