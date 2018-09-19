@@ -1,0 +1,1 @@
+* Gracefully filling warnings are only issued when the co-ordinate or bound data is actually masked.
