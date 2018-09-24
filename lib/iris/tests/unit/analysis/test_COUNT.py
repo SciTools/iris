@@ -29,7 +29,7 @@ import numpy.ma as ma
 from iris.analysis import COUNT
 from iris.cube import Cube
 from iris.coords import DimCoord
-from iris._lazy_data import as_lazy_data
+from iris._lazy_data import as_lazy_data, is_lazy_data
 
 
 class Test_basics(tests.IrisTest):
@@ -48,27 +48,33 @@ class Test_basics(tests.IrisTest):
     def test_no_function(self):
         exp_emsg = "function must be a callable. Got <class 'NoneType'>"
         with self.assertRaisesRegexp(TypeError, exp_emsg):
-            self.lazy_cube.collapsed("foo", COUNT)
+            COUNT.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
 
     def test_not_callable(self):
         with self.assertRaisesRegexp(TypeError, 'function must be a callable'):
-            self.cube.collapsed("foo", COUNT, function='wibble')
+            COUNT.aggregate(self.cube.data, axis=0, function='wibble')
 
     def test_lazy_not_callable(self):
         with self.assertRaisesRegexp(TypeError, 'function must be a callable'):
-            self.lazy_cube.collapsed("foo", COUNT, function='wibble')
+            COUNT.lazy_aggregate(self.lazy_cube.lazy_data(),
+                                 axis=0,
+                                 function='wibble')
 
     def test_collapse(self):
-        cube = self.cube.collapsed("foo", COUNT, function=self.func)
-        self.assertArrayEqual(cube.data, [3])
+        data = COUNT.aggregate(self.cube.data, axis=0, function=self.func)
+        self.assertArrayEqual(data, [3])
 
     def test_lazy(self):
-        cube = self.lazy_cube.collapsed("foo", COUNT, function=self.func)
-        self.assertTrue(cube.has_lazy_data())
+        lazy_data = COUNT.lazy_aggregate(self.lazy_cube.lazy_data(),
+                                         axis=0,
+                                         function=self.func)
+        self.assertTrue(is_lazy_data(lazy_data))
 
     def test_lazy_collapse(self):
-        cube = self.lazy_cube.collapsed("foo", COUNT, function=self.func)
-        self.assertArrayEqual(cube.data, [3])
+        lazy_data = COUNT.lazy_aggregate(self.lazy_cube.lazy_data(),
+                                         axis=0,
+                                         function=self.func)
+        self.assertArrayEqual(lazy_data.compute(), [3])
 
 
 class Test_units_func(tests.IrisTest):
@@ -85,26 +91,8 @@ class Test_masked(tests.IrisTest):
         self.func = lambda x: x >= 3
 
     def test_ma(self):
-        cube = self.cube.collapsed("foo", COUNT, function=self.func)
-        self.assertArrayEqual(cube.data, [2])
-
-
-class Test_lazy(tests.IrisTest):
-    def setUp(self):
-        data = np.array([1, 2, 3, 4, 5])
-        self.cube = Cube(as_lazy_data(data))
-        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
-        self.func = lambda x: x >= 3
-
-    def test_lazy_oper(self):
-        cube = self.cube.collapsed("foo", COUNT, function=self.func)
-        self.assertTrue(cube.has_lazy_data())
-
-    def test_collapse(self):
-        result = self.cube.collapsed("foo", COUNT, function=self.func)
-        self.cube.data
-        expected = self.cube.collapsed("foo", COUNT, function=self.func)
-        self.assertArrayEqual(result.data, expected.data)
+        data = COUNT.aggregate(self.cube.data, axis=0, function=self.func)
+        self.assertArrayEqual(data, [2])
 
 
 class Test_lazy_masked(tests.IrisTest):
@@ -117,9 +105,11 @@ class Test_lazy_masked(tests.IrisTest):
         self.func = lambda x: x >= 3
 
     def test_ma(self):
-        cube = self.lazy_cube.collapsed("foo", COUNT, function=self.func)
-        self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(cube.data, [2])
+        lazy_data = COUNT.lazy_aggregate(self.lazy_cube.lazy_data(),
+                                         axis=0,
+                                         function=self.func)
+        self.assertTrue(is_lazy_data(lazy_data))
+        self.assertArrayEqual(lazy_data.compute(), [2])
 
 
 class Test_aggregate_shape(tests.IrisTest):

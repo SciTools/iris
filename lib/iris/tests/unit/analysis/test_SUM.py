@@ -29,7 +29,7 @@ import numpy.ma as ma
 from iris.analysis import SUM
 from iris.cube import Cube
 from iris.coords import DimCoord
-from iris._lazy_data import as_lazy_data
+from iris._lazy_data import as_lazy_data, is_lazy_data
 
 
 class Test_basics(tests.IrisTest):
@@ -45,16 +45,16 @@ class Test_basics(tests.IrisTest):
         self.assertEqual(SUM.name(), 'sum')
 
     def test_collapse(self):
-        cube = self.cube.collapsed("foo", SUM)
-        self.assertArrayEqual(cube.data, [15])
+        data = SUM.aggregate(self.cube.data, axis=0)
+        self.assertArrayEqual(data, [15])
 
     def test_lazy(self):
-        cube = self.lazy_cube.collapsed("foo", SUM)
-        self.assertTrue(cube.has_lazy_data())
+        lazy_data = SUM.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
+        self.assertTrue(is_lazy_data(lazy_data))
 
     def test_lazy_collapse(self):
-        cube = self.lazy_cube.collapsed("foo", SUM)
-        self.assertArrayEqual(cube.data, [15])
+        lazy_data = SUM.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
+        self.assertArrayEqual(lazy_data.compute(), [15])
 
 
 class Test_masked(tests.IrisTest):
@@ -63,8 +63,8 @@ class Test_masked(tests.IrisTest):
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
 
     def test_ma(self):
-        cube = self.cube.collapsed("foo", SUM)
-        self.assertArrayEqual(cube.data, [12])
+        data = SUM.aggregate(self.cube.data, axis=0)
+        self.assertArrayEqual(data, [12])
 
 
 class Test_lazy_masked(tests.IrisTest):
@@ -74,9 +74,9 @@ class Test_lazy_masked(tests.IrisTest):
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
 
     def test_lazy_ma(self):
-        cube = self.cube.collapsed("foo", SUM)
-        self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(cube.data, [12])
+        lazy_data = SUM.lazy_aggregate(self.cube.lazy_data(), axis=0)
+        self.assertTrue(is_lazy_data(lazy_data))
+        self.assertArrayEqual(lazy_data.compute(), [12])
 
 
 class Test_weights_and_returned(tests.IrisTest):
@@ -90,19 +90,19 @@ class Test_weights_and_returned(tests.IrisTest):
         self.weights = np.array([2, 1, 1, 1, 1] * 2).reshape(2, 5)
 
     def test_weights(self):
-        cube = self.cube_2d.collapsed('bar', SUM, weights=self.weights)
-        self.assertArrayEqual(cube.data, [14, 9, 11, 13, 15])
+        data = SUM.aggregate(self.cube_2d.data, axis=0, weights=self.weights)
+        self.assertArrayEqual(data, [14, 9, 11, 13, 15])
 
     def test_returned(self):
-        cube, weights = self.cube_2d.collapsed('bar', SUM, returned=True)
-        self.assertArrayEqual(cube.data, [7, 9, 11, 13, 15])
+        data, weights = SUM.aggregate(self.cube_2d.data, axis=0, returned=True)
+        self.assertArrayEqual(data, [7, 9, 11, 13, 15])
         self.assertArrayEqual(weights, [2, 2, 2, 2, 2])
 
     def test_weights_and_returned(self):
-        cube, weights = self.cube_2d.collapsed('bar', SUM,
-                                               weights=self.weights,
-                                               returned=True)
-        self.assertArrayEqual(cube.data, [14, 9, 11, 13, 15])
+        data, weights = SUM.aggregate(self.cube_2d.data, axis=0,
+                                      weights=self.weights,
+                                      returned=True)
+        self.assertArrayEqual(data, [14, 9, 11, 13, 15])
         self.assertArrayEqual(weights, [4, 2, 2, 2, 2])
 
 
@@ -117,22 +117,26 @@ class Test_lazy_weights_and_returned(tests.IrisTest):
         self.weights = np.array([2, 1, 1, 1, 1] * 2).reshape(2, 5)
 
     def test_weights(self):
-        cube = self.cube_2d.collapsed('bar', SUM, weights=self.weights)
-        self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(cube.data, [14, 9, 11, 13, 15])
+        lazy_data = SUM.lazy_aggregate(self.cube_2d.lazy_data(), axis=0,
+                                       weights=self.weights)
+        self.assertTrue(is_lazy_data(lazy_data))
+        self.assertArrayEqual(lazy_data.compute(), [14, 9, 11, 13, 15])
 
     def test_returned(self):
-        cube, weights = self.cube_2d.collapsed('bar', SUM, returned=True)
-        self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(cube.data, [7, 9, 11, 13, 15])
+        lazy_data, weights = SUM.lazy_aggregate(self.cube_2d.lazy_data(),
+                                                axis=0,
+                                                returned=True)
+        self.assertTrue(is_lazy_data(lazy_data))
+        self.assertArrayEqual(lazy_data.compute(), [7, 9, 11, 13, 15])
         self.assertArrayEqual(weights, [2, 2, 2, 2, 2])
 
     def test_weights_and_returned(self):
-        cube, weights = self.cube_2d.collapsed('bar', SUM,
-                                               weights=self.weights,
-                                               returned=True)
-        self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(cube.data, [14, 9, 11, 13, 15])
+        lazy_data, weights = SUM.lazy_aggregate(self.cube_2d.lazy_data(),
+                                                axis=0,
+                                                weights=self.weights,
+                                                returned=True)
+        self.assertTrue(is_lazy_data(lazy_data))
+        self.assertArrayEqual(lazy_data.compute(), [14, 9, 11, 13, 15])
         self.assertArrayEqual(weights, [4, 2, 2, 2, 2])
 
 
