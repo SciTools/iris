@@ -1020,7 +1020,7 @@ def _build_dask_mdtol_function(dask_stats_function):
     Make a wrapped dask statistic function that supports the 'mdtol' keyword.
 
     'dask_function' must be a dask statistical function, compatible with the
-    call signature : "dask_stats_function(data, axis, **kwargs)".
+    call signature : "dask_stats_function(data, axis=axis, **kwargs)".
     It must be masked-data tolerant, i.e. it ignores masked input points and
     performs a calculation on only the unmasked points.
     For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
@@ -1228,10 +1228,7 @@ def _weighted_percentile(data, axis, weights, percent, returned=False,
 @_build_dask_mdtol_function
 def _lazy_count(array, **kwargs):
     array = iris._lazy_data.as_lazy_data(array)
-    try:
-        func = kwargs.pop('function')
-    except KeyError:
-        raise KeyError('no selection function supplied.')
+    func = kwargs.pop('function', None)
     if not callable(func):
         emsg = 'function must be a callable. Got {}.'
         raise TypeError(emsg.format(type(func)))

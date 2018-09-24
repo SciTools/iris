@@ -46,7 +46,8 @@ class Test_basics(tests.IrisTest):
         self.assertEqual(COUNT.name(), 'count')
 
     def test_no_function(self):
-        with self.assertRaisesRegexp(KeyError, 'no selection function'):
+        exp_emsg = "function must be a callable. Got <class 'NoneType'>"
+        with self.assertRaisesRegexp(TypeError, exp_emsg):
             self.lazy_cube.collapsed("foo", COUNT)
 
     def test_not_callable(self):
