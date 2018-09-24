@@ -25,7 +25,7 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris._lazy_data import as_concrete_data, as_lazy_data
+from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.analysis import STD_DEV
 from iris.cube import Cube
 from iris.coords import DimCoord
@@ -44,16 +44,16 @@ class Test_basics(tests.IrisTest):
         self.assertEqual(STD_DEV.name(), 'standard_deviation')
 
     def test_collapse(self):
-        cube = self.cube.collapsed("foo", STD_DEV)
-        self.assertArrayAlmostEqual(cube.data, [1.58113883])
+        data = STD_DEV.aggregate(self.cube.data, axis=0)
+        self.assertArrayAlmostEqual(data, [1.58113883])
 
     def test_lazy(self):
-        cube = self.lazy_cube.collapsed("foo", STD_DEV)
-        self.assertTrue(cube.has_lazy_data())
+        lazy_data = STD_DEV.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
+        self.assertTrue(is_lazy_data(lazy_data))
 
     def test_lazy_collapse(self):
-        cube = self.lazy_cube.collapsed("foo", STD_DEV)
-        self.assertArrayAlmostEqual(cube.data, [1.58113883])
+        lazy_data = STD_DEV.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
+        self.assertArrayAlmostEqual(lazy_data.compute(), [1.58113883])
 
 
 class Test_lazy_aggregate(tests.IrisTest):
