@@ -29,7 +29,7 @@ import numpy.ma as ma
 from iris.analysis import MIN
 from iris.cube import Cube
 from iris.coords import DimCoord
-from iris._lazy_data import as_lazy_data
+from iris._lazy_data import as_lazy_data, is_lazy_data
 
 
 class Test_basics(tests.IrisTest):
@@ -45,16 +45,16 @@ class Test_basics(tests.IrisTest):
         self.assertEqual(MIN.name(), 'minimum')
 
     def test_collapse(self):
-        cube = self.cube.collapsed("foo", MIN)
-        self.assertArrayEqual(cube.data, [1])
+        data = MIN.aggregate(self.cube.data, axis=0)
+        self.assertArrayEqual(data, [1])
 
     def test_lazy(self):
-        cube = self.lazy_cube.collapsed("foo", MIN)
-        self.assertTrue(cube.has_lazy_data())
+        lazy_data = MIN.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
+        self.assertTrue(is_lazy_data(lazy_data))
 
     def test_lazy_collapse(self):
-        cube = self.lazy_cube.collapsed("foo", MIN)
-        self.assertArrayEqual(cube.data, [1])
+        lazy_data = MIN.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
+        self.assertArrayEqual(lazy_data.compute(), [1])
 
 
 class Test_masked(tests.IrisTest):
@@ -63,8 +63,8 @@ class Test_masked(tests.IrisTest):
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
 
     def test_ma(self):
-        cube = self.cube.collapsed("foo", MIN)
-        self.assertArrayEqual(cube.data, [3])
+        data = MIN.aggregate(self.cube.data, axis=0)
+        self.assertArrayEqual(data, [3])
 
 
 class Test_lazy_masked(tests.IrisTest):
@@ -74,9 +74,9 @@ class Test_lazy_masked(tests.IrisTest):
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
 
     def test_lazy_ma(self):
-        cube = self.cube.collapsed("foo", MIN)
-        self.assertTrue(cube.has_lazy_data())
-        self.assertArrayEqual(cube.data, [3])
+        lazy_data = MIN.lazy_aggregate(self.cube.lazy_data(), axis=0)
+        self.assertTrue(is_lazy_data(lazy_data))
+        self.assertArrayEqual(lazy_data.compute(), [3])
 
 
 class Test_aggregate_shape(tests.IrisTest):
