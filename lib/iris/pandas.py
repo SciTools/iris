@@ -115,7 +115,8 @@ def as_cube(pandas_array, copy=True, calendars=None):
     _add_iris_coord(cube, "index", pandas_array.index, 0,
                     calendars.get(0, None))
     if pandas_array.ndim == 2:
-        _add_iris_coord(cube, "columns", pandas_array.columns, 1,
+        _add_iris_coord(cube, "columns", np.array([k for k in
+                                                   pandas_array.columns]), 1,
                         calendars.get(1, None))
     return cube
 
