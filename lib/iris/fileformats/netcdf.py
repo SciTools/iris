@@ -393,6 +393,10 @@ class NetCDFDataProxy(object):
             variable = dataset.variables[self.variable_name]
             # Get the NetCDF variable data and slice.
             var = variable[keys]
+            # Make into a 'plain' array if no masked points,
+            # for compatibility with netcdf <= 1.3.
+            if isinstance(var, np.ma.MaskedArray) and not np.ma.is_masked(var):
+                var = var.data
         finally:
             dataset.close()
         return np.asanyarray(var)
