@@ -936,11 +936,6 @@ class CFReader(object):
 
         self._dataset = netCDF4.Dataset(self._filename, mode='r')
 
-        # Return variable data as np.ma.MaskedArray *only* when masked points
-        # are found in the slice requested, otherwise as 'normal' np.ndarray.
-        # Note: this suits us better, and was standard up to netcdf 1.3.
-        self._dataset.set_always_mask(False)
-
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in ['NETCDF3_CLASSIC', 'NETCDF3_64BIT']:
             warnings.warn('Optimise CF-netCDF loading by converting data from NetCDF3 ' \
