@@ -44,6 +44,7 @@
 + [Documentation](#documentation)
 + [Installation](#installation)
 + [Copyright and licence](#copyright-and-licence)
++ [Contributing](#contributing)
 
 [](TOC)
 
@@ -98,5 +99,7 @@ are available in [INSTALL](INSTALL).
 Iris may be freely distributed, modified and used commercially under the terms
 of its [GNU LGPLv3 license](COPYING.LESSER).
 
+# Contributing
+Information on how to contribute can be found in the [Iris developer guide](https://scitools.org.uk/iris/docs/latest/developers_guide/index.html).
 
 (C) British Crown Copyright 2010 - 2018, Met Office
