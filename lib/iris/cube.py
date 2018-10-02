@@ -994,11 +994,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if not isinstance(aux_factory, iris.aux_factory.AuxCoordFactory):
             raise TypeError('Factory must be a subclass of '
                             'iris.aux_factory.AuxCoordFactory.')
-        coords = self.coords()
+        cube_coords = self.coords()
         for dependency in aux_factory.dependencies:
-            if aux_factory.dependencies[dependency] not in coords:
-                msg = "Coordinate for factory is not present on cube {}"
-                raise ValueError(msg.format(self.name()))
+            factory_coord = aux_factory.dependencies[dependency]
+            if factory_coord not in cube_coords:
+                msg = "{} coordinate for factory is not present on cube {}"
+                raise ValueError(msg.format(factory_coord.name(), self.name()))
         self._aux_factories.append(aux_factory)
 
     def add_cell_measure(self, cell_measure, data_dims=None):
