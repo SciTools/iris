@@ -997,7 +997,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         cube_coords = self.coords()
         for dependency in aux_factory.dependencies:
             factory_coord = aux_factory.dependencies[dependency]
-            if factory_coord not in cube_coords:
+            if factory_coord is not None and factory_coord not in cube_coords:
                 msg = "{} coordinate for factory is not present on cube {}"
                 raise ValueError(msg.format(factory_coord.name(), self.name()))
         self._aux_factories.append(aux_factory)
