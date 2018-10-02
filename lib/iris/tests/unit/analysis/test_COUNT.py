@@ -46,7 +46,7 @@ class Test_basics(tests.IrisTest):
         self.assertEqual(COUNT.name(), 'count')
 
     def test_no_function(self):
-        exp_emsg = "function must be a callable. Got <class 'NoneType'>"
+        exp_emsg = r"function must be a callable. Got <.* 'NoneType'>"
         with self.assertRaisesRegexp(TypeError, exp_emsg):
             COUNT.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
 
