@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,73 +26,73 @@ import iris.tests as tests
 import unittest
 
 import iris
+from iris.util import reverse
 import numpy as np
 
 
-class Test(tests.IrisTest):
-    def SetUpReversed(self):
+class Test_array(tests.IrisTest):
+    def test_simple_array(self):
+        a = np.arange(12).reshape(3, 4)
+        self.assertArrayEqual(a[::-1], reverse(a, 0))
+        self.assertArrayEqual(a[::-1, ::-1], reverse(a, [0, 1]))
+        self.assertArrayEqual(a[:, ::-1], reverse(a, 1))
+        self.assertArrayEqual(a[:, ::-1], reverse(a, [1]))
+        self.assertRaises(ValueError, reverse, a, [])
+        self.assertRaises(ValueError, reverse, a, -1)
+        self.assertRaises(ValueError, reverse, a, 10)
+        self.assertRaises(ValueError, reverse, a, [-1])
+        self.assertRaises(ValueError, reverse, a, [0, -1])
+
+    def test_single_array(self):
+        a = np.arange(36).reshape(3, 4, 3)
+        self.assertArrayEqual(a[::-1], reverse(a, 0))
+        self.assertArrayEqual(a[::-1, ::-1], reverse(a, [0, 1]))
+        self.assertArrayEqual(a[:, ::-1, ::-1], reverse(a, [1, 2]))
+        self.assertArrayEqual(a[..., ::-1], reverse(a, 2))
+        self.assertRaises(ValueError, reverse, a, -1)
+        self.assertRaises(ValueError, reverse, a, 10)
+        self.assertRaises(ValueError, reverse, a, [-1])
+        self.assertRaises(ValueError, reverse, a, [0, -1])
+
+
+class Test_cube(tests.IrisTest):
+    def setUp(self):
         # On this cube pair, the coordinates to perform operations on have
         # matching long names but the points array on one cube is reversed
         # with respect to that on the other.
-        data = np.zeros((3, 4))
+        data = np.arange(12).reshape(3, 4)
         a1 = iris.coords.DimCoord([1, 2, 3], long_name='a')
         b1 = iris.coords.DimCoord([1, 2, 3, 4], long_name='b')
         a2 = iris.coords.DimCoord([3, 2, 1], long_name='a')
         b2 = iris.coords.DimCoord([4, 3, 2, 1], long_name='b')
 
-        reversed1 = iris.cube.Cube(
+        self.cube1 = iris.cube.Cube(
             data, dim_coords_and_dims=[(a1, 0), (b1, 1)])
-        reversed2 = iris.cube.Cube(
+        self.cube2 = iris.cube.Cube(
             data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
 
-        return reversed1, reversed2
-
-    def test_simple_array(self):
-        a = np.arange(12).reshape(3, 4)
-        self.assertArrayEqual(a[::-1], iris.util.reverse(a, 0))
-        self.assertArrayEqual(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
-        self.assertArrayEqual(a[:, ::-1], iris.util.reverse(a, 1))
-        self.assertArrayEqual(a[:, ::-1], iris.util.reverse(a, [1]))
-        self.assertRaises(ValueError, iris.util.reverse, a, [])
-        self.assertRaises(ValueError, iris.util.reverse, a, -1)
-        self.assertRaises(ValueError, iris.util.reverse, a, 10)
-        self.assertRaises(ValueError, iris.util.reverse, a, [-1])
-        self.assertRaises(ValueError, iris.util.reverse, a, [0, -1])
-
-    def test_single_array(self):
-        a = np.arange(36).reshape(3, 4, 3)
-        self.assertArrayEqual(a[::-1], iris.util.reverse(a, 0))
-        self.assertArrayEqual(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
-        self.assertArrayEqual(a[:, ::-1, ::-1], iris.util.reverse(a, [1, 2]))
-        self.assertArrayEqual(a[..., ::-1], iris.util.reverse(a, 2))
-        self.assertRaises(ValueError, iris.util.reverse, a, -1)
-        self.assertRaises(ValueError, iris.util.reverse, a, 10)
-        self.assertRaises(ValueError, iris.util.reverse, a, [-1])
-        self.assertRaises(ValueError, iris.util.reverse, a, [0, -1])
-
     def test_cube(self):
-        cube1, cube2 = self.SetUpReversed()
+        cube1_reverse0 = reverse(self.cube1, 0)
+        cube1_reverse1 = reverse(self.cube1, 1)
+        cube1_reverse_both = reverse(self.cube1, (0, 1))
 
-        cube1_reverse0 = iris.util.reverse(cube1, 0)
-        cube1_reverse1 = iris.util.reverse(cube1, 1)
-        cube1_reverse_both = iris.util.reverse(cube1, (0, 1))
-
-        self.assertArrayEqual(cube1.data[::-1], cube1_reverse0.data)
-        self.assertArrayEqual(cube2.coord('a').points,
+        self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
+        self.assertArrayEqual(self.cube2.coord('a').points,
                               cube1_reverse0.coord('a').points)
-        self.assertArrayEqual(cube1.coord('b').points,
+        self.assertArrayEqual(self.cube1.coord('b').points,
                               cube1_reverse0.coord('b').points)
 
-        self.assertArrayEqual(cube1.data[:, ::-1], cube1_reverse1.data)
-        self.assertArrayEqual(cube1.coord('a').points,
+        self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
+        self.assertArrayEqual(self.cube1.coord('a').points,
                               cube1_reverse1.coord('a').points)
-        self.assertArrayEqual(cube2.coord('b').points,
+        self.assertArrayEqual(self.cube2.coord('b').points,
                               cube1_reverse1.coord('b').points)
 
-        self.assertArrayEqual(cube1.data[::-1, ::-1], cube1_reverse_both.data)
-        self.assertArrayEqual(cube2.coord('a').points,
+        self.assertArrayEqual(self.cube1.data[::-1, ::-1],
+                              cube1_reverse_both.data)
+        self.assertArrayEqual(self.cube2.coord('a').points,
                               cube1_reverse_both.coord('a').points)
-        self.assertArrayEqual(cube2.coord('b').points,
+        self.assertArrayEqual(self.cube2.coord('b').points,
                               cube1_reverse_both.coord('b').points)
 
 
