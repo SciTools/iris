@@ -41,6 +41,7 @@ import numpy.ma as ma
 
 import iris
 import iris.exceptions
+import iris.cube
 
 
 def broadcast_to_shape(array, shape, dim_map):
@@ -406,16 +407,19 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         return lambda c: lh < c < rh
 
 
-def reverse(cube_or_array, axes):
+def reverse(cube_or_array, coords_or_dims):
     """
-    Reverse the cube or array along the given axes.
+    Reverse the cube or array along the given dimensions.
 
     Args:
 
     * cube_or_array: :class:`iris.cube.Cube` or :class:`numpy.ndarray`
-        The cube or array to reverse
-    * axes: int or sequence of ints
-        One or more axes to reverse.
+        The cube or array to reverse.
+    * coords_or_dims: int, str, :class:`iris.coords.Coord` or sequence of these
+        Identify one or more dimensions to reverse.  If cube_or_array is a
+        numpy array, use int or a sequence of ints, as in the examples below.
+        If cube_or_array is a Cube, a Coord or coordinate name (or sequence of
+        these) may be specified instead.
 
     ::
 
@@ -448,7 +452,25 @@ def reverse(cube_or_array, axes):
 
     """
     index = [slice(None, None)] * cube_or_array.ndim
-    axes = np.array(axes, ndmin=1)
+
+    if iris.cube._is_single_item(coords_or_dims):
+        coords_or_dims = [coords_or_dims]
+
+    axes = set()
+    for coord_or_dim in coords_or_dims:
+        if isinstance(coord_or_dim, int):
+            axes.add(coord_or_dim)
+        elif isinstance(cube_or_array, np.ndarray):
+            raise TypeError(
+                'To reverse an array, provide an int or sequence of ints.')
+        else:
+            try:
+                axes.update(cube_or_array.coord_dims(coord_or_dim))
+            except AttributeError:
+                raise TypeError('coords_or_dims must be int, str, coordinate '
+                                'or sequence of these.')
+
+    axes = np.array(list(axes), ndmin=1)
     if axes.ndim != 1:
         raise ValueError('Reverse was expecting a single axis or a 1d array '
                          'of axes, got %r' % axes)
