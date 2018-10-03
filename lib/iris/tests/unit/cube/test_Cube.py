@@ -1558,7 +1558,7 @@ class Test_add_metadata(tests.IrisTest):
         self.assertIsNone(cube.add_aux_factory(factory))
 
     def test_error_for_add_invalid_aux_factory(self):
-        cube = Cube(np.arange(8).reshape(2, 2, 2))
+        cube = Cube(np.arange(8).reshape(2, 2, 2), long_name='bar')
         delta = AuxCoord(points=[0, 1], long_name='delta', units='m')
         sigma = AuxCoord(points=[0, 1], long_name='sigma')
         orog = AuxCoord(np.arange(4).reshape(2, 2), units='m', long_name='foo')
@@ -1566,7 +1566,8 @@ class Test_add_metadata(tests.IrisTest):
         cube.add_aux_coord(sigma, 0)
         # Note orography is not added to the cube here
         factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orog)
-        expected_error = "foo coordinate for factory is not present on cube"
+        expected_error = ("foo coordinate for factory is not present on cube "
+                          "bar")
         with self.assertRaisesRegexp(ValueError, expected_error):
             cube.add_aux_factory(factory)
 
