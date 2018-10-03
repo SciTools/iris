@@ -25,11 +25,9 @@ import iris.tests as tests
 
 import numpy as np
 
+from iris.tests import mock
 from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import MixinCoords
-
-if tests.MPL_AVAILABLE:
-    import iris.plot as iplt
 
 
 class MixinStringCoordPlot(object):
@@ -91,6 +89,32 @@ class Mixin2dCoordsPlot(MixinCoords):
         self.draw_func = self.blockplot_func()
         patch_target_name = 'matplotlib.pyplot.' + self.draw_func.__name__
         self.mpl_patch = self.patch(patch_target_name)
+
+
+class Mixin2dCoordsContigTol(object):
+    # Mixin for contiguity tolerance argument to pcolor/pcolormesh.
+    # To use, make a class that inherits from this *and*
+    # :class:`iris.tests.IrisTest`,
+    # and defines "self.blockplot_func()", to return the `iris.plot` function,
+    # and defines "self.additional_kwargs" for expected extra call args.
+    def test_contig_tol(self):
+        # Patch the inner call to ensure contiguity_tolerance is passed.
+        cube_argument = mock.sentinel.passed_arg
+        expected_result = mock.sentinel.returned_value
+        blockplot_patch = self.patch(
+            'iris.plot._draw_2d_from_bounds',
+            mock.Mock(return_value=expected_result))
+        # Make the call
+        draw_func = self.blockplot_func()
+        other_kwargs = self.additional_kwargs
+        result = draw_func(cube_argument, contiguity_tolerance=0.0123)
+        drawfunc_name = draw_func.__name__
+        # Check details of the call that was made.
+        self.assertEqual(
+            blockplot_patch.call_args_list,
+            [mock.call(drawfunc_name, cube_argument,
+                       contiguity_tolerance=0.0123, **other_kwargs)])
+        self.assertEqual(result, expected_result)
 
 
 if __name__ == "__main__":
