@@ -782,7 +782,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 points = self._str_dates(self.points)
             bounds = ''
             if self.has_bounds():
-                bounds = ', bounds=' + self._str_dates(self.bounds)
+                if self.units.is_long_time_interval():
+                    bounds_vals = self.bounds
+                else:
+                    bounds_vals = self._str_dates(self.bounds)
+                bounds = ', bounds={vals}'.format(vals=bounds_vals)
             result = fmt.format(self=self, cls=type(self).__name__,
                                 points=points, bounds=bounds,
                                 other_metadata=self._repr_other_metadata())
