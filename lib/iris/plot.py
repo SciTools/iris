@@ -31,13 +31,13 @@ import datetime
 import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes
 from cartopy.geodesic import Geodesic
+import cftime
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.ticker as mpl_ticker
-import cftime
 import matplotlib.transforms as mpl_transforms
 import numpy as np
 import numpy.ma as ma
@@ -50,7 +50,6 @@ from iris.exceptions import IrisError
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
 from iris.util import _meshgrid
-
 
 # Cynthia Brewer citation text.
 BREWER_CITE = 'Colours based on ColorBrewer.org'
@@ -95,15 +94,17 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
         else:
             span = set(cube.coord_dims(coord))
         return span
+
     spans = list(map(get_span, coords))
     for span, coord in zip(spans, coords):
         if not span:
             msg = 'The coordinate {!r} doesn\'t span a data dimension.'
             raise ValueError(msg.format(coord.name()))
-        if mode == iris.coords.BOUND_MODE and len(span) != 1:
-            raise ValueError('The coordinate {!r} is multi-dimensional and'
-                             ' cannot be used in a cell-based plot.'
-                             .format(coord.name()))
+        if mode == iris.coords.BOUND_MODE and len(span) not in [1, 2]:
+            raise ValueError('The coordinate {!r} has {} dimensions.'
+                             'Cell-based plotting is only supported for'
+                             'coordinates with one or two dimensions.'
+                             .format(coord.name()), len(span))
 
     # Check the combination of coordinates spans enough (ndims) data
     # dimensions.
@@ -129,7 +130,7 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     return PlotDefn(plot_coords, transpose)
 
 
-def _valid_bound_coord(coord):
+def _valid_bound_dim_coord(coord):
     result = None
     if coord and coord.ndim == 1 and coord.nbounds:
         result = coord
@@ -154,7 +155,7 @@ def _get_plot_defn(cube, mode, ndims=2):
 
     # When appropriate, restrict to 1D with bounds.
     if mode == iris.coords.BOUND_MODE:
-        coords = list(map(_valid_bound_coord, coords))
+        coords = list(map(_valid_bound_dim_coord, coords))
 
     def guess_axis(coord):
         axis = None
@@ -171,6 +172,19 @@ def _get_plot_defn(cube, mode, ndims=2):
             if aux_coords:
                 aux_coords.sort(key=lambda coord: coord._as_defn())
                 coords[dim] = aux_coords[0]
+
+    # If plotting a 2 dimensional plot, check for 2d coordinates
+    if ndims == 2:
+        missing_dims = [dim for dim, coord in enumerate(coords) if
+                        coord is None]
+        if missing_dims:
+            # Note that this only picks up coordinates that span the dims
+            two_dim_coords = cube.coords(dimensions=missing_dims)
+            two_dim_coords = [coord for coord in two_dim_coords
+                              if coord.ndim == 2]
+            if len(two_dim_coords) >= 2:
+                two_dim_coords.sort(key=lambda coord: coord._as_defn())
+                coords = two_dim_coords[:2]
 
     if mode == iris.coords.POINT_MODE:
         # Allow multi-dimensional aux_coords to override the dim_coords
@@ -195,6 +209,7 @@ def _get_plot_defn(cube, mode, ndims=2):
         return (order.get(axis, 0),
                 coords.index(coord),
                 coord and coord.name())
+
     sorted_coords = sorted(coords, key=sort_key)
 
     transpose = (sorted_coords != coords)
@@ -256,6 +271,85 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
+def _check_bounds_contiguity_and_mask(coord, data, atol=None):
+    """
+    Checks that any discontiguities in the bounds of the given coordinate only
+    occur where the data is masked.
+
+    Where a discontinuity occurs the grid created for plotting will not be
+    correct. This does not matter if the data is masked in that location as
+    this is not plotted.
+
+    If a discontiguity occurs where the data is *not* masked, an error is
+    raised.
+
+    Args:
+        coord: (iris.coord.Coord)
+            Coordinate the bounds of which will be checked for contiguity
+        data: (array)
+            Data of the the cube we are plotting
+        atol:
+            Absolute tolerance when checking the contiguity. Defaults to None.
+            If an absolute tolerance is not set, 1D coords are not checked (so
+            as to not introduce a breaking change without a major release) but
+            2D coords are always checked, by calling
+            :meth:`iris.coords.Coord._discontiguity_in_bounds` with its default
+            tolerance.
+
+    """
+    data_is_masked = hasattr(data, 'mask')
+    if data_is_masked:
+        # When checking the location of the discontiguities, we check against
+        # the opposite of the mask, which is True where data exists.
+        mask_invert = np.logical_not(data.mask)
+
+    if coord.ndim == 1:
+        # 1D coords are only checked if an absolute tolerance is set, to avoid
+        # introducing a breaking change.
+        if atol:
+            contiguous, diffs = coord._discontiguity_in_bounds(atol=atol)
+
+            if not contiguous and data_is_masked:
+                    not_masked_at_discontiguity = np.any(
+                        np.logical_and(mask_invert[:-1], diffs))
+        else:
+            return
+
+    elif coord.ndim == 2:
+        if atol:
+            kwargs = {'atol': atol}
+        else:
+            kwargs = {}
+        contiguous, diffs = coord._discontiguity_in_bounds(**kwargs)
+
+        if not contiguous and data_is_masked:
+            diffs_along_x, diffs_along_y = diffs
+
+            # Check along both dimensions.
+            not_masked_at_discontiguity_along_x = np.any(
+                np.logical_and(mask_invert[:, :-1], diffs_along_x))
+
+            not_masked_at_discontiguity_along_y = np.any(
+                np.logical_and(mask_invert[:-1, ], diffs_along_y))
+
+            not_masked_at_discontiguity = not_masked_at_discontiguity_along_x \
+                or not_masked_at_discontiguity_along_y
+
+    # If any discontiguity occurs where the data is not masked the grid will be
+    # created incorrectly, so raise an error.
+    if not contiguous:
+        if not data_is_masked:
+            raise ValueError('The bounds of the {} coordinate are not '
+                             'contiguous. Not able to create a suitable grid'
+                             'to plot.'.format(coord.name()))
+        if not_masked_at_discontiguity:
+            raise ValueError('The bounds of the {} coordinate are not '
+                             'contiguous and data is not masked where the '
+                             'discontiguity occurs. Not able to create a '
+                             'suitable grid to plot.'.format(
+                              coord.name()))
+
+
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
@@ -263,9 +357,17 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
+        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode,
+                                                        ndims=2)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
+
+    contig_tol = kwargs.pop('contiguity_tolerance', None)
+
+    for coord in plot_defn.coords:
+        if hasattr(coord, 'has_bounds') and coord.has_bounds():
+                _check_bounds_contiguity_and_mask(coord, data=cube.data,
+                                                  atol=contig_tol)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
@@ -309,7 +411,15 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             plot_arrays.append(values)
 
         u, v = plot_arrays
-        u, v = _broadcast_2d(u, v)
+
+        # If the data is transposed, 2D coordinates will also need to be
+        # transposed.
+        if plot_defn.transpose is True:
+            u, v = [coord.T if coord.ndim == 2 else coord for coord in [u, v]]
+
+        if u.ndim == v.ndim == 1:
+            u, v = _broadcast_2d(u, v)
+
         axes = kwargs.pop('axes', None)
         draw_method = getattr(axes if axes else plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
@@ -434,8 +544,8 @@ def _fixup_dates(coord, values):
                 raise IrisError(msg)
 
             r = [nc_time_axis.CalendarDateTime(
-                 cftime.datetime(*date), coord.units.calendar)
-                 for date in dates]
+                cftime.datetime(*date), coord.units.calendar)
+                for date in dates]
         values = np.empty(len(r), dtype=object)
         values[:] = r
     return values
@@ -675,8 +785,8 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     axes = kwargs.get('axes')
     if axes is None:
         if (isinstance(cs, iris.coord_systems.RotatedGeogCS) and
-           x_coord.points.max() > 180 and x_coord.points.max() < 360 and
-           x_coord.points.min() > 0):
+                x_coord.points.max() > 180 and x_coord.points.max() < 360 and
+                x_coord.points.min() > 0):
             # The RotatedGeogCS has 0 - 360 extent, different from the
             # assumptions made by Cartopy: rebase longitudes for the map axes
             # to set the datum longitude to the International Date Line.
@@ -721,17 +831,22 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
         else:
             raise ValueError("Expected 1D or 2D XY coords")
     else:
-        try:
-            x, y = _meshgrid(x_coord.contiguous_bounds(),
-                             y_coord.contiguous_bounds())
-        # Exception translation.
-        except iris.exceptions.CoordinateMultiDimError:
-            raise ValueError("Could not get XY grid from bounds. "
-                             "X or Y coordinate not 1D.")
-        except ValueError:
-            raise ValueError("Could not get XY grid from bounds. "
-                             "X or Y coordinate doesn't have 2 bounds "
-                             "per point.")
+        if not x_coord.ndim == y_coord.ndim == 2:
+            try:
+                x, y = _meshgrid(x_coord.contiguous_bounds(),
+                                 y_coord.contiguous_bounds())
+            # Exception translation.
+            except iris.exceptions.CoordinateMultiDimError:
+                raise ValueError("Expected two 1D coords. Could not get XY"
+                                 " grid from bounds. X or Y coordinate not"
+                                 " 1D.")
+            except ValueError:
+                raise ValueError("Could not get XY grid from bounds. "
+                                 "X or Y coordinate doesn't have 2 bounds "
+                                 "per point.")
+        else:
+            x = x_coord.contiguous_bounds()
+            y = y_coord.contiguous_bounds()
 
     # Obtain the data array.
     data = cube.data
@@ -1005,7 +1120,10 @@ def outline(cube, coords=None, color='k', linewidth=None, axes=None):
 
 def pcolor(cube, *args, **kwargs):
     """
-    Draws a pseudocolor plot based on the given Cube.
+    Draws a pseudocolor plot based on the given 2-dimensional Cube.
+
+    The cube must have either two 1-dimensional coordinates or two
+    2-dimensional coordinates with contiguous bounds to plot the cube against.
 
     Kwargs:
 
@@ -1018,6 +1136,9 @@ def pcolor(cube, *args, **kwargs):
 
     * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
         Defaults to the current axes if none provided.
+
+    * contiguity_tolerance: The absolute tolerance used when checking for
+        contiguity between the bounds of the cells. Defaults to None.
 
     See :func:`matplotlib.pyplot.pcolor` for details of other valid
     keyword arguments.
@@ -1031,7 +1152,11 @@ def pcolor(cube, *args, **kwargs):
 
 def pcolormesh(cube, *args, **kwargs):
     """
-    Draws a pseudocolor plot based on the given Cube.
+    Draws a pseudocolor plot based on the given 2-dimensional Cube.
+
+    The cube must have either two 1-dimensional coordinates or two
+    2-dimensional coordinates with contiguous bounds to plot against each
+    other.
 
     Kwargs:
 
@@ -1044,6 +1169,9 @@ def pcolormesh(cube, *args, **kwargs):
 
     * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
         Defaults to the current axes if none provided.
+
+    * contiguity_tolerance: The absolute tolerance used when checking for
+        contiguity between the bounds of the cells. Defaults to None.
 
     See :func:`matplotlib.pyplot.pcolormesh` for details of other
     valid keyword arguments.
@@ -1073,10 +1201,97 @@ def points(cube, *args, **kwargs):
     keyword arguments.
 
     """
+
     def _scatter_args(u, v, data, *args, **kwargs):
         return ((u, v) + args, kwargs)
 
     return _draw_2d_from_points('scatter', _scatter_args, cube,
+                                *args, **kwargs)
+
+
+def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
+    """
+    Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
+
+    Returns arguments (x, y, u, v), to be passed to the underlying matplotlib
+    call.
+
+    "u_data" will always be "u_cube.data".
+    The matching "v_cube.data" component is stored in kwargs['_v_data'].
+
+    """
+    v_data = kwargs.pop('_v_data')
+
+    # Rescale u+v values for plot distortion.
+    crs = kwargs.get('transform', None)
+    if crs:
+        if not isinstance(crs, (ccrs.PlateCarree, ccrs.RotatedPole)):
+            msg = ('Can only plot vectors provided in a lat-lon '
+                   'projection, i.e. equivalent to "cartopy.crs.PlateCarree" '
+                   'or "cartopy.crs.RotatedPole". This '
+                   "cube coordinate system translates as Cartopy {}.")
+            raise ValueError(msg.format(crs))
+        # Given the above check, the Y points must be latitudes.
+        # We therefore **assume** they are in degrees : I'm not sure this
+        # is wise, but all the rest of this plot code does that, e.g. in
+        # _map_common.
+        # TODO: investigate degree units assumptions, here + elsewhere.
+
+        # Implement a latitude scaling, but preserve the given magnitudes.
+        u_data, v_data = [arr.copy() for arr in (u_data, v_data)]
+        mags = np.sqrt(u_data * u_data + v_data * v_data)
+        v_data *= np.cos(np.deg2rad(y_points))
+        scales = mags / np.sqrt(u_data * u_data + v_data * v_data)
+        u_data *= scales
+        v_data *= scales
+
+    return ((x_points, y_points, u_data, v_data), kwargs)
+
+
+def quiver(u_cube, v_cube, *args, **kwargs):
+    """
+    Draws an arrow plot from two vector component cubes.
+
+    Args:
+
+    * u_cube, v_cube : (:class:`~iris.cube.Cube`)
+        u and v vector components.  Must have same shape and units.
+        If the cubes have geographic coordinates, the values are treated as
+        true distance differentials, e.g. windspeeds, and *not* map coordinate
+        vectors.  The components are aligned with the North and East of the
+        cube coordinate system.
+
+    .. Note:
+
+        At present, if u_cube and v_cube have geographic coordinates, then they
+        must be in a lat-lon coordinate system, though it may be a rotated one.
+        To transform wind values between coordinate systems, use
+        :func:`iris.analysis.cartography.rotate_vectors`.
+        To transform coordinate grid points, you will need to create
+        2-dimensional arrays of x and y values.  These can be transformed with
+        :meth:`cartopy.crs.CRS.transform_points`.
+
+    Kwargs:
+
+    * coords: (list of :class:`~iris.coords.Coord` or string)
+        Coordinates or coordinate names. Use the given coordinates as the axes
+        for the plot. The order of the given coordinates indicates which axis
+        to use for each, where the first element is the horizontal
+        axis of the plot and the second element is the vertical axis
+        of the plot.
+
+    * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
+        Defaults to the current axes if none provided.
+
+    See :func:`matplotlib.pyplot.quiver` for details of other valid
+    keyword arguments.
+
+    """
+    #
+    # TODO: check u + v cubes for compatibility.
+    #
+    kwargs['_v_data'] = v_cube.data
+    return _draw_2d_from_points('quiver', _vector_component_args, u_cube,
                                 *args, **kwargs)
 
 
