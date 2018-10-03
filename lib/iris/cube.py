@@ -996,10 +996,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             'iris.aux_factory.AuxCoordFactory.')
         cube_coords = self.coords()
         for dependency in aux_factory.dependencies:
-            reference_coord = aux_factory.dependencies[dependency]
-            if reference_coord is not None and reference_coord not in cube_coords:
+            ref_coord = aux_factory.dependencies[dependency]
+            if ref_coord is not None and ref_coord not in cube_coords:
                 msg = "{} coordinate for factory is not present on cube {}"
-                raise ValueError(msg.format(reference_coord.name(), self.name()))
+                raise ValueError(msg.format(ref_coord.name(), self.name()))
         self._aux_factories.append(aux_factory)
 
     def add_cell_measure(self, cell_measure, data_dims=None):
