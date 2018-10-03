@@ -1,0 +1,1 @@
+* :func:`iris.util.reverse` can now be used to reverse a cube by specifying one or more coordinates.
