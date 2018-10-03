@@ -453,7 +453,8 @@ def reverse(cube_or_array, coords_or_dims):
     """
     index = [slice(None, None)] * cube_or_array.ndim
 
-    if iris.cube._is_single_item(coords_or_dims):
+    if (iris.cube._is_single_item(coords_or_dims) or
+            isinstance(coords_or_dims, iris.cube.Cube)):
         coords_or_dims = [coords_or_dims]
 
     axes = set()
@@ -471,7 +472,7 @@ def reverse(cube_or_array, coords_or_dims):
                                 'or sequence of these.')
 
     axes = np.array(list(axes), ndmin=1)
-    if axes.ndim != 1:
+    if axes.ndim != 1 or axes.size == 0:
         raise ValueError('Reverse was expecting a single axis or a 1d array '
                          'of axes, got %r' % axes)
     if np.min(axes) < 0 or np.max(axes) > cube_or_array.ndim-1:
