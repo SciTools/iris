@@ -170,9 +170,15 @@ class Test_cube(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, msg):
             reverse(self.cube1, [])
 
-        msg = 'coords_or_dims must be int, str, coordinate or *'
+        msg = ('coords_or_dims must be int, str, coordinate or sequence of '
+               'these.  Got cube.')
         with self.assertRaisesRegexp(TypeError, msg):
             reverse(self.cube1, self.cube1)
+
+        msg = ('coords_or_dims must be int, str, coordinate or sequence of '
+               'these.')
+        with self.assertRaisesRegexp(TypeError, msg):
+            reverse(self.cube1, 3.)
 
 
 if __name__ == '__main__':

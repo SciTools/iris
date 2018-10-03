@@ -453,8 +453,11 @@ def reverse(cube_or_array, coords_or_dims):
     """
     index = [slice(None, None)] * cube_or_array.ndim
 
-    if (iris.cube._is_single_item(coords_or_dims) or
-            isinstance(coords_or_dims, iris.cube.Cube)):
+    if isinstance(coords_or_dims, iris.cube.Cube):
+        raise TypeError('coords_or_dims must be int, str, coordinate or '
+                        'sequence of these.  Got cube.')
+
+    if iris.cube._is_single_item(coords_or_dims):
         coords_or_dims = [coords_or_dims]
 
     axes = set()
