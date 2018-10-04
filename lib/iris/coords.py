@@ -1013,7 +1013,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                              'are not defined for coordinates with more than '
                              '2 dimensions.'.format(self.name()))
 
-    def _discontiguity_in_bounds(self, rtol=1e-05, atol=1e-08):
+    def _discontiguity_in_bounds(self, rtol=1e-5, atol=1e-8):
         """
         Checks that the bounds of the coordinate are contiguous.
 

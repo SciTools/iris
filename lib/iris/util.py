@@ -1556,7 +1556,7 @@ def _meshgrid(*xi, **kwargs):
     return mxi
 
 
-def find_discontiguities_in_bounds(coord, abs_tol=1e-4):
+def find_discontiguities_in_bounds(coord, rel_tol=1e-5, abs_tol=1e-8):
     """
     Searches coord for discontiguities in the bounds array, returned as
     booleans.
@@ -1578,8 +1578,8 @@ def find_discontiguities_in_bounds(coord, abs_tol=1e-4):
               '2-dimensional coordinates.'
         raise NotImplementedError(msg)
 
-    _, diffs_x, diffs_y = coord._discontiguity_in_bounds(coord.bounds,
-                                                         abs_tol)
+    _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(rtol=rel_tol,
+                                                         atol=abs_tol)
 
     gaps_x = diffs_x > abs_tol
     gaps_y = diffs_y > abs_tol
@@ -1598,7 +1598,7 @@ def find_discontiguities_in_bounds(coord, abs_tol=1e-4):
     return bad_points_boolean
 
 
-def mask_data_at_discontiguities(cube, coord, abs_tol=1e-4):
+def mask_data_at_discontiguities(cube, coord, abs_tol=1e-8):
     """
     Masks any cells in the data array which correspond to discontiguous
     cells in the coordinate points array.
@@ -1637,8 +1637,7 @@ def mask_data_at_discontiguities(cube, coord, abs_tol=1e-4):
         msg = msg.format(type(coord))
         raise TypeError(msg)
 
-    discontiguous_points = find_discontiguities_in_bounds(coord,
-                                                          abs_tol=abs_tol)
+    discontiguous_points = find_discontiguities_in_bounds(coord)
 
     # Check which dimensions are spanned by each coordinate.
     if isinstance(coord, int):

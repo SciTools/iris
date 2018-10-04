@@ -67,7 +67,7 @@ class Test(tests.IrisTest):
             real_err = find_discontiguities_in_bounds(coord)
             self.assertEqual(expected_err, real_err)
 
-    def test_find_discontiguities_with_tol(self):
+    def test_find_discontiguities_with_atol(self):
         coord = self.longitude_coord
         # Choose a very large tolerance which will result in fine
         # discontiguities being disregarded
