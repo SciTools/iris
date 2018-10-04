@@ -3247,10 +3247,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
             # accepts multiple axes (unlike 'aggregate').
-            collapse_axis = dims_to_collapse
+            collapse_axis = list(dims_to_collapse)
             try:
                 data_result = aggregator.lazy_aggregate(self.lazy_data(),
-                                                        collapse_axis,
+                                                        axis=collapse_axis,
                                                         **kwargs)
             except TypeError:
                 # TypeError - when unexpected keywords passed through (such as
