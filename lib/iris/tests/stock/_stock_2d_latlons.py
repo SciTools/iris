@@ -308,6 +308,7 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
 
     Changes the points and bounds of a single gridcell, so that it becomes
     discontinuous with the next gridcell to its right.
+
     Also masks the cube data at the given point.
 
     The cube must have bounded 2d 'x' and 'y' coordinates.
@@ -359,7 +360,7 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
         for cube_slice in sliced_cube:
             # For each cube slice, mask the data array at discontiguous points
             cube_slice.data = ma.masked_array(cube_slice.data)
-            cube_slice.data[at_ix, at_iy] = ma.masked
+            cube_slice.data[at_iy, at_ix] = ma.masked
             cube_slice_list.append(cube_slice)
         masked_cube, = cube_slice_list.merge()
 

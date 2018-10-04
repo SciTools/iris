@@ -1578,7 +1578,7 @@ def find_discontiguities_in_bounds(coord, abs_tol=1e-4):
               '2-dimensional coordinates.'
         raise NotImplementedError(msg)
 
-    _, diffs_x, diffs_y = iris.coords._discontiguity_in_2d_bounds(coord.bounds,
+    _, diffs_x, diffs_y = coord._discontiguity_in_bounds(coord.bounds,
                                                                   abs_tol)
 
     gaps_x = diffs_x > abs_tol

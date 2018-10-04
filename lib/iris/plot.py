@@ -24,8 +24,8 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 from __future__ import (absolute_import, division, print_function)
 
-import warnings
 from six.moves import (map, zip)  # noqa
+import six
 
 import collections
 import datetime
@@ -327,7 +327,8 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
         if not contiguous and data_is_masked:
             diffs_along_x, diffs_along_y = diffs
 
-            # Check along both dimensions.
+            # Check along both dimensions that any discontiguous
+            # points are correctly masked.
             not_masked_at_discontiguity_along_x = np.any(
                 np.logical_and(mask_invert[:, :-1], diffs_along_x))
 

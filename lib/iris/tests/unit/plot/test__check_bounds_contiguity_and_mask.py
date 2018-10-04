@@ -43,10 +43,11 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         # Test a 1D coordinate, which is not checked as atol is not set.
         coord = DimCoord([1, 3, 5], bounds=[[0, 2], [2, 4], [5, 6]])
         data = np.array([278, 300, 282])
-        iplt._check_bounds_contiguity_and_mask(coord, data)
+        # Make sure contiguity checking doesn't throw an error
+        self.assertIsNone(iplt._check_bounds_contiguity_and_mask(coord, data))
 
     def test_1d_contiguous(self):
-        # Test a 1D coordinate which is contiguous.
+        # Test that a 1D coordinate which is contiguous does not fail.
         coord = DimCoord([1, 3, 5], bounds=[[0, 2], [2, 4], [4, 6]])
         data = np.array([278, 300, 282])
         iplt._check_bounds_contiguity_and_mask(coord, data, atol=1e-3)
@@ -69,10 +70,10 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
             iplt._check_bounds_contiguity_and_mask(coord, data, atol=1e-3)
 
     def test_2d_contiguous(self):
-        # Test a 2D coordinate which is contiguous.
+        # Test that a 2D coordinate which is contiguous does not throw an error.
         cube = sample_2d_latlons()
-        iplt._check_bounds_contiguity_and_mask(cube.coord('longitude'),
-                                               cube.data)
+        self.assertIsNone(iplt._check_bounds_contiguity_and_mask(
+            cube.coord('longitude'), cube.data))
 
     def test_2d_contiguous_atol(self):
         # Check the atol is passed correctly.
@@ -88,12 +89,12 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         discontiguity_check.assert_called_with(atol=1e-3)
 
     def test_2d_discontigous_masked(self):
-        # Test a 2D coordinate which is discontiguous but masked at
-        # discontiguities.
+        # Test that a 2D coordinate which is discontiguous but masked at
+        # discontiguities doesn't error.
         cube = sample_2d_latlons()
         make_bounds_discontiguous_at_point(cube, 3, 4)
-        iplt._check_bounds_contiguity_and_mask(cube.coord('longitude'),
-                                               cube.data)
+        self.assertIsNone(iplt._check_bounds_contiguity_and_mask(
+            cube.coord('longitude'), cube.data))
 
     def test_2d_discontigous_unmasked(self):
         # Test a 2D coordinate which is discontiguous and unmasked at
@@ -101,7 +102,7 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         cube = sample_2d_latlons()
         make_bounds_discontiguous_at_point(cube, 3, 4)
         msg = 'coordinate are not contiguous'
-        cube.data[3, 4] = ma.nomask
+        cube.data.mask[3, 4] = ma.nomask
         with self.assertRaisesRegexp(ValueError, msg):
             iplt._check_bounds_contiguity_and_mask(cube.coord('longitude'),
                                                    cube.data)
