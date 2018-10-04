@@ -1579,7 +1579,7 @@ def find_discontiguities_in_bounds(coord, rel_tol=1e-5, abs_tol=1e-8):
         raise NotImplementedError(msg)
 
     _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(rtol=rel_tol,
-                                                         atol=abs_tol)
+                                                           atol=abs_tol)
 
     gaps_x = diffs_x > abs_tol
     gaps_y = diffs_y > abs_tol
