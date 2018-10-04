@@ -25,7 +25,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 from __future__ import (absolute_import, division, print_function)
 
 from six.moves import (map, zip)  # noqa
-import six
+import six  # noqa
 
 import collections
 import datetime

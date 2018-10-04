@@ -70,7 +70,8 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
             iplt._check_bounds_contiguity_and_mask(coord, data, atol=1e-3)
 
     def test_2d_contiguous(self):
-        # Test that a 2D coordinate which is contiguous does not throw an error.
+        # Test that a 2D coordinate which is contiguous does not throw
+        # an error.
         cube = sample_2d_latlons()
         self.assertIsNone(iplt._check_bounds_contiguity_and_mask(
             cube.coord('longitude'), cube.data))
