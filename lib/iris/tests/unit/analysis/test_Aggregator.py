@@ -283,7 +283,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         axis = mock.sentinel.axis
         aggregator = Aggregator('', None, lazy_func=lazy_func)
         aggregator.lazy_aggregate(data, axis)
-        lazy_func.assert_called_once_with(data, axis)
+        lazy_func.assert_called_once_with(data, axis=axis)
 
     def test_kwarg_pass_through_call_kwargs(self):
         lazy_func = mock.Mock()
@@ -292,7 +292,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         kwargs = dict(wibble='wobble', foo='bar')
         aggregator = Aggregator('', None, lazy_func=lazy_func)
         aggregator.lazy_aggregate(data, axis, **kwargs)
-        lazy_func.assert_called_once_with(data, axis, **kwargs)
+        lazy_func.assert_called_once_with(data, axis=axis, **kwargs)
 
     def test_kwarg_pass_through_init_kwargs(self):
         lazy_func = mock.Mock()
@@ -301,7 +301,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         kwargs = dict(wibble='wobble', foo='bar')
         aggregator = Aggregator('', None, lazy_func=lazy_func, **kwargs)
         aggregator.lazy_aggregate(data, axis)
-        lazy_func.assert_called_once_with(data, axis, **kwargs)
+        lazy_func.assert_called_once_with(data, axis=axis, **kwargs)
 
     def test_kwarg_pass_through_combined_kwargs(self):
         lazy_func = mock.Mock()
@@ -313,7 +313,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         aggregator.lazy_aggregate(data, axis, **call_kwargs)
         expected_kwargs = init_kwargs.copy()
         expected_kwargs.update(call_kwargs)
-        lazy_func.assert_called_once_with(data, axis, **expected_kwargs)
+        lazy_func.assert_called_once_with(data, axis=axis, **expected_kwargs)
 
 
 if __name__ == "__main__":
