@@ -1556,7 +1556,7 @@ def _meshgrid(*xi, **kwargs):
     return mxi
 
 
-def find_discontiguities_in_bounds(coord, rel_tol=1e-5, abs_tol=1e-8):
+def find_discontiguities_in_bounds(cube, rel_tol=1e-5, abs_tol=1e-8):
     """
     Searches coord for discontiguities in the bounds array, returned as
     booleans.
@@ -1573,6 +1573,15 @@ def find_discontiguities_in_bounds(coord, rel_tol=1e-5, abs_tol=1e-8):
         Boolean array representing the truth value for
         discontiguous cells in the coordinate points array.
     """
+    # TODO: 1. Identify spatial coordinates and their dimensions
+    # TODO: 2. Find size of 2d spatial array (lat-lon)
+    # TODO: 3. Apply size to bad_points_boolean
+    # TODO: 4. Loop over spatial dims to check contiguity
+    # TODO: 5. Return 2d bad_points boolean array
+
+    # Set up unmasked boolean array the same size as the coord points array:
+    bad_points_boolean = np.zeros(coord.points.shape, dtype=bool)
+
     if coord.ndim != 2:
         msg = 'Discontiguity searches are currently only supported for ' \
               '2-dimensional coordinates.'
@@ -1584,8 +1593,7 @@ def find_discontiguities_in_bounds(coord, rel_tol=1e-5, abs_tol=1e-8):
     gaps_x = diffs_x > abs_tol
     gaps_y = diffs_y > abs_tol
 
-    # Set up unmasked boolean array the same size as the coord points array:
-    bad_points_boolean = np.zeros(coord.points.shape, dtype=bool)
+
 
     # Apply mask for x-direction discontiguities:
     bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1],
@@ -1625,6 +1633,8 @@ def mask_data_at_discontiguities(cube, coord, abs_tol=1e-8):
         A cube whose data array is masked at points where the chosen
         coordinate bounds array is discontiguous.
     """
+    # TODO: Take out all the stuff about broadcasting
+    # TODO: Replace coord input with bad_points boolean array
     if isinstance(coord, six.string_types):
         coord = cube.coord(coord)
     elif isinstance(coord, iris.coords.Coord):
