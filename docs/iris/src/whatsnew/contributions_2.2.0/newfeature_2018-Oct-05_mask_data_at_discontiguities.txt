@@ -1,0 +1,2 @@
+* Users can now mask Cube data at discontiguous points to avoid plotting
+errors with the function :func:`iris.util.mask_data_at_discontiguities`.
