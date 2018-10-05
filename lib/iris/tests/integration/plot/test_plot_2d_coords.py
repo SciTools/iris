@@ -26,10 +26,16 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-import cartopy.crs as ccrs
+import numpy as np
+
 import matplotlib.pyplot as plt
 
+import cartopy.crs as ccrs
 import iris
+from iris.analysis.cartography import unrotate_pole
+from iris.cube import Cube
+from iris.coords import AuxCoord
+
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
@@ -60,6 +66,30 @@ class Test(tests.GraphicsTest):
         ax = plt.axes(projection=ccrs.NorthPolarStereo())
         qplt.pcolormesh(cube)
         ax.coastlines(color='red')
+        self.check_graphic()
+
+
+@tests.skip_plot
+@tests.skip_data
+class Test2dContour(tests.GraphicsTest):
+    def test_2d_coords_contour(self):
+        ny, nx = 4, 6
+        x1 = np.linspace(-20, 70, nx)
+        y1 = np.linspace(10, 60, ny)
+        data = np.zeros((ny, nx))
+        data.flat[:] = np.arange(nx * ny) % 7
+        cube = Cube(data, long_name='Odd data')
+        x2, y2 = np.meshgrid(x1, y1)
+        true_lons, true_lats = unrotate_pole(x2, y2, -130., 77.)
+        co_x = AuxCoord(true_lons, standard_name='longitude', units='degrees')
+        co_y = AuxCoord(true_lats, standard_name='latitude', units='degrees')
+        cube.add_aux_coord(co_y, (0, 1))
+        cube.add_aux_coord(co_x, (0, 1))
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        qplt.contourf(cube)
+        ax.coastlines(color='red')
+        ax.gridlines(draw_labels=True)
+        ax.set_extent((0, 180, 0, 90))
         self.check_graphic()
 
 
