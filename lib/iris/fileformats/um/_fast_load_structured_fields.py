@@ -294,7 +294,7 @@ def group_structured_fields(field_iterator,
        :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
 
     Returns:
-        A generator of BasicFieldCollation objects, each of which contains a
+        A generator of 'collation_class' objects, each of which contains a
         single collated group from the input fields.
 
     .. note::

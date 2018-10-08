@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Unit tests for the class
-:class:`iris.fileformats.um._fast_load_structured_fields.FieldCollation`.
+:class:`iris.fileformats.um._fast_load_structured_fields.BasicFieldCollation`.
 
 """
 
@@ -32,20 +32,20 @@ from cftime import datetime
 import numpy as np
 
 from iris.fileformats.um._fast_load_structured_fields \
-    import BasicFieldCollation as FieldCollation
+    import BasicFieldCollation
 import iris.fileformats.pp
 
 
 class Test___init__(tests.IrisTest):
     def test_no_fields(self):
         with self.assertRaises(AssertionError):
-            FieldCollation([])
+            BasicFieldCollation([])
 
 
 class Test_fields(tests.IrisTest):
     def test_preserve_members(self):
         fields = ('foo', 'bar', 'wibble')
-        collation = FieldCollation(fields)
+        collation = BasicFieldCollation(fields)
         self.assertEqual(collation.fields, fields)
 
 
@@ -81,7 +81,7 @@ def _make_data(fill_value):
 class Test_data(tests.IrisTest):
     # Test order of the data attribute when fastest-varying element is changed.
     def test_t1_varies_faster(self):
-        collation = FieldCollation(
+        collation = BasicFieldCollation(
             [_make_field(lbyr=2013, lbyrd=2000, data=0),
              _make_field(lbyr=2014, lbyrd=2000, data=1),
              _make_field(lbyr=2015, lbyrd=2000, data=2),
@@ -93,7 +93,7 @@ class Test_data(tests.IrisTest):
         self.assertArrayEqual(result, expected)
 
     def test_t2_varies_faster(self):
-        collation = FieldCollation(
+        collation = BasicFieldCollation(
             [_make_field(lbyr=2013, lbyrd=2000, data=0),
              _make_field(lbyr=2013, lbyrd=2001, data=1),
              _make_field(lbyr=2013, lbyrd=2002, data=2),
@@ -108,12 +108,12 @@ class Test_data(tests.IrisTest):
 class Test_element_arrays_and_dims(tests.IrisTest):
     def test_single_field(self):
         field = _make_field(2013)
-        collation = FieldCollation([field])
+        collation = BasicFieldCollation([field])
         self.assertEqual(collation.element_arrays_and_dims, {})
 
     def test_t1(self):
-        collation = FieldCollation([_make_field(lbyr=2013),
-                                    _make_field(lbyr=2014)])
+        collation = BasicFieldCollation([_make_field(lbyr=2013),
+                                         _make_field(lbyr=2014)])
         result = collation.element_arrays_and_dims
         self.assertEqual(list(result.keys()), ['t1'])
         values, dims = result['t1']
@@ -122,9 +122,9 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         self.assertEqual(dims, (0,))
 
     def test_t1_and_t2(self):
-        collation = FieldCollation([_make_field(lbyr=2013, lbyrd=2000),
-                                    _make_field(lbyr=2014, lbyrd=2001),
-                                    _make_field(lbyr=2015, lbyrd=2002)])
+        collation = BasicFieldCollation([_make_field(lbyr=2013, lbyrd=2000),
+                                         _make_field(lbyr=2014, lbyrd=2001),
+                                         _make_field(lbyr=2015, lbyrd=2002)])
         result = collation.element_arrays_and_dims
         self.assertEqual(set(result.keys()), set(['t1', 't2']))
         values, dims = result['t1']
@@ -139,10 +139,11 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         self.assertEqual(dims, (0,))
 
     def test_t1_and_t2_and_lbft(self):
-        collation = FieldCollation([_make_field(lbyr=1, lbyrd=15, lbft=6),
-                                    _make_field(lbyr=1, lbyrd=16, lbft=9),
-                                    _make_field(lbyr=11, lbyrd=25, lbft=6),
-                                    _make_field(lbyr=11, lbyrd=26, lbft=9)])
+        collation = BasicFieldCollation(
+            [_make_field(lbyr=1, lbyrd=15, lbft=6),
+             _make_field(lbyr=1, lbyrd=16, lbft=9),
+             _make_field(lbyr=11, lbyrd=25, lbft=6),
+             _make_field(lbyr=11, lbyrd=26, lbft=9)])
         result = collation.element_arrays_and_dims
         self.assertEqual(set(result.keys()), set(['t1', 't2', 'lbft']))
         values, dims = result['t1']
@@ -159,7 +160,8 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         self.assertEqual(dims, (1,))
 
     def test_blev(self):
-        collation = FieldCollation([_make_field(blev=1), _make_field(blev=2)])
+        collation = BasicFieldCollation([_make_field(blev=1),
+                                         _make_field(blev=2)])
         result = collation.element_arrays_and_dims
         keys = set(['blev', 'brsvd1', 'brsvd2', 'brlev',
                     'bhrlev', 'lblev', 'bhlev'])
@@ -169,8 +171,8 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         self.assertEqual(dims, (0,))
 
     def test_bhlev(self):
-        collation = FieldCollation([_make_field(blev=0, bhlev=1),
-                                    _make_field(blev=1, bhlev=2)])
+        collation = BasicFieldCollation([_make_field(blev=0, bhlev=1),
+                                         _make_field(blev=1, bhlev=2)])
         result = collation.element_arrays_and_dims
         keys = set(['blev', 'brsvd1', 'brsvd2', 'brlev',
                     'bhrlev', 'lblev', 'bhlev'])
@@ -201,7 +203,7 @@ class Test__time_comparable_int(tests.IrisTest):
             (2004, 3, 1, 0, 0, 0),
             (2005, 1, 1, 0, 0, 0)]
 
-        collation = FieldCollation(['foo', 'bar'])
+        collation = BasicFieldCollation(['foo', 'bar'])
         test_date_ints = [collation._time_comparable_int(*test_tuple)
                           for test_tuple in test_date_tuples]
         # Check all values are distinct.
