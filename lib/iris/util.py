@@ -1556,118 +1556,102 @@ def _meshgrid(*xi, **kwargs):
     return mxi
 
 
-def find_discontiguities_in_bounds(cube, rel_tol=1e-5, abs_tol=1e-8):
+def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     """
-    Searches coord for discontiguities in the bounds array, returned as
-    booleans.
+    Searches coord for discontiguities in the bounds array, returned as a
+    boolean array (True where discontiguities are present).
 
     Args:
-        coord:
-        An instance of :class:`iris.coords.Coord`
+        cube:
+        An instance of :class:`iris.cube.Cube`
 
     Kwargs:
+        rel_tol:
+        relative tolerance
+
         abs_tol:
         absolute tolerance in coordinate units
 
     Returns:
-        Boolean array representing the truth value for
-        discontiguous cells in the coordinate points array.
+        Boolean array representing the truth value for discontiguous cells in
+        the coordinate points array.  This can be used as the input array for
+        :func:`iris.util.mask_discontiguities`.
+
+    Examples::
+
+        # Find any unknown discontiguities in your cube's x and y arrays:
+        discontiguities = iris.util.find_discontiguities(cube)
+
+        # Pass the resultant boolean array to `iris.util.mask_discontiguities`
+        # with a cube slice; this will use the boolean array to mask
+        # any discontiguous data points before plotting:
+        masked_cube_slice = iris.util.mask_discontiguities(cube[0],
+                                                           discontiguities)
+
+        # Plot the masked cube slice:
+        iplt.pcolormesh(masked_cube_slice)
+
     """
-    # TODO: 1. Identify spatial coordinates and their dimensions
-    # TODO: 2. Find size of 2d spatial array (lat-lon)
-    # TODO: 3. Apply size to bad_points_boolean
-    # TODO: 4. Loop over spatial dims to check contiguity
-    # TODO: 5. Return 2d bad_points boolean array
+    lats_and_lons = ['latitude', 'grid_latitude',
+                     'longitude', 'grid_longitude']
+    spatial_coords = [coord for coord in cube.aux_coords if
+                      coord.name() in lats_and_lons]
+    dim_err_msg = 'Discontiguity searches are currently only supported for ' \
+                  '2-dimensional coordinates.'
+    if len(spatial_coords) != 2:
+        raise NotImplementedError(dim_err_msg)
+
+    # Check which dimensions are spanned by each coordinate.
+    for coord in spatial_coords:
+        if coord.ndim != 2:
+            raise NotImplementedError(dim_err_msg)
+        elif isinstance(coord, int):
+            span = set([coord])
+        else:
+            span = set(cube.coord_dims(coord))
+        if not span:
+            msg = 'The coordinate {!r} doesn\'t span a data dimension.'
+            raise ValueError(msg.format(coord.name()))
+
+    # Check that the 2d coordinate arrays are the same shape as each other
+    if len(spatial_coords) == 2:
+        assert spatial_coords[0].points.shape == spatial_coords[1].points.shape
 
     # Set up unmasked boolean array the same size as the coord points array:
-    bad_points_boolean = np.zeros(coord.points.shape, dtype=bool)
+    bad_points_boolean = np.zeros(spatial_coords[0].points.shape, dtype=bool)
 
-    if coord.ndim != 2:
-        msg = 'Discontiguity searches are currently only supported for ' \
-              '2-dimensional coordinates.'
-        raise NotImplementedError(msg)
+    for coord in spatial_coords:
+        _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(rtol=rel_tol,
+                                                               atol=abs_tol)
+        gaps_x = diffs_x > abs_tol
+        gaps_y = diffs_y > abs_tol
 
-    _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(rtol=rel_tol,
-                                                           atol=abs_tol)
-
-    gaps_x = diffs_x > abs_tol
-    gaps_y = diffs_y > abs_tol
-
-
-
-    # Apply mask for x-direction discontiguities:
-    bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1],
-                                               gaps_x)
-
-    # apply mask for y-direction discontiguities:
-    bad_points_boolean[:-1, :] = np.logical_or(bad_points_boolean[:-1, :],
-                                               gaps_y)
-
+        bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1],
+                                                   gaps_x)
+        # apply mask for y-direction discontiguities:
+        bad_points_boolean[:-1, :] = np.logical_or(bad_points_boolean[:-1, :],
+                                                   gaps_y)
     return bad_points_boolean
 
 
-def mask_data_at_discontiguities(cube, coord, abs_tol=1e-8):
+def mask_discontiguities(cube_slice, discontiguous_points):
     """
     Masks any cells in the data array which correspond to discontiguous
     cells in the coordinate points array.
 
     Args:
-        Either
+        cube_slice:
+        A scalar instance of :class:`iris.cube.Cube` (i.e. 2-dimensional)
 
-        (a) An instance of :class:`iris.coords.DimCoord`
-
-        or
-
-        (b) the :attr:`standard_name`, :attr:`long_name`, or
-        :attr:`var_name` of an instance of an instance of
-        :class:`iris.coords.DimCoord`.
-
-        data:
-        the :attr:`data` of the cube from which the coord is taken.
-
-    Kwargs:
-        abs_tol:
-        absolute tolerance in degrees
+        discontiguous_points:
+        A 2d boolean array representing
+        discontiguities in the x and y bounds arrays
 
     Returns:
-        A cube whose data array is masked at points where the chosen
-        coordinate bounds array is discontiguous.
+        The cube slice whose data array is now masked at points
+        where the chosen coordinate bounds array is discontiguous.
+
     """
-    # TODO: Take out all the stuff about broadcasting
-    # TODO: Replace coord input with bad_points boolean array
-    if isinstance(coord, six.string_types):
-        coord = cube.coord(coord)
-    elif isinstance(coord, iris.coords.Coord):
-        coord = coord
-    else:
-        # Don't know how to handle this type
-        msg = ("Don't know how to handle coordinate of type {}. "
-               "Please use either the standard_name, long_name or var_name "
-               "of the coordinate, or alternatively a coordinate object.")
-        msg = msg.format(type(coord))
-        raise TypeError(msg)
-
-    discontiguous_points = find_discontiguities_in_bounds(coord)
-
-    # Check which dimensions are spanned by each coordinate.
-    if isinstance(coord, int):
-        span = set([coord])
-    else:
-        span = set(cube.coord_dims(coord))
-    if not span:
-        msg = 'The coordinate {!r} doesn\'t span a data dimension.'
-        raise ValueError(msg.format(coord.name()))
-
-    # masked_data = ma.masked_array(cube.data)
-    # Slice data so that we can apply the mask to the correct points and
-    # then broadcast it
-    sliced_cube = cube.slices(span)
-    cube_slice_list = iris.cube.CubeList()
-    for cube_slice in sliced_cube:
-        # For each cube slice, mask the data array at discontiguous points
-        cube_slice.data = ma.masked_array(cube_slice.data)
-        cube_slice.data[discontiguous_points] = ma.masked
-        cube_slice_list.append(cube_slice)
-    masked_cube, = cube_slice_list.merge()
-
-    return masked_cube
+    cube_slice.data = ma.masked_array(cube_slice.data)
+    cube_slice.data[discontiguous_points] = ma.masked
+    return cube_slice
