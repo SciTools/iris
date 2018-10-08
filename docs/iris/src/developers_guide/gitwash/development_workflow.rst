@@ -144,6 +144,12 @@ In more detail
 #. To push the changes up to your forked repo on github, do a ``git
    push`` (see `git push`_).
 
+Testing your changes
+====================
+
+Once you are happy with your changes, work thorough the :ref:`pr_check` and make sure
+your branch passess all the relevant tests.
+
 Ask for your changes to be reviewed or merged
 =============================================
 

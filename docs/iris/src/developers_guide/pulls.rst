@@ -1,3 +1,5 @@
+.. _pr_check:
+
 Pull Request Check List
 ***********************
 
