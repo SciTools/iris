@@ -27,10 +27,8 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.util import mask_discontiguities
-from iris.tests.stock import simple_3d
 from iris.tests.stock import sample_2d_latlons
 from iris.tests.stock import make_bounds_discontiguous_at_point
-from iris.tests.stock._stock_2d_latlons import grid_coords_2d_from_1d
 
 
 def full2d_global():
