@@ -1,0 +1,5 @@
+* Users can now check their cubes for any discontiguities in bounds arrays
+using the function :func:`iris.util.find_discontiguities_in_bounds`.
+Additionally, users can choose to mask their data at discontiguous points
+with the function :func:`iris.util.mask_data_at_discontiguities`, which could
+prevent plotting errors in some cases.
