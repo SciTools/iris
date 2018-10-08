@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2017, Met Office
+# (C) British Crown Copyright 2016 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,17 +40,65 @@ from contextlib import contextmanager
 import threading
 import os.path
 
+import numpy as np
+
 # Be minimal about what we import from iris, to avoid circular imports.
 # Below, other parts of iris.fileformats are accessed via deferred imports.
 import iris
 from iris.coords import DimCoord
 from iris.cube import CubeList
 from iris.exceptions import TranslationError
-
+from iris.fileformats.um._fast_load_structured_fields import \
+    BasicFieldCollation, group_structured_fields
 
 # Strings to identify the PP and FF file format handler specs.
 _FF_SPEC_NAME = 'UM Fieldsfile'
 _PP_SPEC_NAME = 'UM Post Processing file'
+
+
+class FieldCollation(BasicFieldCollation):
+    # This class specialises the BasicFieldCollation by adding the file-index
+    # and file-path concepts.
+    # This preserves the more abstract scope of the original 'FieldCollation'
+    # class, now renamed 'BasicFieldCollation'.
+
+    def __init__(self, fields, filepath):
+        """
+        Args:
+
+        * fields (iterable of :class:`iris.fileformats.pp.PPField`):
+            The fields in the collation.
+
+        * filepath (string):
+            The path of the file the collation is loaded from.
+
+        """
+        super(FieldCollation, self).__init__(fields)
+        self._load_filepath = filepath
+
+    @property
+    def data_filepath(self):
+        return self._load_filepath
+
+    @property
+    def data_field_indices(self):
+        """
+        Field indices of the contained PPFields in the input file.
+
+        This records the original file location of the individual data fields
+        contained, within the input datafile.
+
+        Returns:
+            An integer array of shape `self.vector_dims_shape`.
+
+        """
+        # Get shape :  N.B. this calculates (and caches) the structure.
+        vector_dims_shape = self.vector_dims_shape
+        # Get index-in-file of each contained field.
+        indices = np.array([field._index_in_structured_load_file
+                            for field in self._fields],
+                           dtype=np.int64)
+        return indices.reshape(vector_dims_shape)
 
 
 def _basic_load_function(filename, pp_filter=None, **kwargs):
@@ -71,8 +119,6 @@ def _basic_load_function(filename, pp_filter=None, **kwargs):
     # Therefore, the actual loader will pass this as the 'pp_filter' keyword,
     # when it is present.
     # Additional load keywords are 'passed on' to the lower-level function.
-    from iris.fileformats.um._fast_load_structured_fields import \
-        group_structured_fields
 
     # Helper function to select the correct fields loader call.
     def _select_raw_fields_loader(fname):
@@ -98,10 +144,20 @@ def _basic_load_function(filename, pp_filter=None, **kwargs):
         return loader
 
     loader = _select_raw_fields_loader(filename)
-    fields = iter(field
-                  for field in loader(filename, **kwargs)
-                  if pp_filter is None or pp_filter(field))
-    return group_structured_fields(fields)
+
+    def iter_fields_decorated_with_load_indices(fields_iter):
+        for i_field, field in enumerate(fields_iter):
+            field._index_in_structured_load_file = i_field
+            yield field
+
+    fields = iter_fields_decorated_with_load_indices(
+        field
+        for field in loader(filename, **kwargs)
+        if pp_filter is None or pp_filter(field))
+
+    return group_structured_fields(fields,
+                                   collation_class=FieldCollation,
+                                   filepath=filename)
 
 
 # Define the preferred order of candidate dimension coordinates, as used by
@@ -342,7 +398,9 @@ def structured_um_loading():
         which is normally the whole of one phenomenon from a single input file.
         In particular, the callback's "field" argument is a
         :class:`~iris.fileformats.um.FieldCollation`, from which "field.fields"
-        gives a *list* of PPFields from which that cube was built.
+        gives a *list* of PPFields from which that cube was built, and the
+        properties "field.load_filepath" and "field.load_file_indices"
+        reference the original file locations of the cube data.
         The code required is therefore different from a 'normal' callback.
         For an example of this, see `this example in the Iris test code
         <https://github.com/SciTools/iris/
