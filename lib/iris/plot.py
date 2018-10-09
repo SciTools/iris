@@ -343,12 +343,20 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
         if not data_is_masked:
             raise ValueError('The bounds of the {} coordinate are not '
                              'contiguous. Not able to create a suitable grid'
-                             'to plot.'.format(coord.name()))
+                             'to plot. You can use '
+                             'iris.util.find_discontiguities() to identify '
+                             'discontiguities in your x and y coordinate '
+                             'bounds arrays.'.format(coord.name()))
         if not_masked_at_discontiguity:
             raise ValueError('The bounds of the {} coordinate are not '
                              'contiguous and data is not masked where the '
                              'discontiguity occurs. Not able to create a '
-                             'suitable grid to plot.'.format(
+                             'suitable grid to plot. You can use '
+                             'iris.util.find_discontiguities() to identify '
+                             'discontiguities in your x and y coordinate '
+                             'bounds arrays, and then mask them with '
+                             'iris.util.mask_discontiguities()'
+                             ''.format(
                               coord.name()))
 
 
