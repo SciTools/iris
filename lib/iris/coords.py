@@ -1064,9 +1064,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                         modification = (index.astype(int) * 360) * sign
                         upper_bounds -= modification
 
-                diffs_along_axis = np.abs(upper_bounds - lower_bounds)
-                contiguous_along_axis = np.allclose(upper_bounds, lower_bounds,
-                                                    rtol=rtol, atol=atol)
+                diffs_between_cells = np.abs(upper_bounds - lower_bounds)
+                cell_size = lower_bounds - upper_bounds
+                diffs_along_axis = diffs_between_cells > \
+                                   (atol + rtol * cell_size)
+
+                points_close_enough = (diffs_along_axis <=
+                                       (atol + rtol * lower_bounds))
+                contiguous_along_axis = np.all(points_close_enough)
                 return diffs_along_axis, contiguous_along_axis
 
             diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis='x')

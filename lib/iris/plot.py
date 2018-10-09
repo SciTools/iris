@@ -271,7 +271,7 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
-def _check_bounds_contiguity_and_mask(coord, data, atol=None):
+def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
     """
     Checks that any discontiguities in the bounds of the given coordinate only
     occur where the data is masked.
@@ -297,6 +297,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
             tolerance.
 
     """
+    kwargs = {}
     data_is_masked = hasattr(data, 'mask')
     if data_is_masked:
         # When checking the location of the discontiguities, we check against
@@ -317,9 +318,9 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None):
 
     elif coord.ndim == 2:
         if atol:
-            kwargs = {'atol': atol}
-        else:
-            kwargs = {}
+            kwargs['atol'] = atol
+        if rtol:
+            kwargs['rtol'] = rtol
         contiguous, diffs = coord._discontiguity_in_bounds(**kwargs)
 
         if not contiguous and data_is_masked:

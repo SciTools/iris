@@ -1623,14 +1623,14 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     for coord in spatial_coords:
         _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(rtol=rel_tol,
                                                                atol=abs_tol)
-        gaps_x = diffs_x > abs_tol
-        gaps_y = diffs_y > abs_tol
+        # gaps_x = diffs_x > abs_tol + (rel_tol * )
+        # gaps_y = diffs_y > abs_tol
 
         bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1],
-                                                   gaps_x)
+                                                   diffs_x)
         # apply mask for y-direction discontiguities:
         bad_points_boolean[:-1, :] = np.logical_or(bad_points_boolean[:-1, :],
-                                                   gaps_y)
+                                                   diffs_y)
     return bad_points_boolean
 
 

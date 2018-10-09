@@ -76,18 +76,17 @@ class Test(tests.IrisTest):
         returned = find_discontiguities(cube, abs_tol=atol)
         self.assertTrue(np.all(expected == returned))
 
-    # def test_find_discontiguities_with_rtol(self):
-    #     cube = self.latlon_2d_cube
-    #     lons = cube.coord('longitude')
-    #     # Choose a very large relative tolerance which will result in fine
-    #     # discontiguities being disregarded
-    #     rtol = 1000
-    #     # Construct an array the size of the points array filled with 'False'
-    #     # to represent a mask showing no discontiguities
-    #     expected = np.zeros(lons.points.shape, dtype=bool)
-    #     returned = find_discontiguities(cube, rel_tol=rtol)
-    #     self.assertTrue(np.all(expected == returned))
-    #     # TODO: Get this test passing (figure out why it's failing first)
+    def test_find_discontiguities_with_rtol(self):
+        cube = self.latlon_2d_cube
+        lons = cube.coord('longitude')
+        # Choose a very large relative tolerance which will result in fine
+        # discontiguities being disregarded
+        rtol = 1000
+        # Construct an array the size of the points array filled with 'False'
+        # to represent a mask showing no discontiguities
+        expected = np.zeros(lons.points.shape, dtype=bool)
+        returned = find_discontiguities(cube, rel_tol=rtol)
+        self.assertTrue(np.all(expected == returned))
 
 
 if __name__ == '__main__':
