@@ -1,0 +1,2 @@
+* :func:`iris.util.find_discontiguities_in_bounds` now gives users the
+ability to check iris cubes for discontiguities in the bounds arrays.
