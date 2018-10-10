@@ -43,7 +43,7 @@ class Test(tests.IrisTest):
         self.cube_2d = full2d_global()
         make_bounds_discontiguous_at_point(self.cube_2d, 3, 3)
 
-    def test_mask_discontiguities_2d(self):
+    def test_mask_cube_2d(self):
         # This tests the masking of a 2d data array
         cube = self.cube_2d
         discontiguity_array = ma.getmaskarray(cube.data).copy()
