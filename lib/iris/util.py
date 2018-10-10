@@ -1562,25 +1562,29 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     boolean array (True where discontiguities are present).
 
     Args:
-        cube (`iris.cube.Cube`):
-            The cube to be checked for discontinuities in its 'x' and 'y'
-            coordinates.
+
+    * cube (`iris.cube.Cube`):
+        The cube to be checked for discontinuities in its 'x' and 'y'
+        coordinates.
 
     Kwargs:
-        rel_tol (float):
-            The relative equality tolerance to apply in coordinate bounds
-            checking.
-        abs_tol (float):
-            The absolute value tolerance to apply in coordinate bounds
-            checking.
+
+    * rel_tol (float):
+        The relative equality tolerance to apply in coordinate bounds
+        checking.
+
+    * abs_tol (float):
+        The absolute value tolerance to apply in coordinate bounds
+        checking.
 
     Returns:
-        result (`numpy.ndarray` of bool) :
-            true/false map of which cells in the cube XY grid have
-            discontiguities in the coordinate points array.
 
-            This can be used as the input array for
-            :func:`iris.util.mask_discontiguities`.
+    * result (`numpy.ndarray` of bool) :
+        true/false map of which cells in the cube XY grid have
+        discontiguities in the coordinate points array.
+
+        This can be used as the input array for
+        :func:`iris.util.mask_discontiguities`.
 
     Examples::
 
@@ -1641,15 +1645,18 @@ def mask_cube(cube, points_to_mask):
     in the `points_to_mask` array.
 
     Args:
-        cube:
+
+    * cube (`iris.cube.Cube`):
         A 2-dimensional instance of :class:`iris.cube.Cube`.
 
-        points_to_mask:
+    * points_to_mask (`numpy.ndarray` of bool):
         A 2d boolean array of Truth values representing points to mask in the
         x and y arrays of the cube.
 
     Returns:
-        A cube whose data array is masked at specified points.
+
+    * result (`iris.cube.Cube`):
+        A cube whose data array is masked at points specified by input array.
 
     """
     cube.data = ma.masked_array(cube.data)

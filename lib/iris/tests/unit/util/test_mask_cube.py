@@ -56,8 +56,6 @@ class Test(tests.IrisTest):
         returned = mask_cube(cube, discontiguity_array)
         self.assertTrue(np.all(expected.data.mask == returned.data.mask))
 
-    # TODO: Add more tests here (e.g. y-direction discontiguity masking)
-
 
 if __name__ == '__main__':
     tests.main()
