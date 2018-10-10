@@ -1637,20 +1637,19 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
 
 def mask_cube(cube, points_to_mask):
     """
-    Masks any cells in the data array which correspond to discontiguous
-    cells in the coordinate points array.
+    Masks any cells in the data array which correspond to cells marked `True`
+    in the `points_to_mask` array.
 
     Args:
-        cube_slice:
-        A 2-dimensional instance of :class:`iris.cube.Cube`
+        cube:
+        A 2-dimensional instance of :class:`iris.cube.Cube`.
 
-        discontiguous_points:
-        A 2d boolean array representing
-        discontiguities in the x and y bounds arrays
+        points_to_mask:
+        A 2d boolean array of Truth values representing points to mask in the
+        x and y arrays of the cube.
 
     Returns:
-        The cube slice whose data array is now masked at points
-        where the chosen coordinate bounds array is discontiguous.
+        A cube whose data array is masked at specified points.
 
     """
     cube.data = ma.masked_array(cube.data)
