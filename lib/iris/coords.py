@@ -1066,8 +1066,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
                 diffs_between_cells = np.abs(upper_bounds - lower_bounds)
                 cell_size = lower_bounds - upper_bounds
-                diffs_along_axis = diffs_between_cells > \
-                                   (atol + rtol * cell_size)
+                diffs_along_axis = diffs_between_cells > (atol +
+                                                          rtol * cell_size)
 
                 points_close_enough = (diffs_along_axis <=
                                        (atol + rtol * lower_bounds))
