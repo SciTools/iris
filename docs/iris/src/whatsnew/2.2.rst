@@ -1,4 +1,4 @@
-What's New in Iris 2.2.0
+What's New in Iris 2.2
 ************************
 
 :Release: 2.2.0
@@ -6,11 +6,11 @@ What's New in Iris 2.2.0
 
 
 This document explains the new/changed features of Iris in the release
-of version 2.2.0
+of version 2.2
 (:doc:`View all changes <index>`).
 
 
-Iris 2.2.0 Features
+Iris 2.2 Features
 ===================
 .. _showcase:
 
@@ -34,6 +34,11 @@ Iris 2.2.0 Features
   :func:`iris.analysis.cartography.rotate_grid_vectors` have been added,
   allowing you to convert gridcell-oriented vectors to true-North/East ones.
 
+.. admonition:: NetCDF Data Variable Chunk Sizes
+
+  NetCDF data variable chunk sizes are now utilised at load time for
+  significant performance improvements.
+
 * The :class:`iris.fileformats.um.FieldCollation` objects, which are passed
   into load callbacks when using
   :func:`iris.fileformats.um.structured_um_loading`, now
@@ -42,9 +47,6 @@ Iris 2.2.0 Features
   :data:`iris.fileformats.um.FieldCollation.data_field_indices`.
   These provide the file locations of the original data fields, which are
   otherwise lost in the structured loading process.
-
-* NetCDF data variable chunk sizes are utilised at load time for significant
-  performance improvements.
 
 * :func:`iris.util.reverse` can now be used to reverse a cube by specifying
   one or more coordinates.
@@ -65,8 +67,8 @@ Iris 2.2.0 Features
   using another new feature :func:`iris.util.mask_cube`.
 
 
-Iris 2.1 Dependency updates
-===========================
+Iris 2.2 Dependency updates
+=============================
 
 * Iris is now using the latest version release of Dask (currently 0.19.3)
 
