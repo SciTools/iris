@@ -1562,20 +1562,25 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     boolean array (True where discontiguities are present).
 
     Args:
-        cube:
-        An instance of :class:`iris.cube.Cube`
+        cube (`iris.cube.Cube`):
+            The cube to be checked for discontinuities in its 'x' and 'y'
+            coordinates.
 
     Kwargs:
-        rel_tol:
-        relative tolerance
-
-        abs_tol:
-        absolute tolerance in coordinate units
+        rel_tol (float):
+            The relative equality tolerance to apply in coordinate bounds
+            checking.
+        abs_tol (float):
+            The absolute value tolerance to apply in coordinate bounds
+            checking.
 
     Returns:
-        Boolean array representing the truth value for discontiguous cells in
-        the coordinate points array.  This can be used as the input array for
-        :func:`iris.util.mask_discontiguities`.
+        result (`numpy.ndarray` of bool) :
+            true/false map of which cells in the cube XY grid have
+            discontiguities in the coordinate points array.
+
+            This can be used as the input array for
+            :func:`iris.util.mask_discontiguities`.
 
     Examples::
 
@@ -1605,8 +1610,6 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     for coord in spatial_coords:
         if coord.ndim != 2:
             raise NotImplementedError(dim_err_msg)
-        elif isinstance(coord, int):
-            span = set([coord])
         else:
             span = set(cube.coord_dims(coord))
         if not span:
@@ -1632,14 +1635,14 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     return bad_points_boolean
 
 
-def mask_discontiguities(cube_slice, discontiguous_points):
+def mask_cube(cube, points_to_mask):
     """
     Masks any cells in the data array which correspond to discontiguous
     cells in the coordinate points array.
 
     Args:
         cube_slice:
-        A scalar instance of :class:`iris.cube.Cube` (i.e. 2-dimensional)
+        A 2-dimensional instance of :class:`iris.cube.Cube`
 
         discontiguous_points:
         A 2d boolean array representing
@@ -1650,6 +1653,6 @@ def mask_discontiguities(cube_slice, discontiguous_points):
         where the chosen coordinate bounds array is discontiguous.
 
     """
-    cube_slice.data = ma.masked_array(cube_slice.data)
-    cube_slice.data[discontiguous_points] = ma.masked
-    return cube_slice
+    cube.data = ma.masked_array(cube.data)
+    cube.data[points_to_mask] = ma.masked
+    return cube

@@ -355,7 +355,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
                              'iris.util.find_discontiguities() to identify '
                              'discontiguities in your x and y coordinate '
                              'bounds arrays, and then mask them with '
-                             'iris.util.mask_discontiguities()'
+                             'iris.util.mask_cube()'
                              ''.format(
                               coord.name()))
 

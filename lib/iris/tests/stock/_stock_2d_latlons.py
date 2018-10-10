@@ -26,7 +26,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis.cartography import unrotate_pole
-from iris.cube import Cube, CubeList
+from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import RotatedGeogCS
 
@@ -304,14 +304,14 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
 
 def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
     """
-    Meddle with the XY grid bounds of a cube to make the grid discontiguous.
+    Meddle with the XY grid bounds of a 2D cube to make the grid discontiguous.
 
     Changes the points and bounds of a single gridcell, so that it becomes
     discontinuous with the next gridcell to its right.
 
     Also masks the cube data at the given point.
 
-    The cube must have bounded 2d 'x' and 'y' coordinates.
+    The cube must be 2-dimensional and have bounded 2d 'x' and 'y' coordinates.
 
     TODO: add a switch to make a discontiguity in the *y*-direction instead ?
     """
@@ -344,25 +344,12 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
 
     # Check which dimensions are spanned by each coordinate.
     for coord in (x_coord, y_coord):
-        if isinstance(coord, int):
-            span = set([coord])
-        else:
-            span = set(cube.coord_dims(coord))
+        span = set(cube.coord_dims(coord))
         if not span:
             msg = 'The coordinate {!r} doesn\'t span a data dimension.'
             raise ValueError(msg.format(coord.name()))
 
-        # masked_data = ma.masked_array(cube.data)
-        # Slice data so that we can apply the mask to the correct points and
-        # then broadcast it
-        sliced_cube = cube.slices(span)
-        cube_slice_list = CubeList()
-        for cube_slice in sliced_cube:
-            # For each cube slice, mask the data array at discontiguous points
-            cube_slice.data = ma.masked_array(cube_slice.data)
-            cube_slice.data[at_iy, at_ix] = ma.masked
-            cube_slice_list.append(cube_slice)
-        masked_cube, = cube_slice_list.merge()
+        masked_data = ma.masked_array(cube.data)
+        masked_data[at_iy, at_ix] = ma.masked
 
-    # # Also mask the relevant data point.
-    cube.data = masked_cube.data
+    cube.data = masked_data
