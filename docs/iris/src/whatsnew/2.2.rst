@@ -1,11 +1,11 @@
 What's New in Iris 2.2.0
 ************************
 
-:Release: 2.2.0a0
+:Release: 2.2.0
 :Date:
 
 
-This document explains the new/changed features of Iris in the alpha release
+This document explains the new/changed features of Iris in the release
 of version 2.2.0
 (:doc:`View all changes <index>`).
 
@@ -25,7 +25,7 @@ Iris 2.2.0 Features
   contiguous, or the cube's data must be masked at the discontiguities in
   order to avoid plotting errors.
 
-  The iris plot functions :func:`iris.plot.quiver` has been added, and this
+  The iris plot function :func:`iris.plot.quiver` has been added, and this
   also works with 2-dimensional plot coordinates.
 
 .. admonition:: 2-Dimensional Grid Vectors
@@ -33,3 +33,36 @@ Iris 2.2.0 Features
   The iris functions :func:`iris.analysis.cartography.gridcell_angles` and
   :func:`iris.analysis.cartography.rotate_grid_vectors` have been added,
   allowing you to convert gridcell-oriented vectors to true-North/East ones.
+
+* The :class:`iris.fileformats.um.FieldCollation` objects, which are passed
+  into load callbacks when using
+  :func:`iris.fileformats.um.structured_um_loading`, now
+  have the additional properties:
+  :data:`iris.fileformats.um.FieldCollation.data_filepath` and
+  :data:`iris.fileformats.um.FieldCollation.data_field_indices`.
+  These provide the file locations of the original data fields, which are
+  otherwise lost in the structured loading process.
+
+* NetCDF data variable chunk sizes are utilised at load time for significant
+  performance improvements.
+
+* :func:`iris.util.reverse` can now be used to reverse a cube by specifying
+  one or more coordinates.
+
+
+Iris 2.1 Dependency updates
+===========================
+
+* Iris is now using the latest version release of Dask (currently 0.19.3)
+
+*
+
+Bugs Fixed
+==========
+
+* Fixed a bug that prevented printing time coordinates with bounds when the
+  time coordinate was measured on a long interval (that is, ``months``
+  or ``years``).
+
+* "Gracefully filling..." warnings are now only issued when the co-ordinate or
+  bound data is actually masked.
