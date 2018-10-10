@@ -26,11 +26,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
 import numpy as np
 
-import matplotlib.pyplot as plt
-
-import cartopy.crs as ccrs
 import iris
 from iris.analysis.cartography import unrotate_pole
 from iris.cube import Cube
@@ -70,7 +69,6 @@ class Test(tests.GraphicsTest):
 
 
 @tests.skip_plot
-@tests.skip_data
 class Test2dContour(tests.GraphicsTest):
     def test_2d_coords_contour(self):
         ny, nx = 4, 6
