@@ -302,18 +302,18 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     return cube
 
 
-def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
+def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
     """
     Meddle with the XY grid bounds of a 2D cube to make the grid discontiguous.
 
     Changes the points and bounds of a single gridcell, so that it becomes
-    discontinuous with the next gridcell to its right.
+    discontinuous with an adjacent gridcell : either the one to its right, or
+    the one above it (if 'in_y' is True).
 
     Also masks the cube data at the given point.
 
     The cube must be 2-dimensional and have bounded 2d 'x' and 'y' coordinates.
 
-    TODO: add a switch to make a discontiguity in the *y*-direction instead ?
     """
     x_coord = cube.coord(axis='x')
     y_coord = cube.coord(axis='y')
@@ -326,11 +326,21 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
         pts, bds = coord.points, coord.bounds
         # Fetch the 4 bounds (bottom-left, bottom-right, top-right, top-left)
         bds_bl, bds_br, bds_tr, bds_tl = bds[at_iy, at_ix]
-        # Make a discontinuity "at" (iy, ix), by moving the right-hand edge of
-        # the cell to the midpoint of the existing left+right bounds.
-        new_bds_br = 0.5 * (bds_bl + bds_br)
-        new_bds_tr = 0.5 * (bds_tl + bds_tr)
-        bds_br, bds_tr = new_bds_br, new_bds_tr
+        if not in_y:
+            # Make a discontinuity "at" (iy, ix), by moving the right-hand edge
+            # of the cell to the midpoint of the existing left+right bounds.
+            new_bds_br = 0.5 * (bds_bl + bds_br)
+            new_bds_tr = 0.5 * (bds_tl + bds_tr)
+            bds_br, bds_tr = new_bds_br, new_bds_tr
+        else:
+            # Same but in the 'grid y direction' :
+            # Make a discontinuity "at" (iy, ix), by moving the **top** edge of
+            # the cell to the midpoint of the existing **top+bottom** bounds.
+            new_bds_tl = 0.5 * (bds_bl + bds_tl)
+            new_bds_tr = 0.5 * (bds_br + bds_tr)
+            bds_tl, bds_tr = new_bds_tl, new_bds_tr
+
+        # Write in the new bounds (all 4 corners).
         bds[at_iy, at_ix] = [bds_bl, bds_br, bds_tr, bds_tl]
         # Also reset the cell midpoint to the middle of the 4 new corners,
         # in case having a midpoint outside the corners might cause a problem.
