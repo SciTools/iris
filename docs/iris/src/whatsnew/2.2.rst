@@ -49,13 +49,16 @@ Iris 2.2.0 Features
 * :func:`iris.util.reverse` can now be used to reverse a cube by specifying
   one or more coordinates.
 
+* Time mean fields can now be saved to PP files as a cell method.
+
 
 Iris 2.1 Dependency updates
 ===========================
 
 * Iris is now using the latest version release of Dask (currently 0.19.3)
 
-*
+* Proj4 has been temporarily pinned to version < 5 while problems with the
+  Mollweide projection are addressed.
 
 Bugs Fixed
 ==========
