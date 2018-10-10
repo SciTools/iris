@@ -51,6 +51,19 @@ Iris 2.2.0 Features
 
 * Time mean fields can now be saved to PP files as a cell method.
 
+* Cube aggregators :func:`iris.analysis.MIN`, :func:`iris.analysis.MAX`,
+  :func:`iris.analysis.SUM` and :func:`iris.analysis.COUNT` now perform lazy
+  aggregation by utilizing Dask.
+
+* Error messages thrown upon failed addition of
+  :class:`iris.aux_factory.AuxCoordFactory` now include the name of the
+  required (but absent) coordinate as well as the name of the cube.
+
+* The function :func:`iris.util.find_discontiguities` can be used to check for
+  discontiguities in the bounds arrays of cube coordinates.  Additionally,
+  discontiguous points in coordinates can be explicitly masked
+  using another new feature :func:`iris.util.mask_cube`.
+
 
 Iris 2.1 Dependency updates
 ===========================
@@ -60,12 +73,30 @@ Iris 2.1 Dependency updates
 * Proj4 has been temporarily pinned to version < 5 while problems with the
   Mollweide projection are addressed.
 
+* Matplotlib has been pinned to version < 3 temporarily while we account for
+  its changes in all SciTools libraries.
+
+
 Bugs Fixed
 ==========
 
-* Fixed a bug that prevented printing time coordinates with bounds when the
-  time coordinate was measured on a long interval (that is, ``months``
+* The bug has been fixed that prevented printing time coordinates with bounds
+  when the time coordinate was measured on a long interval (that is, ``months``
   or ``years``).
 
 * "Gracefully filling..." warnings are now only issued when the co-ordinate or
   bound data is actually masked.
+
+* Iris can now correctly unpack a column of header objects when saving a
+  pandas DataFrame to a cube.
+
+
+Documentation Changes
+=====================
+
+* Iris' INSTALL document has been updated to include guidance for running
+  tests.
+
+* A link has been added to the Developers' Guide to make it easier to find the
+  Pull Request Check List.
+
