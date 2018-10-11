@@ -1,2 +1,0 @@
-* Fixed a bug that prevented printing time coordinates with bounds when the time
-  coordinate was measured on a long interval (that is, ``months`` or ``years``).
