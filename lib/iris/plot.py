@@ -104,7 +104,7 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
             raise ValueError('The coordinate {!r} has {} dimensions.'
                              'Cell-based plotting is only supported for'
                              'coordinates with one or two dimensions.'
-                             .format(coord.name(), len(span)))
+                             .format(coord.name()), len(span))
 
     # Check the combination of coordinates spans enough (ndims) data
     # dimensions.
@@ -271,7 +271,7 @@ def _invert_yaxis(v_coord, axes=None):
             axes.invert_yaxis()
 
 
-def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
+def _check_bounds_contiguity_and_mask(coord, data, atol=None):
     """
     Checks that any discontiguities in the bounds of the given coordinate only
     occur where the data is masked.
@@ -297,7 +297,6 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
             tolerance.
 
     """
-    kwargs = {}
     data_is_masked = hasattr(data, 'mask')
     if data_is_masked:
         # When checking the location of the discontiguities, we check against
@@ -318,16 +317,15 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
 
     elif coord.ndim == 2:
         if atol:
-            kwargs['atol'] = atol
-        if rtol:
-            kwargs['rtol'] = rtol
+            kwargs = {'atol': atol}
+        else:
+            kwargs = {}
         contiguous, diffs = coord._discontiguity_in_bounds(**kwargs)
 
         if not contiguous and data_is_masked:
             diffs_along_x, diffs_along_y = diffs
 
-            # Check along both dimensions that any discontiguous
-            # points are correctly masked.
+            # Check along both dimensions.
             not_masked_at_discontiguity_along_x = np.any(
                 np.logical_and(mask_invert[:, :-1], diffs_along_x))
 
@@ -343,20 +341,12 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
         if not data_is_masked:
             raise ValueError('The bounds of the {} coordinate are not '
                              'contiguous. Not able to create a suitable grid'
-                             'to plot. You can use '
-                             'iris.util.find_discontiguities() to identify '
-                             'discontiguities in your x and y coordinate '
-                             'bounds arrays.'.format(coord.name()))
+                             'to plot.'.format(coord.name()))
         if not_masked_at_discontiguity:
             raise ValueError('The bounds of the {} coordinate are not '
                              'contiguous and data is not masked where the '
                              'discontiguity occurs. Not able to create a '
-                             'suitable grid to plot. You can use '
-                             'iris.util.find_discontiguities() to identify '
-                             'discontiguities in your x and y coordinate '
-                             'bounds arrays, and then mask them with '
-                             'iris.util.mask_cube()'
-                             ''.format(
+                             'suitable grid to plot.'.format(
                               coord.name()))
 
 

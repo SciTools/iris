@@ -302,17 +302,17 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     return cube
 
 
-def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
+def make_bounds_discontiguous_at_point(cube, at_iy, at_ix):
     """
-    Meddle with the XY grid bounds of a 2D cube to make the grid discontiguous.
+    Meddle with the XY grid bounds of a cube to make the grid discontiguous.
 
     Changes the points and bounds of a single gridcell, so that it becomes
-    discontinuous with an adjacent gridcell : either the one to its right, or
-    the one above it (if 'in_y' is True).
-
+    discontinuous with the next gridcell to its right.
     Also masks the cube data at the given point.
 
-    The cube must be 2-dimensional and have bounded 2d 'x' and 'y' coordinates.
+    The cube must have bounded 2d 'x' and 'y' coordinates.
+
+    TODO: add a switch to make a discontiguity in the *y*-direction instead ?
 
     """
     x_coord = cube.coord(axis='x')
@@ -326,21 +326,11 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
         pts, bds = coord.points, coord.bounds
         # Fetch the 4 bounds (bottom-left, bottom-right, top-right, top-left)
         bds_bl, bds_br, bds_tr, bds_tl = bds[at_iy, at_ix]
-        if not in_y:
-            # Make a discontinuity "at" (iy, ix), by moving the right-hand edge
-            # of the cell to the midpoint of the existing left+right bounds.
-            new_bds_br = 0.5 * (bds_bl + bds_br)
-            new_bds_tr = 0.5 * (bds_tl + bds_tr)
-            bds_br, bds_tr = new_bds_br, new_bds_tr
-        else:
-            # Same but in the 'grid y direction' :
-            # Make a discontinuity "at" (iy, ix), by moving the **top** edge of
-            # the cell to the midpoint of the existing **top+bottom** bounds.
-            new_bds_tl = 0.5 * (bds_bl + bds_tl)
-            new_bds_tr = 0.5 * (bds_br + bds_tr)
-            bds_tl, bds_tr = new_bds_tl, new_bds_tr
-
-        # Write in the new bounds (all 4 corners).
+        # Make a discontinuity "at" (iy, ix), by moving the right-hand edge of
+        # the cell to the midpoint of the existing left+right bounds.
+        new_bds_br = 0.5 * (bds_bl + bds_br)
+        new_bds_tr = 0.5 * (bds_tl + bds_tr)
+        bds_br, bds_tr = new_bds_br, new_bds_tr
         bds[at_iy, at_ix] = [bds_bl, bds_br, bds_tr, bds_tl]
         # Also reset the cell midpoint to the middle of the 4 new corners,
         # in case having a midpoint outside the corners might cause a problem.
@@ -351,15 +341,10 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
 
     adjust_coord(x_coord)
     adjust_coord(y_coord)
-
-    # Check which dimensions are spanned by each coordinate.
-    for coord in (x_coord, y_coord):
-        span = set(cube.coord_dims(coord))
-        if not span:
-            msg = 'The coordinate {!r} doesn\'t span a data dimension.'
-            raise ValueError(msg.format(coord.name()))
-
-        masked_data = ma.masked_array(cube.data)
-        masked_data[at_iy, at_ix] = ma.masked
-
-    cube.data = masked_data
+    # Also mask the relevant data point.
+    data = cube.data  # N.B. fetch all the data.
+    if not ma.isMaskedArray(data):
+        # Promote to masked array, to avoid converting mask to NaN.
+        data = ma.masked_array(data)
+    data[at_iy, at_ix] = ma.masked
+    cube.data = data
