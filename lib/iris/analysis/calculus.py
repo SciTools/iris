@@ -243,7 +243,7 @@ def differentiate(cube, coord_to_differentiate):
     and `C` and `B` the output coordinate values and bounds.
 
     .. note:: Difference method used is the same as :func:`cube_delta`
-    and therefore has the same limitations.
+        and therefore has the same limitations.
 
     .. note:: Spherical differentiation does not occur in this routine.
 

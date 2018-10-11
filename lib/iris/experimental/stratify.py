@@ -115,7 +115,7 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
         If the interpolator is None, :func:`stratify.interpolate` will be used
         with linear interpolation and NaN extrapolation.
 
-        An example of constructing an alternative interpolation scheme:
+        An example of constructing an alternative interpolation scheme::
 
             from functools import partial
             interpolator = partial(stratify.interpolate,
