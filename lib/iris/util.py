@@ -33,13 +33,13 @@ import os
 import os.path
 import sys
 import tempfile
-import time
 
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.coords
 import iris.exceptions
 import iris.cube
 
@@ -1580,3 +1580,111 @@ def _meshgrid(*xi, **kwargs):
         if mxii.dtype != xii.dtype:
             mxi[i] = mxii.astype(xii.dtype)
     return mxi
+
+
+def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
+    """
+    Searches coord for discontiguities in the bounds array, returned as a
+    boolean array (True where discontiguities are present).
+
+    Args:
+
+    * cube (`iris.cube.Cube`):
+        The cube to be checked for discontinuities in its 'x' and 'y'
+        coordinates.
+
+    Kwargs:
+
+    * rel_tol (float):
+        The relative equality tolerance to apply in coordinate bounds
+        checking.
+
+    * abs_tol (float):
+        The absolute value tolerance to apply in coordinate bounds
+        checking.
+
+    Returns:
+
+    * result (`numpy.ndarray` of bool) :
+        true/false map of which cells in the cube XY grid have
+        discontiguities in the coordinate points array.
+
+        This can be used as the input array for
+        :func:`iris.util.mask_discontiguities`.
+
+    Examples::
+
+        # Find any unknown discontiguities in your cube's x and y arrays:
+        discontiguities = iris.util.find_discontiguities(cube)
+
+        # Pass the resultant boolean array to `iris.util.mask_discontiguities`
+        # with a cube slice; this will use the boolean array to mask
+        # any discontiguous data points before plotting:
+        masked_cube_slice = iris.util.mask_discontiguities(cube[0],
+                                                           discontiguities)
+
+        # Plot the masked cube slice:
+        iplt.pcolormesh(masked_cube_slice)
+
+    """
+    lats_and_lons = ['latitude', 'grid_latitude',
+                     'longitude', 'grid_longitude']
+    spatial_coords = [coord for coord in cube.aux_coords if
+                      coord.name() in lats_and_lons]
+    dim_err_msg = 'Discontiguity searches are currently only supported for ' \
+                  '2-dimensional coordinates.'
+    if len(spatial_coords) != 2:
+        raise NotImplementedError(dim_err_msg)
+
+    # Check which dimensions are spanned by each coordinate.
+    for coord in spatial_coords:
+        if coord.ndim != 2:
+            raise NotImplementedError(dim_err_msg)
+        else:
+            span = set(cube.coord_dims(coord))
+        if not span:
+            msg = 'The coordinate {!r} doesn\'t span a data dimension.'
+            raise ValueError(msg.format(coord.name()))
+
+    # Check that the 2d coordinate arrays are the same shape as each other
+    if len(spatial_coords) == 2:
+        assert spatial_coords[0].points.shape == spatial_coords[1].points.shape
+
+    # Set up unmasked boolean array the same size as the coord points array:
+    bad_points_boolean = np.zeros(spatial_coords[0].points.shape, dtype=bool)
+
+    for coord in spatial_coords:
+        _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(rtol=rel_tol,
+                                                               atol=abs_tol)
+
+        bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1],
+                                                   diffs_x)
+        # apply mask for y-direction discontiguities:
+        bad_points_boolean[:-1, :] = np.logical_or(bad_points_boolean[:-1, :],
+                                                   diffs_y)
+    return bad_points_boolean
+
+
+def mask_cube(cube, points_to_mask):
+    """
+    Masks any cells in the data array which correspond to cells marked `True`
+    in the `points_to_mask` array.
+
+    Args:
+
+    * cube (`iris.cube.Cube`):
+        A 2-dimensional instance of :class:`iris.cube.Cube`.
+
+    * points_to_mask (`numpy.ndarray` of bool):
+        A 2d boolean array of Truth values representing points to mask in the
+        x and y arrays of the cube.
+
+    Returns:
+
+    * result (`iris.cube.Cube`):
+        A cube whose data array is masked at points specified by input array.
+
+    """
+    cube.data = ma.masked_array(cube.data)
+    cube.data[points_to_mask] = ma.masked
+    return cube

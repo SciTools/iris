@@ -480,7 +480,8 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
         self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs_along_x, np.array([2, 2, 2]).reshape(3, 1))
+        self.assertArrayEqual(diffs_along_x,
+                              np.array([True, True, True]).reshape(3, 1))
         self.assertTrue(not diffs_along_y.any())
 
     def test_2d_discontiguous_along_y(self):
@@ -490,7 +491,7 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         diffs_along_x, diffs_along_y = diffs
         self.assertFalse(contiguous)
         self.assertTrue(not diffs_along_x.any())
-        self.assertArrayEqual(diffs_along_y, np.array([[2, 2, 2]]))
+        self.assertArrayEqual(diffs_along_y, np.array([[True, True, True]]))
 
     def test_2d_discontiguous_along_x_and_y(self):
         coord = AuxCoord(np.array([[1, 5], [3, 5]]),
@@ -498,8 +499,8 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
                                           [[2, 4, 4, 2], [4, 6, 6, 4]]]))
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        exp_x_diffs = np.array([2, 0]).reshape(2, 1)
-        exp_y_diffs = np.array([2, 0]).reshape(1, 2)
+        exp_x_diffs = np.array([True, False]).reshape(2, 1)
+        exp_y_diffs = np.array([True, False]).reshape(1, 2)
         self.assertFalse(contiguous)
         self.assertArrayEqual(diffs_along_x, exp_x_diffs)
         self.assertArrayEqual(diffs_along_y, exp_y_diffs)
@@ -508,10 +509,11 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         coord = AuxCoord(self.points_3by3[:, ::2],
                          bounds=self.lon_bounds_3by3[:, ::2, :])
         # Set a high atol that allows small discontiguities.
-        contiguous, diffs = coord._discontiguity_in_bounds(atol=2)
+        contiguous, diffs = coord._discontiguity_in_bounds(atol=5)
         diffs_along_x, diffs_along_y = diffs
         self.assertTrue(contiguous)
-        self.assertArrayEqual(diffs_along_x, np.array([2, 2, 2]).reshape(3, 1))
+        self.assertArrayEqual(diffs_along_x,
+                              np.array([False, False, False]).reshape(3, 1))
         self.assertTrue(not diffs_along_y.any())
 
     def test_2d_one_cell(self):
@@ -571,7 +573,7 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
         self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs_along_x, np.array([[170], [170]]))
+        self.assertArrayEqual(diffs_along_x, np.array([[True], [True]]))
         self.assertTrue(not diffs_along_y.any())
 
     def test_2d_contiguous_mod_360_not_longitude(self):
@@ -599,7 +601,7 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
         self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs_along_x, np.array([[100], [100]]))
+        self.assertArrayEqual(diffs_along_x, np.array([[True], [True]]))
         self.assertTrue(not diffs_along_y.any())
 
 
