@@ -2035,14 +2035,32 @@ class _Groupby(object):
                 if coord.bounds is None:
                     new_points = []
                     new_bounds = None
+                    # np.apply_along_axis does not work with str.join, so we
+                    # need to loop through the array directly. First move axis
+                    # of interest to trailing dim and flatten the others.
+                    work_arr = np.moveaxis(coord.points, dim, -1)
+                    shape = work_arr.shape
+                    if coord.ndim == 1:
+                        work_shape = (1, ) + work_arr.shape
+                        new_shape = (len(self),)
+                    else:
+                        work_shape = (np.product(work_arr.shape[:-1]),
+                                      work_arr.shape[-1])
+                        new_shape = (len(self),) + shape[:-1]
+                    work_arr = work_arr.reshape(work_shape)
+
                     for key_slice in six.itervalues(self._slices_by_key):
                         if isinstance(key_slice, slice):
                             indices = key_slice.indices(
                                 coord.points.shape[dim])
                             key_slice = range(*indices)
-                        new_pts = np.apply_along_axis(
-                            '|'.join, dim, coord.points.take(key_slice, dim))
-                        new_points.append(new_pts)
+
+                        for arr in work_arr:
+                            new_points.append('|'.join(arr.take(key_slice)))
+
+                    # Reinstate flattened dimensions. Aggregated dim now leads.
+                    new_points = np.array(new_points).reshape(new_shape)
+
                     # Move aggregated dimension back to position it started in.
                     new_points = np.moveaxis(new_points, 0, dim)
                 else:
