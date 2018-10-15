@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -223,7 +223,7 @@ def geometry_area_weights(cube, geometry, normalize=False):
         else:
             slices.append(slice(None))
 
-    weights[slices] = subweights
+    weights[tuple(slices)] = subweights
 
     # Fix for the limitation of iris.analysis.MEAN weights handling.
     # Broadcast the array to the full shape of the cube

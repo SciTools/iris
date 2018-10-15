@@ -143,6 +143,47 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
+def _get_2d_coord_bound_grid(bounds):
+    """
+    Creates a grid using the bounds of a 2D coordinate with 4 sided cells.
+
+    Assumes that the four vertices of the cells are in an anti-clockwise order
+    (bottom-left, bottom-right, top-right, top-left).
+
+    Selects the zeroth vertex of each cell. A final column is added, which
+    contains the first vertex of the cells in the final column. A final row
+    is added, which contains the third vertex of all the cells in the final
+    row, except for in the final column where it uses the second vertex.
+    e.g.
+    # 0-0-0-0-1
+    # 0-0-0-0-1
+    # 3-3-3-3-2
+
+    Args:
+    * bounds: (array)
+        Coordinate bounds array of shape (Y, X, 4)
+
+    Returns:
+    * grid: (array)
+        Grid of shape (Y+1, X+1)
+
+    """
+    # Check bds has the shape (ny, nx, 4)
+    if not (bounds.ndim == 3 and bounds.shape[-1] == 4):
+        raise ValueError('Bounds for 2D coordinates must be 3-dimensional and '
+                         'have 4 bounds per point.')
+
+    bounds_shape = bounds.shape
+    result = np.zeros((bounds_shape[0] + 1, bounds_shape[1] + 1))
+
+    result[:-1, :-1] = bounds[:, :, 0]
+    result[:-1, -1] = bounds[:, -1, 1]
+    result[-1, :-1] = bounds[-1, :, 3]
+    result[-1, -1] = bounds[-1, -1, 2]
+
+    return result
+
+
 class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
     """
     An immutable representation of a single cell of a coordinate, including the
@@ -741,7 +782,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 points = self._str_dates(self.points)
             bounds = ''
             if self.has_bounds():
-                bounds = ', bounds=' + self._str_dates(self.bounds)
+                if self.units.is_long_time_interval():
+                    bounds_vals = self.bounds
+                else:
+                    bounds_vals = self._str_dates(self.bounds)
+                bounds = ', bounds={vals}'.format(vals=bounds_vals)
             result = fmt.format(self=self, cls=type(self).__name__,
                                 points=points, bounds=bounds,
                                 other_metadata=self._repr_other_metadata())
@@ -950,21 +995,100 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         return _CellIterator(self)
 
-    def _sanity_check_contiguous(self):
-        if self.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(
-                'Invalid operation for {!r}. Contiguous bounds are not defined'
-                ' for multi-dimensional coordinates.'.format(self.name()))
-        if self.nbounds != 2:
-            raise ValueError(
-                'Invalid operation for {!r}, with {} bounds. Contiguous bounds'
-                ' are only defined for coordinates with 2 bounds.'.format(
-                    self.name(), self.nbounds))
+    def _sanity_check_bounds(self):
+        if self.ndim == 1:
+            if self.nbounds != 2:
+                raise ValueError('Invalid operation for {!r}, with {} '
+                                 'bound(s). Contiguous bounds are only '
+                                 'defined for 1D coordinates with 2 '
+                                 'bounds.'.format(self.name(), self.nbounds))
+        elif self.ndim == 2:
+            if self.nbounds != 4:
+                raise ValueError('Invalid operation for {!r}, with {} '
+                                 'bound(s). Contiguous bounds are only '
+                                 'defined for 2D coordinates with 4 '
+                                 'bounds.'.format(self.name(), self.nbounds))
+        else:
+            raise ValueError('Invalid operation for {!r}. Contiguous bounds '
+                             'are not defined for coordinates with more than '
+                             '2 dimensions.'.format(self.name()))
+
+    def _discontiguity_in_bounds(self, rtol=1e-05, atol=1e-08):
+        """
+        Checks that the bounds of the coordinate are contiguous.
+
+        Kwargs:
+        * rtol: (float)
+            Relative tolerance that is used when checking contiguity. Defaults
+            to 1e-5.
+        * atol: (float)
+            Absolute tolerance that is used when checking contiguity. Defaults
+            to 1e-8.
+
+        Returns:
+        * contiguous: (boolean)
+            True if there are no discontiguities.
+        * diffs: (array or tuple of arrays)
+            The diffs along the bounds of the coordinate. If self is a 2D
+            coord of shape (Y, X), a tuple of arrays is returned, where the
+            first is an array of differences along the x-axis, of the shape
+            (Y, X-1) and the second is an array of differences along the
+            y-axis, of the shape (Y-1, X).
+
+        """
+        self._sanity_check_bounds()
+
+        if self.ndim == 1:
+            contiguous = np.allclose(self.bounds[1:, 0],
+                                     self.bounds[:-1, 1],
+                                     rtol=rtol, atol=atol)
+            diffs = np.abs(self.bounds[:-1, 1] - self.bounds[1:, 0])
+
+        elif self.ndim == 2:
+            def mod360_adjust(compare_axis):
+                bounds = self.bounds.copy()
+
+                if compare_axis == 'x':
+                    upper_bounds = bounds[:, :-1, 1]
+                    lower_bounds = bounds[:, 1:, 0]
+                elif compare_axis == 'y':
+                    upper_bounds = bounds[:-1, :, 3]
+                    lower_bounds = bounds[1:, :, 0]
+
+                if self.name() in ['longitude', 'grid_longitude']:
+                    # If longitude, adjust for longitude wrapping
+                    diffs = upper_bounds - lower_bounds
+                    index = diffs > 180
+                    if index.any():
+                        sign = np.sign(diffs)
+                        modification = (index.astype(int) * 360) * sign
+                        upper_bounds -= modification
+
+                diffs_along_axis = np.abs(upper_bounds - lower_bounds)
+                contiguous_along_axis = np.allclose(upper_bounds, lower_bounds,
+                                                    rtol=rtol, atol=atol)
+                return diffs_along_axis, contiguous_along_axis
+
+            diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis='x')
+            diffs_along_y, match_cell_y1 = mod360_adjust(compare_axis='y')
+
+            contiguous = match_cell_x1 and match_cell_y1
+            diffs = (diffs_along_x, diffs_along_y)
+
+        return contiguous, diffs
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
         """
         Return True if, and only if, this Coord is bounded with contiguous
         bounds to within the specified relative and absolute tolerances.
+
+        1D coords are contiguous if the upper bound of a cell aligns,
+        within a tolerance, to the lower bound of the next cell along.
+
+        2D coords, with 4 bounds, are contiguous if the lower right corner of
+        each cell aligns with the lower left corner of the cell to the right of
+        it, and the upper left corner of each cell aligns with the lower left
+        corner of the cell above it.
 
         Args:
 
@@ -978,33 +1102,49 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         if self.has_bounds():
-            self._sanity_check_contiguous()
-            return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
-                               rtol=rtol, atol=atol)
+            contiguous, _ = self._discontiguity_in_bounds(rtol=rtol, atol=atol)
         else:
-            return False
+            contiguous = False
+        return contiguous
 
     def contiguous_bounds(self):
         """
-        Returns the N+1 bound values for a contiguous bounded coordinate
-        of length N.
+        Returns the N+1 bound values for a contiguous bounded 1D coordinate
+        of length N, or the (N+1, M+1) bound values for a contiguous bounded 2D
+        coordinate of shape (N, M).
+
+        Only 1D or 2D coordinates are supported.
 
         .. note::
 
-            If the coordinate is does not have bounds, this method will
+            If the coordinate has bounds, this method assumes they are
+            contiguous.
+
+            If the coordinate is 1D and does not have bounds, this method will
             return bounds positioned halfway between the coordinate's points.
+
+            If the coordinate is 2D and does not have bounds, an error will be
+            raised.
 
         """
         if not self.has_bounds():
-            warnings.warn('Coordinate {!r} is not bounded, guessing '
-                          'contiguous bounds.'.format(self.name()))
-            bounds = self._guess_bounds()
+            if self.ndim == 1:
+                warnings.warn('Coordinate {!r} is not bounded, guessing '
+                              'contiguous bounds.'.format(self.name()))
+                bounds = self._guess_bounds()
+            elif self.ndim == 2:
+                raise ValueError('2D coordinate {!r} is not bounded. Guessing '
+                                 'bounds of 2D coords is not currently '
+                                 'supported.'.format(self.name()))
         else:
-            self._sanity_check_contiguous()
+            self._sanity_check_bounds()
             bounds = self.bounds
 
-        c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
-        c_bounds[-1] = bounds[-1, 1]
+        if self.ndim == 1:
+            c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
+            c_bounds[-1] = bounds[-1, 1]
+        elif self.ndim == 2:
+            c_bounds = _get_2d_coord_bound_grid(bounds)
         return c_bounds
 
     def is_monotonic(self):

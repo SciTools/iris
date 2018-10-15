@@ -45,6 +45,7 @@
 + [Installation](#installation)
 + [Copyright and licence](#copyright-and-licence)
 + [Get in touch](#get-in-touch)
++ [Contributing](#contributing)
 
 [](TOC)
 
@@ -96,9 +97,8 @@ are available in [INSTALL](INSTALL).
 # Get in touch
 
   * Report bugs, or suggest new features using an Issue or Pull Request on [Github](https://github.com/SciTools/iris). You can also comment on existing Issues and Pull Requests.
-  * For discussions from a user perspective you could join our [SciTools User's Google Group](https://groups.google.com/forum/#!forum/scitools-iris).
-  * For those involved in developing Iris we also have a [Google Group](https://groups.google.com/forum/#!forum/scitools-iris-dev).
-  * [Gitter](https://gitter.im/SciTools/iris) ???
+  * For discussions from a user perspective you could join our [SciTools Users Google Group](https://groups.google.com/forum/#!forum/scitools-iris).
+  * For those involved in developing Iris we also have an [Iris Developers Google Group](https://groups.google.com/forum/#!forum/scitools-iris-dev).
   * [StackOverflow](https://stackoverflow.com/questions/tagged/python-iris) For "How do I?".
 
 # Copyright and licence
@@ -106,5 +106,7 @@ are available in [INSTALL](INSTALL).
 Iris may be freely distributed, modified and used commercially under the terms
 of its [GNU LGPLv3 license](COPYING.LESSER).
 
+# Contributing
+Information on how to contribute can be found in the [Iris developer guide](https://scitools.org.uk/iris/docs/latest/developers_guide/index.html).
 
 (C) British Crown Copyright 2010 - 2018, Met Office

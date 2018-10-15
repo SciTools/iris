@@ -93,31 +93,6 @@ class TestMonotonic(tests.IrisTest):
         self.assertMonotonic(b)
 
 
-class TestReverse(tests.IrisTest):
-    def test_simple(self):
-        a = np.arange(12).reshape(3, 4)
-        np.testing.assert_array_equal(a[::-1], iris.util.reverse(a, 0))
-        np.testing.assert_array_equal(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
-        np.testing.assert_array_equal(a[:, ::-1], iris.util.reverse(a, 1))
-        np.testing.assert_array_equal(a[:, ::-1], iris.util.reverse(a, [1]))
-        self.assertRaises(ValueError, iris.util.reverse, a, [])
-        self.assertRaises(ValueError, iris.util.reverse, a, -1)
-        self.assertRaises(ValueError, iris.util.reverse, a, 10)
-        self.assertRaises(ValueError, iris.util.reverse, a, [-1])
-        self.assertRaises(ValueError, iris.util.reverse, a, [0, -1])
-
-    def test_single(self):
-        a = np.arange(36).reshape(3, 4, 3)
-        np.testing.assert_array_equal(a[::-1], iris.util.reverse(a, 0))
-        np.testing.assert_array_equal(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
-        np.testing.assert_array_equal(a[:, ::-1, ::-1], iris.util.reverse(a, [1, 2]))
-        np.testing.assert_array_equal(a[..., ::-1], iris.util.reverse(a, 2))
-        self.assertRaises(ValueError, iris.util.reverse, a, -1)
-        self.assertRaises(ValueError, iris.util.reverse, a, 10)
-        self.assertRaises(ValueError, iris.util.reverse, a, [-1])
-        self.assertRaises(ValueError, iris.util.reverse, a, [0, -1])
-
-
 class TestClipString(tests.IrisTest):
     def setUp(self):
         self.test_string = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."

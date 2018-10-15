@@ -28,7 +28,7 @@ def read_conda_reqs(fname, options):
     with open(fname, 'r') as fh:
         for line in fh:
             line = line.strip()
-            if '#conda:' in line:
+            if CONDA_PATTERN in line:
                 line_start = line.index(CONDA_PATTERN) + len(CONDA_PATTERN)
                 line = line[line_start:].strip()
                 if 'only python=2' in line:

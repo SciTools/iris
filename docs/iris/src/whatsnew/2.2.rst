@@ -1,0 +1,35 @@
+What's New in Iris 2.2.0
+************************
+
+:Release: 2.2.0a0
+:Date:
+
+
+This document explains the new/changed features of Iris in the alpha release
+of version 2.2.0
+(:doc:`View all changes <index>`).
+
+
+Iris 2.2.0 Features
+===================
+.. _showcase:
+
+.. admonition:: 2-Dimensional Coordinate Plotting
+
+  The iris plot functions :func:`~iris.plot.pcolor` and
+  :func:`~iris.plot.pcolormesh` now accommodate the plotting of 2-dimensional
+  coordinates as well as 1-dimensional coordinates.
+
+  To enable this feature, each coordinate passed in for plotting will be
+  automatically checked for contiguity.  Coordinate bounds must either be
+  contiguous, or the cube's data must be masked at the discontiguities in
+  order to avoid plotting errors.
+
+  The iris plot functions :func:`iris.plot.quiver` has been added, and this
+  also works with 2-dimensional plot coordinates.
+
+.. admonition:: 2-Dimensional Grid Vectors
+
+  The iris functions :func:`iris.analysis.cartography.gridcell_angles` and
+  :func:`iris.analysis.cartography.rotate_grid_vectors` have been added,
+  allowing you to convert gridcell-oriented vectors to true-North/East ones.
