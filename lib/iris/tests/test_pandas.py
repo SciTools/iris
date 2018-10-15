@@ -398,6 +398,17 @@ class TestDataFrameAsCube(tests.IrisTest):
             tests.get_result_path(('pandas', 'as_cube',
                                    'data_frame_masked.cml')))
 
+    def test_data_frame_multidim(self):
+        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4],
+                                       [5, 6, 7, 8, 9]],
+                                      index=[0, 1],
+                                      columns=['col_1', 'col_2', 'col_3',
+                                               'col_4', 'col_5'])
+        self.assertCML(
+            iris.pandas.as_cube(data_frame),
+            tests.get_result_path(('pandas', 'as_cube',
+                                   'data_frame_multidim.cml')))
+
     def test_data_frame_cftime_360(self):
         data_frame = pandas.DataFrame(
             [[0, 1, 2, 3, 4],

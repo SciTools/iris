@@ -40,11 +40,13 @@ class TestBoundsVertexDim(tests.IrisTest):
     def setUp(self):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
+
+        cf_data = self._make_cf_data(points)
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
             dimensions=('foo', 'bar'),
             cf_name='wibble',
-            cf_data=mock.Mock(),
+            cf_data=cf_data,
             standard_name=None,
             long_name='wibble',
             units='m',
@@ -54,7 +56,8 @@ class TestBoundsVertexDim(tests.IrisTest):
 
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=('foo', 'bar')),
+            cf_var=mock.Mock(dimensions=('foo', 'bar'),
+                             cf_data=cf_data),
             filename='DUMMY',
             provides=dict(coordinates=[]))
 
@@ -72,14 +75,21 @@ class TestBoundsVertexDim(tests.IrisTest):
             'iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
             new=patched__getitem__)
 
+    @staticmethod
+    def _make_cf_data(vals):
+        cf_data = mock.Mock(_FillValue=None)
+        cf_data.chunking = mock.MagicMock(return_value=vals.shape)
+        return cf_data
+
     def test_slowest_varying_vertex_dim(self):
         # Create the bounds cf variable.
         bounds = np.arange(24).reshape(4, 2, 3)
+        cf_data = self._make_cf_data(bounds)
         self.cf_bounds_var = mock.Mock(
             spec=CFVariable,
             dimensions=('nv', 'foo', 'bar'),
             cf_name='wibble_bnds',
-            cf_data=mock.Mock(),
+            cf_data=cf_data,
             shape=bounds.shape,
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
@@ -116,11 +126,12 @@ class TestBoundsVertexDim(tests.IrisTest):
 
     def test_fastest_varying_vertex_dim(self):
         bounds = np.arange(24).reshape(2, 3, 4)
+        cf_data = self._make_cf_data(bounds)
         self.cf_bounds_var = mock.Mock(
             spec=CFVariable,
             dimensions=('foo', 'bar', 'nv'),
             cf_name='wibble_bnds',
-            cf_data=mock.Mock(),
+            cf_data=cf_data,
             shape=bounds.shape,
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
@@ -155,11 +166,12 @@ class TestBoundsVertexDim(tests.IrisTest):
         # which are 'foo' and 'bar' (as permitted by the cf spec),
         # this should still work because the vertex dim is the fastest varying.
         bounds = np.arange(24).reshape(2, 3, 4)
+        cf_data = self._make_cf_data(bounds)
         self.cf_bounds_var = mock.Mock(
             spec=CFVariable,
             dimensions=('x', 'y', 'nv'),
             cf_name='wibble_bnds',
-            cf_data=mock.Mock(),
+            cf_data=cf_data,
             shape=bounds.shape,
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
@@ -194,11 +206,14 @@ class TestDtype(tests.IrisTest):
     def setUp(self):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
+        cf_data = mock.Mock(_FillValue=None)
+        cf_data.chunking = mock.MagicMock(return_value=points.shape)
+
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
             dimensions=('foo', 'bar'),
             cf_name='wibble',
-            cf_data=mock.Mock(),
+            cf_data=cf_data,
             standard_name=None,
             long_name='wibble',
             units='m',

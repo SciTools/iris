@@ -65,7 +65,7 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
 from iris.analysis._regrid import RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
-import iris._lazy_data as iris_lazy_data
+import iris._lazy_data
 
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
@@ -468,7 +468,7 @@ class _Aggregator(object):
         # provided to __init__.
         kwargs = dict(list(self._kwargs.items()) + list(kwargs.items()))
 
-        return self.lazy_func(data, axis, **kwargs)
+        return self.lazy_func(data, axis=axis, **kwargs)
 
     def aggregate(self, data, axis, **kwargs):
         """
@@ -1015,6 +1015,40 @@ class WeightedAggregator(Aggregator):
         return result
 
 
+def _build_dask_mdtol_function(dask_stats_function):
+    """
+    Make a wrapped dask statistic function that supports the 'mdtol' keyword.
+
+    'dask_function' must be a dask statistical function, compatible with the
+    call signature : "dask_stats_function(data, axis=axis, **kwargs)".
+    It must be masked-data tolerant, i.e. it ignores masked input points and
+    performs a calculation on only the unmasked points.
+    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
+
+    The returned value is a new function operating on dask arrays.
+    It has the call signature `stat(data, axis=-1, mdtol=None, **kwargs)`.
+
+    """
+    @wraps(dask_stats_function)
+    def inner_stat(array, axis=-1, mdtol=None, **kwargs):
+        # Call the statistic to get the basic result (missing-data tolerant).
+        dask_result = dask_stats_function(array, axis=axis, **kwargs)
+        if mdtol is None or mdtol >= 1.0:
+            result = dask_result
+        else:
+            # Build a lazy computation to compare the fraction of missing
+            # input points at each output point to the 'mdtol' threshold.
+            point_mask_counts = da.sum(da.ma.getmaskarray(array), axis=axis)
+            points_per_calc = array.size / dask_result.size
+            masked_point_fractions = point_mask_counts / points_per_calc
+            boolean_mask = masked_point_fractions > mdtol
+            # Return an mdtol-masked version of the basic result.
+            result = da.ma.masked_array(da.ma.getdata(dask_result),
+                                        boolean_mask)
+        return result
+    return inner_stat
+
+
 def _percentile(data, axis, percent, fast_percentile_method=False,
                 **kwargs):
     """
@@ -1191,20 +1225,24 @@ def _weighted_percentile(data, axis, weights, percent, returned=False,
         return result
 
 
-def _count(array, function, axis, **kwargs):
-    if not callable(function):
-        raise ValueError('function must be a callable. Got %s.'
-                         % type(function))
-    return ma.sum(function(array), axis=axis, **kwargs)
+@_build_dask_mdtol_function
+def _lazy_count(array, **kwargs):
+    array = iris._lazy_data.as_lazy_data(array)
+    func = kwargs.pop('function', None)
+    if not callable(func):
+        emsg = 'function must be a callable. Got {}.'
+        raise TypeError(emsg.format(type(func)))
+    return da.sum(func(array), **kwargs)
 
 
 def _proportion(array, function, axis, **kwargs):
+    count = iris._lazy_data.non_lazy(_lazy_count)
     # if the incoming array is masked use that to count the total number of
     # values
     if ma.isMaskedArray(array):
         # calculate the total number of non-masked values across the given axis
-        total_non_masked = _count(array.mask, np.logical_not,
-                                  axis=axis, **kwargs)
+        total_non_masked = count(
+            array.mask, axis=axis, function=np.logical_not, **kwargs)
         total_non_masked = ma.masked_equal(total_non_masked, 0)
     else:
         total_non_masked = array.shape[axis]
@@ -1215,7 +1253,7 @@ def _proportion(array, function, axis, **kwargs):
     # a dtype for its data that is different to the dtype of the fill-value,
     # which can cause issues outside this function.
     # Reference - tests/unit/analyis/test_PROPORTION.py Test_masked.test_ma
-    numerator = _count(array, function, axis=axis, **kwargs)
+    numerator = count(array, axis=axis, function=function, **kwargs)
     result = ma.asarray(numerator / total_non_masked)
 
     return result
@@ -1228,21 +1266,23 @@ def _rms(array, axis, **kwargs):
     return rval
 
 
-def _sum(array, **kwargs):
+@_build_dask_mdtol_function
+def _lazy_sum(array, **kwargs):
+    array = iris._lazy_data.as_lazy_data(array)
     # weighted or scaled sum
     axis_in = kwargs.get('axis', None)
     weights_in = kwargs.pop('weights', None)
     returned_in = kwargs.pop('returned', False)
     if weights_in is not None:
-        wsum = ma.sum(weights_in * array, **kwargs)
+        wsum = da.sum(weights_in * array, **kwargs)
     else:
-        wsum = ma.sum(array, **kwargs)
+        wsum = da.sum(array, **kwargs)
     if returned_in:
         if weights_in is None:
-            weights = np.ones_like(array)
+            weights = iris._lazy_data.as_lazy_data(np.ones_like(array))
         else:
             weights = weights_in
-        rvalue = (wsum, ma.sum(weights, axis=axis_in))
+        rvalue = (wsum, da.sum(weights, axis=axis_in))
     else:
         rvalue = wsum
     return rvalue
@@ -1352,8 +1392,9 @@ def _peak(array, **kwargs):
 #
 # Common partial Aggregation class constructors.
 #
-COUNT = Aggregator('count', _count,
-                   units_func=lambda units: 1)
+COUNT = Aggregator('count', iris._lazy_data.non_lazy(_lazy_count),
+                   units_func=lambda units: 1,
+                   lazy_func=_lazy_count)
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
 of :class:`~iris.cube.Cube` data occurrences that satisfy a particular
@@ -1418,56 +1459,6 @@ This aggregator handles masked data.
 
 """
 
-
-MAX = Aggregator('maximum', ma.max)
-"""
-An :class:`~iris.analysis.Aggregator` instance that calculates
-the maximum over a :class:`~iris.cube.Cube`, as computed by
-:func:`numpy.ma.max`.
-
-**For example**:
-
-To compute zonal maximums over the *longitude* axis of a cube::
-
-    result = cube.collapsed('longitude', iris.analysis.MAX)
-
-This aggregator handles masked data.
-
-"""
-
-
-def _build_dask_mdtol_function(dask_stats_function):
-    """
-    Make a wrapped dask statistic function that supports the 'mdtol' keyword.
-
-    'dask_function' must be a dask statistical function, compatible with the
-    call signature : "dask_stats_function(data, axis, **kwargs)".
-    It must be masked-data tolerant, i.e. it ignores masked input points and
-    performs a calculation on only the unmasked points.
-    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
-
-    The returned value is a new function operating on dask arrays.
-    It has the call signature `stat(data, axis=-1, mdtol=None, **kwargs)`.
-
-    """
-    @wraps(dask_stats_function)
-    def inner_stat(array, axis=-1, mdtol=None, **kwargs):
-        # Call the statistic to get the basic result (missing-data tolerant).
-        dask_result = dask_stats_function(array, axis=axis, **kwargs)
-        if mdtol is None or mdtol >= 1.0:
-            result = dask_result
-        else:
-            # Build a lazy computation to compare the fraction of missing
-            # input points at each output point to the 'mdtol' threshold.
-            point_mask_counts = da.sum(da.ma.getmaskarray(array), axis=axis)
-            points_per_calc = array.size / dask_result.size
-            masked_point_fractions = point_mask_counts / points_per_calc
-            boolean_mask = masked_point_fractions > mdtol
-            # Return an mdtol-masked version of the basic result.
-            result = da.ma.masked_array(da.ma.getdata(dask_result),
-                                        boolean_mask)
-        return result
-    return inner_stat
 
 MEAN = WeightedAggregator('mean', ma.average,
                           lazy_func=_build_dask_mdtol_function(da.mean))
@@ -1534,7 +1525,8 @@ This aggregator handles masked data.
 """
 
 
-MIN = Aggregator('minimum', ma.min)
+MIN = Aggregator('minimum', ma.min,
+                 lazy_func=_build_dask_mdtol_function(da.min))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the minimum over a :class:`~iris.cube.Cube`, as computed by
@@ -1545,6 +1537,24 @@ the minimum over a :class:`~iris.cube.Cube`, as computed by
 To compute zonal minimums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MIN)
+
+This aggregator handles masked data.
+
+"""
+
+
+MAX = Aggregator('maximum', ma.max,
+                 lazy_func=_build_dask_mdtol_function(da.max))
+"""
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the maximum over a :class:`~iris.cube.Cube`, as computed by
+:func:`numpy.ma.max`.
+
+**For example**:
+
+To compute zonal maximums over the *longitude* axis of a cube::
+
+    result = cube.collapsed('longitude', iris.analysis.MAX)
 
 This aggregator handles masked data.
 
@@ -1700,7 +1710,8 @@ This aggregator handles masked data.
 """
 
 
-SUM = WeightedAggregator('sum', _sum)
+SUM = WeightedAggregator('sum', iris._lazy_data.non_lazy(_lazy_sum),
+                         lazy_func=_build_dask_mdtol_function(_lazy_sum))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the sum over a :class:`~iris.cube.Cube`, as computed by :func:`numpy.ma.sum`.

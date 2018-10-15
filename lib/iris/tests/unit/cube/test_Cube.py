@@ -34,9 +34,9 @@ import iris.analysis
 import iris.aux_factory
 import iris.coords
 import iris.exceptions
-from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
+from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord, CellMeasure
 from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
@@ -1545,6 +1545,31 @@ class Test_add_metadata(tests.IrisTest):
                                      long_name='area', measure='area')
         cube.add_cell_measure(a_cell_measure, [0, 1])
         self.assertEqual(cube.cell_measure('area'), a_cell_measure)
+
+    def test_add_valid_aux_factory(self):
+        cube = Cube(np.arange(8).reshape(2, 2, 2))
+        delta = AuxCoord(points=[0, 1], long_name='delta', units='m')
+        sigma = AuxCoord(points=[0, 1], long_name='sigma')
+        orog = AuxCoord(np.arange(4).reshape(2, 2), units='m')
+        cube.add_aux_coord(delta, 0)
+        cube.add_aux_coord(sigma, 0)
+        cube.add_aux_coord(orog, (1, 2))
+        factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orog)
+        self.assertIsNone(cube.add_aux_factory(factory))
+
+    def test_error_for_add_invalid_aux_factory(self):
+        cube = Cube(np.arange(8).reshape(2, 2, 2), long_name='bar')
+        delta = AuxCoord(points=[0, 1], long_name='delta', units='m')
+        sigma = AuxCoord(points=[0, 1], long_name='sigma')
+        orog = AuxCoord(np.arange(4).reshape(2, 2), units='m', long_name='foo')
+        cube.add_aux_coord(delta, 0)
+        cube.add_aux_coord(sigma, 0)
+        # Note orography is not added to the cube here
+        factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orog)
+        expected_error = ("foo coordinate for factory is not present on cube "
+                          "bar")
+        with self.assertRaisesRegexp(ValueError, expected_error):
+            cube.add_aux_factory(factory)
 
 
 class Test_remove_metadata(tests.IrisTest):

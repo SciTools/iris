@@ -174,7 +174,14 @@ def _general_time_rules(cube, pp):
     if (time_coord is not None and
             time_coord.has_bounds() and
             clim_season_coord is None and
-            (fp_coord is not None or frt_coord is not None) and
+            cm_time_mean is not None):
+        pp.lbtim.ib = 2
+        pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
+        pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
+
+    if (time_coord is not None and
+            time_coord.has_bounds() and
+            clim_season_coord is None and
             cm_time_mean is not None and
             cm_time_mean.intervals != () and
             cm_time_mean.intervals[0].endswith('hour')):

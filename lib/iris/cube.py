@@ -994,6 +994,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if not isinstance(aux_factory, iris.aux_factory.AuxCoordFactory):
             raise TypeError('Factory must be a subclass of '
                             'iris.aux_factory.AuxCoordFactory.')
+        cube_coords = self.coords()
+        for dependency in aux_factory.dependencies:
+            ref_coord = aux_factory.dependencies[dependency]
+            if ref_coord is not None and ref_coord not in cube_coords:
+                msg = "{} coordinate for factory is not present on cube {}"
+                raise ValueError(msg.format(ref_coord.name(), self.name()))
         self._aux_factories.append(aux_factory)
 
     def add_cell_measure(self, cell_measure, data_dims=None):
@@ -3241,10 +3247,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
             # accepts multiple axes (unlike 'aggregate').
-            collapse_axis = dims_to_collapse
+            collapse_axis = list(dims_to_collapse)
             try:
                 data_result = aggregator.lazy_aggregate(self.lazy_data(),
-                                                        collapse_axis,
+                                                        axis=collapse_axis,
                                                         **kwargs)
             except TypeError:
                 # TypeError - when unexpected keywords passed through (such as

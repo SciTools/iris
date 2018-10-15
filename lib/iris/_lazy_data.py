@@ -23,12 +23,27 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from functools import wraps
+
 import dask
 import dask.array as da
 import dask.context
 from dask.local import get_sync as dget_sync
 import numpy as np
 import numpy.ma as ma
+
+
+def non_lazy(func):
+    """
+    Turn a lazy function into a function that returns a result immediately.
+
+    """
+    @wraps(func)
+    def inner(*args, **kwargs):
+        """Immediately return the results of a lazy function."""
+        result = func(*args, **kwargs)
+        return dask.compute(result)[0]
+    return inner
 
 
 def is_lazy_data(data):

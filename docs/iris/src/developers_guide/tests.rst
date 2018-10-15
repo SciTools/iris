@@ -3,6 +3,9 @@
 Testing
 *******
 
+The Iris tests may be run with ``python setup.py test`` which has a 
+command line utility included.
+
 There are three categories of tests within Iris:
  - Unit tests
  - Integration tests

@@ -160,6 +160,27 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea857a81957a857e957ec17e817e6a816a853e817a853e816e818d3a862ad3fe.png", 
         "https://scitools.github.io/test-iris-imagehash/images/v4/be81857ec17e7a81c17e7e81857e3e803e81817a3e81c17e7a81c17ec97e2c2b.png"
     ], 
+    "iris.tests.integration.plot.test_plot_2d_coords.Test.test_2d_coord_bounds_northpolarstereo.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e59661969e699659c0f719a6c967339a1992c07f3649c09c3f612669c07b3f66.png"
+    ], 
+    "iris.tests.integration.plot.test_plot_2d_coords.Test.test_2d_coord_bounds_platecarree.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ee816299954a1da699b6915ec25b6e419729c42c3f84bd9fe6d262d1d1dac076.png"
+    ], 
+    "iris.tests.integration.plot.test_vector_plots.TestQuiver.test_2d_plain_latlon.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fb8d4f21c472b27e919d2e216f216b3178e69c7e961ab39a84696c616d245b94.png"
+    ], 
+    "iris.tests.integration.plot.test_vector_plots.TestQuiver.test_2d_plain_latlon_on_polar_map.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e66c6619999933666666c6d99999336663646d9999c1332667b60cf964d8672c.png"
+    ], 
+    "iris.tests.integration.plot.test_vector_plots.TestQuiver.test_2d_rotated_latlon.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eba925a5c476d25a95a56b876f3826246a449c6b96a3731ab13f6c656a5cb48a.png"
+    ], 
+    "iris.tests.integration.plot.test_vector_plots.TestQuiver.test_non_latlon_1d_coords.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a7ac24947259f3493697632df45926b6e126c4f392593b4937266f26ccf032d8.png"
+    ], 
+    "iris.tests.integration.plot.test_vector_plots.TestQuiver.test_non_latlon_2d_coords.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/afac26367251d3493617632df45c26a6e126c6f392593b4937266f26ccf232d0.png"
+    ], 
     "iris.tests.test_analysis.TestProject.test_cartopy_projection.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/9e1952c9c165b4fc668a9d47c1461d7a60fb2e853eb426bd62fd229c9f04c16d.png"
     ], 

@@ -86,7 +86,8 @@ class Test__regrid__linear(tests.IrisTest):
         result = regrid(self.data, self.x_dim, self.y_dim,
                         self.x, self.y,
                         np.array([xs]), np.array([ys]))
-        self.assertArrayAllClose(result, expecteds, rtol=1e-04)
+        self.assertArrayAllClose(result, expecteds, rtol=1e-04,
+                                 equal_nan=True)
 
         # Check that transposing the input data results in the same values
         ndim = self.data.ndim

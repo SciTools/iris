@@ -501,8 +501,8 @@ def _get_actual_dtype(cf_var):
     return dummy_data.dtype
 
 
-def _load_cube(engine, cf, cf_var, filename):
-    """Create the cube associated with the CF-netCDF data variable."""
+def _get_cf_var_data(cf_var, filename):
+    # Get lazy chunked data out of a cf variable.
     dtype = _get_actual_dtype(cf_var)
 
     # Create cube with deferred data, but no metadata
@@ -510,7 +510,16 @@ def _load_cube(engine, cf, cf_var, filename):
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
     proxy = NetCDFDataProxy(cf_var.shape, dtype, filename, cf_var.cf_name,
                             fill_value)
-    data = as_lazy_data(proxy)
+    chunks = cf_var.cf_data.chunking()
+    # Chunks can be an iterable, None, or `'contiguous'`.
+    if chunks == 'contiguous':
+        chunks = None
+    return as_lazy_data(proxy, chunks=chunks)
+
+
+def _load_cube(engine, cf, cf_var, filename):
+    """Create the cube associated with the CF-netCDF data variable."""
+    data = _get_cf_var_data(cf_var, filename)
     cube = iris.cube.Cube(data)
 
     # Reset the pyke inference engine.
