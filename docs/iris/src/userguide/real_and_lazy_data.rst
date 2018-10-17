@@ -34,7 +34,7 @@ take up a large amount of memory.
 Conversely, we use the term **lazy data** to describe data that is not loaded into memory.
 (This is sometimes also referred to as **deferred data**.)
 In Iris, lazy data is provided as a
-`dask array <http://dask.pydata.org/en/latest/array-overview.html>`_.
+`dask array <https://docs.dask.org/en/latest/array.html>`_.
 A dask array also has a shape and data type
 but the dask array's data points remain on disk and only loaded into memory in
 small chunks when absolutely necessary.  This has key performance benefits for
