@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,6 @@ import numpy as np
 
 import iris.cube
 import iris.coords
-from iris.exceptions import IrisUserWarning
 from iris.tests import mock
 
 
@@ -98,7 +97,7 @@ class Test_phenomenon(tests.IrisTest):
         with warnings.catch_warnings():
             # This should issue a warning about unrecognised data
             warnings.simplefilter("error")
-            with self.assertRaises(IrisUserWarning):
+            with self.assertRaises(UserWarning):
                 grib_save_rules.set_discipline_and_parameter(cube, grib)
         # do it all again, and this time check the results
         grib = None
