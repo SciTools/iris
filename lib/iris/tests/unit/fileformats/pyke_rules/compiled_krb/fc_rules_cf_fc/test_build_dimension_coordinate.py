@@ -127,6 +127,8 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             bounds=self.bounds)
 
         with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter('always')
             # Asserts must lie within context manager because of deferred
             # loading.
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
@@ -154,6 +156,8 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             bounds=self.bounds)
 
         with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter('always')
             # Asserts must lie within context manager because of deferred
             # loading.
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
@@ -178,6 +182,8 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             bounds=self.bounds)
 
         with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter('always')
             # Asserts must lie within context manager because of deferred
             # loading.
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
