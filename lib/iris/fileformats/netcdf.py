@@ -992,10 +992,16 @@ class Saver(object):
 
         # Create the associated cube CF-netCDF data variable.
         cf_var_cube = self._create_cf_data_variable(
-            cube, dimension_names, local_keys, zlib=zlib, complevel=complevel,
+            cube, dimension_names, local_keys, zlib=zlib,
+
+            # NOTE: these ones *could* all be relagated to **kwargs ...
+            complevel=complevel,
             shuffle=shuffle, fletcher32=fletcher32, contiguous=contiguous,
             chunksizes=chunksizes, endian=endian,
-            least_significant_digit=least_significant_digit, packing=packing,
+            least_significant_digit=least_significant_digit,
+
+            # ... And these ones not.
+            packing=packing,
             fill_value=fill_value)
 
         # Add coordinate variables.
