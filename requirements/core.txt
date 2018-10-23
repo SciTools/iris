@@ -10,5 +10,5 @@ cftime
 dask[array]  #conda: dask
 matplotlib>=2,<3
 netcdf4
-numpy>=1.14,!=1.15.2
+numpy>=1.14
 scipy
