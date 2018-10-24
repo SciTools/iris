@@ -1260,10 +1260,27 @@ def _proportion(array, function, axis, **kwargs):
 
 
 def _rms(array, axis, **kwargs):
+    # XXX due to the current limitations in `da.average` (see below), maintain
+    # an explicit non-lazy aggregation function for now.
+    # Note: retaining this function also means that if weights are passed to
+    # the lazy aggregator, the aggregation will fall back to using this
+    # non-lazy aggregator.
     rval = np.sqrt(ma.average(np.square(array), axis=axis, **kwargs))
     if not ma.isMaskedArray(array):
         rval = np.asarray(rval)
     return rval
+
+
+@_build_dask_mdtol_function
+def _lazy_rms(array, axis, **kwargs):
+    # XXX This should use `da.average` and not `da.mean`, as does the above.
+    # However `da.average` current doesn't handle masked weights correctly
+    # (see https://github.com/dask/dask/issues/3846).
+    # To work around this we use da.mean, which doesn't support weights at
+    # all. Thus trying to use this aggregator with weights will currently
+    # raise an error in dask due to the unexpected keyword `weights`,
+    # rather than silently returning the wrong answer.
+    return da.sqrt(da.mean(array ** 2, axis=axis, **kwargs))
 
 
 @_build_dask_mdtol_function
@@ -1654,7 +1671,8 @@ This aggregator handles masked data.
 """
 
 
-RMS = WeightedAggregator('root mean square', _rms)
+RMS = WeightedAggregator('root mean square', _rms,
+                         lazy_func=_build_dask_mdtol_function(_lazy_rms))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the root mean square over a :class:`~iris.cube.Cube`, as computed by
