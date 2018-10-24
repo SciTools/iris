@@ -1260,6 +1260,11 @@ def _proportion(array, function, axis, **kwargs):
 
 
 def _rms(array, axis, **kwargs):
+    # XXX due to the current limitations in `da.average` (see below), maintain
+    # an explicit non-lazy aggregation function for now.
+    # Note: retaining this function also means that if weights are passed to
+    # the lazy aggregator, the aggregation will fall back to using this
+    # non-lazy aggregator.
     rval = np.sqrt(ma.average(np.square(array), axis=axis, **kwargs))
     if not ma.isMaskedArray(array):
         rval = np.asarray(rval)
