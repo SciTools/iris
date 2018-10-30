@@ -782,7 +782,7 @@ class _FillValueMaskCheckAndStoreTarget(object):
 _SaveFile = NamedTuple('SaveFile', ['dims', 'vars', 'attrs'])
 _SaveDim = NamedTuple('SaveDim', ['name', 'size'])
 _SaveVar = NamedTuple('SaveVar', ['name', 'dim_names', 'attrs',
-                                  'data_source', 'create_kwargs'])
+                                  'data_source', 'controls'])
 _SaveAttr = NamedTuple('SaveAttr', ['name', 'value'])
 
 
@@ -858,11 +858,14 @@ class Saver(object):
         self._save = _SaveFile(dims=OrderedDict(),
                                vars=OrderedDict(),
                                attrs=OrderedDict())
+        self._append_mode = append
+
         #: NetCDF dataset
         try:
-            open_mode = 'w'
-            if append and os.path.exists(filename):
+            if self._append_mode and os.path.exists(filename):
                 open_mode = 'r+'
+            else:
+                open_mode = 'w'
             self._dataset = netCDF4.Dataset(filename, mode=open_mode,
                                             format=netcdf_format)
         except RuntimeError:
@@ -1528,7 +1531,7 @@ class Saver(object):
                                     [bounds_dimension_name]),
                          attrs=OrderedDict(),
                          data_source=coord.core_bounds(),
-                         create_kwargs={}))
+                         controls={'var_type': 'bounds-var'}))
 
     def _get_cube_variable_name(self, cube):
         """
@@ -1644,7 +1647,7 @@ class Saver(object):
             dim_names=cf_dimensions,
             attrs=OrderedDict(),
             data_source=data,
-            create_kwargs={})
+            controls={'var_type': 'cell-measure'})
         _addbyname(self._save.vars, cf_var)
 
         if cell_measure.units != 'unknown':
@@ -1693,6 +1696,7 @@ class Saver(object):
         cf_dimensions = [dimension_names[dim] for dim in
                          cube.coord_dims(coord)]
 
+        controls = {'var_type': 'coordinate'}
         if np.issubdtype(coord.dtype, np.str_):
             dtype = coord.dtype
             string_dimension_depth = dtype.itemsize
@@ -1730,7 +1734,7 @@ class Saver(object):
                                 dim_names=cf_dimensions,
                                 attrs=OrderedDict(),
                                 data_source=content,
-                                create_kwargs={}))
+                                controls=controls))
 
         else:
             # Identify the collection of coordinates that represent CF-netCDF
@@ -1755,7 +1759,7 @@ class Saver(object):
                               dim_names=cf_dimensions,
                               attrs=OrderedDict(),
                               data_source=coord.core_points(),
-                              create_kwargs={})
+                              controls=controls)
             _addbyname(self._save.vars, cf_var)
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
@@ -1881,7 +1885,7 @@ class Saver(object):
                                        dim_names=[],
                                        attrs=OrderedDict(),
                                        data_source=np.array(0, dtype=np.int32),
-                                       create_kwargs={})
+                                       controls={'var_type': 'grid-mapping'})
                 _addbyname(self._save.vars, cf_var_grid)
 
                 def gridattr(name, value):
@@ -2122,13 +2126,14 @@ class Saver(object):
 #        cf_var = self._dataset.createVariable(cf_name, dtype, dimension_names,
 #                                              fill_value=fill_value,
 #                                              **kwargs)
-        kwargs['__iris_saver_settings'] = {
-            'fill_value': fill_value, 'packing': packing}
+        controls = {'var_type':'data-var',
+                    'create_kwargs':kwargs,
+                    'fill_value':fill_value, 'packing':packing}
         cf_var = _SaveVar(name=cf_name,
                           dim_names=dimension_names,
                           attrs=OrderedDict(),
                           data_source=cube.core_data(),
-                          create_kwargs=kwargs)
+                          controls=controls)
         _addbyname(self._save.vars, cf_var)
 
 #
@@ -2264,8 +2269,9 @@ class Saver(object):
 
         # Add variables.
         for var in self._save.vars.values():
-            create_kwargs = var.create_kwargs
-            settings = create_kwargs.pop('__iris_saver_settings', {})
+            settings = var.controls
+            # TODO: settings controls packing etc. :: SWITCH on 'var_type'...
+            create_kwargs = settings.get('create_kwargs', {})
             # Note : both dtype and data are *not* as simple as this ...
             # TODO: take account of the existing code.
             nc_var = self._dataset.createVariable(
@@ -2273,7 +2279,7 @@ class Saver(object):
                 datatype=var.data_source.dtype,
                 dimensions=tuple(var.dim_names),
                 **create_kwargs)
-            # Add variable ttributes.
+            # Add variable attributes.
             for attr in var.attrs.values():
                 _setncattr(nc_var, attr.name, attr.value)
             # Add data.
