@@ -841,8 +841,17 @@ class Saver(object):
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
 
+        output_path = self._dataset.filepath()
         self._dataset.sync()
         self._dataset.close()
+        import os
+        os.system('echo ""')
+        os.system('echo "***** <START> ncdump -h {} ..."'.format(output_path))
+        os.system('echo ""')
+        os.system('ncdump -h ' + output_path)
+        os.system('echo ""')
+        os.system('echo "... ncdump <ENDS>"')
+        os.system('echo ""')
 
     def write(self, cube, local_keys=None, unlimited_dimensions=None,
               zlib=False, complevel=4, shuffle=True, fletcher32=False,
