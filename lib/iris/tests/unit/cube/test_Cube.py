@@ -503,6 +503,9 @@ class Test_aggregated_by(tests.IrisTest):
                                long_name='label', units='no_unit')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('label'), label_coord)
+
+    def test_2d_agg_by_label(self):
+        res_cube = self.cube.aggregated_by('label', self.mock_agg)
         # For 2d coord, slices of aggregated coord should be the same as
         # aggregated slices.
         for res_slice, cube_slice in zip(res_cube.slices('val'),
@@ -524,6 +527,9 @@ class Test_aggregated_by(tests.IrisTest):
                                long_name='label', units='no_unit')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('label'), label_coord)
+
+    def test_2d_agg_by_val(self):
+        res_cube = self.cube.aggregated_by('val', self.mock_agg)
         # For 2d coord, slices of aggregated coord should be the same as
         # aggregated slices.
         for res_slice, cube_slice in zip(res_cube.slices('val'),

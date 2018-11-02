@@ -3387,13 +3387,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             lambda coord_: coord_ not in groupby_coords,
             self.coords(contains_dimension=dimension_to_groupby)))
 
-        match_dims = [
-            index for coord_ in shared_coords for (index, dim) in
-            enumerate(self.coord_dims(coord_)) if dim == dimension_to_groupby]
+        # Determine which of each shared coord's dimensions will be aggregated.
+        shared_coords_and_dims = [
+            (coord_, index)
+            for coord_ in shared_coords
+            for (index, dim) in enumerate(self.coord_dims(coord_))
+            if dim == dimension_to_groupby]
 
         # Create the aggregation group-by instance.
         groupby = iris.analysis._Groupby(groupby_coords,
-                                         zip(shared_coords, match_dims))
+                                         shared_coords_and_dims)
 
         # Create the resulting aggregate-by cube and remove the original
         # coordinates that are going to be groupedby.

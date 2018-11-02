@@ -1859,8 +1859,7 @@ class _Groupby(object):
 
         Kwargs:
 
-        * shared_coords (list of tuples containing :class:`iris.coords.Coord`
-            instances with `int`):
+        * shared_coords (list of (:class:`iris.coords.Coord`, `int`) pairs):
             One or more coordinates (including multidimensional coordinates)
             that share the same group-by coordinate axis.  The `int` identifies
             which dimension of the coord is on the group-by coordinate axis.
@@ -2040,13 +2039,10 @@ class _Groupby(object):
                     # of interest to trailing dim and flatten the others.
                     work_arr = np.moveaxis(coord.points, dim, -1)
                     shape = work_arr.shape
-                    if coord.ndim == 1:
-                        work_shape = (1, ) + work_arr.shape
-                        new_shape = (len(self),)
-                    else:
-                        work_shape = (np.product(work_arr.shape[:-1]),
-                                      work_arr.shape[-1])
-                        new_shape = (len(self),) + shape[:-1]
+                    work_shape = (-1, shape[-1])
+                    new_shape = (len(self),)
+                    if coord.ndim > 1:
+                        new_shape += shape[:-1]
                     work_arr = work_arr.reshape(work_shape)
 
                     for key_slice in six.itervalues(self._slices_by_key):
